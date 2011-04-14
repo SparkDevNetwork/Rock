@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "docbookV4.2/docbookx.dtd" []>
+<article>
+  <title>Rock Developer Quick-Start Guide</title>
+  <articleinfo>
+    <subtitle>The basics needed to start developing &quot;stuff&quot; for the Rock-ChMS Framework</subtitle>
+    <releaseinfo>Version 0.02</releaseinfo>
+    <copyright>
+      <year>2011</year>
+      <holder>Spark Development Network, LLC.</holder>
+    </copyright>
+  </articleinfo>
+  <abstract>
+    <para>This guide  is meant to be a starting point to quickly get new developers familiar with the Rock Framework.  Once developers have mastered the basics outlined here they should proceed to the Rock Complete Developer Reference.</para>
+  </abstract>
+  <section>
+    <title>Introduction to Rock</title>
+    <para>Rock is an extremely powerful application development framework which can be used to create a completely custom application or it can be used to develop additional functionality for the Rock Church Management System (ChMS). Rock is written using the latest technology including LINQ and the Entity Framework but we&apos;ll leave that for another document so we don&apos;t put you to sleep.  All you need to know is Rock was built to make development simple for you! </para>
+    <para>Rock is primarily made up of two parts, <emphasis role="italic">Theme Layouts</emphasis> and <emphasis role="italic">Blocks</emphasis>.  Themes have layouts that control  the placement and definition of content areas called &quot;Zones&quot; and also include the pieces that define the styling.  Blocks are the fundamental, functional code-parts that make up an application, widget, control, module -- or whatever you you call them. </para>
+    <para>When combined layouts and building blocks allow you to compose a powerful application.  In fact, the ChMS parts of Rock are built using these very things. We like to say &quot;Rock is built on Rock&quot;.</para>
+  </section>
+  <section>
+    <title>Theme Layouts</title>
+    <para>A Theme Layout is simply an ASP.NET Web Page (.aspx) that  basically defines zero or more zones where Blocks might reside and can also refer to css, javascripts, and images. Theme Layouts can include just about anything you wish but they must  inherit from the Rock.Cms.CmsPage class.<figure>
+        <title>An example Theme Layout; TwoColumn.aspx</title>
+        <graphic fileref="images/ExampleThemeLayout_TwoColumn.png"/>
+      </figure>Notice in the code-behind for the TwoColumn.aspx layout that four zones are added to the Zones collection in the DefineZones() method which is overridden from the parent CmsPage class.  A zone is simply any ASP control that can have child controls.<programlisting>using System;
+using Rock.Cms;
+
+namespace Rock.Themes.Default.Layouts
+{
+    public partial class TwoColumn : CmsPage
+    {
+        protected void Page_Load( object sender, EventArgs e )
+        {
+        }
+
+        protected override void DefineZones()
+        {
+            Zones.Add( &quot;Header&quot;, Heading );
+            Zones.Add( &quot;FirstColumn&quot;, FirstColumn );
+            Zones.Add( &quot;SecondColumn&quot;, SecondColumn );
+            Zones.Add( &quot;Footer&quot;, Footer );
+        }
+    }
+}</programlisting></para>
+    <para>The recommended folder structure for any custom themes you create should be similar to the Default theme (which has three layouts) shown below.</para>
+    <para><graphic fileref="images/ThemeFolderLayout.png"/> </para>
+  </section>
+  <section>
+    <title>Blocks</title>
+    <para>Blocks are simply ASP.NET  User Controls and are the fundamental, functional &quot;building blocks&quot; that make up your application, widget, module or whatever you want to call it. They can include anything you want but they must inherit from the Rock.Cms.CmsBlock class.</para>
+    <para><figure>
+        <title>An example Block</title>
+        <graphic fileref="images/ExampleBlock.png"/>
+        <programlisting>using System;
+using Ignite.Cms;
+
+namespace FakeCompany.Examples
+{
+    public partial class ExampleTimeBlock : CmsBlock
+    {
+        protected void Page_Load(object sender, EventArgs e )
+        {
+            lTime.Text = DateTime.Now.ToShortTimeString();
+        }
+    }
+}</programlisting>
+      </figure></para>
+  </section>
+  <section>
+    <title>Hello World</title>
+    <para>Now let&apos;s walk through an example so you can see how easy it is to create a custom block and assemble a simple page.</para>
+    <para/>
+  </section>
+  <section>
+    <title>Pages</title>
+    <para>TBD</para>
+  </section>
+</article>

@@ -1,0 +1,1 @@
+dotless.compiler ../../../Ignite.Web/Themes/Default/CSS/*.less --watch

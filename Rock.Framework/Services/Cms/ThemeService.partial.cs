@@ -1,0 +1,61 @@
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.IO;
+
+namespace Rock.Services.Cms
+{
+	public partial class ThemeService
+	{
+		private string _themePath;
+
+		public ThemeService( string rootPath )
+		{
+			_themePath = rootPath;
+
+			if ( !rootPath.EndsWith( @"\" ) )
+				_themePath += @"\";
+
+			_themePath += @"Themes\";
+		}
+
+		/// <summary>
+		/// Returns the valid themes found in this installation.
+		/// </summary>
+		/// <returns></returns>
+		public string[] GetThemesNames()
+		{
+			string[] themeFolders = Directory.GetDirectories( _themePath );
+			List<string> list = new List<string>();
+			// TODO validate these are good, legal themes?
+			for ( int i = 0; i < themeFolders.Length; i++ )
+			{
+				list.Add( themeFolders[i].Substring( _themePath.Length ) );
+			}
+			return list.ToArray();
+		}
+
+		public string[] GetThemeLayoutNames( string themeName )
+		{
+			string path = string.Format( @"{0}{1}\Layouts\", _themePath, themeName );
+			string[] layoutNames = Directory.GetFiles( path , "*.aspx" );
+			
+			List<string> list = new List<string>();
+			// TODO validate these are good, legal layouts?
+			string fileName = string.Empty;
+			for ( int i = 0; i < layoutNames.Length; i++ )
+			{
+				fileName = layoutNames[i].Substring( path.Length );
+				list.Add( fileName.Substring(0, fileName.Length - 5) );	// remove .aspx extension
+			}
+			list.Sort();
+			return list.ToArray();
+		}
+	}
+}
