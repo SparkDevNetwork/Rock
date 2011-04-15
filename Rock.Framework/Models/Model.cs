@@ -31,7 +31,12 @@ namespace Rock.Models
 
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Secure" }; }
+            get { return new List<string>() { "View", "Edit", "Configure", "Secure" }; }
+        }
+
+        public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
+        {
+            return Rock.Cms.Security.Authorization.Authorized( this, action, user );
         }
 
         public virtual bool DefaultAuthorization (string action)

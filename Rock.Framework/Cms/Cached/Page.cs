@@ -449,6 +449,11 @@ namespace Rock.Cms.Cached
 
         public List<string> SupportedActions { get; set; }
 
+        public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
+        {
+            return Rock.Cms.Security.Authorization.Authorized( this, action, user );
+        }
+
         public bool DefaultAuthorization( string action )
         {
             return action == "View";

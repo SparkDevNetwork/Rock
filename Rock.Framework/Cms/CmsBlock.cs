@@ -151,7 +151,7 @@ namespace Rock.Cms
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
             MembershipUser user = Membership.GetUser();
-            if ( Authorization.Authorized( BlockInstance, "Configure", user ) )
+            if ( BlockInstance.Authorized( "Configure", user ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "attributes-{0}-hide", BlockInstance.Id );
@@ -231,7 +231,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public bool UserAuthorized( string action )
         {
-            return Rock.Cms.Security.Authorization.Authorized( BlockInstance, action, System.Web.Security.Membership.GetUser() );
+            return BlockInstance.Authorized( action, System.Web.Security.Membership.GetUser() );
         }
 
         /// <summary>

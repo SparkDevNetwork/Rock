@@ -236,7 +236,7 @@ namespace Rock.Cms
             // If a PageInstance exists
             if ( PageInstance != null )
             {
-                if ( !Authorization.Authorized( PageInstance, "View", user ) )
+                if ( !PageInstance.Authorized( "View", user ) )
                 {
                     if ( user == null || !user.IsApproved )
                         FormsAuthentication.RedirectToLoginPage();
@@ -256,9 +256,9 @@ namespace Rock.Cms
                         Trace.Write( string.Format( "Begin Block Instance: {0}", blockInstance.Id ) );
 
                         // Get current user's permissions for the block instance
-                        bool canView = Authorization.Authorized( blockInstance, "View", user );
-                        bool canEdit = Authorization.Authorized( blockInstance, "Edit", user );
-                        bool canConfig = Authorization.Authorized( blockInstance, "Configure", user );
+                        bool canView = blockInstance.Authorized( "View", user );
+                        bool canEdit = blockInstance.Authorized( "Edit", user );
+                        bool canConfig = blockInstance.Authorized( "Configure", user );
                         Trace.Write( "Read user's permissions for block instance" );
 
                         // If user can't view and they haven't logged in, redirect to the login page
@@ -458,7 +458,7 @@ namespace Rock.Cms
                         Trace.Write( string.Format( "End Block Instance: {0}", blockInstance.Id ) );
                     }
 
-                    if ( PageInstance.IncludeAdminFooter && Authorization.Authorized( PageInstance, "Edit", user ) )
+                    if ( PageInstance.IncludeAdminFooter && PageInstance.Authorized( "Edit", user ) )
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";

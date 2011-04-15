@@ -12,6 +12,7 @@ namespace Rock.Cms.Security
         ISecured ParentAuthority { get; }
         List<string> SupportedActions { get; }
 
+        bool Authorized( string action, System.Web.Security.MembershipUser user );
         bool DefaultAuthorization( string action );
     }
 }
