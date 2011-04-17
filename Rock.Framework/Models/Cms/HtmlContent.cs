@@ -26,10 +26,12 @@ namespace Rock.Models.Cms
     {
 		public Guid Guid { get; set; }
 		
+		public int BlockId { get; set; }
+		
 		public string Content { get; set; }
 		
 		[MaxLength( 50 )]
-		public string EntityKey { get; set; }
+		public string EntityValue { get; set; }
 		
 		public int VersionLabel { get; set; }
 		
@@ -50,8 +52,6 @@ namespace Rock.Models.Cms
 		public DateTime? StartDateTime { get; set; }
 		
 		public DateTime? ExpireDateTime { get; set; }
-		
-		public int BlockId { get; set; }
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.HtmlContent"; } }

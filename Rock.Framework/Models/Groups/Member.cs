@@ -30,9 +30,9 @@ namespace Rock.Models.Groups
 		
 		public int GroupId { get; set; }
 		
-		public int GroupRoleId { get; set; }
-		
 		public int PersonId { get; set; }
+		
+		public int GroupRoleId { get; set; }
 		
 		public DateTime? CreatedDateTime { get; set; }
 		
