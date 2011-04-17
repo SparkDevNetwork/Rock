@@ -30,9 +30,7 @@ namespace Rock.Helpers
         public UnitOfWorkScope( bool saveAllChangesAtScopeEnd )
         {
             if ( currentScope != null && !currentScope.isDisposed )
-            {
-                throw new InvalidOperationException( "ObjectContextScope instances can not be nested." );
-            }
+                throw new InvalidOperationException( Rock.Framework.Properties.ExceptionMessage.NestedObjectContext );
 
             SaveAllChangesAtScopeEnd = saveAllChangesAtScopeEnd;
             objectContext = new Rock.EntityFramework.RockContext();

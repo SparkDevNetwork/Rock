@@ -49,6 +49,15 @@ namespace Rock.Web.Blocks.Cms {
         protected global::System.Web.UI.WebControls.PlaceHolder phDetails;
         
         /// <summary>
+        /// lblPath control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPath;
+        
+        /// <summary>
         /// tbPath control.
         /// </summary>
         /// <remarks>
@@ -56,6 +65,15 @@ namespace Rock.Web.Blocks.Cms {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox tbPath;
+        
+        /// <summary>
+        /// lblName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblName;
         
         /// <summary>
         /// tbName control.
@@ -67,6 +85,15 @@ namespace Rock.Web.Blocks.Cms {
         protected global::System.Web.UI.WebControls.TextBox tbName;
         
         /// <summary>
+        /// lblDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDescription;
+        
+        /// <summary>
         /// tbDescription control.
         /// </summary>
         /// <remarks>
@@ -74,6 +101,15 @@ namespace Rock.Web.Blocks.Cms {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox tbDescription;
+        
+        /// <summary>
+        /// lblSystem control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSystem;
         
         /// <summary>
         /// cbSystem control.

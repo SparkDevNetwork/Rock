@@ -24,7 +24,7 @@ namespace Rock.Web.Blocks.Cms
                 System.Web.UI.HtmlControls.HtmlGenericControl aAttributes = new System.Web.UI.HtmlControls.HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "edit icon-button" );
                 aAttributes.Attributes.Add( "href", "#" );
-                aAttributes.Attributes.Add( "title", "Edit HTML" );
+                aAttributes.Attributes.Add( "title", GetLocalResourceObject("EditHtml").ToString() );
                 aAttributes.InnerText = "Edit";
                 configControls.Add( aAttributes );
             }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Security;
 
+using Rock.Framework.Properties;
 using Rock.Services.Cms;
 using Rock.Services.Groups;
 
@@ -69,17 +70,17 @@ namespace Rock.Cms.Security
 
         public override void AddUsersToRoles( string[] usernames, string[] roleNames )
         {
-            throw new NotImplementedException( "Provider does not support AddUsersToRoles method" );
+            throw new NotImplementedException( ExceptionMessage.AddUsersToRolesNotImplemented );
         }
 
         public override void CreateRole( string roleName )
         {
-            throw new NotImplementedException( "Provider does not support CreateRole method" );
+            throw new NotImplementedException( ExceptionMessage.CreateRoleNotImplemented );
         }
 
         public override bool DeleteRole( string roleName, bool throwOnPopulatedRole )
         {
-            throw new NotImplementedException( "Provider does not support DeleteRole method" );
+            throw new NotImplementedException( ExceptionMessage.DeleteRoleNotImplemented );
         }
 
         public override string[] FindUsersInRole( string roleName, string usernameToMatch )
@@ -92,7 +93,7 @@ namespace Rock.Cms.Security
 
             List<string> users = GetRole( roleName );
             if ( users == null )
-                throw new ProviderException( "Role does not exist." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
 
             return users.ToArray();
         }
@@ -113,7 +114,7 @@ namespace Rock.Cms.Security
 
             UserInfo user = GetUser( username );
             if ( user == null )
-                throw new ProviderException( "user does not exist." );
+                throw new ProviderException( ExceptionMessage.UserDoesntExist );
 
             return user.Roles.ToArray();
         }
@@ -125,7 +126,7 @@ namespace Rock.Cms.Security
 
             List<string> users = GetRole( roleName );
             if ( users == null )
-                throw new ProviderException( "Role does not exist." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
 
             return users.ToArray();
         }
@@ -139,18 +140,18 @@ namespace Rock.Cms.Security
                 throw new ArgumentNullException( "roleName" );
 
             if ( GetUser( username ) == null )
-                throw new ProviderException( "user does not exist." );
+                throw new ProviderException( ExceptionMessage.UserDoesntExist );
 
             List<string> users = GetRole( roleName );
             if ( users != null )
                 return users.Contains( username );
             else
-                throw new ProviderException( "Role does not exist." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
         }
 
         public override void RemoveUsersFromRoles( string[] usernames, string[] roleNames )
         {
-            throw new NotImplementedException( "Provider does not support RemoveUsersFromRoles method" );
+            throw new NotImplementedException( ExceptionMessage.RemoveUsersFromRoleNotImplemented );
         }
 
         public override bool RoleExists( string roleName )

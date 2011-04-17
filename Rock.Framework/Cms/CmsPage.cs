@@ -10,6 +10,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Framework.Properties;
 using Rock.Models.Cms;
 using Rock.Models.Crm;
 using Rock.Services.Cms;
@@ -436,11 +437,10 @@ namespace Rock.Cms
 
                                         }
 
-
                                         Button btnSaveAttributes = new Button();
                                         btnSaveAttributes.ID = string.Format( "attributes-{0}-hide", blockInstance.Id );
                                         btnSaveAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                                        btnSaveAttributes.Text = "Save";
+                                        btnSaveAttributes.Text = Text.Save;
                                         btnSaveAttributes.CssClass = btnSaveAttributes.ID;
                                         btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
                                         upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
@@ -476,29 +476,29 @@ namespace Rock.Cms
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
-                        aBlockConfig.Attributes.Add( "Title", "Show Block Configuration" );
-                        aBlockConfig.InnerText = "Block Settings";
+                        aBlockConfig.Attributes.Add( "Title", Text.ShowBlockConfiguration );
+                        aBlockConfig.InnerText = Text.BlockSettings;
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "attributes icon-button" );
                         aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", "Show Page Attributes" );
-                        aAttributes.InnerText = "Page Attributes";
+                        aAttributes.Attributes.Add( "Title", Text.ShowPageAttributes );
+                        aAttributes.InnerText = Text.PageAttributes;
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
                         aChildPages.Attributes.Add( "href", "#" );
-                        aChildPages.Attributes.Add( "Title", "Show Child Pages" );
-                        aChildPages.InnerText = "Child Pages";
+                        aChildPages.Attributes.Add( "Title", Text.ShowChildPages );
+                        aChildPages.InnerText = Text.ChildPages;
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
-                        aPageZones.Attributes.Add( "Title", "Show Page Zones" );
-                        aPageZones.InnerText = "Page Zones";
+                        aPageZones.Attributes.Add( "Title", Text.ShowPageZones );
+                        aPageZones.InnerText = Text.PageZones;
 
                         string footerScript = @"
     $(document).ready(function () {
@@ -537,7 +537,7 @@ namespace Rock.Cms
             if ( phLoadTime != null  )
             {
                 TimeSpan tsDuration = DateTime.Now.Subtract( ( DateTime )Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "Page Load Time: {0:N2}s", tsDuration.TotalSeconds ) ) );
+                phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", Text.PageLoadTime, tsDuration.TotalSeconds ) ) );
             }
         }
 

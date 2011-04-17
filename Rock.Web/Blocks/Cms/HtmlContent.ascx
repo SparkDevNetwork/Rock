@@ -90,8 +90,8 @@
                 <asp:TextBox ID="txtHtmlContentEditor" CssClass="html-content-editor" TextMode="MultiLine" runat="server"></asp:TextBox>
                 
                 <div class="editor-buttons">
-                    <asp:Button ID="btnSaveContent" CssClass="save" runat="server" Text="Save" OnClick="btnSaveContent_Click" />
-                    <input type="button" class="cancel" value="Cancel" />
+                    <asp:Button ID="btnSaveContent" runat="server" meta:resourcekey="btnSaveContent" Text="Save" CssClass="save" OnClick="btnSaveContent_Click" />
+                    <input id="btnCancel" runat="server" meta:resourcekey="btnCancel" type="button" class="cancel" value="Cancel" />
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>

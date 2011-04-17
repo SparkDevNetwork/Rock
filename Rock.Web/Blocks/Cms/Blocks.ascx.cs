@@ -29,7 +29,7 @@ namespace Rock.Web.Blocks.Cms
 					if ( Int32.TryParse( PageParameter( "BlockId" ), out _blockId ) )
 						DisplayEdit( _blockId );
 					else
-						throw new System.Exception( "Invalid Block Id" );
+						throw new System.Exception( GetLocalResourceObject( "InvalidBlockId").ToString() );
 					break;
 			}
 		}
@@ -56,6 +56,9 @@ namespace Rock.Web.Blocks.Cms
 				if ( blockId > 0 )
 				{
 					Rock.Models.Cms.Block block = blockService.GetBlock( Convert.ToInt32( PageParameter( "BlockId" ) ) );
+                    if (block == null)
+                        throw new System.Exception( GetLocalResourceObject( "InvalidBlockId" ).ToString() );
+
 					tbPath.Text = block.Path;
 					tbName.Text = block.Name;
 					tbDescription.Text = block.Description;

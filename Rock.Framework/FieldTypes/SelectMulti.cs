@@ -19,8 +19,8 @@ namespace Rock.FieldTypes
                 {
                     qualifiers = new List<FieldQualifier>();
                     qualifiers.Add( new FieldQualifier( 
-                        "Values", 
-                        "Comma-Separated list of values for user to select from",
+                        Rock.Framework.Properties.Text.Values, 
+                        Rock.Framework.Properties.Text.CommaSeparatedList,
                         new Text() ) );
                 }
 
