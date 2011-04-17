@@ -68,7 +68,7 @@ namespace Rock.Web.Blocks.Cms
 
                         // cache content
                         if ( cacheDuration > 0 )
-                            AddCacheItem( entityValue, content, cacheDuration );
+                            AddCacheItem( entityValue, content.Content); //, cacheDuration );
                     }
                 }
                 else
