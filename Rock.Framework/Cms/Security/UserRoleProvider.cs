@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Security;
 
+using Rock.Framework.Properties;
 using Rock.Services.Cms;
 
 namespace Rock.Cms.Security
@@ -58,12 +59,12 @@ namespace Rock.Cms.Security
         public override void AddUsersToRoles( string[] usernames, string[] roleNames )
         {
             foreach ( string roleName in roleNames )
-                if (GetRole( roleName) == null)
-                    throw new ProviderException( roleName + " role does not exist." );
+                if ( GetRole( roleName ) == null )
+                    throw new ProviderException( string.Format( "{0} {1}", roleName, ExceptionMessage.RoleDoesntExist ) );
 
-            foreach(string username in usernames)
-                if (GetUser(username) == null)
-                    throw new ProviderException(username + " username does not exist.");
+            foreach ( string username in usernames )
+                if ( GetUser( username ) == null )
+                    throw new ProviderException( string.Format( "{0} {1}", username, ExceptionMessage.UserDoesntExist ) );
 
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
@@ -79,11 +80,11 @@ namespace Rock.Cms.Security
                         {
                             Rock.Models.Cms.Role role = RoleService.GetRoleByApplicationNameAndName( applicationName, roleName );
                             if ( role == null )
-                                throw new ProviderException( roleName + " role does not exist." );  //Shouldn't happen
+                                throw new ProviderException( string.Format("{0} {1}", roleName, ExceptionMessage.RoleDoesntExist ) );  //Shouldn't happen
 
                             Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
                             if ( user == null )
-                                throw new ProviderException( username + " username does not exist." );  //Shouldn't happen
+                                throw new ProviderException( string.Format( "{0} {1}", username, ExceptionMessage.UserDoesntExist ) );  //Shouldn't happen
 
                             role.Users.Add( user );
                             RoleService.Save( role, CurrentPersonId() );
@@ -102,7 +103,7 @@ namespace Rock.Cms.Security
                 throw new ArgumentNullException( "roleName" );
 
             if (GetRole(roleName) != null)
-                throw new ProviderException( "Role already exists." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
 
             RoleService RoleService = new RoleService();
 
@@ -121,13 +122,13 @@ namespace Rock.Cms.Security
                 }
                 catch (SystemException ex)
                 {
-                    throw new ProviderException("Could not create role", ex);
+                    throw new ProviderException( ExceptionMessage.CreateRoleError, ex);
                 }
 
                 GetRoles().Add(roleName, new List<string>());
             }
             else
-                throw new ProviderException("Role already exists.");
+                throw new ProviderException( ExceptionMessage.RoleAlreadyExists );
         }
 
         public override bool DeleteRole( string roleName, bool throwOnPopulatedRole )
@@ -136,7 +137,7 @@ namespace Rock.Cms.Security
                 throw new ArgumentNullException( "roleName" );
 
             if ( GetRole( roleName ) == null )
-                throw new ArgumentException( "Role does not exist." );
+                throw new ArgumentException( ExceptionMessage.RoleDoesntExist );
 
             RoleService RoleService = new RoleService();
 
@@ -145,7 +146,7 @@ namespace Rock.Cms.Security
             if ( role != null )
             {
                 if ( throwOnPopulatedRole && role.Users.Count > 0 )
-                    throw new ProviderException( "Role still contains users." );
+                    throw new ProviderException( ExceptionMessage.RoleContainsUsers );
 
                 RoleService.DeleteRole( role );
 
@@ -155,7 +156,7 @@ namespace Rock.Cms.Security
 
             }
             else
-                throw new ArgumentException( "Role does not exist." );
+                throw new ArgumentException( ExceptionMessage.RoleDoesntExist );
         }
 
         public override string[] FindUsersInRole( string roleName, string usernameToMatch )
@@ -168,7 +169,7 @@ namespace Rock.Cms.Security
 
             List<string> users = GetRole(roleName);
             if (users == null)
-                throw new ProviderException("Role does not exist.");
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
 
             return users.ToArray();
         }
@@ -189,7 +190,7 @@ namespace Rock.Cms.Security
 
             List<string> roles = GetUser( username );
             if (roles == null)
-                throw new ProviderException( "user does not exist." );
+                throw new ProviderException( ExceptionMessage.UserDoesntExist );
 
             return roles.ToArray();
         }
@@ -201,7 +202,7 @@ namespace Rock.Cms.Security
 
             List<string> users = GetRole( roleName );
             if (users == null)
-                throw new ProviderException( "Role does not exist." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
 
             return users.ToArray();
         }
@@ -215,24 +216,24 @@ namespace Rock.Cms.Security
                 throw new ArgumentNullException( "roleName" );
 
             if (GetUser(username) == null)
-                throw new ProviderException( "user does not exist." );
+                throw new ProviderException( ExceptionMessage.UserDoesntExist );
 
             List<string> users = GetRole( roleName );
             if (users != null)
                 return users.Contains(username);
             else
-                throw new ProviderException( "Role does not exist." );
+                throw new ProviderException( ExceptionMessage.RoleDoesntExist );
        }
 
         public override void RemoveUsersFromRoles( string[] usernames, string[] roleNames )
         {
             foreach ( string roleName in roleNames )
                 if ( GetRole( roleName ) == null )
-                    throw new ProviderException( roleName + " role does not exist." );
+                    throw new ProviderException( string.Format( "{0} {1}", roleName, ExceptionMessage.RoleDoesntExist ) );
 
             foreach ( string username in usernames )
                 if ( GetUser( username ) == null )
-                    throw new ProviderException( username + " username does not exist." );
+                    throw new ProviderException( string.Format( "{0} {1}", username, ExceptionMessage.UserDoesntExist ) );
 
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {

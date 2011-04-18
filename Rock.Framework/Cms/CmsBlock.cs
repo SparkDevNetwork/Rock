@@ -9,6 +9,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Framework.Properties;
 using Rock.Cms.Security;
 using Rock.Models.Cms;
 
@@ -269,8 +270,8 @@ namespace Rock.Cms
                 aAttributes.Attributes.Add( "class", string.Format(
                     "attributes icon-button attributes-{0}-show", BlockInstance.Id ) );
                 aAttributes.Attributes.Add( "href", "#" );
-                aAttributes.Attributes.Add( "title", "Block Attributes" );
-                aAttributes.InnerText = "Attributes";
+                aAttributes.Attributes.Add( "title", Text.BlockAttributes );
+                aAttributes.InnerText = Text.Attributes;
                 configControls.Add( aAttributes );
             }
 

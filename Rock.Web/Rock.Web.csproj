@@ -302,6 +302,12 @@
     <Content Include="Scripts\Web.config" />
     <None Include="Themes\Default\CSS\styles.less" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Blocks\Cms\App_LocalResources\Blocks.ascx.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Blocks\Cms\App_LocalResources\HtmlContent.ascx.resx" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <ProjectExtensions>
