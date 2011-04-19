@@ -44,7 +44,7 @@ namespace Rock.Web.Blocks.Cms
 
                 // register core cms css
                 PageInstance.AddCSSLink( this.Page, "../..//css/cms-core.css" );
-
+                
                 string blockContent = "";
 
                 // get settings

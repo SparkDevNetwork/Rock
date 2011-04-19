@@ -126,4 +126,7 @@
   <data name="EditHtml" xml:space="preserve">
     <value>Edit HTML</value>
   </data>
+  <data name="ContentEditorWindowTitle" xml:space="preserve">
+    <value>HTML Content Editor</value>
+  </data>
 </root>
