@@ -211,7 +211,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public string AttributeValue( string name )
+        public string AttributeValue( string key )
         {
             if ( BlockInstance == null )
                 return string.Empty;
@@ -219,8 +219,8 @@ namespace Rock.Cms
             if ( BlockInstance.AttributeValues == null )
                 return string.Empty;
 
-            if ( BlockInstance.AttributeValues.ContainsKey( name ) )
-                return BlockInstance.AttributeValues[name];
+            if ( BlockInstance.AttributeValues.ContainsKey( key ) )
+                return BlockInstance.AttributeValues[key].Value;
 
             return null;
         }

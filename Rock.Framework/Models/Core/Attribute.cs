@@ -38,6 +38,9 @@ namespace Rock.Models.Core
 		
 		public int? EntityQualifierId { get; set; }
 		
+		[MaxLength( 50 )]
+		public string Key { get; set; }
+		
 		[MaxLength( 100 )]
 		public string Name { get; set; }
 		

@@ -29,7 +29,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, string> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -150,7 +150,7 @@ namespace Rock.Cms.Cached
                 pageService.LoadAttributes( pageModel );
 
                 foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
-                    pageService.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Name], personId );
+                    pageService.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 

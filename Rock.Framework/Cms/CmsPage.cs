@@ -413,14 +413,13 @@ namespace Rock.Cms
                                             li.ClientIDMode = ClientIDMode.AutoID;
                                             ol.Controls.Add( li );
 
-
                                             Label lbl = new Label();
                                             lbl.ClientIDMode = ClientIDMode.AutoID;
                                             lbl.Text = attribute.Name;
                                             lbl.AssociatedControlID = string.Format("attribute-field-{0}", attribute.Id);
                                             li.Controls.Add( lbl );
 
-                                            Control attributeControl = attribute.CreateControl( blockInstance.AttributeValues[attribute.Name] );
+                                            Control attributeControl = attribute.CreateControl( blockInstance.AttributeValues[attribute.Key].Value );
                                             attributeControl.ID = string.Format("attribute-field-{0}", attribute.Id);
                                             attributeControl.ClientIDMode = ClientIDMode.AutoID;
                                             li.Controls.Add( attributeControl );
@@ -553,7 +552,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public string AttributeValue( string name )
+        public string AttributeValue( string key )
         {
             if ( PageInstance == null )
                 return string.Empty;
@@ -561,10 +560,10 @@ namespace Rock.Cms
             if ( PageInstance.AttributeValues == null )
                 return string.Empty;
 
-            if ( !PageInstance.AttributeValues.ContainsKey( name ) )
+            if ( !PageInstance.AttributeValues.ContainsKey( key ) )
                 return string.Empty;
 
-            return string.Join( "|", PageInstance.AttributeValues[name] );
+            return string.Join( "|", PageInstance.AttributeValues[key].Value );
         }
 
         #endregion
@@ -588,7 +587,7 @@ namespace Rock.Cms
                         //HtmlGenericControl editCell = ( HtmlGenericControl )blockWrapper.FindControl( string.Format( "attribute-{0}", attribute.Id.ToString() ) );
                         Control control = blockWrapper.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
                         if ( control != null )
-                            blockInstance.AttributeValues[attribute.Name] = attribute.FieldType.Field.ReadValue( control );
+                            blockInstance.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
                     }
 
                     blockInstance.SaveAttributeValues( CurrentPersonId );

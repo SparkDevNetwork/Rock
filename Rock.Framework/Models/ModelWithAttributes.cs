@@ -26,6 +26,6 @@ namespace Rock.Models
         /// Lightweight collection of attribute name and values
         /// </summary>
         [NotMapped]
-        public Dictionary<string, string> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
     }
 }

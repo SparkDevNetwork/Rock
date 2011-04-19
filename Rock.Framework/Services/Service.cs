@@ -21,7 +21,7 @@ namespace Rock.Services
         public void LoadAttributes( ModelWithAttributes model )
         {
             List<Rock.Models.Core.Attribute> attributes = new List<Rock.Models.Core.Attribute>();
-            Dictionary<string, string> attributeValues = new Dictionary<string, string>();
+            Dictionary<string, KeyValuePair<string, string>> attributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -41,7 +41,7 @@ namespace Rock.Services
                     ( int )properties[attribute.EntityQualifier.ToLower()].GetValue( model, null ) == attribute.EntityQualifierId.Value ) ) )
                 {
                     attributes.Add( attribute );
-                    attributeValues.Add( attribute.Name, attribute.GetValue(model.Id));
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( model.Id ) ) );
                 }
             }
 
@@ -73,7 +73,7 @@ namespace Rock.Services
 
             attributeValueService.Save( attributeValue, personId );
 
-            model.AttributeValues[attribute.Name] = value;
+            model.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, value );
         }
 
         #endregion

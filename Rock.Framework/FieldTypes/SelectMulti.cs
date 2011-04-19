@@ -19,6 +19,7 @@ namespace Rock.FieldTypes
                 {
                     qualifiers = new List<FieldQualifier>();
                     qualifiers.Add( new FieldQualifier( 
+                        "Values",
                         Rock.Framework.Properties.Text.Values, 
                         Rock.Framework.Properties.Text.CommaSeparatedList,
                         new Text() ) );

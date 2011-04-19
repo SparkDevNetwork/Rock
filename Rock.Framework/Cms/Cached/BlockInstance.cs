@@ -23,7 +23,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, string> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -63,7 +63,7 @@ namespace Rock.Cms.Cached
                 {
                     blockInstanceService.LoadAttributes( blockInstanceModel );
                     foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-                        blockInstanceService.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Name], personId );
+                        blockInstanceService.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
                 }
             }
         }
