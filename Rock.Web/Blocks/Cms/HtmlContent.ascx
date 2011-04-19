@@ -42,7 +42,7 @@
             autoOpen: false,
             width: 880,
             height: 500,
-            title: 'HTML Content Editor',
+            title: '<asp:Localize runat="server" ID="ContentEditorWindowTitle" Text="HTML Content Editor" meta:resourcekey="ContentEditorWindowTitle" />',
             closeOnEscape: true,
             modal: true,
             close: function (event, ui) {

@@ -120,9 +120,29 @@
     </header>
 
     <div id="page-content" class="group">
-        <asp:Panel ID="FirstColumn" runat="server" class="first-column"></asp:Panel>
-        <asp:Panel ID="SecondColumn" runat="server" class="second-column"></asp:Panel>
-        <asp:Panel ID="ThirdColumn" runat="server" class="third-column"></asp:Panel>
+        <div id="zone-firstcolumn" class="zone-instance can-edit">
+            <div style="display: none;" class="zone-configuration">
+                <p>FirstColumn:</p> <a title="Zone Blocks" href="#" class="zone-blocks icon-button zone-firstcolumn-show">Blocks</a>
+            </div>
+            <asp:Panel ID="FirstColumn" runat="server" class="first-column"></asp:Panel>
+        </div>
+
+        
+
+
+         <div id="zone-secondcolumn" class="zone-instance can-edit">
+            <div style="display: none;" class="zone-configuration">
+                <p>SecondColumn:</p> <a title="Zone Blocks" href="#" class="zone-blocks icon-button zone-firstcolumn-show">Blocks</a>
+            </div>
+            <asp:Panel ID="SecondColumn" runat="server" class="second-column"></asp:Panel>
+        </div>
+
+         <div id="zone-thirdcolumn" class="zone-instance can-edit">
+            <div style="display: none;" class="zone-configuration">
+                <p>ThirdColumn:</p> <a title="Zone Blocks" href="#" class="zone-blocks icon-button zone-firstcolumn-show">Blocks</a>
+            </div>
+            <asp:Panel ID="ThirdColumn" runat="server" class="third-column"></asp:Panel>
+        </div>
     </div>
 
     <footer class="group">
@@ -141,5 +161,15 @@
     <script>
         $('input').placeholder();
     </script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#cms-admin-footer .page-zones').click(function (ev) {
+                $('.zone-configuration').toggle();
+                $('.zone-instance').toggleClass('outline');
+                return false;
+            });
+        });
+        </script>
 
 </asp:Content>
