@@ -176,6 +176,44 @@ textarea:focus, input:not([type=radio]):focus {
 	margin-right: 15px;
 }
 
+/* Zone Config */
+.zone-instance {
+    position: relative;
+    display: inline;
+}
+
+.zone-instance.can-edit.outline {
+    overflow: hidden;
+    border: 1px solid green;
+    margin: -1px; 
+    min-height: 60px;  
+    display: block;
+    width: 100%;
+    clear: both;
+}
+
+.zone-configuration {
+    z-index: 300;
+    position: absolute;
+    bottom: 5px;
+    right: 0;
+    height: 20px;
+    background: rgba(210,210,210,.8);
+    border-color: rgba(150,150,150,.8);
+    border-width: 1px;
+    border-style: solid;
+    color: #7f7f7f;
+    padding: 5px 12px 0 12px;
+    font-size: 80%;
+    overflow: auto;
+    width: auto;
+    float: right;
+}
+
+.zone-configuration p {
+    float: left;   
+}
+
 /* Module Config */
 .block-instance {
     position: relative;
@@ -291,6 +329,10 @@ a.icon-button.page-zones {
 
 a.icon-button.edit {
 	background-image: url('../Assets/Icons/edit.png');
+}
+
+a.icon-button.zone-blocks {
+	background-image: url('../Assets/Icons/zone-blocks.png');
 }
 
 /* HTML Content */
