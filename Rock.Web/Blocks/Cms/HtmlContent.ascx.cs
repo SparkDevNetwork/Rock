@@ -48,9 +48,9 @@ namespace Rock.Web.Blocks.Cms
                 string blockContent = "";
 
                 // get settings
-                string entityKey = AttributeValue( "Entity Aware Key" );
+                string entityKey = AttributeValue( "EntityAwareKey" );
                 string entityValue = PageParameter( entityKey );
-                int cacheDuration = Int32.Parse ( AttributeValue( "Cache Duration" ) );
+                int cacheDuration = Int32.Parse ( AttributeValue( "CacheDuration" ) );
 
                 // get blocks cached content
                 string cachedContent = null;
@@ -78,9 +78,9 @@ namespace Rock.Web.Blocks.Cms
                 txtHtmlContentEditor.Text = blockContent;
 
                 // add content to the content window
-                lPreText.Text = AttributeValue( "Pre-Text" );
+                lPreText.Text = AttributeValue( "PreText" );
                 lHtmlContent.Text = blockContent;
-                lPostText.Text = AttributeValue( "Post-Text" );
+                lPostText.Text = AttributeValue( "PostText" );
 
             }
 
@@ -90,8 +90,8 @@ namespace Rock.Web.Blocks.Cms
 
         void HtmlContent_AttributesUpdated( object sender, EventArgs e )
         {
-            lPreText.Text = AttributeValue( "Pre-Text" );
-            lPostText.Text = AttributeValue( "Post-Text" );
+            lPreText.Text = AttributeValue( "PreText" );
+            lPostText.Text = AttributeValue( "PostText" );
         }
 
         protected void btnSaveContent_Click( object sender, EventArgs e )
@@ -99,9 +99,9 @@ namespace Rock.Web.Blocks.Cms
             if ( UserAuthorized( "Edit" ) )
             {
                 // get settings
-                string entityKey = AttributeValue( "Entity Aware Key" );
+                string entityKey = AttributeValue( "EntityAwareKey" );
                 string entityValue = PageParameter( entityKey );
-                int cacheDuration = Int32.Parse( AttributeValue( "Cache Duration" ) );
+                int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
                 
                 // get current  content
                 HtmlContentService service = new HtmlContentService();

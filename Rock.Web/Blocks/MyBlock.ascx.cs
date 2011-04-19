@@ -75,7 +75,7 @@ namespace Rock.Web.Blocks
 
             lMovie.Text = AttributeValue( "Movie" );
 
-            pnlAttribute.BorderWidth = Convert.ToInt32( AttributeValue( "Border Width" ) );
+            pnlAttribute.BorderWidth = Convert.ToInt32( AttributeValue( "BorderWidth" ) );
 
             switch ( AttributeValue( "Border" ) )
             {

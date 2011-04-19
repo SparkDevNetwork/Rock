@@ -18,12 +18,12 @@ namespace Rock.FieldTypes
         {
         }
 
-        public Field( Dictionary<string, string> qualifierValues )
+        public Field( Dictionary<string, KeyValuePair<string, string>> qualifierValues )
         {
             this.QualifierValues = qualifierValues;
         }
 
-        public Dictionary<string, string> QualifierValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; set; }
 
         public virtual List<FieldQualifier> Qualifiers
         {

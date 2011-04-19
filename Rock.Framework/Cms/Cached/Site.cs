@@ -20,7 +20,7 @@ namespace Rock.Cms.Cached
         public string Name { get; private set; }
         public string Description { get; private set; }
         public string Theme { get; private set; }
-        public Dictionary<string, string> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -61,7 +61,7 @@ namespace Rock.Cms.Cached
                 siteService.LoadAttributes( siteModel );
 
                 foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
-                    siteService.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Name], personId );
+                    siteService.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 

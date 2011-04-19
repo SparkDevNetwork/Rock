@@ -16,11 +16,12 @@ namespace Rock.Cms.Cached
         private Attribute() { }
 
         public int Id { get; private set; }
+        public string Key { get; private set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
         public bool GridColumn { get; private set; }
         public string DefaultValue { get; private set; }
-        public Dictionary<string, string> QualifierValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; private set; }
 
         private int FieldTypeId { get; set; }
         public FieldType FieldType 
@@ -94,15 +95,16 @@ namespace Rock.Cms.Cached
         {
             Attribute attribute = new Attribute();
             attribute.Id = attributeModel.Id;
+            attribute.Key = attributeModel.Key;
             attribute.Name = attributeModel.Name;
             attribute.Description = attributeModel.Description;
             attribute.GridColumn = attributeModel.GridColumn;
             attribute.FieldTypeId = attributeModel.FieldTypeId;
             attribute.DefaultValue = attributeModel.DefaultValue;
 
-            attribute.QualifierValues = new Dictionary<string,string>();
+            attribute.QualifierValues = new Dictionary<string,KeyValuePair<string, string>>();
             foreach ( Rock.Models.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
-                attribute.QualifierValues.Add( qualifier.Name, qualifier.Value );
+                attribute.QualifierValues.Add( qualifier.Key, new KeyValuePair<string, string>( qualifier.Name, qualifier.Value ) );
 
             return attribute;
         }

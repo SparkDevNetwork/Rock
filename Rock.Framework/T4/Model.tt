@@ -26,8 +26,8 @@
 	
 	// Database properties
 	//string connectionString = @"Data Source=172.16.0.7; User Id=RockUser; password=dw72Y13a7Qgm";
-    string connectionString = @"Data Source=24.249.179.215; User Id=RockUser; password=dw72Y13a7Qgm";
-	//string connectionString = @"Server=LocalHost;Trusted_Connection=True;";
+    //string connectionString = @"Data Source=24.249.179.215; User Id=RockUser; password=dw72Y13a7Qgm";
+	string connectionString = @"Server=LocalHost;Trusted_Connection=True;";
     string databaseName = "RockChMS";
 	
 	// Connect to database and create the Server and Database objects

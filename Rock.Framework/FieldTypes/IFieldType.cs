@@ -15,7 +15,7 @@ namespace Rock.FieldTypes
     public interface IFieldType
     {
         List<FieldQualifier> Qualifiers { get; }
-        Dictionary<string, string> QualifierValues { get; set;  }
+        Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; set;  }
         string FormatValue( string value, bool condensed );
         Control CreateControl( string value );
         string ReadValue( Control control );
