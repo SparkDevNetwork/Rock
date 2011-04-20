@@ -35,6 +35,8 @@ namespace Rock.Models.Cms
 		[MaxLength( 2000 )]
 		public string Description { get; set; }
 		
+		public bool ModerateComments { get; set; }
+		
 		[MaxLength( 250 )]
 		public string PublicFeedAddress { get; set; }
 		
