@@ -55,6 +55,8 @@ namespace Rock.Models.Cms
 
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
 
+		public virtual ICollection<BlogTag> BlogTags { get; set; }
+
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
