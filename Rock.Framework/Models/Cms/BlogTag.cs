@@ -28,7 +28,8 @@ namespace Rock.Models.Cms
 		
 		public int BlogId { get; set; }
 		
-		public nchar Name { get; set; }
+		[MaxLength( 50 )]
+		public string Name { get; set; }
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogTag"; } }
