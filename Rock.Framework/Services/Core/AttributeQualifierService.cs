@@ -43,11 +43,6 @@ namespace Rock.Services.Core
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeQualifier> GetAttributeQualifiersByAttributeId( int attributeId )
-        {
-            return _repository.Find( t => t.AttributeId == attributeId );
-        }
-		
         public void AddAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
             if ( AttributeQualifier.Guid == Guid.Empty )

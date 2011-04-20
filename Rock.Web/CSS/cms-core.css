@@ -335,6 +335,22 @@ a.icon-button.zone-blocks {
 	background-image: url('../Assets/Icons/zone-blocks.png');
 }
 
+a.icon-button.security {
+	background-image: url('../Assets/Icons/security.png');
+}
+
+a.icon-button.page-security {
+	background-image: url('../Assets/Icons/page-security.png');
+}
+
+a.icon-button.delete {
+	background-image: url('../Assets/Icons/delete.png');
+}
+
+a.icon-button.block-move {
+	background-image: url('../Assets/Icons/block-move.png');
+}
+
 /* HTML Content */
 .html-content, .html-content-block, .html-content-block > div {
 	display: inline;

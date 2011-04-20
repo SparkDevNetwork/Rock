@@ -52,6 +52,8 @@ namespace Rock.Models.Cms
 
 		public virtual BlogPost Post { get; set; }
 
+		public virtual Crm.Person Person { get; set; }
+
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
@@ -62,6 +64,7 @@ namespace Rock.Models.Cms
         public BlogPostCommentConfiguration()
         {
 			this.HasRequired( p => p.Post ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PostId );
+			this.HasOptional( p => p.Person ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PersonId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

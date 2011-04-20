@@ -53,6 +53,10 @@ namespace Rock.Models.Crm
 		[NotMapped]
 		public override string AuthEntity { get { return "Crm.Person"; } }
 
+		public virtual ICollection<Cms.BlogPost> BlogPosts { get; set; }
+
+		public virtual ICollection<Cms.BlogPostComment> BlogPostComments { get; set; }
+
 		public virtual ICollection<Cms.User> Users { get; set; }
 
 		public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }

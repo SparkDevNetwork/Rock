@@ -35,6 +35,8 @@ namespace Rock.Models.Cms
 		[MaxLength( 2000 )]
 		public string Description { get; set; }
 		
+		public bool ModerateComments { get; set; }
+		
 		[MaxLength( 250 )]
 		public string PublicFeedAddress { get; set; }
 		
@@ -54,6 +56,8 @@ namespace Rock.Models.Cms
 		public virtual ICollection<BlogCategory> BlogCategorys { get; set; }
 
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
+
+		public virtual ICollection<BlogTag> BlogTags { get; set; }
 
 		public virtual Crm.Person CreatedByPerson { get; set; }
 

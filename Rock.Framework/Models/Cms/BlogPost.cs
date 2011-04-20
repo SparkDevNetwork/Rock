@@ -54,7 +54,11 @@ namespace Rock.Models.Cms
 
 		public virtual ICollection<BlogPostComment> BlogPostComments { get; set; }
 
+		public virtual ICollection<BlogTag> Tags { get; set; }
+
 		public virtual Blog Blog { get; set; }
+
+		public virtual Crm.Person Author { get; set; }
 
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
@@ -65,7 +69,9 @@ namespace Rock.Models.Cms
     {
         public BlogPostConfiguration()
         {
+			this.HasMany( p => p.Tags ).WithMany( c => c.Posts ).Map( m => m.ToTable("cmsBlogPostTag" ) );
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.BlogId );
+			this.HasOptional( p => p.Author ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.AuthorId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
