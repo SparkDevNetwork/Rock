@@ -344,9 +344,18 @@ namespace Rock.Cms
     }});
 
     Sys.Application.add_load(function () {{
+
         $('.attributes-{0}-hide').click(function () {{
             $('div.attributes-{0}').dialog('close');
         }});
+
+        $('.blockinstance-{0}-delete').click(function () {{
+            if (confirm('Are you sure?'))
+            {{
+                alert('deleted!');
+            }}
+        }});
+
     }});
 ", blockInstance.Id );
 
@@ -457,6 +466,7 @@ namespace Rock.Cms
                         Trace.Write( string.Format( "End Block Instance: {0}", blockInstance.Id ) );
                     }
 
+                    // Add the page admin footer if the user is authorized to edit the page
                     if ( PageInstance.IncludeAdminFooter && PageInstance.Authorized( "Edit", user ) )
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );

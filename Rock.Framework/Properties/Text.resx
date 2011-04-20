@@ -132,6 +132,9 @@
   <data name="CommaSeparatedList" xml:space="preserve">
     <value>Comma-Separated list of values for user to select from</value>
   </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
   <data name="DropDownList" xml:space="preserve">
     <value>Drop Down List</value>
   </data>

@@ -273,6 +273,14 @@ namespace Rock.Cms
                 aAttributes.Attributes.Add( "title", Text.BlockAttributes );
                 aAttributes.InnerText = Text.Attributes;
                 configControls.Add( aAttributes );
+
+                HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
+                aDeleteBlock.Attributes.Add( "class", string.Format(
+                    "delete icon-button blockinstance-{0}-delete", BlockInstance.Id ) );
+                aDeleteBlock.Attributes.Add( "href", "#" );
+                aDeleteBlock.Attributes.Add( "title", Text.Delete );
+                aDeleteBlock.InnerText = Text.Delete;
+                configControls.Add( aDeleteBlock );
             }
 
             return configControls;
