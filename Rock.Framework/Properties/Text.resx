@@ -123,6 +123,9 @@
   <data name="BlockAttributes" xml:space="preserve">
     <value>Block Attributes</value>
   </data>
+  <data name="Blocks" xml:space="preserve">
+    <value>Blocks</value>
+  </data>
   <data name="BlockSettings" xml:space="preserve">
     <value>Block Settings</value>
   </data>
@@ -147,6 +150,9 @@
   <data name="IsNotAValidValue" xml:space="preserve">
     <value>is not a valid value</value>
   </data>
+  <data name="Move" xml:space="preserve">
+    <value>Move</value>
+  </data>
   <data name="N" xml:space="preserve">
     <value>N</value>
   </data>
@@ -159,6 +165,9 @@
   <data name="PageLoadTime" xml:space="preserve">
     <value>Page Load Time</value>
   </data>
+  <data name="PageSecurity" xml:space="preserve">
+    <value>Page Security</value>
+  </data>
   <data name="PageZones" xml:space="preserve">
     <value>Page Zones</value>
   </data>
@@ -167,6 +176,9 @@
   </data>
   <data name="Save" xml:space="preserve">
     <value>Save</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Security</value>
   </data>
   <data name="ShowBlockConfiguration" xml:space="preserve">
     <value>Show Block Configuration</value>
@@ -188,5 +200,8 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="ZoneBlocks" xml:space="preserve">
+    <value>Zone Blocks</value>
   </data>
 </root>

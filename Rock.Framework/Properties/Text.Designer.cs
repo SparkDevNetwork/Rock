@@ -79,6 +79,15 @@ namespace Rock.Framework.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Blocks.
+        /// </summary>
+        internal static string Blocks {
+            get {
+                return ResourceManager.GetString("Blocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Block Settings.
         /// </summary>
         internal static string BlockSettings {
@@ -151,6 +160,15 @@ namespace Rock.Framework.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Move.
+        /// </summary>
+        internal static string Move {
+            get {
+                return ResourceManager.GetString("Move", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to N.
         /// </summary>
         internal static string N {
@@ -187,6 +205,15 @@ namespace Rock.Framework.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Page Security.
+        /// </summary>
+        internal static string PageSecurity {
+            get {
+                return ResourceManager.GetString("PageSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Page Zones.
         /// </summary>
         internal static string PageZones {
@@ -210,6 +237,15 @@ namespace Rock.Framework.Properties {
         internal static string Save {
             get {
                 return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Security.
+        /// </summary>
+        internal static string Security {
+            get {
+                return ResourceManager.GetString("Security", resourceCulture);
             }
         }
         
@@ -273,6 +309,15 @@ namespace Rock.Framework.Properties {
         internal static string Yes {
             get {
                 return ResourceManager.GetString("Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zone Blocks.
+        /// </summary>
+        internal static string ZoneBlocks {
+            get {
+                return ResourceManager.GetString("ZoneBlocks", resourceCulture);
             }
         }
     }

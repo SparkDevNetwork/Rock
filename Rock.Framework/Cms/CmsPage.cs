@@ -250,6 +250,38 @@ namespace Rock.Cms
                     ObjectCache cache = MemoryCache.Default;
                     Trace.Write( "Created Cache Object" );
 
+                    bool canEditPage = PageInstance.Authorized( "Edit", user );
+
+                    if ( canEditPage )
+                        foreach ( KeyValuePair<string, Control> zoneControl in this.Zones )
+                        {
+                            Control parent = zoneControl.Value.Parent;
+
+                            HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
+                            parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
+                            zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
+                            zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            zoneWrapper.Attributes.Add( "class", "zone-instance can-edit" );
+
+                            HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
+                            zoneWrapper.Controls.Add( zoneConfig );
+                            zoneConfig.Attributes.Add( "style", "display: none;" );
+                            zoneConfig.Attributes.Add( "class", "zone-configuration" );
+
+                            zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.ID ) ) );
+
+                            HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                            zoneConfig.Controls.Add( aBlockConfig );
+                            aBlockConfig.Attributes.Add( "class", string.Format( "zone-blocks icon-button zone-{0}-show",
+                                zoneControl.Value.ID ) );
+                            aBlockConfig.Attributes.Add( "href", "#" );
+                            aBlockConfig.Attributes.Add( "Title", Text.ZoneBlocks );
+                            aBlockConfig.InnerText = Text.Blocks;
+
+                            parent.Controls.Remove( zoneControl.Value );
+                            zoneWrapper.Controls.Add( zoneControl.Value );
+                        }
+
                     // Load the blocks and insert them into page zones
                     Trace.Write("Getting Block Instances");
                     foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
@@ -341,19 +373,27 @@ namespace Rock.Cms
             return false;
         }});
 
+        $('a.blockinstance-{0}-secure').click(function () {{
+            alert('block instance secure logic goes here!');
+        }});
+
+        $('a.blockinstance-{0}-move').click(function () {{
+            alert('block instance move logic goes here!');
+        }});
+
+        $('a.blockinstance-{0}-delete').click(function () {{
+            if (confirm('Are you sure?'))
+            {{
+                alert('block instance delete logic goes here!');
+            }}
+        }});
+
     }});
 
     Sys.Application.add_load(function () {{
 
         $('.attributes-{0}-hide').click(function () {{
             $('div.attributes-{0}').dialog('close');
-        }});
-
-        $('.blockinstance-{0}-delete').click(function () {{
-            if (confirm('Are you sure?'))
-            {{
-                alert('deleted!');
-            }}
         }});
 
     }});
@@ -467,7 +507,7 @@ namespace Rock.Cms
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( PageInstance.IncludeAdminFooter && PageInstance.Authorized( "Edit", user ) )
+                    if ( PageInstance.IncludeAdminFooter && canEditPage)
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -509,13 +549,33 @@ namespace Rock.Cms
                         aPageZones.Attributes.Add( "Title", Text.ShowPageZones );
                         aPageZones.InnerText = Text.PageZones;
 
+                        HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
+                        buttonBar.Controls.Add( aPageSecurity );
+                        aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
+                        aPageSecurity.Attributes.Add( "href", "#" );
+                        aPageSecurity.Attributes.Add( "Title", Text.PageSecurity );
+                        aPageSecurity.InnerText = Text.PageSecurity;
+
                         string footerScript = @"
     $(document).ready(function () {
+
         $('#cms-admin-footer .block-config').click(function (ev) {
             $('.block-configuration').toggle();
             $('.block-instance').toggleClass('outline');
             return false;
         });
+
+        $('#cms-admin-footer .page-zones').click(function (ev) {
+            $('.zone-configuration').toggle();
+            $('.zone-instance').toggleClass('outline');
+            return false;
+        });
+
+        $('#cms-admin-footer .page-security').click(function (ev) {
+            alert('Page Security logic goes here!');
+            return false;
+        });
+
     });
 ";
 

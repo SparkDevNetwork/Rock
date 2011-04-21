@@ -274,6 +274,22 @@ namespace Rock.Cms
                 aAttributes.InnerText = Text.Attributes;
                 configControls.Add( aAttributes );
 
+                HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
+                aSecureBlock.Attributes.Add( "class", string.Format(
+                    "security icon-button blockinstance-{0}-secure", BlockInstance.Id ) );
+                aSecureBlock.Attributes.Add( "href", "#" );
+                aSecureBlock.Attributes.Add( "title", Text.Security );
+                aSecureBlock.InnerText = Text.Security;
+                configControls.Add( aSecureBlock );
+                
+                HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
+                aMoveBlock.Attributes.Add( "class", string.Format(
+                    "block-move icon-button blockinstance-{0}-move", BlockInstance.Id ) );
+                aMoveBlock.Attributes.Add( "href", "#" );
+                aMoveBlock.Attributes.Add( "title", Text.Move );
+                aMoveBlock.InnerText = Text.Move;
+                configControls.Add( aMoveBlock );
+
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", string.Format(
                     "delete icon-button blockinstance-{0}-delete", BlockInstance.Id ) );
