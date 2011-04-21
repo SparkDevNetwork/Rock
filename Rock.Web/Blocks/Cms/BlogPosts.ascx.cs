@@ -90,7 +90,7 @@ namespace Rock.Web.Blocks.Cms
                         // determine categories
                         if ( post.Categorys.Count > 0 )
                         {
-                            sb.Append( "in" );
+                            sb.Append( "in " );
 
                             bool firstCategory = true;
                             foreach ( BlogCategory category in post.Categorys )
@@ -101,8 +101,9 @@ namespace Rock.Web.Blocks.Cms
                                     firstCategory = false;
                                 }
                                 else
-                                    sb.Append( "," + category.Name );
+                                    sb.Append( ", " + category.Name );
                             }
+                            sb.Append( " " );
                         }
 
                         sb.Append( "on " + publishDate.ToString("D") + " by " + post.Author.FirstName + " " + post.Author.LastName + "\n" );
