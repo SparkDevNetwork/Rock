@@ -2,8 +2,11 @@
 
 <asp:UpdatePanel ID="upPosts" runat="server" UpdateMode="Always">
 <ContentTemplate>
-    <asp:BulletedList ID="blPosts" runat="server">
-    </asp:BulletedList>
+    <asp:Literal ID="lPosts" runat="server"></asp:Literal>
+
+    <a ID="aOlder" class="button older-posts" runat="server">Older Posts</a>
+    <a ID="aNewer" class="button newer-posts" runat="server">Newer Posts</a>
+
 </ContentTemplate>
 </asp:UpdatePanel>
 

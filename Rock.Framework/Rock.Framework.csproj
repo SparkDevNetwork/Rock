@@ -99,6 +99,7 @@
     <Compile Include="Models\Cms\BlogPost.cs" />
     <Compile Include="Models\Cms\BlogPostComment.cs" />
     <Compile Include="Models\Cms\BlogTag.cs" />
+    <Compile Include="Models\Cms\BlogPost.Partial.cs" />
     <Compile Include="Models\Cms\HtmlContent.cs">
       <SubType>Code</SubType>
     </Compile>

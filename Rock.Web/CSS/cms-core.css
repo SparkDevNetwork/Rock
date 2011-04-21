@@ -41,6 +41,25 @@ textarea, input:not([type=radio]) {
 	margin: 4px 0;
 }
 
+.button {
+    border: 1px solid #000000;
+    background: #f0f0f0;
+    display: inline-block;
+    color: #000000;
+    text-decoration: none;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+	padding: 4px 10px;
+	border: 1px solid #8f8f8f;
+	margin: 4px 0;
+	cursor: pointer;
+}
+
+.button:visited {
+    color: #000000;
+}
+
 textarea:focus, input:not([type=radio]):focus {
 	border: 1px solid #64788f;
 	background: #efefef;
@@ -365,4 +384,14 @@ a.icon-button.block-move {
 /* CK Editor Tweaks */
 span.cke_skin_kama {
     padding: 0 !important;   
+}
+
+/* Blog Posts */
+article.blog-post {
+   display: block;
+   margin-bottom: 24px;
+}
+
+article.blog-post header {
+    display: block;   
 }

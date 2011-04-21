@@ -22,12 +22,30 @@ namespace Rock.Web.Blocks.Cms {
         protected global::System.Web.UI.UpdatePanel upPosts;
         
         /// <summary>
-        /// blPosts control.
+        /// lPosts control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.BulletedList blPosts;
+        protected global::System.Web.UI.WebControls.Literal lPosts;
+        
+        /// <summary>
+        /// aOlder control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor aOlder;
+        
+        /// <summary>
+        /// aNewer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor aNewer;
     }
 }
