@@ -16,6 +16,8 @@ namespace Rock.Web.Blocks.Cms
         protected int skipCount = 0;
         protected int takeCount = 1;
         protected int currentPage = 1;
+        protected int categoryId = 0;
+        protected int tagId = 0;
         
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -27,6 +29,10 @@ namespace Rock.Web.Blocks.Cms
 
             // get number of posts to display per page
             takeCount = Convert.ToInt32( AttributeValue( "PostsPerPage" ) );
+
+            // get category and tag id
+            int.TryParse( PageParameter( "Category" ), out categoryId );
+            int.TryParse( PageParameter( "Tag" ), out tagId );
 
             // calculate the number to skip
             skipCount = (takeCount * currentPage) - takeCount;
@@ -67,7 +73,14 @@ namespace Rock.Web.Blocks.Cms
 
                 // load posts
                 //var posts = blog.BlogPosts.Select( p => new { p.Title, p.PublishDate, p.State, AuthorFirstName = p.Author.FirstName, AuthorLastName = p.Author.LastName, p.Content } ).Where( p => p.State == (int)BlogPost.PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).ToList();
-                var posts = blog.BlogPosts.Where( p => p.State == (int)BlogPost.PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).ToList();
+                IQueryable<BlogPost> qPosts = blog.BlogPosts.Where( p => p.State == (int)BlogPost.PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).AsQueryable();
+
+                // add category and tag filters if requested
+                if ( categoryId != 0 )
+                    qPosts.Where( p => p.Categorys.Any(c => c.Id == categoryId ));
+                
+                // run query
+                var posts = qPosts.ToList();
 
                 // we load one exta post so that we can determine if there is a need to display the older posts button
                 int postsToShow = posts.Count();
@@ -97,11 +110,11 @@ namespace Rock.Web.Blocks.Cms
                             {
                                 if ( firstCategory )
                                 {
-                                    sb.Append( category.Name );
+                                    sb.Append( "<a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a>" );
                                     firstCategory = false;
                                 }
                                 else
-                                    sb.Append( ", " + category.Name );
+                                    sb.Append( ", <a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a>" );
                             }
                             sb.Append( " " );
                         }
