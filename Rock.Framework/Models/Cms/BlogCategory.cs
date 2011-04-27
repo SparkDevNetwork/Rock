@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,25 +25,32 @@ namespace Rock.Models.Cms
     [Table( "cmsBlogCategory" )]
     public partial class BlogCategory : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public int BlogId { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string Name { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogCategory"; } }
 
-		public virtual ICollection<BlogPost> Posts { get; set; }
+		public virtual ICollection<BlogPost> BlogPosts { get; set; }
 
 		public virtual Blog Blog { get; set; }
 
@@ -55,7 +63,7 @@ namespace Rock.Models.Cms
     {
         public BlogCategoryConfiguration()
         {
-			this.HasMany( p => p.Posts ).WithMany( c => c.Categorys ).Map( m => m.ToTable("cmsBlogPostCategory" ) );
+			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategorys ).Map( m => m.ToTable("cmsBlogPostCategory" ) );
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogCategorys ).HasForeignKey( p => p.BlogId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,33 +25,47 @@ namespace Rock.Models.Cms
     [Table( "cmsHtmlContent" )]
     public partial class HtmlContent : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public int BlockId { get; set; }
 		
+		[DataMember]
 		public string Content { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string EntityValue { get; set; }
 		
+		[DataMember]
 		public int VersionLabel { get; set; }
 		
+		[DataMember]
 		public bool Approved { get; set; }
 		
+		[DataMember]
 		public int? ApprovedByPersonId { get; set; }
 		
+		[DataMember]
 		public DateTime? ApprovedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		[DataMember]
 		public DateTime? StartDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ExpireDateTime { get; set; }
 		
 		[NotMapped]

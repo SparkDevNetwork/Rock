@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,23 +25,32 @@ namespace Rock.Models.Groups
     [Table( "groupsGroupType" )]
     public partial class GroupType : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public bool System { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Name { get; set; }
 		
+		[DataMember]
 		public string Description { get; set; }
 		
+		[DataMember]
 		public int DefaultGroupRoleId { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
@@ -65,7 +75,7 @@ namespace Rock.Models.Groups
     {
         public GroupTypeConfiguration()
         {
-			this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => m.ToTable("groupsGroupTypeAssociationV" ) );
+			this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => m.ToTable("groupsGroupTypeAssociationV2" ) );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 			this.HasRequired( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId );

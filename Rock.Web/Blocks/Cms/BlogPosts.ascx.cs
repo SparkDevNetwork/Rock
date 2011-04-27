@@ -77,7 +77,7 @@ namespace Rock.Web.Blocks.Cms
 
                 // add category and tag filters if requested
                 if ( categoryId != 0 )
-                    qPosts.Where( p => p.Categorys.Any(c => c.Id == categoryId ));
+                    qPosts.Where( p => p.BlogCategorys.Any(c => c.Id == categoryId ));
                 
                 // run query
                 var posts = qPosts.ToList();
@@ -101,12 +101,12 @@ namespace Rock.Web.Blocks.Cms
                         sb.Append( "         Posted " );
 
                         // determine categories
-                        if ( post.Categorys.Count > 0 )
+                        if ( post.BlogCategorys.Count > 0 )
                         {
                             sb.Append( "in " );
 
                             bool firstCategory = true;
-                            foreach ( BlogCategory category in post.Categorys )
+                            foreach ( BlogCategory category in post.BlogCategorys )
                             {
                                 if ( firstCategory )
                                 {

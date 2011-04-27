@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,37 +25,48 @@ namespace Rock.Models.Cms
     [Table( "cmsBlogPost" )]
     public partial class BlogPost : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public int BlogId { get; set; }
 		
 		[MaxLength( 250 )]
+		[DataMember]
 		public string Title { get; set; }
 		
+		[DataMember]
 		public string Content { get; set; }
 		
+		[DataMember]
 		public int? AuthorId { get; set; }
 		
+		[DataMember]
 		public int State { get; set; }
 		
+		[DataMember]
 		public DateTime? PublishDate { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogPost"; } }
 
-		public virtual ICollection<BlogCategory> Categorys { get; set; }
+		public virtual ICollection<BlogCategory> BlogCategorys { get; set; }
 
 		public virtual ICollection<BlogPostComment> BlogPostComments { get; set; }
 
-		public virtual ICollection<BlogTag> Tags { get; set; }
+		public virtual ICollection<BlogTag> BlogTags { get; set; }
 
 		public virtual Blog Blog { get; set; }
 
@@ -69,7 +81,7 @@ namespace Rock.Models.Cms
     {
         public BlogPostConfiguration()
         {
-			this.HasMany( p => p.Tags ).WithMany( c => c.Posts ).Map( m => m.ToTable("cmsBlogPostTag" ) );
+			this.HasMany( p => p.BlogTags ).WithMany( c => c.BlogPosts ).Map( m => m.ToTable("cmsBlogPostTag" ) );
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.BlogId );
 			this.HasOptional( p => p.Author ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.AuthorId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

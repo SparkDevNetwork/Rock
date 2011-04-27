@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Services;
 using System.Data.Services.Common;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 namespace Rock.Models
@@ -13,12 +14,14 @@ namespace Rock.Models
     /// </summary>
     [DataServiceKey("Id")]
     [IgnoreProperties(new[] { "ParentAuthority", "SupportedActions", "AuthEntity" })]
-    public abstract class Model :  Rock.Cms.Security.ISecured
+    [DataContract]
+    public abstract class Model : Rock.Cms.Security.ISecured
     {
         // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
         // the service to interface with EF and fetch data.
 
         [Key]
+        [DataMember]
         public int Id { get; set; }
 
         #region ISecured implementation

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,40 +25,56 @@ namespace Rock.Models.Core
     [Table( "coreAttribute" )]
     public partial class Attribute : Model, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public bool System { get; set; }
 		
+		[DataMember]
 		public int FieldTypeId { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string Entity { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string EntityQualifier { get; set; }
 		
+		[DataMember]
 		public int? EntityQualifierId { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string Key { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Name { get; set; }
 		
+		[DataMember]
 		public string Description { get; set; }
 		
+		[DataMember]
 		public int Order { get; set; }
 		
+		[DataMember]
 		public bool GridColumn { get; set; }
 		
+		[DataMember]
 		public string DefaultValue { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]

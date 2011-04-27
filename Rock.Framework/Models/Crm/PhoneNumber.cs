@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,23 +25,32 @@ namespace Rock.Models.Crm
     [Table( "crmPhoneNumber" )]
     public partial class PhoneNumber : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public bool System { get; set; }
 		
+		[DataMember]
 		public int PersonId { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Number { get; set; }
 		
+		[DataMember]
 		public string Description { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
