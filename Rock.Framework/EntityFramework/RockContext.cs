@@ -51,7 +51,7 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Groups.GroupType> GroupTypes { get; set; }
         public DbSet<Rock.Models.Groups.Member> Members { get; set; }
 
-        protected override void OnModelCreating( System.Data.Entity.ModelConfiguration.ModelBuilder modelBuilder )
+        protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             modelBuilder.Configurations.Add( new Rock.Models.Cms.AuthConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.BlockConfiguration() );

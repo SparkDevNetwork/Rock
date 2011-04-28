@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,34 +25,48 @@ namespace Rock.Models.Cms
     [Table( "cmsPage" )]
     public partial class Page : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public bool System { get; set; }
 		
+		[DataMember]
 		public int? ParentPageId { get; set; }
 		
+		[DataMember]
 		public int? SiteId { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Layout { get; set; }
 		
+		[DataMember]
 		public int Order { get; set; }
 		
+		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Name { get; set; }
 		
+		[DataMember]
 		public string Description { get; set; }
 		
+		[DataMember]
 		public bool IncludeAdminFooter { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]

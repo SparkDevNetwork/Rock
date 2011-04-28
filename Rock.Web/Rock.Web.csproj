@@ -40,8 +40,9 @@
     <Reference Include="dotless.Core">
       <HintPath>..\packages\dotless.1.1.0\lib\dotless.Core.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EFCodeFirst.0.8\lib\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft ADO.NET Entity Framework 4.1\Binaries\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="Facebook">
       <HintPath>..\packages\Facebook.5.0.9.0\lib\net40-client\Facebook.dll</HintPath>
@@ -54,8 +55,10 @@
     <Reference Include="System.Data.Services" />
     <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Activation" />
+    <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -73,6 +76,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="WCF\RestService.svc" />
     <Content Include="WebServices\RockDataService.svc" />
     <Content Include="Blocks\AnotherBlock.ascx" />
     <Content Include="Blocks\Cms\BlogPosts.ascx" />
@@ -127,6 +131,10 @@
     <Compile Include="feed.ashx.cs">
       <DependentUpon>feed.ashx</DependentUpon>
     </Compile>
+    <Compile Include="WCF\RestService.svc.cs">
+      <DependentUpon>RestService.svc</DependentUpon>
+    </Compile>
+    <Compile Include="WCF\IRestService.cs" />
     <Compile Include="WebServices\RockDataService.svc.cs">
       <DependentUpon>RockDataService.svc</DependentUpon>
     </Compile>
@@ -311,6 +319,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Blocks\Cms\App_LocalResources\HtmlContent.ascx.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

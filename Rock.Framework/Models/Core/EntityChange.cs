@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,23 +25,31 @@ namespace Rock.Models.Core
     [Table( "coreEntityChange" )]
     public partial class EntityChange : ModelWithAttributes
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public Guid ChangeSet { get; set; }
 		
 		[MaxLength( 10 )]
+		[DataMember]
 		public string ChangeType { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string EntityType { get; set; }
 		
+		[DataMember]
 		public int EntityId { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Property { get; set; }
 		
+		[DataMember]
 		public string OriginalValue { get; set; }
 		
+		[DataMember]
 		public string CurrentValue { get; set; }
 		
 		[NotMapped]

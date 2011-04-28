@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,11 +25,14 @@ namespace Rock.Models.Cms
     [Table( "cmsBlogTag" )]
     public partial class BlogTag : ModelWithAttributes
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public int BlogId { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string Name { get; set; }
 		
 		[NotMapped]

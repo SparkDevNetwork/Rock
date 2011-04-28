@@ -15,7 +15,7 @@ namespace Rock.Helpers
     {
         [ThreadStatic]
         private static UnitOfWorkScope currentScope;
-        private readonly DbContext objectContext;
+        public readonly DbContext objectContext;
         private bool isDisposed;
 
         public bool SaveAllChangesAtScopeEnd { get; set; }

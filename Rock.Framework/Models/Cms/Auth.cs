@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,31 +25,43 @@ namespace Rock.Models.Cms
     [Table( "cmsAuth" )]
     public partial class Auth : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
 		[MaxLength( 200 )]
+		[DataMember]
 		public string EntityType { get; set; }
 		
+		[DataMember]
 		public int? EntityId { get; set; }
 		
+		[DataMember]
 		public int Order { get; set; }
 		
+		[DataMember]
 		public string AllowOrDeny { get; set; }
 		
+		[DataMember]
 		public string UserOrRole { get; set; }
 		
 		[MaxLength( 50 )]
+		[DataMember]
 		public string Action { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string UserOrRoleName { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]

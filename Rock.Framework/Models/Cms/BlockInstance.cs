@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,30 +25,42 @@ namespace Rock.Models.Cms
     [Table( "cmsBlockInstance" )]
     public partial class BlockInstance : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[DataMember]
 		public bool System { get; set; }
 		
+		[DataMember]
 		public int? PageId { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Layout { get; set; }
 		
+		[DataMember]
 		public int BlockId { get; set; }
 		
 		[MaxLength( 100 )]
+		[DataMember]
 		public string Zone { get; set; }
 		
+		[DataMember]
 		public int Order { get; set; }
 		
+		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]

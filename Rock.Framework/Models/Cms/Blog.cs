@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Models;
@@ -24,17 +25,22 @@ namespace Rock.Models.Cms
     [Table( "cmsBlog" )]
     public partial class Blog : ModelWithAttributes, IAuditable
     {
+		[DataMember]
 		public Guid Guid { get; set; }
 		
 		[MaxLength( 75 )]
+		[DataMember]
 		public string Name { get; set; }
 		
 		[MaxLength( 200 )]
+		[DataMember]
 		public string Subtitle { get; set; }
 		
 		[MaxLength( 2000 )]
+		[DataMember]
 		public string Description { get; set; }
 		
+		[DataMember]
 		public bool ModerateComments { get; set; }
 		
 		[MaxLength( 250 )]
@@ -48,12 +54,16 @@ namespace Rock.Models.Cms
 		
 		public bool? AllowComments { get; set; }
 		
+		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]

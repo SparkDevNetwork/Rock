@@ -69,8 +69,8 @@ namespace Rock.Web
                 routes.Add( route );
             }
 
-            var factory = new DataServiceHostFactory();
-            routes.Add(new ServiceRoute("api", factory, typeof (RockDataService)));
+            var factory = new WebServiceHostFactory();
+            routes.Add(new ServiceRoute("Rest.svc", factory, typeof (WCF.RestService)));
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new RockRouteHandler() ) );

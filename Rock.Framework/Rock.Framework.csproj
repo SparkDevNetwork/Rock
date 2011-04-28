@@ -36,8 +36,9 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EFCodeFirst.0.8\lib\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft ADO.NET Entity Framework 4.1\Binaries\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -51,6 +52,7 @@
     <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -100,6 +102,8 @@
     <Compile Include="Models\Cms\BlogPostComment.cs" />
     <Compile Include="Models\Cms\BlogTag.cs" />
     <Compile Include="Models\Cms\BlogPost.Partial.cs" />
+    <Compile Include="Models\Cms\Auth.Partial.cs" />
+    <Compile Include="Models\Cms\User.Partial.cs" />
     <Compile Include="Models\Cms\HtmlContent.cs">
       <SubType>Code</SubType>
     </Compile>
