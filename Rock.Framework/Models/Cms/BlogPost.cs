@@ -50,11 +50,11 @@ namespace Rock.Models.Cms
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogPost"; } }
 
-		public virtual ICollection<BlogCategory> Categorys { get; set; }
+		public virtual ICollection<BlogCategory> BlogCategorys { get; set; }
 
 		public virtual ICollection<BlogPostComment> BlogPostComments { get; set; }
 
-		public virtual ICollection<BlogTag> Tags { get; set; }
+		public virtual ICollection<BlogTag> BlogTags { get; set; }
 
 		public virtual Blog Blog { get; set; }
 
@@ -69,7 +69,7 @@ namespace Rock.Models.Cms
     {
         public BlogPostConfiguration()
         {
-			this.HasMany( p => p.Tags ).WithMany( c => c.Posts ).Map( m => m.ToTable("cmsBlogPostTag" ) );
+			this.HasMany( p => p.BlogTags ).WithMany( c => c.BlogPosts ).Map( m => m.ToTable("cmsBlogPostTag" ) );
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.BlogId );
 			this.HasOptional( p => p.Author ).WithMany( p => p.BlogPosts ).HasForeignKey( p => p.AuthorId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

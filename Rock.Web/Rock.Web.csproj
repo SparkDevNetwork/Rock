@@ -124,6 +124,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="feed.ashx.cs">
+      <DependentUpon>feed.ashx</DependentUpon>
+    </Compile>
     <Compile Include="WebServices\RockDataService.svc.cs">
       <DependentUpon>RockDataService.svc</DependentUpon>
     </Compile>
@@ -300,6 +303,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="Scripts\Web.config" />
+    <Content Include="feed.ashx" />
     <None Include="Themes\Default\CSS\styles.less" />
   </ItemGroup>
   <ItemGroup>

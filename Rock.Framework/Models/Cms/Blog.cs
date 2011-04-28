@@ -38,7 +38,13 @@ namespace Rock.Models.Cms
 		public bool ModerateComments { get; set; }
 		
 		[MaxLength( 250 )]
+		public string PublicPublishingPoint { get; set; }
+		
+		[MaxLength( 250 )]
 		public string PublicFeedAddress { get; set; }
+		
+		[MaxLength( 250 )]
+		public string CopyrightStatement { get; set; }
 		
 		public bool? AllowComments { get; set; }
 		

@@ -268,6 +268,7 @@
     <Compile Include="Services\Groups\MemberService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Services\IFeed.cs" />
     <Compile Include="Services\Service.cs" />
     <Compile Include="T4\Model1.cs">
       <AutoGen>True</AutoGen>

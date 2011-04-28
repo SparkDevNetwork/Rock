@@ -69,6 +69,19 @@ namespace Rock.Web.Blocks.Cms
                 Rock.Services.Cms.BlogService blogService = new Services.Cms.BlogService();
                 Rock.Models.Cms.Blog blog = blogService.GetBlog( blogId );
 
+                // add rss link in header if publish location is avail
+                if ( blog.PublicFeedAddress != null && blog.PublicFeedAddress != string.Empty )
+                {
+                    System.Web.UI.HtmlControls.HtmlLink rssLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+                    rssLink.Attributes.Add( "type", "application/rss+xml" );
+                    rssLink.Attributes.Add( "rel", "alternate" );
+                    rssLink.Attributes.Add( "href", blog.PublicFeedAddress );
+                    rssLink.Attributes.Add( "title", "RSS" );
+
+                    PageInstance.AddHtmlLink( this.Page, rssLink );
+                }
+
                 lPosts.Text = "";
 
                 // load posts
@@ -77,7 +90,10 @@ namespace Rock.Web.Blocks.Cms
 
                 // add category and tag filters if requested
                 if ( categoryId != 0 )
-                    qPosts.Where( p => p.Categorys.Any(c => c.Id == categoryId ));
+                    qPosts = qPosts.Where( p => p.BlogCategorys.Any(c => c.Id == categoryId ));
+
+                if ( tagId != 0 )
+                    qPosts = qPosts.Where( p => p.BlogTags.Any( t => t.Id == tagId ) );
                 
                 // run query
                 var posts = qPosts.ToList();
@@ -101,25 +117,32 @@ namespace Rock.Web.Blocks.Cms
                         sb.Append( "         Posted " );
 
                         // determine categories
-                        if ( post.Categorys.Count > 0 )
+                        if ( post.BlogCategorys.Count > 0 )
                         {
-                            sb.Append( "in " );
+                            sb.Append( "in <ul>" );
 
-                            bool firstCategory = true;
-                            foreach ( BlogCategory category in post.Categorys )
+                            foreach ( BlogCategory category in post.BlogCategorys )
                             {
-                                if ( firstCategory )
-                                {
-                                    sb.Append( "<a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a>" );
-                                    firstCategory = false;
-                                }
-                                else
-                                    sb.Append( ", <a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a>" );
+                                sb.Append( "<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a></li?" );
                             }
-                            sb.Append( " " );
+                            sb.Append( "</ul> " );
                         }
 
                         sb.Append( "on " + publishDate.ToString("D") + " by " + post.Author.FirstName + " " + post.Author.LastName + "\n" );
+
+                        // show tags if any
+                        if ( post.BlogTags.Count > 0 )
+                        {
+                            sb.Append( "<div class=\"tags\">Tags:\n\t<ul>" );
+
+                            foreach ( BlogTag tag in post.BlogTags )
+                            {
+                                sb.Append( "\t\t<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Tag=" + tag.Id.ToString() + "\">" + tag.Name + "</a></li>\n" );
+                            }
+
+                            sb.Append( "\t</ul>\n</div>" );
+                        }
+
                         sb.Append( "     </header>\n" );
                         sb.Append( post.Content + "\n" );
                         sb.Append( "</article>\n" );
@@ -132,7 +155,7 @@ namespace Rock.Web.Blocks.Cms
                     else
                         aNewer.Visible = true;
 
-                    if ( posts.Count() < takeCount )
+                    if ( posts.Count() <= takeCount )
                         aOlder.Visible = false;
                     else
                         aOlder.Visible = true;

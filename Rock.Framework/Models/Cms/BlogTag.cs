@@ -34,7 +34,7 @@ namespace Rock.Models.Cms
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogTag"; } }
 
-		public virtual ICollection<BlogPost> Posts { get; set; }
+		public virtual ICollection<BlogPost> BlogPosts { get; set; }
 
 		public virtual Blog Blog { get; set; }
     }
