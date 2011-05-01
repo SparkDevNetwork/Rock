@@ -51,7 +51,12 @@ namespace Rock.Services.Crm
             _repository.Add( Person );
         }
 
-        public void DeletePerson( Rock.Models.Crm.Person Person )
+        public void AttachPerson( Rock.Models.Crm.Person Person )
+        {
+            _repository.Attach( Person );
+        }
+
+		public void DeletePerson( Rock.Models.Crm.Person Person )
         {
             _repository.Delete( Person );
         }

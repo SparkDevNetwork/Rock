@@ -56,7 +56,12 @@ namespace Rock.Services.Core
             _repository.Add( EntityChange );
         }
 
-        public void DeleteEntityChange( Rock.Models.Core.EntityChange EntityChange )
+        public void AttachEntityChange( Rock.Models.Core.EntityChange EntityChange )
+        {
+            _repository.Attach( EntityChange );
+        }
+
+		public void DeleteEntityChange( Rock.Models.Core.EntityChange EntityChange )
         {
             _repository.Delete( EntityChange );
         }

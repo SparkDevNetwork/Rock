@@ -56,7 +56,12 @@ namespace Rock.Services.Cms
             _repository.Add( Site );
         }
 
-        public void DeleteSite( Rock.Models.Cms.Site Site )
+        public void AttachSite( Rock.Models.Cms.Site Site )
+        {
+            _repository.Attach( Site );
+        }
+
+		public void DeleteSite( Rock.Models.Cms.Site Site )
         {
             _repository.Delete( Site );
         }

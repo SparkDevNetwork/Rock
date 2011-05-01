@@ -61,7 +61,12 @@ namespace Rock.Services.Cms
             _repository.Add( Role );
         }
 
-        public void DeleteRole( Rock.Models.Cms.Role Role )
+        public void AttachRole( Rock.Models.Cms.Role Role )
+        {
+            _repository.Attach( Role );
+        }
+
+		public void DeleteRole( Rock.Models.Cms.Role Role )
         {
             _repository.Delete( Role );
         }

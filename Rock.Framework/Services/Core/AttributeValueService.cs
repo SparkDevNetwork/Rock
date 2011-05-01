@@ -66,7 +66,12 @@ namespace Rock.Services.Core
             _repository.Add( AttributeValue );
         }
 
-        public void DeleteAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
+        public void AttachAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
+        {
+            _repository.Attach( AttributeValue );
+        }
+
+		public void DeleteAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
         {
             _repository.Delete( AttributeValue );
         }

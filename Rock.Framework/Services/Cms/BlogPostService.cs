@@ -51,7 +51,12 @@ namespace Rock.Services.Cms
             _repository.Add( BlogPost );
         }
 
-        public void DeleteBlogPost( Rock.Models.Cms.BlogPost BlogPost )
+        public void AttachBlogPost( Rock.Models.Cms.BlogPost BlogPost )
+        {
+            _repository.Attach( BlogPost );
+        }
+
+		public void DeleteBlogPost( Rock.Models.Cms.BlogPost BlogPost )
         {
             _repository.Delete( BlogPost );
         }

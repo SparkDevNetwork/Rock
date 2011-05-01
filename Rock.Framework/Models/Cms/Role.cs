@@ -62,7 +62,7 @@ namespace Rock.Models.Cms
     {
         public RoleConfiguration()
         {
-			this.HasMany( p => p.Users ).WithMany( c => c.Roles ).Map( m => m.ToTable("cmsUserRole" ) );
+			this.HasMany( p => p.Users ).WithMany( c => c.Roles ).Map( m => { m.MapLeftKey("UserId"); m.MapRightKey("RoleId"); m.ToTable("cmsUserRole" ); } );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

@@ -71,7 +71,12 @@ namespace Rock.Services.Cms
             _repository.Add( User );
         }
 
-        public void DeleteUser( Rock.Models.Cms.User User )
+        public void AttachUser( Rock.Models.Cms.User User )
+        {
+            _repository.Attach( User );
+        }
+
+		public void DeleteUser( Rock.Models.Cms.User User )
         {
             _repository.Delete( User );
         }

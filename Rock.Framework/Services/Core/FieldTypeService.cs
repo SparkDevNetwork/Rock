@@ -61,7 +61,12 @@ namespace Rock.Services.Core
             _repository.Add( FieldType );
         }
 
-        public void DeleteFieldType( Rock.Models.Core.FieldType FieldType )
+        public void AttachFieldType( Rock.Models.Core.FieldType FieldType )
+        {
+            _repository.Attach( FieldType );
+        }
+
+		public void DeleteFieldType( Rock.Models.Core.FieldType FieldType )
         {
             _repository.Delete( FieldType );
         }

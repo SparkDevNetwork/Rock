@@ -51,7 +51,12 @@ namespace Rock.Services.Crm
             _repository.Add( PhoneNumber );
         }
 
-        public void DeletePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
+        public void AttachPhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
+        {
+            _repository.Attach( PhoneNumber );
+        }
+
+		public void DeletePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
         {
             _repository.Delete( PhoneNumber );
         }

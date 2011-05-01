@@ -51,7 +51,12 @@ namespace Rock.Services.Cms
             _repository.Add( BlogTag );
         }
 
-        public void DeleteBlogTag( Rock.Models.Cms.BlogTag BlogTag )
+        public void AttachBlogTag( Rock.Models.Cms.BlogTag BlogTag )
+        {
+            _repository.Attach( BlogTag );
+        }
+
+		public void DeleteBlogTag( Rock.Models.Cms.BlogTag BlogTag )
         {
             _repository.Delete( BlogTag );
         }

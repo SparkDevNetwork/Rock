@@ -63,7 +63,7 @@ namespace Rock.Models.Cms
     {
         public BlogCategoryConfiguration()
         {
-			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategorys ).Map( m => m.ToTable("cmsBlogPostCategory" ) );
+			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategorys ).Map( m => { m.MapLeftKey("BlogPostId"); m.MapRightKey("BlogCategoryId"); m.ToTable("cmsBlogPostCategory" ); } );
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogCategorys ).HasForeignKey( p => p.BlogId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
