@@ -56,7 +56,7 @@ namespace Rock.Models.Cms
 		public string CopyrightStatement { get; set; }
 		
 		[DataMember]
-		public bool? AllowComments { get; set; }
+		public bool AllowComments { get; set; }
 		
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }

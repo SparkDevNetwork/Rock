@@ -7,10 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.Web.Blocks.Cms {
+namespace Rock.Web.Blocks.Cms.Blog {
     
     
-    public partial class BlogPosts {
+    public partial class Posts {
         
         /// <summary>
         /// lPosts control.

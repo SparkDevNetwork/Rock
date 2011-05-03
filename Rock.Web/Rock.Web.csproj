@@ -76,10 +76,12 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Blocks\Cms\Blog\Categories.ascx" />
+    <Content Include="Blocks\Cms\Blog\PostDisplay.ascx" />
     <Content Include="WCF\RestService.svc" />
     <Content Include="WebServices\RockDataService.svc" />
     <Content Include="Blocks\AnotherBlock.ascx" />
-    <Content Include="Blocks\Cms\BlogPosts.ascx" />
+    <Content Include="Blocks\Cms\Blog\Posts.ascx" />
     <Content Include="Blocks\Cms\HtmlContent.ascx" />
     <Content Include="Blocks\Cms\Blocks.ascx" />
     <Content Include="Blocks\Cms\Roles.ascx" />
@@ -128,6 +130,20 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Cms\Blog\Categories.ascx.cs">
+      <DependentUpon>Categories.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Blocks\Cms\Blog\Categories.ascx.designer.cs">
+      <DependentUpon>Categories.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Blocks\Cms\Blog\PostDisplay.ascx.cs">
+      <DependentUpon>PostDisplay.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Blocks\Cms\Blog\PostDisplay.ascx.designer.cs">
+      <DependentUpon>PostDisplay.ascx</DependentUpon>
+    </Compile>
     <Compile Include="feed.ashx.cs">
       <DependentUpon>feed.ashx</DependentUpon>
     </Compile>
@@ -145,12 +161,12 @@
     <Compile Include="Blocks\AnotherBlock.ascx.designer.cs">
       <DependentUpon>AnotherBlock.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Blocks\Cms\BlogPosts.ascx.cs">
-      <DependentUpon>BlogPosts.ascx</DependentUpon>
+    <Compile Include="Blocks\Cms\Blog\Posts.ascx.cs">
+      <DependentUpon>Posts.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Blocks\Cms\BlogPosts.ascx.designer.cs">
-      <DependentUpon>BlogPosts.ascx</DependentUpon>
+    <Compile Include="Blocks\Cms\Blog\Posts.ascx.designer.cs">
+      <DependentUpon>Posts.ascx</DependentUpon>
     </Compile>
     <Compile Include="Blocks\Cms\HtmlContent.ascx.cs">
       <DependentUpon>HtmlContent.ascx</DependentUpon>

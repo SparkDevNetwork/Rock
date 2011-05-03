@@ -9,9 +9,9 @@ using System.Text;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
-namespace Rock.Web.Blocks.Cms
+namespace Rock.Web.Blocks.Cms.Blog
 {
-    public partial class BlogPosts : Rock.Cms.CmsBlock
+    public partial class Posts : Rock.Cms.CmsBlock
     {
         protected int skipCount = 0;
         protected int takeCount = 1;
@@ -67,7 +67,15 @@ namespace Rock.Web.Blocks.Cms
             if ( blogId != -1 )
             {
                 Rock.Services.Cms.BlogService blogService = new Services.Cms.BlogService();
-                Rock.Models.Cms.Blog blog = blogService.GetBlog( blogId );
+                
+                // try loading the blog object from the page cache
+                Rock.Models.Cms.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.Models.Cms.Blog;
+
+                if ( blog == null )
+                {
+                    blog = blogService.GetBlog( blogId );
+                    PageInstance.SaveSharedItem( "blog", blog );
+                }
 
                 // add rss link in header if publish location is avail
                 if ( blog.PublicFeedAddress != null && blog.PublicFeedAddress != string.Empty )
