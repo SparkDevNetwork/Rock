@@ -15,19 +15,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using System.Xml;
-
 using Rock.Models.Cms;
 using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogService : Rock.Services.Service, Rock.Services.IFeed
+    public partial class BlogService : Rock.Services.Service
     {
         private IBlogRepository _repository;
 
         public BlogService()
-            : this( new EntityBlogRepository() )
+			: this( new EntityBlogRepository() )
         { }
 
         public BlogService( IBlogRepository BlogRepository )
@@ -44,7 +42,7 @@ namespace Rock.Services.Cms
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
-
+		
         public void AddBlog( Rock.Models.Cms.Blog Blog )
         {
             if ( Blog.Guid == Guid.Empty )
@@ -62,76 +60,17 @@ namespace Rock.Services.Cms
         {
             List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Blog, personId );
 
-            if ( entityChanges != null )
+			if ( entityChanges != null )
             {
                 Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
 
                 foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
                 {
                     entityChange.EntityId = Blog.Id;
-                    entityChangeService.AddEntityChange( entityChange );
+                    entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
             }
-        }
-
-        public string ReturnFeed( int key, int count, string format, out string errorMessage, out string contentType )
-        {
-            errorMessage = string.Empty;
-            contentType = "application/rss+xml";
-            
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-            settings.Encoding = Encoding.UTF8;
-
-            StringBuilder builder = new StringBuilder();
-
-            using ( XmlWriter writer = XmlWriter.Create( builder, settings ) )
-            {
-                // get blog
-                Blog blog = this.GetBlog( key );
-
-                if ( blog == null )
-                {
-                    errorMessage = "The blog with the id of " + key.ToString() + " could not be found.";
-                }
-                else
-                {
-                    writer.WriteStartDocument();
-
-                    // write rss Tags
-                    writer.WriteStartElement( "rss" );
-                    writer.WriteAttributeString( "version", "2.0" );
-
-                    writer.WriteStartElement( "channel" );
-                    writer.WriteElementString( "title", blog.Name );
-                    writer.WriteElementString( "link", blog.PublicPublishingPoint );
-                    writer.WriteElementString( "description", blog.Description );
-                    writer.WriteElementString( "copyright", blog.CopyrightStatement );
-
-                    // get posts
-                    var blogPosts = blog.BlogPosts.Take( count );
-
-                    foreach ( BlogPost post in blogPosts )
-                    {
-                        writer.WriteStartElement( "item" );
-                        writer.WriteElementString( "title", post.Title );
-                        writer.WriteElementString( "description", post.Content );
-                        writer.WriteElementString( "link", "" );
-                        writer.WriteElementString( "pubDate", post.PublishDate.ToString() );
-                        writer.WriteEndElement();
-                    }
-
-                    //  close up tags
-                    writer.WriteEndElement();
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
-                }
-                writer.Flush();
-                writer.Close();
-
-            }
-            return builder.ToString();
         }
     }
 }

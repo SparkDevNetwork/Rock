@@ -243,6 +243,7 @@
     <Compile Include="Services\Cms\BlogPostService.cs" />
     <Compile Include="Services\Cms\BlogService.cs" />
     <Compile Include="Services\Cms\BlogTagService.cs" />
+    <Compile Include="Services\Cms\BlogService.Partial.cs" />
     <Compile Include="Services\Cms\HtmlContentService.cs" />
     <Compile Include="Services\Cms\HtmlContentService.Partial.cs" />
     <Compile Include="Services\Cms\PageRouteService.cs" />
