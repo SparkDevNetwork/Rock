@@ -56,7 +56,12 @@ namespace Rock.Services.Core
             _repository.Add( AttributeQualifier );
         }
 
-        public void DeleteAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
+        public void AttachAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
+        {
+            _repository.Attach( AttributeQualifier );
+        }
+
+		public void DeleteAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
             _repository.Delete( AttributeQualifier );
         }

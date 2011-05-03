@@ -66,7 +66,12 @@ namespace Rock.Services.Groups
             _repository.Add( Member );
         }
 
-        public void DeleteMember( Rock.Models.Groups.Member Member )
+        public void AttachMember( Rock.Models.Groups.Member Member )
+        {
+            _repository.Attach( Member );
+        }
+
+		public void DeleteMember( Rock.Models.Groups.Member Member )
         {
             _repository.Delete( Member );
         }

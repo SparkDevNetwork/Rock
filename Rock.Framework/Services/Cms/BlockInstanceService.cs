@@ -61,7 +61,12 @@ namespace Rock.Services.Cms
             _repository.Add( BlockInstance );
         }
 
-        public void DeleteBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
+        public void AttachBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
+        {
+            _repository.Attach( BlockInstance );
+        }
+
+		public void DeleteBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
         {
             _repository.Delete( BlockInstance );
         }

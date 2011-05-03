@@ -61,7 +61,12 @@ namespace Rock.Services.Cms
             _repository.Add( Page );
         }
 
-        public void DeletePage( Rock.Models.Cms.Page Page )
+        public void AttachPage( Rock.Models.Cms.Page Page )
+        {
+            _repository.Attach( Page );
+        }
+
+		public void DeletePage( Rock.Models.Cms.Page Page )
         {
             _repository.Delete( Page );
         }

@@ -51,7 +51,12 @@ namespace Rock.Services.Cms
             _repository.Add( BlogCategory );
         }
 
-        public void DeleteBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
+        public void AttachBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
+        {
+            _repository.Attach( BlogCategory );
+        }
+
+		public void DeleteBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
         {
             _repository.Delete( BlogCategory );
         }

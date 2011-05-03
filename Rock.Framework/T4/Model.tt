@@ -217,12 +217,10 @@ namespace Rock.Models<#= projectNamespace #>
 								if (!processedM2MTables.Contains(relatedTable.Name))
 								{
 									specialReferences.Add(string.Format(
-										"this.HasMany( p => p.{0}s ).WithMany( c => c.{1}s ).Map( m => m.ToTable(\"{2}{3}\" ) );",
+										"this.HasMany( p => p.{0}s ).WithMany( c => c.{1}s ).Map( m => {{ m.MapLeftKey(\"{2}\"); m.MapRightKey(\"{3}\"); m.ToTable(\"{4}\" ); }} );",
 										propertyName,  parentPropertyName, 
-										//primaryKeys[0].Name, parentKeyColumn, 
-										//childTable.Columns[0].Name, childKeyColumn, 
-										relatedTable.Name,
-										childTable.Name == oneTable.Name ? "V2" : ""));
+										childKeyColumn, parentKeyColumn, 
+										relatedTable.Name));
 										
 									processedM2MTables.Add(relatedTable.Name);
 								}
@@ -511,7 +509,12 @@ namespace Rock.Services<#= projectNamespace #>
             _repository.Add( <#= Entity #> );
         }
 
-        public void Delete<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
+        public void Attach<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
+        {
+            _repository.Attach( <#= Entity #> );
+        }
+
+		public void Delete<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
         {
             _repository.Delete( <#= Entity #> );
         }
@@ -647,6 +650,7 @@ namespace Rock.Web.WCF
 <#
 		foreach ( KeyValuePair<string, string> entity in entities )
 		{
+			string entityVar = entity.Value.Substring(0,1).ToLower() + entity.Value.Substring(1);
 #>
 		#region <#= entity.Value #>
 		
@@ -658,6 +662,18 @@ namespace Rock.Web.WCF
         [WebInvoke( Method = "GET", UriTemplate = "<#= entity.Value.ToLower() #>/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
         <#= entity.Key #> Get<#= entity.Value #>Xml( string id );
 		
+        [OperationContract]
+        [WebInvoke( Method = "PUT", UriTemplate = "<#= entity.Value.ToLower() #>/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void Update<#= entity.Value #>( string id, <#= entity.Key #> <#= entityVar #> );
+
+        [OperationContract]
+        [WebInvoke( Method = "POST", UriTemplate = "<#= entity.Value.ToLower() #>", ResponseFormat = WebMessageFormat.Json )]
+        void Create<#= entity.Value #>( <#= entity.Key #> <#= entityVar #> );
+
+        [OperationContract]
+        [WebInvoke( Method = "DELETE", UriTemplate = "<#= entity.Value.ToLower() #>/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void Delete<#= entity.Value #>( string id );
+
 		#endregion
 		
 <#
@@ -735,6 +751,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void Update<#= entity.Value #>( string id, <#= entity.Key #> <#= entityVar #> )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
+                <#= entity.Key #> existing<#= entity.Value #> = <#= entityVar #>Service.Get<#= entity.Value #>( int.Parse( id ) );
+                if ( existing<#= entity.Value #>.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existing<#= entity.Value #>).CurrentValues.SetValues(<#= entityVar #>);
+                    <#= entityVar #>Service.Save( existing<#= entity.Value #>, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void Create<#= entity.Value #>( <#= entity.Key #> <#= entityVar #> )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
+                <#= entityVar #>Service.Attach<#= entity.Value #>( <#= entityVar #> );
+                <#= entityVar #>Service.Save( <#= entityVar #>, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void Delete<#= entity.Value #>( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
+                <#= entity.Key #> <#= entity.Value #> = <#= entityVar #>Service.Get<#= entity.Value #>( int.Parse( id ) );
+                if ( <#= entity.Value #>.Authorized( "Edit", currentUser ) )
+                {
+                    <#= entityVar #>Service.Delete<#= entity.Value #>( <#= entity.Value #> );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 <#

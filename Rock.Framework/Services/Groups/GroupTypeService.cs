@@ -56,7 +56,12 @@ namespace Rock.Services.Groups
             _repository.Add( GroupType );
         }
 
-        public void DeleteGroupType( Rock.Models.Groups.GroupType GroupType )
+        public void AttachGroupType( Rock.Models.Groups.GroupType GroupType )
+        {
+            _repository.Attach( GroupType );
+        }
+
+		public void DeleteGroupType( Rock.Models.Groups.GroupType GroupType )
         {
             _repository.Delete( GroupType );
         }

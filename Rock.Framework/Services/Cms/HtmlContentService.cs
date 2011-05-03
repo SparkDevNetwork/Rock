@@ -51,7 +51,12 @@ namespace Rock.Services.Cms
             _repository.Add( HtmlContent );
         }
 
-        public void DeleteHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
+        public void AttachHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
+        {
+            _repository.Attach( HtmlContent );
+        }
+
+		public void DeleteHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
         {
             _repository.Delete( HtmlContent );
         }

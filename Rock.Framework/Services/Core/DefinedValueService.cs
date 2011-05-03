@@ -56,7 +56,12 @@ namespace Rock.Services.Core
             _repository.Add( DefinedValue );
         }
 
-        public void DeleteDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
+        public void AttachDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
+        {
+            _repository.Attach( DefinedValue );
+        }
+
+		public void DeleteDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
         {
             _repository.Delete( DefinedValue );
         }

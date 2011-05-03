@@ -51,7 +51,12 @@ namespace Rock.Services.Core
             _repository.Add( DefinedType );
         }
 
-        public void DeleteDefinedType( Rock.Models.Core.DefinedType DefinedType )
+        public void AttachDefinedType( Rock.Models.Core.DefinedType DefinedType )
+        {
+            _repository.Attach( DefinedType );
+        }
+
+		public void DeleteDefinedType( Rock.Models.Core.DefinedType DefinedType )
         {
             _repository.Delete( DefinedType );
         }

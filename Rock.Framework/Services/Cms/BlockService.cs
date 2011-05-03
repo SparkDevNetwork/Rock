@@ -66,7 +66,12 @@ namespace Rock.Services.Cms
             _repository.Add( Block );
         }
 
-        public void DeleteBlock( Rock.Models.Cms.Block Block )
+        public void AttachBlock( Rock.Models.Cms.Block Block )
+        {
+            _repository.Attach( Block );
+        }
+
+		public void DeleteBlock( Rock.Models.Cms.Block Block )
         {
             _repository.Delete( Block );
         }

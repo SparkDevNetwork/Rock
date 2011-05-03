@@ -61,7 +61,12 @@ namespace Rock.Services.Cms
             _repository.Add( Auth );
         }
 
-        public void DeleteAuth( Rock.Models.Cms.Auth Auth )
+        public void AttachAuth( Rock.Models.Cms.Auth Auth )
+        {
+            _repository.Attach( Auth );
+        }
+
+		public void DeleteAuth( Rock.Models.Cms.Auth Auth )
         {
             _repository.Delete( Auth );
         }

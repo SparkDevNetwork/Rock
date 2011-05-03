@@ -53,6 +53,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateAuth( string id, Rock.Models.Cms.Auth auth )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.AuthService authService = new Rock.Services.Cms.AuthService();
+                Rock.Models.Cms.Auth existingAuth = authService.GetAuth( int.Parse( id ) );
+                if ( existingAuth.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(auth);
+                    authService.Save( existingAuth, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateAuth( Rock.Models.Cms.Auth auth )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.AuthService authService = new Rock.Services.Cms.AuthService();
+                authService.AttachAuth( auth );
+                authService.Save( auth, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteAuth( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.AuthService authService = new Rock.Services.Cms.AuthService();
+                Rock.Models.Cms.Auth Auth = authService.GetAuth( int.Parse( id ) );
+                if ( Auth.Authorized( "Edit", currentUser ) )
+                {
+                    authService.DeleteAuth( Auth );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Block
@@ -85,6 +144,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlock( string id, Rock.Models.Cms.Block block )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                Rock.Models.Cms.Block existingBlock = blockService.GetBlock( int.Parse( id ) );
+                if ( existingBlock.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(block);
+                    blockService.Save( existingBlock, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlock( Rock.Models.Cms.Block block )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                blockService.AttachBlock( block );
+                blockService.Save( block, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlock( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                Rock.Models.Cms.Block Block = blockService.GetBlock( int.Parse( id ) );
+                if ( Block.Authorized( "Edit", currentUser ) )
+                {
+                    blockService.DeleteBlock( Block );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region BlockInstance
@@ -117,6 +235,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstance blockInstance )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+                Rock.Models.Cms.BlockInstance existingBlockInstance = blockInstanceService.GetBlockInstance( int.Parse( id ) );
+                if ( existingBlockInstance.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(blockInstance);
+                    blockInstanceService.Save( existingBlockInstance, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlockInstance( Rock.Models.Cms.BlockInstance blockInstance )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+                blockInstanceService.AttachBlockInstance( blockInstance );
+                blockInstanceService.Save( blockInstance, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlockInstance( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+                Rock.Models.Cms.BlockInstance BlockInstance = blockInstanceService.GetBlockInstance( int.Parse( id ) );
+                if ( BlockInstance.Authorized( "Edit", currentUser ) )
+                {
+                    blockInstanceService.DeleteBlockInstance( BlockInstance );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Blog
@@ -149,6 +326,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlog( string id, Rock.Models.Cms.Blog blog )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                Rock.Models.Cms.Blog existingBlog = blogService.GetBlog( int.Parse( id ) );
+                if ( existingBlog.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(blog);
+                    blogService.Save( existingBlog, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlog( Rock.Models.Cms.Blog blog )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                blogService.AttachBlog( blog );
+                blogService.Save( blog, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlog( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                Rock.Models.Cms.Blog Blog = blogService.GetBlog( int.Parse( id ) );
+                if ( Blog.Authorized( "Edit", currentUser ) )
+                {
+                    blogService.DeleteBlog( Blog );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region BlogCategory
@@ -181,6 +417,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategory blogCategory )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogCategoryService blogCategoryService = new Rock.Services.Cms.BlogCategoryService();
+                Rock.Models.Cms.BlogCategory existingBlogCategory = blogCategoryService.GetBlogCategory( int.Parse( id ) );
+                if ( existingBlogCategory.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(blogCategory);
+                    blogCategoryService.Save( existingBlogCategory, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlogCategory( Rock.Models.Cms.BlogCategory blogCategory )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogCategoryService blogCategoryService = new Rock.Services.Cms.BlogCategoryService();
+                blogCategoryService.AttachBlogCategory( blogCategory );
+                blogCategoryService.Save( blogCategory, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlogCategory( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogCategoryService blogCategoryService = new Rock.Services.Cms.BlogCategoryService();
+                Rock.Models.Cms.BlogCategory BlogCategory = blogCategoryService.GetBlogCategory( int.Parse( id ) );
+                if ( BlogCategory.Authorized( "Edit", currentUser ) )
+                {
+                    blogCategoryService.DeleteBlogCategory( BlogCategory );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region BlogPost
@@ -213,6 +508,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlogPost( string id, Rock.Models.Cms.BlogPost blogPost )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostService blogPostService = new Rock.Services.Cms.BlogPostService();
+                Rock.Models.Cms.BlogPost existingBlogPost = blogPostService.GetBlogPost( int.Parse( id ) );
+                if ( existingBlogPost.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(blogPost);
+                    blogPostService.Save( existingBlogPost, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlogPost( Rock.Models.Cms.BlogPost blogPost )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostService blogPostService = new Rock.Services.Cms.BlogPostService();
+                blogPostService.AttachBlogPost( blogPost );
+                blogPostService.Save( blogPost, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlogPost( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostService blogPostService = new Rock.Services.Cms.BlogPostService();
+                Rock.Models.Cms.BlogPost BlogPost = blogPostService.GetBlogPost( int.Parse( id ) );
+                if ( BlogPost.Authorized( "Edit", currentUser ) )
+                {
+                    blogPostService.DeleteBlogPost( BlogPost );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region BlogPostComment
@@ -245,6 +599,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlogPostComment( string id, Rock.Models.Cms.BlogPostComment blogPostComment )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostCommentService blogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
+                Rock.Models.Cms.BlogPostComment existingBlogPostComment = blogPostCommentService.GetBlogPostComment( int.Parse( id ) );
+                if ( existingBlogPostComment.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(blogPostComment);
+                    blogPostCommentService.Save( existingBlogPostComment, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlogPostComment( Rock.Models.Cms.BlogPostComment blogPostComment )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostCommentService blogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
+                blogPostCommentService.AttachBlogPostComment( blogPostComment );
+                blogPostCommentService.Save( blogPostComment, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlogPostComment( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogPostCommentService blogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
+                Rock.Models.Cms.BlogPostComment BlogPostComment = blogPostCommentService.GetBlogPostComment( int.Parse( id ) );
+                if ( BlogPostComment.Authorized( "Edit", currentUser ) )
+                {
+                    blogPostCommentService.DeleteBlogPostComment( BlogPostComment );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region BlogTag
@@ -277,6 +690,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateBlogTag( string id, Rock.Models.Cms.BlogTag blogTag )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogTagService blogTagService = new Rock.Services.Cms.BlogTagService();
+                Rock.Models.Cms.BlogTag existingBlogTag = blogTagService.GetBlogTag( int.Parse( id ) );
+                if ( existingBlogTag.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(blogTag);
+                    blogTagService.Save( existingBlogTag, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateBlogTag( Rock.Models.Cms.BlogTag blogTag )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogTagService blogTagService = new Rock.Services.Cms.BlogTagService();
+                blogTagService.AttachBlogTag( blogTag );
+                blogTagService.Save( blogTag, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteBlogTag( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.BlogTagService blogTagService = new Rock.Services.Cms.BlogTagService();
+                Rock.Models.Cms.BlogTag BlogTag = blogTagService.GetBlogTag( int.Parse( id ) );
+                if ( BlogTag.Authorized( "Edit", currentUser ) )
+                {
+                    blogTagService.DeleteBlogTag( BlogTag );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region HtmlContent
@@ -309,6 +781,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContent htmlContent )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.HtmlContentService htmlContentService = new Rock.Services.Cms.HtmlContentService();
+                Rock.Models.Cms.HtmlContent existingHtmlContent = htmlContentService.GetHtmlContent( int.Parse( id ) );
+                if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(htmlContent);
+                    htmlContentService.Save( existingHtmlContent, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateHtmlContent( Rock.Models.Cms.HtmlContent htmlContent )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.HtmlContentService htmlContentService = new Rock.Services.Cms.HtmlContentService();
+                htmlContentService.AttachHtmlContent( htmlContent );
+                htmlContentService.Save( htmlContent, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteHtmlContent( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.HtmlContentService htmlContentService = new Rock.Services.Cms.HtmlContentService();
+                Rock.Models.Cms.HtmlContent HtmlContent = htmlContentService.GetHtmlContent( int.Parse( id ) );
+                if ( HtmlContent.Authorized( "Edit", currentUser ) )
+                {
+                    htmlContentService.DeleteHtmlContent( HtmlContent );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Page
@@ -341,6 +872,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdatePage( string id, Rock.Models.Cms.Page page )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+                Rock.Models.Cms.Page existingPage = pageService.GetPage( int.Parse( id ) );
+                if ( existingPage.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingPage).CurrentValues.SetValues(page);
+                    pageService.Save( existingPage, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreatePage( Rock.Models.Cms.Page page )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+                pageService.AttachPage( page );
+                pageService.Save( page, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeletePage( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+                Rock.Models.Cms.Page Page = pageService.GetPage( int.Parse( id ) );
+                if ( Page.Authorized( "Edit", currentUser ) )
+                {
+                    pageService.DeletePage( Page );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region PageRoute
@@ -373,6 +963,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdatePageRoute( string id, Rock.Models.Cms.PageRoute pageRoute )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageRouteService pageRouteService = new Rock.Services.Cms.PageRouteService();
+                Rock.Models.Cms.PageRoute existingPageRoute = pageRouteService.GetPageRoute( int.Parse( id ) );
+                if ( existingPageRoute.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(pageRoute);
+                    pageRouteService.Save( existingPageRoute, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreatePageRoute( Rock.Models.Cms.PageRoute pageRoute )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageRouteService pageRouteService = new Rock.Services.Cms.PageRouteService();
+                pageRouteService.AttachPageRoute( pageRoute );
+                pageRouteService.Save( pageRoute, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeletePageRoute( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.PageRouteService pageRouteService = new Rock.Services.Cms.PageRouteService();
+                Rock.Models.Cms.PageRoute PageRoute = pageRouteService.GetPageRoute( int.Parse( id ) );
+                if ( PageRoute.Authorized( "Edit", currentUser ) )
+                {
+                    pageRouteService.DeletePageRoute( PageRoute );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Role
@@ -405,6 +1054,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateRole( string id, Rock.Models.Cms.Role role )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
+                Rock.Models.Cms.Role existingRole = roleService.GetRole( int.Parse( id ) );
+                if ( existingRole.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingRole).CurrentValues.SetValues(role);
+                    roleService.Save( existingRole, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateRole( Rock.Models.Cms.Role role )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
+                roleService.AttachRole( role );
+                roleService.Save( role, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteRole( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
+                Rock.Models.Cms.Role Role = roleService.GetRole( int.Parse( id ) );
+                if ( Role.Authorized( "Edit", currentUser ) )
+                {
+                    roleService.DeleteRole( Role );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Site
@@ -437,6 +1145,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateSite( string id, Rock.Models.Cms.Site site )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+                Rock.Models.Cms.Site existingSite = siteService.GetSite( int.Parse( id ) );
+                if ( existingSite.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingSite).CurrentValues.SetValues(site);
+                    siteService.Save( existingSite, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateSite( Rock.Models.Cms.Site site )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+                siteService.AttachSite( site );
+                siteService.Save( site, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteSite( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+                Rock.Models.Cms.Site Site = siteService.GetSite( int.Parse( id ) );
+                if ( Site.Authorized( "Edit", currentUser ) )
+                {
+                    siteService.DeleteSite( Site );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region SiteDomain
@@ -469,6 +1236,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomain siteDomain )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
+                Rock.Models.Cms.SiteDomain existingSiteDomain = siteDomainService.GetSiteDomain( int.Parse( id ) );
+                if ( existingSiteDomain.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(siteDomain);
+                    siteDomainService.Save( existingSiteDomain, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateSiteDomain( Rock.Models.Cms.SiteDomain siteDomain )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
+                siteDomainService.AttachSiteDomain( siteDomain );
+                siteDomainService.Save( siteDomain, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteSiteDomain( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
+                Rock.Models.Cms.SiteDomain SiteDomain = siteDomainService.GetSiteDomain( int.Parse( id ) );
+                if ( SiteDomain.Authorized( "Edit", currentUser ) )
+                {
+                    siteDomainService.DeleteSiteDomain( SiteDomain );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region User
@@ -501,6 +1327,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateUser( string id, Rock.Models.Cms.User user )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User existingUser = userService.GetUser( int.Parse( id ) );
+                if ( existingUser.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingUser).CurrentValues.SetValues(user);
+                    userService.Save( existingUser, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateUser( Rock.Models.Cms.User user )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                userService.AttachUser( user );
+                userService.Save( user, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteUser( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User User = userService.GetUser( int.Parse( id ) );
+                if ( User.Authorized( "Edit", currentUser ) )
+                {
+                    userService.DeleteUser( User );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Attribute
@@ -533,6 +1418,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateAttribute( string id, Rock.Models.Core.Attribute attribute )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeService attributeService = new Rock.Services.Core.AttributeService();
+                Rock.Models.Core.Attribute existingAttribute = attributeService.GetAttribute( int.Parse( id ) );
+                if ( existingAttribute.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(attribute);
+                    attributeService.Save( existingAttribute, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateAttribute( Rock.Models.Core.Attribute attribute )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeService attributeService = new Rock.Services.Core.AttributeService();
+                attributeService.AttachAttribute( attribute );
+                attributeService.Save( attribute, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteAttribute( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeService attributeService = new Rock.Services.Core.AttributeService();
+                Rock.Models.Core.Attribute Attribute = attributeService.GetAttribute( int.Parse( id ) );
+                if ( Attribute.Authorized( "Edit", currentUser ) )
+                {
+                    attributeService.DeleteAttribute( Attribute );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region AttributeQualifier
@@ -565,6 +1509,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier attributeQualifier )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeQualifierService attributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
+                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = attributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(attributeQualifier);
+                    attributeQualifierService.Save( existingAttributeQualifier, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifier attributeQualifier )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeQualifierService attributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
+                attributeQualifierService.AttachAttributeQualifier( attributeQualifier );
+                attributeQualifierService.Save( attributeQualifier, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteAttributeQualifier( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeQualifierService attributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
+                Rock.Models.Core.AttributeQualifier AttributeQualifier = attributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
+                {
+                    attributeQualifierService.DeleteAttributeQualifier( AttributeQualifier );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region AttributeValue
@@ -597,6 +1600,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValue attributeValue )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
+                Rock.Models.Core.AttributeValue existingAttributeValue = attributeValueService.GetAttributeValue( int.Parse( id ) );
+                if ( existingAttributeValue.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(attributeValue);
+                    attributeValueService.Save( existingAttributeValue, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateAttributeValue( Rock.Models.Core.AttributeValue attributeValue )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
+                attributeValueService.AttachAttributeValue( attributeValue );
+                attributeValueService.Save( attributeValue, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteAttributeValue( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
+                Rock.Models.Core.AttributeValue AttributeValue = attributeValueService.GetAttributeValue( int.Parse( id ) );
+                if ( AttributeValue.Authorized( "Edit", currentUser ) )
+                {
+                    attributeValueService.DeleteAttributeValue( AttributeValue );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region DefinedType
@@ -629,6 +1691,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateDefinedType( string id, Rock.Models.Core.DefinedType definedType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedTypeService definedTypeService = new Rock.Services.Core.DefinedTypeService();
+                Rock.Models.Core.DefinedType existingDefinedType = definedTypeService.GetDefinedType( int.Parse( id ) );
+                if ( existingDefinedType.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(definedType);
+                    definedTypeService.Save( existingDefinedType, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateDefinedType( Rock.Models.Core.DefinedType definedType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedTypeService definedTypeService = new Rock.Services.Core.DefinedTypeService();
+                definedTypeService.AttachDefinedType( definedType );
+                definedTypeService.Save( definedType, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteDefinedType( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedTypeService definedTypeService = new Rock.Services.Core.DefinedTypeService();
+                Rock.Models.Core.DefinedType DefinedType = definedTypeService.GetDefinedType( int.Parse( id ) );
+                if ( DefinedType.Authorized( "Edit", currentUser ) )
+                {
+                    definedTypeService.DeleteDefinedType( DefinedType );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region DefinedValue
@@ -661,6 +1782,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValue definedValue )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedValueService definedValueService = new Rock.Services.Core.DefinedValueService();
+                Rock.Models.Core.DefinedValue existingDefinedValue = definedValueService.GetDefinedValue( int.Parse( id ) );
+                if ( existingDefinedValue.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(definedValue);
+                    definedValueService.Save( existingDefinedValue, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateDefinedValue( Rock.Models.Core.DefinedValue definedValue )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedValueService definedValueService = new Rock.Services.Core.DefinedValueService();
+                definedValueService.AttachDefinedValue( definedValue );
+                definedValueService.Save( definedValue, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteDefinedValue( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.DefinedValueService definedValueService = new Rock.Services.Core.DefinedValueService();
+                Rock.Models.Core.DefinedValue DefinedValue = definedValueService.GetDefinedValue( int.Parse( id ) );
+                if ( DefinedValue.Authorized( "Edit", currentUser ) )
+                {
+                    definedValueService.DeleteDefinedValue( DefinedValue );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region EntityChange
@@ -693,6 +1873,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateEntityChange( string id, Rock.Models.Core.EntityChange entityChange )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
+                Rock.Models.Core.EntityChange existingEntityChange = entityChangeService.GetEntityChange( int.Parse( id ) );
+                if ( existingEntityChange.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(entityChange);
+                    entityChangeService.Save( existingEntityChange, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateEntityChange( Rock.Models.Core.EntityChange entityChange )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
+                entityChangeService.AttachEntityChange( entityChange );
+                entityChangeService.Save( entityChange, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteEntityChange( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
+                Rock.Models.Core.EntityChange EntityChange = entityChangeService.GetEntityChange( int.Parse( id ) );
+                if ( EntityChange.Authorized( "Edit", currentUser ) )
+                {
+                    entityChangeService.DeleteEntityChange( EntityChange );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region FieldType
@@ -725,6 +1964,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateFieldType( string id, Rock.Models.Core.FieldType fieldType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.FieldTypeService fieldTypeService = new Rock.Services.Core.FieldTypeService();
+                Rock.Models.Core.FieldType existingFieldType = fieldTypeService.GetFieldType( int.Parse( id ) );
+                if ( existingFieldType.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(fieldType);
+                    fieldTypeService.Save( existingFieldType, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateFieldType( Rock.Models.Core.FieldType fieldType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.FieldTypeService fieldTypeService = new Rock.Services.Core.FieldTypeService();
+                fieldTypeService.AttachFieldType( fieldType );
+                fieldTypeService.Save( fieldType, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteFieldType( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Core.FieldTypeService fieldTypeService = new Rock.Services.Core.FieldTypeService();
+                Rock.Models.Core.FieldType FieldType = fieldTypeService.GetFieldType( int.Parse( id ) );
+                if ( FieldType.Authorized( "Edit", currentUser ) )
+                {
+                    fieldTypeService.DeleteFieldType( FieldType );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Person
@@ -757,6 +2055,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdatePerson( string id, Rock.Models.Crm.Person person )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PersonService personService = new Rock.Services.Crm.PersonService();
+                Rock.Models.Crm.Person existingPerson = personService.GetPerson( int.Parse( id ) );
+                if ( existingPerson.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(person);
+                    personService.Save( existingPerson, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreatePerson( Rock.Models.Crm.Person person )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PersonService personService = new Rock.Services.Crm.PersonService();
+                personService.AttachPerson( person );
+                personService.Save( person, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeletePerson( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PersonService personService = new Rock.Services.Crm.PersonService();
+                Rock.Models.Crm.Person Person = personService.GetPerson( int.Parse( id ) );
+                if ( Person.Authorized( "Edit", currentUser ) )
+                {
+                    personService.DeletePerson( Person );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region PhoneNumber
@@ -789,6 +2146,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber phoneNumber )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PhoneNumberService phoneNumberService = new Rock.Services.Crm.PhoneNumberService();
+                Rock.Models.Crm.PhoneNumber existingPhoneNumber = phoneNumberService.GetPhoneNumber( int.Parse( id ) );
+                if ( existingPhoneNumber.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(phoneNumber);
+                    phoneNumberService.Save( existingPhoneNumber, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber phoneNumber )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PhoneNumberService phoneNumberService = new Rock.Services.Crm.PhoneNumberService();
+                phoneNumberService.AttachPhoneNumber( phoneNumber );
+                phoneNumberService.Save( phoneNumber, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeletePhoneNumber( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Crm.PhoneNumberService phoneNumberService = new Rock.Services.Crm.PhoneNumberService();
+                Rock.Models.Crm.PhoneNumber PhoneNumber = phoneNumberService.GetPhoneNumber( int.Parse( id ) );
+                if ( PhoneNumber.Authorized( "Edit", currentUser ) )
+                {
+                    phoneNumberService.DeletePhoneNumber( PhoneNumber );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Group
@@ -821,6 +2237,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateGroup( string id, Rock.Models.Groups.Group group )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupService groupService = new Rock.Services.Groups.GroupService();
+                Rock.Models.Groups.Group existingGroup = groupService.GetGroup( int.Parse( id ) );
+                if ( existingGroup.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(group);
+                    groupService.Save( existingGroup, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateGroup( Rock.Models.Groups.Group group )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupService groupService = new Rock.Services.Groups.GroupService();
+                groupService.AttachGroup( group );
+                groupService.Save( group, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteGroup( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupService groupService = new Rock.Services.Groups.GroupService();
+                Rock.Models.Groups.Group Group = groupService.GetGroup( int.Parse( id ) );
+                if ( Group.Authorized( "Edit", currentUser ) )
+                {
+                    groupService.DeleteGroup( Group );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region GroupRole
@@ -853,6 +2328,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateGroupRole( string id, Rock.Models.Groups.GroupRole groupRole )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupRoleService groupRoleService = new Rock.Services.Groups.GroupRoleService();
+                Rock.Models.Groups.GroupRole existingGroupRole = groupRoleService.GetGroupRole( int.Parse( id ) );
+                if ( existingGroupRole.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(groupRole);
+                    groupRoleService.Save( existingGroupRole, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateGroupRole( Rock.Models.Groups.GroupRole groupRole )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupRoleService groupRoleService = new Rock.Services.Groups.GroupRoleService();
+                groupRoleService.AttachGroupRole( groupRole );
+                groupRoleService.Save( groupRole, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteGroupRole( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupRoleService groupRoleService = new Rock.Services.Groups.GroupRoleService();
+                Rock.Models.Groups.GroupRole GroupRole = groupRoleService.GetGroupRole( int.Parse( id ) );
+                if ( GroupRole.Authorized( "Edit", currentUser ) )
+                {
+                    groupRoleService.DeleteGroupRole( GroupRole );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region GroupType
@@ -885,6 +2419,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateGroupType( string id, Rock.Models.Groups.GroupType groupType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupTypeService groupTypeService = new Rock.Services.Groups.GroupTypeService();
+                Rock.Models.Groups.GroupType existingGroupType = groupTypeService.GetGroupType( int.Parse( id ) );
+                if ( existingGroupType.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(groupType);
+                    groupTypeService.Save( existingGroupType, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateGroupType( Rock.Models.Groups.GroupType groupType )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupTypeService groupTypeService = new Rock.Services.Groups.GroupTypeService();
+                groupTypeService.AttachGroupType( groupType );
+                groupTypeService.Save( groupType, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteGroupType( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.GroupTypeService groupTypeService = new Rock.Services.Groups.GroupTypeService();
+                Rock.Models.Groups.GroupType GroupType = groupTypeService.GetGroupType( int.Parse( id ) );
+                if ( GroupType.Authorized( "Edit", currentUser ) )
+                {
+                    groupTypeService.DeleteGroupType( GroupType );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
 		#region Member
@@ -917,6 +2510,65 @@ namespace Rock.Web.WCF
             }
         }
 		
+        public void UpdateMember( string id, Rock.Models.Groups.Member member )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.MemberService memberService = new Rock.Services.Groups.MemberService();
+                Rock.Models.Groups.Member existingMember = memberService.GetMember( int.Parse( id ) );
+                if ( existingMember.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingMember).CurrentValues.SetValues(member);
+                    memberService.Save( existingMember, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateMember( Rock.Models.Groups.Member member )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.MemberService memberService = new Rock.Services.Groups.MemberService();
+                memberService.AttachMember( member );
+                memberService.Save( member, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteMember( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Groups.MemberService memberService = new Rock.Services.Groups.MemberService();
+                Rock.Models.Groups.Member Member = memberService.GetMember( int.Parse( id ) );
+                if ( Member.Authorized( "Edit", currentUser ) )
+                {
+                    memberService.DeleteMember( Member );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
 		#endregion
 		
     }

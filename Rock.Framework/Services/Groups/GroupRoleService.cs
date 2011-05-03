@@ -61,7 +61,12 @@ namespace Rock.Services.Groups
             _repository.Add( GroupRole );
         }
 
-        public void DeleteGroupRole( Rock.Models.Groups.GroupRole GroupRole )
+        public void AttachGroupRole( Rock.Models.Groups.GroupRole GroupRole )
+        {
+            _repository.Attach( GroupRole );
+        }
+
+		public void DeleteGroupRole( Rock.Models.Groups.GroupRole GroupRole )
         {
             _repository.Delete( GroupRole );
         }

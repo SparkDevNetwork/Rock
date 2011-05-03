@@ -66,7 +66,12 @@ namespace Rock.Services.Cms
             _repository.Add( SiteDomain );
         }
 
-        public void DeleteSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
+        public void AttachSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
+        {
+            _repository.Attach( SiteDomain );
+        }
+
+		public void DeleteSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
         {
             _repository.Delete( SiteDomain );
         }

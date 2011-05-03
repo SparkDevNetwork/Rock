@@ -61,7 +61,12 @@ namespace Rock.Services.Cms
             _repository.Add( PageRoute );
         }
 
-        public void DeletePageRoute( Rock.Models.Cms.PageRoute PageRoute )
+        public void AttachPageRoute( Rock.Models.Cms.PageRoute PageRoute )
+        {
+            _repository.Attach( PageRoute );
+        }
+
+		public void DeletePageRoute( Rock.Models.Cms.PageRoute PageRoute )
         {
             _repository.Delete( PageRoute );
         }
