@@ -78,6 +78,7 @@
   <ItemGroup>
     <Content Include="Blocks\Cms\Blog\Categories.ascx" />
     <Content Include="Blocks\Cms\Blog\PostDisplay.ascx" />
+    <Content Include="license.txt" />
     <Content Include="WCF\RestService.svc" />
     <Content Include="WebServices\RockDataService.svc" />
     <Content Include="Blocks\AnotherBlock.ascx" />
