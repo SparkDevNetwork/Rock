@@ -13,15 +13,6 @@ namespace Rock.Web.Blocks.Cms {
     public partial class HtmlContent {
         
         /// <summary>
-        /// ContentEditorWindowTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Localize ContentEditorWindowTitle;
-        
-        /// <summary>
         /// pnlContent control.
         /// </summary>
         /// <remarks>
