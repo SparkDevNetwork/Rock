@@ -140,11 +140,6 @@
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\ModelWithAttributes.cs" />
     <Compile Include="Models\TrackChangesAttribute.cs" />
-    <Compile Include="Properties\ValidationMessages.es-MX.Designer.cs">
-      <DependentUpon>ValidationMessages.es-MX.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="EntityFramework\RockContext.cs" />
     <Compile Include="Helpers\UnitOfWorkScope.cs" />
     <Compile Include="Models\Cms\Block.cs" />
@@ -224,16 +219,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Repository\IRepository.cs" />
-    <Compile Include="Properties\ExceptionMessage.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ExceptionMessage.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Text.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Text.resx</DependentUpon>
-    </Compile>
     <Compile Include="Services\Cms\AuthService.cs" />
     <Compile Include="Services\Cms\BlockInstanceService.cs" />
     <Compile Include="Services\Cms\BlockService.cs" />
@@ -281,30 +266,6 @@
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Validation\DataAnnotationValidator.cs" />
-    <Compile Include="Properties\ValidationMessages.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ValidationMessages.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\ValidationMessages.es-MX.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ValidationMessages.es-MX.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\ValidationMessages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ValidationMessages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\ExceptionMessage.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>ExceptionMessage.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Text.es-MX.resx" />
-    <EmbeddedResource Include="Properties\Text.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Text.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

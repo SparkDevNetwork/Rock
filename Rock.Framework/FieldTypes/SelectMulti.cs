@@ -20,8 +20,8 @@ namespace Rock.FieldTypes
                     qualifiers = new List<FieldQualifier>();
                     qualifiers.Add( new FieldQualifier( 
                         "Values",
-                        Rock.Framework.Properties.Text.Values, 
-                        Rock.Framework.Properties.Text.CommaSeparatedList,
+                        "Values", 
+                        "Comma-Separated list of values for user to select from",
                         new Text() ) );
                 }
 

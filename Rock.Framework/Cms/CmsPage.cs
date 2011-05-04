@@ -10,7 +10,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Framework.Properties;
 using Rock.Models.Cms;
 using Rock.Models.Crm;
 using Rock.Services.Cms;
@@ -193,12 +192,15 @@ namespace Rock.Cms
         {
             Trace.Write( "Begin page init" );
 
-            if ( ScriptManager.GetCurrent( this.Page ) == null )
+            ScriptManager sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm == null )
             {
-                ScriptManager sm = new ScriptManager();
+                sm = new ScriptManager();
                 sm.ID = "sManager";
                 Page.Form.Controls.AddAt( 0, sm );
             }
+            sm.EnablePageMethods = true;
+
             Trace.Write( "Added Script Manager" );
 
             // Get current user/person info
@@ -275,8 +277,8 @@ namespace Rock.Cms
                             aBlockConfig.Attributes.Add( "class", string.Format( "zone-blocks icon-button zone-{0}-show",
                                 zoneControl.Value.ID ) );
                             aBlockConfig.Attributes.Add( "href", "#" );
-                            aBlockConfig.Attributes.Add( "Title", Text.ZoneBlocks );
-                            aBlockConfig.InnerText = Text.Blocks;
+                            aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
+                            aBlockConfig.InnerText = "Blocks";
 
                             parent.Controls.Remove( zoneControl.Value );
                             zoneWrapper.Controls.Add( zoneControl.Value );
@@ -488,7 +490,7 @@ namespace Rock.Cms
                                         Button btnSaveAttributes = new Button();
                                         btnSaveAttributes.ID = string.Format( "attributes-{0}-hide", blockInstance.Id );
                                         btnSaveAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                                        btnSaveAttributes.Text = Text.Save;
+                                        btnSaveAttributes.Text = "Save";
                                         btnSaveAttributes.CssClass = btnSaveAttributes.ID;
                                         btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
                                         upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
@@ -525,36 +527,36 @@ namespace Rock.Cms
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
-                        aBlockConfig.Attributes.Add( "Title", Text.ShowBlockConfiguration );
-                        aBlockConfig.InnerText = Text.BlockSettings;
+                        aBlockConfig.Attributes.Add( "Title", "Show Block Configuration" );
+                        aBlockConfig.InnerText = "BlockSettings";
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "attributes icon-button" );
                         aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", Text.ShowPageAttributes );
-                        aAttributes.InnerText = Text.PageAttributes;
+                        aAttributes.Attributes.Add( "Title", "Show Page Attributes" );
+                        aAttributes.InnerText = "Page Attributes";
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
                         aChildPages.Attributes.Add( "href", "#" );
-                        aChildPages.Attributes.Add( "Title", Text.ShowChildPages );
-                        aChildPages.InnerText = Text.ChildPages;
+                        aChildPages.Attributes.Add( "Title", "Show Child Pages" );
+                        aChildPages.InnerText = "Child Pages";
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
-                        aPageZones.Attributes.Add( "Title", Text.ShowPageZones );
-                        aPageZones.InnerText = Text.PageZones;
+                        aPageZones.Attributes.Add( "Title", "Show Page Zones" );
+                        aPageZones.InnerText = "Page Zones";
 
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
                         aPageSecurity.Attributes.Add( "href", "#" );
-                        aPageSecurity.Attributes.Add( "Title", Text.PageSecurity );
-                        aPageSecurity.InnerText = Text.PageSecurity;
+                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                        aPageSecurity.InnerText = "Page Security";
 
                         string footerScript = @"
     $(document).ready(function () {
@@ -606,7 +608,7 @@ namespace Rock.Cms
             if ( phLoadTime != null  )
             {
                 TimeSpan tsDuration = DateTime.Now.Subtract( ( DateTime )Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", Text.PageLoadTime, tsDuration.TotalSeconds ) ) );
+                phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", "Page Load Time", tsDuration.TotalSeconds ) ) );
             }
         }
 
