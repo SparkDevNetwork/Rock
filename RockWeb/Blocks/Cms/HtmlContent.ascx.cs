@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
 
-namespace Rock.Web.Blocks.Cms
+namespace RockWeb.Blocks.Cms
 {
     public partial class HtmlContent : Rock.Cms.CmsBlock
     {

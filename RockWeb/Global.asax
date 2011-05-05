@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="Rock.Web.Global" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="RockWeb.Global" Language="C#" %>

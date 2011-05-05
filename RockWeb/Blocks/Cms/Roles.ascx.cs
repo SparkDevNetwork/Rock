@@ -6,7 +6,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Web.Blocks.Cms
+namespace RockWeb.Blocks.Cms
 {
     public partial class Roles : Rock.Cms.CmsBlock
     {

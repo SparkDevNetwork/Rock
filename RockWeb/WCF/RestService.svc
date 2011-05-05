@@ -1,1 +1,1 @@
-﻿<%@ ServiceHost Language="C#" Debug="true" Service="Rock.Web.WCF.RestService" CodeBehind="~/App_Code/RestService.svc.cs" %>
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="RockWeb.WCF.RestService" CodeBehind="~/App_Code/RestService.svc.cs" %>

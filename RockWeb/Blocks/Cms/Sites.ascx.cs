@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Web.Blocks.Cms
+namespace RockWeb.Blocks.Cms
 {
     public partial class Sites : Rock.Cms.CmsBlock
     {
@@ -43,7 +43,7 @@ namespace Rock.Web.Blocks.Cms
             phList.Visible = true;
             phDetails.Visible = false;
 
-            Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
+            Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
             gvList.DataSource = siteService.Queryable().ToList();
             gvList.DataBind();
         }
@@ -55,9 +55,9 @@ namespace Rock.Web.Blocks.Cms
 
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-                Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
-				Rock.Services.Cms.ThemeService themeService = new Services.Cms.ThemeService( Request.RequestContext.HttpContext.Server.MapPath( "~" ) );
+                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+                Rock.Services.Cms.ThemeService themeService = new Rock.Services.Cms.ThemeService( Request.RequestContext.HttpContext.Server.MapPath( "~" ) );
 
                 ddlDefaultPage.DataSource = pageService.Queryable().Where( p => p.ParentPage == null ).ToList();
                 ddlDefaultPage.DataBind();
@@ -87,8 +87,8 @@ namespace Rock.Web.Blocks.Cms
         {
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-                Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
+                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
 
                 Rock.Models.Cms.Site site = _action == "add" ?
                     new Rock.Models.Cms.Site() :

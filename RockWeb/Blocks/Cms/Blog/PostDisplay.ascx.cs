@@ -9,7 +9,7 @@ using System.Text;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
-namespace Rock.Web.Blocks.Cms.Blog
+namespace RockWeb.Blocks.Cms.Blog
 {
     public partial class PostDisplay : Rock.Cms.CmsBlock
     {
@@ -27,7 +27,7 @@ namespace Rock.Web.Blocks.Cms.Blog
             {
             }
             
-            Rock.Services.Cms.BlogPostService postService = new Services.Cms.BlogPostService();
+            Rock.Services.Cms.BlogPostService postService = new Rock.Services.Cms.BlogPostService();
             BlogPost post = postService.GetBlogPost( postId );
 
             lTitle.Text = post.Title;

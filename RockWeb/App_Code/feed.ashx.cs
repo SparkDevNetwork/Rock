@@ -9,7 +9,7 @@ using System.Text;
 using Rock.Services.Cms;
 using Rock.Models.Cms;
 
-namespace Rock.Web
+namespace RockWeb
 {
     /// <summary>
     /// Summary description for feed

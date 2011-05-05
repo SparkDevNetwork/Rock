@@ -9,7 +9,7 @@ using System.Text;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
-namespace Rock.Web.Blocks.Cms.Blog
+namespace RockWeb.Blocks.Cms.Blog
 {
     public partial class Categories : Rock.Cms.CmsBlock
     {
@@ -34,7 +34,7 @@ namespace Rock.Web.Blocks.Cms.Blog
 
             if ( blogId != -1 )
             {
-                Rock.Services.Cms.BlogService blogService = new Services.Cms.BlogService();
+                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
 
                 // try loading the blog object from the page cache
                 Rock.Models.Cms.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.Models.Cms.Blog;

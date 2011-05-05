@@ -13,7 +13,7 @@ using Rock.Cms.Security;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
 
-namespace Rock.Web
+namespace RockWeb
 {
     public class Global : System.Web.HttpApplication
     {
