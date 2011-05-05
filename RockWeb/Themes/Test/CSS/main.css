@@ -1,0 +1,62 @@
+﻿body, html 
+{
+    margin: 0;
+    padding: 0;
+    color: .000;
+    background: #a7a09a;
+}
+
+.three-column-layout, .two-column-layout 
+{
+    width: 750px;
+    margin: 0 auto;
+    background #999;
+}
+
+.three-column-layout .header, .two-column-layout .header
+{
+    background: #ddd;
+}
+
+.three-column-layout .first-column
+{
+    float: left;
+    width: 150px;
+    background: #99c;
+}
+
+.three-column-layout .second-column
+{
+    float: left;
+    width: 450px;
+    background: #c99;
+}
+
+.three-column-layout .third-column
+{
+    float: right;
+    width: 150px;
+    background: #9c9;
+}
+
+.two-column-layout .first-column
+{
+    float: left;
+    width: 150px;
+    background: #9c9;
+}
+
+.two-column-layout .second-column
+{
+    float: right;
+    width: 600px;
+    background: #c99;
+}
+
+.three-column-layout .footer, .two-column-layout .footer
+{
+    clear: both;
+    background: #ddd;
+}
+
+
