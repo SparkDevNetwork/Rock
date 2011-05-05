@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Roles.ascx.cs" Inherits="Rock.Web.Blocks.Cms.Roles" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Roles.ascx.cs" Inherits="RockWeb.Blocks.Cms.Roles" %>
 
 <asp:PlaceHolder ID="phList" runat="server" Visible="false">
     <asp:PlaceHolder ID="phRoles" runat="server"></asp:PlaceHolder>

@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Web.Blocks.Cms
+namespace RockWeb.Blocks.Cms
 {
 	public partial class Blocks : Rock.Cms.CmsBlock
 	{
@@ -39,7 +39,7 @@ namespace Rock.Web.Blocks.Cms
 			phList.Visible = true;
 			phDetails.Visible = false;
 
-			Rock.Services.Cms.BlockService service = new Services.Cms.BlockService();
+			Rock.Services.Cms.BlockService service = new Rock.Services.Cms.BlockService();
 			gvList.DataSource = service.Queryable().ToList();
 			gvList.DataBind();
 		}
@@ -51,7 +51,7 @@ namespace Rock.Web.Blocks.Cms
 
 			using ( new Rock.Helpers.UnitOfWorkScope() )
 			{
-				Rock.Services.Cms.BlockService blockService = new Services.Cms.BlockService();
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
 
 				if ( blockId > 0 )
 				{
@@ -76,7 +76,7 @@ namespace Rock.Web.Blocks.Cms
 		{
 			using ( new Rock.Helpers.UnitOfWorkScope() )
 			{
-				Rock.Services.Cms.BlockService blockService = new Services.Cms.BlockService();
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
 
 				Rock.Models.Cms.Block block = _action == "add" ?
 					new Rock.Models.Cms.Block() :

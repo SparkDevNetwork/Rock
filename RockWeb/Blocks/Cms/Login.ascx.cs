@@ -5,7 +5,7 @@ using Facebook;
 using Rock.Cms;
 using Rock.Repository.Cms;
 
-namespace Rock.Web.Blocks.Cms
+namespace RockWeb.Blocks.Cms
 {
     public partial class Login : CmsBlock
     {

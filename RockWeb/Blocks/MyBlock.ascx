@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyBlock.ascx.cs" Inherits="Rock.Web.Blocks.MyBlock" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyBlock.ascx.cs" Inherits="RockWeb.Blocks.MyBlock" %>
 <script>
     $(document).ready(function () {
 
@@ -37,7 +37,7 @@
 
 
 <p>MY BLOCK CONTROL</p>
-<%= ThemePath %>
+<%= ThemePath %><br />
 <asp:literal ID="lPersonName" runat="server"></asp:literal><br />
 <asp:literal ID="lBlockDetails" runat="server"></asp:literal><br />
 <asp:literal ID="lBlockTime" runat="server"></asp:literal><br />
@@ -57,5 +57,5 @@
 
 <br />
 <br />
-<a href="#" id="getjson-button">Get JSON Data</a> (must be logged in)
+<a href="#" id="getjson-button">Get JSON Data</a> (must be logged in)<br />
 <a href="#" id="getpagemethod-button">Get PageMethod Data</a> (must be logged in)

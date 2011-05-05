@@ -18,7 +18,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-namespace Rock.Web.WCF
+namespace RockWeb.WCF
 {
     // Rest Verbs...
     // GET = Retrieve

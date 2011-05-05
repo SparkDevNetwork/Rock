@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Blocks.ascx.cs" Inherits="Rock.Web.Blocks.Cms.Blocks" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Blocks.ascx.cs" Inherits="RockWeb.Blocks.Cms.Blocks" %>
 
 <asp:PlaceHolder ID="phList" runat="server" Visible="false">
 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonEdit.ascx.cs" Inherits="Rock.Web.Blocks.PersonEdit" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonEdit.ascx.cs" Inherits="RockWeb.Blocks.PersonEdit" %>
 <%@ Register Assembly="Rock.Framework" Namespace="Rock.Validation" TagPrefix="cc1" %>
 
 <br /><br />

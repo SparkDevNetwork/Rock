@@ -6,7 +6,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Web.AspxServices
+namespace RockWeb.AspxServices
 {
     public partial class UsernameAvailable : System.Web.UI.Page
     {

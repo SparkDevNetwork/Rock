@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HtmlContent.ascx.cs" Inherits="Rock.Web.Blocks.Cms.HtmlContent" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HtmlContent.ascx.cs" Inherits="RockWeb.Blocks.Cms.HtmlContent" %>
 <script> 
     $(document).ready(function () {
 

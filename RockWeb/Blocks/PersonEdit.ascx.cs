@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 using Rock.Models.Crm;
 using Rock.Services.Crm;
 
-namespace Rock.Web.Blocks
+namespace RockWeb.Blocks
 {
     public partial class PersonEdit : Rock.Cms.CmsBlock
     {

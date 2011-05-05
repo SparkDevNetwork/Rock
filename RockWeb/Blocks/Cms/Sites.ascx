@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Sites.ascx.cs" Inherits="Rock.Web.Blocks.Cms.Sites" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Sites.ascx.cs" Inherits="RockWeb.Blocks.Cms.Sites" %>
 
 <asp:PlaceHolder ID="phList" runat="server" Visible="false">
     <asp:GridView ID="gvList" runat="server" AutoGenerateColumns="false">

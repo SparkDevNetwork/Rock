@@ -8,7 +8,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-namespace Rock.Web.Blocks
+namespace RockWeb.Blocks
 {
     public partial class MyBlock : Rock.Cms.CmsBlock
     {
@@ -17,9 +17,9 @@ namespace Rock.Web.Blocks
             base.OnInit( e );
 
             if ( CurrentPerson != null )
-                lPersonName.Text = CurrentPerson.FullName;
+                lPersonName.Text = "Person Name: " + CurrentPerson.FullName;
             else
-                lPersonName.Text = "???";
+                lPersonName.Text = "Person Name: " + "???";
 
             lBlockDetails.Text = string.Format(
                 "PageId: {0}<br/>Zone: {1}<br/>InstanceBlock: {2}<br/>Path: {3}<br/>",
@@ -43,7 +43,7 @@ namespace Rock.Web.Blocks
 
             lItemTest.Text = itemTest;
 
-            Rock.Services.Groups.GroupTypeService _service = new Services.Groups.GroupTypeService();
+            Rock.Services.Groups.GroupTypeService _service = new Rock.Services.Groups.GroupTypeService();
             Rock.Models.Groups.GroupType groupType = _service.GetGroupType( 2 );
 
             foreach ( Rock.Models.Groups.GroupType parentType in groupType.ParentGroupTypes )

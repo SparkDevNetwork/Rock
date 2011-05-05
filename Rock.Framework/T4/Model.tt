@@ -636,7 +636,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 
-namespace Rock.Web.WCF
+namespace RockWeb.WCF
 {
     // Rest Verbs...
     // GET = Retrieve
@@ -683,7 +683,7 @@ namespace Rock.Web.WCF
 }
 <#
 	// Write the Rest Service Interface Class
-    relativeOutputFilePath = @"..\..\..\Rock.Web\WCF\IRestService.cs";
+    relativeOutputFilePath = @"..\..\..\RockWeb\App_Code\IRestService.cs";
     TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 
 	GenerationEnvironment = new System.Text.StringBuilder();
@@ -709,7 +709,7 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.Text;
 
-namespace Rock.Web.WCF
+namespace RockWeb.WCF
 {
     [AspNetCompatibilityRequirements(RequirementsMode=AspNetCompatibilityRequirementsMode.Allowed)]
     public class RestService : IRestService
@@ -739,7 +739,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
@@ -757,7 +757,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -779,7 +779,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -795,7 +795,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -819,7 +819,7 @@ namespace Rock.Web.WCF
 }
 <#
 	// Write the Rest Service Class
-    relativeOutputFilePath = @"..\..\..\Rock.Web\WCF\RestService.svc.cs";
+    relativeOutputFilePath = @"..\..\..\RockWeb\App_Code\RestService.svc.cs";
     TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 
 	GenerationEnvironment = new System.Text.StringBuilder();

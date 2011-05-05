@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="Rock.Web.Blocks.Cms.Login" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Blocks.Cms.Login" %>
 
 <section class="facebook-login">
     <asp:Button ID="btnFbLogOn" runat="server" Text="Login With Facebook" OnClick="btnFbLogOn_Click" />

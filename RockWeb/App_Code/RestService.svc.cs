@@ -18,7 +18,7 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.Text;
 
-namespace Rock.Web.WCF
+namespace RockWeb.WCF
 {
     [AspNetCompatibilityRequirements(RequirementsMode=AspNetCompatibilityRequirementsMode.Allowed)]
     public class RestService : IRestService
@@ -41,7 +41,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.AuthService authService = new Rock.Services.Cms.AuthService();
@@ -59,7 +59,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -81,7 +81,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -97,7 +97,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -132,7 +132,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
@@ -150,7 +150,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -172,7 +172,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -188,7 +188,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -223,7 +223,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
@@ -241,7 +241,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -263,7 +263,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -279,7 +279,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -314,7 +314,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
@@ -332,7 +332,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -354,7 +354,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -370,7 +370,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -405,7 +405,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlogCategoryService blogCategoryService = new Rock.Services.Cms.BlogCategoryService();
@@ -423,7 +423,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -445,7 +445,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -461,7 +461,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -496,7 +496,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlogPostService blogPostService = new Rock.Services.Cms.BlogPostService();
@@ -514,7 +514,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -536,7 +536,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -552,7 +552,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -587,7 +587,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlogPostCommentService blogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
@@ -605,7 +605,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -627,7 +627,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -643,7 +643,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -678,7 +678,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.BlogTagService blogTagService = new Rock.Services.Cms.BlogTagService();
@@ -696,7 +696,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -718,7 +718,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -734,7 +734,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -769,7 +769,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.HtmlContentService htmlContentService = new Rock.Services.Cms.HtmlContentService();
@@ -787,7 +787,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -809,7 +809,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -825,7 +825,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -860,7 +860,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
@@ -878,7 +878,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -900,7 +900,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -916,7 +916,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -951,7 +951,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.PageRouteService pageRouteService = new Rock.Services.Cms.PageRouteService();
@@ -969,7 +969,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -991,7 +991,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1007,7 +1007,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1042,7 +1042,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
@@ -1060,7 +1060,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1082,7 +1082,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1098,7 +1098,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1133,7 +1133,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
@@ -1151,7 +1151,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1173,7 +1173,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1189,7 +1189,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1224,7 +1224,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
@@ -1242,7 +1242,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1264,7 +1264,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1280,7 +1280,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1315,7 +1315,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
@@ -1333,7 +1333,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1355,7 +1355,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1371,7 +1371,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1406,7 +1406,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.AttributeService attributeService = new Rock.Services.Core.AttributeService();
@@ -1424,7 +1424,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1446,7 +1446,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1462,7 +1462,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1497,7 +1497,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.AttributeQualifierService attributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
@@ -1515,7 +1515,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1537,7 +1537,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1553,7 +1553,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1588,7 +1588,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
@@ -1606,7 +1606,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1628,7 +1628,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1644,7 +1644,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1679,7 +1679,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.DefinedTypeService definedTypeService = new Rock.Services.Core.DefinedTypeService();
@@ -1697,7 +1697,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1719,7 +1719,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1735,7 +1735,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1770,7 +1770,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.DefinedValueService definedValueService = new Rock.Services.Core.DefinedValueService();
@@ -1788,7 +1788,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1810,7 +1810,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1826,7 +1826,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1861,7 +1861,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
@@ -1879,7 +1879,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1901,7 +1901,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1917,7 +1917,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1952,7 +1952,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Core.FieldTypeService fieldTypeService = new Rock.Services.Core.FieldTypeService();
@@ -1970,7 +1970,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -1992,7 +1992,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2008,7 +2008,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2043,7 +2043,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Crm.PersonService personService = new Rock.Services.Crm.PersonService();
@@ -2061,7 +2061,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2083,7 +2083,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2099,7 +2099,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2134,7 +2134,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Crm.PhoneNumberService phoneNumberService = new Rock.Services.Crm.PhoneNumberService();
@@ -2152,7 +2152,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2174,7 +2174,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2190,7 +2190,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2225,7 +2225,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Groups.GroupService groupService = new Rock.Services.Groups.GroupService();
@@ -2243,7 +2243,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2265,7 +2265,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2281,7 +2281,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2316,7 +2316,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Groups.GroupRoleService groupRoleService = new Rock.Services.Groups.GroupRoleService();
@@ -2334,7 +2334,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2356,7 +2356,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2372,7 +2372,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2407,7 +2407,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Groups.GroupTypeService groupTypeService = new Rock.Services.Groups.GroupTypeService();
@@ -2425,7 +2425,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2447,7 +2447,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2463,7 +2463,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2498,7 +2498,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using (Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope())
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
                 Rock.Services.Groups.MemberService memberService = new Rock.Services.Groups.MemberService();
@@ -2516,7 +2516,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2538,7 +2538,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
@@ -2554,7 +2554,7 @@ namespace Rock.Web.WCF
             if ( currentUser == null )
                 throw new FaultException( "Must be logged in" );
 
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Helpers.UnitOfWorkScope() )
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 

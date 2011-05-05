@@ -34,8 +34,9 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public int? PersonId { get; set; }
 		
+		[MaxLength( 250 )]
 		[DataMember]
-		public int PersonName { get; set; }
+		public string PersonName { get; set; }
 		
 		[DataMember]
 		public DateTime? CommentDate { get; set; }

@@ -33,8 +33,8 @@ namespace Rock.Models.Crm
 		
 		[MaxLength( 50 )]
 		[TrackChanges]
-        [Required( ErrorMessage = "Name must be between 1 and 12 characters" )]
-        [StringLength( 12, ErrorMessage = "First Name is required" )]
+		[Required( ErrorMessage = "First Name must be between 1 and 12 characters" )]
+		[StringLength( 12, ErrorMessage = "First Name is required" )]
 		[DataMember]
 		public string FirstName { get; set; }
 		
