@@ -33,8 +33,8 @@ namespace Rock.Models.Crm
 		
 		[MaxLength( 50 )]
 		[TrackChanges]
-		[Required( ErrorMessageResourceType = typeof( Rock.Framework.Properties.ValidationMessages ), ErrorMessageResourceName = "PersonFirstNameRequired" )]
-		[StringLength( 12, ErrorMessageResourceType = typeof( Rock.Framework.Properties.ValidationMessages ), ErrorMessageResourceName = "PersonFirstNameLength" )]
+		[Required( ErrorMessage = "First Name must be between 1 and 12 characters" )]
+		[StringLength( 12, ErrorMessage = "First Name is required" )]
 		[DataMember]
 		public string FirstName { get; set; }
 		

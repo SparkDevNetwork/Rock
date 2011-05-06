@@ -1,9 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Web", "Rock.Web\Rock.Web.csproj", "{E86F6592-860C-4403-93AF-5FDE7C91B2B6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Framework", "Rock.Framework\Rock.Framework.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.Framework.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
+		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/RockWeb"
+		Release.AspNetCompiler.PhysicalPath = "RockWeb\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "64987"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,14 +31,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E86F6592-860C-4403-93AF-5FDE7C91B2B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E86F6592-860C-4403-93AF-5FDE7C91B2B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E86F6592-860C-4403-93AF-5FDE7C91B2B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E86F6592-860C-4403-93AF-5FDE7C91B2B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

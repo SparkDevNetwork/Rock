@@ -8,7 +8,6 @@ using System.Web.Configuration;
 using System.Web.Security;
 using System.Security.Cryptography;
 
-using Rock.Framework.Properties;
 using Rock.Services.Cms;
 
 namespace Rock.Cms.Security
@@ -123,7 +122,7 @@ namespace Rock.Cms.Security
             System.Configuration.Configuration cfg = WebConfigurationManager.OpenWebConfiguration( System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath );
             machineKey = cfg.GetSection( "system.web/machineKey" ) as MachineKeySection;
             if ( machineKey.ValidationKey.Contains( "AutoGenerate" ) )
-                throw new ProviderException( ExceptionMessage.HashedPasswordsNotSupported );
+                throw new ProviderException( "Hashed passwords are not supported with auto-generated keys." );
         }
 
         public override bool ChangePassword( string username, string oldPassword, string newPassword )
@@ -146,7 +145,7 @@ namespace Rock.Cms.Security
                     if ( args.FailureInformation != null )
                         throw args.FailureInformation;
                     else
-                        throw new Exception( ExceptionMessage.ChangePasswordFailedValidation );
+                        throw new Exception( "Change password canceled due to new password validation failure" );
                 }
 
                 user.Password = EncodePassword( newPassword );
@@ -270,7 +269,7 @@ namespace Rock.Cms.Security
                 }
                 catch ( SystemException ex )
                 {
-                    throw new ProviderException( ExceptionMessage.DeleteUserError, ex );
+                    throw new ProviderException( "Error occurred attempting to delete User", ex );
                 }
             }
             else
@@ -365,7 +364,7 @@ namespace Rock.Cms.Security
 
         public override string GetPassword( string username, string answer )
         {
-            throw new ProviderException( ExceptionMessage.PasswordRetrievalDisabled );
+            throw new ProviderException( "Password Retrieval Not Enabled" );
         }
 
         public override MembershipUser GetUser( string username, bool userIsOnline )
@@ -388,7 +387,7 @@ namespace Rock.Cms.Security
                     return null;
             }
             else
-                throw new ProviderException( ExceptionMessage.InvalidProviderUserKey );
+                throw new ProviderException( "Invalid providerUserKey" );
         }
 
         private MembershipUser GetUser( UserService UserService, string username, bool userIsOnline )
@@ -454,7 +453,7 @@ namespace Rock.Cms.Security
         public override string ResetPassword( string username, string answer )
         {
             if ( !EnablePasswordReset )
-                throw new NotSupportedException( ExceptionMessage.PasswordResetDisabled );
+                throw new NotSupportedException( "Password Reset is not enabled" );
 
             UserService UserService = new Services.Cms.UserService();
 
@@ -465,7 +464,7 @@ namespace Rock.Cms.Security
                 if ( string.IsNullOrEmpty( answer ) && RequiresQuestionAndAnswer )
                 {
                     UpdateFailureCount( user, FailureType.PasswordAnswer );
-                    throw new ProviderException( ExceptionMessage.PasswordResetRequiresAnswer );
+                    throw new ProviderException( "Password answer required for password reset" );
                 }
 
                 string newPassword = System.Web.Security.Membership.GeneratePassword( newPasswordLength, MinRequiredNonAlphanumericCharacters );
@@ -479,16 +478,16 @@ namespace Rock.Cms.Security
                     if ( args.FailureInformation != null )
                         throw args.FailureInformation;
                     else
-                        throw new MembershipPasswordException( ExceptionMessage.PasswordResetFailedValidation );
+                        throw new MembershipPasswordException( "Reset password canceled due to password validation failure" );
                 }
 
                 if ( user.IsLockedOut ?? false )
-                    throw new MembershipPasswordException( ExceptionMessage.UserLockedOut );
+                    throw new MembershipPasswordException( "The supplied user is locked out" );
 
                 if ( RequiresQuestionAndAnswer && EncodePassword( answer) != user.PasswordAnswer )
                 {
                     UpdateFailureCount( user, FailureType.PasswordAnswer );
-                    throw new MembershipPasswordException( ExceptionMessage.IncorrectAnswer );
+                    throw new MembershipPasswordException( "Incorrect password answer" );
                 }
 
                 user.Password = EncodePassword( newPassword );
@@ -498,7 +497,7 @@ namespace Rock.Cms.Security
                 return newPassword;
             }
             else
-                throw new MembershipPasswordException( ExceptionMessage.UserDoesntExist );
+                throw new MembershipPasswordException( "User does not exist" );
 
         }
 

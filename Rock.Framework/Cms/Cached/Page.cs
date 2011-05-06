@@ -202,20 +202,12 @@ namespace Rock.Cms.Cached
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddCSSLink( System.Web.UI.Page page, string href )
         {
-            AddCSSLink( page, href, string.Empty );
+            CmsPage.AddCSSLink( page, href );
         }
 
         public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
         {
-            System.Web.UI.HtmlControls.HtmlLink htmlLink = new System.Web.UI.HtmlControls.HtmlLink();
-
-            htmlLink.Attributes.Add( "type", "text/css" );
-            htmlLink.Attributes.Add( "rel", "stylesheet" );
-            htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
-            if ( mediaType != string.Empty )
-                htmlLink.Attributes.Add( "media", mediaType );
-
-            AddHtmlLink( page, htmlLink );
+            CmsPage.AddCSSLink( page, href, mediaType );
         }
 
         /// <summary>
@@ -223,52 +215,7 @@ namespace Rock.Cms.Cached
         /// </summary>
         public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
         {
-            if ( page != null && page.Header != null )
-                if ( !HtmlLinkExists( page, htmlLink ) )
-                {
-                    // Find last Link element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                        if ( page.Header.Controls[i] is HtmlLink )
-                        {
-                            index = i;
-                            break;
-                        }
-
-                    if (index == page.Header.Controls.Count)
-                        page.Header.Controls.Add( htmlLink );
-                    else
-                        page.Header.Controls.AddAt( ++index, htmlLink );
-                }
-        }
-
-        private bool HtmlLinkExists( System.Web.UI.Page page, HtmlLink newLink )
-        {
-            bool existsAlready = false;
-
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
-                    if ( control is HtmlLink )
-                    {
-                        HtmlLink existingLink = ( HtmlLink )control;
-
-                        bool sameAttributes = true;
-
-                        foreach ( string attributeKey in newLink.Attributes.Keys )
-                            if ( existingLink.Attributes[attributeKey] != null &&
-                                existingLink.Attributes[attributeKey].ToLower() != newLink.Attributes[attributeKey].ToLower() )
-                            {
-                                sameAttributes = false;
-                                break;
-                            }
-
-                        if ( sameAttributes )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-                    }
-            return existsAlready;
+            CmsPage.AddHtmlLink( page, htmlLink );
         }
 
         /// <summary>
@@ -278,56 +225,8 @@ namespace Rock.Cms.Cached
         /// <param name="href">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddScriptLink( System.Web.UI.Page page, string path )
         {
-            string relativePath = page.ResolveUrl( path );
-
-            bool existsAlready = false;
-
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
-                {
-                    if ( control is LiteralControl )
-                        if ( ( ( LiteralControl )control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-
-                    if ( control is HtmlGenericControl )
-                    {
-                        HtmlGenericControl genericControl = ( HtmlGenericControl )control;
-                        if ( genericControl.TagName.ToLower() == "script" &&
-                           genericControl.Attributes["src"] != null &&
-                                genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-                    }
-                }
-
-            if ( !existsAlready )
-            {
-                HtmlGenericControl genericControl = new HtmlGenericControl();
-                genericControl.TagName = "script";
-                genericControl.Attributes.Add( "src", relativePath );
-                genericControl.Attributes.Add( "type", "text/javascript" );
-
-                int index = 0;
-                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                    if ( page.Header.Controls[i] is HtmlGenericControl ||
-                         page.Header.Controls[i] is LiteralControl )
-                    {
-                        index = i;
-                        break;
-                    }
-
-                if ( index == page.Header.Controls.Count )
-                    page.Header.Controls.Add( genericControl );
-                else
-                    page.Header.Controls.AddAt( ++index, genericControl );
-            }
+            CmsPage.AddScriptLink( page, path );
         }
-
 
         #endregion
 
