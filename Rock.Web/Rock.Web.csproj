@@ -305,7 +305,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_GlobalResources\" />
     <Folder Include="Assets\Images\" />
     <Folder Include="Plugins\FakeCompany.com\TimeClock\Assets\" />
     <Folder Include="Plugins\FakeCompany.com\TimeClock\CSS\" />
@@ -324,22 +323,10 @@
     <Content Include="Themes\Test\Layouts\Site.Master" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Blocks\App_LocalResources\PersonEdit.ascx.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Blocks\App_LocalResources\PersonEdit.ascx.es-MX.resx" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="Scripts\Web.config" />
     <Content Include="feed.ashx" />
     <None Include="Themes\Default\CSS\styles.less" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Blocks\Cms\App_LocalResources\Blocks.ascx.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Blocks\Cms\App_LocalResources\HtmlContent.ascx.resx" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

@@ -9,7 +9,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Framework.Properties;
 using Rock.Cms.Security;
 using Rock.Models.Cms;
 
@@ -270,32 +269,32 @@ namespace Rock.Cms
                 aAttributes.Attributes.Add( "class", string.Format(
                     "attributes icon-button attributes-{0}-show", BlockInstance.Id ) );
                 aAttributes.Attributes.Add( "href", "#" );
-                aAttributes.Attributes.Add( "title", Text.BlockAttributes );
-                aAttributes.InnerText = Text.Attributes;
+                aAttributes.Attributes.Add( "title", "Block Attributes" );
+                aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
 
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", string.Format(
                     "security icon-button blockinstance-{0}-secure", BlockInstance.Id ) );
                 aSecureBlock.Attributes.Add( "href", "#" );
-                aSecureBlock.Attributes.Add( "title", Text.Security );
-                aSecureBlock.InnerText = Text.Security;
+                aSecureBlock.Attributes.Add( "title", "Security" );
+                aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", string.Format(
                     "block-move icon-button blockinstance-{0}-move", BlockInstance.Id ) );
                 aMoveBlock.Attributes.Add( "href", "#" );
-                aMoveBlock.Attributes.Add( "title", Text.Move );
-                aMoveBlock.InnerText = Text.Move;
+                aMoveBlock.Attributes.Add( "title", "Move" );
+                aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", string.Format(
                     "delete icon-button blockinstance-{0}-delete", BlockInstance.Id ) );
                 aDeleteBlock.Attributes.Add( "href", "#" );
-                aDeleteBlock.Attributes.Add( "title", Text.Delete );
-                aDeleteBlock.InnerText = Text.Delete;
+                aDeleteBlock.Attributes.Add( "title", "Delete" );
+                aDeleteBlock.InnerText = "Delete";
                 configControls.Add( aDeleteBlock );
             }
 

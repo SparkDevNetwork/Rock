@@ -34,18 +34,18 @@ namespace Rock.FieldTypes
 
                     qualifiers.Add( new FieldQualifier(
                         "Values",
-                        Rock.Framework.Properties.Text.Values,
-                        Rock.Framework.Properties.Text.CommaSeparatedList,
+                        "Values",
+                        "Comma-Separated list of values for user to select from",
                         new Text() ) );
 
                     Dictionary<string, KeyValuePair<string, string>> options = new Dictionary<string, KeyValuePair<string, string>>();
-                    options.Add( "Values", new KeyValuePair<string, string>( Rock.Framework.Properties.Text.Values, string.Format( "{0}, {1}",
-                        Rock.Framework.Properties.Text.RadioButtons, Rock.Framework.Properties.Text.DropDownList ) ) );
-                    options.Add( "FieldType", new KeyValuePair<string, string>( Rock.Framework.Properties.Text.FieldType, Rock.Framework.Properties.Text.DropDownList ) );
+                    options.Add( "Values", new KeyValuePair<string, string>( "Values", string.Format( "{0}, {1}",
+                        "Radio Buttons", "Drop Down List" ) ) );
+                    options.Add( "FieldType", new KeyValuePair<string, string>( "Field Type", "Drop Down List" ) );
 
                     qualifiers.Add( new FieldQualifier(
                         "FieldType",
-                        Rock.Framework.Properties.Text.FieldType,
+                        "Field Type",
                         "",
                         new SelectSingle(options) ) );
                 }
@@ -58,7 +58,7 @@ namespace Rock.FieldTypes
         {
             if (!this.QualifierValues["Values"].Value.Split( ',' ).Contains(value))
             {
-                message = string.Format( "'{0}' {1}", value, Rock.Framework.Properties.Text.IsNotAValidValue );
+                message = string.Format( "'{0}' {1}", value, "is not a valid value" );
                 return false;
             }
 
@@ -69,7 +69,7 @@ namespace Rock.FieldTypes
         {
             ListControl listControl;
 
-            if ( this.QualifierValues["FieldType"].Value == Rock.Framework.Properties.Text.RadioButtons )
+            if ( this.QualifierValues["FieldType"].Value == "Radio Buttons" )
             {
                 RadioButtonList rbl = new RadioButtonList();
                 rbl.RepeatLayout = RepeatLayout.Flow;

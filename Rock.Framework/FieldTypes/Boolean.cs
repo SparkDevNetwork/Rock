@@ -15,9 +15,9 @@ namespace Rock.FieldTypes
         public override string FormatValue( string value, bool condensed )
         {
             if ( string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value ) )
-                return condensed ? Rock.Framework.Properties.Text.Y : Rock.Framework.Properties.Text.Yes;
+                return condensed ? "Y" : "Yes";
             else
-                return condensed ? Rock.Framework.Properties.Text.N : Rock.Framework.Properties.Text.No;
+                return condensed ? "N" : "No";
         }
 
         public override bool IsValid( string value, out string message )
@@ -25,7 +25,7 @@ namespace Rock.FieldTypes
             bool boolValue = false;
             if ( !bool.TryParse( value, out boolValue ) )
             {
-                message = Rock.Framework.Properties.Text.InvalidBooleanValue;
+                message = "Invalid boolean value";
                 return false;
             }
 

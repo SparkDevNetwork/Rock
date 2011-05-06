@@ -10,7 +10,6 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Framework.Properties;
 using Rock.Models.Cms;
 using Rock.Models.Crm;
 using Rock.Services.Cms;
@@ -193,12 +192,15 @@ namespace Rock.Cms
         {
             Trace.Write( "Begin page init" );
 
-            if ( ScriptManager.GetCurrent( this.Page ) == null )
+            ScriptManager sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm == null )
             {
-                ScriptManager sm = new ScriptManager();
+                sm = new ScriptManager();
                 sm.ID = "sManager";
                 Page.Form.Controls.AddAt( 0, sm );
             }
+            sm.EnablePageMethods = true;
+
             Trace.Write( "Added Script Manager" );
 
             // Get current user/person info
@@ -275,8 +277,8 @@ namespace Rock.Cms
                             aBlockConfig.Attributes.Add( "class", string.Format( "zone-blocks icon-button zone-{0}-show",
                                 zoneControl.Value.ID ) );
                             aBlockConfig.Attributes.Add( "href", "#" );
-                            aBlockConfig.Attributes.Add( "Title", Text.ZoneBlocks );
-                            aBlockConfig.InnerText = Text.Blocks;
+                            aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
+                            aBlockConfig.InnerText = "Blocks";
 
                             parent.Controls.Remove( zoneControl.Value );
                             zoneWrapper.Controls.Add( zoneControl.Value );
@@ -488,7 +490,7 @@ namespace Rock.Cms
                                         Button btnSaveAttributes = new Button();
                                         btnSaveAttributes.ID = string.Format( "attributes-{0}-hide", blockInstance.Id );
                                         btnSaveAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                                        btnSaveAttributes.Text = Text.Save;
+                                        btnSaveAttributes.Text = "Save";
                                         btnSaveAttributes.CssClass = btnSaveAttributes.ID;
                                         btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
                                         upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
@@ -525,36 +527,36 @@ namespace Rock.Cms
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
-                        aBlockConfig.Attributes.Add( "Title", Text.ShowBlockConfiguration );
-                        aBlockConfig.InnerText = Text.BlockSettings;
+                        aBlockConfig.Attributes.Add( "Title", "Show Block Configuration" );
+                        aBlockConfig.InnerText = "BlockSettings";
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "attributes icon-button" );
                         aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", Text.ShowPageAttributes );
-                        aAttributes.InnerText = Text.PageAttributes;
+                        aAttributes.Attributes.Add( "Title", "Show Page Attributes" );
+                        aAttributes.InnerText = "Page Attributes";
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
                         aChildPages.Attributes.Add( "href", "#" );
-                        aChildPages.Attributes.Add( "Title", Text.ShowChildPages );
-                        aChildPages.InnerText = Text.ChildPages;
+                        aChildPages.Attributes.Add( "Title", "Show Child Pages" );
+                        aChildPages.InnerText = "Child Pages";
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
-                        aPageZones.Attributes.Add( "Title", Text.ShowPageZones );
-                        aPageZones.InnerText = Text.PageZones;
+                        aPageZones.Attributes.Add( "Title", "Show Page Zones" );
+                        aPageZones.InnerText = "Page Zones";
 
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
                         aPageSecurity.Attributes.Add( "href", "#" );
-                        aPageSecurity.Attributes.Add( "Title", Text.PageSecurity );
-                        aPageSecurity.InnerText = Text.PageSecurity;
+                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                        aPageSecurity.InnerText = "Page Security";
 
                         string footerScript = @"
     $(document).ready(function () {
@@ -606,7 +608,7 @@ namespace Rock.Cms
             if ( phLoadTime != null  )
             {
                 TimeSpan tsDuration = DateTime.Now.Subtract( ( DateTime )Context.Items["Request_Start_Time"] );
-                phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", Text.PageLoadTime, tsDuration.TotalSeconds ) ) );
+                phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", "Page Load Time", tsDuration.TotalSeconds ) ) );
             }
         }
 
@@ -635,6 +637,144 @@ namespace Rock.Cms
 
             return string.Join( "|", PageInstance.AttributeValues[key].Value );
         }
+
+        #endregion
+
+        #region HtmlLinks
+
+        /// <summary>
+        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
+        /// </summary>
+        /// <param name="page">Current System.Web.UI.Page</param>
+        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        public static void AddCSSLink( System.Web.UI.Page page, string href )
+        {
+            AddCSSLink( page, href, string.Empty );
+        }
+
+        public static void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
+        {
+            System.Web.UI.HtmlControls.HtmlLink htmlLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+            htmlLink.Attributes.Add( "type", "text/css" );
+            htmlLink.Attributes.Add( "rel", "stylesheet" );
+            htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            if ( mediaType != string.Empty )
+                htmlLink.Attributes.Add( "media", mediaType );
+
+            AddHtmlLink( page, htmlLink );
+        }
+
+        /// <summary>
+        /// Adds a new Html link that will be added to the page header prior to the page being rendered
+        /// </summary>
+        public static void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
+        {
+            if ( page != null && page.Header != null )
+                if ( !HtmlLinkExists( page, htmlLink ) )
+                {
+                    // Find last Link element
+                    int index = 0;
+                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                        if ( page.Header.Controls[i] is HtmlLink )
+                        {
+                            index = i;
+                            break;
+                        }
+
+                    if ( index == page.Header.Controls.Count )
+                        page.Header.Controls.Add( htmlLink );
+                    else
+                        page.Header.Controls.AddAt( ++index, htmlLink );
+                }
+        }
+
+        private static bool HtmlLinkExists( System.Web.UI.Page page, HtmlLink newLink )
+        {
+            bool existsAlready = false;
+
+            if ( page != null && page.Header != null )
+                foreach ( Control control in page.Header.Controls )
+                    if ( control is HtmlLink )
+                    {
+                        HtmlLink existingLink = ( HtmlLink )control;
+
+                        bool sameAttributes = true;
+
+                        foreach ( string attributeKey in newLink.Attributes.Keys )
+                            if ( existingLink.Attributes[attributeKey] != null &&
+                                existingLink.Attributes[attributeKey].ToLower() != newLink.Attributes[attributeKey].ToLower() )
+                            {
+                                sameAttributes = false;
+                                break;
+                            }
+
+                        if ( sameAttributes )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+            return existsAlready;
+        }
+
+        /// <summary>
+        /// Adds a new script tag to the page header prior to the page being rendered
+        /// </summary>
+        /// <param name="page">Current System.Web.UI.Page</param>
+        /// <param name="href">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        public static void AddScriptLink( System.Web.UI.Page page, string path )
+        {
+            string relativePath = page.ResolveUrl( path );
+
+            bool existsAlready = false;
+
+            if ( page != null && page.Header != null )
+                foreach ( Control control in page.Header.Controls )
+                {
+                    if ( control is LiteralControl )
+                        if ( ( ( LiteralControl )control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+
+                    if ( control is HtmlGenericControl )
+                    {
+                        HtmlGenericControl genericControl = ( HtmlGenericControl )control;
+                        if ( genericControl.TagName.ToLower() == "script" &&
+                           genericControl.Attributes["src"] != null &&
+                                genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                }
+
+            if ( !existsAlready )
+            {
+                HtmlGenericControl genericControl = new HtmlGenericControl();
+                genericControl.TagName = "script";
+                genericControl.Attributes.Add( "src", relativePath );
+                genericControl.Attributes.Add( "type", "text/javascript" );
+
+                int index = 0;
+                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                    if ( page.Header.Controls[i] is HtmlGenericControl ||
+                         page.Header.Controls[i] is LiteralControl )
+                    {
+                        index = i;
+                        break;
+                    }
+
+                if ( index == page.Header.Controls.Count )
+                    page.Header.Controls.Add( genericControl );
+                else
+                    page.Header.Controls.AddAt( ++index, genericControl );
+            }
+        }
+
 
         #endregion
 
