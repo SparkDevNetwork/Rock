@@ -179,8 +179,8 @@ namespace RockWeb.Blocks.Cms.Blog
                         aOlder.Visible = true;
 
                    // set next prev button urls
-                   aOlder.HRef = PageInstance.BuildUrl( PageInstance.Id, new Dictionary<string, string>() { { "Page", ( currentPage + 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
-                   aNewer.HRef = PageInstance.BuildUrl( PageInstance.Id, new Dictionary<string, string>() { { "Page", ( currentPage - 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
+                   aOlder.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage + 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
+                   aNewer.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage - 1 ).ToString() }, { "BlogId", blogId.ToString() } }, HttpContext.Current.Request.QueryString );
                 }
                 catch ( NullReferenceException nrx )
                 {
