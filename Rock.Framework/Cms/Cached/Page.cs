@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
+using Rock.Helpers;
+
 namespace Rock.Cms.Cached
 {
     /// <summary>
@@ -25,6 +27,24 @@ namespace Rock.Cms.Cached
         public string Name { get; private set; }
         public string Description { get; private set; }
         public bool IncludeAdminFooter { get; private set; }
+
+        private int _routeId = -1;
+        public int RouteId {
+            get
+            {
+                return _routeId;
+            }
+            set
+            {
+                _routeId = value;
+            }
+        }
+        public PageReference PageReference {
+            get
+            {
+                return new PageReference( Id, RouteId );
+            }
+        }
 
         /// <summary>
         /// Dictionary of all attributes and their value.
