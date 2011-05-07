@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Cms
                 PageInstance.AddScriptLink( this.Page, "../../../scripts/ckeditor/adapters/jquery.js" );
 
                 // register core cms css
-                PageInstance.AddCSSLink( this.Page, "../..//css/cms-core.css" );
+                PageInstance.AddCSSLink( this.Page, "../../css/cms-core.css" );
                 
                 string blockContent = "";
 

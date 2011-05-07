@@ -9,6 +9,8 @@ using System.Text;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
+using System.Web.Routing;
+
 namespace Rock.Web.Blocks.Cms.Blog
 {
     public partial class Posts : Rock.Cms.CmsBlock
@@ -88,6 +90,13 @@ namespace Rock.Web.Blocks.Cms.Blog
                     rssLink.Attributes.Add( "title", "RSS" );
 
                     PageInstance.AddHtmlLink( this.Page, rssLink );
+                }
+
+                RouteCollection routes = RouteTable.Routes;
+
+                foreach ( Route route in routes )
+                {
+                    string text = route.Url;
                 }
 
                 lPosts.Text = "";

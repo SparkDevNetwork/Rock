@@ -85,6 +85,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FieldTypes\Boolean.cs" />
+    <Compile Include="FieldTypes\PageReference.cs" />
     <Compile Include="FieldTypes\Integer.cs" />
     <Compile Include="FieldTypes\SelectMulti.cs" />
     <Compile Include="FieldTypes\Color.cs" />
@@ -95,6 +96,9 @@
     <Compile Include="FieldTypes\IFieldType.cs" />
     <Compile Include="FieldTypes\Text.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
+    <Compile Include="Helpers\PageReference.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />

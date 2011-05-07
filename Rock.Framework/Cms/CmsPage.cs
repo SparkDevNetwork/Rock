@@ -10,6 +10,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using System.Text.RegularExpressions;
+using System.Web;
+
 using Rock.Models.Cms;
 using Rock.Models.Crm;
 using Rock.Services.Cms;
@@ -601,6 +604,14 @@ namespace Rock.Cms
             Trace.Write( "End page init" );
         }
 
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            Page.Header.DataBind();
+        }
+        
+        
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -775,6 +786,139 @@ namespace Rock.Cms
             }
         }
 
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageId">Page to link to</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        public static string BuildUrl( int pageId, Dictionary<string, string> parms )
+        {
+            return BuildUrl(new Rock.Helpers.PageReference(pageId, -1), parms, null);
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageId">Page to link to</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        /// <param name="queryString">Querystring to include paramters from</param>
+        public static string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        {
+            return BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, queryString );
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageRef">PageReference to use for the link</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        public static string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms )
+        {
+            return BuildUrl( pageRef, parms, null );
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageRef">PageReference to use for the link</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        /// <param name="queryString">Querystring to include paramters from</param>
+        public static string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        {
+            string url = string.Empty;
+
+            // merge parms from query string to the parms dictionary to get a single list of parms
+            // skipping those parms that are already in the dictionary
+            if ( queryString != null )
+            {
+                foreach ( string key in queryString.AllKeys )
+                {
+                    // check that the dictionary doesn't already have this key
+                    if ( !parms.ContainsKey( key ) )
+                        parms.Add( key, queryString[key].ToString() );
+                }
+            }
+
+            // load route URL 
+            if ( pageRef.RouteId != -1 )
+            {
+                url = BuildRouteURL( pageRef.RouteId, parms );
+            }
+
+            // build normal url if route url didn't process
+            if ( url == string.Empty )
+            {
+                url = "page/" + pageRef.PageId;
+
+                // add parms to the url
+                string delimitor = "?";
+                foreach ( KeyValuePair<string, string> parm in parms )
+                {
+                    url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                    delimitor = "&";
+                }
+            }
+            
+            // add base path to url
+            url = HttpContext.Current.Request.ApplicationPath + "/" + url;
+            
+            return url;
+        }
+
+        // returns route based url if all required parmameters were provided
+        private static string BuildRouteURL( int routeId, Dictionary<string, string> parms ) 
+        {
+            string routeUrl = string.Empty;
+            
+            foreach ( Route route in RouteTable.Routes )
+            {
+                if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == routeId.ToString() )
+                    routeUrl = route.Url;
+            }
+
+            // get dictionary of parms in the route
+            Dictionary<string, string> routeParms = new Dictionary<string, string>();
+            bool allRouteParmsProvided = true;
+
+            var r = new Regex( @"{([A-Za-z0-9\-]+)}" );
+            foreach ( Match match in r.Matches( routeUrl ) )
+            {
+                // add parm to dictionary
+                routeParms.Add( match.Groups[1].Value, match.Value );
+
+                // check that a value for that parm is available
+                if ( !parms.ContainsKey( match.Groups[1].Value ) )
+                    allRouteParmsProvided = false;
+            }
+
+            // if we have a value for all route parms build route url
+            if ( allRouteParmsProvided )
+            {
+                // merge route parm values
+                foreach ( KeyValuePair<string,string> parm in routeParms )
+                {
+                    // merge field
+                    routeUrl = routeUrl.Replace(parm.Value, parms[parm.Key]);
+
+                    // remove parm from dictionary
+                    parms.Remove(parm.Key);
+                }
+
+                // add remaining parms to the query string
+                string delimitor = "?";
+                foreach ( KeyValuePair<string,string> parm in parms ) 
+                {
+                    routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                    delimitor = "&";
+                }
+                
+                return routeUrl;
+            }
+            else
+                return string.Empty;
+
+            
+        }
 
         #endregion
 
