@@ -694,9 +694,15 @@ namespace Rock.Cms
                         }
 
                     if ( index == page.Header.Controls.Count )
+                    {
+                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
                         page.Header.Controls.Add( htmlLink );
+                    }
                     else
+                    {
+                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
                         page.Header.Controls.AddAt( ++index, htmlLink );
+                    }
                 }
         }
 
@@ -780,9 +786,15 @@ namespace Rock.Cms
                     }
 
                 if ( index == page.Header.Controls.Count )
+                {
+                    page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
                     page.Header.Controls.Add( genericControl );
+                }
                 else
+                {
+                    page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
                     page.Header.Controls.AddAt( ++index, genericControl );
+                }
             }
         }
 

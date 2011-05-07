@@ -13,19 +13,17 @@ namespace Rock.Themes.Default.Layouts
     {
         protected override void OnInit( EventArgs e )
         {
-            
             // register scripts
             AddScriptLink( Page, "~/Scripts/jquery-1.5.min.js" );
             AddScriptLink( Page, "~/Scripts/jquery-ui-1.8.9.custom.min.js" );
             AddScriptLink( Page, "~/Themes/Default/Scripts/jquery-placeholder-plugin.js" );
 
-            // register css
-            AddCSSLink( Page, "~/css/reset-core.css" );
-            AddCSSLink( Page, "~/css/cms-core.css" );
-            AddCSSLink( Page, "~/Themes/Default/CSS/styles.css" );
-            AddCSSLink( Page, "~/css/reset-core.css" );
-            AddCSSLink( Page, "~/css/overcast/jquery-ui-1.8.9.custom.css" );
-
+        	// register css
+            AddCSSLink( Page, "~/CSS/reset-core.css" );
+            AddCSSLink( Page, "~/CSS/cms-core.css" );
+            AddCSSLink( Page, "../CSS/styles.css" );
+            AddCSSLink( Page, "~/CSS/overcast/jquery-ui-1.8.9.custom.css" );
+          
             base.OnInit( e );
 
             lUserName.Text = this.UserName;
