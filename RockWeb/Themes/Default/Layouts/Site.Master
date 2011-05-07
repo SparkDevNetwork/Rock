@@ -10,11 +10,6 @@
         <script src="/Themes/Default/Scripts/html5.js"></script>
     <![endif]-->
 
-    <link type="text/css" rel="stylesheet" href="../../../css/reset-core.css" />
-    <link type="text/css" rel="stylesheet" href="../../../css/cms-core.css" />
-    <link type="text/css" rel="stylesheet" href="../css/styles.css" />
-    <link href="../../../css/overcast/jquery-ui-1.8.9.custom.css" rel="stylesheet" type="text/css" />
-
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
