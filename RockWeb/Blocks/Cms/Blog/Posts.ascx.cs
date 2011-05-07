@@ -129,6 +129,16 @@ namespace RockWeb.Blocks.Cms.Blog
                         {
                             sb.Append( "in <ul>" );
 
+                            //s
+                            Dictionary<string, string> parms = new Dictionary<string, string>();
+                            parms.Add( "1", "value1" );
+                            parms.Add( "2", "value2" );
+
+                            string test = PageInstance.BuildUrl(new PageReference(1,7), parms, HttpContext.Current.Request.QueryString);
+                            
+
+                            //e
+
                             foreach ( BlogCategory category in post.BlogCategorys )
                             {
                                 sb.Append( "<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a></li?" );
@@ -169,8 +179,8 @@ namespace RockWeb.Blocks.Cms.Blog
                         aOlder.Visible = true;
 
                    // set next prev button urls
-                    aOlder.HRef = HtmlHelper.AppendQueryParameter( HttpContext.Current.Request.Url.PathAndQuery, "Page", (currentPage + 1).ToString() );
-                    aNewer.HRef = HtmlHelper.AppendQueryParameter( HttpContext.Current.Request.Url.PathAndQuery, "Page", (currentPage - 1).ToString() );
+                   aOlder.HRef = PageInstance.BuildUrl( PageInstance.Id, new Dictionary<string, string>() { { "Page", ( currentPage + 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
+                   aNewer.HRef = PageInstance.BuildUrl( PageInstance.Id, new Dictionary<string, string>() { { "Page", ( currentPage - 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
                 }
                 catch ( NullReferenceException nrx )
                 {

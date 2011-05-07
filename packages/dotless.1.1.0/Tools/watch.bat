@@ -1,1 +1,1 @@
-dotless.compiler ../../../Ignite.Web/Themes/Default/CSS/*.less --watch
+dotless.compiler ../../../RockWeb/Themes/Default/CSS/*.less --watch
