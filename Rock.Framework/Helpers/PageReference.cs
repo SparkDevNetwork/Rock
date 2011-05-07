@@ -20,7 +20,6 @@ namespace Rock.Helpers
         // private members
         private int _pageId = -1;
         private int _routeId = -1;
-        private string _routeUrl = "empty";
         
         // public properties
         public int PageId 
@@ -39,27 +38,6 @@ namespace Rock.Helpers
             }
         }
 
-        public string RouteUrl
-        {
-            get
-            {
-                if ( _routeUrl == "empty" )
-                {
-                    _routeUrl = string.Empty;
-
-                    //RouteCollection routes = RouteDataRouteTable.Routes;
-
-                    /*foreach ( Route route in routes )
-                    {
-                        if ( route.DataTokens["RouteId"] == _routeId.ToString() )
-                            _routeUrl = route.Url;
-                    }*/
-                }
-                
-                return _routeUrl;
-            }
-        }
-        
         // constructors
         public PageReference(){}
 
@@ -69,8 +47,12 @@ namespace Rock.Helpers
 
             Int32.TryParse( items[0], out _pageId );
             Int32.TryParse( items[1], out _routeId );
+        }
 
-            //RouteCollection routes = RouteDataRouteTable.Routes;
+        public PageReference( int pageId, int routeId )
+        {
+            _pageId = pageId;
+            _routeId = routeId;
         }
         
     }

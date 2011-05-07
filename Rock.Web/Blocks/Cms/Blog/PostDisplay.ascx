@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="PostDisplay.ascx.cs" Inherits="Rock.Web.Blocks.Cms.Blog.PostDisplay" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PostDisplay.ascx.cs" Inherits="RockWeb.Blocks.Cms.Blog.PostDisplay" %>
 
 <article>
     <header>

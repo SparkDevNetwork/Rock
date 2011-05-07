@@ -228,6 +228,48 @@ namespace Rock.Cms.Cached
             CmsPage.AddScriptLink( page, path );
         }
 
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageId">Page to link to</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        public string BuildUrl( int pageId, Dictionary<string, string> parms )
+        {
+            return CmsPage.BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, null );
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageId">Page to link to</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        /// <param name="queryString">Querystring to include paramters from</param>
+        public string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        {
+            return CmsPage.BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, queryString );
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageRef">PageReference to use for the link</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        public string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms )
+        {
+            return CmsPage.BuildUrl( pageRef, parms, null );
+        }
+
+        /// <summary>
+        /// Builds a URL from a page and parameters with support for routes
+        /// </summary>
+        /// <param name="pageRef">PageReference to use for the link</param>
+        /// <param name="parms">Dictionary of parameters</param>
+        /// <param name="queryString">Querystring to include paramters from</param>
+        public string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        {
+            return CmsPage.BuildUrl( pageRef, parms, queryString );
+        }
+
         #endregion
 
         #region Static Methods
