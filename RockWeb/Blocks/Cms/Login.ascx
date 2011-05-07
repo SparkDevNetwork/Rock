@@ -1,8 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Blocks.Cms.Login" %>
 
-<section class="facebook-login">
-    <asp:Button ID="btnFbLogOn" runat="server" Text="Login With Facebook" OnClick="btnFbLogOn_Click" />
-</section>
 
 <asp:Login ID="login1" runat="server" RenderOuterTable="false" >
     <LayoutTemplate>

@@ -7,7 +7,7 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="/Themes/Default/Scripts/html5.js"></script>
+        <script src="<%# ResolveUrl("~/Themes/Default/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
