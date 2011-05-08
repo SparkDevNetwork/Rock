@@ -18,6 +18,7 @@ namespace RockWeb.Blocks.Cms.Blog
         protected int currentPage = 1;
         protected int categoryId = 0;
         protected int tagId = 0;
+        protected PageReference postDetailsPage = null;
         
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -26,6 +27,9 @@ namespace RockWeb.Blocks.Cms.Blog
             {
                 currentPage = 1;
             }
+
+            // get post details page
+            postDetailsPage = new PageReference( AttributeValue( "PostDetailPage" ) );
 
             // get number of posts to display per page
             takeCount = Convert.ToInt32( AttributeValue( "PostsPerPage" ) );
@@ -121,7 +125,12 @@ namespace RockWeb.Blocks.Cms.Blog
                         StringBuilder sb = new StringBuilder();
                         sb.Append( "<article class=\"blog-post\">\n" );
                         sb.Append( "    <header>\n" );
-                        sb.Append( "        <h1>" + post.Title + "</h1>" );
+                        
+                        if (postDetailsPage.IsValid)
+                            sb.Append( "        <a href=\"" + PageInstance.BuildUrl( postDetailsPage, new Dictionary<string, string>() {{"PostId", post.Id.ToString()}} ) + "\"><h1>" + post.Title + "</h1></a>" );
+                        else
+                            sb.Append( "         <h1>" + post.Title + "</h1>" );
+
                         sb.Append( "         Posted " );
 
                         // determine categories
@@ -129,19 +138,9 @@ namespace RockWeb.Blocks.Cms.Blog
                         {
                             sb.Append( "in <ul>" );
 
-                            //s
-                            Dictionary<string, string> parms = new Dictionary<string, string>();
-                            parms.Add( "1", "value1" );
-                            parms.Add( "2", "value2" );
-
-                            string test = PageInstance.BuildUrl(new PageReference(1,7), parms, HttpContext.Current.Request.QueryString);
-                            
-
-                            //e
-
                             foreach ( BlogCategory category in post.BlogCategorys )
                             {
-                                sb.Append( "<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a></li?" );
+                                sb.Append( "<li><a href=\"" + PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Category", category.Id.ToString() }, { "BlogId", blogId.ToString() } } ) + "\">" + category.Name + "</a></li?" );
                             }
                             sb.Append( "</ul> " );
                         }
@@ -155,7 +154,7 @@ namespace RockWeb.Blocks.Cms.Blog
 
                             foreach ( BlogTag tag in post.BlogTags )
                             {
-                                sb.Append( "\t\t<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Tag=" + tag.Id.ToString() + "\">" + tag.Name + "</a></li>\n" );
+                                sb.Append( "\t\t<li><a href=\"" + PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Tag", tag.Id.ToString() }, { "BlogId", blogId.ToString() } } ) + "</a></li>\n" );
                             }
 
                             sb.Append( "\t</ul>\n</div>" );
