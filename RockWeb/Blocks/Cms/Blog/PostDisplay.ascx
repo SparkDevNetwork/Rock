@@ -33,6 +33,9 @@
                 <asp:RequiredFieldValidator ID="rfvEmail" runat="server" ControlToValidate="txtEmail" 
                         CssClass="failureNotification" ErrorMessage="Email address is required." ToolTip="Email address is required." 
                         ValidationGroup="CommentValidationGroup">*</asp:RequiredFieldValidator>
+                <asp:RegularExpressionValidator ID="regexEmail" runat="server" ValidationExpression="\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" 
+                        ControlToValidate="txtEmail" ValidationGroup="CommentValidationGroup" ErrorMessage="Invalid email address." ToolTip="Invalid email address.">*</asp:RegularExpressionValidator>
+
             </li>
             <li>
                 <asp:TextBox ID="txtComment" TextMode="MultiLine" Rows="12" runat="server"></asp:TextBox>
@@ -45,14 +48,17 @@
                     Theme="clean"
                     PublicKey="6Lf1A8QSAAAAAM1_QtF5xyxgo8IwtA2WJDJDu0D0" PrivateKey="6Lf1A8QSAAAAAIilSEpreSmMP__Bad8EgT6kB81W"
                     runat="server"/>
+                <asp:CustomValidator id="valRecaptcha" runat="server" ValidationGroup="CommentValidationGroup"
+                    Text="Phases do not match.  Please try again." OnServerValidate="valRecaptcha_Validate" ToolTip="Phases do not match.  Please try again." />
             </li>
             <li>
-                <asp:Button ID="btnSubmitComment" Text="Submit Comment" runat="server" OnClick="btnSubmitComment_Click" />
+                <asp:Button ID="btnSubmitComment" Text="Submit Comment" runat="server" OnClick="btnSubmitComment_Click" ValidationGroup="CommentValidationGroup"/>
             </li>
         </ol>
         
     </fieldset>
-
+    <asp:ValidationSummary ID="CommentValidationGroup" runat="server" CssClass="failureNotification" 
+                ValidationGroup="CommentValidationGroup"/>
 </asp:Panel>
 
 

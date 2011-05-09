@@ -38,6 +38,17 @@ namespace Rock.Helpers
             }
         }
 
+        public bool IsValid
+        {
+            get
+            {
+                if ( _pageId != -1 )
+                    return true;
+                else
+                    return false;
+            }
+        }
+
         // constructors
         public PageReference(){}
 
@@ -45,8 +56,11 @@ namespace Rock.Helpers
         {
             string[] items = reference.Split( ',' );
 
-            Int32.TryParse( items[0], out _pageId );
-            Int32.TryParse( items[1], out _routeId );
+            if ( items.Length == 2 )
+            {
+                Int32.TryParse( items[0], out _pageId );
+                Int32.TryParse( items[1], out _routeId );
+            }
         }
 
         public PageReference( int pageId, int routeId )
@@ -54,6 +68,5 @@ namespace Rock.Helpers
             _pageId = pageId;
             _routeId = routeId;
         }
-        
     }
 }
