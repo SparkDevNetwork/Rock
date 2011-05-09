@@ -10,6 +10,11 @@
         <script src="<%# ResolveUrl("~/Themes/Default/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
+    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/reset-core.css") %>" />
+    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>" />
+	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/Themes/Default/CSS/styles.css") %>" />
+	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/overcast/jquery-ui-1.8.9.custom.css") %>" />
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>

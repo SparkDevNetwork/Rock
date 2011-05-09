@@ -412,3 +412,29 @@ article.blog-post header ul li:after {
 article.blog-post header ul li:last-child:after {
     content: "";
 }
+
+.post-comments h1 {
+    margin-bottom: 24px;   
+}
+
+.post-comments article {
+    display: block; 
+    margin-bottom: 24px;  
+}
+
+.post-comments article header {
+    font-size: 10px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.post-comments article header img {
+    float: left;
+    margin-right: 12px;
+}
+
+.post-comments article header strong {
+    display: block; 
+    font-weight: bold;
+    font-size: 16px; 
+}

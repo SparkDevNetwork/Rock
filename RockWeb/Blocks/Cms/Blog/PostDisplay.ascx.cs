@@ -68,10 +68,13 @@ namespace RockWeb.Blocks.Cms.Blog
 
             var comments = post.BlogPostComments;
 
+            if ( comments.Count > 0 )
+                sbComments.Append( "<h1>Comments</h1>\n" );
+
             foreach ( BlogPostComment comment in comments )
             {
-                sbComments.Append( "<article>\n" );
-                sbComments.Append( "<header>" + comment.PersonName + " says: </h1>" + comment.CommentDate.Value.ToLongDateString() + " " + comment.CommentDate.Value.ToShortTimeString() + "</header>" );
+                sbComments.Append( "<article class=\"group\">\n" );
+                sbComments.Append( "<header><img src=\"http://www.gravatar.com/avatar/" + HtmlHelper.CalculateMD5Hash( comment.EmailAddress ) + "?r=pg&d=identicon&s=50\" /><strong>" + comment.PersonName + " says:</strong> </h1>" + comment.CommentDate.Value.ToLongDateString() + " " + comment.CommentDate.Value.ToShortTimeString() + "</header>" );
                 sbComments.Append( comment.Comment );
 
                 sbComments.Append( "</article>\n" );
@@ -80,8 +83,19 @@ namespace RockWeb.Blocks.Cms.Blog
             lPostComments.Text = sbComments.ToString();
         }
 
-        protected void btnSubmitComment_Click( object sender, EventArgs e )
+        protected void valRecaptcha_Validate( object sender, ServerValidateEventArgs e )
         {
+            // ensure recaptcha is correct
+            rcComment.Validate();
+            if ( !rcComment.IsValid )
+            {
+                e.IsValid = false;
+
+            }
+        }
+
+        protected void btnSubmitComment_Click( object sender, EventArgs e )
+        {            
             if ( Page.IsValid )
             {
                 // save comment
