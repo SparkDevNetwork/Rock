@@ -1,9 +1,11 @@
-﻿<%@ Page Title="" ValidateRequest="false"Language="C#" MasterPageFile="~/Themes/Default/Layouts/Site.Master" AutoEventWireup="true" CodeFile="ThreeColumn.aspx.cs" Inherits="Rock.Themes.Default.Layouts.ThreeColumn" %>
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/Default/Layouts/Site.Master"
+    AutoEventWireup="true" CodeFile="ThreeColumn.aspx.cs" Inherits="Rock.Themes.Default.Layouts.ThreeColumn" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="main" runat="server">
     <div class="content">
-    <header id="page-header" class="group">
+        <header id="page-header" class="group">
         
             <h1>Spark ChMS</h1>
             <section class="user">
@@ -118,14 +120,15 @@
             <asp:PlaceHolder ID="Heading" runat="server"></asp:PlaceHolder>
         
     </header>
-
-    <div id="page-content" class="group">
-        <asp:Panel ID="FirstColumn" runat="server" class="first-column"></asp:Panel>
-        <asp:Panel ID="SecondColumn" runat="server" class="second-column"></asp:Panel>
-        <asp:Panel ID="ThirdColumn" runat="server" class="third-column"></asp:Panel>
-    </div>
-
-    <footer class="group">
+        <div id="page-content" class="group">
+            <asp:Panel ID="FirstColumn" runat="server" class="first-column">
+            </asp:Panel>
+            <asp:Panel ID="SecondColumn" runat="server" class="second-column">
+            </asp:Panel>
+            <asp:Panel ID="ThirdColumn" runat="server" class="third-column">
+            </asp:Panel>
+        </div>
+        <footer class="group">
         <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
 
         <div id="footer-base" class="group">
@@ -141,5 +144,4 @@
     <script>
         $('input').placeholder();
     </script>
-
 </asp:Content>
