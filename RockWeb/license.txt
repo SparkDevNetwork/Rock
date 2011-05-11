@@ -20,6 +20,18 @@ CK Editor:
 
 SlickGrid jQuery Plugin:
 
+jQuery.event.drag
+A jquery special event plugin that makes the task of adding complex drag interactions, 
+to any element, simple and powerful (used by SlickGrid). available under the open source
+MIT license (http://threedubmedia.com/code/license). 
+http://threedubmedia.com/
+
+jQuery.event.drop
+A jquery special event plugin that makes the task of adding complex drop interactions, 
+to any element, simple and powerful (used by SlickGrid). available under the open source 
+MIT license (http://threedubmedia.com/code/license). 
+http://threedubmedia.com/
+
 Fugue Icons v.30:
 The Fugue icons are used through out the application to enhance the user interface. They
 are licensed under the Creative Commons Attribution 3.0 license (http://creativecommons.org/licenses/by/3.0/)

@@ -29,18 +29,23 @@ namespace Rock.Controls
             return string.Format( "{0}:{1}", DataField, DataBinder.GetPropertyValue( dataItem, DataField, null ).ToLower() );
         }
 
-        internal override void AddScriptFunctions( Dictionary<string, string> functions, Page page )
+        internal override void AddScriptFunctions( Page page )
         {
-            if ( !functions.ContainsKey( "BoolCellFormatter" ) )
-                functions.Add( "BoolCellFormatter", string.Format( @"
+            ClientScriptManager cs = page.ClientScript;
+            Type baseType = base.GetType();
+
+            if ( !cs.IsClientScriptBlockRegistered( baseType, "BoolCellFormatter" ) )
+                cs.RegisterClientScriptBlock( baseType, "BoolCellFormatter", string.Format( @"
     function BoolCellFormatter(row, cell, value, columnDef, dataContext) {{
         return value ? ""<img src='{0}'>"" : """";
     }}
 ",
-                    page.ResolveUrl( "~/Assets/Icons/tick.png" ) ) );
+                    page.ResolveUrl( "~/Assets/Grid/tick.png" ) ), true );
 
-            if ( !functions.ContainsKey( "YesNoCheckboxCellEditor" ) )
-                functions.Add( "YesNoCheckboxCellEditor", @"
+            if ( CanEdit )
+            {
+                if ( !cs.IsClientScriptBlockRegistered( baseType, "YesNoCheckboxCellEditor" ) )
+                    cs.RegisterClientScriptBlock( baseType, "YesNoCheckboxCellEditor", @"
     function YesNoCheckboxCellEditor(args) {
         var $select;
         var defaultValue;
@@ -89,7 +94,9 @@ namespace Rock.Controls
 
         this.init();
     }
-" );
+",
+                         true );
+            }
         }
     }
 }
