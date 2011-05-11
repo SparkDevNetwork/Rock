@@ -43,7 +43,7 @@ namespace Rock.Helpers
             {
                 sb.Append( hash[i].ToString( "X2" ) );
             }
-            return sb.ToString();
+            return sb.ToString().ToLower();
         }
 
     }
