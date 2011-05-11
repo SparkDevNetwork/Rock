@@ -15,23 +15,28 @@ namespace Rock.Controls
         private string dataFormatStringValue;
         private int widthValue;
         private int minWidthValue;
-        private bool canEdit;
-        private bool sortable;
+        private bool canEditValue;
+        private bool sortableValue;
         private string classNameValue;
+        private bool uniqueIdentifierValue;
 
         public GridColumn()
-            : this( string.Empty, string.Empty, string.Empty, 0, 0, string.Empty )
+            : this( string.Empty, string.Empty, string.Empty, 0, 0, false, true, false, string.Empty )
         {
         }
 
         public GridColumn( string headerText, string dataField, string dataFormatString,
-            int width, int minWidth, string className )
+            int width, int minWidth, bool canEdit, bool sortable, bool uniqueIdentifier,
+            string className )
         {
             headerTextValue = headerText;
             dataFieldValue = dataField;
             dataFormatStringValue = dataFormatString;
             widthValue = width;
             minWidthValue = minWidth;
+            canEditValue = canEdit;
+            sortableValue = sortable;
+            uniqueIdentifierValue = uniqueIdentifier;
             classNameValue = className;
         }
 
@@ -97,26 +102,38 @@ namespace Rock.Controls
 
         [
         Category( "Behavior" ),
-        DefaultValue( 0 ),
+        DefaultValue( false ),
         Description( "Can values be edited" ),
         NotifyParentProperty( true ),
         ]
         public bool CanEdit
         {
-            get { return canEdit; }
-            set { canEdit = value; }
+            get { return canEditValue; }
+            set { canEditValue = value; }
         }
 
         [
         Category( "Behavior" ),
-        DefaultValue( 0 ),
+        DefaultValue( false ),
         Description( "Can column be sorted" ),
         NotifyParentProperty( true ),
         ]
         public bool Sortable
         {
-            get { return sortable; }
-            set { sortable = value; }
+            get { return sortableValue; }
+            set { sortableValue = value; }
+        }
+
+        [
+        Category( "Behavior" ),
+        DefaultValue( false ),
+        Description( "Is this column the unique identifier field" ),
+        NotifyParentProperty( true ),
+        ]
+        public bool UniqueIdentifier
+        {
+            get { return uniqueIdentifierValue; }
+            set { uniqueIdentifierValue = value; }
         }
 
         [
@@ -166,15 +183,25 @@ namespace Rock.Controls
             get { return "TextCellEditor"; }
         }
 
-        internal virtual string RowParameter ( object dataItem )
+        internal virtual string RowParameter( object dataItem )
         {
-            return string.Format( "{0}:\"{1}\"", DataField, DataBinder.GetPropertyValue( dataItem, DataField, null ) );
+            return RowParameter( dataItem, DataField );
         }
 
-        internal virtual void AddScriptFunctions( Dictionary<string, string> functions, Page page )
+        internal virtual string RowParameter ( object dataItem, string keyName )
         {
-            if (!functions.ContainsKey("TextCellEditor"))
-                functions.Add( "TextCellEditor", @"
+            return string.Format( "{0}:\"{1}\"", keyName, DataBinder.GetPropertyValue( dataItem, DataField, null ) );
+        }
+
+        internal virtual void AddScriptFunctions( Page page )
+        {
+            if ( CanEdit )
+            {
+                ClientScriptManager cs = page.ClientScript;
+                Type baseType = this.GetType();
+
+                if ( !cs.IsClientScriptBlockRegistered( baseType, "TextCellEditor" ) )
+                    cs.RegisterClientScriptBlock( baseType, "TextCellEditor", @"
     function TextCellEditor(args) {
 
         var $input;
@@ -243,7 +270,9 @@ namespace Rock.Controls
 
         this.init();
     }
-" );
+",
+                        true );
+            }
         }
     }
 }
