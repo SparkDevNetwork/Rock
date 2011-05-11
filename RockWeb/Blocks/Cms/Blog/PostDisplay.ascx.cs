@@ -37,7 +37,13 @@ namespace RockWeb.Blocks.Cms.Blog
             lTitle.Text = post.Title;
             lContents.Text = post.Content;
 
-            lPostDetails.Text = "Put details here";
+            // prepare post details
+            StringBuilder pDetails = new StringBuilder();
+
+            DateTime publishDate = (DateTime)post.PublishDate;
+            pDetails.Append( "This entry was posted on " + publishDate.ToString( "D" ) + " at " + String.Format( "{0:t}", publishDate ) + " by " + post.Author.FirstName + " " + post.Author.LastName + "." );
+
+            lPostDetails.Text = pDetails.ToString();
 
             // check if comments are allowed
             if ( post.Blog.AllowComments )
