@@ -1,5 +1,5 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/Default/Layouts/Site.Master"
-    AutoEventWireup="true" CodeFile="ThreeColumn.aspx.cs" Inherits="Rock.Themes.Default.Layouts.ThreeColumn" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Themes/Default/Layouts/Site.Master"
+    AutoEventWireup="true" CodeFile="OneColumn.aspx.cs" Inherits="Rock.Themes.Default.Layouts.OneColumn" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -119,27 +119,23 @@
 
             <asp:PlaceHolder ID="Heading" runat="server"></asp:PlaceHolder>
         
-    </header>
+        </header>
         <div id="page-content" class="group">
-            <asp:Panel ID="FirstColumn" runat="server" class="first-column">
-            </asp:Panel>
-            <asp:Panel ID="SecondColumn" runat="server" class="second-column">
-            </asp:Panel>
-            <asp:Panel ID="ThirdColumn" runat="server" class="third-column">
+            <asp:Panel ID="Content" runat="server" class="one-column-content">
             </asp:Panel>
         </div>
         <footer class="group">
-        <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
 
-        <div id="footer-base" class="group">
-            <p id="footer-confidential">The information and data contained in this system is the property
-            of --insert organization name--.  Those granted access are reminded to deny requests for giving
-            out addresses, emails, phone numbers, etc. or to use the information for anything other than
-            this organization's activities.</p>
-            <p id="footer-license">Spark ChMS is an open-source project by the <a href="http://www.sparkdevelopmentnetwork.com">Spark Development 
-            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src="../../Themes/Default/Assets/Images/cc-license.png" height="15" width="80" /></a> </p>
-        </div>
-    </footer>
+            <div id="footer-base" class="group">
+                <p id="footer-confidential">The information and data contained in this system is the property
+                of --insert organization name--.  Those granted access are reminded to deny requests for giving
+                out addresses, emails, phone numbers, etc. or to use the information for anything other than
+                this organization's activities.</p>
+                <p id="footer-license">Spark ChMS is an open-source project by the <a href="http://www.sparkdevelopmentnetwork.com">Spark Development 
+                Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src="../../Themes/Default/Assets/Images/cc-license.png" height="15" width="80" /></a> </p>
+            </div>
+        </footer>
     </div>
     <script>
         $('input').placeholder();

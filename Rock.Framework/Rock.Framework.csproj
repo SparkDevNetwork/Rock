@@ -79,6 +79,9 @@
     <Compile Include="Cms\Security\ISecured.cs" />
     <Compile Include="Cms\Security\UserRoleProvider.cs" />
     <Compile Include="Cms\Security\User.cs" />
+    <Compile Include="Controls\Grid.cs" />
+    <Compile Include="Controls\GridBoolColumn.cs" />
+    <Compile Include="Controls\GridColumn.cs" />
     <Compile Include="Controls\HtmlGenericContainer.cs" />
     <Compile Include="Controls\NotificationBox.cs" />
     <Compile Include="Cms\Security\GroupRoleProvider.cs">
