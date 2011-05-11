@@ -12,5 +12,13 @@ namespace RockWeb.Blocks
 {
     public partial class TestGrid : Rock.Cms.CmsBlock
     {
+        protected override void OnInit( EventArgs e )
+        {
+            Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+            rGrid.DataSource = pageService.Queryable().ToList();
+            rGrid.DataBind();
+
+            base.OnInit( e );
+        }
     }
 }
