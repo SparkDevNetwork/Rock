@@ -1,14 +1,15 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PostDisplay.ascx.cs" Inherits="RockWeb.Blocks.Cms.Blog.PostDisplay" %>
 
-<article>
+<article class="blog-post">
     <header>
         <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+        <asp:Literal ID="lPostDetails" runat="server"></asp:Literal>
     </header>
 
     <asp:Literal ID="lContents" runat="server"></asp:Literal>
     
     <footer>
-        <div class="post-details"><asp:Literal ID="lPostDetails" runat="server"></asp:Literal></div>
+        <div class="post-details"></div>
 
         <div class="post-comments"><asp:Literal ID="lPostComments" runat="server"></asp:Literal></div>
     </footer>
