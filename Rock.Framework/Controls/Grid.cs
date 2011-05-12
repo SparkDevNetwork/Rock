@@ -14,14 +14,16 @@ using System.Web.UI.WebControls;
 namespace Rock.Controls
 {
     [
-    AspNetHostingPermission(SecurityAction.Demand, Level=AspNetHostingPermissionLevel.Minimal),
-    AspNetHostingPermission(SecurityAction.InheritanceDemand, Level=AspNetHostingPermissionLevel.Minimal),
-    DefaultProperty("GridColumns"),
-    ParseChildren(true, "GridColumns"),
-    ToolboxData("<{0}:Grid runat=\"server\"> </{0}:Grid>")
+    AspNetHostingPermission( SecurityAction.Demand, Level = AspNetHostingPermissionLevel.Minimal ),
+    AspNetHostingPermission( SecurityAction.InheritanceDemand, Level = AspNetHostingPermissionLevel.Minimal ),
+    DefaultProperty( "GridColumns" ),
+    ParseChildren( true, "GridColumns" ),
+    ToolboxData( "<{0}:Grid runat=\"server\"> </{0}:Grid>" )
     ]
-    public class Grid : DataBoundControl
+    public class Grid : DataBoundControl, ICallbackEventHandler
     {
+        private string returnValue;
+
         protected override HtmlTextWriterTag TagKey
         {
             get
@@ -105,11 +107,11 @@ namespace Rock.Controls
         }
 
         [
-        Category("Behavior"),
-        Description("The column collection"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        //Editor(typeof(GridColumnCollectionEditor), typeof(UITypeEditor)),
-        PersistenceMode(PersistenceMode.InnerDefaultProperty)
+        Category( "Behavior" ),
+        Description( "The column collection" ),
+        DesignerSerializationVisibility( DesignerSerializationVisibility.Content ),
+            //Editor(typeof(GridColumnCollectionEditor), typeof(UITypeEditor)),
+        PersistenceMode( PersistenceMode.InnerDefaultProperty )
         ]
         public List<GridColumn> GridColumns
         {
@@ -146,6 +148,8 @@ namespace Rock.Controls
         {
             base.PerformDataBinding( retrievedData );
 
+            string jsFriendlyClientId = this.ClientID.Replace( "-", "_" );
+
             Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.event.drag-2.0.min.js" );
             Rock.Cms.CmsPage.AddCSSLink( Page, "~/Scripts/slickgrid/slick.grid.css" );
             Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/slickgrid/plugins/slick.rowselectionmodel.js" );
@@ -168,8 +172,30 @@ namespace Rock.Controls
                 Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/slickgrid/slick.dataview.js" );
             }
 
+            ClientScriptManager cs = Page.ClientScript;
+            Type type = this.GetType();
 
+            string sendDataScript = string.Format( "{0}_SendServerData", jsFriendlyClientId );
+            if ( !cs.IsClientScriptBlockRegistered( type, sendDataScript ) )
+                cs.RegisterClientScriptBlock( type, sendDataScript, string.Format( @"
+    function {0}_SendServerData(arg, context)
+    {{
+        {1}
+    }}
+",
+                    jsFriendlyClientId,
+                    cs.GetCallbackEventReference(
+                        this, "arg", string.Format( "{0}_ReceiveServerData", jsFriendlyClientId ), "context" ) ), true );
 
+            string receiveDataScript = string.Format( "{0}_ReceiveServerData", jsFriendlyClientId );
+            if ( !cs.IsClientScriptBlockRegistered( type, receiveDataScript ) )
+                cs.RegisterClientScriptBlock( type, receiveDataScript, string.Format( @"
+    function {0}_ReceiveServerData(rValue)
+    {{
+        alert(rValue);
+    }}
+",
+                    jsFriendlyClientId ), true );
 
             if ( retrievedData != null )
             {
@@ -179,8 +205,6 @@ namespace Rock.Controls
                 grid.Attributes.Add( "style", "width:100%;height:100%;" );
                 grid.ID = this.ID + "_grid";
                 this.Controls.Add( grid );
-
-                string jsFriendlyClientId = this.ClientID.Replace( "-", "_" );
 
                 HtmlGenericControl pager = new HtmlGenericControl( "div" );
                 if ( EnablePaging )
@@ -289,7 +313,7 @@ namespace Rock.Controls
                     script.AppendFormat( @"
         $(""#{0}"").show;
 ",
-                    grid.ClientID);
+                    grid.ClientID );
 
                 if ( EnablePaging )
                     script.AppendFormat( @"
@@ -297,7 +321,7 @@ namespace Rock.Controls
         var {0}_pager = new Slick.Controls.Pager({0}_dataView, {0}_grid, $(""#{1}""));
 ",
                         jsFriendlyClientId,
-                        pager.ClientID);
+                        pager.ClientID );
 
                 if ( EnableOrdering )
                     script.AppendFormat( @"
@@ -349,6 +373,9 @@ namespace Rock.Controls
             {0}_dataView.setItems({0}_data);
 			{0}_grid.setSelectedRows(selectedRows);
             {0}_grid.render();
+
+            {0}_SendServerData(rows + ':' + insertBefore);
+
         }});
 
         {0}_grid.registerPlugin({0}_moveRowsPlugin);
@@ -482,7 +509,7 @@ namespace Rock.Controls
         {0}_dataView.setItems({0}_data);
         {0}_dataView.endUpdate();
 ",
-                    jsFriendlyClientId);
+                    jsFriendlyClientId );
 
                 script.Append( @"
     })
@@ -510,5 +537,39 @@ namespace Rock.Controls
             return options;
         }
 
+
+        public string GetCallbackResult()
+        {
+            return returnValue;
+        }
+
+        public void RaiseCallbackEvent( string eventArgument )
+        {
+            string[] parms = eventArgument.Split( ':' );
+            GridReorderEventArgs args = new GridReorderEventArgs( parms[0], parms[1] );
+            OnGridReorder( args );
+
+            returnValue = eventArgument;
+        }
+
+        public event GridReorderEventHandler GridReorder;
+        protected virtual void OnGridReorder(GridReorderEventArgs e)
+        {
+            if ( GridReorder != null )
+                GridReorder( this, e );
+        }
     }
+
+    public class GridReorderEventArgs : EventArgs
+    {
+        public string Rows { get; private set; }
+        public string InsertBefore { get; private set; }
+
+        public GridReorderEventArgs( string rows, string insertBefore )
+        {
+            Rows = rows;
+            InsertBefore = insertBefore;
+        }
+    }
+    public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );
 }

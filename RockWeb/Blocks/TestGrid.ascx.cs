@@ -14,11 +14,18 @@ namespace RockWeb.Blocks
     {
         protected override void OnInit( EventArgs e )
         {
+            rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
             Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-            rGrid.DataSource = pageService.Queryable().ToList();
+            rGrid.DataSource = pageService.GetPagesByParentPageId(-1).ToList();
             rGrid.DataBind();
 
             base.OnInit( e );
+        }
+
+        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        {
+            string rows = e.Rows;
+            string insertBefore = e.InsertBefore;
         }
     }
 }
