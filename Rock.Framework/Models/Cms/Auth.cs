@@ -23,7 +23,7 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsAuth" )]
-    public partial class Auth : ModelWithAttributes, IAuditable
+    public partial class Auth : ModelWithAttributes, IAuditable, IOrdered
     {
 		[DataMember]
 		public Guid Guid { get; set; }

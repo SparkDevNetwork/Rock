@@ -45,12 +45,12 @@ namespace Rock.Services.Cms
 		
         public IEnumerable<Rock.Models.Cms.Auth> GetAuthsByEntityTypeAndEntityId( string entityType, int? entityId )
         {
-            return _repository.Find( t => t.EntityType == entityType && t.EntityId == entityId );
+            return _repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
         }
 		
         public IEnumerable<Rock.Models.Cms.Auth> GetAuthsByGuid( Guid guid )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return _repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
         }
 		
         public void AddAuth( Rock.Models.Cms.Auth Auth )
@@ -85,6 +85,19 @@ namespace Rock.Services.Cms
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
+            }
+        }
+        public void SaveOrder( List<Rock.Models.Cms.Auth> Auths, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Cms.Auth Auth in Auths )
+            {
+                if ( Auth.Order != order )
+                {
+                    Auth.Order = order;
+                    Save( Auth, personId );
+                }
+                order++;
             }
         }
     }

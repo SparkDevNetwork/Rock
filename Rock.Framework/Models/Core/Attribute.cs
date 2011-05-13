@@ -23,7 +23,7 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreAttribute" )]
-    public partial class Attribute : Model, IAuditable
+    public partial class Attribute : Model, IAuditable, IOrdered
     {
 		[DataMember]
 		public Guid Guid { get; set; }

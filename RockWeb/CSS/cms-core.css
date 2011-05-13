@@ -438,16 +438,3 @@ article.blog-post header ul li:last-child:after {
     font-weight: bold;
     font-size: 16px; 
 }
-
-
-
-.data-grid {
-    background: none repeat scroll 0 0 white;
-    border: 1px solid gray;
-    outline: 0 none;
-    text-align: left;
-}
-.data-grid-cell-reorder {
-	cursor: move;
-	background: url("../Assets/Grid/drag-handle.png") no-repeat center center;
-}

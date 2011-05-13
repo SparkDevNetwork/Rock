@@ -108,6 +108,42 @@ namespace Rock.Controls
 
         [
         Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Unique identifier column name" )
+        ]
+        public virtual string IdColumnName
+        {
+            get
+            {
+                string s = ViewState["IdColumnName"] as string;
+                return ( s == null ) ? "" : s;
+            }
+            set
+            {
+                ViewState["IdColumnName"] = value;
+            }
+        }
+
+        [
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Title to display above grid" )
+        ]
+        public virtual string Title
+        {
+            get
+            {
+                string s = ViewState["Title"] as string;
+                return ( s == null ) ? "" : s;
+            }
+            set
+            {
+                ViewState["Title"] = value;
+            }
+        }
+
+        [
+        Category( "Behavior" ),
         Description( "The column collection" ),
         DesignerSerializationVisibility( DesignerSerializationVisibility.Content ),
             //Editor(typeof(GridColumnCollectionEditor), typeof(UITypeEditor)),
@@ -192,19 +228,62 @@ namespace Rock.Controls
                 cs.RegisterClientScriptBlock( type, receiveDataScript, string.Format( @"
     function {0}_ReceiveServerData(rValue)
     {{
-        alert(rValue);
+    }}
+",
+                    jsFriendlyClientId ), true );
+
+            string toggleControlRow = string.Format( "{0}_ToggleControlRow", jsFriendlyClientId );
+            if ( !cs.IsClientScriptBlockRegistered( type, toggleControlRow ) )
+                cs.RegisterClientScriptBlock( type, toggleControlRow, string.Format( @"
+    function {0}_ToggleControlRow()
+    {{
+        if ($({0}_grid.getTopPanel()).is("":visible""))
+            {0}_grid.hideTopPanel();
+        else
+            {0}_grid.showTopPanel();
+        return false;
     }}
 ",
                     jsFriendlyClientId ), true );
 
             if ( retrievedData != null )
             {
+                if ( Title != string.Empty )
+                {
+                    HtmlGenericControl title = new HtmlGenericControl( "div" );
+                    title.Attributes.Add( "class", "data-grid-header" );
+                    title.Attributes.Add( "style", "width:100%" );
+                    this.Controls.Add( title );
+
+                    HtmlGenericControl titleLabel = new HtmlGenericControl( "label" );
+                    title.Controls.Add( titleLabel );
+                    titleLabel.InnerText = Title;
+
+                    HtmlGenericControl controlsIcon = new HtmlGenericControl( "a" );
+                    controlsIcon.Attributes.Add( "style", "float:right" );
+                    controlsIcon.Attributes.Add( "class", "icon-button attributes" );
+                    controlsIcon.Attributes.Add( "title", "Toggle Controls" );
+                    controlsIcon.Attributes.Add( "href", "#" );
+                    controlsIcon.Attributes.Add( "onclick", string.Format("{0}_ToggleControlRow()", jsFriendlyClientId ) );
+                    title.Controls.Add( controlsIcon );
+                }
+
+//<span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel" onclick="toggleFilterRow()"></span>                }
+
                 // Add the Grid HTML container
                 HtmlGenericControl grid = new HtmlGenericControl( "div" );
                 grid.Attributes.Add( "class", "data-grid" );
-                grid.Attributes.Add( "style", "width:100%;height:100%;" );
+                grid.Attributes.Add( "style", string.Format( "width:100%;height:{0};", this.Height.ToString() ) );
                 grid.ID = this.ID + "_grid";
                 this.Controls.Add( grid );
+
+                HtmlGenericControl controlsGrid = new HtmlGenericControl( "div" );
+                controlsGrid.ID = this.ID + "_controls";
+                controlsGrid.Attributes.Add( "style", "display:none;background:#dddddd;padding:3px;color:black;" );
+                controlsGrid.InnerText = "Control Icons will go here (i.e. excel export)";
+                this.Parent.Controls.Add( controlsGrid );
+
+                this.Height = Unit.Empty;
 
                 HtmlGenericControl pager = new HtmlGenericControl( "div" );
                 if ( EnablePaging )
@@ -216,7 +295,6 @@ namespace Rock.Controls
                 }
 
                 // Create column & function Definitions
-                string idColumn = string.Empty;
                 List<string> columnDefs = new List<string>();
 
                 if ( EnableOrdering )
@@ -224,19 +302,13 @@ namespace Rock.Controls
 
                 foreach ( GridColumn gridColumn in GridColumns )
                 {
-                    if ( gridColumn.DataField == "id" || gridColumn.UniqueIdentifier )
-                    {
-                        if ( idColumn != string.Empty )
-                            throw new ApplicationException( "Only one Unique Identifier column should be defined (A DataField of 'id' acts as a unique identifier)" );
-                        idColumn = gridColumn.DataField;
-                    }
-
-                    columnDefs.Add( "{" + string.Join( ", ", gridColumn.ColumnParameters.ToArray() ) + "}" );
+                    if (gridColumn.Visible)
+                        columnDefs.Add( "{" + string.Join( ", ", gridColumn.ColumnParameters.ToArray() ) + "}" );
 
                     gridColumn.AddScriptFunctions( Page );
                 }
 
-                bool uniqueKey = idColumn != string.Empty;
+                bool uniqueKey = IdColumnName != string.Empty;
 
                 // If grid has a unique key, use a SlickGrid DataView object instead of just a data[] object
                 if ( uniqueKey )
@@ -249,7 +321,7 @@ namespace Rock.Controls
                     List<string> rowColValues = new List<string>();
                     foreach ( GridColumn gridColumn in GridColumns )
                     {
-                        if ( idColumn == gridColumn.DataField && idColumn != "id" )
+                        if ( IdColumnName == gridColumn.DataField && IdColumnName != "id" )
                             rowColValues.Add( string.Format( "id:\"{0}\"", DataBinder.GetPropertyValue( dataItem, gridColumn.DataField, null ) ) );
 
                         rowColValues.Add( gridColumn.RowParameter( dataItem ) );
@@ -304,10 +376,15 @@ namespace Rock.Controls
                 script.AppendFormat( @"
         {0}_grid = new Slick.Grid(""#{1}"", {0}_data{2}, {0}_columns, {0}_options);
         {0}_grid.setSelectionModel(new Slick.RowSelectionModel());
+        
+        $(""#{3}"")
+            .appendTo({0}_grid.getTopPanel())
+            .show();
 ",
                     jsFriendlyClientId,
                     grid.ClientID,
-                    uniqueKey ? "View" : "" );
+                    uniqueKey ? "View" : "",
+                    controlsGrid.ClientID );
 
                 if ( !uniqueKey )
                     script.AppendFormat( @"
@@ -374,7 +451,7 @@ namespace Rock.Controls
 			{0}_grid.setSelectedRows(selectedRows);
             {0}_grid.render();
 
-            {0}_SendServerData(rows + ':' + insertBefore);
+            {0}_SendServerData('REORDER:' + rows + ';' + insertBefore);
 
         }});
 
@@ -545,9 +622,19 @@ namespace Rock.Controls
 
         public void RaiseCallbackEvent( string eventArgument )
         {
-            string[] parms = eventArgument.Split( ':' );
-            GridReorderEventArgs args = new GridReorderEventArgs( parms[0], parms[1] );
-            OnGridReorder( args );
+            if ( eventArgument.StartsWith( "REORDER:" ) )
+            {
+                string[] parms = eventArgument.Substring( 8 ).Split( ';' );
+
+                int oldIndex = 0;
+                Int32.TryParse( parms[0], out oldIndex );
+
+                int newIndex = 0;
+                Int32.TryParse( parms[1], out newIndex );
+
+                GridReorderEventArgs args = new GridReorderEventArgs( oldIndex, newIndex );
+                OnGridReorder( args );
+            }
 
             returnValue = eventArgument;
         }
@@ -562,13 +649,13 @@ namespace Rock.Controls
 
     public class GridReorderEventArgs : EventArgs
     {
-        public string Rows { get; private set; }
-        public string InsertBefore { get; private set; }
+        public int OldIndex { get; private set; }
+        public int NewIndex { get; private set; }
 
-        public GridReorderEventArgs( string rows, string insertBefore )
+        public GridReorderEventArgs( int oldIndex, int newIndex )
         {
-            Rows = rows;
-            InsertBefore = insertBefore;
+            OldIndex = oldIndex;
+            NewIndex = newIndex;
         }
     }
     public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );

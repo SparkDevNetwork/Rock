@@ -45,7 +45,7 @@ namespace Rock.Services.Core
 		
         public IEnumerable<Rock.Models.Core.Attribute> GetAttributesByEntity( string entity )
         {
-            return _repository.Find( t => t.Entity == entity );
+            return _repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
         }
 		
         public void AddAttribute( Rock.Models.Core.Attribute Attribute )
@@ -80,6 +80,19 @@ namespace Rock.Services.Core
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
+            }
+        }
+        public void SaveOrder( List<Rock.Models.Core.Attribute> Attributes, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Core.Attribute Attribute in Attributes )
+            {
+                if ( Attribute.Order != order )
+                {
+                    Attribute.Order = order;
+                    Save( Attribute, personId );
+                }
+                order++;
             }
         }
     }

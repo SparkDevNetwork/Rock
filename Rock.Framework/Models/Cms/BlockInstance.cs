@@ -23,7 +23,7 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlockInstance" )]
-    public partial class BlockInstance : ModelWithAttributes, IAuditable
+    public partial class BlockInstance : ModelWithAttributes, IAuditable, IOrdered
     {
 		[DataMember]
 		public Guid Guid { get; set; }

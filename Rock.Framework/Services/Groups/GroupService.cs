@@ -55,7 +55,7 @@ namespace Rock.Services.Groups
 		
         public IEnumerable<Rock.Models.Groups.Group> GetGroupsByParentGroupIdAndName( int? parentGroupId, string name )
         {
-            return _repository.Find( t => t.ParentGroupId == parentGroupId && t.Name == name );
+            return _repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
 		
         public void AddGroup( Rock.Models.Groups.Group Group )

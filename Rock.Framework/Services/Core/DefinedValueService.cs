@@ -45,7 +45,7 @@ namespace Rock.Services.Core
 		
         public IEnumerable<Rock.Models.Core.DefinedValue> GetDefinedValuesByDefinedTypeId( int definedTypeId )
         {
-            return _repository.Find( t => t.DefinedTypeId == definedTypeId );
+            return _repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }
 		
         public void AddDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
@@ -80,6 +80,19 @@ namespace Rock.Services.Core
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
+            }
+        }
+        public void SaveOrder( List<Rock.Models.Core.DefinedValue> DefinedValues, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Core.DefinedValue DefinedValue in DefinedValues )
+            {
+                if ( DefinedValue.Order != order )
+                {
+                    DefinedValue.Order = order;
+                    Save( DefinedValue, personId );
+                }
+                order++;
             }
         }
     }

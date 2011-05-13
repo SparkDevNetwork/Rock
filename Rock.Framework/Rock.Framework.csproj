@@ -79,6 +79,7 @@
     <Compile Include="Cms\Security\ISecured.cs" />
     <Compile Include="Cms\Security\UserRoleProvider.cs" />
     <Compile Include="Cms\Security\User.cs" />
+    <Compile Include="Controls\GridHyperlinkColumn.cs" />
     <Compile Include="Controls\GridIntegerColumn.cs" />
     <Compile Include="Controls\Grid.cs" />
     <Compile Include="Controls\GridBoolColumn.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Models\Cms\Role.cs" />
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
+    <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">
       <SubType>Code</SubType>

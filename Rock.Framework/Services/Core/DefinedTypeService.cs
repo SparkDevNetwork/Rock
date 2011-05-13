@@ -77,5 +77,18 @@ namespace Rock.Services.Core
                 }
             }
         }
+        public void SaveOrder( List<Rock.Models.Core.DefinedType> DefinedTypes, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Core.DefinedType DefinedType in DefinedTypes )
+            {
+                if ( DefinedType.Order != order )
+                {
+                    DefinedType.Order = order;
+                    Save( DefinedType, personId );
+                }
+                order++;
+            }
+        }
     }
 }
