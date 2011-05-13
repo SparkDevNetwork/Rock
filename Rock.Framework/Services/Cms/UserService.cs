@@ -60,7 +60,7 @@ namespace Rock.Services.Cms
 		
         public IEnumerable<Rock.Models.Cms.User> GetUsersByPersonId( int? personId )
         {
-            return _repository.Find( t => t.PersonId == personId );
+            return _repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
 		
         public void AddUser( Rock.Models.Cms.User User )

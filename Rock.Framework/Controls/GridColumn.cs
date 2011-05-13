@@ -19,15 +19,16 @@ namespace Rock.Controls
         private bool sortableValue;
         private string classNameValue;
         private bool uniqueIdentifierValue;
+        private bool visibleValue;
 
         public GridColumn()
-            : this( string.Empty, string.Empty, string.Empty, 0, 0, false, true, false, string.Empty )
+            : this( string.Empty, string.Empty, string.Empty, 0, 0, false, true, false, string.Empty, true )
         {
         }
 
         public GridColumn( string headerText, string dataField, string dataFormatString,
             int width, int minWidth, bool canEdit, bool sortable, bool uniqueIdentifier,
-            string className )
+            string className, bool visible )
         {
             headerTextValue = headerText;
             dataFieldValue = dataField;
@@ -38,6 +39,7 @@ namespace Rock.Controls
             sortableValue = sortable;
             uniqueIdentifierValue = uniqueIdentifier;
             classNameValue = className;
+            visibleValue = visible;
         }
 
         [
@@ -146,6 +148,18 @@ namespace Rock.Controls
         {
             get { return classNameValue; }
             set { classNameValue = value; }
+        }
+
+        [
+        Category( "Behavior" ),
+        DefaultValue( false ),
+        Description( "Should column be displayed" ),
+        NotifyParentProperty( true ),
+        ]
+        public bool Visible
+        {
+            get { return visibleValue; }
+            set { visibleValue = value; }
         }
 
         internal virtual List<string> ColumnParameters

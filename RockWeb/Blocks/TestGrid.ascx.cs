@@ -12,11 +12,15 @@ namespace RockWeb.Blocks
 {
     public partial class TestGrid : Rock.Cms.CmsBlock
     {
+        Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        List<Rock.Models.Cms.Page> pages;
+
         protected override void OnInit( EventArgs e )
         {
             rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-            Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-            rGrid.DataSource = pageService.GetPagesByParentPageId(-1).ToList();
+
+            pages = pageService.GetPagesByParentPageId( null ).ToList();
+            rGrid.DataSource = pages;
             rGrid.DataBind();
 
             base.OnInit( e );
@@ -24,8 +28,11 @@ namespace RockWeb.Blocks
 
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
-            string rows = e.Rows;
-            string insertBefore = e.InsertBefore;
+            Rock.Models.Cms.Page page = pages[e.OldIndex];
+            pages.RemoveAt( e.OldIndex );
+            pages.Insert( e.NewIndex > e.OldIndex ? e.NewIndex - 1 : e.NewIndex, page );
+
+            pageService.SaveOrder( pages, CurrentPersonId );
         }
     }
 }
