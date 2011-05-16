@@ -511,6 +511,28 @@ namespace Rock.Cms
                         Trace.Write( string.Format( "End Block Instance: {0}", blockInstance.Id ) );
                     }
 
+                    // Add favicon and apple touch icons to page
+                    if ( PageInstance.Site.FaviconUrl != null )
+                    {
+                        System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+                        faviconLink.Attributes.Add( "rel", "shortcut icon" );
+                        faviconLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.FaviconUrl) );
+
+                        PageInstance.AddHtmlLink( this.Page, faviconLink );
+                    }
+
+                    if ( PageInstance.Site.AppleTouchUrl != null )
+                    {
+                        System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+                        touchLink.Attributes.Add( "rel", "apple-touch-icon" );
+                        touchLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.AppleTouchUrl) );
+
+                        PageInstance.AddHtmlLink( this.Page, touchLink );
+                    }
+
+
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( PageInstance.IncludeAdminFooter && canEditPage)
                     {
