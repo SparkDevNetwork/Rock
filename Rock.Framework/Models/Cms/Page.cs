@@ -28,6 +28,14 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public Guid Guid { get; set; }
 		
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Name { get; set; }
+		
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Title { get; set; }
+		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -42,14 +50,28 @@ namespace Rock.Models.Cms
 		public string Layout { get; set; }
 		
 		[DataMember]
+		public bool RequiresEncryption { get; set; }
+		
+		[DataMember]
+		public bool EnableViewState { get; set; }
+		
+		[DataMember]
+		public bool MenuDisplayDescription { get; set; }
+		
+		[DataMember]
+		public bool MenuDisplayIcon { get; set; }
+		
+		[DataMember]
+		public bool MenuDisplayChildPages { get; set; }
+		
+		[DataMember]
+		public int DisplayInNavWhen { get; set; }
+		
+		[DataMember]
 		public int Order { get; set; }
 		
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
-		
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
 		
 		[DataMember]
 		public string Description { get; set; }
