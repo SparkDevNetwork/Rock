@@ -20,6 +20,8 @@ namespace Rock.Cms.Cached
         public string Name { get; private set; }
         public string Description { get; private set; }
         public string Theme { get; private set; }
+        public string FaviconUrl { get; private set; }
+        public string AppleTouchUrl { get; private set; }
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
@@ -99,6 +101,8 @@ namespace Rock.Cms.Cached
                     site.Description = siteModel.Description;
                     site.Theme = siteModel.Theme;
                     site.DefaultPageId = siteModel.DefaultPageId;
+                    site.AppleTouchUrl = siteModel.AppleTouchIconUrl;
+                    site.FaviconUrl = siteModel.FaviconUrl;
 
                     siteService.LoadAttributes( siteModel );
 

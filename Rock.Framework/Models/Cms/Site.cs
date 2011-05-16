@@ -45,6 +45,14 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public int? DefaultPageId { get; set; }
 		
+		[MaxLength( 150 )]
+		[DataMember]
+		public string FaviconUrl { get; set; }
+		
+		[MaxLength( 150 )]
+		[DataMember]
+		public string AppleTouchIconUrl { get; set; }
+		
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
