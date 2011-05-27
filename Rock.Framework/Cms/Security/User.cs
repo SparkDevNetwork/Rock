@@ -31,6 +31,13 @@ namespace Rock.Cms.Security
           PasswordAnswer = 2
         }
 
+        public enum AuthenticationType
+        {
+            Database = 1,
+            Facebook = 2, 
+            ActiveDirectory = 3
+        }
+
         #region Properties
 
         public override string ApplicationName
@@ -231,6 +238,7 @@ namespace Rock.Cms.Security
                 user.FailedPasswordAttemptWindowStart = createDate;
                 user.FailedPasswordAnswerAttemptCount = 0;
                 user.FailedPasswordAnswerAttemptWindowStart = createDate;
+                user.AuthenticationType = (int)AuthenticationType.Database;
 
                 try
                 {
