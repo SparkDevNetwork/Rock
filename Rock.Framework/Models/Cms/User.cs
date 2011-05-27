@@ -44,9 +44,8 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public string Comment { get; set; }
 		
-		[MaxLength( 25 )]
 		[DataMember]
-		public string AuthenticationType { get; set; }
+		public int AuthenticationType { get; set; }
 		
 		[MaxLength( 128 )]
 		[DataMember]

@@ -34,3 +34,7 @@
             <asp:Button ID="LoginButton" runat="server" CommandName="Login" Text="Log In" ValidationGroup="LoginUserValidationGroup" />
     </LayoutTemplate>
 </asp:Login>
+
+<div class="facebook-login">
+    <asp:ImageButton ID="ibFacebookLogin" runat="server" ImageUrl="~/Assets/Images/fb-login.png" BorderStyle="None" OnClick="ibFacebookLogin_Click" />
+</div>
