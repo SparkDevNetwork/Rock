@@ -11,13 +11,19 @@ namespace RockWeb.Blocks.Cms
 {
     public partial class Login : CmsBlock
     {
-        protected void Page_Init(object sender, EventArgs e)
-        {
-            
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
+            // determine if Facebook login enabled
+            string facebookAppId = PageInstance.Site.FacebookAppId;
+            string facebookAppSecret = PageInstance.Site.FacebookAppSecret;
+            bool facebookEnabled = Convert.ToBoolean( AttributeValue( "FacebookEnabled" ) );
+
+            // disable the facebook login button if it's not able to be used
+            if ( !facebookEnabled ||  facebookAppId == "" || facebookAppSecret == "")
+            {
+                phFacebookLogin.Visible = false;
+            }
+            
             // Check for Facebook query string params. If exists, assume it's a redirect back from Facebook.
             if ( Request.QueryString["code"] != null )
             {
@@ -34,8 +40,8 @@ namespace RockWeb.Blocks.Cms
         {
             var returnUrl = Request.QueryString["returnurl"];
             var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-            oAuthClient.AppId = "201981526511937";
-            oAuthClient.AppSecret = "79893a57ac39dbae0b05a8972319073b";
+            oAuthClient.AppId = PageInstance.Site.FacebookAppId;
+            oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
 
             // Grab publically available information. No special permissions needed for authentication.
             var loginUri = oAuthClient.GetLoginUrl( new Dictionary<string, object> { { "state", returnUrl } } );
@@ -52,44 +58,48 @@ namespace RockWeb.Blocks.Cms
             FacebookOAuthResult oAuthResult;
 
             if ( FacebookOAuthResult.TryParse( Request.Url, out oAuthResult ) && oAuthResult.IsSuccess )
-            {               
-                var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-                oAuthClient.AppId = "201981526511937";
-                oAuthClient.AppSecret = "79893a57ac39dbae0b05a8972319073b";
-                dynamic tokenResult = oAuthClient.ExchangeCodeForAccessToken( code );
-                string accessToken = tokenResult.access_token;
-
-                FacebookClient fbClient = new FacebookClient( accessToken );
-                dynamic me = fbClient.Get( "me" );
-                var userRepository = new EntityUserRepository();
-                string facebookId = me.id.ToString();
-                var user = userRepository.FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 );
-
-                if ( user == null )
+            {
+                try
                 {
-                    // TODO: Show label indicating inability to find user corresponding to facebook id
-                    return;
+                    var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
+                    oAuthClient.AppId = PageInstance.Site.FacebookAppId;
+                    oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
+                    dynamic tokenResult = oAuthClient.ExchangeCodeForAccessToken( code );
+                    string accessToken = tokenResult.access_token;
+
+                    FacebookClient fbClient = new FacebookClient( accessToken );
+                    dynamic me = fbClient.Get( "me" );
+                    var userRepository = new EntityUserRepository();
+                    string facebookId = me.id.ToString();
+                    var user = userRepository.FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 );
+
+                    if ( user == null )
+                    {
+                        // TODO: Show label indicating inability to find user corresponding to facebook id
+                        return;
+                    }
+
+                    FormsAuthentication.SetAuthCookie( user.Username, false );
+
+                    if ( state != null )
+                    {
+                        Response.Redirect( state );
+                    }
                 }
-                 
-                FormsAuthentication.SetAuthCookie( user.Username, false );
-
-                if ( state != null )
+                catch ( FacebookOAuthException oae )
                 {
-                    Response.Redirect( state );
-                } 
+                    // TODO: Add error handeling
+                    // Error validating verification code. (usually from wrong return url very picky with formatting)
+                    // Error validating client secret.
+                    // Error validating application.
+                }
             }
-
-            // TODO: Supply user feedback indicating authentication was not successful.
         }
 
         private string GetOAuthRedirectUrl()
         {
-            // TODO: Does this actually provide the correct absolute path to the current page?
-            //return new Uri( string.Format( "~/page/{0}/{1}", PageInstance.Id, Request.QueryString ) ).AbsoluteUri;
-            //return HttpContext.Current.Request.Url.ToString();
-            return "http://localhost:64987/RockWeb/login";
+            Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
-
-
     }
 }

@@ -53,6 +53,22 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public string AppleTouchIconUrl { get; set; }
 		
+		[MaxLength( 25 )]
+		[DataMember]
+		public string FacebookAppId { get; set; }
+		
+		[MaxLength( 50 )]
+		[DataMember]
+		public string FacebookAppSecret { get; set; }
+		
+		[MaxLength( 10 )]
+		[DataMember]
+		public string LoginPageReference { get; set; }
+		
+		[MaxLength( 10 )]
+		[DataMember]
+		public string RegistrationPageReference { get; set; }
+		
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		

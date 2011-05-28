@@ -35,6 +35,8 @@
     </LayoutTemplate>
 </asp:Login>
 
-<div class="facebook-login">
-    <asp:ImageButton ID="ibFacebookLogin" runat="server" ImageUrl="~/Assets/Images/fb-login.png" BorderStyle="None" OnClick="ibFacebookLogin_Click" />
-</div>
+<asp:PlaceHolder ID="phFacebookLogin" runat="server">
+    <div class="facebook-login">
+        <asp:ImageButton ID="ibFacebookLogin" runat="server" ImageUrl="~/Assets/Images/fb-login.png" BorderStyle="None" OnClick="ibFacebookLogin_Click" />
+    </div>
+</asp:PlaceHolder>

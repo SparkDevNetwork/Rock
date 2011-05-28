@@ -23,6 +23,8 @@ namespace Rock.Cms.Cached
         public string FaviconUrl { get; private set; }
         public string AppleTouchUrl { get; private set; }
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+        public string FacebookAppId { get; private set; }
+        public string FacebookAppSecret { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -103,6 +105,8 @@ namespace Rock.Cms.Cached
                     site.DefaultPageId = siteModel.DefaultPageId;
                     site.AppleTouchUrl = siteModel.AppleTouchIconUrl;
                     site.FaviconUrl = siteModel.FaviconUrl;
+                    site.FacebookAppId = siteModel.FacebookAppId;
+                    site.FacebookAppSecret = siteModel.FacebookAppSecret;
 
                     siteService.LoadAttributes( siteModel );
 
