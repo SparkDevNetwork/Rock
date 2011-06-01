@@ -242,6 +242,13 @@ namespace Rock.Cms
             // If a PageInstance exists
             if ( PageInstance != null )
             {
+                // check if page should have been loaded via ssl
+                if ( !Request.IsSecureConnection && PageInstance.RequiresEncryption )
+                {
+                    string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
+                    Response.Redirect( redirectUrl ); 
+                }
+                
                 if ( !PageInstance.Authorized( "View", user ) )
                 {
                     if ( user == null || !user.IsApproved )
@@ -250,6 +257,15 @@ namespace Rock.Cms
                 else
                 {
                     Trace.Write( "Checked if user is authorized to view page" );
+
+                    // set page title
+                    if ( PageInstance.Title != null && PageInstance.Title != "" )
+                        this.Title = PageInstance.Title;
+                    else
+                        this.Title = PageInstance.Name;
+
+                    // set viewstate on/off
+                    this.EnableViewState = PageInstance.EnableViewstate;
 
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
@@ -509,6 +525,27 @@ namespace Rock.Cms
                         }
 
                         Trace.Write( string.Format( "End Block Instance: {0}", blockInstance.Id ) );
+                    }
+
+                    // Add favicon and apple touch icons to page
+                    if ( PageInstance.Site.FaviconUrl != null )
+                    {
+                        System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+                        faviconLink.Attributes.Add( "rel", "shortcut icon" );
+                        faviconLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.FaviconUrl) );
+
+                        PageInstance.AddHtmlLink( this.Page, faviconLink );
+                    }
+
+                    if ( PageInstance.Site.AppleTouchUrl != null )
+                    {
+                        System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
+
+                        touchLink.Attributes.Add( "rel", "apple-touch-icon" );
+                        touchLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.AppleTouchUrl) );
+
+                        PageInstance.AddHtmlLink( this.Page, touchLink );
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
