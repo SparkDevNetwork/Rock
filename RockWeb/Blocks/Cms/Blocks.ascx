@@ -2,15 +2,13 @@
 
 <asp:PlaceHolder ID="phList" runat="server" Visible="false">
 
-	<asp:GridView ID="gvList" runat="server" AutoGenerateColumns="false">
-		<Columns>
-			<asp:HyperLinkField HeaderText="Block" DataNavigateUrlFormatString="~/Bloc/Edit/{0}" DataNavigateUrlFields="Id" DataTextField="Name" />
-			<asp:BoundField HeaderText="Path" DataField="Path" />
-			<asp:BoundField HeaderText="Name" DataField="Name" />
-			<asp:BoundField HeaderText="Description" DataField="Description" />
-		</Columns>
-	</asp:GridView> 
-
+    <Rock:Grid ID="gList" runat="server" EnableEdit="false" EnableOrdering="false" EnablePaging="true" IdColumnName="Id" Height="500" Width="600">
+        <Rock:GridColumn DataField="Id" Visible="false" />
+        <Rock:GridHyperlinkColumn HeaderText="Block" DataNavigateUrlFormatString="~/Bloc/Edit/{0}" DataNavigateUrlField="Id" DataField="Name" Width="100" />
+        <Rock:GridColumn DataField="Name" HeaderText="Name" Width="100" />
+        <Rock:GridColumn DataField="Description" HeaderText="Description" Width="200" />
+    </Rock:Grid>
+	
 	<asp:HyperLink ID="hlAdd" runat="server" Text="Add New Block" NavigateUrl="~/Bloc/Add"></asp:HyperLink>
 
 </asp:PlaceHolder>

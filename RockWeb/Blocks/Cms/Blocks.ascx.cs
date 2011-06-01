@@ -40,8 +40,8 @@ namespace RockWeb.Blocks.Cms
 			phDetails.Visible = false;
 
 			Rock.Services.Cms.BlockService service = new Rock.Services.Cms.BlockService();
-			gvList.DataSource = service.Queryable().ToList();
-			gvList.DataBind();
+			gList.DataSource = service.Queryable().ToList();
+			gList.DataBind();
 		}
 
 		private void DisplayEdit( int blockId )
