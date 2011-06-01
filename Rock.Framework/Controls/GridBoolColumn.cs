@@ -40,7 +40,7 @@ namespace Rock.Controls
         return value ? ""<img src='{0}'>"" : """";
     }}
 ",
-                    page.ResolveUrl( "~/Assets/Grid/tick.png" ) ), true );
+                    page.ResolveUrl( "~/Assets/Images/Grid/tick.png" ) ), true );
 
             if ( CanEdit )
             {
