@@ -44,6 +44,9 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public string Comment { get; set; }
 		
+		[DataMember]
+		public int AuthenticationType { get; set; }
+		
 		[MaxLength( 128 )]
 		[DataMember]
 		public string Password { get; set; }
@@ -109,10 +112,6 @@ namespace Rock.Models.Cms
 		
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		[MaxLength( 100 )]
-		[DataMember]
-		public string FacebookId { get; set; }
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.User"; } }

@@ -25,8 +25,15 @@ namespace Rock.Cms.Cached
         public int Order { get; private set; }
         public int OutputCacheDuration { get; private set; }
         public string Name { get; private set; }
+        public string Title { get; private set; }
         public string Description { get; private set; }
         public bool IncludeAdminFooter { get; private set; }
+        public bool MenuDisplayDescription { get; private set; }
+        public bool MenuDisplayIcon { get; private set; }
+        public bool MenuDisplayChildPages { get; private set; }
+        public int DisplayInNavWhen { get; private set; }
+        public bool RequiresEncryption { get; private set; }
+        public bool EnableViewstate { get; private set; }
 
         private int _routeId = -1;
         public int RouteId {
@@ -374,6 +381,13 @@ namespace Rock.Cms.Cached
             page.Description = pageModel.Description;
             page.AttributeValues = pageModel.AttributeValues;
             page.IncludeAdminFooter = pageModel.IncludeAdminFooter;
+            page.Title = pageModel.Title;
+            page.DisplayInNavWhen = pageModel.DisplayInNavWhen;
+            page.MenuDisplayChildPages = pageModel.MenuDisplayChildPages;
+            page.MenuDisplayDescription = pageModel.MenuDisplayDescription;
+            page.MenuDisplayIcon = pageModel.MenuDisplayIcon;
+            page.EnableViewstate = pageModel.EnableViewState;
+            page.RequiresEncryption = pageModel.RequiresEncryption;
 
             foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
             {
