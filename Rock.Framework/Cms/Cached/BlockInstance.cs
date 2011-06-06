@@ -136,11 +136,12 @@ namespace Rock.Cms.Cached
             blockInstance.AttributeValues = blockInstanceModel.AttributeValues;
 
             blockInstance.AttributeIds = new List<int>();
-            foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-            {
-                blockInstance.AttributeIds.Add( attribute.Id );
-                Attribute.Read( attribute );
-            }
+            if (blockInstanceModel.Attributes != null)
+                foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
+                {
+                    blockInstance.AttributeIds.Add( attribute.Id );
+                    Attribute.Read( attribute );
+                }
 
             blockInstance.AuthEntity = blockInstanceModel.AuthEntity;
             blockInstance.SupportedActions = blockInstanceModel.SupportedActions;

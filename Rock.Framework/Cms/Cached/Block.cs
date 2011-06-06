@@ -90,11 +90,12 @@ namespace Rock.Cms.Cached
 
                     block.AttributeValues = blockModel.AttributeValues;
 
-                    foreach ( Rock.Models.Core.Attribute attribute in blockModel.Attributes )
-                    {
-                        block.AttributeIds.Add( attribute.Id );
-                        Attribute.Read( attribute );
-                    }
+                    if (blockModel.Attributes != null)
+                        foreach ( Rock.Models.Core.Attribute attribute in blockModel.Attributes )
+                        {
+                            block.AttributeIds.Add( attribute.Id );
+                            Attribute.Read( attribute );
+                        }
 
                     cache.Set( cacheKey, block, new CacheItemPolicy() );
 

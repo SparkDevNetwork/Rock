@@ -4,6 +4,7 @@ using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Xml.Linq;
 
 using Rock.Helpers;
 
@@ -20,6 +21,8 @@ namespace Rock.Cms.Cached
         /// </summary>
         private Page() { }
 
+        #region Properties
+
         public int Id { get; private set; }
         public string Layout { get; private set; }
         public int Order { get; private set; }
@@ -31,12 +34,13 @@ namespace Rock.Cms.Cached
         public bool MenuDisplayDescription { get; private set; }
         public bool MenuDisplayIcon { get; private set; }
         public bool MenuDisplayChildPages { get; private set; }
-        public int DisplayInNavWhen { get; private set; }
+        public Models.Cms.DisplayInNavWhen DisplayInNavWhen { get; private set; }
         public bool RequiresEncryption { get; private set; }
         public bool EnableViewstate { get; private set; }
 
         private int _routeId = -1;
-        public int RouteId {
+        public int RouteId 
+        {
             get
             {
                 return _routeId;
@@ -46,7 +50,9 @@ namespace Rock.Cms.Cached
                 _routeId = value;
             }
         }
-        public PageReference PageReference {
+
+        public PageReference PageReference 
+        {
             get
             {
                 return new PageReference( Id, RouteId );
@@ -168,6 +174,10 @@ namespace Rock.Cms.Cached
             }
         }
 
+        #endregion
+
+        #region Public Methods
+
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
@@ -180,6 +190,21 @@ namespace Rock.Cms.Cached
                     pageService.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
+
+        public bool DisplayInNav( System.Web.Security.MembershipUser user )
+        {
+            switch ( this.DisplayInNavWhen )
+            {
+                case Models.Cms.DisplayInNavWhen.Always:
+                    return true;
+                case Models.Cms.DisplayInNavWhen.WhenAllowed:
+                    return this.Authorized( "View", user );
+                default:
+                    return false;
+            }
+        }
+
+        #endregion
 
         #region SharedItemCaching
 
@@ -389,11 +414,12 @@ namespace Rock.Cms.Cached
             page.EnableViewstate = pageModel.EnableViewState;
             page.RequiresEncryption = pageModel.RequiresEncryption;
 
-            foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
-            {
-                page.AttributeIds.Add( attribute.Id );
-                Attribute.Read( attribute );
-            }
+            if (pageModel.Attributes != null)
+                foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
+                {
+                    page.AttributeIds.Add( attribute.Id );
+                    Attribute.Read( attribute );
+                }
 
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;
@@ -435,5 +461,51 @@ namespace Rock.Cms.Cached
         }
 
         #endregion
+
+        #region Menu XML Methods
+
+        public XDocument MenuXml( System.Web.Security.MembershipUser user )
+        {
+            return MenuXml( 1, user );
+        }
+
+        public XDocument MenuXml( int levelsDeep, System.Web.Security.MembershipUser user )
+        {
+            XElement menuElement = MenuXmlElement( levelsDeep, user );
+            return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
+        }
+
+        private XElement MenuXmlElement( int levelsDeep,  System.Web.Security.MembershipUser user )
+        {
+            if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
+            {
+                XElement pageElement = new XElement( "page",
+                    new XAttribute( "id", this.Id ),
+                    new XAttribute( "title", this.Title ?? this.Name ),
+                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
+                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
+                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
+                    new XElement( "description", this.Description ?? "" ) );
+
+                XElement childPagesElement = new XElement( "pages" );
+
+                pageElement.Add( childPagesElement );
+
+                if ( levelsDeep > 0 && this.MenuDisplayChildPages)
+                foreach ( Page page in Pages )
+                {
+                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, user );
+                    if ( childPageElement != null )
+                        childPagesElement.Add( childPageElement );
+                }
+
+                return pageElement;
+            }
+            else
+                return null;
+        }
+
+        #endregion
+
     }
 }

@@ -64,8 +64,9 @@ namespace Rock.Cms.Cached
             {
                 siteService.LoadAttributes( siteModel );
 
-                foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
-                    siteService.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                if ( siteModel.Attributes != null )
+                    foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
+                        siteService.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
