@@ -64,8 +64,15 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public bool MenuDisplayChildPages { get; set; }
 		
-		[DataMember]
-		public int DisplayInNavWhen { get; set; }
+		[DataMember(Name = "DisplayInNavWhen")]
+		internal int DisplayInNavWhenInternal { get; set; }
+
+		[NotMapped]
+		public DisplayInNavWhen DisplayInNavWhen
+		{
+			get { return (DisplayInNavWhen)this.DisplayInNavWhenInternal; }
+			set { this.DisplayInNavWhenInternal = (int)value; }
+		}
 		
 		[DataMember]
 		public int Order { get; set; }

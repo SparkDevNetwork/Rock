@@ -159,8 +159,46 @@ namespace Rock.Models<#= projectNamespace #>
 		[MaxLength( <#= column.DataType.MaximumLength.ToString() #> )]
 <#
 					}
+
+					string dataMember = "[DataMember]";
+					string property = "";
 					
-					string property = "public " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }";
+					if (column.DataType.ToString() == "int")
+					{
+						// Check for enumeration in the description property in the format enum[NameOfEnum]
+						ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
+						
+						if (descProperty != null)
+						{
+							string colDesc = descProperty.Value.ToString();
+							int iStart = colDesc.ToLower().IndexOf("enum[");
+							if (iStart > 0)
+							{
+								iStart += 5;
+								int iEnd = colDesc.IndexOf("]", iStart);
+								if (iEnd > iStart)
+								{
+									string enumName = colDesc.Substring(iStart, iEnd - iStart);
+									
+									dataMember = "[DataMember(Name = \"" + column.Name + "\")]";
+									
+									property = 
+									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
+									"\t\t[NotMapped]\n" +
+									"\t\tpublic " + enumName + " " + column.Name + "\n" +
+									"\t\t{\n" +
+									"\t\t\tget { return (" + enumName + ")this." + column.Name + "Internal; }\n" +
+									"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
+									"\t\t}";
+
+								}
+							}
+						}						
+					}
+						
+					if (property == "")
+						property = "public " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }";
+						
 					List<string> attributes = TemplateHelper.getAttributes(partialClassLines, property);
 					foreach(string attribute in attributes)
 					{
@@ -169,7 +207,7 @@ namespace Rock.Models<#= projectNamespace #>
 <#
 					}
 #>
-		[DataMember]
+		<#= dataMember #>
 		<#= property #>
 		
 <#
