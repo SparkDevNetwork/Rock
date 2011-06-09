@@ -45,12 +45,12 @@ namespace Rock.Services.Cms
 		
         public IEnumerable<Rock.Models.Cms.Page> GetPagesByGuid( Guid guid )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return _repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
         }
 		
         public IEnumerable<Rock.Models.Cms.Page> GetPagesByParentPageId( int? parentPageId )
         {
-            return _repository.Find( t => t.ParentPageId == parentPageId );
+            return _repository.Find( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
         public void AddPage( Rock.Models.Cms.Page Page )
@@ -85,6 +85,19 @@ namespace Rock.Services.Cms
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
+            }
+        }
+        public void SaveOrder( List<Rock.Models.Cms.Page> Pages, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Cms.Page Page in Pages )
+            {
+                if ( Page.Order != order )
+                {
+                    Page.Order = order;
+                    Save( Page, personId );
+                }
+                order++;
             }
         }
     }

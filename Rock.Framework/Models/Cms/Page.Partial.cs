@@ -14,4 +14,11 @@ namespace Rock.Models.Cms
             return Name;
         }
     }
+
+    public enum DisplayInNavWhen
+    {
+        WhenAllowed = 0,
+        Always = 1,
+        Never = 2
+    }
 }

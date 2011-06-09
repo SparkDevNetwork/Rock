@@ -48,11 +48,11 @@ namespace Rock.Cms
 
             Rock.Cms.Cached.Page page = Rock.Cms.Cached.Page.Read( Convert.ToInt32(pageId) );
 
-            // load the route id
-            page.RouteId = routeId;
-
             if ( page != null && !String.IsNullOrEmpty( page.LayoutPath ) )
             {
+                // load the route id
+                page.RouteId = routeId;
+
                 // Return the page using the cached route
                 CmsPage cmsPage = ( CmsPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( CmsPage ) );
                 cmsPage.PageInstance = page;
@@ -66,6 +66,9 @@ namespace Rock.Cms
 
                 if ( page != null )
                 {
+                    // load the route id
+                    page.RouteId = routeId;
+
                     theme = page.Site.Theme;
                     layout = page.Layout;
                     layoutPath = Rock.Cms.Cached.Page.FormatPath( theme, layout );
@@ -76,7 +79,7 @@ namespace Rock.Cms
                 try
                 {
                     // Return the page for the selected theme and layout
-                    CmsPage cmsPage = ( CmsPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( CmsPage ) );
+                    CmsPage cmsPage = ( CmsPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( CmsPage ) );
                     cmsPage.PageInstance = page;
                     return cmsPage;
                 }
@@ -100,7 +103,7 @@ namespace Rock.Cms
                         page.LayoutPath = layoutPath;
 
                     // Return the default layout and/or theme
-                    CmsPage cmsPage = ( CmsPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( CmsPage ) );
+                    CmsPage cmsPage = ( CmsPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( CmsPage ) );
                     cmsPage.PageInstance = page;
                     return cmsPage;
                 }
