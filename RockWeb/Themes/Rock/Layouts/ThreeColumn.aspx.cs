@@ -7,9 +7,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Cms;
 
-namespace Rock.Themes.Rock.Layouts
+namespace Rock.Themes.Default.Layouts
 {
-    public partial class Splash : CmsPage
+    public partial class ThreeColumn : CmsPage
     {
         protected override void OnInit( EventArgs e )
         {
@@ -19,11 +19,17 @@ namespace Rock.Themes.Rock.Layouts
             AddScriptLink( Page, "~/Themes/Default/Scripts/jquery-placeholder-plugin.js" );
           
             base.OnInit( e );
+
+            lUserName.Text = this.UserName;
         }
 
         protected override void DefineZones()
         {
-            Zones.Add( "Main", Main );
+            Zones.Add( "Header", Heading );
+            Zones.Add( "FirstColumn", FirstColumn );
+            Zones.Add( "SecondColumn", SecondColumn );
+            Zones.Add( "ThirdColumn", ThirdColumn );
+            Zones.Add( "Footer", Footer );
         }
     }
 }
