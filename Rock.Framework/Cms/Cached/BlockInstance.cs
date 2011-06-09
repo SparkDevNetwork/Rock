@@ -68,6 +68,29 @@ namespace Rock.Cms.Cached
             }
         }
 
+        public void ReloadAttributeValues()
+        {
+            using ( new Rock.Helpers.UnitOfWorkScope() )
+            {
+                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
+                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( this.Id );
+
+                if ( blockInstanceModel != null )
+                {
+                    blockInstanceService.LoadAttributes( blockInstanceModel );
+                    this.AttributeValues = blockInstanceModel.AttributeValues;
+
+                    this.AttributeIds = new List<int>();
+                    if ( blockInstanceModel.Attributes != null )
+                        foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
+                        {
+                            this.AttributeIds.Add( attribute.Id );
+                            Attribute.Read( attribute );
+                        }
+                }
+            }
+        }
+
         #region Static Methods
 
         private static string CacheKey( int id )
