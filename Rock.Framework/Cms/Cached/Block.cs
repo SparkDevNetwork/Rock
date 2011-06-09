@@ -19,6 +19,9 @@ namespace Rock.Cms.Cached
         public string Path { get; private set; }
         public string Name { get; private set; }
         public string Description { get; private set; }
+
+        public bool InstancePropertiesVerified { get; internal set; }
+
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
@@ -85,6 +88,7 @@ namespace Rock.Cms.Cached
                     block.Path = blockModel.Path;
                     block.Name = blockModel.Name;
                     block.Description = blockModel.Description;
+                    block.InstancePropertiesVerified = false;
 
                     blockService.LoadAttributes( blockModel );
 
@@ -97,7 +101,17 @@ namespace Rock.Cms.Cached
                             Attribute.Read( attribute );
                         }
 
-                    cache.Set( cacheKey, block, new CacheItemPolicy() );
+                    // Block cache expiration monitors the actual block on the file system so that it is flushed from 
+                    // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any
+                    // BlockInstancePropery attributes that may have been added or modified
+                    string physicalPath = System.Web.HttpContext.Current.Request.MapPath( block.Path );
+                    List<string> filePaths = new List<string>();
+                    filePaths.Add( physicalPath );
+                    filePaths.Add( physicalPath + ".cs" );
+
+                    CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
+                    cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
+                    cache.Set( cacheKey, block, cacheItemPolicy );
 
                     return block;
                 }

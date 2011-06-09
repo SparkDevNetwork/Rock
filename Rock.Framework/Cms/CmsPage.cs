@@ -369,6 +369,12 @@ namespace Rock.Cms
                                     cmsBlock.BlockInstance = blockInstance;
                                     Trace.Write( "Set block cached instance properties" );
 
+                                    // If the block's BlockInstanceProperty values have not yet been verified verify them.
+                                    // (This provides a mechanism for block developers to define the needed blockinstance 
+                                    //  attributes in code and have them automatically added to the database)
+                                    if ( !blockInstance.Block.InstancePropertiesVerified )
+                                        cmsBlock.VerifyInstanceAttributes();
+
                                     // If user has edit or configuration rights add the configure buttons and attribute
                                     // edit panel in addition to the user block
                                     if ( canConfig )
