@@ -45,12 +45,12 @@ namespace Rock.Services.Cms
 		
         public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByLayout( string layout )
         {
-            return _repository.Find( t => t.Layout == layout );
+            return _repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
         }
 		
         public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByPageId( int? pageId )
         {
-            return _repository.Find( t => t.PageId == pageId );
+            return _repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
         public void AddBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
@@ -85,6 +85,19 @@ namespace Rock.Services.Cms
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }
+            }
+        }
+        public void SaveOrder( List<Rock.Models.Cms.BlockInstance> BlockInstances, int? personId )
+        {
+            int order = 0;
+            foreach ( Rock.Models.Cms.BlockInstance BlockInstance in BlockInstances )
+            {
+                if ( BlockInstance.Order != order )
+                {
+                    BlockInstance.Order = order;
+                    Save( BlockInstance, personId );
+                }
+                order++;
             }
         }
     }

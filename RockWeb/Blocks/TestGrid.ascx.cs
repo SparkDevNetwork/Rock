@@ -12,13 +12,27 @@ namespace RockWeb.Blocks
 {
     public partial class TestGrid : Rock.Cms.CmsBlock
     {
+        Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        List<Rock.Models.Cms.Page> pages;
+
         protected override void OnInit( EventArgs e )
         {
-            Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-            rGrid.DataSource = pageService.Queryable().ToList();
+            rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
+
+            pages = pageService.GetPagesByParentPageId( null ).ToList();
+            rGrid.DataSource = pages;
             rGrid.DataBind();
 
             base.OnInit( e );
+        }
+
+        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        {
+            Rock.Models.Cms.Page page = pages[e.OldIndex];
+            pages.RemoveAt( e.OldIndex );
+            pages.Insert( e.NewIndex > e.OldIndex ? e.NewIndex - 1 : e.NewIndex, page );
+
+            pageService.SaveOrder( pages, CurrentPersonId );
         }
     }
 }

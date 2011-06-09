@@ -50,7 +50,7 @@ namespace Rock.Services.Groups
 		
         public IEnumerable<Rock.Models.Groups.GroupRole> GetGroupRolesByOrder( int? order )
         {
-            return _repository.Find( t => t.Order == order );
+            return _repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
         }
 		
         public void AddGroupRole( Rock.Models.Groups.GroupRole GroupRole )

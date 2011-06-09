@@ -97,6 +97,11 @@
 				createdById != null && createdById.Nullable && createdById.DataType.ToString() == "int" &&
 				modifiedById != null && modifiedById.Nullable && modifiedById.DataType.ToString() == "int")
 				iAuditable = ", IAuditable";
+
+			Column orderCol = oneTable.Columns["Order"];
+			string iOrdered = "";
+			if (orderCol != null && !orderCol.Nullable && orderCol.DataType.ToString() == "int")
+				iOrdered = ", IOrdered";
 			
 // Generate POCO model
 #>
@@ -125,7 +130,7 @@ using Rock.Models;
 namespace Rock.Models<#= projectNamespace #>
 {
     [Table( "<#= oneTable.Name #>" )]
-    public partial class <#= Entity #> : <#= baseClass #><#= iAuditable #>
+    public partial class <#= Entity #> : <#= baseClass #><#= iAuditable #><#= iOrdered #>
     {
 <#
 			// Write the properties for each column in the table
@@ -154,8 +159,46 @@ namespace Rock.Models<#= projectNamespace #>
 		[MaxLength( <#= column.DataType.MaximumLength.ToString() #> )]
 <#
 					}
+
+					string dataMember = "[DataMember]";
+					string property = "";
 					
-					string property = "public " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }";
+					if (column.DataType.ToString() == "int")
+					{
+						// Check for enumeration in the description property in the format enum[NameOfEnum]
+						ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
+						
+						if (descProperty != null)
+						{
+							string colDesc = descProperty.Value.ToString();
+							int iStart = colDesc.ToLower().IndexOf("enum[");
+							if (iStart > 0)
+							{
+								iStart += 5;
+								int iEnd = colDesc.IndexOf("]", iStart);
+								if (iEnd > iStart)
+								{
+									string enumName = colDesc.Substring(iStart, iEnd - iStart);
+									
+									dataMember = "[DataMember(Name = \"" + column.Name + "\")]";
+									
+									property = 
+									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
+									"\t\t[NotMapped]\n" +
+									"\t\tpublic " + enumName + " " + column.Name + "\n" +
+									"\t\t{\n" +
+									"\t\t\tget { return (" + enumName + ")this." + column.Name + "Internal; }\n" +
+									"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
+									"\t\t}";
+
+								}
+							}
+						}						
+					}
+						
+					if (property == "")
+						property = "public " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }";
+						
 					List<string> attributes = TemplateHelper.getAttributes(partialClassLines, property);
 					foreach(string attribute in attributes)
 					{
@@ -164,7 +207,7 @@ namespace Rock.Models<#= projectNamespace #>
 <#
 					}
 #>
-		[DataMember]
+		<#= dataMember #>
 		<#= property #>
 		
 <#
@@ -471,6 +514,10 @@ namespace Rock.Services<#= projectNamespace #>
 					StringBuilder parameters = new StringBuilder();
 					StringBuilder linqClause = new StringBuilder();
 					
+					string orderByClause = string.Empty;
+					if (iOrdered != "" && !index.IsUnique)
+						orderByClause = ".OrderBy( t => t.Order )";
+					
 					foreach(IndexedColumn indexColumn in index.IndexedColumns)
 					{
 						Column column = oneTable.Columns[indexColumn.Name];
@@ -485,16 +532,14 @@ namespace Rock.Services<#= projectNamespace #>
 							column.Name.Substring(0,1).ToLower(),
 							column.Name.Substring(1));
 						
-						linqClause.AppendFormat("{0}t.{1} == {2}{3}",
+						linqClause.AppendFormat("{0}{1}",
 							linqClause.Length > 0 ? " && " : "",
-							column.Name,
-							column.Name.Substring(0,1).ToLower(),
-							column.Name.Substring(1));
+							TemplateHelper.WhereClause(column));
 					}
 #>
         public <#= returnType #> Get<#= returnName #>By<#= getClause #>( <#= parameters #> )
         {
-            return _repository.<#= queryType #>( t => <#= linqClause #> );
+            return _repository.<#= queryType #>( t => <#= linqClause #> )<#= orderByClause #>;
         }
 		
 <#
@@ -549,6 +594,26 @@ namespace Rock.Services<#= projectNamespace #>
 			}
 #>
         }
+<#
+			if (iOrdered != "")
+			{
+#>
+        public void SaveOrder( List<<#= QualifiedEntity #>> <#= Entity #>s, int? personId )
+        {
+            int order = 0;
+            foreach ( <#= QualifiedEntity #> <#= Entity #> in <#= Entity #>s )
+            {
+                if ( <#= Entity #>.Order != order )
+                {
+                    <#= Entity #>.Order = order;
+                    Save( <#= Entity #>, personId );
+                }
+                order++;
+            }
+        }
+<#
+			}
+#>
     }
 }
 <#
@@ -864,6 +929,21 @@ public class TemplateHelper
 		}
 	}
 	
+	// Handle Null comparison 
+	public static string WhereClause(Column column)
+	{
+		string columnName = column.Name.Substring(0,1).ToLower() + column.Name.Substring(1);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.AppendFormat("t.{0} == {1}", column.Name, columnName);
+		if (column.Nullable)
+		{
+			sb.Insert(0, "( ");
+			sb.AppendFormat(" || ( {1} == null && t.{0} == null ) )", column.Name, columnName);
+		}
+		return sb.ToString();
+	}
+
 	// Get namespace from table name.  Namespace will be the text prior to the first
 	// uppercase letter in the table name.
 	public static string Namespace(string tableName)
