@@ -105,6 +105,7 @@
     <Compile Include="Helpers\PageReference.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Helpers\Reflection.cs" />
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />

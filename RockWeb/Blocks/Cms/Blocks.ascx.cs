@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -34,15 +35,39 @@ namespace RockWeb.Blocks.Cms
 			}
 		}
 
-		private void DisplayList()
-		{
-			phList.Visible = true;
-			phDetails.Visible = false;
+        private void DisplayList()
+        {
+            phList.Visible = true;
+            phDetails.Visible = false;
 
-			Rock.Services.Cms.BlockService service = new Rock.Services.Cms.BlockService();
-			gList.DataSource = service.Queryable().ToList();
-			gList.DataBind();
-		}
+            using ( new Rock.Helpers.UnitOfWorkScope() )
+            {
+                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+
+                // Add any unregistered blocks
+                foreach ( Rock.Models.Cms.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+                {
+                    try
+                    {
+                        Control control = LoadControl( block.Path );
+                        if ( control is Rock.Cms.CmsBlock )
+                        {
+                            block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                            block.Description = block.Path;
+
+                            blockService.AddBlock( block );
+                            blockService.Save( block, CurrentPersonId );
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                gList.DataSource = blockService.Queryable().ToList();
+                gList.DataBind();
+            }
+        }
 
 		private void DisplayEdit( int blockId )
 		{
