@@ -74,6 +74,7 @@
     <Compile Include="Cms\CmsBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Cms\BlockInstancePropertyAttribute.cs" />
     <Compile Include="Cms\RockRouteHandler.cs" />
     <Compile Include="Cms\Security\Authorization.cs" />
     <Compile Include="Cms\Security\ISecured.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="Helpers\PageReference.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Helpers\Reflection.cs" />
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />
@@ -249,6 +251,7 @@
     <Compile Include="Services\Cms\ThemeService.cs" />
     <Compile Include="Services\Cms\ThemeService.partial.cs" />
     <Compile Include="Services\Cms\UserService.cs" />
+    <Compile Include="Services\Core\AttributeService.Partial.cs" />
     <Compile Include="Services\Core\AttributeQualifierService.cs" />
     <Compile Include="Services\Core\AttributeService.cs" />
     <Compile Include="Services\Core\AttributeValueService.cs" />
