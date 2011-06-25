@@ -279,7 +279,7 @@ namespace Rock.Controls
 
                 HtmlGenericControl controlsGrid = new HtmlGenericControl( "div" );
                 controlsGrid.ID = this.ID + "_controls";
-                controlsGrid.Attributes.Add( "style", "display:none;background:#dddddd;padding:3px;color:black;" );
+                controlsGrid.Attributes.Add( "style", "display:none;background:#dddddd;padding:3px;color:black;height:25px" );
                 controlsGrid.InnerText = "Control Icons will go here (i.e. excel export)";
                 this.Parent.Controls.Add( controlsGrid );
 

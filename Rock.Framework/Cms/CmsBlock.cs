@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
@@ -299,6 +301,31 @@ namespace Rock.Cms
             }
 
             return configControls;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal void VerifyInstanceAttributes()
+        {
+            bool attributesUpdated = false;
+
+            using ( new Rock.Helpers.UnitOfWorkScope() )
+            {
+
+                Type type = this.GetType();
+                foreach ( object customAttribute in type.GetCustomAttributes( typeof( BlockInstancePropertyAttribute ), true ) )
+                {
+                    BlockInstancePropertyAttribute blockInstanceProperty = ( BlockInstancePropertyAttribute )customAttribute;
+                    attributesUpdated = blockInstanceProperty.UpdateAttribute( this.BlockInstance, CurrentPersonId ) || attributesUpdated;
+                }
+            }
+
+            if (attributesUpdated)
+                this.BlockInstance.ReloadAttributeValues();
+
+            this.BlockInstance.Block.InstancePropertiesVerified = true;
         }
 
         #endregion
