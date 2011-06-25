@@ -88,7 +88,7 @@
                                 <section>
                                     <header>
                                         <strong>Staff Directory</strong>
-                                        <img src="/Themes/Default/Assets/Mock-Images/staff-directory.png" />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
+                                        <img src="/RockWeb/Themes/Rock/Assets/Mock-Images/staff-directory.png" />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
                                         tincdunt, arcu.
                                     </header>
                                 </section>

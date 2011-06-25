@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web.Security;
-using Rock.Cms;
-using Rock.Repository.Cms;
 
 using Facebook;
 using System.Web;
+using Rock.Cms;
+using Rock.Repository.Cms;
+using Rock.Repository.Crm;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -43,8 +44,16 @@ namespace RockWeb.Blocks.Cms
             oAuthClient.AppId = PageInstance.Site.FacebookAppId;
             oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
 
+            // setup some facebook connection settings
+            var settings = new Dictionary<string, object>
+            {
+                        { "display", "popup" },
+                        { "scope", "user_birthday,email,read_stream,read_friendlists"},
+                        { "state", returnUrl}
+            };
+
             // Grab publically available information. No special permissions needed for authentication.
-            var loginUri = oAuthClient.GetLoginUrl( new Dictionary<string, object> { { "state", returnUrl } } );
+            var loginUri = oAuthClient.GetLoginUrl( settings );
             Response.Redirect( loginUri.AbsoluteUri );
         }
 
@@ -75,6 +84,15 @@ namespace RockWeb.Blocks.Cms
 
                     if ( user == null )
                     {
+                        // determine if we can find a match and if so add an user login record
+                        string lastName = me.last_name.ToString();
+                        string firstName = me.first_name.ToString();
+                        string email = me.email.ToString();
+
+                        var personRepository = new EntityPersonRepository();
+                        //var person = personRepository.FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName );
+                        
+                        
                         // TODO: Show label indicating inability to find user corresponding to facebook id
                         return;
                     }
@@ -102,4 +120,7 @@ namespace RockWeb.Blocks.Cms
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
     }
+
+    // helpful links
+    //  http://blog.prabir.me/post/Facebook-CSharp-SDK-Writing-your-first-Facebook-Application.aspx
 }

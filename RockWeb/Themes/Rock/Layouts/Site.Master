@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="Rock.Themes.Default.Layouts.Site" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="Rock.Themes.Rock.Layouts.Site" %>
 <!DOCTYPE html>
 
 <html>
@@ -7,12 +7,12 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/Default/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/Rock/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/reset-core.css") %>" />
     <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>" />
-	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/Themes/Default/CSS/styles.css") %>" />
+	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/Themes/Rock/CSS/rock.css") %>" />
 	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/smoothness/jquery-ui-1.8.12.custom.css") %>" />
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
@@ -21,7 +21,9 @@
 <body>
 
         <form id="form1" runat="server">
-            <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+            
+                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+            
         </form>
 
 </body>

@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Themes.Default.Layouts
+namespace Rock.Themes.Rock.Layouts
 {
     public partial class Site : System.Web.UI.MasterPage
     {
