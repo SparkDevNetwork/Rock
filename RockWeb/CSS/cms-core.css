@@ -1,22 +1,26 @@
 /* Default Form Styling */
 fieldset 
 {
-    margin: 8px 0;
+    display: inline;
 }
 
 fieldset legend {
     font-weight: bold;
-    padding: 24px 0 0 12px;
+    /*padding: 24px 0 0 12px;*/
     font-size: 120%;
 }
 
-label {
+fieldset.horizontal label {
 	float: left;
 	text-align: right;
 	margin-right: 15px;
 	margin-top: 8px;
 	width: 150px;
 	font-weight: bold;
+}
+
+fieldset.verticle label {
+    display: block;
 }
 
 input[type=radio] + label 
@@ -63,6 +67,10 @@ textarea, input:not([type=radio]) {
 textarea:focus, input:not([type=radio]):focus {
 	border: 1px solid #64788f;
 	background: #efefef;
+}
+
+input.image {
+    background: none;   
 }
 
 .form-input-warning 
@@ -303,7 +311,7 @@ a.tooltip:hover span {
     border-color: rgba(150,150,150,.8);
     border-width: 1px 1px 0 1px;
     border-style: solid;
-    color: #7f7f7f;
+    color: #454545;
     padding: 5px 12px 0 12px;
     font-size: 80%;
 }
@@ -437,4 +445,24 @@ article.blog-post header ul li:last-child:after {
     display: block; 
     font-weight: bold;
     font-size: 16px; 
+}
+
+/* Login Block Style */
+.login .classic-login {
+    float: left;   
+}
+
+.login .facebook-login {
+    float: right;  
+    margin: 80px 25px 0 0; 
+}
+
+.login .forgot {
+    margin-top: 12px;
+    display: block;   
+}
+
+.login .remember {
+    padding-left: .5em;
+    
 }
