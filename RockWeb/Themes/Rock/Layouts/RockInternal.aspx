@@ -115,58 +115,42 @@
                 
                 <div id="main-content" class="group">
                     <div class="content-left column">
-                        <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>
-                        
+                        <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
                     </div>
 
                     <div class="content-right column">
-                        <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>
-                        I'm right content that is so cool cause I'm on the right and it's the right that is always right even when it's wrong, which it never is.
-                        
+                        <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
                     </div>
 
                     <div class="content-center column">
-                        I'm middle content that sits in the middle. For the most part I never get involved as I'm too busy watching American Idol to care much about what's
-                        going on in the world.  Oh is it falling apart... tell me about it, but please wait until the next commercial.
                         <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
                     </div>
                 </div>
                 
                 <div id="upper-band">
                     <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
-                    I'm a band like a band-aid.  Luckily I get the top bunk!
                 </div>
 
                 <div id="lower-band">
                     <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
-                    I'm a band too also like a band-aid.  I hope the guy on the upper band doesn't wet the bed.
                 </div>
                 
 
                 <div id="lower-content" class="group">
                     <div class="content-left column">
                         <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
-                        I'm lower left content for the lower left.
                     </div>
 
                     <div class="content-right column">
                         <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
-                        I'm right content that is so cool cause I'm on the right and it's the right that is always right even when it's wrong, which it never is.
-                        
                     </div>
 
                     <div class="content-center column">
-                        I'm middle content that sits in the middle. For the most part I never get involved as I'm too busy watching American Idol to care much about what's
-                        going on in the world.  Oh is it falling apart... tell me about it, but please wait until the next commercial.
                         <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>
                     </div>
+                    <!-- May need to use http://www.cssnewbie.com/equalheights-jquery-plugin/ to get columns of equal height -->
                 </div>
                 
-
-                
-                
-                
-
                 <footer class="group">
                     <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
                     <div id="footer-base" class="group">
