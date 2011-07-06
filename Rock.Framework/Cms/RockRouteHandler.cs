@@ -27,26 +27,31 @@ namespace Rock.Cms
             int routeId = -1;
 
             // Pages using the default routing URL will have the page id in the RouteData.Values collection
-            if ( requestContext.RouteData.Values["PageId"] != null )
-                pageId = ( string )requestContext.RouteData.Values["PageId"];
+			if ( requestContext.RouteData.Values["PageId"] != null )
+			{
+				pageId = (string)requestContext.RouteData.Values["PageId"];
+			}
+			// Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
+			else if ( requestContext.RouteData.DataTokens["PageId"] != null )
+			{
+				pageId = (string)requestContext.RouteData.DataTokens["PageId"];
+				routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+			}
+			// If page has not been specified get the site by the domain and use the site's default page
+			else
+			{
+				Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
+				Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetSiteDomainByDomain( requestContext.HttpContext.Request.Url.Host );
+				if ( siteDomain != null && siteDomain.Site != null && siteDomain.Site.DefaultPageId != null )
+					pageId = siteDomain.Site.DefaultPageId.Value.ToString();
+			}
 
-            // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
-            else if ( requestContext.RouteData.DataTokens["PageId"] != null )
-            {
-                pageId = (string)requestContext.RouteData.DataTokens["PageId"];
-                routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
-            }
-
-            // If page has not been specified get the site by the domain and use the site's default page
-            else
-            {
-                Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
-                Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetSiteDomainByDomain( requestContext.HttpContext.Request.Url.Host );
-                if ( siteDomain != null && siteDomain.Site != null && siteDomain.Site.DefaultPageId != null )
-                    pageId = siteDomain.Site.DefaultPageId.Value.ToString();
-            }
-
-            Rock.Cms.Cached.Page page = Rock.Cms.Cached.Page.Read( Convert.ToInt32(pageId) );
+            Rock.Cms.Cached.Page page = null;
+			
+			if ( ! string.IsNullOrEmpty( pageId ) )
+			{
+				page = Rock.Cms.Cached.Page.Read( Convert.ToInt32( pageId ) );
+			}
 
             if ( page != null && !String.IsNullOrEmpty( page.LayoutPath ) )
             {
