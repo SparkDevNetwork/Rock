@@ -4,9 +4,10 @@ using System.Web.Security;
 
 using Facebook;
 using System.Web;
+using System.Linq;
 using Rock.Cms;
-using Rock.Repository.Cms;
-using Rock.Repository.Crm;
+using Rock.Services.Cms;
+using Rock.Services.Crm;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -70,6 +71,7 @@ namespace RockWeb.Blocks.Cms
             {
                 try
                 {
+                    // create client to read response
                     var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
                     oAuthClient.AppId = PageInstance.Site.FacebookAppId;
                     oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
@@ -78,23 +80,69 @@ namespace RockWeb.Blocks.Cms
 
                     FacebookClient fbClient = new FacebookClient( accessToken );
                     dynamic me = fbClient.Get( "me" );
-                    var userRepository = new EntityUserRepository();
                     string facebookId = me.id.ToString();
-                    var user = userRepository.FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 );
 
+                    // query for matching id in the user table 
+                    UserService userService = new UserService();
+                    var user = userService.Queryable().FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 ); // TODO: Make this an enum
+
+                    // if not user was found see if we can find a match in the person table
                     if ( user == null )
                     {
-                        // determine if we can find a match and if so add an user login record
-                        string lastName = me.last_name.ToString();
-                        string firstName = me.first_name.ToString();
-                        string email = me.email.ToString();
+                        try
+                        {
+                            // determine if we can find a match and if so add an user login record
 
-                        var personRepository = new EntityPersonRepository();
-                        //var person = personRepository.FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName );
-                        
-                        
+                            // get properties from Facebook dynamic object
+                            string lastName = me.last_name.ToString();
+                            string firstName = me.first_name.ToString();
+                            string email = me.email.ToString();
+
+                            var personService = new PersonService();
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+
+                            if ( person != null )
+                            {
+                                // found exact match create a Facebook login for the user
+                                user = new Rock.Models.Cms.User();
+                                user.PersonId = person.Id;
+                                user.Email = email;
+                                user.AuthenticationType = 2; // TODO: Make this a enum;
+                                user.Password = "fb";
+                                user.Username = facebookId;
+                                user.ApplicationName = "RockChMS";
+                                user.CreationDate = DateTime.Now;
+                                user.LastActivityDate = DateTime.Now;
+                                user.LastLoginDate = DateTime.Now;
+
+                                userService.AddUser( user );
+                                userService.Save( user, person.Id );
+
+                                // since we have the data enter the birthday from Facebook to the db if we don't have it yet
+                                DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
+
+                                if ( person.BirthDay == null )
+                                {
+                                    //person.BirthDate = birthdate;
+                                    //personService.Save( person, person.Id );
+                                }
+
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // TODO: probably should report something...
+                        }
+
                         // TODO: Show label indicating inability to find user corresponding to facebook id
                         return;
+                    }
+                    else
+                    {
+                        // update user record noting the login datetime
+                        user.LastLoginDate = DateTime.Now;
+                        user.LastActivityDate = DateTime.Now;
+                        userService.Save( user, user.PersonId );
                     }
 
                     FormsAuthentication.SetAuthCookie( user.Username, false );
