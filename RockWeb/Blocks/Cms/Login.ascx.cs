@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Cms
                             string email = me.email.ToString();
 
                             var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && (u.FirstName == firstName || u.NickName == firstName) && u.Email == email );
 
                             if ( person != null )
                             {
@@ -128,6 +128,16 @@ namespace RockWeb.Blocks.Cms
                                 }
 
                             }
+                            else
+                            {
+                                // exact person match wasn't found
+                                // TODO: figure out what to do next the plan is:
+                                //         + Look for records with matching emails as the one from Facebook and allow the user to pick the correct person
+                                //         + If no match email is found (or the user states none of the provided ones is him) then allow then to register
+                                //           Registration form should have facebook fields pre-populated.
+
+                                return;
+                            }
                         }
                         catch ( Exception ex )
                         {
@@ -135,7 +145,6 @@ namespace RockWeb.Blocks.Cms
                         }
 
                         // TODO: Show label indicating inability to find user corresponding to facebook id
-                        return;
                     }
                     else
                     {
