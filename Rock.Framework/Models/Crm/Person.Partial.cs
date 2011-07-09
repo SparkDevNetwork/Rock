@@ -18,6 +18,36 @@ namespace Rock.Models.Crm
                 return FirstName + " " + LastName;
             }
         }
+
+        public DateTime BirthDate
+        {
+            // notes
+            // if no birthday is available then DateTime.MinValue is returned
+            // if no birth year is given then the birth year will be DateTime.MinValue.Year
+            get
+            {
+                if ( BirthDay == null || BirthMonth == null )
+                {
+                    return DateTime.MinValue;
+                }
+                else
+                {
+                    string birthYear = "";
+
+                    if ( BirthYear == null )
+                        birthYear = DateTime.MinValue.Year.ToString();
+
+                    return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
+                }
+            }
+
+            /*set
+            {
+                BirthMonth = value.Month;
+                BirthDay = value.Day;
+                BirthYear = value.Year;
+            }*/
+        }
     }
 
     public class CommentPerson
