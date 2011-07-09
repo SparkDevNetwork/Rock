@@ -158,7 +158,7 @@
                             of <insert organization name>/  Thos granted access are reminded to deny requests for giving
                             out addresses, emails, phone numbers, etc. or to use the information for anything other than
                             this organization's activities.</p>
-                        <p id="footer-license">Spark ChMS is an open-source project by the <a href="">Spark Development 
+                        <p id="footer-license">Rock ChMS is an open-source project by the <a href="">Spark Development 
                             Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src="<%# ResolveUrl("~/Themes/Rock/Assets/Images/cc-license.png") %>" height="15" width="80" /></a> </p>
                     </div>
                 </footer>
