@@ -48,6 +48,19 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public string LastName { get; set; }
 		
+		[MaxLength( 75 )]
+		[DataMember]
+		public string Email { get; set; }
+		
+		[DataMember]
+		public int? BirthMonth { get; set; }
+		
+		[DataMember]
+		public int? BirthDay { get; set; }
+		
+		[DataMember]
+		public int? BirthYear { get; set; }
+		
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		

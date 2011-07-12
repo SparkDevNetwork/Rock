@@ -10,7 +10,7 @@ using Rock.Services.Core;
 
 namespace Rock.Services
 {
-    public class Service
+    public abstract class Service
     {
         #region Attributes
 

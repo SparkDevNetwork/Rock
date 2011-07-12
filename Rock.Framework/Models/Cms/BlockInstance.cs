@@ -48,6 +48,10 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public int Order { get; set; }
 		
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Name { get; set; }
+		
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
