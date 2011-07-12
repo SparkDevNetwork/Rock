@@ -91,6 +91,14 @@ input.button, .button {
     float: left;
 }
 
+.content-left > .block-instance {
+    margin-right: 12px;   
+}
+
+.content-right > .block-instance {
+    margin-left: 12px;   
+}
+
 #lower-content {
     background-color: #d0cece;
     color: #595959;
@@ -268,7 +276,7 @@ input.button, .button {
 
 #lower-band {
     background-color: #929292;
-    border-bottom: 1px solid #797979;
+    --border-bottom: 1px solid #797979;
     margin: 0 -2000px;
     padding: 0 2000px;
 }
