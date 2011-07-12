@@ -49,7 +49,7 @@ namespace Rock.Themes.Default.Layouts
   </section>
   <section>
     <title>Blocks</title>
-    <para>Blocks are simply ASP.NET  User Controls and are the fundamental, functional &quot;building blocks&quot; that make up your application, widget, module or whatever you want to call it. They can include anything you want but they must inherit from the Rock.Cms.CmsBlock class.</para>
+    <para>Blocks are simply ASP.NET  User Controls and are the fundamental, functional &quot;building blocks&quot; that make up your plugin, widget, application or whatever you want to call it. They can include anything you want but they must inherit from the Rock.Cms.CmsBlock class.</para>
     <para><figure>
         <title>An example Block</title>
         <graphic fileref="images/ExampleBlock.png"/>
