@@ -54,7 +54,7 @@
             }
         });
 
-        $('#block-instance-id-<%=BlockInstance.Id %> .block-configuration a.edit').click(function (ev) {
+        $('#bid_<%=BlockInstance.Id %> .block-configuration a.edit').click(function (ev) {
             $('#html-content-editor-<%=BlockInstance.Id %>').dialog('open');
             return false;
         });

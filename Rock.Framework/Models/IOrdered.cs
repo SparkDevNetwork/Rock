@@ -7,6 +7,6 @@ namespace Rock.Models
 {
     internal interface IOrdered
     {
-        int Order { get; }
+        int Order { get; set; }
     }
 }

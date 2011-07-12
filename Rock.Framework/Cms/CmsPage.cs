@@ -24,7 +24,7 @@ namespace Rock.Cms
     /// <summary>
     /// CmsPage is the base abstract class that all page templates should inherit from
     /// </summary>
-    public abstract class CmsPage : System.Web.UI.Page
+    public abstract class CmsPage : System.Web.UI.Page, ICallbackEventHandler
     {
         #region Events
 
@@ -36,6 +36,9 @@ namespace Rock.Cms
 
         private Dictionary<string, Control> _zones;
         private PlaceHolder phLoadTime;
+
+        //Callback Event Result
+        private string returnValue;
 
         #endregion
 
@@ -119,6 +122,14 @@ namespace Rock.Cms
             }
         }
 
+        public string ThemePath
+        {
+            get
+            {
+                return ResolveUrl( string.Format( "~/Themes/{0}", PageInstance.Site.Theme ) );
+            }
+        }
+
         #endregion
 
         #region Abstract Methods
@@ -193,8 +204,6 @@ namespace Rock.Cms
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
-            Trace.Write( "Begin page init" );
-
             ScriptManager sm = ScriptManager.GetCurrent( this.Page );
             if ( sm == null )
             {
@@ -202,13 +211,15 @@ namespace Rock.Cms
                 sm.ID = "sManager";
                 Page.Form.Controls.AddAt( 0, sm );
             }
-            sm.EnablePageMethods = true;
+            // Don't think we need page methods enabled.  Commenting this line out for now. 
+            // Will leave code here in case we do need it
+            // sm.EnablePageMethods = true;
 
-            Trace.Write( "Added Script Manager" );
+            // Add the scripts needed to support callbacks
+            AddCallBackScripts();
 
             // Get current user/person info
             MembershipUser user = Membership.GetUser();
-            Trace.Write( "Got current user" );
 
             if ( user != null )
             {
@@ -221,7 +232,6 @@ namespace Rock.Cms
                     if ( Session[personNameKey] != null )
                     {
                         UserName = Session[personNameKey].ToString();
-                        Trace.Write( "Read username from session variable" );
                     }
                     else
                     {
@@ -234,7 +244,6 @@ namespace Rock.Cms
                         }
 
                         Session[personNameKey] = UserName;
-                        Trace.Write( "Read username from database and saved to session" );
                     }
                 }
             }
@@ -256,8 +265,6 @@ namespace Rock.Cms
                 }
                 else
                 {
-                    Trace.Write( "Checked if user is authorized to view page" );
-
                     // set page title
                     if ( PageInstance.Title != null && PageInstance.Title != "" )
                         this.Title = PageInstance.Title;
@@ -269,51 +276,20 @@ namespace Rock.Cms
 
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
-                    Trace.Write( "Created Cache Object" );
 
                     bool canEditPage = PageInstance.Authorized( "Edit", user );
 
+                    // Add div wrapper around each zone for hilighting and editing zone
                     if ( canEditPage )
-                        foreach ( KeyValuePair<string, Control> zoneControl in this.Zones )
-                        {
-                            Control parent = zoneControl.Value.Parent;
-
-                            HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
-                            parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
-                            zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
-                            zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            zoneWrapper.Attributes.Add( "class", "zone-instance can-edit" );
-
-                            HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
-                            zoneWrapper.Controls.Add( zoneConfig );
-                            zoneConfig.Attributes.Add( "style", "display: none;" );
-                            zoneConfig.Attributes.Add( "class", "zone-configuration" );
-
-                            zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.ID ) ) );
-
-                            HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                            zoneConfig.Controls.Add( aBlockConfig );
-                            aBlockConfig.Attributes.Add( "class", string.Format( "zone-blocks icon-button zone-{0}-show",
-                                zoneControl.Value.ID ) );
-                            aBlockConfig.Attributes.Add( "href", "#" );
-                            aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
-                            aBlockConfig.InnerText = "Blocks";
-
-                            parent.Controls.Remove( zoneControl.Value );
-                            zoneWrapper.Controls.Add( zoneControl.Value );
-                        }
+                        AddZoneConfigWrappers();
 
                     // Load the blocks and insert them into page zones
-                    Trace.Write("Getting Block Instances");
                     foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
-                        Trace.Write( string.Format( "Begin Block Instance: {0}", blockInstance.Id ) );
-
                         // Get current user's permissions for the block instance
                         bool canView = blockInstance.Authorized( "View", user );
                         bool canEdit = blockInstance.Authorized( "Edit", user );
-                        bool canConfig = blockInstance.Authorized( "Configure", user );
-                        Trace.Write( "Read user's permissions for block instance" );
+                        bool canConfig = blockInstance.Authorized( "Configure", user );  
 
                         // If user can't view and they haven't logged in, redirect to the login page
                         if ( !canView )
@@ -326,17 +302,15 @@ namespace Rock.Cms
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
                             Rock.Controls.HtmlGenericContainer blockWrapper = new Rock.Controls.HtmlGenericContainer( "div" );
-                            blockWrapper.ID = string.Format("block-instance-id-{0}", blockInstance.Id);
+                            blockWrapper.ID = string.Format("bid_{0}", blockInstance.Id);
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
                                 ( canEdit || canConfig ? "can-edit " : "" ) +
                                 HtmlHelper.CssClassFormat( blockInstance.Block.Name ) );
-                            Trace.Write( "Created block wrapper control" );
 
                             // Check to see if block is configured to use a "Cache Duration'
                             string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", blockInstance.Id );
-                            Trace.Write( "Checked if block output has been cached" );
                             if ( blockInstance.OutputCacheDuration > 0 && cache.Contains( blockCacheKey ) )
                             {
                                 // If the current block exists in our custom output cache, add the cached output instead of adding the control
@@ -346,16 +320,13 @@ namespace Rock.Cms
                             {
                                 // Load the control and add to the control tree
                                 Control control = TemplateControl.LoadControl( blockInstance.Block.Path );
-                                Trace.Write( string.Format( "Loaded {0}", blockInstance.Block.Path ) );
                                 control.ClientIDMode = ClientIDMode.AutoID;
 
                                 CmsBlock cmsBlock = null;
 
                                 // Check to see if the control was a PartialCachingControl or not
                                 if ( control is CmsBlock )
-                                {
                                     cmsBlock = control as CmsBlock;
-                                }
                                 else
                                 {
                                     if ( control is PartialCachingControl && ( ( PartialCachingControl )control ).CachedControl != null )
@@ -367,7 +338,6 @@ namespace Rock.Cms
                                 {
                                     cmsBlock.PageInstance = PageInstance;
                                     cmsBlock.BlockInstance = blockInstance;
-                                    Trace.Write( "Set block cached instance properties" );
 
                                     // If the block's BlockInstanceProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
@@ -375,162 +345,17 @@ namespace Rock.Cms
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
                                         cmsBlock.VerifyInstanceAttributes();
 
-                                    // If user has edit or configuration rights add the configure buttons and attribute
-                                    // edit panel in addition to the user block
-                                    if ( canConfig )
-                                    {
-                                        // Add the attribute edit script
-                                        string blockConfigScript = string.Format( @"
-    $(document).ready(function () {{
-
-        $('div.attributes-{0}').dialog({{
-            autoOpen: false,
-            draggable: true,
-            width: 530,
-            title: 'Module Instance Properties',
-            closeOnEscape: true,
-            modal: true,
-            open: function (type, data) {{
-                $(this).parent().appendTo(""form"");
-            }}
-        }});
-
-        $('a.attributes-{0}-show').click(function () {{
-            $('div.attributes-{0}').dialog('open');
-            return false;
-        }});
-
-        $('a.blockinstance-{0}-secure').click(function () {{
-            alert('block instance secure logic goes here!');
-        }});
-
-        $('a.blockinstance-{0}-move').click(function () {{
-            alert('block instance move logic goes here!');
-        }});
-
-        $('a.blockinstance-{0}-delete').click(function () {{
-            if (confirm('Are you sure?'))
-            {{
-                alert('block instance delete logic goes here!');
-            }}
-        }});
-
-    }});
-
-    Sys.Application.add_load(function () {{
-
-        $('.attributes-{0}-hide').click(function () {{
-            $('div.attributes-{0}').dialog('close');
-        }});
-
-    }});
-", blockInstance.Id );
-
-                                        this.Page.ClientScript.RegisterStartupScript( this.GetType(),
-                                            string.Format( "block-config-script-{0}", blockInstance.Id ),
-                                            blockConfigScript, true );
-                                        Trace.Write( "Added the configuration script" );
-
-                                    }
-
-                                    if (canEdit || canConfig)
-                                    {
-                                        // Add the config buttons
-                                        HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
-                                        blockConfig.ClientIDMode = ClientIDMode.AutoID;
-                                        blockConfig.Attributes.Add( "class", "block-configuration" );
-                                        blockConfig.Attributes.Add( "style", "display: none" );
-                                        blockWrapper.Controls.Add( blockConfig );
-
-                                        foreach ( Control configControl in cmsBlock.GetConfigurationControls( canConfig, canEdit ) )
-                                        {
-                                            configControl.ClientIDMode = ClientIDMode.AutoID;
-                                            blockConfig.Controls.Add( configControl );
-                                        }
-                                        Trace.Write( "Added the configuration controls" );
-                                    }
+                                    // Add the block configuration scripts and icons if user is authorized
+                                    AddBlockConfig(blockWrapper, cmsBlock, blockInstance, canConfig, canEdit);
 
                                     // Add the block
                                     blockWrapper.Controls.Add( control );
-                                    Trace.Write( "Added the block instance control" );
-
-                                    if (canConfig)
-                                    {
-                                        // Add the attribute update panel
-                                        HtmlGenericControl attributePanel = new HtmlGenericControl( "div" );
-                                        attributePanel.ClientIDMode = ClientIDMode.AutoID;
-                                        attributePanel.Attributes.Add( "class",
-                                            string.Format( "attributes-{0}", blockInstance.Id ) );
-                                        attributePanel.Attributes.Add( "style", "text-align: left" );
-                                        blockWrapper.Controls.Add( attributePanel );
-
-                                        UpdatePanel upPanel = new UpdatePanel();
-                                        upPanel.ClientIDMode = ClientIDMode.AutoID;
-                                        upPanel.UpdateMode = UpdatePanelUpdateMode.Conditional;
-                                        upPanel.ChildrenAsTriggers = true;
-                                        attributePanel.Controls.Add( upPanel );
-
-                                        PlaceHolder phAttributes = new PlaceHolder();
-                                        phAttributes.ClientIDMode = ClientIDMode.AutoID;
-                                        upPanel.ContentTemplateContainer.Controls.Add( phAttributes );
-
-                                        HtmlGenericControl fieldset = new HtmlGenericControl( "fieldset" );
-                                        fieldset.ClientIDMode = ClientIDMode.AutoID;
-                                        phAttributes.Controls.Add( fieldset );
-
-                                        HtmlGenericControl ol = new HtmlGenericControl( "ol" );
-                                        ol.ClientIDMode = ClientIDMode.AutoID;
-                                        fieldset.Controls.Add( ol );
-
-                                        foreach ( Rock.Cms.Cached.Attribute attribute in blockInstance.Attributes )
-                                        {
-                                            HtmlGenericControl li = new HtmlGenericControl( "li" );
-                                            li.ID = string.Format( "attribute-{0}", attribute.Id );
-                                            li.ClientIDMode = ClientIDMode.AutoID;
-                                            ol.Controls.Add( li );
-
-                                            Label lbl = new Label();
-                                            lbl.ClientIDMode = ClientIDMode.AutoID;
-                                            lbl.Text = attribute.Name;
-                                            lbl.AssociatedControlID = string.Format("attribute-field-{0}", attribute.Id);
-                                            li.Controls.Add( lbl );
-
-                                            Control attributeControl = attribute.CreateControl( blockInstance.AttributeValues[attribute.Key].Value );
-                                            attributeControl.ID = string.Format("attribute-field-{0}", attribute.Id);
-                                            attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                                            li.Controls.Add( attributeControl );
-
-                                            if ( !string.IsNullOrEmpty( attribute.Description ) )
-                                            {
-                                                HtmlAnchor a = new HtmlAnchor();
-                                                a.ClientIDMode = ClientIDMode.AutoID;
-                                                a.Attributes.Add( "class", "attribute-description tooltip" );
-                                                a.InnerHtml = "<span>" + attribute.Description + "</span>";
-
-                                                li.Controls.Add( a );
-                                            }
-
-                                        }
-
-                                        Button btnSaveAttributes = new Button();
-                                        btnSaveAttributes.ID = string.Format( "attributes-{0}-hide", blockInstance.Id );
-                                        btnSaveAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                                        btnSaveAttributes.Text = "Save";
-                                        btnSaveAttributes.CssClass = btnSaveAttributes.ID;
-                                        btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
-                                        upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
-
-                                        Trace.Write( "Added the attribute update panel" );
-                                    }
-
                                 }
                                 else
                                     // add the generic control
                                     blockWrapper.Controls.Add( control );
                             }
                         }
-
-                        Trace.Write( string.Format( "End Block Instance: {0}", blockInstance.Id ) );
                     }
 
                     // Add favicon and apple touch icons to page
@@ -628,8 +453,6 @@ namespace Rock.Cms
 ";
 
                         this.ClientScript.RegisterClientScriptBlock( this.GetType(), "cms-admin-footer", footerScript, true );
-
-                        Trace.Write( "Added the admin footer" );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -643,8 +466,6 @@ namespace Rock.Cms
                     }
                 }
             }
-
-            Trace.Write( "End page init" );
         }
 
         protected override void OnLoad( EventArgs e )
@@ -694,7 +515,293 @@ namespace Rock.Cms
 
         #endregion
 
-        #region HtmlLinks
+        #region CMS Admin Content
+
+        #region ICallbackEventHandler support
+
+        private void AddCallBackScripts()
+        {
+            ClientScriptManager cs = this.Page.ClientScript;
+            Type type = this.GetType();
+            if ( !cs.IsClientScriptBlockRegistered( type, "CallbackToServer" ) )
+                cs.RegisterClientScriptBlock( type, "CallbackToServer", string.Format( @"
+    function CallbackToServer(arg, context)
+    {{
+        {0}
+    }}
+",
+                    cs.GetCallbackEventReference( this, "arg", "ReceiveCallback", "context" ) ), true );
+
+            if ( !cs.IsClientScriptBlockRegistered( type, "ReceiveCallback" ) )
+                cs.RegisterClientScriptBlock( type, "ReceiveCallback", @"
+    function ReceiveCallback(rValue)
+    {
+        var jsonObject = JSON.parse(rValue);
+        switch (jsonObject.Action)
+        {
+            case 'zone-blocks': 
+                var results = '';
+                for (var i = 0; i < jsonObject.Result.length; i++) {
+                    results += jsonObject.Result[i].Block.Name + '\n';
+                }
+                alert (results);
+                break;
+
+            case 'block-attributes': 
+                var results = '';
+                for (var i = 0; i < jsonObject.Result.length; i++) {
+                    results += jsonObject.Result[i].Name + '\n';
+                }
+                alert (results);
+                break;
+        }
+    }
+",
+                    true );
+        }
+
+        public string GetCallbackResult()
+        {
+            return returnValue;
+        }
+
+        public void RaiseCallbackEvent( string eventArgument )
+        {
+            JsonResult jsonResult = null;
+
+            if ( eventArgument.StartsWith( "zone-blocks:" ) )
+                jsonResult = new JsonResult( "zone-blocks", GetZoneBlocks( eventArgument.Substring( 12 ) ).ToArray() );
+
+            else if ( eventArgument.StartsWith( "block-attributes:" ) )
+                jsonResult = new JsonResult( "block-attributes", GetBlockAttributes( Convert.ToInt32( eventArgument.Substring( 17 ) ) ).ToArray() );
+
+            if (jsonResult != null)
+                returnValue = jsonResult.Serialize();
+        }
+
+        #endregion
+
+        #region Zones
+
+        private void AddZoneConfigWrappers()
+        {
+            string script = @"
+    $(document).ready(function () {
+        $('a.zone-blocks').colorbox({
+            width: '562px',
+            height: '80%',
+            iframe: true,
+            onClosed:function(){ location.reload(true); }
+        });
+    });
+";
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "zone-config-script", script, true );
+
+            foreach ( KeyValuePair<string, Control> zoneControl in this.Zones )
+            {
+                Control parent = zoneControl.Value.Parent;
+
+                HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
+                parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
+                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
+                zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                zoneWrapper.Attributes.Add( "class", "zone-instance can-edit" );
+
+                HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
+                zoneWrapper.Controls.Add( zoneConfig );
+                zoneConfig.Attributes.Add( "style", "display: none;" );
+                zoneConfig.Attributes.Add( "class", "zone-configuration" );
+
+                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.ID ) ) );
+
+                HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                zoneConfig.Controls.Add( aBlockConfig );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button" );
+                aBlockConfig.Attributes.Add( "href", string.Format("ZoneBlocks/{0}/{1}", PageInstance.Id, zoneControl.Value.ID ) );
+                aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
+                aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
+                aBlockConfig.InnerText = "Blocks";
+
+                parent.Controls.Remove( zoneControl.Value );
+                zoneWrapper.Controls.Add( zoneControl.Value );
+            }
+
+            // Add the zone blocks update panel
+            HtmlGenericControl zoneBlocksPanel = new HtmlGenericControl( "div" );
+            zoneBlocksPanel.ClientIDMode = ClientIDMode.AutoID;
+            zoneBlocksPanel.Attributes.Add( "class", "zone-blocks" );
+            zoneBlocksPanel.Attributes.Add( "style", "text-align: left" );
+            this.Controls.Add( zoneBlocksPanel );
+        }
+
+        private List<Cached.BlockInstance> GetZoneBlocks( string zoneName )
+        {
+            List<Rock.Cms.Cached.BlockInstance> blocks = new List<Cached.BlockInstance>();
+            foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
+                if (blockInstance.Zone == zoneName)
+                    blocks.Add(blockInstance);
+
+            return blocks;
+        }
+
+        #endregion
+
+        #region Blocks
+
+        private void AddBlockConfig( Rock.Controls.HtmlGenericContainer blockWrapper, CmsBlock cmsBlock, 
+            Cached.BlockInstance blockInstance, bool canConfig, bool canEdit )
+        {
+            if ( canConfig || canEdit )
+            {
+                StringBuilder script = new StringBuilder();
+
+                script.AppendFormat( @"
+    $(document).ready(function () {{
+
+        $('div.attributes-{0}').dialog({{
+            autoOpen: false,
+            draggable: true,
+            width: 530,
+            title: 'Module Instance Properties',
+            closeOnEscape: true,
+            modal: true,
+            open: function (type, data) {{
+                $(this).parent().appendTo(""form"");
+            }}
+        }});
+
+        $('a.attributes-{0}-show').click(function () {{
+            $('div.attributes-{0}').dialog('open');
+            return false;
+        }});
+", blockInstance.Id );
+
+                if ( canConfig )
+                {
+                    script.AppendFormat( @"
+        $('a.blockinstance-{0}-secure').click(function () {{
+            alert('block instance secure logic goes here!');
+        }});
+
+        $('a.blockinstance-{0}-move').click(function () {{
+            alert('block instance move logic goes here!');
+        }});
+
+        $('a.blockinstance-{0}-delete').click(function () {{
+            if (confirm('Are you sure?'))
+            {{
+                alert('block instance delete logic goes here!');
+            }}
+        }});
+", blockInstance.Id );
+                }
+
+                script.AppendFormat( @"
+    }});
+
+Sys.Application.add_load(function () {{
+
+        $('.attributes-{0}-hide').click(function () {{
+            $('div.attributes-{0}').dialog('close');
+        }});
+
+    }});
+", blockInstance.Id );
+
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(),
+                    string.Format( "block-config-script-{0}", blockInstance.Id ),
+                    script.ToString(), true );
+
+                // Add the config buttons
+                HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
+                blockConfig.ClientIDMode = ClientIDMode.AutoID;
+                blockConfig.Attributes.Add( "class", "block-configuration" );
+                blockConfig.Attributes.Add( "style", "display: none" );
+                blockWrapper.Controls.Add( blockConfig );
+
+                foreach ( Control configControl in cmsBlock.GetConfigurationControls( canConfig, canEdit ) )
+                {
+                    configControl.ClientIDMode = ClientIDMode.AutoID;
+                    blockConfig.Controls.Add( configControl );
+                }
+
+                // Add the attribute update panel
+                HtmlGenericControl attributePanel = new HtmlGenericControl( "div" );
+                attributePanel.ClientIDMode = ClientIDMode.AutoID;
+                attributePanel.Attributes.Add( "class",
+                    string.Format( "attributes-{0}", blockInstance.Id ) );
+                attributePanel.Attributes.Add( "style", "text-align: left" );
+                blockWrapper.Controls.Add( attributePanel );
+
+                UpdatePanel upPanel = new UpdatePanel();
+                upPanel.ClientIDMode = ClientIDMode.AutoID;
+                upPanel.UpdateMode = UpdatePanelUpdateMode.Conditional;
+                upPanel.ChildrenAsTriggers = true;
+                attributePanel.Controls.Add( upPanel );
+
+                PlaceHolder phAttributes = new PlaceHolder();
+                phAttributes.ClientIDMode = ClientIDMode.AutoID;
+                upPanel.ContentTemplateContainer.Controls.Add( phAttributes );
+
+                HtmlGenericControl fieldset = new HtmlGenericControl( "fieldset" );
+                fieldset.ClientIDMode = ClientIDMode.AutoID;
+                phAttributes.Controls.Add( fieldset );
+
+                HtmlGenericControl ol = new HtmlGenericControl( "ol" );
+                ol.ClientIDMode = ClientIDMode.AutoID;
+                fieldset.Controls.Add( ol );
+
+                foreach ( Rock.Cms.Cached.Attribute attribute in blockInstance.Attributes )
+                {
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    li.ID = string.Format( "attribute-{0}", attribute.Id );
+                    li.ClientIDMode = ClientIDMode.AutoID;
+                    ol.Controls.Add( li );
+
+                    Label lbl = new Label();
+                    lbl.ClientIDMode = ClientIDMode.AutoID;
+                    lbl.Text = attribute.Name;
+                    lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                    li.Controls.Add( lbl );
+
+                    Control attributeControl = attribute.CreateControl( blockInstance.AttributeValues[attribute.Key].Value );
+                    attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                    attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                    li.Controls.Add( attributeControl );
+
+                    if ( !string.IsNullOrEmpty( attribute.Description ) )
+                    {
+                        HtmlAnchor a = new HtmlAnchor();
+                        a.ClientIDMode = ClientIDMode.AutoID;
+                        a.Attributes.Add( "class", "attribute-description tooltip" );
+                        a.InnerHtml = "<span>" + attribute.Description + "</span>";
+
+                        li.Controls.Add( a );
+                    }
+
+                }
+
+                Button btnSaveAttributes = new Button();
+                btnSaveAttributes.ID = string.Format( "attributes-{0}-hide", blockInstance.Id );
+                btnSaveAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                btnSaveAttributes.Text = "Save";
+                btnSaveAttributes.CssClass = btnSaveAttributes.ID;
+                btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
+                upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
+            }
+        }
+
+        private List<Cached.Attribute> GetBlockAttributes ( int blockInstanceId )
+        {
+            Cached.BlockInstance blockInstance = Cached.BlockInstance.Read( blockInstanceId );
+            return blockInstance.Attributes;
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Static Helper Methods
 
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
@@ -988,7 +1095,7 @@ namespace Rock.Cms
             if ( blockInstance != null )
             {
                 // Find the container control
-                Control blockWrapper = RecurseControls(this, string.Format("block-instance-id-{0}", blockInstance.Id));
+                Control blockWrapper = RecurseControls(this, string.Format("bid_{0}", blockInstance.Id));
                 if ( blockWrapper != null )
                 {
                     foreach ( Rock.Cms.Cached.Attribute attribute in blockInstance.Attributes )
@@ -1021,6 +1128,31 @@ namespace Rock.Cms
             BlockInstanceID = blockInstanceID;
         }
     }
+
+    internal class JsonResult
+    {
+        public string Action { get; set; }
+        public object Result { get; set; }
+
+        public JsonResult( string action, object result )
+        {
+            Action = action;
+            Result = result;
+        }
+
+        public string Serialize()
+        {
+            System.Web.Script.Serialization.JavaScriptSerializer serializer =
+                new System.Web.Script.Serialization.JavaScriptSerializer();
+
+            StringBuilder sb = new StringBuilder();
+
+            serializer.Serialize( this, sb );
+
+            return sb.ToString();
+        }
+    }
+
 
     #endregion
 
