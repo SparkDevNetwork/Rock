@@ -39,12 +39,9 @@ namespace RockWeb.Blocks.Cms
             if ( !IsPostBack )
             {
                 // register scripts
-                PageInstance.AddScriptLink( this.Page, "../../../scripts/ckeditor/ckeditor.js" );
-                PageInstance.AddScriptLink( this.Page, "../../../scripts/ckeditor/adapters/jquery.js" );
+                PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
+                PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
 
-                // register core cms css
-                PageInstance.AddCSSLink( this.Page, "../../css/cms-core.css" );
-                
                 string blockContent = "";
 
                 // get settings

@@ -51,9 +51,6 @@ namespace RockWeb.Blocks
             foreach ( Rock.Models.Groups.GroupType childType in groupType.ChildGroupTypes )
                 lChildGroups.Text += childType.Name + ":";
 
-            PageInstance.AddCSSLink( this.Page, "../CSS/MyCSS.css");
-            //PageInstance.AddScriptLink( this.Page, "../Scripts/test.js" );
-
             this.AttributesUpdated += new Rock.Cms.AttributesUpdatedEventHandler( MyBlock_AttributesUpdated );
             this.AddAttributeUpdateTrigger(pnlAttributeValues);
 
