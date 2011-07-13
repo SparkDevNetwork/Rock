@@ -53,6 +53,11 @@ namespace Rock.Services.Cms
             return _repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
+        public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
+        {
+            return _repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
+        }
+		
         public void AddBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
         {
             if ( BlockInstance.Guid == Guid.Empty )

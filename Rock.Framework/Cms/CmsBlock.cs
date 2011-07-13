@@ -67,10 +67,7 @@ namespace Rock.Cms
         /// </summary>
         public string ThemePath
         {
-            get
-            {
-                return ResolveUrl( string.Format( "~/Themes/{0}", PageInstance.Site.Theme ) );
-            }
+            get { return ( ( CmsPage )this.Page ).ThemePath; }
         }
 
         #endregion
@@ -265,7 +262,7 @@ namespace Rock.Cms
         {
             List<Control> configControls = new List<Control>();
 
-            if ( canConfig )
+            if ( canConfig || canEdit)
             {
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", string.Format(
@@ -274,7 +271,10 @@ namespace Rock.Cms
                 aAttributes.Attributes.Add( "title", "Block Attributes" );
                 aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
+            }
 
+            if ( canConfig )
+            {
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", string.Format(
                     "security icon-button blockinstance-{0}-secure", BlockInstance.Id ) );
