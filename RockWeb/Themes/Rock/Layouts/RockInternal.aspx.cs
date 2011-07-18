@@ -17,7 +17,7 @@ namespace Rock.Themes.Rock.Layouts
             AddScriptLink( Page, "~/Scripts/jquery-1.5.min.js" );
             AddScriptLink( Page, "~/Scripts/jquery-ui-1.8.9.custom.min.js" );
             AddScriptLink( Page, "~/Themes/Default/Scripts/jquery-placeholder-plugin.js" );
-            AddScriptLink( this, "~/Scripts/colorbox/jquery.colorbox.js" );
+            AddScriptLink( Page, "~/Scripts/colorbox/jquery.colorbox.js" );
 
             AddCSSLink( this, "~/Themes/Rock/CSS/colorbox.css" );
           
