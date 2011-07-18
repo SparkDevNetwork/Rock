@@ -83,7 +83,11 @@ namespace Rock.Cms
                 attribute.Description = this.Description;
                 attribute.DefaultValue = this.DefaultValue;
 
-                if ( attribute.FieldType.Assembly != this.FieldTypeAssembly ||
+				// Q for David: Upon first use, immediately after adding a new
+				// BlockInstanceProperty in a block, the attribute.FieldType was null
+				// so I changed this below to fall into the 'if' block on that case too.
+				// Is this correct or should the attribute have had a FieldType? (Nick)
+                if ( attribute.FieldType == null || attribute.FieldType.Assembly != this.FieldTypeAssembly ||
                     attribute.FieldType.Class != this.FieldTypeClass )
                 {
                     attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
