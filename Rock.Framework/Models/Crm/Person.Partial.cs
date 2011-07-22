@@ -19,6 +19,7 @@ namespace Rock.Models.Crm
             }
         }
 
+        [NotMapped]
         public DateTime BirthDate
         {
             // notes
@@ -41,12 +42,12 @@ namespace Rock.Models.Crm
                 }
             }
 
-            /*set
+            set
             {
                 BirthMonth = value.Month;
                 BirthDay = value.Day;
                 BirthYear = value.Year;
-            }*/
+            }
         }
     }
 

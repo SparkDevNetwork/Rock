@@ -123,8 +123,8 @@ namespace RockWeb.Blocks.Cms
 
                                 if ( person.BirthDay == null )
                                 {
-                                    //person.BirthDate = birthdate;
-                                    //personService.Save( person, person.Id );
+                                    person.BirthDate = birthdate;
+                                    personService.Save( person, person.Id );
                                 }
 
                             }
