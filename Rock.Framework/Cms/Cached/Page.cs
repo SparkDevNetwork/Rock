@@ -204,6 +204,11 @@ namespace Rock.Cms.Cached
             }
         }
 
+        public void FlushBlockInstances()
+        {
+            blockInstanceIds = null;
+        }
+
         #endregion
 
         #region SharedItemCaching

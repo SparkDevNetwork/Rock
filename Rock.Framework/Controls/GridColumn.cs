@@ -168,8 +168,8 @@ namespace Rock.Controls
             {
                 List<string> columnParameters = new List<string>();
 
-                columnParameters.Add( string.Format( "id:\"{0}\"", DataField ) );
-                columnParameters.Add( string.Format( "field:\"{0}\"", DataField ) );
+                columnParameters.Add( string.Format( "id:\"{0}\"", DataField.Replace(".","") ) );
+                columnParameters.Add( string.Format( "field:\"{0}\"", DataField.Replace( ".", "" ) ) );
                 columnParameters.Add( string.Format( "name:\"{0}\"", HeaderText ) );
                 if ( Width > 0 )
                     columnParameters.Add( string.Format( "width:{0}", Width.ToString() ) );
@@ -197,6 +197,8 @@ namespace Rock.Controls
             get { return "TextCellEditor"; }
         }
 
+        internal string JsFriendlyClientId { get; set; }
+
         internal virtual string RowParameter( object dataItem )
         {
             return RowParameter( dataItem, DataField );
@@ -204,7 +206,8 @@ namespace Rock.Controls
 
         internal virtual string RowParameter ( object dataItem, string keyName )
         {
-            return string.Format( "{0}:\"{1}\"", keyName, DataBinder.GetPropertyValue( dataItem, DataField, null ) );
+            //return string.Format( "{0}:\"{1}\"", keyName, DataBinder.GetPropertyValue( dataItem, DataField, null ) );
+            return string.Format( "{0}:\"{1}\"", keyName.Replace(".","") , DataBinder.Eval( dataItem, DataField, null ) );
         }
 
         internal virtual void AddScriptFunctions( Page page )

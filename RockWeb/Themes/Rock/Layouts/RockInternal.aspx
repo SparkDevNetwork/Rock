@@ -36,7 +36,7 @@
                                         <section>
                                             <header>
                                                 <strong>Staff Directory</strong>
-                                                <img src="/Themes/Default/Assets/Mock-Images/staff-directory.png" />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
+                                                <img src='/RockWeb/Themes/Rock/Assets/Mock-Images/staff-directory.png' />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
                                                 tincdunt, arcu.
                                             </header>
                                         </section>
@@ -81,7 +81,7 @@
                                         <section>
                                             <header>
                                                 <strong>Staff Directory</strong>
-                                                <img src="/Themes/Default/Assets/Mock-Images/staff-directory.png" />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
+                                                <img src='/RockWeb/Themes/Rock/Assets/Mock-Images/staff-directory.png' />Lorem ispsum dolor sit amet, consectur adipiscing elit. Quisque 
                                                 tincdunt, arcu.
                                             </header>
                                         </section>
@@ -159,7 +159,7 @@
                             out addresses, emails, phone numbers, etc. or to use the information for anything other than
                             this organization's activities.</p>
                         <p id="footer-license">Rock ChMS is an open-source project by the <a href="">Spark Development 
-                            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src="<%# ResolveUrl("~/Themes/Rock/Assets/Images/cc-license.png") %>" height="15" width="80" /></a> </p>
+                            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src='RockWeb/Themes/Rock/Assets/Images/cc-license.png' height="15" width="80" /></a> </p>
                     </div>
                 </footer>
                  

@@ -80,6 +80,7 @@
     <Compile Include="Cms\Security\ISecured.cs" />
     <Compile Include="Cms\Security\UserRoleProvider.cs" />
     <Compile Include="Cms\Security\User.cs" />
+    <Compile Include="Controls\GridDeleteColumn.cs" />
     <Compile Include="Controls\GridHyperlinkColumn.cs" />
     <Compile Include="Controls\GridIntegerColumn.cs" />
     <Compile Include="Controls\Grid.cs" />
