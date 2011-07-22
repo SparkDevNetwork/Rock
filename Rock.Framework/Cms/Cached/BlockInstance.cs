@@ -16,6 +16,7 @@ namespace Rock.Cms.Cached
         private BlockInstance() { }
 
         public int Id { get; set; }
+        public string Name { get; set; }
         public string Zone { get; private set; }
         public int Order { get; private set; }
         public int OutputCacheDuration { get; private set; }
@@ -153,6 +154,7 @@ namespace Rock.Cms.Cached
             BlockInstance blockInstance = new BlockInstance();
             blockInstance.Id = blockInstanceModel.Id;
             blockInstance.BlockId = blockInstanceModel.BlockId;
+            blockInstance.Name = blockInstanceModel.Name;
             blockInstance.Zone = blockInstanceModel.Zone;
             blockInstance.Order = blockInstanceModel.Order;
             blockInstance.OutputCacheDuration = blockInstanceModel.OutputCacheDuration;
