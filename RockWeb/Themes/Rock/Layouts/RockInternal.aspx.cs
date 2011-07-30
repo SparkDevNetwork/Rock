@@ -19,7 +19,7 @@ namespace Rock.Themes.Rock.Layouts
             AddScriptLink( Page, "~/Themes/Default/Scripts/jquery-placeholder-plugin.js" );
             AddScriptLink( Page, "~/Scripts/colorbox/jquery.colorbox.js" );
 
-            AddCSSLink( this, "~/Themes/Rock/CSS/colorbox.css" );
+            AddCSSLink( this, "~/CSS/colorbox.css" );
           
             base.OnInit( e );
 

@@ -209,8 +209,10 @@ namespace Rock.Controls
         {
             jsFriendlyClientId = this.ClientID.Replace( "-", "_" );
 
-            Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.event.drag-2.0.min.js" );
             Rock.Cms.CmsPage.AddCSSLink( Page, "~/Scripts/slickgrid/slick.grid.css" );
+            Rock.Cms.CmsPage.AddCSSLink( Page, "~/CSS/grid.css" );
+
+            Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.event.drag-2.0.min.js" );
             Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/slickgrid/plugins/slick.rowselectionmodel.js" );
 
             if ( EnableOrdering )
@@ -235,9 +237,6 @@ namespace Rock.Controls
             if ( IdColumnName != string.Empty )
                 Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/slickgrid/slick.dataview.js" );
 
-            Cms.CmsPage cmsPage = this.Page as Cms.CmsPage;
-            if ( cmsPage != null )
-                cmsPage.PageInstance.AddCSSLink( this.Page, cmsPage.ThemePath + "/CSS/grid.css" );
             ClientScriptManager cs = Page.ClientScript;
             Type type = this.GetType();
 
