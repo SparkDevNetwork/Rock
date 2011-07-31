@@ -16,6 +16,10 @@ body {
     overflow-x: hidden;
 }
 
+body.dialog {
+    background: #d0cece;
+}
+
 a {
     color: #406b89;
     text-decoration: none;
@@ -376,5 +380,15 @@ footer {
 	color: #595959;
 }
 
+#cboxOverlay {
+    background: url("../Assets/Images/colorbox-background.png") repeat scroll 0 0 transparent;
+}
 
+#cboxContent {
+    background-color: #d0cece;
+}
 
+.data-grid .header {
+    background: #0d2c44 none; 
+    color: #c6c6c6;
+}
