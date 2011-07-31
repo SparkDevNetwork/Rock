@@ -466,3 +466,17 @@ article.blog-post header ul li:last-child:after {
     padding-left: .5em;
     
 }
+
+/* colorbox overrides */
+#cboxLoadedContent {
+    margin-top:  28px;  
+    margin-bottom: 0;
+}
+
+#cboxTitle, #cboxCurrent, #cboxNext, #cboxPrevious, #cboxSlideshow {
+    top: 4px;
+}
+
+#cboxClose {
+    top: 0;
+}/**/

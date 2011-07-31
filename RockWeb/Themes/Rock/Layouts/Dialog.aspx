@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/Rock/Layouts/Site.Master"
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/Rock/Layouts/Dialog.Master"
     AutoEventWireup="true" CodeFile="Dialog.aspx.cs" Inherits="Rock.Themes.Rock.Layouts.Dialog" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
