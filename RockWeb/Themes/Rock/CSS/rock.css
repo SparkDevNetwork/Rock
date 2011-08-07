@@ -145,7 +145,7 @@ input.button, .button {
 
 /* Page Navigation Styles */
 
-#page-wrapper > header > nav {
+#page-wrapper > header nav {
     clear: both;
 	float: left; 
 	margin-top: 0;
@@ -161,11 +161,11 @@ input.button, .button {
     border: 1px solid #1e3b51;
 }
 
-#page-wrapper > header > nav ul {
+#page-wrapper > header nav ul {
     list-style: none outside none;
 }
 
-#page-wrapper > header > nav > ul > li {
+#page-wrapper > header nav > ul > li {
     float: left;
 	position: relative;
 	padding: 11px 30px 0 30px;
@@ -175,7 +175,7 @@ input.button, .button {
 	height: 30px;
 }
 
-#page-wrapper > header > nav > ul > li:first-child {
+#page-wrapper > header nav > ul > li:first-child {
     padding-left: 30px;
     -webkit-border-top-left-radius: 5px;
     -webkit-border-bottom-left-radius: 5px;
@@ -186,17 +186,17 @@ input.button, .button {
     border-left: none;
 }
 
-#page-wrapper > header > nav > ul > li:first-child:hover {
+#page-wrapper > header nav > ul > li:first-child:hover {
     border: 1px solid #929292;
     margin-left: -1px;
 }
 
-#page-wrapper > header > nav ul li a {
+#page-wrapper > header nav ul li a {
     color: #cfcdcd;
     font-size: 14px;
 }
 
-#page-wrapper > header > nav ul li .nav-menu {
+#page-wrapper > header nav ul li .nav-menu {
 	left: -999em;
 	position: absolute;
 	background-color: #d0d0d0;
@@ -213,11 +213,11 @@ input.button, .button {
 	text-align: left;
 }
 
-#page-wrapper > header > nav ul li .nav-menu .width-1column {
+#page-wrapper > header nav ul li .nav-menu .width-1column {
 	width: 350px;
 }
 
-#page-wrapper > header > nav ul li .nav-menu header > strong {
+#page-wrapper > header nav ul li .nav-menu header > strong {
 	font-size: 16px;
 	font-weight: normal;
 	display: block;
@@ -227,44 +227,44 @@ input.button, .button {
 	color: #3c3c3c;
 }
 
-#page-wrapper > header > nav ul li .nav-menu header > img {
+#page-wrapper > header nav ul li .nav-menu header > img {
 	float: left;
 	padding-right: 12px;
 }
 					
-#page-wrapper > header > nav ul li .nav-menu ul {
+#page-wrapper > header nav ul li .nav-menu ul {
 	list-style-type: square;
 	width: 100%;
 	padding-left: 2em;
 	margin-top: 6px;
 }
 
-#page-wrapper > header > nav ul li .nav-menu ul	li {
+#page-wrapper > header nav ul li .nav-menu ul	li {
 	width: 140px;
 	float: left;
 	margin-right: 10px;
 }
 								
-#page-wrapper > header > nav ul li .nav-menu ul	li a {
+#page-wrapper > header nav ul li .nav-menu ul	li a {
 	text-decoration: none;
 	color: #03375c;
 }
 
-#page-wrapper > header > nav ul li .nav-menu ul	li a:hover {
+#page-wrapper > header nav ul li .nav-menu ul	li a:hover {
 	color: #054d80;
 }
 
-#page-wrapper > header > nav > ul > li:hover {
+#page-wrapper > header nav > ul > li:hover {
 	z-index: 2;
 	border-color: #929292;
 	background-color: #d0d0d0;
 }					
 
-#page-wrapper > header > nav > ul > li:hover a {
+#page-wrapper > header nav > ul > li:hover a {
 	color: #3c3c3c;
 }
 
-#page-wrapper > header > nav ul > li:hover .nav-menu {
+#page-wrapper > header nav ul > li:hover .nav-menu {
 	left: -1px;
 	top: 27px;
 }
