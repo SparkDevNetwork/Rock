@@ -214,6 +214,7 @@ input.image {
     border: 1px solid green;
     margin: -1px; 
     min-height: 60px;  
+    min-width: 180px;
     display: block;
     width: 100%;
     clear: both;
@@ -252,6 +253,7 @@ input.image {
     border: 1px solid red;
     margin: -1px; 
     min-height: 60px;  
+    min-width: 180px;
     display: block;
 }
 
@@ -479,4 +481,4 @@ article.blog-post header ul li:last-child:after {
 
 #cboxClose {
     top: 0;
-}/**/
+}
