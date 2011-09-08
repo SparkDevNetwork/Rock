@@ -280,8 +280,11 @@ namespace Rock.Cms
                     bool canEditPage = PageInstance.Authorized( "Edit", user );
 
                     // Add div wrapper around each zone for hilighting and editing zone
-                    if ( canEditPage )
+                    if (canEditPage)
+                    {
+                        AddConfigScript();
                         AddZoneConfigWrappers();
+                    }
 
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
@@ -583,20 +586,45 @@ namespace Rock.Cms
 
         #region Zones
 
-        private void AddZoneConfigWrappers()
+        private void AddConfigScript()
         {
             string script = @"
     $(document).ready(function () {
-        $('a.zone-blocks').colorbox({
-            width: '562px',
-            height: '80%',
-            iframe: true,
-            onClosed:function(){ location.reload(true); }
+
+        $('a.zone-blocks').popup({height: '80%', onClosed:function(){ location.reload(true); }
         });
+
+        $('a.attributes-show').popup();
+
+        $('a.blockinstance-secure').click(function () {
+            var elementId = $(this).attr('href');
+            alert('block instance secure logic goes here! (element: ' + elementId + ')');
+            return false;
+        });
+
+        $('a.blockinstance-move').click(function () {
+            var elementId = $(this).attr('href');
+            alert('block instance move logic goes here! (element: ' + elementId + ')');
+            return false;
+        });
+
+        $('a.blockinstance-delete').click(function () {
+            var elementId = $(this).attr('href');
+            if (confirm('Are you sure? (element: ' + elementId + ')'))
+            {
+                alert('block instance delete logic goes here!');
+            }
+            return false;
+        });
+
     });
 ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "zone-config-script", script, true );
+            this.Page.ClientScript.RegisterStartupScript(this.GetType(), "config-script", script, true);
 
+        }
+
+        private void AddZoneConfigWrappers()
+        {
             foreach ( KeyValuePair<string, Control> zoneControl in this.Zones )
             {
                 Control parent = zoneControl.Value.Parent;
@@ -653,65 +681,6 @@ namespace Rock.Cms
         {
             if ( canConfig || canEdit )
             {
-                StringBuilder script = new StringBuilder();
-
-                script.AppendFormat( @"
-    $(document).ready(function () {{
-
-        $('div.attributes-{0}').dialog({{
-            autoOpen: false,
-            draggable: true,
-            width: 530,
-            title: 'Module Instance Properties',
-            closeOnEscape: true,
-            modal: true,
-            open: function (type, data) {{
-                $(this).parent().appendTo(""form"");
-            }}
-        }});
-
-        $('a.attributes-{0}-show').click(function () {{
-            $('div.attributes-{0}').dialog('open');
-            return false;
-        }});
-", blockInstance.Id );
-
-                if ( canConfig )
-                {
-                    script.AppendFormat( @"
-        $('a.blockinstance-{0}-secure').click(function () {{
-            alert('block instance secure logic goes here!');
-        }});
-
-        $('a.blockinstance-{0}-move').click(function () {{
-            alert('block instance move logic goes here!');
-        }});
-
-        $('a.blockinstance-{0}-delete').click(function () {{
-            if (confirm('Are you sure?'))
-            {{
-                alert('block instance delete logic goes here!');
-            }}
-        }});
-", blockInstance.Id );
-                }
-
-                script.AppendFormat( @"
-    }});
-
-Sys.Application.add_load(function () {{
-
-        $('.attributes-{0}-hide').click(function () {{
-            $('div.attributes-{0}').dialog('close');
-        }});
-
-    }});
-", blockInstance.Id );
-
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(),
-                    string.Format( "block-config-script-{0}", blockInstance.Id ),
-                    script.ToString(), true );
-
                 // Add the config buttons
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
                 blockConfig.ClientIDMode = ClientIDMode.AutoID;
@@ -726,12 +695,15 @@ Sys.Application.add_load(function () {{
                 }
 
                 // Add the attribute update panel
-                HtmlGenericControl attributePanel = new HtmlGenericControl( "div" );
-                attributePanel.ClientIDMode = ClientIDMode.AutoID;
-                attributePanel.Attributes.Add( "class",
-                    string.Format( "attributes-{0}", blockInstance.Id ) );
+                HtmlGenericControl div = new HtmlGenericControl("div");
+                div.Attributes.Add("style", "display: none");
+                blockWrapper.Controls.Add(div);
+
+                HtmlGenericControl attributePanel = new HtmlGenericControl("div");
+                attributePanel.ClientIDMode = ClientIDMode.Static;
+                attributePanel.Attributes.Add( "id", string.Format( "attributes-{0}", blockInstance.Id ) );
                 attributePanel.Attributes.Add( "style", "text-align: left" );
-                blockWrapper.Controls.Add( attributePanel );
+                div.Controls.Add(attributePanel);
 
                 UpdatePanel upPanel = new UpdatePanel();
                 upPanel.ClientIDMode = ClientIDMode.AutoID;
@@ -787,6 +759,7 @@ Sys.Application.add_load(function () {{
                 btnSaveAttributes.Text = "Save";
                 btnSaveAttributes.CssClass = btnSaveAttributes.ID;
                 btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
+                btnSaveAttributes.OnClientClick = "$.fn.popup.close();";
                 upPanel.ContentTemplateContainer.Controls.Add( btnSaveAttributes );
             }
         }
