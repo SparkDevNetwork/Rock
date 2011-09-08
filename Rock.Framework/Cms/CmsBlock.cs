@@ -262,12 +262,13 @@ namespace Rock.Cms
         {
             List<Control> configControls = new List<Control>();
 
+            string AttributeDivId = string.Format("#attributes-{0}", BlockInstance.Id);
+
             if ( canConfig || canEdit)
             {
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                aAttributes.Attributes.Add( "class", string.Format(
-                    "attributes icon-button attributes-{0}-show", BlockInstance.Id ) );
-                aAttributes.Attributes.Add( "href", "#" );
+                aAttributes.Attributes.Add( "class", "attributes icon-button attributes-show" );
+                aAttributes.Attributes.Add("href", AttributeDivId);
                 aAttributes.Attributes.Add( "title", "Block Attributes" );
                 aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
@@ -276,25 +277,22 @@ namespace Rock.Cms
             if ( canConfig )
             {
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
-                aSecureBlock.Attributes.Add( "class", string.Format(
-                    "security icon-button blockinstance-{0}-secure", BlockInstance.Id ) );
-                aSecureBlock.Attributes.Add( "href", "#" );
+                aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
+                aSecureBlock.Attributes.Add("href", AttributeDivId);
                 aSecureBlock.Attributes.Add( "title", "Security" );
                 aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                aMoveBlock.Attributes.Add( "class", string.Format(
-                    "block-move icon-button blockinstance-{0}-move", BlockInstance.Id ) );
-                aMoveBlock.Attributes.Add( "href", "#" );
+                aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
+                aMoveBlock.Attributes.Add("href", AttributeDivId);
                 aMoveBlock.Attributes.Add( "title", "Move" );
                 aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
-                aDeleteBlock.Attributes.Add( "class", string.Format(
-                    "delete icon-button blockinstance-{0}-delete", BlockInstance.Id ) );
-                aDeleteBlock.Attributes.Add( "href", "#" );
+                aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
+                aDeleteBlock.Attributes.Add("href", AttributeDivId);
                 aDeleteBlock.Attributes.Add( "title", "Delete" );
                 aDeleteBlock.InnerText = "Delete";
                 configControls.Add( aDeleteBlock );
