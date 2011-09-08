@@ -1,4 +1,9 @@
-﻿.data-grid .content {
+﻿.data-grid 
+{
+    width: inherit;
+}
+
+.data-grid .content {
     background: none repeat scroll 0 0 white;
     border: 1px solid gray;
     outline: 0 none;
@@ -61,10 +66,10 @@
 
 .data-grid-cell-delete a
 {
+    margin-left: 9px;
     height: 16px;
     width: 16px;
     display: block;
     background: url("../Assets/Images/Grid/delete.png") 
 }
 
-.data-grid .pager
