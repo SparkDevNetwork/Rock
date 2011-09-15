@@ -61,6 +61,7 @@ namespace RockWeb.Blocks
         void MyBlock_AttributesUpdated( object sender, EventArgs e )
         {
             ShowAttributeValue();
+            pnlAttributeValues.Update();
         }
 
         private void ShowAttributeValue()

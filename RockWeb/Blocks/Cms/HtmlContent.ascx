@@ -88,7 +88,6 @@
         <asp:UpdatePanel ID="upContentDialog" UpdateMode="Conditional" ChildrenAsTriggers="true" runat="server">
             <ContentTemplate>
                 <asp:TextBox ID="txtHtmlContentEditor" CssClass="html-content-editor" TextMode="MultiLine" runat="server"></asp:TextBox>
-                
                 <div class="editor-buttons">
                     <asp:Button ID="btnSaveContent" runat="server" Text="Save" CssClass="save" OnClick="btnSaveContent_Click" />
                     <input id="btnCancel" runat="server" type="button" class="cancel" value="Cancel" />

@@ -153,7 +153,7 @@ namespace Rock.Cms
             if ( BlockInstance.Authorized( "Configure", user ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "attributes-{0}-hide", BlockInstance.Id );
+                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
                 trigger.EventName = "Click";
                 updatePanel.Triggers.Add( trigger );
             }
@@ -162,13 +162,6 @@ namespace Rock.Cms
         #endregion
 
         #region Overridden Methods
-
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            ( ( Rock.Cms.CmsPage )this.Page ).BlockInstanceAttributesUpdated += new BlockInstanceAttributesUpdatedEventHandler( CmsBlock_BlockInstanceAttributesUpdated );
-        }
 
         /// <summary>
         /// When a control renders it's content to the page, this method will also check to see if 
@@ -262,14 +255,34 @@ namespace Rock.Cms
         {
             List<Control> configControls = new List<Control>();
 
-            string AttributeDivId = string.Format("#attributes-{0}", BlockInstance.Id);
-
             if ( canConfig || canEdit)
             {
+                CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
+                    delegate( Control content )
+                    {
+                        Button trigger = new Button();
+                        trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id.ToString() );
+                        trigger.Click += new EventHandler( trigger_Click );
+                        content.Controls.Add( trigger );
+
+                        HiddenField triggerData = new HiddenField();
+                        triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", BlockInstance.Id.ToString() );
+                        content.Controls.Add( triggerData );
+                    }
+                );
+
+                UpdatePanel upTrigger = new UpdatePanel();
+                upTrigger.ContentTemplate = upContent;
+                configControls.Add( upTrigger );
+                upTrigger.Attributes.Add( "style", "display:none" );
+
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "attributes icon-button attributes-show" );
-                aAttributes.Attributes.Add("href", AttributeDivId);
-                aAttributes.Attributes.Add( "title", "Block Attributes" );
+                aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockAttributes/{0}", BlockInstance.Id)));
+                aAttributes.Attributes.Add("title", "Block Attributes");
+                aAttributes.Attributes.Add("instance-id", BlockInstance.Id.ToString());
                 aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
             }
@@ -278,27 +291,33 @@ namespace Rock.Cms
             {
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
-                aSecureBlock.Attributes.Add("href", AttributeDivId);
+                aSecureBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aSecureBlock.Attributes.Add( "title", "Security" );
                 aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
-                aMoveBlock.Attributes.Add("href", AttributeDivId);
+                aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aMoveBlock.Attributes.Add( "title", "Move" );
                 aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
-                aDeleteBlock.Attributes.Add("href", AttributeDivId);
+                aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aDeleteBlock.Attributes.Add( "title", "Delete" );
                 aDeleteBlock.InnerText = "Delete";
                 configControls.Add( aDeleteBlock );
             }
 
             return configControls;
+        }
+
+        protected void trigger_Click( object sender, EventArgs e )
+        {
+            if ( AttributesUpdated != null )
+                AttributesUpdated( sender, e );
         }
 
         #endregion

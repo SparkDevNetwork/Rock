@@ -32,10 +32,11 @@ namespace Rock.FieldTypes
             return base.IsValid( value, out message );
         }
 
-        public override Control CreateControl( string value )
+        public override Control CreateControl( string value, bool setValue )
         {
             CheckBox cb = new CheckBox();
-            cb.Checked = string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value );
+            if (setValue)
+                cb.Checked = string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value );
             return cb;
         }
 

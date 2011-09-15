@@ -80,6 +80,11 @@ namespace RockWeb.Blocks.Cms
                 lPostText.Text = AttributeValue( "PostText" );
 
             }
+        }
+
+        protected override void  OnInit(EventArgs e)
+        {
+ 	        base.OnInit(e);
 
             this.AttributesUpdated += new Rock.Cms.AttributesUpdatedEventHandler( HtmlContent_AttributesUpdated );
             this.AddAttributeUpdateTrigger( pnlContent );
@@ -89,6 +94,7 @@ namespace RockWeb.Blocks.Cms
         {
             lPreText.Text = AttributeValue( "PreText" );
             lPostText.Text = AttributeValue( "PostText" );
+            pnlContent.Update();
         }
 
         protected void btnSaveContent_Click( object sender, EventArgs e )

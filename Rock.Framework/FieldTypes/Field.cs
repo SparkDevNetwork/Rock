@@ -58,10 +58,11 @@ namespace Rock.FieldTypes
         /// </summary>
         /// <param name="parentControl">Control that the field type's controls will be added to</param>
         /// <param name="fieldValues">Collection of existing values for the field</param>
-        public virtual Control CreateControl( string value )
+        public virtual Control CreateControl(string value, bool setValue)
         {
             TextBox textBox = new TextBox();
-            textBox.Text = value;
+            if (setValue)
+                textBox.Text = value;
             return textBox;
         }
 
