@@ -65,7 +65,7 @@ namespace Rock.FieldTypes
             return base.IsValid( value, out message );
         }
 
-        public override Control CreateControl( string value )
+        public override Control CreateControl(string value, bool setValue)
         {
             ListControl listControl;
 
@@ -82,7 +82,8 @@ namespace Rock.FieldTypes
             foreach ( string option in this.QualifierValues["Values"].Value.Split( ',' ) )
             {
                 ListItem li = new ListItem( option, option );
-                li.Selected = li.Value == value;
+                if (setValue)
+                    li.Selected = li.Value == value;
                 listControl.Items.Add( li );
             }
 

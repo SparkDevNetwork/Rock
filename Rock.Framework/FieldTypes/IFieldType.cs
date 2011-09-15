@@ -17,7 +17,7 @@ namespace Rock.FieldTypes
         List<FieldQualifier> Qualifiers { get; }
         Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; set;  }
         string FormatValue( string value, bool condensed );
-        Control CreateControl( string value );
+        Control CreateControl( string value, bool setValue );
         string ReadValue( Control control );
     }
 }

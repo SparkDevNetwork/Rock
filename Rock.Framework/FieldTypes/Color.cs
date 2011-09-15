@@ -13,7 +13,7 @@ namespace Rock.FieldTypes
     /// </summary>
     public class Color : Field
     {
-        public override Control CreateControl( string value )
+        public override Control CreateControl(string value, bool setValue)
         {
             DropDownList ddl = new DropDownList();
 
@@ -22,7 +22,8 @@ namespace Rock.FieldTypes
             foreach ( PropertyInfo info in colorInfo )
             {
                 ListItem li = new ListItem( info.Name, info.Name );
-                li.Selected = info.Name == value;
+                if (setValue)
+                    li.Selected = info.Name == value;
                 ddl.Items.Add( li );
             }
 

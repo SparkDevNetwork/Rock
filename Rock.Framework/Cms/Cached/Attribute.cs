@@ -29,10 +29,10 @@ namespace Rock.Cms.Cached
             get { return FieldType.Read( FieldTypeId ); }
         }
 
-        public System.Web.UI.Control CreateControl( string value)
+        public System.Web.UI.Control CreateControl( string value, bool setValue)
         {
             this.FieldType.Field.QualifierValues = this.QualifierValues;
-            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value );
+            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value, setValue );
         }
 
         #region Static Methods
