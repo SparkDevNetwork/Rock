@@ -43,7 +43,7 @@
 					<xsl:value-of select="@title"/>
 				</strong>
 				<xsl:if test="@display-icon = 'true'">
-					[X]
+					icon value goes here
 				</xsl:if>
 				<xsl:if test="@display-description = 'true'">
 					<xsl:value-of disable-output-escaping="yes" select="description"/>

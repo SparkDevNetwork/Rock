@@ -39,3 +39,15 @@ http://p.yusukekamiyamane.com/
 
 reCaptcha ASP.Net Plugin:
 http://code.google.com/apis/recaptcha/docs/aspnet.html
+
+Google Maps API (Terms of Service):
+http://code.google.com/intl/en-US/apis/maps/faq.html#tos
+   * "...but [if] you display this information using the Google Maps API on a free part of
+      your site, you'll also meet the Google Maps API Terms of Service." 
+   * "If consumers can easily sign up for a password without charge or if the purpose of the
+      password protected map is to enhance the publicly available map (ie. administration),
+      then your site is likely within the Terms of Service."
+
+Rock ChMS is intended to be packaged in such a way as to be compliant with the above
+statements from the Google Maps API Terms of Service.  Any changes made by the user-admin
+should be done with the Google Maps API Terms of Service in mind to maintain compliance.
