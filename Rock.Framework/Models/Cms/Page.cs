@@ -98,6 +98,10 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		[MaxLength( 150 )]
+		[DataMember]
+		public string IconUrl { get; set; }
+		
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.Page"; } }
 

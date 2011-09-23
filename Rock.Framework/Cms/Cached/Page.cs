@@ -30,6 +30,7 @@ namespace Rock.Cms.Cached
         public string Name { get; private set; }
         public string Title { get; private set; }
         public string Description { get; private set; }
+		public string IconUrl { get; private set; }
         public bool IncludeAdminFooter { get; private set; }
         public bool MenuDisplayDescription { get; private set; }
         public bool MenuDisplayIcon { get; private set; }
@@ -409,6 +410,7 @@ namespace Rock.Cms.Cached
             page.OutputCacheDuration = pageModel.OutputCacheDuration;
             page.Name = pageModel.Name;
             page.Description = pageModel.Description;
+			page.IconUrl = pageModel.IconUrl;
             page.AttributeValues = pageModel.AttributeValues;
             page.IncludeAdminFooter = pageModel.IncludeAdminFooter;
             page.Title = pageModel.Title;
@@ -484,13 +486,14 @@ namespace Rock.Cms.Cached
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
             {
-                XElement pageElement = new XElement( "page",
-                    new XAttribute( "id", this.Id ),
-                    new XAttribute( "title", this.Title ?? this.Name ),
-                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
-                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
-                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
-                    new XElement( "description", this.Description ?? "" ) );
+				XElement pageElement = new XElement( "page",
+					new XAttribute( "id", this.Id ),
+					new XAttribute( "title", this.Title ?? this.Name ),
+					new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
+					new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
+					new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
+					new XElement( "description", this.Description ?? "" ),
+					new XElement( "icon-url", this.IconUrl ?? "" ) );
 
                 XElement childPagesElement = new XElement( "pages" );
 
