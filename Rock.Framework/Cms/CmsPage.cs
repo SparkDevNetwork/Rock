@@ -578,7 +578,7 @@ namespace Rock.Cms
             HtmlGenericControl modalIFrame = new HtmlGenericControl("iframe");
             modalIFrame.Attributes.Add("id", "modalIFrame");
             modalIFrame.Attributes.Add("width", "100%");
-            modalIFrame.Attributes.Add("height", "570px");
+            modalIFrame.Attributes.Add("height", "545px");
             modalIFrame.Attributes.Add("marginWidth", "0");
             modalIFrame.Attributes.Add("marginHeight", "0");
             modalIFrame.Attributes.Add("frameBorder", "0");
