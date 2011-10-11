@@ -1,13 +1,16 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ZoneBlocks.ascx.cs" Inherits="RockWeb.Blocks.Cms.ZoneBlocks" %>
 
 <div class='admin-dialog'>
-    <Rock:Grid ID="rGrid" runat="server" Width="480px" Height="180px" Title="Zone Blocks" 
-    EnableEdit="true" EnableAdd="true" EnableOrdering="true" EnablePaging="true"
-    CssClass="data-grid" AsyncEditorLoading="true" style="position:relative" IdColumnName="id">
-        <Rock:GridDeleteColumn DataField="id" />
-        <Rock:GridColumn DataField="id" Visible="false" />
-        <Rock:GridColumn DataField="Name" HeaderText="Name" CanEdit="true" Width="180" />
-        <Rock:GridColumn DataField="Block.Name" HeaderText="Type" CanEdit="false" Width="180" />
+    <Rock:Grid ID="rGrid" runat="server" EnableOrdering="true" DataKeyNames="id">
+        <Columns>
+            <asp:BoundField DataField="Name" HeaderText="Name" ItemStyle-Width="180px" />
+            <asp:TemplateField HeaderText="Type" ItemStyle-Width="180px">
+                <ItemTemplate>
+                <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                </ItemTemplate>
+            </asp:TemplateField>
+            <Rock:DeleteField />
+        </Columns>
     </Rock:Grid>
     <div class="admin-details" style="display:none">
         <span class="failureNotification">

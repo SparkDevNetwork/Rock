@@ -2,12 +2,11 @@
 
 <asp:PlaceHolder ID="phList" runat="server" Visible="false">
 
-    <Rock:Grid ID="gList" runat="server" Title="Blocks" EnableEdit="false" EnableOrdering="false" EnablePaging="true" 
-        IdColumnName="Id" Height="500" Width="600" CssClass="data-grid" style="position:relative" >
-        <Rock:GridColumn DataField="Id" Visible="false" />
-        <Rock:GridHyperlinkColumn HeaderText="Block" DataNavigateUrlFormatString="~/Bloc/Edit/{0}" DataNavigateUrlField="Id" DataField="Name" Width="100" />
-        <Rock:GridColumn DataField="Description" HeaderText="Description" Width="200" />
-    </Rock:Grid>
+    <RockGrid:Table ID="gList" runat="server" Title="Blocks" EnableOrdering="false" EnablePaging="true" 
+        IdentityColumn="Id" Height="500" Width="600" CssClass="data-grid" style="position:relative" >
+        <RockGrid:HyperlinkColumn HeaderText="Block" DataNavigateUrlFormatString="~/Bloc/Edit/{0}" DataNavigateUrlField="Id" DataField="Name" Width="100" />
+        <RockGrid:Column DataField="Description" HeaderText="Description" Width="200" />
+    </RockGrid:Table>
 	
 	<asp:HyperLink ID="hlAdd" runat="server" Text="Add New Block" NavigateUrl="~/Bloc/Add"></asp:HyperLink>
 

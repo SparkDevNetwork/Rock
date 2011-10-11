@@ -3,19 +3,7 @@
     width: inherit;
 }
 
-.data-grid .content {
-    background: none repeat scroll 0 0 white;
-    border: 1px solid gray;
-    outline: 0 none;
-    text-align: left;
-}
-
-.data-grid-cell-reorder {
-	cursor: move;
-	background: url("../Assets/Images/Grid/drag-handle.png") no-repeat center center;
-}
-
-.data-grid .header {
+.data-grid thead {
     -moz-border-bottom-colors: none;
     -moz-border-image: none;
     -moz-border-left-colors: none;
@@ -32,18 +20,22 @@
     line-height: 24px;
 }
 
+.data-grid td {
+    background: none repeat scroll 0 0 white;
+    border: 1px solid gray;
+    outline: 0 none;
+}
+
+.data-grid-cell-reorder {
+	cursor: move;
+	background: url("../Assets/Images/Grid/drag-handle.png") no-repeat center center;
+}
+
 .data-grid .header a.icon-button.attributes
 {
     margin: 4px 4px 0 0; 
 }
 
-.data-grid .header label 
-{
-    float: none;
-    margin: 0 0 0 5px;
-    text-align: left;
-    width: auto;
-}
 
 .data-grid .controls
 {
@@ -64,7 +56,7 @@
     margin: 4px 4px 0 0; 
 }
 
-.data-grid-cell-delete a
+td.col-delete a
 {
     margin-left: 9px;
     height: 16px;
