@@ -43,7 +43,11 @@
 					<xsl:value-of select="@title"/>
 				</strong>
 				<xsl:if test="@display-icon = 'true'">
-					[X]
+					<img>
+						<xsl:attribute name="src">
+							<xsl:value-of disable-output-escaping="yes" select="icon-url"/>
+						</xsl:attribute>
+					</img>
 				</xsl:if>
 				<xsl:if test="@display-description = 'true'">
 					<xsl:value-of disable-output-escaping="yes" select="description"/>

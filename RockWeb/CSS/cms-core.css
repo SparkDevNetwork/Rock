@@ -469,21 +469,5 @@ article.blog-post header ul li:last-child:after {
     
 }
 
-/* colorbox overrides */
-#cboxLoadedContent {
-    margin-top:  28px;  
-    margin-bottom: 0;
-}
+/* default popup styling */
 
-#cboxTitle, #cboxCurrent, #cboxNext, #cboxPrevious, #cboxSlideshow {
-    top: 4px;
-}
-
-#cboxTitle 
-{
-    height:16px;
-}
-
-#cboxClose {
-    top: 0;
-}
