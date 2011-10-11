@@ -21,8 +21,8 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnInit( EventArgs e )
         {
-            try
-            {
+            //try
+            //{
                 MembershipUser user = Membership.GetUser();
 
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
@@ -42,18 +42,19 @@ namespace RockWeb.Blocks.Cms
 ";
                     Page.ClientScript.RegisterStartupScript( this.GetType(), "show-details", script, true );
 
+                    //rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                    rGrid.GridDelete += new Rock.Controls.GridDeleteEventHandler( rGrid_GridDelete );
+                    //rGrid.GridDelete += new Rock.Controls.Grid.GridDeleteEventHandler( rGrid_GridDelete );
                     
                     BindZoneBlocks();
 
                     LoadBlockTypes(); 
                 //}
-            }
+            //}
 
-            catch ( System.Exception ex )
-            {
-            }
+            //catch ( System.Exception ex )
+            //{
+            //}
 
             base.OnInit( e );
         }
@@ -63,12 +64,16 @@ namespace RockWeb.Blocks.Cms
             try
             {
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+
                 List<Rock.Models.Cms.BlockInstance> blockInstances = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone(
                     null, _page.Id, _zoneName ).ToList();
 
-                Rock.Models.Cms.BlockInstance blockInstance = blockInstances[e.OldIndex];
-                blockInstances.RemoveAt( e.OldIndex );
-                blockInstances.Insert( e.NewIndex > e.OldIndex ? e.NewIndex - 1 : e.NewIndex, blockInstance );
+                int oldIndex = blockInstances.FindIndex(i => i.Id == Convert.ToInt32(e.DataKey));
+                int newIndex = (e.NewIndex - e.OldIndex) + oldIndex;
+
+                Rock.Models.Cms.BlockInstance blockInstance = blockInstances[oldIndex];
+                blockInstances.RemoveAt( oldIndex );
+                blockInstances.Insert( newIndex > oldIndex ? newIndex - 1 : newIndex, blockInstance );
 
                 blockInstanceService.SaveOrder( blockInstances, CurrentPersonId );
 
@@ -80,31 +85,31 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        void rGrid_GridDelete( object sender, Rock.Controls.GridRowEventArgs e )
-        {
-            try
-            {
-                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( e.Id );
-                if ( BlockInstance != null )
-                {
-                    blockInstanceService.DeleteBlockInstance( blockInstance );
-                    blockInstanceService.Save( blockInstance, CurrentPersonId );
-                    _page.FlushBlockInstances();
-                }
-                else
-                    e.Cancel = true;
-            }
-            catch
-            {
-                e.Cancel = true;
-            }
-        }
+        //void rGrid_GridDelete( object sender, Rock.Controls.Grid.GridRowEventArgs e )
+        //{
+        //    try
+        //    {
+        //        Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+        //        Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( e.Id );
+        //        if ( BlockInstance != null )
+        //        {
+        //            blockInstanceService.DeleteBlockInstance( blockInstance );
+        //            blockInstanceService.Save( blockInstance, CurrentPersonId );
+        //            _page.FlushBlockInstances();
+        //        }
+        //        else
+        //            e.Cancel = true;
+        //    }
+        //    catch
+        //    {
+        //        e.Cancel = true;
+        //    }
+        //}
 
         private void BindZoneBlocks()
         {
             Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-            rGrid.DataSource = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone(null, _page.Id, _zoneName );
+            rGrid.DataSource = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
             rGrid.DataBind();
         }
 
