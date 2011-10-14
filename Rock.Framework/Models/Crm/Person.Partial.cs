@@ -33,11 +33,7 @@ namespace Rock.Models.Crm
                 }
                 else
                 {
-                    string birthYear = "";
-
-                    if ( BirthYear == null )
-                        birthYear = DateTime.MinValue.Year.ToString();
-
+                    string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
                     return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
                 }
             }

@@ -13,8 +13,8 @@ namespace RockWeb.Blocks.Cms
 		private string _action = string.Empty;
 		private int _blockId = 0;
 
-		protected void Page_Init( object sender, EventArgs e )
-		{
+        protected override void OnInit( EventArgs e )
+        {
 			_action = PageParameter( "action" ).ToLower();
 			switch ( _action )
 			{
@@ -34,6 +34,19 @@ namespace RockWeb.Blocks.Cms
 					break;
 			}
 		}
+
+        protected override void OnLoad( EventArgs e )
+        {
+			_action = PageParameter( "action" ).ToLower();
+            switch ( _action )
+            {
+                case "":
+                case "list":
+                    BindGrid();
+                    break;
+            }
+        }
+
 
         private void DisplayList()
         {
@@ -64,9 +77,30 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                gList.DataSource = blockService.Queryable().ToList();
-                gList.DataBind();
             }
+
+            rGrid.DataKeyNames = new string[] { "id" };
+            rGrid.EnableAdd = true;
+            rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
+            rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
+            rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+
+            string script = string.Format( @"
+    $(document).ready(function() {{
+        $('td.grid-icon-cell.delete a').click(function(){{
+            return confirm('Are you sure you want to delete this Block?');
+            }});
+    }});
+", rGrid.ClientID );
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+
+        }
+
+        private void BindGrid()
+        {
+            Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+            rGrid.DataSource = blockService.Queryable().ToList();
+            rGrid.DataBind();
         }
 
 		private void DisplayEdit( int blockId )
@@ -97,7 +131,30 @@ namespace RockWeb.Blocks.Cms
 			}
 		}
 
-		protected void lbSave_Click( object sender, EventArgs e )
+        void rGrid_GridAdd( object sender, EventArgs e )
+        {
+            Response.Redirect( "~/Bloc/Add" );
+        }
+
+        protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
+        {
+            Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+            Rock.Models.Cms.Block block = blockService.GetBlock( ( int )e.Keys["id"] );
+            if ( block != null )
+            {
+                blockService.DeleteBlock( block );
+                blockService.Save( block, CurrentPersonId );
+            }
+
+            BindGrid();
+        }
+
+        void rGrid_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        protected void lbSave_Click( object sender, EventArgs e )
 		{
 			using ( new Rock.Helpers.UnitOfWorkScope() )
 			{

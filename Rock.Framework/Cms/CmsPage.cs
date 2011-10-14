@@ -31,9 +31,6 @@ namespace Rock.Cms
         private Dictionary<string, Control> _zones;
         private PlaceHolder phLoadTime;
 
-        //Callback Event Result
-        private string returnValue;
-
         #endregion
 
         #region Protected Variables
@@ -113,6 +110,14 @@ namespace Rock.Cms
             private set
             {
                 Context.Items.Add( "CurrentPerson", value );
+            }
+        }
+
+        public string AppPath
+        {
+            get
+            {
+                return ResolveUrl( "~" );
             }
         }
 

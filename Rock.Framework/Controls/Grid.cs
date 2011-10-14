@@ -7,14 +7,21 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Controls
 {
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, ICallbackEventHandler
     {
+        #region Fields
+
         private string returnValue;
         string jsFriendlyClientId = string.Empty;
+
+        #endregion
+
+        #region Properties
 
         [
         Category( "Behavior" ),
@@ -52,13 +59,56 @@ namespace Rock.Controls
             }
         }
 
+        [
+        Category( "Behavior" ),
+        DefaultValue( false ),
+        Description( "Enable Add" )
+        ]
+        public virtual bool EnableAdd
+        {
+            get
+            {
+                bool? b = ViewState["EnableAdd"] as bool?;
+                return ( b == null ) ? false : b.Value;
+            }
+            set
+            {
+                ViewState["EnableAdd"] = value;
+            }
+        }
+
+        [
+        Category( "Behavior" ),
+        Description( "Client Add Script" )
+        ]
+        public virtual string ClientAddScript
+        {
+            get
+            {
+                if ( ViewState["ClientAddScript"] == null )
+                    ViewState["ClientAddScript"] = string.Empty;
+                return ViewState["ClientAddScript"].ToString();
+            }
+            set
+            {
+                ViewState["ClientAddScript"] = value;
+            }
+        }
+
+        #endregion
+
+        #region Overridden Methods
+
         protected override void OnInit( EventArgs e )
         {
             Rock.Cms.CmsPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
-            this.CssClass = "data-grid";
+            this.CssClass = "grid-table";
             this.AutoGenerateColumns = false;
+
+            // Paging Support
             this.AllowPaging = true;
+            this.PageIndexChanging += new GridViewPageEventHandler( Grid_PageIndexChanging );
 
             jsFriendlyClientId = this.ClientID.Replace( "-", "_" );
 
@@ -171,6 +221,13 @@ namespace Rock.Controls
             }
         }
 
+        protected override void OnDataBound( EventArgs e )
+        {
+            base.OnDataBound( e );
+
+            this.BottomPagerRow.Visible = true;
+        }
+
         protected override void OnRowDataBound( GridViewRowEventArgs e )
         {
             base.OnRowDataBound( e );
@@ -185,11 +242,68 @@ namespace Rock.Controls
                 }
             }
 
+            
             else if (e.Row.RowType == DataControlRowType.Pager)
             {
-                int pgrCells = e.Row.Cells.Count;
+                if ( e.Row.Cells.Count == 1 )
+                {
+                    e.Row.Cells[0].Attributes.Add( "class", "grid-footer" );
+
+                    Panel panelPager = new Panel();
+                    panelPager.CssClass = "paging";
+
+                    Panel panelActions = new Panel();
+                    panelActions.CssClass = "actions";
+
+                    foreach ( Control control in e.Row.Cells[0].Controls )
+                        panelPager.Controls.Add( control );
+
+                    if ( EnableAdd )
+                    {
+                        LinkButton lbAdd = new LinkButton();
+                        lbAdd.CssClass = "add";
+                        lbAdd.Text = "Add";
+                        lbAdd.Click += new EventHandler( lbAdd_Click );
+
+                        if ( ClientAddScript != string.Empty )
+                            lbAdd.OnClientClick = ClientAddScript;
+
+                        panelActions.Controls.Add( lbAdd );
+                    }
+
+                    e.Row.Cells[0].Controls.Clear();
+                    e.Row.Cells[0].Controls.Add( panelPager );
+                    e.Row.Cells[0].Controls.Add( panelActions );
+                }
             }
         }
+
+        //protected override void DataBind( bool raiseOnDataBinding )
+        //{
+        //    if (this.DataSource is IEnumerable && this.AllowCustomPaging)
+        //    {
+        //        this.VirtualItemCount = ((IEnumerable<>)this.DataSource).cou
+        //    base.DataBind( raiseOnDataBinding );
+        //}
+
+        #endregion
+
+        #region Internal Methods
+
+        protected void lbAdd_Click( object sender, EventArgs e )
+        {
+            OnGridAdd( e );
+        }
+
+        protected void Grid_PageIndexChanging( object sender, GridViewPageEventArgs e )
+        {
+            this.PageIndex = e.NewPageIndex;
+
+            EventArgs eventArgs = new EventArgs();
+            OnGridRebind( eventArgs );
+        }
+
+        #endregion
 
         #region Callback Methods/Events
 
@@ -209,10 +323,16 @@ namespace Rock.Controls
                 string dataKey = parms[0];
 
                 int oldIndex = 0;
-                Int32.TryParse( parms[1], out oldIndex );
+                if (!Int32.TryParse( parms[1], out oldIndex ))
+                    oldIndex = 0;
 
                 int newIndex = 0;
-                Int32.TryParse( parms[2], out newIndex );
+                if (!Int32.TryParse( parms[2], out newIndex ))
+                    newIndex = 0;
+
+                int pageFactor = this.PageIndex * this.PageSize;
+                oldIndex += pageFactor;
+                newIndex += pageFactor;
 
                 GridReorderEventArgs args = new GridReorderEventArgs( dataKey, oldIndex, newIndex );
                 OnGridReorder( args );
@@ -224,6 +344,10 @@ namespace Rock.Controls
 
         }
 
+        #endregion
+
+        #region Events
+
         public event GridReorderEventHandler GridReorder;
         protected virtual void OnGridReorder( GridReorderEventArgs e )
         {
@@ -231,10 +355,32 @@ namespace Rock.Controls
                 GridReorder( this, e );
         }
 
+        public event GridAddEventHandler GridAdd;
+        protected virtual void OnGridAdd( EventArgs e )
+        {
+            if ( GridAdd != null )
+                GridAdd( this, e );
+        }
+
+        public event GridRebindEventHandler GridRebind;
+        protected virtual void OnGridRebind( EventArgs e )
+        {
+            if ( GridRebind != null )
+                GridRebind( this, e );
+        }
+
         #endregion
     }
 
-    #region Event Classes
+    #region Delegates
+
+    public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );
+    public delegate void GridAddEventHandler( object sender, EventArgs e);
+    public delegate void GridRebindEventHandler( object sender, EventArgs e );
+
+    #endregion
+
+    #region Event Handlers
 
     public class GridReorderEventArgs : EventArgs
     {
@@ -258,8 +404,8 @@ namespace Rock.Controls
     }
 
     #endregion
-    
-    public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );
+
+    #region Helper Classes
 
     internal class JsonResult
     {
@@ -292,7 +438,8 @@ namespace Rock.Controls
 
             return sb.ToString();
         }
-
-
     }
+
+    #endregion
+
 }

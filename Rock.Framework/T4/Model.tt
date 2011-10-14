@@ -598,8 +598,16 @@ namespace Rock.Services<#= projectNamespace #>
 			if (iOrdered != "")
 			{
 #>
-        public void SaveOrder( List<<#= QualifiedEntity #>> <#= Entity #>s, int? personId )
+
+        public void Reorder( List<<#= QualifiedEntity #>> <#= Entity #>s, int oldIndex, int newIndex, int? personId )
         {
+            <#= QualifiedEntity #> moved<#= Entity #> = <#= Entity #>s[oldIndex];
+            <#= Entity #>s.RemoveAt( oldIndex );
+            if ( newIndex >= <#= Entity #>s.Count )
+                <#= Entity #>s.Add( moved<#= Entity #> );
+            else
+                <#= Entity #>s.Insert( newIndex, moved<#= Entity #> );
+
             int order = 0;
             foreach ( <#= QualifiedEntity #> <#= Entity #> in <#= Entity #>s )
             {
