@@ -159,7 +159,7 @@
                             out addresses, emails, phone numbers, etc. or to use the information for anything other than
                             this organization's activities.</p>
                         <p id="footer-license">Rock ChMS is an open-source project by the <a href="">Spark Development 
-                            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img src='RockWeb/Themes/Rock/Assets/Images/cc-license.png' height="15" width="80" /></a> </p>
+                            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img id="imgCC" runat="server" height="15" width="80" /></a> </p>
                     </div>
                 </footer>
                  

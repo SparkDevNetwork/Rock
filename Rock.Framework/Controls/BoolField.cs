@@ -16,7 +16,9 @@ namespace Rock.Controls
             base.InitializeCell( cell, cellType, rowState, rowIndex );
 
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell bool";
         }
+
         protected override string FormatDataValue( object dataValue, bool encode )
         {
             bool boolValue = false;
@@ -29,7 +31,7 @@ namespace Rock.Controls
                     boolValue = intValue != 0;
             }
 
-            return string.Format( "<span class=\"col-bool {0}\">{1}</span>", 
+            return string.Format( "<span class=\"{0}\">{1}</span>", 
                 boolValue.ToString().ToLower(), ( boolValue ? "X" : "" ) );
         }
     }

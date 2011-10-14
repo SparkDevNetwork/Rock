@@ -247,7 +247,7 @@ namespace Rock.Cms.Security
                     status = MembershipCreateStatus.Success;
 
                 }
-                catch ( SystemException ex )
+                catch 
                 {
                     status = MembershipCreateStatus.ProviderError;
                 }
@@ -451,10 +451,10 @@ namespace Rock.Cms.Security
 
         private string GetUserNameByEmail( UserService UserService, string email )
         {
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndEmail( applicationName, email );
-            if ( user != null )
-                return user.Username;
-            else
+            //Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndEmail( applicationName, email );
+            //if ( user != null )
+            //    return user.Username;
+            //else
                 return string.Empty;
         }
 

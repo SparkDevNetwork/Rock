@@ -87,8 +87,16 @@ namespace Rock.Services.Cms
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Cms.Auth> Auths, int? personId )
+
+        public void Reorder( List<Rock.Models.Cms.Auth> Auths, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Cms.Auth movedAuth = Auths[oldIndex];
+            Auths.RemoveAt( oldIndex );
+            if ( newIndex >= Auths.Count )
+                Auths.Add( movedAuth );
+            else
+                Auths.Insert( newIndex, movedAuth );
+
             int order = 0;
             foreach ( Rock.Models.Cms.Auth Auth in Auths )
             {

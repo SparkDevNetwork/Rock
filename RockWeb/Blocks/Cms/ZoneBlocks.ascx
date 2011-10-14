@@ -1,7 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ZoneBlocks.ascx.cs" Inherits="RockWeb.Blocks.Cms.ZoneBlocks" %>
+<script type="text/javascript">
+    function addItem() {
+        $('.admin-details').show();
+        return false;
+    }
+</script>
 
 <div class='admin-dialog'>
-    <Rock:Grid ID="rGrid" runat="server" EnableOrdering="true" DataKeyNames="id">
+    <Rock:Grid ID="rGrid" runat="server">
         <Columns>
             <asp:BoundField DataField="Name" HeaderText="Name" ItemStyle-Width="180px" />
             <asp:TemplateField HeaderText="Type" ItemStyle-Width="180px">
@@ -12,6 +18,7 @@
             <Rock:DeleteField />
         </Columns>
     </Rock:Grid>
+
     <div class="admin-details" style="display:none">
         <span class="failureNotification">
             <asp:Literal ID="FailureText" runat="server"></asp:Literal>

@@ -77,8 +77,16 @@ namespace Rock.Services.Core
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Core.DefinedType> DefinedTypes, int? personId )
+
+        public void Reorder( List<Rock.Models.Core.DefinedType> DefinedTypes, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Core.DefinedType movedDefinedType = DefinedTypes[oldIndex];
+            DefinedTypes.RemoveAt( oldIndex );
+            if ( newIndex >= DefinedTypes.Count )
+                DefinedTypes.Add( movedDefinedType );
+            else
+                DefinedTypes.Insert( newIndex, movedDefinedType );
+
             int order = 0;
             foreach ( Rock.Models.Core.DefinedType DefinedType in DefinedTypes )
             {

@@ -48,9 +48,9 @@ namespace Rock.Services.Cms
             return _repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
         }
 		
-        public User GetUserByApplicationNameAndEmail( string applicationName, string email )
+        public IEnumerable<Rock.Models.Cms.User> GetUsersByApplicationNameAndEmail( string applicationName, string email )
         {
-            return _repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Email == email );
+            return _repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
         }
 		
         public User GetUserByGuid( Guid guid )

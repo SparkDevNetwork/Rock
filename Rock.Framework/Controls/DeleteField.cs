@@ -18,7 +18,7 @@ namespace Rock.Controls
 
             this.ShowDeleteButton = true;
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "col-delete";
+            this.ItemStyle.CssClass = "grid-icon-cell delete";
         }
     }
 }
