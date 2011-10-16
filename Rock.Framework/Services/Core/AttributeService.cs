@@ -82,8 +82,16 @@ namespace Rock.Services.Core
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Core.Attribute> Attributes, int? personId )
+
+        public void Reorder( List<Rock.Models.Core.Attribute> Attributes, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Core.Attribute movedAttribute = Attributes[oldIndex];
+            Attributes.RemoveAt( oldIndex );
+            if ( newIndex >= Attributes.Count )
+                Attributes.Add( movedAttribute );
+            else
+                Attributes.Insert( newIndex, movedAttribute );
+
             int order = 0;
             foreach ( Rock.Models.Core.Attribute Attribute in Attributes )
             {

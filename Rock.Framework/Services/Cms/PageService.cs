@@ -87,8 +87,16 @@ namespace Rock.Services.Cms
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Cms.Page> Pages, int? personId )
+
+        public void Reorder( List<Rock.Models.Cms.Page> Pages, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Cms.Page movedPage = Pages[oldIndex];
+            Pages.RemoveAt( oldIndex );
+            if ( newIndex >= Pages.Count )
+                Pages.Add( movedPage );
+            else
+                Pages.Insert( newIndex, movedPage );
+
             int order = 0;
             foreach ( Rock.Models.Cms.Page Page in Pages )
             {

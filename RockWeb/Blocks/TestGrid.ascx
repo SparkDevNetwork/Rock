@@ -1,11 +1,16 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TestGrid.ascx.cs" Inherits="RockWeb.Blocks.TestGrid" %>
+<script type="text/javascript">
+    function addItem() {
+        alert("Adding Item");
+        return false;
+    }
+</script>
 
-<Rock:Grid ID="rGrid" runat="server" Title="Pages" Width="500px" Height="200px" 
-EnableEdit="true" CssClass="data-grid" AsyncEditorLoading="true" EnablePaging="true" 
-EnableOrdering="true" style="position:relative" IdColumnName="Id">
-    <Rock:GridColumn DataField="Id" Visible="false" />
-    <Rock:GridHyperlinkColumn DataField="Name" DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlField="Id" HeaderText="Page Name" Width="130" />
-    <Rock:GridColumn DataField="Description" HeaderText="Description" CanEdit="true" Width="220" />
-    <Rock:GridBoolColumn DataField="System" HeaderText="System" CanEdit="true" Width="80" />
+<Rock:Grid ID="rGrid" runat="server">
+    <Columns>
+        <asp:HyperLinkField DataTextField="Name" DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" HeaderText="Page Name" />
+        <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+        <Rock:BoolField DataField="System" HeaderText="System" SortExpression="System"></Rock:BoolField>
+        <Rock:DeleteField/>
+    </Columns>
 </Rock:Grid>
-
