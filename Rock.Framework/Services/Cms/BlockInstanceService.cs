@@ -92,8 +92,16 @@ namespace Rock.Services.Cms
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Cms.BlockInstance> BlockInstances, int? personId )
+
+        public void Reorder( List<Rock.Models.Cms.BlockInstance> BlockInstances, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Cms.BlockInstance movedBlockInstance = BlockInstances[oldIndex];
+            BlockInstances.RemoveAt( oldIndex );
+            if ( newIndex >= BlockInstances.Count )
+                BlockInstances.Add( movedBlockInstance );
+            else
+                BlockInstances.Insert( newIndex, movedBlockInstance );
+
             int order = 0;
             foreach ( Rock.Models.Cms.BlockInstance BlockInstance in BlockInstances )
             {

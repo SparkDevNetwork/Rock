@@ -82,8 +82,16 @@ namespace Rock.Services.Core
                 }
             }
         }
-        public void SaveOrder( List<Rock.Models.Core.DefinedValue> DefinedValues, int? personId )
+
+        public void Reorder( List<Rock.Models.Core.DefinedValue> DefinedValues, int oldIndex, int newIndex, int? personId )
         {
+            Rock.Models.Core.DefinedValue movedDefinedValue = DefinedValues[oldIndex];
+            DefinedValues.RemoveAt( oldIndex );
+            if ( newIndex >= DefinedValues.Count )
+                DefinedValues.Add( movedDefinedValue );
+            else
+                DefinedValues.Insert( newIndex, movedDefinedValue );
+
             int order = 0;
             foreach ( Rock.Models.Core.DefinedValue DefinedValue in DefinedValues )
             {
