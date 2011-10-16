@@ -5,8 +5,7 @@ is a .Net 4.0 Entity Framework project written in C#.
 
 ## Getting Started
 
-To compile the project, you'll need Visual Studio 2010 or later and PowerShell 2.0. You'll also need to 
-
+To compile the project, you'll need Visual Studio 2010 or later and PowerShell 2.0. 
 To build the project, clone it locally:
 
     git clone git@github.com:SparkDevNetwork/Rock-ChMS.git
@@ -25,7 +24,8 @@ If somehow you figure things out and find a bug with, please visit the Issue tra
 create an issue. If you're feeling kind, please search to see if the issue is already logged before creating a 
 new one.
 
-When creating an issue, clearly explain
+When creating an issue, clearly explain:
+
 * What you were trying to do.
 * What you expected to happen.
 * What actually happened.
