@@ -38,7 +38,7 @@ Does it happen when you switch browsers, etc.
 Before starting work on an issue, either create an issue or comment on an existing issue to ensure that we're all 
 communicating.
 
-To contribute to the gallery, make sure to create a fork first. Make your changes in the fork following 
+To contribute to the project, make sure to create a fork first. Make your changes in the fork following 
 the Git Workflow. When you are done with your changes, send us a pull request.
 
 ## Copyright and License
