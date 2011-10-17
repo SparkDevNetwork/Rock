@@ -3,7 +3,7 @@
 <#@ Assembly Name="System.Core.dll" #>
 <#@ Assembly Name="System.Windows.Forms.dll" #>
 <#@ Assembly name="System.Data" #>
-<#@ Assembly name="System.Xml" #>
+<#@ Assembly name="System.Xml.dll" #>
 <#@ Assembly name="Microsoft.SqlServer.SqlEnum" #>
 <#@ Assembly name="Microsoft.SqlServer.ConnectionInfo" #>
 <#@ Assembly name="Microsoft.SqlServer.Smo" #>
@@ -17,21 +17,28 @@
 <#@ import namespace="System.Collections.Generic" #> 
 <#@ import namespace="System.Data.SqlClient" #>
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+
 <#@ import namespace="Microsoft.SqlServer.Management.Common" #>
 <#@ import namespace="Microsoft.SqlServer.Management.Smo" #>
  
 <#
 	// Uncomment this line to debug the template generation
-	//System.Diagnostics.Debugger.Launch();
+	// System.Diagnostics.Debugger.Launch();
 	
 	// Database properties
-	//string connectionString = @"Data Source=172.16.0.7; User Id=RockUser; password=dw72Y13a7Qgm";
-    string connectionString = @"Data Source=24.249.179.215; User Id=RockUser; password=dw72Y13a7Qgm";
-	//string connectionString = @"Server=LocalHost;Trusted_Connection=True;";
     string databaseName = "RockChMS";
 	
+	// Get Connection String from Web.Config
+	string path = Host.ResolvePath("");
+	path = path.Replace("Rock.Framework\\T4", "RockWeb") + "\\web.config";
+	XmlDocument configDoc = new XmlDocument();
+	configDoc.Load(path);
+	XmlNode node = configDoc.SelectSingleNode("/configuration/connectionStrings/add[@name=\"RockContext\"]");
+	string connString = node.Attributes.GetNamedItem("connectionString").Value;
+
 	// Connect to database and create the Server and Database objects
-	SqlConnection oneSqlConnection = new SqlConnection(connectionString);
+	SqlConnection oneSqlConnection = new SqlConnection(connString);
     ServerConnection oneServerConnection = new ServerConnection(oneSqlConnection);
     Server oneServer = new Server(oneServerConnection);
     Database oneDatabase = oneServer.Databases[databaseName];
