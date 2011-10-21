@@ -19,28 +19,22 @@ namespace RockWeb
 
         public void ProcessRequest( HttpContext context )
         {
-			string fileGuid = context.Request.QueryString[0];
+			if ( context.Request.QueryString == null )
+				return;
+
             context.Response.Clear();
 
-			string errorMessage = string.Empty;
-			string contentType = string.Empty;
-
 			FileService fileService = new FileService();
-			BlogService blogService = new BlogService();
-			//string feedXml = blogService.ReturnFeed( key, count, format, out errorMessage, out contentType );
-			string data = string.Empty;
 
-			if ( errorMessage == string.Empty )
-			{
-				context.Response.ContentType = contentType;
-				context.Response.Write( data );
-			}
-			else
-			{
-				context.Response.ContentType = "text/html";
-				context.Response.Write( errorMessage );
-			}
+			int id;
+			string anID = context.Request.QueryString[0];
 
+			Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
+
+			context.Response.ContentType = file.MimeType;
+			context.Response.AddHeader("content-disposition", "inline;filename=" + file.FileName);
+			context.Response.BinaryWrite( file.Data );
+			context.Response.Flush();
 			context.Response.End();
         }
 
