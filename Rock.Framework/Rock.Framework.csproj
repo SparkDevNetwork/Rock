@@ -114,6 +114,7 @@
     <Compile Include="Models\Cms\BlogTag.cs" />
     <Compile Include="Models\Cms\BlogPost.Partial.cs" />
     <Compile Include="Models\Cms\Auth.Partial.cs" />
+    <Compile Include="Models\Cms\File.cs" />
     <Compile Include="Models\Cms\User.Partial.cs" />
     <Compile Include="Models\Cms\HtmlContent.cs">
       <SubType>Code</SubType>
@@ -169,6 +170,7 @@
     <Compile Include="Repository\Cms\EntityBlogPostRepository.cs" />
     <Compile Include="Repository\Cms\EntityBlogRepository.cs" />
     <Compile Include="Repository\Cms\EntityBlogTagRepository.cs" />
+    <Compile Include="Repository\Cms\EntityFileRepository.cs" />
     <Compile Include="Repository\Cms\EntityHtmlContentRepository.cs" />
     <Compile Include="Repository\Cms\EntityPageRepository.cs" />
     <Compile Include="Repository\Cms\EntityPageRouteRepository.cs" />
@@ -184,6 +186,7 @@
     <Compile Include="Repository\Cms\IBlogPostRepository.cs" />
     <Compile Include="Repository\Cms\IBlogRepository.cs" />
     <Compile Include="Repository\Cms\IBlogTagRepository.cs" />
+    <Compile Include="Repository\Cms\IFileRepository.cs" />
     <Compile Include="Repository\Cms\IHtmlContentRepository.cs" />
     <Compile Include="Repository\Cms\IPageRepository.cs" />
     <Compile Include="Repository\Cms\IPageRouteRepository.cs" />
@@ -241,6 +244,7 @@
     <Compile Include="Services\Cms\BlogService.cs" />
     <Compile Include="Services\Cms\BlogTagService.cs" />
     <Compile Include="Services\Cms\BlogService.Partial.cs" />
+    <Compile Include="Services\Cms\FileService.cs" />
     <Compile Include="Services\Cms\HtmlContentService.cs" />
     <Compile Include="Services\Cms\HtmlContentService.Partial.cs" />
     <Compile Include="Services\Cms\PageRouteService.cs" />
