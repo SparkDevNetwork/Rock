@@ -926,6 +926,7 @@ public class TemplateHelper
 		{
 			case "int" : return "int" + nullModifier;
 			case "bit" : return "bool" + nullModifier;
+			case "varbinary"	: return "byte[]" + nullModifier;
 			case "varchar": return "string";
 			case "nvarchar": return "string";
 			case "uniqueidentifier": return "Guid" + nullModifier;	
