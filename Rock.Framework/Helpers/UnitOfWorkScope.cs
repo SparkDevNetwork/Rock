@@ -35,7 +35,7 @@ namespace Rock.Helpers
             SaveAllChangesAtScopeEnd = saveAllChangesAtScopeEnd;
             objectContext = new Rock.EntityFramework.RockContext();
             isDisposed = false;
-            Thread.BeginThreadAffinity();
+            //Thread.BeginThreadAffinity();  --Not supported with Medium Trust
             currentScope = this;
         }
 
@@ -44,7 +44,7 @@ namespace Rock.Helpers
             if ( !isDisposed )
             {
                 currentScope = null;
-                Thread.EndThreadAffinity();
+                //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
 
                 if ( SaveAllChangesAtScopeEnd )
                 {

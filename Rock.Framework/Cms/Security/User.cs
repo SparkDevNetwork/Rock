@@ -21,7 +21,7 @@ namespace Rock.Cms.Security
         private int minRequiredPasswordLength;
         private string passwordStrengthRegularExpression;
 
-        private MachineKeySection machineKey;
+        private string validationKey = "D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2";
 
         private int newPasswordLength = 8;
 
@@ -83,7 +83,7 @@ namespace Rock.Cms.Security
 
         public override bool RequiresUniqueEmail
         {
-            get { return true; }
+            get { return false; }
         }
 
         public override bool EnablePasswordReset
@@ -126,10 +126,16 @@ namespace Rock.Cms.Security
             passwordStrengthRegularExpression = Convert.ToString( GetConfigValue( config["passwordStrengthRegularExpression"], String.Empty ) );
 
             //Get encryption and decryption key information from the configuration.
-            System.Configuration.Configuration cfg = WebConfigurationManager.OpenWebConfiguration( System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath );
-            machineKey = cfg.GetSection( "system.web/machineKey" ) as MachineKeySection;
-            if ( machineKey.ValidationKey.Contains( "AutoGenerate" ) )
-                throw new ProviderException( "Hashed passwords are not supported with auto-generated keys." );
+            AspNetHostingPermissionLevel currentLevel = GetCurrentTrustLevel();
+            if ( currentLevel == AspNetHostingPermissionLevel.High || currentLevel == AspNetHostingPermissionLevel.Unrestricted )
+            {
+                //System.Configuration.Configuration cfg = WebConfigurationManager.OpenWebConfiguration( System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath );
+                //MachineKeySection machineKey = cfg.GetSection( "system.web/machineKey" ) as MachineKeySection;
+                //if ( machineKey.ValidationKey.Contains( "AutoGenerate" ) )
+                //    throw new ProviderException( "Hashed passwords are not supported with auto-generated keys." );
+                //else
+                //    validationKey = machineKey.ValidationKey;
+            }
         }
 
         public override bool ChangePassword( string username, string oldPassword, string newPassword )
@@ -224,7 +230,6 @@ namespace Rock.Cms.Security
                 user.ApplicationName = applicationName;
                 user.Username = username;
                 user.Password = EncodePassword( password );
-                user.Email = email;
                 user.PasswordQuestion = passwordQuestion;
                 user.PasswordAnswer = passwordAnswer;
                 user.IsApproved = isApproved;
@@ -445,17 +450,12 @@ namespace Rock.Cms.Security
 
         public override string GetUserNameByEmail( string email )
         {
-            UserService UserService = new Services.Cms.UserService();
-            return GetUserNameByEmail( UserService, email );
+            throw new NotImplementedException( "Provider does not support GetUserNameByEmail method" );
         }
 
         private string GetUserNameByEmail( UserService UserService, string email )
         {
-            //Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndEmail( applicationName, email );
-            //if ( user != null )
-            //    return user.Username;
-            //else
-                return string.Empty;
+            throw new NotImplementedException( "Provider does not support GetUserNameByEmail method" );
         }
 
         public override string ResetPassword( string username, string answer )
@@ -593,7 +593,7 @@ namespace Rock.Cms.Security
         private string EncodePassword( string password )
         {
             HMACSHA1 hash = new HMACSHA1();
-            hash.Key = HexToByte( machineKey.ValidationKey );
+            hash.Key = HexToByte( validationKey );
             return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
         }
 
@@ -660,6 +660,33 @@ namespace Rock.Cms.Security
                     return null;
             }
             return null;
+        }
+
+        private AspNetHostingPermissionLevel GetCurrentTrustLevel()
+        {
+            foreach ( AspNetHostingPermissionLevel trustLevel in
+                new AspNetHostingPermissionLevel[] 
+                {
+                    AspNetHostingPermissionLevel.Unrestricted,
+                    AspNetHostingPermissionLevel.High,
+                    AspNetHostingPermissionLevel.Medium,
+                    AspNetHostingPermissionLevel.Low,
+                    AspNetHostingPermissionLevel.Minimal 
+                } )
+            {
+                try
+                {
+                    new AspNetHostingPermission( trustLevel ).Demand();
+                }
+                catch ( System.Security.SecurityException )
+                {
+                    continue;
+                }
+
+                return trustLevel;
+            }
+
+            return AspNetHostingPermissionLevel.None;
         }
 
         #endregion

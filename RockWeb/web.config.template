@@ -5,13 +5,14 @@
   -->
 <configuration>
 	<configSections>
-		<section name="facebookSettings" type="Facebook.FacebookConfigurationSection" />
+		<section requirePermission="false" name="facebookSettings" type="Facebook.FacebookConfigurationSection" />
 	</configSections>
 	<connectionStrings>
 		<add name="RockContext" connectionString="Data Source=localhost;Initial Catalog=RockChMS; User Id=RockUser; password=;MultipleActiveResultSets=true" providerName="System.Data.SqlClient" />
 	</connectionStrings>
 	<system.web>
 		<trace enabled="false" />
+		<trust level="Medium"/>
 		<compilation debug="true" targetFramework="4.0">
 			<assemblies>
 				<add assembly="EntityFramework, Version=4.1.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089" />
@@ -46,7 +47,7 @@
 		</pages>
 	</system.web>
 	<system.webServer>
-		<modules />
+		<modules runAllManagedModulesForAllRequests="true"/>
 	</system.webServer>
 	<appSettings>
 		<add key="CKEditor:BasePath" value="~/Scripts/ckeditor/" />
