@@ -26,27 +26,23 @@ namespace Rock.Helpers
             FileInfo executingFile = new FileInfo( executingAssembly.Location );
 
             Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
-            assemblies.Add( executingAssembly.Location, executingAssembly );
+            assemblies.Add( executingAssembly.Location.ToLower(), executingAssembly );
 
             foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies() )
                 if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.Location  ) )
-                    assemblies.Add( assembly.FullName, assembly );
-
-            //foreach (Assembly assembly in BuildManager.GetReferencedAssemblies())
-            //    if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.Location ) )
-            //        assemblies.Add( assembly.FullName, assembly );
+                    assemblies.Add( assembly.FullName.ToLower(), assembly );
 
             foreach ( FileInfo fileInfo in executingFile.Directory.GetFiles( "rock.*.dll" ) )
-                if ( !assemblies.Keys.Contains( fileInfo.FullName ) )
+                if ( !assemblies.Keys.Contains( fileInfo.FullName.ToLower() ) )
                 {
                     Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
-                    assemblies.Add( fileInfo.FullName, fileAssembly );
+                    assemblies.Add( fileInfo.FullName.ToLower(), fileAssembly );
                 }
-
 
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
                 foreach ( KeyValuePair<string, Type> typeEntry in SearchAssembly( assemblyEntry.Value, baseType ) )
-                    types.Add( typeEntry.Key, typeEntry.Value );
+                    if (!types.Keys.Contains(typeEntry.Key))
+                        types.Add( typeEntry.Key, typeEntry.Value );
 
             return types;
         }
