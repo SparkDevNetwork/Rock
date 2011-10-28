@@ -11,15 +11,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using Rock.Models.Util;
 
 namespace Rock.Repository.Util
 {
-    public partial class EntityJobsRepository : EntityRepository<Rock.Models.Util.Jobs>, IJobsRepository
+    public interface IJobRepository : IRepository<Rock.Models.Util.Job>
     {
     }
 }

@@ -22,8 +22,8 @@ using Rock.Models;
 
 namespace Rock.Models.Util
 {
-    [Table( "utilJobs" )]
-    public partial class Jobs : ModelWithAttributes
+    [Table( "utilJob" )]
+    public partial class Job : ModelWithAttributes
     {
 		[DataMember]
 		public Guid Guid { get; set; }
@@ -51,10 +51,10 @@ namespace Rock.Models.Util
 		public string Class { get; set; }
 		
 		[DataMember]
-		public time StartTime { get; set; }
+		public DateTime StartTime { get; set; }
 		
 		[DataMember]
-		public time EndTime { get; set; }
+		public DateTime EndTime { get; set; }
 		
 		[MaxLength( 35 )]
 		[DataMember]
@@ -83,24 +83,24 @@ namespace Rock.Models.Util
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
-		public override string AuthEntity { get { return "Util.Jobs"; } }
+		public override string AuthEntity { get { return "Util.Job"; } }
 
 		public virtual Crm.Person CreateByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
-        public static Jobs Read(int id)
+        public static Job Read(int id)
         {
-            return new Rock.Services.Util.JobsService().GetJobs( id );
+            return new Rock.Services.Util.JobService().GetJob( id );
         }
     }
 
-    public partial class JobsConfiguration : EntityTypeConfiguration<Jobs>
+    public partial class JobConfiguration : EntityTypeConfiguration<Job>
     {
-        public JobsConfiguration()
+        public JobConfiguration()
         {
-			this.HasOptional( p => p.CreateByPerson ).WithMany( p => p.Jobss ).HasForeignKey( p => p.CreateByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany( p => p.Jobss ).HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasOptional( p => p.CreateByPerson ).WithMany().HasForeignKey( p => p.CreateByPersonId );
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
     }
 }

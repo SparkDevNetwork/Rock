@@ -20,55 +20,55 @@ using Rock.Repository.Util;
 
 namespace Rock.Services.Util
 {
-    public partial class JobsService : Rock.Services.Service
+    public partial class JobService : Rock.Services.Service
     {
-        private IJobsRepository _repository;
+        private IJobRepository _repository;
 
-        public JobsService()
-			: this( new EntityJobsRepository() )
+        public JobService()
+			: this( new EntityJobRepository() )
         { }
 
-        public JobsService( IJobsRepository JobsRepository )
+        public JobService( IJobRepository JobRepository )
         {
-            _repository = JobsRepository;
+            _repository = JobRepository;
         }
 
-        public IQueryable<Rock.Models.Util.Jobs> Queryable()
+        public IQueryable<Rock.Models.Util.Job> Queryable()
         {
             return _repository.AsQueryable();
         }
 
-        public Rock.Models.Util.Jobs GetJobs( int id )
+        public Rock.Models.Util.Job GetJob( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public IEnumerable<Rock.Models.Util.Jobs> GetJobssByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Util.Job> GetJobsByGuid( Guid guid )
         {
             return _repository.Find( t => t.Guid == guid );
         }
 		
-        public void AddJobs( Rock.Models.Util.Jobs Jobs )
+        public void AddJob( Rock.Models.Util.Job Job )
         {
-            if ( Jobs.Guid == Guid.Empty )
-                Jobs.Guid = Guid.NewGuid();
+            if ( Job.Guid == Guid.Empty )
+                Job.Guid = Guid.NewGuid();
 
-            _repository.Add( Jobs );
+            _repository.Add( Job );
         }
 
-        public void AttachJobs( Rock.Models.Util.Jobs Jobs )
+        public void AttachJob( Rock.Models.Util.Job Job )
         {
-            _repository.Attach( Jobs );
+            _repository.Attach( Job );
         }
 
-		public void DeleteJobs( Rock.Models.Util.Jobs Jobs )
+		public void DeleteJob( Rock.Models.Util.Job Job )
         {
-            _repository.Delete( Jobs );
+            _repository.Delete( Job );
         }
 
-        public void Save( Rock.Models.Util.Jobs Jobs, int? personId )
+        public void Save( Rock.Models.Util.Job Job, int? personId )
         {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Jobs, personId );
+            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Job, personId );
 
 			if ( entityChanges != null )
             {
@@ -76,7 +76,7 @@ namespace Rock.Services.Util
 
                 foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
                 {
-                    entityChange.EntityId = Jobs.Id;
+                    entityChange.EntityId = Job.Id;
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }

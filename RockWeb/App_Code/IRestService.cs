@@ -701,27 +701,27 @@ namespace RockWeb.WCF
 
 		#endregion
 		
-		#region Jobs
+		#region Job
 		
 		[OperationContract]
-        [WebInvoke(Method = "GET", UriTemplate = "jobs/{id}", ResponseFormat = WebMessageFormat.Json )]
-        Rock.Models.Util.Jobs GetJobsJson( string id );
+        [WebInvoke(Method = "GET", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
+        Rock.Models.Util.Job GetJobJson( string id );
 
         [OperationContract]
-        [WebInvoke( Method = "GET", UriTemplate = "jobs/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
-        Rock.Models.Util.Jobs GetJobsXml( string id );
+        [WebInvoke( Method = "GET", UriTemplate = "job/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
+        Rock.Models.Util.Job GetJobXml( string id );
 		
         [OperationContract]
-        [WebInvoke( Method = "PUT", UriTemplate = "jobs/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void UpdateJobs( string id, Rock.Models.Util.Jobs jobs );
+        [WebInvoke( Method = "PUT", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void UpdateJob( string id, Rock.Models.Util.Job job );
 
         [OperationContract]
-        [WebInvoke( Method = "POST", UriTemplate = "jobs", ResponseFormat = WebMessageFormat.Json )]
-        void CreateJobs( Rock.Models.Util.Jobs jobs );
+        [WebInvoke( Method = "POST", UriTemplate = "job", ResponseFormat = WebMessageFormat.Json )]
+        void CreateJob( Rock.Models.Util.Job job );
 
         [OperationContract]
-        [WebInvoke( Method = "DELETE", UriTemplate = "jobs/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void DeleteJobs( string id );
+        [WebInvoke( Method = "DELETE", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void DeleteJob( string id );
 
 		#endregion
 		

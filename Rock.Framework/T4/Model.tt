@@ -967,6 +967,7 @@ public class TemplateHelper
 			case "nvarchar": return "string";
 			case "uniqueidentifier": return "Guid" + nullModifier;	
 			case "datetime": return "DateTime" + nullModifier;
+			case "time": return "DateTime" + nullModifier;
 			case "char" : return "string";
 			case "text" : return "string";
 			case "ntext" : return "string";
