@@ -13,10 +13,16 @@ using Rock.Cms.Security;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
 
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Matchers;
+
 namespace RockWeb
 {
     public class Global : System.Web.HttpApplication
     {
+        // global Quartz scheduler for jobs
+        IScheduler sched = null;
 
         protected void Application_Start( object sender, EventArgs e )
         {
