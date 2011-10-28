@@ -418,8 +418,10 @@ namespace Rock.Cms
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
-                        aPageSecurity.Attributes.Add( "href", "#" );
+                        aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
+                            Rock.Cms.Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                        aPageSecurity.Attributes.Add( "instance-id", PageInstance.Id.ToString() );
                         aPageSecurity.InnerText = "Page Security";
 
                         string footerScript = @"
@@ -438,8 +440,23 @@ namespace Rock.Cms
         });
 
         $('#cms-admin-footer .page-security').click(function (ev) {
-            alert('Page Security logic goes here!');
+
+            var instanceId = $(this).attr('instance-id')
+
+            $('#modalIFrame').attr('src', $(this).attr('href'));
+
+            $('#modalDiv').bind('dialogclose', function(event, ui) {
+                $('#blck-cnfg-trggr-' + instanceId).click();
+                $('#modalDiv').unbind('dialogclose');
+                $('#modalIFrame').attr('src', '');
+            });
+            
+            $('#modalDiv').dialog('option', 'title', 'Page Security');
+
+            $('#modalDiv').dialog('open');
+            
             return false;
+
         });
 
     });
@@ -550,9 +567,23 @@ namespace Rock.Cms
         });
 
         $('a.blockinstance-secure').click(function () {
-            var elementId = $(this).attr('href');
-            alert('block instance secure logic goes here! (element: ' + elementId + ')');
+
+            var instanceId = $(this).attr('instance-id')
+
+            $('#modalIFrame').attr('src', $(this).attr('href'));
+
+            $('#modalDiv').bind('dialogclose', function(event, ui) {
+                $('#blck-cnfg-trggr-' + instanceId).click();
+                $('#modalDiv').unbind('dialogclose');
+                $('#modalIFrame').attr('src', '');
+            });
+            
+            $('#modalDiv').dialog('option', 'title', 'Block Security');
+
+            $('#modalDiv').dialog('open');
+            
             return false;
+
         });
 
         $('a.blockinstance-move').click(function () {

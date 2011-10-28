@@ -61,6 +61,11 @@ namespace Rock.Models.Crm
 		public virtual Person CreatedByPerson { get; set; }
 
 		public virtual Person ModifiedByPerson { get; set; }
+
+        public static PhoneNumber Read(int id)
+        {
+            return new Rock.Services.Crm.PhoneNumberService().GetPhoneNumber( id );
+        }
     }
 
     public partial class PhoneNumberConfiguration : EntityTypeConfiguration<PhoneNumber>

@@ -70,6 +70,11 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static Auth Read(int id)
+        {
+            return new Rock.Services.Cms.AuthService().GetAuth( id );
+        }
     }
 
     public partial class AuthConfiguration : EntityTypeConfiguration<Auth>

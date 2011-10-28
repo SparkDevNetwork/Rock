@@ -75,6 +75,11 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static BlogPost Read(int id)
+        {
+            return new Rock.Services.Cms.BlogPostService().GetBlogPost( id );
+        }
     }
 
     public partial class BlogPostConfiguration : EntityTypeConfiguration<BlogPost>

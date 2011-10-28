@@ -330,6 +330,35 @@ namespace Rock.Models<#= projectNamespace #>
 		public virtual <#= relatedNamespace #><#= relatedEntity #> <#= propertyName #> { get; set; }
 <#
 			}
+
+			// Create the Get[Entity] method based on the table's (entity's) 
+			// primary keys
+			if (primaryKeys.Count > 0)
+			{
+				StringBuilder parameters = new StringBuilder();
+				StringBuilder vars = new StringBuilder();
+				
+				foreach(Column column in primaryKeys)
+				{
+					parameters.AppendFormat("{0}{1} {2}{3}",
+						parameters.Length > 0 ? ", " : "",
+						TemplateHelper.ConvertDataType(column),
+						column.Name.Substring(0,1).ToLower(),
+						column.Name.Substring(1));
+					
+					vars.AppendFormat("{0}{1}{2}",
+						vars.Length > 0 ? ", " : "",
+						column.Name.Substring(0,1).ToLower(),
+						column.Name.Substring(1));
+				}
+#>
+
+        public static <#= Entity #> Read(<#= parameters #>)
+        {
+            return new Rock.Services<#= projectNamespace #>.<#= Entity #>Service().Get<#= Entity #>( <#= vars #> );
+        }
+<#
+			}
 #>
     }
 
@@ -933,6 +962,7 @@ public class TemplateHelper
 		{
 			case "int" : return "int" + nullModifier;
 			case "bit" : return "bool" + nullModifier;
+			case "varbinary" : return "byte[]";
 			case "varchar": return "string";
 			case "nvarchar": return "string";
 			case "uniqueidentifier": return "Guid" + nullModifier;	

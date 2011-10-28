@@ -20,60 +20,50 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class RoleService : Rock.Services.Service
+    public partial class FileService : Rock.Services.Service
     {
-        private IRoleRepository _repository;
+        private IFileRepository _repository;
 
-        public RoleService()
-			: this( new EntityRoleRepository() )
+        public FileService()
+			: this( new EntityFileRepository() )
         { }
 
-        public RoleService( IRoleRepository RoleRepository )
+        public FileService( IFileRepository FileRepository )
         {
-            _repository = RoleRepository;
+            _repository = FileRepository;
         }
 
-        public IQueryable<Rock.Models.Cms.Role> Queryable()
+        public IQueryable<Rock.Models.Cms.File> Queryable()
         {
             return _repository.AsQueryable();
         }
 
-        public Rock.Models.Cms.Role GetRole( int id )
+        public Rock.Models.Cms.File GetFile( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Role> GetRolesByGuid( Guid guid )
+        public void AddFile( Rock.Models.Cms.File File )
         {
-            return _repository.Find( t => t.Guid == guid );
-        }
-		
-        public Role GetRoleByApplicationNameAndName( string applicationName, string name )
-        {
-            return _repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Name == name );
-        }
-		
-        public void AddRole( Rock.Models.Cms.Role Role )
-        {
-            if ( Role.Guid == Guid.Empty )
-                Role.Guid = Guid.NewGuid();
+            if ( File.Guid == Guid.Empty )
+                File.Guid = Guid.NewGuid();
 
-            _repository.Add( Role );
+            _repository.Add( File );
         }
 
-        public void AttachRole( Rock.Models.Cms.Role Role )
+        public void AttachFile( Rock.Models.Cms.File File )
         {
-            _repository.Attach( Role );
+            _repository.Attach( File );
         }
 
-		public void DeleteRole( Rock.Models.Cms.Role Role )
+		public void DeleteFile( Rock.Models.Cms.File File )
         {
-            _repository.Delete( Role );
+            _repository.Delete( File );
         }
 
-        public void Save( Rock.Models.Cms.Role Role, int? personId )
+        public void Save( Rock.Models.Cms.File File, int? personId )
         {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Role, personId );
+            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( File, personId );
 
 			if ( entityChanges != null )
             {
@@ -81,7 +71,7 @@ namespace Rock.Services.Cms
 
                 foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
                 {
-                    entityChange.EntityId = Role.Id;
+                    entityChange.EntityId = File.Id;
                     entityChangeService.AddEntityChange ( entityChange );
                     entityChangeService.Save( entityChange, personId );
                 }

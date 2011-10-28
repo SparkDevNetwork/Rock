@@ -28,11 +28,18 @@ namespace RockWeb.Blocks
 
             string script = string.Format( @"
     $(document).ready(function() {{
-        $('td.grid-icon-cell.delete a').click(function(){{
+        $('#{0} td.grid-icon-cell.delete a').click(function(){{
+            return confirm('Are you sure you want to delete this Page?');
+            }});
+    }});
+
+    Sys.Application.add_load(function () {{
+        $('{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this Page?');
             }});
     }});
 ", rGrid.ClientID );
+
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
 
             base.OnInit( e );

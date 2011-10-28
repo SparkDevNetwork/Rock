@@ -11,15 +11,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
-    public partial class EntityRoleRepository : EntityRepository<Rock.Models.Cms.Role>, IRoleRepository
+    public interface IFileRepository : IRepository<Rock.Models.Cms.File>
     {
     }
 }

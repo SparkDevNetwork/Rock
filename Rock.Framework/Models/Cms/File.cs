@@ -22,25 +22,38 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
-    [Table( "cmsRole" )]
-    public partial class Role : ModelWithAttributes, IAuditable
+    [Table( "cmsFile" )]
+    public partial class File : ModelWithAttributes
     {
 		[DataMember]
 		public Guid Guid { get; set; }
 		
-		[MaxLength( 255 )]
 		[DataMember]
-		public string Name { get; set; }
+		public bool System { get; set; }
+		
+		[DataMember]
+		public byte[] Data { get; set; }
 		
 		[MaxLength( 255 )]
 		[DataMember]
-		public string ApplicationName { get; set; }
+		public string Url { get; set; }
+		
+		[MaxLength( 255 )]
+		[DataMember]
+		public string FileName { get; set; }
+		
+		[MaxLength( 255 )]
+		[DataMember]
+		public string MimeType { get; set; }
 		
 		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
+		public string Description { get; set; }
 		
 		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
+		public DateTime CreatedDateTime { get; set; }
+		
+		[DataMember]
+		public DateTime ModifiedDateTime { get; set; }
 		
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
@@ -49,20 +62,22 @@ namespace Rock.Models.Cms
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Role"; } }
-
-		public virtual ICollection<User> Users { get; set; }
+		public override string AuthEntity { get { return "Cms.File"; } }
 
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static File Read(int id)
+        {
+            return new Rock.Services.Cms.FileService().GetFile( id );
+        }
     }
 
-    public partial class RoleConfiguration : EntityTypeConfiguration<Role>
+    public partial class FileConfiguration : EntityTypeConfiguration<File>
     {
-        public RoleConfiguration()
+        public FileConfiguration()
         {
-			this.HasMany( p => p.Users ).WithMany( c => c.Roles ).Map( m => { m.MapLeftKey("UserId"); m.MapRightKey("RoleId"); m.ToTable("cmsUserRole" ); } );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

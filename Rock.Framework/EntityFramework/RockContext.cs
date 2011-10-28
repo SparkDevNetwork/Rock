@@ -30,10 +30,10 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Cms.BlogPost> BlogPosts { get; set; }
         public DbSet<Rock.Models.Cms.BlogPostComment> BlogPostComments { get; set; }
         public DbSet<Rock.Models.Cms.BlogTag> BlogTags { get; set; }
+        public DbSet<Rock.Models.Cms.File> Files { get; set; }
         public DbSet<Rock.Models.Cms.HtmlContent> HtmlContents { get; set; }
         public DbSet<Rock.Models.Cms.Page> Pages { get; set; }
         public DbSet<Rock.Models.Cms.PageRoute> PageRoutes { get; set; }
-        public DbSet<Rock.Models.Cms.Role> Roles { get; set; }
         public DbSet<Rock.Models.Cms.Site> Sites { get; set; }
         public DbSet<Rock.Models.Cms.SiteDomain> SiteDomains { get; set; }
         public DbSet<Rock.Models.Cms.User> Users { get; set; }
@@ -61,10 +61,10 @@ namespace Rock.EntityFramework
             modelBuilder.Configurations.Add( new Rock.Models.Cms.BlogPostConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.BlogPostCommentConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.BlogTagConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Models.Cms.FileConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.HtmlContentConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.PageConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.PageRouteConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Models.Cms.RoleConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.SiteConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.SiteDomainConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Cms.UserConfiguration() );

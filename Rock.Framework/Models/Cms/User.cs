@@ -116,13 +116,16 @@ namespace Rock.Models.Cms
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.User"; } }
 
-		public virtual ICollection<Role> Roles { get; set; }
-
 		public virtual Crm.Person Person { get; set; }
 
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static User Read(int id)
+        {
+            return new Rock.Services.Cms.UserService().GetUser( id );
+        }
     }
 
     public partial class UserConfiguration : EntityTypeConfiguration<User>

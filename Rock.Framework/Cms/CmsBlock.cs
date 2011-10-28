@@ -291,8 +291,10 @@ namespace Rock.Cms
             {
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
-                aSecureBlock.Attributes.Add("href", BlockInstance.Id.ToString());
+                aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
+                    Rock.Cms.Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
                 aSecureBlock.Attributes.Add( "title", "Security" );
+                aSecureBlock.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 

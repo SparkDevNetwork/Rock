@@ -63,6 +63,11 @@ namespace Rock.Models.Groups
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static GroupRole Read(int id)
+        {
+            return new Rock.Services.Groups.GroupRoleService().GetGroupRole( id );
+        }
     }
 
     public partial class GroupRoleConfiguration : EntityTypeConfiguration<GroupRole>

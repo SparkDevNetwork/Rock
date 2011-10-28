@@ -43,6 +43,11 @@ namespace Rock.Services.Crm
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
+        public Person GetPersonByGuid( Guid guid )
+        {
+            return _repository.FirstOrDefault( t => t.Guid == guid );
+        }
+		
         public void AddPerson( Rock.Models.Crm.Person Person )
         {
             if ( Person.Guid == Guid.Empty )

@@ -89,6 +89,11 @@ namespace Rock.Models.Crm
 		public virtual Person CreatedByPerson { get; set; }
 
 		public virtual Person ModifiedByPerson { get; set; }
+
+        public static Person Read(int id)
+        {
+            return new Rock.Services.Crm.PersonService().GetPerson( id );
+        }
     }
 
     public partial class PersonConfiguration : EntityTypeConfiguration<Person>

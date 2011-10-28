@@ -751,6 +751,97 @@ namespace RockWeb.WCF
 
 		#endregion
 		
+		#region File
+		
+        public Rock.Models.Cms.File GetFileJson( string id )
+        {
+            return GetFile( id );
+        }
+
+        public Rock.Models.Cms.File GetFileXml( string id )
+        {
+            return GetFile( id );
+        }
+
+        private Rock.Models.Cms.File GetFile( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+                Rock.Services.Cms.FileService fileService = new Rock.Services.Cms.FileService();
+                Rock.Models.Cms.File file = fileService.GetFile( int.Parse( id ) );
+                if ( file.Authorized( "View", currentUser ) )
+                    return file;
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+		
+        public void UpdateFile( string id, Rock.Models.Cms.File file )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.FileService fileService = new Rock.Services.Cms.FileService();
+                Rock.Models.Cms.File existingFile = fileService.GetFile( int.Parse( id ) );
+                if ( existingFile.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingFile).CurrentValues.SetValues(file);
+                    fileService.Save( existingFile, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateFile( Rock.Models.Cms.File file )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.FileService fileService = new Rock.Services.Cms.FileService();
+                fileService.AttachFile( file );
+                fileService.Save( file, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteFile( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Cms.FileService fileService = new Rock.Services.Cms.FileService();
+                Rock.Models.Cms.File File = fileService.GetFile( int.Parse( id ) );
+                if ( File.Authorized( "Edit", currentUser ) )
+                {
+                    fileService.DeleteFile( File );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+		#endregion
+		
 		#region HtmlContent
 		
         public Rock.Models.Cms.HtmlContent GetHtmlContentJson( string id )
@@ -1016,97 +1107,6 @@ namespace RockWeb.WCF
                 if ( PageRoute.Authorized( "Edit", currentUser ) )
                 {
                     pageRouteService.DeletePageRoute( PageRoute );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-
-		#endregion
-		
-		#region Role
-		
-        public Rock.Models.Cms.Role GetRoleJson( string id )
-        {
-            return GetRole( id );
-        }
-
-        public Rock.Models.Cms.Role GetRoleXml( string id )
-        {
-            return GetRole( id );
-        }
-
-        private Rock.Models.Cms.Role GetRole( string id )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
-                Rock.Models.Cms.Role role = roleService.GetRole( int.Parse( id ) );
-                if ( role.Authorized( "View", currentUser ) )
-                    return role;
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-		
-        public void UpdateRole( string id, Rock.Models.Cms.Role role )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
-                Rock.Models.Cms.Role existingRole = roleService.GetRole( int.Parse( id ) );
-                if ( existingRole.Authorized( "Edit", currentUser ) )
-                {
-                    uow.objectContext.Entry(existingRole).CurrentValues.SetValues(role);
-                    roleService.Save( existingRole, ( int )currentUser.ProviderUserKey );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-
-        public void CreateRole( Rock.Models.Cms.Role role )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
-                roleService.AttachRole( role );
-                roleService.Save( role, ( int )currentUser.ProviderUserKey );
-            }
-        }
-
-        public void DeleteRole( string id )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                Rock.Services.Cms.RoleService roleService = new Rock.Services.Cms.RoleService();
-                Rock.Models.Cms.Role Role = roleService.GetRole( int.Parse( id ) );
-                if ( Role.Authorized( "Edit", currentUser ) )
-                {
-                    roleService.DeleteRole( Role );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

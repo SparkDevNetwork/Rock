@@ -54,6 +54,11 @@ namespace Rock.Models.Core
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.EntityChange"; } }
+
+        public static EntityChange Read(int id)
+        {
+            return new Rock.Services.Core.EntityChangeService().GetEntityChange( id );
+        }
     }
 
     public partial class EntityChangeConfiguration : EntityTypeConfiguration<EntityChange>

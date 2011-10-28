@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 using Rock.Models.Cms;
@@ -43,9 +44,50 @@ namespace Rock.Cms.Security
                 List<AuthRule> actionPermissions = instanceAuths[auth.Action];
 
                 actionPermissions.Add( new AuthRule(
+                    auth.Id,
                     auth.AllowOrDeny,
                     auth.UserOrRole,
-                    auth.UserOrRoleName ) );
+                    auth.UserOrRoleName,
+                    auth.Order) );
+            }
+        }
+
+        public static void ReloadAction( string entityType, int entityId, string action )
+        {
+            // If there's no Authorizations object, create it
+            if ( Authorizations == null )
+                Load();
+            else
+            {
+                // Delete the current authorizations
+                if ( Authorizations.ContainsKey( entityType ) )
+                    if ( Authorizations[entityType].ContainsKey( entityId ) )
+                        if ( Authorizations[entityType][entityId].ContainsKey( action ) )
+                            Authorizations[entityType][entityId][action] = new List<AuthRule>();
+
+                // Find the Authrules for the given entity type, entity id, and action
+                AuthService authService = new AuthService();
+                foreach ( Auth auth in authService.GetAuths(entityType, entityId, action))
+                {
+                    if ( !Authorizations.ContainsKey( auth.EntityType ) )
+                        Authorizations.Add( auth.EntityType, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                    Dictionary<int, Dictionary<string, List<AuthRule>>> entityAuths = Authorizations[auth.EntityType];
+
+                    if ( !entityAuths.ContainsKey( auth.EntityId ?? 0 ) )
+                        entityAuths.Add( auth.EntityId ?? 0, new Dictionary<string, List<AuthRule>>() );
+                    Dictionary<string, List<AuthRule>> instanceAuths = entityAuths[auth.EntityId ?? 0];
+
+                    if ( !instanceAuths.ContainsKey( auth.Action ) )
+                        instanceAuths.Add( auth.Action, new List<AuthRule>() );
+                    List<AuthRule> actionPermissions = instanceAuths[auth.Action];
+
+                    actionPermissions.Add( new AuthRule(
+                        auth.Id,
+                        auth.AllowOrDeny,
+                        auth.UserOrRole,
+                        auth.UserOrRoleName,
+                        auth.Order) );
+                }
             }
         }
 
@@ -86,9 +128,17 @@ namespace Rock.Cms.Security
                         return authRule.AllowOrDeny == "A";
 
                     if ( user != null )
-                        if ( ( authRule.UserOrRole == "U" && user.UserName == authRule.UserOrRoleName ) ||
-                        ( authRule.UserOrRole == "R" && System.Web.Security.Roles.IsUserInRole( user.UserName, authRule.UserOrRoleName ) ) )
+                    {
+                        if ( authRule.UserOrRole == "U" && user.UserName == authRule.UserOrRoleName )
                             return authRule.AllowOrDeny == "A";
+
+                        if ( authRule.UserOrRole == "R")
+                        {
+                            Role role = Role.Read(authRule.UserOrRoleName);
+                            if (role != null && role.UserInRole(user.UserName))
+                                return authRule.AllowOrDeny == "A";
+                        }
+                    }
                 }
 
             // If not match was found for the selected user on the current entity instance, check to see if the instance
@@ -98,6 +148,35 @@ namespace Rock.Cms.Security
                 return Authorized( entity.ParentAuthority, action, user );
             else
                 return entity.DefaultAuthorization( action );
+        }
+
+        public static List<AuthRule> AuthRules( string entityType, int entityId, string action )
+        {
+            List<AuthRule> rules = new List<AuthRule>();
+
+            // If there's no Authorizations object, create it
+            if ( Authorizations == null )
+                Load();
+
+            // Find the Authrules for the given entity type, entity id, and action
+            if (Authorizations.ContainsKey(entityType))
+                if ( Authorizations[entityType].ContainsKey( entityId ) )
+                    if (Authorizations[entityType][entityId].ContainsKey(action))
+                        rules = Authorizations[entityType][entityId][action];
+
+            return rules;
+        }
+
+        public static string EncodeEntityTypeName( Type iSecuredType )
+        {
+            byte[] b = Encoding.UTF8.GetBytes( iSecuredType.AssemblyQualifiedName );
+            return Convert.ToBase64String( b );
+        }
+
+        public static string DecodeEntityTypeName( string encodedTypeName )
+        {
+            byte[] b = Convert.FromBase64String( encodedTypeName );
+            return Encoding.UTF8.GetString( b );
         }
 
         public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, int? personId )
@@ -136,7 +215,7 @@ namespace Rock.Cms.Security
                             authService.AddAuth(auth);
                             authService.Save(auth, personId);
 
-                            newActions[action.Key].Add( new AuthRule( rule.AllowOrDeny, rule.UserOrRole, rule.UserOrRoleName ) );
+                            newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.UserOrRole, rule.UserOrRoleName, rule.Order ) );
 
                             order++;
                         }
@@ -160,15 +239,46 @@ namespace Rock.Cms.Security
     /// </summary>
     public class AuthRule
     {
+        public int Id { get; set; }
         public string AllowOrDeny { get; set; }
         public string UserOrRole { get; set; }
         public string UserOrRoleName { get; set; }
+        public int Order { get; set; }
 
-        public AuthRule( string allowOrDeny, string userOrRole, string userOrRoleName )
+        public string DisplayName
         {
+            get
+            {
+                if ( UserOrRole == "U" )
+                {
+                    if ( UserOrRoleName == "*" )
+                        return "All Users";
+
+                    try
+                    {
+                        Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
+                        Rock.Models.Crm.Person person = personService.GetPersonByGuid( new Guid( UserOrRoleName ) );
+                        return person.FullName + " (User)";
+                    }
+                    catch
+                    {
+                        return "*** Unknown User ***";
+                    }
+                }
+                else
+                {
+                    return Role.Read( UserOrRoleName ).Name + " (Role)";
+                }
+            }
+        }
+
+        public AuthRule( int id, string allowOrDeny, string userOrRole, string userOrRoleName, int order )
+        {
+            Id = id;
             AllowOrDeny = allowOrDeny;
             UserOrRole = userOrRole;
             UserOrRoleName = userOrRoleName;
+            Order = order;
         }
     }
 

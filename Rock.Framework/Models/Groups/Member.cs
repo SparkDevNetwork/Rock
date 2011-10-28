@@ -64,6 +64,11 @@ namespace Rock.Models.Groups
 		public virtual Group Group { get; set; }
 
 		public virtual GroupRole GroupRole { get; set; }
+
+        public static Member Read(int id)
+        {
+            return new Rock.Services.Groups.MemberService().GetMember( id );
+        }
     }
 
     public partial class MemberConfiguration : EntityTypeConfiguration<Member>
