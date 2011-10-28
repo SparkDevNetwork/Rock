@@ -156,12 +156,13 @@ namespace Rock.Controls
         {
             base.OnPreRender( e );
 
-            if ( Rows.Count > 0 )
-            {
-                UseAccessibleHeader = true;
+            UseAccessibleHeader = true;
+
+            if ( HeaderRow != null )
                 HeaderRow.TableSection = TableRowSection.TableHeader;
+
+            if ( FooterRow != null )
                 FooterRow.TableSection = TableRowSection.TableFooter;
-            }
 
             if ( TopPagerRow != null )
                 TopPagerRow.TableSection = TableRowSection.TableHeader;
@@ -198,7 +199,7 @@ namespace Rock.Controls
         return ui;
     };
 ";
-                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), 
+                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(),
                     "grid-sort-helper-script", script, true );
 
                 script = string.Format( @"
@@ -216,7 +217,7 @@ namespace Rock.Controls
     }});
 ", jsFriendlyClientId );
 
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), 
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(),
                     string.Format( "grid-sort-{0}-script", jsFriendlyClientId ), script, true );
             }
         }
@@ -225,7 +226,8 @@ namespace Rock.Controls
         {
             base.OnDataBound( e );
 
-            this.BottomPagerRow.Visible = true;
+            if (this.BottomPagerRow != null)
+                this.BottomPagerRow.Visible = true;
         }
 
         protected override void OnRowDataBound( GridViewRowEventArgs e )

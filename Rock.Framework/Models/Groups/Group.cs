@@ -73,6 +73,11 @@ namespace Rock.Models.Groups
 		public virtual Group ParentGroup { get; set; }
 
 		public virtual GroupType GroupType { get; set; }
+
+        public static Group Read(int id)
+        {
+            return new Rock.Services.Groups.GroupService().GetGroup( id );
+        }
     }
 
     public partial class GroupConfiguration : EntityTypeConfiguration<Group>

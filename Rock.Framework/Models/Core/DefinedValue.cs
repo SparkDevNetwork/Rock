@@ -64,6 +64,11 @@ namespace Rock.Models.Core
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static DefinedValue Read(int id)
+        {
+            return new Rock.Services.Core.DefinedValueService().GetDefinedValue( id );
+        }
     }
 
     public partial class DefinedValueConfiguration : EntityTypeConfiguration<DefinedValue>

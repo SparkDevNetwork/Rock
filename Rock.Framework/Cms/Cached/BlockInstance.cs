@@ -92,6 +92,11 @@ namespace Rock.Cms.Cached
             }
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #region Static Methods
 
         private static string CacheKey( int id )

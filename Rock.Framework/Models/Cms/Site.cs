@@ -93,6 +93,11 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static Site Read(int id)
+        {
+            return new Rock.Services.Cms.SiteService().GetSite( id );
+        }
     }
 
     public partial class SiteConfiguration : EntityTypeConfiguration<Site>

@@ -7,19 +7,11 @@ using System.Text;
 
 namespace Rock.Models.Cms
 {
-    public partial class Page
+    public partial class BlockInstance
     {
         public override string ToString()
         {
-            return Name;
+            return this.Name;
         }
     }
-
-    public enum DisplayInNavWhen
-    {
-        WhenAllowed = 0,
-        Always = 1,
-        Never = 2
-    }
-
 }

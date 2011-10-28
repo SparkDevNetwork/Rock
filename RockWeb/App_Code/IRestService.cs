@@ -221,6 +221,30 @@ namespace RockWeb.WCF
 
 		#endregion
 		
+		#region File
+		
+		[OperationContract]
+        [WebInvoke(Method = "GET", UriTemplate = "file/{id}", ResponseFormat = WebMessageFormat.Json )]
+        Rock.Models.Cms.File GetFileJson( string id );
+
+        [OperationContract]
+        [WebInvoke( Method = "GET", UriTemplate = "file/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
+        Rock.Models.Cms.File GetFileXml( string id );
+		
+        [OperationContract]
+        [WebInvoke( Method = "PUT", UriTemplate = "file/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void UpdateFile( string id, Rock.Models.Cms.File file );
+
+        [OperationContract]
+        [WebInvoke( Method = "POST", UriTemplate = "file", ResponseFormat = WebMessageFormat.Json )]
+        void CreateFile( Rock.Models.Cms.File file );
+
+        [OperationContract]
+        [WebInvoke( Method = "DELETE", UriTemplate = "file/{id}", ResponseFormat = WebMessageFormat.Json )]
+        void DeleteFile( string id );
+
+		#endregion
+		
 		#region HtmlContent
 		
 		[OperationContract]
@@ -290,30 +314,6 @@ namespace RockWeb.WCF
         [OperationContract]
         [WebInvoke( Method = "DELETE", UriTemplate = "pageroute/{id}", ResponseFormat = WebMessageFormat.Json )]
         void DeletePageRoute( string id );
-
-		#endregion
-		
-		#region Role
-		
-		[OperationContract]
-        [WebInvoke(Method = "GET", UriTemplate = "role/{id}", ResponseFormat = WebMessageFormat.Json )]
-        Rock.Models.Cms.Role GetRoleJson( string id );
-
-        [OperationContract]
-        [WebInvoke( Method = "GET", UriTemplate = "role/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
-        Rock.Models.Cms.Role GetRoleXml( string id );
-		
-        [OperationContract]
-        [WebInvoke( Method = "PUT", UriTemplate = "role/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void UpdateRole( string id, Rock.Models.Cms.Role role );
-
-        [OperationContract]
-        [WebInvoke( Method = "POST", UriTemplate = "role", ResponseFormat = WebMessageFormat.Json )]
-        void CreateRole( Rock.Models.Cms.Role role );
-
-        [OperationContract]
-        [WebInvoke( Method = "DELETE", UriTemplate = "role/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void DeleteRole( string id );
 
 		#endregion
 		

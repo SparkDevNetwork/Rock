@@ -444,6 +444,11 @@ namespace Rock.Cms.Cached
             cache.Remove( Page.CacheKey( id ) );
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #endregion
 
         #region ISecure Implementation

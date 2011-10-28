@@ -58,6 +58,11 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
 		public virtual Crm.Person ModifiedByPerson { get; set; }
+
+        public static PageRoute Read(int id)
+        {
+            return new Rock.Services.Cms.PageRouteService().GetPageRoute( id );
+        }
     }
 
     public partial class PageRouteConfiguration : EntityTypeConfiguration<PageRoute>

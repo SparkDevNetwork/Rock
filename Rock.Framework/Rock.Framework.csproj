@@ -65,6 +65,7 @@
     <Compile Include="Cms\Cached\Attribute.cs" />
     <Compile Include="Cms\Cached\Block.cs" />
     <Compile Include="Cms\Cached\BlockInstance.cs" />
+    <Compile Include="Cms\Security\Role.cs" />
     <Compile Include="Cms\Cached\FieldType.cs" />
     <Compile Include="Cms\Cached\Site.cs" />
     <Compile Include="Cms\Cached\Page.cs" />
@@ -78,8 +79,9 @@
     <Compile Include="Cms\RockRouteHandler.cs" />
     <Compile Include="Cms\Security\Authorization.cs" />
     <Compile Include="Cms\Security\ISecured.cs" />
-    <Compile Include="Cms\Security\UserRoleProvider.cs" />
-    <Compile Include="Cms\Security\User.cs" />
+    <Compile Include="Cms\Security\User.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Controls\DeleteField.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,9 +89,6 @@
     <Compile Include="Controls\BoolField.cs" />
     <Compile Include="Controls\HtmlGenericContainer.cs" />
     <Compile Include="Controls\NotificationBox.cs" />
-    <Compile Include="Cms\Security\GroupRoleProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="FieldTypes\Boolean.cs" />
     <Compile Include="FieldTypes\PageReference.cs" />
     <Compile Include="FieldTypes\Integer.cs" />
@@ -114,6 +113,8 @@
     <Compile Include="Models\Cms\BlogTag.cs" />
     <Compile Include="Models\Cms\BlogPost.Partial.cs" />
     <Compile Include="Models\Cms\Auth.Partial.cs" />
+    <Compile Include="Models\Cms\BlockInstance.Partial.cs" />
+    <Compile Include="Models\Cms\File.cs" />
     <Compile Include="Models\Cms\User.Partial.cs" />
     <Compile Include="Models\Cms\HtmlContent.cs">
       <SubType>Code</SubType>
@@ -122,7 +123,6 @@
     <Compile Include="Models\Cms\BlockInstance.cs" />
     <Compile Include="Models\Cms\Page.Partial.cs" />
     <Compile Include="Models\Cms\PageRoute.cs" />
-    <Compile Include="Models\Cms\Role.cs" />
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
     <Compile Include="Models\IOrdered.cs" />
@@ -169,10 +169,10 @@
     <Compile Include="Repository\Cms\EntityBlogPostRepository.cs" />
     <Compile Include="Repository\Cms\EntityBlogRepository.cs" />
     <Compile Include="Repository\Cms\EntityBlogTagRepository.cs" />
+    <Compile Include="Repository\Cms\EntityFileRepository.cs" />
     <Compile Include="Repository\Cms\EntityHtmlContentRepository.cs" />
     <Compile Include="Repository\Cms\EntityPageRepository.cs" />
     <Compile Include="Repository\Cms\EntityPageRouteRepository.cs" />
-    <Compile Include="Repository\Cms\EntityRoleRepository.cs" />
     <Compile Include="Repository\Cms\EntitySiteDomainRepository.cs" />
     <Compile Include="Repository\Cms\EntitySiteRepository.cs" />
     <Compile Include="Repository\Cms\EntityUserRepository.cs" />
@@ -184,10 +184,10 @@
     <Compile Include="Repository\Cms\IBlogPostRepository.cs" />
     <Compile Include="Repository\Cms\IBlogRepository.cs" />
     <Compile Include="Repository\Cms\IBlogTagRepository.cs" />
+    <Compile Include="Repository\Cms\IFileRepository.cs" />
     <Compile Include="Repository\Cms\IHtmlContentRepository.cs" />
     <Compile Include="Repository\Cms\IPageRepository.cs" />
     <Compile Include="Repository\Cms\IPageRouteRepository.cs" />
-    <Compile Include="Repository\Cms\IRoleRepository.cs" />
     <Compile Include="Repository\Cms\ISiteDomainRepository.cs" />
     <Compile Include="Repository\Cms\ISiteRepository.cs" />
     <Compile Include="Repository\Cms\IUserRepository.cs" />
@@ -241,11 +241,12 @@
     <Compile Include="Services\Cms\BlogService.cs" />
     <Compile Include="Services\Cms\BlogTagService.cs" />
     <Compile Include="Services\Cms\BlogService.Partial.cs" />
+    <Compile Include="Services\Cms\AuthService.partial.cs" />
+    <Compile Include="Services\Cms\FileService.cs" />
     <Compile Include="Services\Cms\HtmlContentService.cs" />
     <Compile Include="Services\Cms\HtmlContentService.Partial.cs" />
     <Compile Include="Services\Cms\PageRouteService.cs" />
     <Compile Include="Services\Cms\PageService.cs" />
-    <Compile Include="Services\Cms\RoleService.cs" />
     <Compile Include="Services\Cms\SiteDomainService.cs" />
     <Compile Include="Services\Cms\SiteService.cs" />
     <Compile Include="Services\Cms\ThemeService.cs" />
@@ -259,6 +260,7 @@
     <Compile Include="Services\Core\DefinedValueService.cs" />
     <Compile Include="Services\Core\EntityChangeService.cs" />
     <Compile Include="Services\Core\FieldTypeService.cs" />
+    <Compile Include="Services\Crm\PersonService.partial.cs" />
     <Compile Include="Services\Crm\PersonService.cs" />
     <Compile Include="Services\Crm\PhoneNumberService.cs" />
     <Compile Include="Services\Groups\GroupRoleService.cs" />

@@ -30,12 +30,6 @@
 				<add name="RockMembershipProvider" type="Rock.Cms.Security.User" applicationName="RockChMS" maxInvalidPasswordAttempts="5" passwordAttemptWindow="10" minRequiredAlphaNumericCharacters="1" minRequiredPasswordLength="7" passwordStrengthRegularExpression="" />
 			</providers>
 		</membership>
-		<roleManager defaultProvider="RockGroupRoleProvider" enabled="true" cacheRolesInCookie="true" cookieName=".RockROLES" cookieTimeout="30" cookiePath="/" cookieRequireSSL="false" cookieSlidingExpiration="true" cookieProtection="All">
-			<providers>
-				<clear />
-				<add name="RockGroupRoleProvider" type="Rock.Cms.Security.GroupRoleProvider" applicationName="RockChMS" />
-			</providers>
-		</roleManager>
 		<httpRuntime requestValidationMode="2.0" />
 		<pages>
 			<controls>

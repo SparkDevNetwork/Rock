@@ -41,6 +41,11 @@ namespace Rock.Models.Cms
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
 
 		public virtual Blog Blog { get; set; }
+
+        public static BlogTag Read(int id)
+        {
+            return new Rock.Services.Cms.BlogTagService().GetBlogTag( id );
+        }
     }
 
     public partial class BlogTagConfiguration : EntityTypeConfiguration<BlogTag>
