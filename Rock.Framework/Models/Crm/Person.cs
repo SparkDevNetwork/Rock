@@ -86,6 +86,10 @@ namespace Rock.Models.Crm
 
 		public virtual ICollection<Groups.Member> Members { get; set; }
 
+		public virtual ICollection<Util.Jobs> Jobss { get; set; }
+
+		public virtual ICollection<Util.Jobs> Jobss { get; set; }
+
 		public virtual Person CreatedByPerson { get; set; }
 
 		public virtual Person ModifiedByPerson { get; set; }
