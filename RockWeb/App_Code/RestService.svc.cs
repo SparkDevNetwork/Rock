@@ -2571,19 +2571,19 @@ namespace RockWeb.WCF
 
 		#endregion
 		
-		#region Jobs
+		#region Job
 		
-        public Rock.Models.Util.Jobs GetJobsJson( string id )
+        public Rock.Models.Util.Job GetJobJson( string id )
         {
-            return GetJobs( id );
+            return GetJob( id );
         }
 
-        public Rock.Models.Util.Jobs GetJobsXml( string id )
+        public Rock.Models.Util.Job GetJobXml( string id )
         {
-            return GetJobs( id );
+            return GetJob( id );
         }
 
-        private Rock.Models.Util.Jobs GetJobs( string id )
+        private Rock.Models.Util.Job GetJob( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -2592,16 +2592,16 @@ namespace RockWeb.WCF
             using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
-                Rock.Models.Util.Jobs jobs = jobsService.GetJobs( int.Parse( id ) );
-                if ( jobs.Authorized( "View", currentUser ) )
-                    return jobs;
+                Rock.Services.Util.JobService jobService = new Rock.Services.Util.JobService();
+                Rock.Models.Util.Job job = jobService.GetJob( int.Parse( id ) );
+                if ( job.Authorized( "View", currentUser ) )
+                    return job;
                 else
                     throw new FaultException( "Unauthorized" );
             }
         }
 		
-        public void UpdateJobs( string id, Rock.Models.Util.Jobs jobs )
+        public void UpdateJob( string id, Rock.Models.Util.Job job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -2611,19 +2611,19 @@ namespace RockWeb.WCF
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
-                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
-                Rock.Models.Util.Jobs existingJobs = jobsService.GetJobs( int.Parse( id ) );
-                if ( existingJobs.Authorized( "Edit", currentUser ) )
+                Rock.Services.Util.JobService jobService = new Rock.Services.Util.JobService();
+                Rock.Models.Util.Job existingJob = jobService.GetJob( int.Parse( id ) );
+                if ( existingJob.Authorized( "Edit", currentUser ) )
                 {
-                    uow.objectContext.Entry(existingJobs).CurrentValues.SetValues(jobs);
-                    jobsService.Save( existingJobs, ( int )currentUser.ProviderUserKey );
+                    uow.objectContext.Entry(existingJob).CurrentValues.SetValues(job);
+                    jobService.Save( existingJob, ( int )currentUser.ProviderUserKey );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
             }
         }
 
-        public void CreateJobs( Rock.Models.Util.Jobs jobs )
+        public void CreateJob( Rock.Models.Util.Job job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -2633,13 +2633,13 @@ namespace RockWeb.WCF
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
-                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
-                jobsService.AttachJobs( jobs );
-                jobsService.Save( jobs, ( int )currentUser.ProviderUserKey );
+                Rock.Services.Util.JobService jobService = new Rock.Services.Util.JobService();
+                jobService.AttachJob( job );
+                jobService.Save( job, ( int )currentUser.ProviderUserKey );
             }
         }
 
-        public void DeleteJobs( string id )
+        public void DeleteJob( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -2649,11 +2649,11 @@ namespace RockWeb.WCF
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
-                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
-                Rock.Models.Util.Jobs Jobs = jobsService.GetJobs( int.Parse( id ) );
-                if ( Jobs.Authorized( "Edit", currentUser ) )
+                Rock.Services.Util.JobService jobService = new Rock.Services.Util.JobService();
+                Rock.Models.Util.Job Job = jobService.GetJob( int.Parse( id ) );
+                if ( Job.Authorized( "Edit", currentUser ) )
                 {
-                    jobsService.DeleteJobs( Jobs );
+                    jobService.DeleteJob( Job );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
