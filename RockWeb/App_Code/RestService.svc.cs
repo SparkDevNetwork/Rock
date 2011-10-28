@@ -2571,5 +2571,96 @@ namespace RockWeb.WCF
 
 		#endregion
 		
+		#region Jobs
+		
+        public Rock.Models.Util.Jobs GetJobsJson( string id )
+        {
+            return GetJobs( id );
+        }
+
+        public Rock.Models.Util.Jobs GetJobsXml( string id )
+        {
+            return GetJobs( id );
+        }
+
+        private Rock.Models.Util.Jobs GetJobs( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
+                Rock.Models.Util.Jobs jobs = jobsService.GetJobs( int.Parse( id ) );
+                if ( jobs.Authorized( "View", currentUser ) )
+                    return jobs;
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+		
+        public void UpdateJobs( string id, Rock.Models.Util.Jobs jobs )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
+                Rock.Models.Util.Jobs existingJobs = jobsService.GetJobs( int.Parse( id ) );
+                if ( existingJobs.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existingJobs).CurrentValues.SetValues(jobs);
+                    jobsService.Save( existingJobs, ( int )currentUser.ProviderUserKey );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+        public void CreateJobs( Rock.Models.Util.Jobs jobs )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
+                jobsService.AttachJobs( jobs );
+                jobsService.Save( jobs, ( int )currentUser.ProviderUserKey );
+            }
+        }
+
+        public void DeleteJobs( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services.Util.JobsService jobsService = new Rock.Services.Util.JobsService();
+                Rock.Models.Util.Jobs Jobs = jobsService.GetJobs( int.Parse( id ) );
+                if ( Jobs.Authorized( "Edit", currentUser ) )
+                {
+                    jobsService.DeleteJobs( Jobs );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+		#endregion
+		
     }
 }
