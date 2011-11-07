@@ -1,0 +1,1 @@
+﻿<%@ WebHandler Language="C#" CodeBehind="~/App_Code/Image.ashx.cs" Class="RockWeb.Image" %>
