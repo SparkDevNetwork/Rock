@@ -12,34 +12,9 @@ using System.Web.UI.HtmlControls;
 namespace Rock.Controls
 {
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
-    public class Grid : System.Web.UI.WebControls.GridView, ICallbackEventHandler
+    public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
-        #region Fields
-
-        private string returnValue;
-        string jsFriendlyClientId = string.Empty;
-
-        #endregion
-
         #region Properties
-
-        [
-        Category( "Behavior" ),
-        DefaultValue( false ),
-        Description( "Enable Ordering" )
-        ]
-        public virtual bool EnableOrdering
-        {
-            get
-            {
-                bool? b = ViewState["EnableOrdering"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["EnableOrdering"] = value;
-            }
-        }
 
         [
         Category( "Behavior" ),
@@ -105,49 +80,21 @@ namespace Rock.Controls
 
             this.CssClass = "grid-table";
             this.AutoGenerateColumns = false;
+            this.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            this.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            this.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            this.PagerStyle.CssClass = "grid-footer";
 
             // Paging Support
             this.AllowPaging = true;
-            this.PageIndexChanging += new GridViewPageEventHandler( Grid_PageIndexChanging );
 
-            jsFriendlyClientId = this.ClientID.Replace( "-", "_" );
+            GridPagerTemplate gridPagerTemplate = new GridPagerTemplate();
+            gridPagerTemplate.AddClick += new EventHandler( gridPagerTemplate_AddClick );
+            gridPagerTemplate.PageClick += new EventHandler( gridPagerTemplate_PageClick );
+            this.PagerTemplate = gridPagerTemplate;
 
-            ClientScriptManager cs = Page.ClientScript;
-            Type type = this.GetType();
-
-            string gridScriptKey = string.Format( "{0}_gridScripts", jsFriendlyClientId );
-            if ( !cs.IsClientScriptBlockRegistered( type, gridScriptKey ) )
-            {
-                string gridScript = string.Format( @"
-
-    function {0}_SendServerData(arg, context)
-    {{
-        {1}
-    }}
-
-    function {0}_ReceiveServerData(rValue)
-    {{
-        var jsonObject = JSON.parse(rValue);
-        if (!jsonObject.Cancel)
-        {{
-            switch (jsonObject.Action)
-            {{
-                case 'delete': 
-                    var item = {0}_dataView.getItem(jsonObject.Result);
-                    {0}_dataView.deleteItem(item.id);
-                    {0}_grid.invalidate();
-                    {0}_grid.render();
-                    break;
-            }}
-        }}
-    }}
-",
-                    jsFriendlyClientId,
-                    cs.GetCallbackEventReference(
-                        this, "arg", string.Format( "{0}_ReceiveServerData", jsFriendlyClientId ), "context" ) );
-
-                cs.RegisterClientScriptBlock( type, gridScriptKey, gridScript, true );
-            }
+            this.ShowHeaderWhenEmpty = true;
+            this.EmptyDataText = "No Results";
 
             base.OnInit( e );
         }
@@ -168,12 +115,16 @@ namespace Rock.Controls
                 TopPagerRow.TableSection = TableRowSection.TableHeader;
 
             if ( BottomPagerRow != null )
+            {
                 BottomPagerRow.TableSection = TableRowSection.TableFooter;
+                if ( !BottomPagerRow.Visible )
+                    BottomPagerRow.Visible = true;
+            }
 
             if ( this.EnableClientSorting )
             {
-                if ( this.AllowSorting || this.EnableOrdering )
-                    throw new ArgumentException( "Cannot use EnableClientSorting with AllowSorting or EnableOrdering" );
+                if ( this.AllowSorting )
+                    throw new ArgumentException( "Cannot use EnableClientSorting with AllowSorting" );
 
                 Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.tablesorter.min.js" );
 
@@ -181,44 +132,12 @@ namespace Rock.Controls
     $(document).ready(function() {{
         $('#{0}').tablesorter();
     }});
+    Sys.Application.add_load(function () {{
+        $('#{0}').tablesorter();
+    }});
 ", this.ClientID );
 
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-sort-{0}-script", this.ClientID ), script, true );
-            }
-
-            if ( this.EnableOrdering )
-            {
-                if ( this.AllowSorting || this.EnableClientSorting )
-                    throw new ArgumentException( "Cannot use EnableOrdering with AllowSorting or EnableClientSorting" );
-
-                string script = @"
-    var fixHelper = function(e, ui) {
-        ui.children().each(function() {
-            $(this).width($(this).width());
-        });
-        return ui;
-    };
-";
-                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(),
-                    "grid-sort-helper-script", script, true );
-
-                script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0} tbody').sortable({{
-            helper: fixHelper,
-            start: function(event, ui) {{
-                var start_pos = ui.item.index();
-                ui.item.data('start_pos', start_pos);
-            }},
-            update: function(event, ui) {{
-                {0}_SendServerData('re-order:' + ui.item.attr('datakey') + ';' + ui.item.data('start_pos') + ';' + ui.item.index());
-            }}
-        }}).disableSelection();
-    }});
-", jsFriendlyClientId );
-
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(),
-                    string.Format( "grid-sort-{0}-script", jsFriendlyClientId ), script, true );
             }
         }
 
@@ -226,8 +145,32 @@ namespace Rock.Controls
         {
             base.OnDataBound( e );
 
-            if (this.BottomPagerRow != null)
-                this.BottomPagerRow.Visible = true;
+            GridViewRow pagerRow = this.BottomPagerRow;
+            if ( pagerRow != null )
+            {
+                // Set Paging Controls
+                DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
+                if ( ddl != null )
+                {
+                    for ( int i = 0; i < this.PageCount; i++ )
+                    {
+                        int pageNumber = i + 1;
+                        ListItem li = new ListItem( pageNumber.ToString(), i.ToString() );
+                        if ( i == this.PageIndex )
+                            li.Selected = true;
+                        ddl.Items.Add( li );
+                    }
+                }
+                
+                // Set Action Controls
+                LinkButton lbAdd = pagerRow.Cells[0].FindControl( "lbAdd" ) as LinkButton;
+                if ( lbAdd != null )
+                {
+                    lbAdd.Visible = EnableAdd;
+                    if ( ClientAddScript != string.Empty )
+                        lbAdd.OnClientClick = ClientAddScript;
+                }
+            }
         }
 
         protected override void OnRowDataBound( GridViewRowEventArgs e )
@@ -243,81 +186,39 @@ namespace Rock.Controls
                     e.Row.Attributes.Add("datakey",key);
                 }
             }
-
-            
-            else if (e.Row.RowType == DataControlRowType.Pager)
-            {
-                if ( e.Row.Cells.Count == 1 )
-                {
-                    e.Row.Cells[0].Attributes.Add( "class", "grid-footer" );
-
-                    Panel panelPager = new Panel();
-                    panelPager.CssClass = "paging";
-
-                    Panel panelActions = new Panel();
-                    panelActions.CssClass = "actions";
-
-                    foreach ( Control control in e.Row.Cells[0].Controls )
-                        panelPager.Controls.Add( control );
-
-                    if ( EnableAdd )
-                    {
-                        LinkButton lbAdd = new LinkButton();
-                        lbAdd.CssClass = "add";
-                        lbAdd.Text = "Add";
-                        lbAdd.Click += new EventHandler( lbAdd_Click );
-
-                        if ( ClientAddScript != string.Empty )
-                            lbAdd.OnClientClick = ClientAddScript;
-
-                        panelActions.Controls.Add( lbAdd );
-                    }
-
-                    e.Row.Cells[0].Controls.Clear();
-                    e.Row.Cells[0].Controls.Add( panelPager );
-                    e.Row.Cells[0].Controls.Add( panelActions );
-                }
-            }
         }
-
-        //protected override void DataBind( bool raiseOnDataBinding )
-        //{
-        //    if (this.DataSource is IEnumerable && this.AllowCustomPaging)
-        //    {
-        //        this.VirtualItemCount = ((IEnumerable<>)this.DataSource).cou
-        //    base.DataBind( raiseOnDataBinding );
-        //}
 
         #endregion
 
         #region Internal Methods
 
-        protected void lbAdd_Click( object sender, EventArgs e )
+        void gridPagerTemplate_PageClick( object sender, EventArgs e )
         {
-            OnGridAdd( e );
+            GridViewRow pagerRow = this.BottomPagerRow;
+            if ( pagerRow != null )
+            {
+                // Set Paging Controls
+                DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
+                if ( ddl != null )
+                {
+                    this.PageIndex = ddl.SelectedIndex;
+                    EventArgs eventArgs = new EventArgs();
+                    OnGridRebind( eventArgs );
+                }
+            }
         }
 
-        protected void Grid_PageIndexChanging( object sender, GridViewPageEventArgs e )
+        void gridPagerTemplate_AddClick( object sender, EventArgs e )
         {
-            this.PageIndex = e.NewPageIndex;
-
-            EventArgs eventArgs = new EventArgs();
-            OnGridRebind( eventArgs );
+            OnGridAdd( e );
         }
 
         #endregion
 
         #region Callback Methods/Events
 
-        public string GetCallbackResult()
+        void IPostBackEventHandler.RaisePostBackEvent( string eventArgument )
         {
-            return returnValue;
-        }
-
-        public void RaiseCallbackEvent( string eventArgument )
-        {
-            JsonResult jsonResult = null;
-
             if ( eventArgument.StartsWith( "re-order:" ) )
             {
                 string[] parms = eventArgument.Substring( 9 ).Split( ';' );
@@ -325,11 +226,11 @@ namespace Rock.Controls
                 string dataKey = parms[0];
 
                 int oldIndex = 0;
-                if (!Int32.TryParse( parms[1], out oldIndex ))
+                if ( !Int32.TryParse( parms[1], out oldIndex ) )
                     oldIndex = 0;
 
                 int newIndex = 0;
-                if (!Int32.TryParse( parms[2], out newIndex ))
+                if ( !Int32.TryParse( parms[2], out newIndex ) )
                     newIndex = 0;
 
                 int pageFactor = this.PageIndex * this.PageSize;
@@ -338,14 +239,9 @@ namespace Rock.Controls
 
                 GridReorderEventArgs args = new GridReorderEventArgs( dataKey, oldIndex, newIndex );
                 OnGridReorder( args );
-
-                jsonResult = new JsonResult( "re-order", args.Cancel );
             }
-
-            returnValue = jsonResult.Serialize();
-
         }
-
+        
         #endregion
 
         #region Events
@@ -444,4 +340,55 @@ namespace Rock.Controls
 
     #endregion
 
+    #region Templates
+
+    internal class GridPagerTemplate : ITemplate
+    {
+        public void  InstantiateIn(Control container)
+        {
+            HtmlGenericControl divPaging = new HtmlGenericControl( "div" );
+            divPaging.Attributes.Add( "class", "paging" );
+            container.Controls.Add( divPaging );
+
+            DropDownList ddl = new DropDownList();
+            ddl.ID = "ddlPageList";
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += new EventHandler( ddl_SelectedIndexChanged );
+
+            Label lbl = new Label();
+            lbl.Text = "Select a page:";
+            lbl.AssociatedControlID = "ddlPageList";
+
+            divPaging.Controls.Add( lbl );
+            divPaging.Controls.Add( ddl );
+
+            HtmlGenericControl divActions = new HtmlGenericControl( "div" );
+            divActions.Attributes.Add( "class", "actions" );
+            container.Controls.Add( divActions );
+
+            LinkButton lbAdd = new LinkButton();
+            lbAdd.ID = "lbAdd";
+            lbAdd.CssClass = "add";
+            lbAdd.Text = "Add";
+            lbAdd.Click += new EventHandler( lbAdd_Click );
+            divActions.Controls.Add( lbAdd );
+        }
+
+        void ddl_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if (PageClick != null)
+                PageClick( sender, e );
+        }
+
+        void lbAdd_Click( object sender, EventArgs e )
+        {
+            if (AddClick != null)
+                AddClick( sender, e );
+        }
+
+        internal event EventHandler PageClick;
+        internal event EventHandler AddClick;
+    }
+
+    #endregion
 }

@@ -43,7 +43,7 @@ namespace Rock.Services.Groups
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public Group GetGroupByGuid( Guid guid )
+        public Rock.Models.Groups.Group GetGroupByGuid( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
         }

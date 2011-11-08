@@ -391,28 +391,29 @@ namespace Rock.Cms
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
-                        aBlockConfig.Attributes.Add( "Title", "Show Block Configuration" );
+                        aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                         aBlockConfig.InnerText = "BlockSettings";
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "attributes icon-button" );
                         aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", "Show Page Attributes" );
-                        aAttributes.InnerText = "Page Attributes";
+                        aAttributes.Attributes.Add( "Title", "Page Properties" );
+                        aAttributes.InnerText = "Page Properties";
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
-                        aChildPages.Attributes.Add( "href", "#" );
-                        aChildPages.Attributes.Add( "Title", "Show Child Pages" );
+                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
+                        aChildPages.Attributes.Add( "Title", "Child Pages" );
+                        aChildPages.Attributes.Add( "instance-id", PageInstance.Id.ToString() );
                         aChildPages.InnerText = "Child Pages";
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
-                        aPageZones.Attributes.Add( "Title", "Show Page Zones" );
+                        aPageZones.Attributes.Add( "Title", "Page Zones" );
                         aPageZones.InnerText = "Page Zones";
 
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
@@ -439,6 +440,25 @@ namespace Rock.Cms
             return false;
         });
 
+        $('#cms-admin-footer .page-child-pages').click(function (ev) {
+
+            var instanceId = $(this).attr('instance-id')
+
+            $('#modalIFrame').attr('src', $(this).attr('href'));
+
+            $('#modalDiv').bind('dialogclose', function(event, ui) {
+                $('#modalDiv').unbind('dialogclose');
+                $('#modalIFrame').attr('src', '');
+            });
+            
+            $('#modalDiv').dialog('option', 'title', 'Child Pages');
+
+            $('#modalDiv').dialog('open');
+            
+            return false;
+
+        });
+
         $('#cms-admin-footer .page-security').click(function (ev) {
 
             var instanceId = $(this).attr('instance-id')
@@ -446,7 +466,6 @@ namespace Rock.Cms
             $('#modalIFrame').attr('src', $(this).attr('href'));
 
             $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
                 $('#modalDiv').unbind('dialogclose');
                 $('#modalIFrame').attr('src', '');
             });
@@ -558,7 +577,7 @@ namespace Rock.Cms
                 $('#modalIFrame').attr('src', '');
             });
             
-            $('#modalDiv').dialog('option', 'title', 'Block Attributes');
+            $('#modalDiv').dialog('option', 'title', 'Block Properties');
 
             $('#modalDiv').dialog('open');
             
@@ -573,7 +592,6 @@ namespace Rock.Cms
             $('#modalIFrame').attr('src', $(this).attr('href'));
 
             $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
                 $('#modalDiv').unbind('dialogclose');
                 $('#modalIFrame').attr('src', '');
             });

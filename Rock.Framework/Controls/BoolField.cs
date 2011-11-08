@@ -11,12 +11,12 @@ namespace Rock.Controls
     [ToolboxData( "<{0}:BoolField runat=server></{0}:BoolField>" )]
     public class BoolField : BoundField
     {
-        public override void InitializeCell( DataControlFieldCell cell, DataControlCellType cellType, DataControlRowState rowState, int rowIndex )
+        public override bool Initialize( bool enableSorting, Control control )
         {
-            base.InitializeCell( cell, cellType, rowState, rowIndex );
-
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.ItemStyle.CssClass = "grid-icon-cell bool";
+
+            return base.Initialize( enableSorting, control );
         }
 
         protected override string FormatDataValue( object dataValue, bool encode )

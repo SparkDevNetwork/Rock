@@ -29,6 +29,7 @@
 .grid-icon-cell
 {
 	width: 30px;
+	vertical-align: middle;
 }
 
 .grid-icon-cell a, .grid-icon-cell span
@@ -44,6 +45,18 @@
 .grid-icon-cell.delete a
 {
     background: url("../Assets/Images/Grid/delete.png") ;
+}
+
+.grid-icon-cell.edit a
+{
+    background: url("../Assets/Images/Grid/edit.png") ;
+}
+
+.grid-icon-cell.reorder a
+{
+    background: url("../Assets/Images/Grid/drag-handle.png") ;
+    height: 12px;
+    width: 12px;
 }
 
 .grid-icon-cell.bool span.true

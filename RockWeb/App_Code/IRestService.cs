@@ -701,29 +701,5 @@ namespace RockWeb.WCF
 
 		#endregion
 		
-		#region Job
-		
-		[OperationContract]
-        [WebInvoke(Method = "GET", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
-        Rock.Models.Util.Job GetJobJson( string id );
-
-        [OperationContract]
-        [WebInvoke( Method = "GET", UriTemplate = "job/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
-        Rock.Models.Util.Job GetJobXml( string id );
-		
-        [OperationContract]
-        [WebInvoke( Method = "PUT", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void UpdateJob( string id, Rock.Models.Util.Job job );
-
-        [OperationContract]
-        [WebInvoke( Method = "POST", UriTemplate = "job", ResponseFormat = WebMessageFormat.Json )]
-        void CreateJob( Rock.Models.Util.Job job );
-
-        [OperationContract]
-        [WebInvoke( Method = "DELETE", UriTemplate = "job/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void DeleteJob( string id );
-
-		#endregion
-		
     }
 }

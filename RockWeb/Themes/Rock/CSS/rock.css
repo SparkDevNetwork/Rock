@@ -358,11 +358,16 @@ footer {
 }
 
 /* Grid Overloads */
-/* in a dialog it's #dialog .data-grid */
+/* in a dialog it's #dialog .grid-table */
 
-.data-grid .header {
+.grid-table .header {
     background: #0d2c44 none; 
     color: #c6c6c6;
     margin-right: -8px;
     padding: 4px;
+}
+
+#dialog .grid-table 
+{
+    width: 500px;
 }
