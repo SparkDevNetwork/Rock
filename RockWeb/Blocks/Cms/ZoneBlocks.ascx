@@ -1,50 +1,50 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ZoneBlocks.ascx.cs" Inherits="RockWeb.Blocks.Cms.ZoneBlocks" %>
-<script type="text/javascript">
-    function addItem() {
-        $('.admin-details').show();
-        return false;
-    }
-</script>
 
-<div class='admin-dialog'>
+<asp:UpdatePanel ID="upPages" runat="server">
+<ContentTemplate>
+
     <Rock:Grid ID="rGrid" runat="server">
         <Columns>
-            <asp:BoundField DataField="Name" HeaderText="Name" ItemStyle-Width="180px" />
-            <asp:TemplateField HeaderText="Type" ItemStyle-Width="180px">
+            <Rock:ReorderField />
+            <asp:BoundField DataField="Name" HeaderText="Name" />
+            <asp:TemplateField HeaderText="Type" >
                 <ItemTemplate>
-                <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                    <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
                 </ItemTemplate>
             </asp:TemplateField>
-            <Rock:DeleteField />
+            <Rock:EditField OnClick="rGrid_Edit" />
+            <Rock:DeleteField OnClick="rGrid_Delete" />
         </Columns>
     </Rock:Grid>
 
-    <div class="admin-details" style="display:none">
-        <span class="failureNotification">
-            <asp:Literal ID="FailureText" runat="server"></asp:Literal>
-        </span>
-        <asp:ValidationSummary ID="ZoneBlockValidationSummary" runat="server" CssClass="failureNotification" 
-                ValidationGroup="ZoneBlockValidationGroup"/>
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
+
+        <asp:HiddenField ID="hfBlockInstanceId" runat="server" />
+        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
-            <legend>Add Block</legend>
+            <legend>Zone Blocks</legend>
             <ol>
                 <li>
-                    <asp:Label ID="BlockNameLabel" runat="server" AssociatedControlID="BlockName">Name</asp:Label>
-                    <asp:TextBox ID="BlockName" runat="server"></asp:TextBox>
-                    <asp:RequiredFieldValidator ID="BlockNameRequired" runat="server" ControlToValidate="BlockName" 
+                    <asp:Label ID="lblBlockName" runat="server" AssociatedControlID="tbBlockName">Name</asp:Label>
+                    <asp:TextBox ID="tbBlockName" runat="server"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvBlockName" runat="server" ControlToValidate="tbBlockName" 
                             CssClass="failureNotification" ErrorMessage="Block Name is required." ToolTip="Block Name is required." 
                             ValidationGroup="ZoneBlockValidationGroup">*</asp:RequiredFieldValidator>
                 </li>
                 <li>
-                    <asp:Label ID="BlockTypeLabel" runat="server" AssociatedControlID="BlockType">Type</asp:Label>
-                    <asp:DropDownList ID="BlockType" runat="server"></asp:DropDownList>
+                    <asp:Label ID="lblLayout" runat="server" AssociatedControlID="ddlBlockType">Type</asp:Label>
+                    <asp:DropDownList ID="ddlBlockType" runat="server"></asp:DropDownList>
                 </li>
             </ol>
         </fieldset>
         <br />
-        <asp:Button ID="AddButton" runat="server" CommandName="Save" Text="Add" 
-            ValidationGroup="ZoneBlockValidationGroup" CssClass="button" 
-            onclick="AddButton_Click" />
-    </div>
-</div>
+        <asp:Button id="btnCancel" runat="server" Text="Cancel" CausesValidation="false" OnClick="btnCancel_Click" />
+        <asp:Button ID="btnSave" runat="server" Text="Save" ValidationGroup="ZoneBlockValidationGroup" CssClass="button" onclick="btnSave_Click" />
+
+    </asp:Panel>
+
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+
+</ContentTemplate>
+</asp:UpdatePanel>
 

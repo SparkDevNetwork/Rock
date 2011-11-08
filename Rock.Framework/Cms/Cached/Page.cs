@@ -210,6 +210,11 @@ namespace Rock.Cms.Cached
             blockInstanceIds = null;
         }
 
+        public void FlushChildPages()
+        {
+            pageIds = null;
+        }
+
         #endregion
 
         #region SharedItemCaching

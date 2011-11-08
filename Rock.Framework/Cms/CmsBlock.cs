@@ -281,7 +281,7 @@ namespace Rock.Cms
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "attributes icon-button attributes-show" );
                 aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockAttributes/{0}", BlockInstance.Id)));
-                aAttributes.Attributes.Add("title", "Block Attributes");
+                aAttributes.Attributes.Add("title", "Block Properties");
                 aAttributes.Attributes.Add("instance-id", BlockInstance.Id.ToString());
                 aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );

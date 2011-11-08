@@ -9,6 +9,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Controls;
+
 namespace RockWeb.Blocks.Cms
 {
     public partial class Security : Rock.Cms.CmsBlock
@@ -36,22 +38,23 @@ namespace RockWeb.Blocks.Cms
 
             lTitle.Text = iSecured.ToString();
 
-            ddlAction.DataSource = iSecured.SupportedActions;
-            ddlAction.DataBind();
-            ShowActionNote();
+            MembershipUser user = Membership.GetUser();
+            if ( iSecured.Authorized( "Edit", Membership.GetUser() ) )
+            {
+                ddlAction.DataSource = iSecured.SupportedActions;
+                ddlAction.DataBind();
+                ShowActionNote();
 
-            rGrid.DataKeyNames = new string[] { "id" };
-            rGrid.EnableOrdering = true;
-            rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-            rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-            rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.DataKeyNames = new string[] { "id" };
+                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
-            ddlRoles.DataSource = Rock.Cms.Security.Role.AllRoles();
-            ddlRoles.DataValueField = "Guid";
-            ddlRoles.DataTextField = "Name";
-            ddlRoles.DataBind();
+                ddlRoles.DataSource = Rock.Cms.Security.Role.AllRoles();
+                ddlRoles.DataValueField = "Guid";
+                ddlRoles.DataTextField = "Name";
+                ddlRoles.DataBind();
 
-            string script = string.Format( @"
+                string script = string.Format( @"
     $(document).ready(function() {{
         $('#{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this role/user?');
@@ -65,70 +68,30 @@ namespace RockWeb.Blocks.Cms
     }});
 ", rGrid.ClientID );
 
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+            }
 
             base.OnInit( e );
         }
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack)
-                BindGrid();
+            nbMessage.Visible = false;
 
-            //LoadBlockTypes();
+            if ( iSecured.Authorized( "Edit", Membership.GetUser() ) )
+            {
+                if (!Page.IsPostBack)
+                    BindGrid();
+            }
+            else
+            {
+                rGrid.Visible = false;
+                nbMessage.Text = "You are not authorized to edit security for this entity";
+                nbMessage.Visible = true;
+            }
+
             
             base.OnLoad( e );
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        private void BindGrid()
-        {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
-            {
-                rGrid.DataSource = Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
-                rGrid.DataBind();
-            }
-        }
-
-        private void ShowActionNote()
-        {
-            bool defaultAction = iSecured.DefaultAuthorization( ddlAction.SelectedValue );
-            lActionNote.Text = string.Format( "By default, all users {0} be authorized to {1}.",
-                ( defaultAction ? "WILL" : "WILL NOT" ), ddlAction.SelectedValue );
-        }
-
-        private void SetRoleActions()
-        {
-            cblRoleActionList.Items.Clear();
-
-            foreach ( string action in iSecured.SupportedActions )
-            {
-                if ( action == ddlAction.Text )
-                {
-                    ListItem roleItem = new ListItem( action );
-                    roleItem.Selected = true;
-                    cblRoleActionList.Items.Add( roleItem );
-                }
-                else
-                {
-                    bool alreadyAdded = false;
-                    foreach ( Rock.Cms.Security.AuthRule rule in
-                        Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, action ) )
-                    {
-                        if ( rule.UserOrRole == "R" && rule.UserOrRoleName == ddlRoles.SelectedValue )
-                        {
-                            alreadyAdded = true;
-                            break;
-                        }
-                    }
-
-                    if ( !alreadyAdded )
-                        cblRoleActionList.Items.Add( new ListItem( action ) );
-                }
-            }
         }
 
         #endregion
@@ -136,6 +99,16 @@ namespace RockWeb.Blocks.Cms
         #region Events
 
         #region Grid Events
+
+        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        {
+            List<Rock.Models.Cms.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, ddlAction.Text ).ToList();
+            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
+
+            Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+
+            BindGrid();
+        }
 
         protected void rGrid_RowDataBound( object sender, GridViewRowEventArgs e )
         {
@@ -147,36 +120,31 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
+        protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            try
+            Rock.Models.Cms.Auth auth = authService.GetAuth( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            if ( auth != null )
             {
-                Rock.Models.Cms.Auth auth = authService.GetAuth( ( int )e.Keys["id"] );
-                if ( auth != null )
-                {
-                    authService.DeleteAuth( auth );
-                    authService.Save( auth, CurrentPersonId );
+                authService.DeleteAuth( auth );
+                authService.Save( auth, CurrentPersonId );
 
-                    Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
-                }
-            }
-            catch
-            {
-                e.Cancel = true;
+                Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
             }
 
             BindGrid();
         }
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
-        {
-            List<Rock.Models.Cms.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, ddlAction.Text ).ToList();
-            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
-            Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
-        }
-
         void rGrid_GridRebind( object sender, EventArgs e )
         {
+            BindGrid();
+        }
+
+        #endregion
+
+        protected void ddlAction_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowActionNote();
+            SetRoleActions();
             BindGrid();
         }
 
@@ -201,15 +169,6 @@ namespace RockWeb.Blocks.Cms
             BindGrid();
         }
 
-        #endregion
-
-        protected void ddlAction_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            ShowActionNote();
-            SetRoleActions();
-            BindGrid();
-        }
-
         protected void lbShowRole_Click( object sender, EventArgs e )
         {
             pnlAddRole.Visible = true;
@@ -221,6 +180,47 @@ namespace RockWeb.Blocks.Cms
         {
             pnlAddUser.Visible = true;
             pnlAddRole.Visible = false;
+        }
+
+        protected void lbAddAllUsers_Click( object sender, EventArgs e )
+        {
+            List<Rock.Cms.Security.AuthRule> existingAuths =
+                Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+
+            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
+
+            bool actionUpdated = false;
+
+            bool alreadyExists = false;
+
+            foreach ( Rock.Cms.Security.AuthRule auth in existingAuths )
+                if ( auth.UserOrRole == "U" && auth.UserOrRoleName == "*" )
+                {
+                    alreadyExists = true;
+                    break;
+                }
+
+            if ( !alreadyExists )
+            {
+                Rock.Models.Cms.Auth auth = new Rock.Models.Cms.Auth();
+                auth.EntityType = iSecured.AuthEntity;
+                auth.EntityId = iSecured.Id;
+                auth.Action = ddlAction.Text;
+                auth.AllowOrDeny = "A";
+                auth.UserOrRole = "U";
+                auth.UserOrRoleName = "*";
+                auth.Order = ++maxOrder;
+                authService.AddAuth( auth );
+                authService.Save( auth, CurrentPersonId );
+
+                actionUpdated = true;
+            }
+
+            if ( actionUpdated )
+                Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+
+            pnlAddUser.Visible = false;
+            BindGrid();
         }
 
         protected void ddlRoles_SelectedIndexChanged( object sender, EventArgs e )
@@ -328,47 +328,58 @@ namespace RockWeb.Blocks.Cms
             BindGrid();
         }
 
-        protected void lbAddAllUsers_Click( object sender, EventArgs e )
+        #endregion
+
+        #region Internal Methods
+
+        private void BindGrid()
         {
-            List<Rock.Cms.Security.AuthRule> existingAuths =
-                Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
-
-            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
-
-            bool actionUpdated = false;
-
-            bool alreadyExists = false;
-
-            foreach ( Rock.Cms.Security.AuthRule auth in existingAuths )
-                if ( auth.UserOrRole == "U" && auth.UserOrRoleName == "*" )
-                {
-                    alreadyExists = true;
-                    break;
-                }
-
-            if ( !alreadyExists )
+            using ( new Rock.Helpers.UnitOfWorkScope() )
             {
-                Rock.Models.Cms.Auth auth = new Rock.Models.Cms.Auth();
-                auth.EntityType = iSecured.AuthEntity;
-                auth.EntityId = iSecured.Id;
-                auth.Action = ddlAction.Text;
-                auth.AllowOrDeny = "A";
-                auth.UserOrRole = "U";
-                auth.UserOrRoleName = "*";
-                auth.Order = ++maxOrder;
-                authService.AddAuth( auth );
-                authService.Save( auth, CurrentPersonId );
-
-                actionUpdated = true;
+                rGrid.DataSource = Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                rGrid.DataBind();
             }
+        }
 
-            if ( actionUpdated )
-                Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+        private void ShowActionNote()
+        {
+            bool defaultAction = iSecured.DefaultAuthorization( ddlAction.SelectedValue );
+            lActionNote.Text = string.Format( "By default, all users {0} be authorized to {1}.",
+                ( defaultAction ? "WILL" : "WILL NOT" ), ddlAction.SelectedValue );
+        }
 
-            pnlAddUser.Visible = false;
-            BindGrid();
+        private void SetRoleActions()
+        {
+            cblRoleActionList.Items.Clear();
+
+            foreach ( string action in iSecured.SupportedActions )
+            {
+                if ( action == ddlAction.Text )
+                {
+                    ListItem roleItem = new ListItem( action );
+                    roleItem.Selected = true;
+                    cblRoleActionList.Items.Add( roleItem );
+                }
+                else
+                {
+                    bool alreadyAdded = false;
+                    foreach ( Rock.Cms.Security.AuthRule rule in
+                        Rock.Cms.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, action ) )
+                    {
+                        if ( rule.UserOrRole == "R" && rule.UserOrRoleName == ddlRoles.SelectedValue )
+                        {
+                            alreadyAdded = true;
+                            break;
+                        }
+                    }
+
+                    if ( !alreadyAdded )
+                        cblRoleActionList.Items.Add( new ListItem( action ) );
+                }
+            }
         }
 
         #endregion
+
     }
 }

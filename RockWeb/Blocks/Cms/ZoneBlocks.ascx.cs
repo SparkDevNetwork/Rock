@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -21,59 +21,157 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        //Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-        //List<Rock.Models.Cms.Page> pages;
-
-        #region Overridden Methods
+        #region Control Methods
 
         protected override void OnInit( EventArgs e )
         {
-            //try
-            //{
-                MembershipUser user = Membership.GetUser();
 
-                int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Cms.Cached.Page.Read( pageId );
+            int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
+            _page = Rock.Cms.Cached.Page.Read( pageId );
+            _zoneName = this.PageParameter( "ZoneName" );
 
-                _zoneName = this.PageParameter( "ZoneName" );
+            MembershipUser user = Membership.GetUser();
+            if ( _page.Authorized( "Edit", Membership.GetUser() ) )
+            {
+                rGrid.DataKeyNames = new string[] { "id" };
+                rGrid.EnableAdd = true;
+                rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
+                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
-                //if ( _page.Authorized( "Configure", user ) )
-                //{
-                    rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.EnableAdd = true;
-                    rGrid.ClientAddScript = "return addItem();";
-                    rGrid.EnableOrdering = true;
-                    rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-                    rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                    rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                string script = string.Format( @"
+        $(document).ready(function() {{
+            $('td.grid-icon-cell.delete a').click(function(){{
+                return confirm('Are you sure you want to delete this block?');
+                }});
+        }});
 
-                    string script = string.Format( @"
-    $(document).ready(function() {{
-        $('td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this block?');
-            }});
-    }});
-", rGrid.ClientID );
+        Sys.Application.add_load(function () {{
+            $('td.grid-icon-cell.delete a').click(function(){{
+                return confirm('Are you sure you want to delete this block?');
+                }});
+        }});
+    ", rGrid.ClientID );
 
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
 
-                //}
-            //}
-
-            //catch ( System.Exception ex )
-            //{
-            //}
+            }
 
             base.OnInit( e );
         }
 
         protected override void OnLoad( EventArgs e )
         {
+            nbMessage.Visible = false;
+
+            if ( _page.Authorized( "Edit", Membership.GetUser() ) )
+            {
+                if ( !Page.IsPostBack )
+                {
+                    BindGrid();
+                    LoadBlockTypes();
+                }
+            }
+            else
+            {
+                rGrid.Visible = false;
+                nbMessage.Text = "You are not authorized to edit these blocks";
+                nbMessage.Visible = true;
+            }
+
+            base.OnLoad( e );
+        }
+
+        #endregion
+
+        #region Grid Events
+
+        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        {
+            blockInstanceService.Reorder(
+                blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
+                e.OldIndex, e.NewIndex, CurrentPersonId );
+
+            BindGrid();
+        }
+
+        protected void rGrid_Edit( object sender, RowEventArgs e )
+        {
+            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+        }
+
+        protected void rGrid_Delete( object sender, RowEventArgs e )
+        {
+            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            if ( BlockInstance != null )
+            {
+                blockInstanceService.DeleteBlockInstance( blockInstance );
+                blockInstanceService.Save( blockInstance, CurrentPersonId );
+
+                _page.FlushBlockInstances();
+            }
+
+            BindGrid();
+        }
+
+        void rGrid_GridAdd( object sender, EventArgs e )
+        {
+            ShowEdit( 0 );
+        }
+
+        void rGrid_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        #endregion
+
+        #region Edit Events
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            Rock.Models.Cms.BlockInstance blockInstance;
+
+            int blockInstanceId = 0;
+            if ( !Int32.TryParse( hfBlockInstanceId.Value, out blockInstanceId ) )
+                blockInstanceId = 0;
+
+            if ( blockInstanceId == 0 )
+            {
+                blockInstance = new Rock.Models.Cms.BlockInstance();
+                blockInstance.PageId = _page.Id;
+                blockInstance.Zone = _zoneName;
+
+                Rock.Models.Cms.BlockInstance lastBlock =
+                    blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
+                                                OrderByDescending( b => b.Order ).FirstOrDefault();
+
+                if ( lastBlock != null )
+                    blockInstance.Order = lastBlock.Order + 1;
+                else
+                    blockInstance.Order = 0;
+
+                blockInstanceService.AddBlockInstance( blockInstance );
+            }
+            else
+                blockInstance = blockInstanceService.GetBlockInstance( blockInstanceId );
+
+            blockInstance.Name = tbBlockName.Text;
+            blockInstance.BlockId = Convert.ToInt32( ddlBlockType.SelectedValue );
+
+            blockInstanceService.Save( blockInstance, CurrentPersonId );
+
+            Rock.Cms.Security.Authorization.CopyAuthorization( _page, blockInstance, CurrentPersonId );
+            _page.FlushBlockInstances();
+
             BindGrid();
 
-            LoadBlockTypes();
-            
-            base.OnLoad( e );
+            pnlDetails.Visible = false;
         }
 
         #endregion
@@ -84,39 +182,6 @@ namespace RockWeb.Blocks.Cms
         {
             rGrid.DataSource = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
             rGrid.DataBind();
-        }
-
-        protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
-        {
-            try
-            {
-                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( (int)e.Keys["id"] );
-                if ( BlockInstance != null )
-                {
-                    blockInstanceService.DeleteBlockInstance( blockInstance );
-                    blockInstanceService.Save( blockInstance, CurrentPersonId );
-                    _page.FlushBlockInstances();
-                }
-                else
-                    e.Cancel = true;
-            }
-            catch
-            {
-                e.Cancel = true;
-            }
-
-            BindGrid();
-        }
-
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
-        {
-            blockInstanceService.Reorder( ( List<Rock.Models.Cms.BlockInstance> )rGrid.DataSource,
-                e.OldIndex, e.NewIndex, CurrentPersonId );
-        }
-
-        void rGrid_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid();
         }
 
         private void LoadBlockTypes()
@@ -145,37 +210,30 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
                 
-                BlockType.DataSource = blockService.Queryable().ToList();
-                BlockType.DataTextField = "Name";
-                BlockType.DataValueField = "Id";
-                BlockType.DataBind();
+                ddlBlockType.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DataTextField = "Name";
+                ddlBlockType.DataValueField = "Id";
+                ddlBlockType.DataBind();
             }
         }
 
-        protected void AddButton_Click( object sender, EventArgs e )
+        protected void ShowEdit( int blockInstanceId )
         {
-            Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-
-            Rock.Models.Cms.BlockInstance blockInstance = new Rock.Models.Cms.BlockInstance();
-            blockInstance.PageId = _page.Id;
-            blockInstance.Zone = _zoneName;
-            blockInstance.Name = BlockName.Text;
-            blockInstance.BlockId = Convert.ToInt32( BlockType.SelectedValue );
-
-            Rock.Models.Cms.BlockInstance lastBlock = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
-                                                OrderByDescending( b => b.Order ).FirstOrDefault();
-            if (lastBlock != null)
-                blockInstance.Order = lastBlock.Order + 1;
+            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( blockInstanceId );
+            if ( blockInstance != null )
+            {
+                hfBlockInstanceId.Value = blockInstance.Id.ToString();
+                ddlBlockType.SelectedValue = blockInstance.Block.Id.ToString();
+                tbBlockName.Text = blockInstance.Name;
+            }
             else
-                blockInstance.Order = 0;
-            
-            blockInstanceService.AddBlockInstance( blockInstance );
-            blockInstanceService.Save( blockInstance, CurrentPersonId  );
+            {
+                hfBlockInstanceId.Value = "0";
+                ddlBlockType.SelectedIndex = -1;
+                tbBlockName.Text = string.Empty;
+            }
 
-            Rock.Cms.Security.Authorization.CopyAuthorization( _page, blockInstance, CurrentPersonId );
-            _page.FlushBlockInstances();
-
-            BindGrid();
+            pnlDetails.Visible = true;
         }
 
         #endregion

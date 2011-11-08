@@ -20,7 +20,6 @@ namespace RockWeb.Blocks
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.EnableAdd = true;
             //rGrid.ClientAddScript = "return addItem();";
-            rGrid.EnableOrdering = true;
             rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
             rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );

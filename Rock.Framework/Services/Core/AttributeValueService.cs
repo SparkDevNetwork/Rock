@@ -43,7 +43,7 @@ namespace Rock.Services.Core
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public AttributeValue GetAttributeValueByAttributeIdAndEntityId( int attributeId, int entityId )
+        public Rock.Models.Core.AttributeValue GetAttributeValueByAttributeIdAndEntityId( int attributeId, int entityId )
         {
             return _repository.FirstOrDefault( t => t.AttributeId == attributeId && t.EntityId == entityId );
         }

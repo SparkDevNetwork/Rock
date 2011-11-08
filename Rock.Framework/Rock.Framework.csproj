@@ -82,6 +82,8 @@
     <Compile Include="Cms\Security\User.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controls\ReorderField.cs" />
+    <Compile Include="Controls\EditField.cs" />
     <Compile Include="Controls\DeleteField.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -89,6 +91,7 @@
     <Compile Include="Controls\BoolField.cs" />
     <Compile Include="Controls\HtmlGenericContainer.cs" />
     <Compile Include="Controls\NotificationBox.cs" />
+    <Compile Include="Controls\RowEventArgs.cs" />
     <Compile Include="FieldTypes\Boolean.cs" />
     <Compile Include="FieldTypes\PageReference.cs" />
     <Compile Include="FieldTypes\Integer.cs" />

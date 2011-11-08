@@ -50,7 +50,6 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Groups.GroupRole> GroupRoles { get; set; }
         public DbSet<Rock.Models.Groups.GroupType> GroupTypes { get; set; }
         public DbSet<Rock.Models.Groups.Member> Members { get; set; }
-        public DbSet<Rock.Models.Util.Job> Jobs { get; set; }
 
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
@@ -82,7 +81,6 @@ namespace Rock.EntityFramework
             modelBuilder.Configurations.Add( new Rock.Models.Groups.GroupRoleConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Groups.GroupTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Groups.MemberConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Models.Util.JobConfiguration() );
 		}
     }
 }

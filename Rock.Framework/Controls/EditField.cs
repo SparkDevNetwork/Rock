@@ -9,22 +9,22 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Controls
 {
-    [ToolboxData( "<{0}:DeleteField runat=server></{0}:DeleteField>" )]
-    public class DeleteField : TemplateField
+    [ToolboxData( "<{0}:EditField runat=server></{0}:EditField>" )]
+    public class EditField : TemplateField
     {
         public override bool Initialize( bool sortingEnabled, Control control )
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell delete";
+            this.ItemStyle.CssClass = "grid-icon-cell edit";
 
-            DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
-            deleteFieldTemplate.LinkButtonClick += new RowEventHandler( deleteFieldTemplate_LinkButtonClick );
-            this.ItemTemplate = deleteFieldTemplate;
+            EditFieldTemplate editFieldTemplate = new EditFieldTemplate();
+            editFieldTemplate.LinkButtonClick += new RowEventHandler( editFieldTemplate_LinkButtonClick );
+            this.ItemTemplate = editFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
         }
 
-        void deleteFieldTemplate_LinkButtonClick( object sender, RowEventArgs e )
+        void editFieldTemplate_LinkButtonClick( object sender, RowEventArgs e )
         {
             OnClick( e );
         }
@@ -37,22 +37,22 @@ namespace Rock.Controls
         }
     }
 
-    public class DeleteFieldTemplate : ITemplate
+    public class EditFieldTemplate : ITemplate
     {
         public void InstantiateIn( Control container )
         {
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
             {
-                LinkButton lbDelete = new LinkButton();
-                lbDelete.Text = "Delete";
-                lbDelete.Click += new EventHandler( lbDelete_Click );
+                LinkButton lbEdit = new LinkButton();
+                lbEdit.Text = "Edit";
+                lbEdit.Click += new EventHandler( lbEdit_Click );
 
-                cell.Controls.Add( lbDelete );
+                cell.Controls.Add( lbEdit );
             }
         }
 
-        void lbDelete_Click( object sender, EventArgs e )
+        void lbEdit_Click( object sender, EventArgs e )
         {
             if ( LinkButtonClick != null )
             {
