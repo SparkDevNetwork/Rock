@@ -48,6 +48,11 @@ namespace Rock.Services.Core
             return _repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
         }
 		
+        public Rock.Models.Core.Attribute GetAttributeByGuid( Guid guid )
+        {
+            return _repository.FirstOrDefault( t => t.Guid == guid );
+        }
+		
         public void AddAttribute( Rock.Models.Core.Attribute Attribute )
         {
             if ( Attribute.Guid == Guid.Empty )

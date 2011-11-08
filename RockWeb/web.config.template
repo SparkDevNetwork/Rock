@@ -81,6 +81,11 @@
 	
 	<system.serviceModel>
 		<serviceHostingEnvironment aspNetCompatibilityEnabled="true" multipleSiteBindingsEnabled="true" />
+		<standardEndpoints>
+			<webHttpEndpoint>
+				<standardEndpoint name="" helpEnabled="true" automaticFormatSelectionEnabled="true"/>
+			</webHttpEndpoint>
+		</standardEndpoints>
 	</system.serviceModel>
 	
 	<facebookSettings appId="{app id}" appSecret="{app secret}" />
