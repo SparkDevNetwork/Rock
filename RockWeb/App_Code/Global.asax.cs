@@ -76,7 +76,7 @@ namespace RockWeb
             }
 
             var factory = new WebServiceHostFactory();
-            routes.Add(new ServiceRoute("Rest.svc", factory, typeof (WCF.RestService)));
+            routes.Add( new ServiceRoute( "api", factory, typeof( Rock.Api.Service ) ) );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new RockRouteHandler() ) );
