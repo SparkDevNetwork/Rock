@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Util
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IJobService
     {
 		[OperationContract]
         Rock.Models.Util.Job GetJob( string id );

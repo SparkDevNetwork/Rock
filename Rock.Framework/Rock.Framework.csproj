@@ -54,6 +54,7 @@
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Extensions" />
@@ -91,6 +92,8 @@
     <Compile Include="Api\Cms\SiteDomainService.cs" />
     <Compile Include="Api\Cms\SiteService.cs" />
     <Compile Include="Api\Cms\UserService.cs" />
+    <Compile Include="Api\CustomServiceRoutesSection.cs" />
+    <Compile Include="Api\ServiceRouteConfiguration.cs" />
     <Compile Include="Api\Core\AttributeQualifierService.cs" />
     <Compile Include="Api\Core\AttributeService.cs" />
     <Compile Include="Api\Core\AttributeValueService.cs" />
@@ -117,9 +120,9 @@
     <Compile Include="Api\Groups\IGroupTypeService.cs" />
     <Compile Include="Api\Groups\IMemberService.cs" />
     <Compile Include="Api\Groups\MemberService.cs" />
-    <Compile Include="Api\IService.cs" />
     <Compile Include="Api\Cms\PageService.cs" />
-    <Compile Include="Api\Service.cs" />
+    <Compile Include="Api\ServiceHelper.cs" />
+    <Compile Include="Api\ServiceRoutesConfiguration.cs" />
     <Compile Include="Api\Util\IJobService.cs" />
     <Compile Include="Api\Util\JobService.cs" />
     <Compile Include="Cms\Cached\Attribute.cs" />

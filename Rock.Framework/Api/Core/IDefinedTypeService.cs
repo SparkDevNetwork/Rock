@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IDefinedTypeService
     {
 		[OperationContract]
         Rock.Models.Core.DefinedType GetDefinedType( string id );

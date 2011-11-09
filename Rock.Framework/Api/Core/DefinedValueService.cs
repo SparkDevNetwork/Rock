@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class DefinedValueService : IDefinedValueService
     {
-
-		[WebGet( UriTemplate = "DefinedValue/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.DefinedValue GetDefinedValue( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "DefinedValue/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "DefinedValue" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "DefinedValue/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteDefinedValue( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

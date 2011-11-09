@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Crm
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class PhoneNumberService : IPhoneNumberService
     {
-
-		[WebGet( UriTemplate = "PhoneNumber/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Crm.PhoneNumber GetPhoneNumber( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "PhoneNumber/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "PhoneNumber" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "PhoneNumber/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePhoneNumber( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

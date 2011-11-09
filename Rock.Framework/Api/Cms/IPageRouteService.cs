@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IPageRouteService
     {
 		[OperationContract]
         Rock.Models.Cms.PageRoute GetPageRoute( string id );

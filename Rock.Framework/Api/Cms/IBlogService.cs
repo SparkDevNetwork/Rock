@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IBlogService
     {
 		[OperationContract]
         Rock.Models.Cms.Blog GetBlog( string id );

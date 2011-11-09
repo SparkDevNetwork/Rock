@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IAttributeService
     {
 		[OperationContract]
         Rock.Models.Core.Attribute GetAttribute( string id );

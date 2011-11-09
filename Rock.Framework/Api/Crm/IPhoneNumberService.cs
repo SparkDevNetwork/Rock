@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Crm
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IPhoneNumberService
     {
 		[OperationContract]
         Rock.Models.Crm.PhoneNumber GetPhoneNumber( string id );

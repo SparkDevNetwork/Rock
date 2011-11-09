@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class BlogTagService : IBlogTagService
     {
-
-		[WebGet( UriTemplate = "BlogTag/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.BlogTag GetBlogTag( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "BlogTag/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogTag( string id, Rock.Models.Cms.BlogTag BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "BlogTag" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogTag( Rock.Models.Cms.BlogTag BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "BlogTag/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogTag( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

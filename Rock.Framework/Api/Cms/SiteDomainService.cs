@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class SiteDomainService : ISiteDomainService
     {
-
-		[WebGet( UriTemplate = "SiteDomain/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.SiteDomain GetSiteDomain( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "SiteDomain/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "SiteDomain" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "SiteDomain/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteSiteDomain( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
