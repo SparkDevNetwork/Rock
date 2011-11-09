@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class BlockInstanceService : IBlockInstanceService
     {
-
-		[WebGet( UriTemplate = "BlockInstance/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.BlockInstance GetBlockInstance( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "BlockInstance/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "BlockInstance" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "BlockInstance/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlockInstance( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

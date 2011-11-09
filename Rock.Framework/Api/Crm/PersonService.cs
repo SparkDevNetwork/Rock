@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Crm
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class PersonService : IPersonService
     {
-
-		[WebGet( UriTemplate = "Person/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Crm.Person GetPerson( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "Person/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePerson( string id, Rock.Models.Crm.Person Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "Person" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePerson( Rock.Models.Crm.Person Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "Person/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePerson( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

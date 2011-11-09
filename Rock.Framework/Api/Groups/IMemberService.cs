@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Groups
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IMemberService
     {
 		[OperationContract]
         Rock.Models.Groups.Member GetMember( string id );

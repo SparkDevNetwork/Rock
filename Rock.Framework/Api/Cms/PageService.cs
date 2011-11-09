@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class PageService : IPageService
     {
-
-		[WebGet( UriTemplate = "Page/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.Page GetPage( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "Page/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePage( string id, Rock.Models.Cms.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "Page" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePage( Rock.Models.Cms.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "Page/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePage( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

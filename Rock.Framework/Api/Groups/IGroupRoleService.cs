@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Groups
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IGroupRoleService
     {
 		[OperationContract]
         Rock.Models.Groups.GroupRole GetGroupRole( string id );

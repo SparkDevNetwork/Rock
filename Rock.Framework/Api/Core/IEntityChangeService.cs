@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IEntityChangeService
     {
 		[OperationContract]
         Rock.Models.Core.EntityChange GetEntityChange( string id );

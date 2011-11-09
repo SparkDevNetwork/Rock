@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class PageRouteService : IPageRouteService
     {
-
-		[WebGet( UriTemplate = "PageRoute/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.PageRoute GetPageRoute( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "PageRoute/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePageRoute( string id, Rock.Models.Cms.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "PageRoute" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePageRoute( Rock.Models.Cms.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "PageRoute/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePageRoute( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

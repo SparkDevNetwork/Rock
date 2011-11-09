@@ -11,14 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial class Service
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class AttributeQualifierService : IAttributeQualifierService
     {
-
-		[WebGet( UriTemplate = "AttributeQualifier/{id}" )]
+		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.AttributeQualifier GetAttributeQualifier( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -37,7 +38,7 @@ namespace Rock.Api
             }
         }
 		
-		[WebInvoke( Method = "PUT", UriTemplate = "AttributeQualifier/{id}" )]
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -60,7 +61,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "POST", UriTemplate = "AttributeQualifier" )]
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
@@ -77,7 +78,7 @@ namespace Rock.Api
             }
         }
 
-		[WebInvoke( Method = "DELETE", UriTemplate = "AttributeQualifier/{id}" )]
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAttributeQualifier( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();

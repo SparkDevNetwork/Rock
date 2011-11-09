@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Cms
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IFileService
     {
 		[OperationContract]
         Rock.Models.Cms.File GetFile( string id );

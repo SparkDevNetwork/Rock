@@ -12,9 +12,10 @@
 //
 using System.ServiceModel;
 
-namespace Rock.Api
+namespace Rock.Api.Core
 {
-    public partial interface IService
+	[ServiceContract]
+    public partial interface IAttributeQualifierService
     {
 		[OperationContract]
         Rock.Models.Core.AttributeQualifier GetAttributeQualifier( string id );
