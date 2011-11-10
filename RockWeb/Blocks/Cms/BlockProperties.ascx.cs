@@ -11,7 +11,7 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
-    public partial class BlockAttributes : Rock.Cms.CmsBlock
+    public partial class BlockProperties : Rock.Cms.CmsBlock
     {
         private Rock.Cms.Cached.BlockInstance _blockInstance = null;
         private string _zoneName = string.Empty;
