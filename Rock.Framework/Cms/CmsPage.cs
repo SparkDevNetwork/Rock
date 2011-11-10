@@ -392,96 +392,31 @@ namespace Rock.Cms
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
-                        aBlockConfig.InnerText = "BlockSettings";
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
-                        aAttributes.Attributes.Add( "class", "attributes icon-button" );
-                        aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", "Page Properties" );
-                        aAttributes.InnerText = "Page Properties";
+                        aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
+                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
+                        aAttributes.Attributes.Add( "title", "Page Properties" );
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
-                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
+                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-iframe-dialog" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
-                        aChildPages.Attributes.Add( "instance-id", PageInstance.Id.ToString() );
-                        aChildPages.InnerText = "Child Pages";
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
-                        aPageZones.InnerText = "Page Zones";
 
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
+                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-iframe-dialog" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                             Rock.Cms.Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
-                        aPageSecurity.Attributes.Add( "instance-id", PageInstance.Id.ToString() );
-                        aPageSecurity.InnerText = "Page Security";
-
-                        string footerScript = @"
-    $(document).ready(function () {
-
-        $('#cms-admin-footer .block-config').click(function (ev) {
-            $('.block-configuration').toggle();
-            $('.block-instance').toggleClass('outline');
-            return false;
-        });
-
-        $('#cms-admin-footer .page-zones').click(function (ev) {
-            $('.zone-configuration').toggle();
-            $('.zone-instance').toggleClass('outline');
-            return false;
-        });
-
-        $('#cms-admin-footer .page-child-pages').click(function (ev) {
-
-            var instanceId = $(this).attr('instance-id')
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-            
-            $('#modalDiv').dialog('option', 'title', 'Child Pages');
-
-            $('#modalDiv').dialog('open');
-            
-            return false;
-
-        });
-
-        $('#cms-admin-footer .page-security').click(function (ev) {
-
-            var instanceId = $(this).attr('instance-id')
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-            
-            $('#modalDiv').dialog('option', 'title', 'Page Security');
-
-            $('#modalDiv').dialog('open');
-            
-            return false;
-
-        });
-
-    });
-";
-
-                        this.ClientScript.RegisterClientScriptBlock( this.GetType(), "cms-admin-footer", footerScript, true );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -549,6 +484,7 @@ namespace Rock.Cms
         private void AddConfigElements()
         {
             string script = @"
+
     $(document).ready(function () {
 
         $('#modalDiv').dialog({ 
@@ -558,48 +494,22 @@ namespace Rock.Cms
             modal: true
         })
 
-        $('a.zone-blocks').click(function () {
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-            $('#modalDiv').dialog('option', 'title', 'Zone Blocks');
-            $('#modalDiv').dialog('open');
-            return false;
-        });
-
-        $('a.attributes-show').click(function () {
-
-            var instanceId = $(this).attr('instance-id')
+        $('a.show-iframe-dialog').click(function () {
 
             $('#modalIFrame').attr('src', $(this).attr('href'));
 
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
+            $('#modalDiv').bind('dialogclose', function (event, ui) {
+                if ($(this).attr('instance-id') != undefined)
+                    $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
                 $('#modalDiv').unbind('dialogclose');
                 $('#modalIFrame').attr('src', '');
             });
-            
-            $('#modalDiv').dialog('option', 'title', 'Block Properties');
+
+            if ($(this).attr('title') != undefined)
+                $('#modalDiv').dialog('option', 'title', $(this).attr('title'));
 
             $('#modalDiv').dialog('open');
-            
-            return false;
 
-        });
-
-        $('a.blockinstance-secure').click(function () {
-
-            var instanceId = $(this).attr('instance-id')
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-            
-            $('#modalDiv').dialog('option', 'title', 'Block Security');
-
-            $('#modalDiv').dialog('open');
-            
             return false;
 
         });
@@ -616,6 +526,18 @@ namespace Rock.Cms
             {
                 alert('block instance delete logic goes here!');
             }
+            return false;
+        });
+
+        $('#cms-admin-footer .block-config').click(function () {
+            $('.block-configuration').toggle();
+            $('.block-instance').toggleClass('outline');
+            return false;
+        });
+
+        $('#cms-admin-footer .page-zones').click(function () {
+            $('.zone-configuration').toggle();
+            $('.zone-instance').toggleClass('outline');
             return false;
         });
 
@@ -659,7 +581,7 @@ namespace Rock.Cms
 
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfig.Controls.Add( aBlockConfig );
-                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-iframe-dialog" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format("~/ZoneBlocks/{0}/{1}", PageInstance.Id, zoneControl.Value.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );

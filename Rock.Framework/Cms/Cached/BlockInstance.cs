@@ -55,17 +55,14 @@ namespace Rock.Cms.Cached
 
         public void SaveAttributeValues(int? personId)
         {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
-            {
-                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( this.Id );
+            Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
+            Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( this.Id );
 
-                if ( blockInstanceModel != null )
-                {
-                    blockInstanceService.LoadAttributes( blockInstanceModel );
-                    foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-                        blockInstanceService.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
-                }
+            if ( blockInstanceModel != null )
+            {
+                blockInstanceService.LoadAttributes( blockInstanceModel );
+                foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
+                    blockInstanceService.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 

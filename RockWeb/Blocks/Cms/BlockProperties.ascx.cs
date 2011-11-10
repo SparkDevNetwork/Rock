@@ -16,87 +16,90 @@ namespace RockWeb.Blocks.Cms
         private Rock.Cms.Cached.BlockInstance _blockInstance = null;
         private string _zoneName = string.Empty;
 
-        //Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-        //List<Rock.Models.Cms.Page> pages;
-
         protected override void OnInit( EventArgs e )
         {
-            MembershipUser user = Membership.GetUser();
-
-            int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
-            _blockInstance = Rock.Cms.Cached.BlockInstance.Read(blockInstanceId);
-
-            if (_blockInstance.Authorized("Configure", user))
-            {
-                HtmlGenericControl fieldset = new HtmlGenericControl( "fieldset" );
-                fieldset.ClientIDMode = ClientIDMode.AutoID;
-                phAttributes.Controls.Add( fieldset );
-
-                HtmlGenericControl ol = new HtmlGenericControl( "ol" );
-                ol.ClientIDMode = ClientIDMode.AutoID;
-                fieldset.Controls.Add( ol );
-
-                foreach (Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes)
-                {
-                    HtmlGenericControl li = new HtmlGenericControl( "li" );
-                    li.ID = string.Format( "attribute-{0}", attribute.Id );
-                    li.ClientIDMode = ClientIDMode.AutoID;
-                    ol.Controls.Add( li );
-
-                    Label lbl = new Label();
-                    lbl.ClientIDMode = ClientIDMode.AutoID;
-                    lbl.Text = attribute.Name;
-                    lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                    li.Controls.Add( lbl );
-
-                    Control attributeControl = attribute.CreateControl(_blockInstance.AttributeValues[attribute.Key].Value, !Page.IsPostBack);
-                    attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
-                    attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                    li.Controls.Add( attributeControl );
-
-                    if ( !string.IsNullOrEmpty( attribute.Description ) )
-                    {
-                        HtmlAnchor a = new HtmlAnchor();
-                        a.ClientIDMode = ClientIDMode.AutoID;
-                        a.Attributes.Add( "class", "attribute-description tooltip" );
-                        a.InnerHtml = "<span>" + attribute.Description + "</span>";
-
-                        li.Controls.Add( a );
-                    }
-
-                }
-
-                Button btnSaveAttributes = new Button();
-                btnSaveAttributes.Text = "Save";
-                btnSaveAttributes.Click += new EventHandler( btnSaveAttributes_Click );
-                phAttributes.Controls.Add(btnSaveAttributes);
-            }
-
             base.OnInit( e );
+
+            try
+            {
+                MembershipUser user = Membership.GetUser();
+
+                int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
+                _blockInstance = Rock.Cms.Cached.BlockInstance.Read( blockInstanceId );
+
+                if ( _blockInstance.Authorized( "Configure", user ) )
+                {
+                    tbBlockName.Text = _blockInstance.Name;
+                    tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
+
+                    foreach ( Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes )
+                    {
+                        HtmlGenericControl li = new HtmlGenericControl( "li" );
+                        li.ID = string.Format( "attribute-{0}", attribute.Id );
+                        li.ClientIDMode = ClientIDMode.AutoID;
+                        olProperties.Controls.Add( li );
+
+                        Label lbl = new Label();
+                        lbl.ClientIDMode = ClientIDMode.AutoID;
+                        lbl.Text = attribute.Name;
+                        lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                        li.Controls.Add( lbl );
+
+                        Control attributeControl = attribute.CreateControl( _blockInstance.AttributeValues[attribute.Key].Value, !Page.IsPostBack );
+                        attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                        attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                        li.Controls.Add( attributeControl );
+
+                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        {
+                            HtmlAnchor a = new HtmlAnchor();
+                            a.ClientIDMode = ClientIDMode.AutoID;
+                            a.Attributes.Add( "class", "attribute-description tooltip" );
+                            a.InnerHtml = "<span>" + attribute.Description + "</span>";
+
+                            li.Controls.Add( a );
+                        }
+                    }
+                }
+                else
+                {
+                    DisplayError( "You are not authorized to edit this block" );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                DisplayError( ex.Message );
+            }
         }
 
-        void btnSaveAttributes_Click(object sender, EventArgs e)
+        protected void btnSave_Click(object sender, EventArgs e)
         {
-            foreach (Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes)
+            using ( new Rock.Helpers.UnitOfWorkScope() )
             {
-                //HtmlGenericControl editCell = ( HtmlGenericControl )blockWrapper.FindControl( string.Format( "attribute-{0}", attribute.Id.ToString() ) );
-                Control control = phAttributes.FindControl(string.Format("attribute-field-{0}", attribute.Id.ToString()));
-                if (control != null)
-                    _blockInstance.AttributeValues[attribute.Key] = new KeyValuePair<string, string>(attribute.Name, attribute.FieldType.Field.ReadValue(control));
+                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
+                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( _blockInstance.Id );
+
+                blockInstance.Name = tbBlockName.Text;
+                blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                blockInstanceService.Save( blockInstance, CurrentPersonId );
+
+                foreach ( Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes )
+                {
+                    Control control = olProperties.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
+                    if ( control != null )
+                        _blockInstance.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
+                }
+
+                _blockInstance.SaveAttributeValues( CurrentPersonId );
+
+                Rock.Cms.Cached.BlockInstance.Flush( _blockInstance.Id );
             }
 
-            _blockInstance.SaveAttributeValues(CurrentPersonId);
-
-            phAttributes.Controls.Clear();
-            phAttributes.Controls.Add(new LiteralControl(@"
+            phClose.Controls.AddAt(0, new LiteralControl( @"
     <script type='text/javascript'>
         window.parent.$('#modalDiv').dialog('close');
     </script>
-"));
-            //        if (BlockInstanceAttributesUpdated != null)
-            //            BlockInstanceAttributesUpdated(sender, new BlockInstanceAttributesUpdatedEventArgs(blockInstanceId));
-            //    }
-            //}
+" ));
         }
     }
 }

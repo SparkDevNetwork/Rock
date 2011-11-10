@@ -1,21 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Security.ascx.cs" Inherits="RockWeb.Blocks.Cms.Security" %>
 <script type="text/javascript">
 
-    $(document).ready(function () {
-        bindActionToggle();
-    });
-
     Sys.Application.add_load(function () {
-        bindActionToggle();
-    });
-
-    function bindActionToggle() {
         $('ol[id$=cblRoleActionList]').hide();
         $('a.show-action-list').click(function () {
             $('ol[id$=cblRoleActionList]').toggle('fast');
             return false;
         });
-    }
+    });
 
 </script>
 <asp:UpdatePanel id="upPanel" runat="server" class="admin-dialog">

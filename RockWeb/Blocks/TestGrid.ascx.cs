@@ -26,12 +26,6 @@ namespace RockWeb.Blocks
             rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0} td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this Page?');
-            }});
-    }});
-
     Sys.Application.add_load(function () {{
         $('{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this Page?');
