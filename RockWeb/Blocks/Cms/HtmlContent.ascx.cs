@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Cms
             List<Control> configControls = new List<Control>();
 
             // add edit icon to config controls if user has edit permission
-            if ( canEdit )
+            if ( canConfig || canEdit )
             {
                 System.Web.UI.HtmlControls.HtmlGenericControl aAttributes = new System.Web.UI.HtmlControls.HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "edit icon-button" );
@@ -99,13 +99,13 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSaveContent_Click( object sender, EventArgs e )
         {
-            if ( UserAuthorized( "Edit" ) )
+            if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
             {
                 // get settings
                 string entityKey = AttributeValue( "EntityAwareKey" );
                 string entityValue = PageParameter( entityKey );
                 int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
-                
+
                 // get current  content
                 HtmlContentService service = new HtmlContentService();
                 Rock.Models.Cms.HtmlContent content = service.GetActiveContentByBlockKey( BlockInstance.Id, entityValue );

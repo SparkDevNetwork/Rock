@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Cms
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Cms.Cached.Page.Read( pageId );
 
-            if ( _page.Authorized( "Edit", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( _page.Authorized( "Edit", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
             {
                 if ( !Page.IsPostBack )
                 {

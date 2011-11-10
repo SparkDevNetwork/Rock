@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
             lTitle.Text = iSecured.ToString();
 
             MembershipUser user = Membership.GetUser();
-            if ( iSecured.Authorized( "Edit", Membership.GetUser() ) )
+            if ( iSecured.Authorized( "Configure", Membership.GetUser() ) )
             {
                 ddlAction.DataSource = iSecured.SupportedActions;
                 ddlAction.DataBind();
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.Authorized( "Edit", Membership.GetUser() ) )
+            if ( iSecured.Authorized( "Configure", Membership.GetUser() ) )
             {
                 if (!Page.IsPostBack)
                     BindGrid();

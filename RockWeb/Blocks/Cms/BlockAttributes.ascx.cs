@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Cms
             int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
             _blockInstance = Rock.Cms.Cached.BlockInstance.Read(blockInstanceId);
 
-            if (_blockInstance.Authorized("Edit", user))
+            if (_blockInstance.Authorized("Configure", user))
             {
                 HtmlGenericControl fieldset = new HtmlGenericControl( "fieldset" );
                 fieldset.ClientIDMode = ClientIDMode.AutoID;

@@ -209,7 +209,7 @@ input.image {
     display: inline;
 }
 
-.zone-instance.can-edit.outline {
+.zone-instance.can-configure.outline {
     overflow: hidden;
     border: 1px solid green;
     margin: -1px; 
@@ -248,7 +248,7 @@ input.image {
     display: inline;
 }
 
-.block-instance.can-edit.outline {
+.block-instance.can-configure.outline {
     overflow: hidden;
     border: 1px solid red;
     margin: -1px; 

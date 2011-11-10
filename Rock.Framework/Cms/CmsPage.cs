@@ -270,22 +270,22 @@ namespace Rock.Cms
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canEditPage = PageInstance.Authorized( "Edit", user );
+                    bool canConfigPage = PageInstance.Authorized( "Configure", user );
 
                     // Add config elements
-                    if (canEditPage)
+                    if (canConfigPage)
                         AddConfigElements();
 
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
                         // Get current user's permissions for the block instance
-                        bool canView = blockInstance.Authorized( "View", user );
+                        bool canConfig = blockInstance.Authorized( "Configure", user );
                         bool canEdit = blockInstance.Authorized( "Edit", user );
-                        bool canConfig = blockInstance.Authorized( "Configure", user );  
+                        bool canView = blockInstance.Authorized( "View", user );
 
                         // If user can't view and they haven't logged in, redirect to the login page
-                        if ( !canView )
+                        if ( !canConfig && !canEdit && !canView )
                         {
                             if ( user == null || !user.IsApproved )
                                 FormsAuthentication.RedirectToLoginPage();
@@ -299,7 +299,7 @@ namespace Rock.Cms
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
-                                ( canEdit || canConfig ? "can-edit " : "" ) +
+                                ( canConfig || canEdit ? "can-configure " : "" ) +
                                 HtmlHelper.CssClassFormat( blockInstance.Block.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
@@ -373,7 +373,7 @@ namespace Rock.Cms
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( PageInstance.IncludeAdminFooter && canEditPage)
+                    if ( PageInstance.IncludeAdminFooter && canConfigPage)
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -648,7 +648,7 @@ namespace Rock.Cms
                 parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance can-edit" );
+                zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );

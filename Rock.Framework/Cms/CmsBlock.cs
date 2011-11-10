@@ -257,6 +257,7 @@ namespace Rock.Cms
 
             if ( canConfig || canEdit)
             {
+                // Attributes
                 CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
                     delegate( Control content )
                     {
@@ -289,6 +290,7 @@ namespace Rock.Cms
 
             if ( canConfig )
             {
+                // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
@@ -298,6 +300,7 @@ namespace Rock.Cms
                 aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 
+                // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
@@ -305,6 +308,7 @@ namespace Rock.Cms
                 aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
+                // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
                 aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
