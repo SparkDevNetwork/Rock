@@ -43,6 +43,5 @@ namespace Rock.Helpers
             }
             return sb.ToString().ToLower();
         }
-
     }
 }

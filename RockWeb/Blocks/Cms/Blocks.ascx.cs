@@ -37,13 +37,16 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-			_action = PageParameter( "action" ).ToLower();
-            switch ( _action )
+            if ( !Page.IsPostBack )
             {
-                case "":
-                case "list":
-                    BindGrid();
-                    break;
+                _action = PageParameter( "action" ).ToLower();
+                switch ( _action )
+                {
+                    case "":
+                    case "list":
+                        BindGrid();
+                        break;
+                }
             }
         }
 
@@ -86,7 +89,7 @@ namespace RockWeb.Blocks.Cms
             rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
-    $(document).ready(function() {{
+    Sys.Application.add_load(function () {{
         $('td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this Block?');
             }});

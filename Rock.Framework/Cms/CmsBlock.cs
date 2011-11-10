@@ -192,9 +192,47 @@ namespace Rock.Cms
             base.Render( writer );
         }
 
+        /// <summary>
+        /// When an unhandled error occurs in a module, a notification box will be displayed.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnError( EventArgs e )
+        {
+            DisplayNotification( "Exception", Rock.Controls.NotificationBoxType.Error,
+                HttpContext.Current.Server.GetLastError().Message );
+
+            base.OnError( e );
+        }
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Clear all child controls and add a notification box with error or warning message
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        public void DisplayNotification( string title, Rock.Controls.NotificationBoxType type, string message )
+        {
+            this.Controls.Clear();
+
+            Rock.Controls.NotificationBox notification = new Controls.NotificationBox();
+            notification.Title = title;
+            notification.NotificationBoxType = type;
+            notification.Text = message;
+            this.Controls.Add( notification );
+        }
+
+        public void DisplayError( string message )
+        {
+            DisplayNotification( "Error", Rock.Controls.NotificationBoxType.Error, message );
+        }
+
+        public void DisplayWarning( string message )
+        {
+            DisplayNotification( "Warning", Rock.Controls.NotificationBoxType.Warning, message );
+        }
 
         /// <summary>
         /// Returns the current blockinstance value for the selected attribute
@@ -280,11 +318,10 @@ namespace Rock.Cms
                 upTrigger.Attributes.Add( "style", "display:none" );
 
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                aAttributes.Attributes.Add( "class", "attributes icon-button attributes-show" );
+                aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
                 aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockProperties/{0}", BlockInstance.Id)));
                 aAttributes.Attributes.Add("title", "Block Properties");
                 aAttributes.Attributes.Add("instance-id", BlockInstance.Id.ToString());
-                aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
             }
 
@@ -292,12 +329,10 @@ namespace Rock.Cms
             {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
-                aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
+                aSecureBlock.Attributes.Add( "class", "security icon-button show-iframe-dialog" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Rock.Cms.Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
                 aSecureBlock.Attributes.Add( "title", "Security" );
-                aSecureBlock.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
-                aSecureBlock.InnerText = "Security";
                 configControls.Add( aSecureBlock );
                 
                 // Move
@@ -305,7 +340,6 @@ namespace Rock.Cms
                 aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aMoveBlock.Attributes.Add( "title", "Move" );
-                aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
                 // Delete
@@ -313,7 +347,6 @@ namespace Rock.Cms
                 aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
                 aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aDeleteBlock.Attributes.Add( "title", "Delete" );
-                aDeleteBlock.InnerText = "Delete";
                 configControls.Add( aDeleteBlock );
             }
 

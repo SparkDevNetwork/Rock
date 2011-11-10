@@ -55,12 +55,6 @@ namespace RockWeb.Blocks.Cms
                 ddlRoles.DataBind();
 
                 string script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0} td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this role/user?');
-            }});
-    }});
-
     Sys.Application.add_load(function () {{
         $('#{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this role/user?');

@@ -25,7 +25,6 @@ namespace RockWeb.Blocks.Cms
                 aAttributes.Attributes.Add( "class", "edit icon-button" );
                 aAttributes.Attributes.Add( "href", "#" );
                 aAttributes.Attributes.Add( "title", "Edit HTML" );
-                aAttributes.InnerText = "Edit";
                 configControls.Add( aAttributes );
             }
 

@@ -129,9 +129,6 @@ namespace Rock.Controls
                 Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.tablesorter.min.js" );
 
                 string script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0}').tablesorter();
-    }});
     Sys.Application.add_load(function () {{
         $('#{0}').tablesorter();
     }});

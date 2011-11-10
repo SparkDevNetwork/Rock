@@ -344,8 +344,8 @@ a.icon-button.block-config {
 	background-image: url('../Assets/Icons/module-config.png');
 }
 
-a.icon-button.attributes {
-    background-image: url('../Assets/Icons/attributes.png');
+a.icon-button.properties {
+    background-image: url('../Assets/Icons/properties.png');
 }
 
 a.icon-button.page-child-pages {
