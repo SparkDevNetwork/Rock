@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IBlogCategoryService
     {
 		[OperationContract]
-        Rock.Models.Cms.BlogCategory GetBlogCategory( string id );
+        Rock.Models.Cms.BlogCategory Get( string id );
 
         [OperationContract]
         void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategory BlogCategory );

@@ -36,6 +36,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,7 +46,14 @@
   <ItemGroup>
     <Compile Include="Api\AddressService.cs" />
     <Compile Include="Api\IAddressService.cs" />
+    <Compile Include="HttpModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Framework\Rock.Framework.csproj">
+      <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
+      <Name>Rock.Framework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

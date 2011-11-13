@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class SiteService : ISiteService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Site GetSite( string id )
+        public Rock.Models.Cms.Site Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site Site = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site Site = SiteService.Get( int.Parse( id ) );
                 if ( Site.Authorized( "View", currentUser ) )
                     return Site;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site existingSite = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site existingSite = SiteService.Get( int.Parse( id ) );
                 if ( existingSite.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                SiteService.AttachSite( Site );
+                SiteService.Add( Site );
                 SiteService.Save( Site, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site Site = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site Site = SiteService.Get( int.Parse( id ) );
                 if ( Site.Authorized( "Edit", currentUser ) )
                 {
-                    SiteService.DeleteSite( Site );
+                    SiteService.Delete( Site );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

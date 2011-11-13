@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IPageService
     {
 		[OperationContract]
-        Rock.Models.Cms.Page GetPage( string id );
+        Rock.Models.Cms.Page Get( string id );
 
         [OperationContract]
         void UpdatePage( string id, Rock.Models.Cms.Page Page );

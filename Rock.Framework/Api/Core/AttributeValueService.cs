@@ -20,7 +20,7 @@ namespace Rock.Api.Core
     public partial class AttributeValueService : IAttributeValueService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeValue GetAttributeValue( string id )
+        public Rock.Models.Core.AttributeValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( AttributeValue.Authorized( "View", currentUser ) )
                     return AttributeValue;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue existingAttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue existingAttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( existingAttributeValue.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
@@ -73,7 +73,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                AttributeValueService.AttachAttributeValue( AttributeValue );
+                AttributeValueService.Add( AttributeValue );
                 AttributeValueService.Save( AttributeValue, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( AttributeValue.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeValueService.DeleteAttributeValue( AttributeValue );
+                    AttributeValueService.Delete( AttributeValue );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

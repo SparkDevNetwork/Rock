@@ -20,7 +20,7 @@ namespace Rock.Api.Groups
     public partial class MemberService : IMemberService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Member GetMember( string id )
+        public Rock.Models.Groups.Member Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member Member = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member Member = MemberService.Get( int.Parse( id ) );
                 if ( Member.Authorized( "View", currentUser ) )
                     return Member;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member existingMember = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member existingMember = MemberService.Get( int.Parse( id ) );
                 if ( existingMember.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
@@ -73,7 +73,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                MemberService.AttachMember( Member );
+                MemberService.Add( Member );
                 MemberService.Save( Member, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member Member = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member Member = MemberService.Get( int.Parse( id ) );
                 if ( Member.Authorized( "Edit", currentUser ) )
                 {
-                    MemberService.DeleteMember( Member );
+                    MemberService.Delete( Member );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -18,7 +18,7 @@ namespace Rock.Api.Util
     public partial interface IJobService
     {
 		[OperationContract]
-        Rock.Models.Util.Job GetJob( string id );
+        Rock.Models.Util.Job Get( string id );
 
         [OperationContract]
         void UpdateJob( string id, Rock.Models.Util.Job Job );

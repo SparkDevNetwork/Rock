@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlock" )]
-    public partial class Block : ModelWithAttributes, IAuditable
+    public partial class Block : ModelWithAttributes<Block>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -65,8 +62,9 @@ namespace Rock.Models.Cms
 
         public static Block Read(int id)
         {
-            return new Rock.Services.Cms.BlockService().GetBlock( id );
+            return new Rock.Services.Cms.BlockService().Get( id );
         }
+
     }
 
     public partial class BlockConfiguration : EntityTypeConfiguration<Block>

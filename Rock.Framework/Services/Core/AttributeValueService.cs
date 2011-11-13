@@ -20,77 +20,22 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class AttributeValueService : Rock.Services.Service
+    public partial class AttributeValueService : Rock.Services.Service<Rock.Models.Core.AttributeValue>
     {
-        private IAttributeValueRepository _repository;
-
-        public AttributeValueService()
-			: this( new EntityAttributeValueRepository() )
-        { }
-
-        public AttributeValueService( IAttributeValueRepository AttributeValueRepository )
+        public Rock.Models.Core.AttributeValue GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
-            _repository = AttributeValueRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.AttributeValue> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.AttributeValue GetAttributeValue( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.FirstOrDefault( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
-        public Rock.Models.Core.AttributeValue GetAttributeValueByAttributeIdAndEntityId( int attributeId, int? entityId )
+        public IEnumerable<Rock.Models.Core.AttributeValue> GetByEntityId( int? entityId )
         {
-            return _repository.FirstOrDefault( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeValue> GetAttributeValuesByEntityId( int? entityId )
+        public IEnumerable<Rock.Models.Core.AttributeValue> GetByGuid( Guid guid )
         {
-            return _repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeValue> GetAttributeValuesByGuid( Guid guid )
-        {
-            return _repository.Find( t => t.Guid == guid );
-        }
-		
-        public void AddAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
-        {
-            if ( AttributeValue.Guid == Guid.Empty )
-                AttributeValue.Guid = Guid.NewGuid();
-
-            _repository.Add( AttributeValue );
-        }
-
-        public void AttachAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
-        {
-            _repository.Attach( AttributeValue );
-        }
-
-		public void DeleteAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
-        {
-            _repository.Delete( AttributeValue );
-        }
-
-        public void Save( Rock.Models.Core.AttributeValue AttributeValue, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( AttributeValue, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = AttributeValue.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

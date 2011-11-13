@@ -20,7 +20,7 @@ namespace Rock.Api.Crm
     public partial class PhoneNumberService : IPhoneNumberService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.PhoneNumber GetPhoneNumber( string id )
+        public Rock.Models.Crm.PhoneNumber Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Crm
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.GetPhoneNumber( int.Parse( id ) );
+                Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
                 if ( PhoneNumber.Authorized( "View", currentUser ) )
                     return PhoneNumber;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                Rock.Models.Crm.PhoneNumber existingPhoneNumber = PhoneNumberService.GetPhoneNumber( int.Parse( id ) );
+                Rock.Models.Crm.PhoneNumber existingPhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
                 if ( existingPhoneNumber.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
@@ -73,7 +73,7 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                PhoneNumberService.AttachPhoneNumber( PhoneNumber );
+                PhoneNumberService.Add( PhoneNumber );
                 PhoneNumberService.Save( PhoneNumber, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.GetPhoneNumber( int.Parse( id ) );
+                Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
                 if ( PhoneNumber.Authorized( "Edit", currentUser ) )
                 {
-                    PhoneNumberService.DeletePhoneNumber( PhoneNumber );
+                    PhoneNumberService.Delete( PhoneNumber );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

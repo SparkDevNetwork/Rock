@@ -167,6 +167,7 @@
     <Compile Include="FieldTypes\IFieldType.cs" />
     <Compile Include="FieldTypes\Text.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
+    <Compile Include="Helpers\HttpModule.cs" />
     <Compile Include="Helpers\PageReference.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -215,8 +216,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\IAuditable.cs" />
+    <Compile Include="Models\IModel.cs" />
     <Compile Include="Models\Model.cs" />
-    <Compile Include="Models\ModelWithAttributes.cs" />
+    <Compile Include="Models\ModelWithAttributes.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Models\TrackChangesAttribute.cs" />
     <Compile Include="EntityFramework\RockContext.cs" />
     <Compile Include="Helpers\UnitOfWorkScope.cs" />

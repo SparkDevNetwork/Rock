@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Cms
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Cms.Cached.Page.Read( pageId );
 
-            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Cms
 
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
-            pageService.Reorder( pageService.GetPagesByParentPageId( _page.Id ).ToList(),
+            pageService.Reorder( pageService.GetByParentPageId( _page.Id ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrid();
@@ -90,12 +90,12 @@ namespace RockWeb.Blocks.Cms
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.GetPage( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Models.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
                 Rock.Cms.Cached.Page.Flush( page.Id );
 
-                pageService.DeletePage( page );
+                pageService.Delete( page );
                 pageService.Save( page, CurrentPersonId );
 
                 _page.FlushChildPages();
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Cms
                 page.IncludeAdminFooter = true;
 
                 Rock.Models.Cms.Page lastPage =
-                    pageService.GetPagesByParentPageId( _page.Id ).
+                    pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastPage != null )
@@ -149,17 +149,18 @@ namespace RockWeb.Blocks.Cms
                 else
                     page.Order = 0;
 
-                pageService.AddPage( page );
+                pageService.Add( page );
+
+                Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
-                page = pageService.GetPage( pageId );
+                page = pageService.Get( pageId );
 
             page.Layout = ddlLayout.Text;
             page.Name = tbPageName.Text;
 
             pageService.Save( page, CurrentPersonId );
 
-            Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             _page.FlushChildPages();
 
             BindGrid();
@@ -173,7 +174,7 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            rGrid.DataSource = pageService.GetPagesByParentPageId( _page.Id ).ToList();
+            rGrid.DataSource = pageService.GetByParentPageId( _page.Id ).ToList();
             rGrid.DataBind();
         }
 
@@ -187,7 +188,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void ShowEdit( int pageId )
         {
-            Rock.Models.Cms.Page page = pageService.GetPage( pageId );
+            Rock.Models.Cms.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

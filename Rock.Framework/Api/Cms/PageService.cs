@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class PageService : IPageService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Page GetPage( string id )
+        public Rock.Models.Cms.Page Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page Page = PageService.GetPage( int.Parse( id ) );
+                Rock.Models.Cms.Page Page = PageService.Get( int.Parse( id ) );
                 if ( Page.Authorized( "View", currentUser ) )
                     return Page;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page existingPage = PageService.GetPage( int.Parse( id ) );
+                Rock.Models.Cms.Page existingPage = PageService.Get( int.Parse( id ) );
                 if ( existingPage.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                PageService.AttachPage( Page );
+                PageService.Add( Page );
                 PageService.Save( Page, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page Page = PageService.GetPage( int.Parse( id ) );
+                Rock.Models.Cms.Page Page = PageService.Get( int.Parse( id ) );
                 if ( Page.Authorized( "Edit", currentUser ) )
                 {
-                    PageService.DeletePage( Page );
+                    PageService.Delete( Page );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

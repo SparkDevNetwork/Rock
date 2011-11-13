@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Cms
         {
  	        base.OnInit(e);
 
-            this.AttributesUpdated += new Rock.Cms.AttributesUpdatedEventHandler( HtmlContent_AttributesUpdated );
+            this.AttributesUpdated += HtmlContent_AttributesUpdated;
             this.AddAttributeUpdateTrigger( pnlContent );
         }
 
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Cms
                     content.EntityValue = entityValue;
                     content.Approved = true;
                     content.ApprovedByPersonId = CurrentPersonId;
-                    service.AddHtmlContent( content );
+                    service.Add( content );
                 }
 
                 content.Content = txtHtmlContentEditor.Text;

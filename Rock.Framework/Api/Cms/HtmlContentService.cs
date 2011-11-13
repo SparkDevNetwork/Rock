@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class HtmlContentService : IHtmlContentService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.HtmlContent GetHtmlContent( string id )
+        public Rock.Models.Cms.HtmlContent Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "View", currentUser ) )
                     return HtmlContent;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent existingHtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent existingHtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                HtmlContentService.AttachHtmlContent( HtmlContent );
+                HtmlContentService.Add( HtmlContent );
                 HtmlContentService.Save( HtmlContent, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "Edit", currentUser ) )
                 {
-                    HtmlContentService.DeleteHtmlContent( HtmlContent );
+                    HtmlContentService.Delete( HtmlContent );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

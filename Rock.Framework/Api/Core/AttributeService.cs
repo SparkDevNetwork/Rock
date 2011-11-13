@@ -20,7 +20,7 @@ namespace Rock.Api.Core
     public partial class AttributeService : IAttributeService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.Attribute GetAttribute( string id )
+        public Rock.Models.Core.Attribute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute Attribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "View", currentUser ) )
                     return Attribute;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute existingAttribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute existingAttribute = AttributeService.Get( int.Parse( id ) );
                 if ( existingAttribute.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(Attribute);
@@ -73,7 +73,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                AttributeService.AttachAttribute( Attribute );
+                AttributeService.Add( Attribute );
                 AttributeService.Save( Attribute, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute Attribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeService.DeleteAttribute( Attribute );
+                    AttributeService.Delete( Attribute );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -19,6 +19,6 @@ namespace Rock.Repository
         void Delete( T entity );
         void Add( T entity );
         void Attach( T entity );
-        List<Rock.Models.Core.EntityChange> Save( T entity, int? personId );
+        List<Rock.Models.Core.EntityChange> Save( int? personId );
     }
 }

@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlogPost" )]
-    public partial class BlogPost : ModelWithAttributes, IAuditable
+    public partial class BlogPost : ModelWithAttributes<BlogPost>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public int BlogId { get; set; }
 		
@@ -78,8 +75,9 @@ namespace Rock.Models.Cms
 
         public static BlogPost Read(int id)
         {
-            return new Rock.Services.Cms.BlogPostService().GetBlogPost( id );
+            return new Rock.Services.Cms.BlogPostService().Get( id );
         }
+
     }
 
     public partial class BlogPostConfiguration : EntityTypeConfiguration<BlogPost>

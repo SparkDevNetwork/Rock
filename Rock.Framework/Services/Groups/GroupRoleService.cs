@@ -20,72 +20,17 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
-    public partial class GroupRoleService : Rock.Services.Service
+    public partial class GroupRoleService : Rock.Services.Service<Rock.Models.Groups.GroupRole>
     {
-        private IGroupRoleRepository _repository;
-
-        public GroupRoleService()
-			: this( new EntityGroupRoleRepository() )
-        { }
-
-        public GroupRoleService( IGroupRoleRepository GroupRoleRepository )
+        public IEnumerable<Rock.Models.Groups.GroupRole> GetByGuid( Guid guid )
         {
-            _repository = GroupRoleRepository;
-        }
-
-        public IQueryable<Rock.Models.Groups.GroupRole> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Groups.GroupRole GetGroupRole( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Groups.GroupRole> GetGroupRolesByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Groups.GroupRole> GetByOrder( int? order )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return Repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
         }
 		
-        public IEnumerable<Rock.Models.Groups.GroupRole> GetGroupRolesByOrder( int? order )
-        {
-            return _repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
-        }
-		
-        public void AddGroupRole( Rock.Models.Groups.GroupRole GroupRole )
-        {
-            if ( GroupRole.Guid == Guid.Empty )
-                GroupRole.Guid = Guid.NewGuid();
-
-            _repository.Add( GroupRole );
-        }
-
-        public void AttachGroupRole( Rock.Models.Groups.GroupRole GroupRole )
-        {
-            _repository.Attach( GroupRole );
-        }
-
-		public void DeleteGroupRole( Rock.Models.Groups.GroupRole GroupRole )
-        {
-            _repository.Delete( GroupRole );
-        }
-
-        public void Save( Rock.Models.Groups.GroupRole GroupRole, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( GroupRole, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = GroupRole.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

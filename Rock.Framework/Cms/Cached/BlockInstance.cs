@@ -56,7 +56,7 @@ namespace Rock.Cms.Cached
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
-            Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( this.Id );
+            Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
 
             if ( blockInstanceModel != null )
             {
@@ -71,7 +71,7 @@ namespace Rock.Cms.Cached
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( this.Id );
+                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
 
                 if ( blockInstanceModel != null )
                 {
@@ -135,7 +135,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.GetBlockInstance( id );
+                Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
                 if ( blockInstanceModel != null )
                 {
                     blockInstanceService.LoadAttributes( blockInstanceModel );

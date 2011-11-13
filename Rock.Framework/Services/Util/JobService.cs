@@ -20,67 +20,12 @@ using Rock.Repository.Util;
 
 namespace Rock.Services.Util
 {
-    public partial class JobService : Rock.Services.Service
+    public partial class JobService : Rock.Services.Service<Rock.Models.Util.Job>
     {
-        private IJobRepository _repository;
-
-        public JobService()
-			: this( new EntityJobRepository() )
-        { }
-
-        public JobService( IJobRepository JobRepository )
+        public IEnumerable<Rock.Models.Util.Job> GetByGuid( Guid guid )
         {
-            _repository = JobRepository;
-        }
-
-        public IQueryable<Rock.Models.Util.Job> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Util.Job GetJob( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Util.Job> GetJobsByGuid( Guid guid )
-        {
-            return _repository.Find( t => t.Guid == guid );
-        }
-		
-        public void AddJob( Rock.Models.Util.Job Job )
-        {
-            if ( Job.Guid == Guid.Empty )
-                Job.Guid = Guid.NewGuid();
-
-            _repository.Add( Job );
-        }
-
-        public void AttachJob( Rock.Models.Util.Job Job )
-        {
-            _repository.Attach( Job );
-        }
-
-		public void DeleteJob( Rock.Models.Util.Job Job )
-        {
-            _repository.Delete( Job );
-        }
-
-        public void Save( Rock.Models.Util.Job Job, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Job, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Job.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

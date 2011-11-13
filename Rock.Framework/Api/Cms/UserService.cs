@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class UserService : IUserService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.User GetUser( string id )
+        public Rock.Models.Cms.User Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User User = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User User = UserService.Get( int.Parse( id ) );
                 if ( User.Authorized( "View", currentUser ) )
                     return User;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User existingUser = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User existingUser = UserService.Get( int.Parse( id ) );
                 if ( existingUser.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                UserService.AttachUser( User );
+                UserService.Add( User );
                 UserService.Save( User, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User User = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User User = UserService.Get( int.Parse( id ) );
                 if ( User.Authorized( "Edit", currentUser ) )
                 {
-                    UserService.DeleteUser( User );
+                    UserService.Delete( User );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

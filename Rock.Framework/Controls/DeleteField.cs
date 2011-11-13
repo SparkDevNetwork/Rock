@@ -18,7 +18,7 @@ namespace Rock.Controls
             this.ItemStyle.CssClass = "grid-icon-cell delete";
 
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
-            deleteFieldTemplate.LinkButtonClick += new RowEventHandler( deleteFieldTemplate_LinkButtonClick );
+            deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
@@ -29,7 +29,7 @@ namespace Rock.Controls
             OnClick( e );
         }
 
-        public event RowEventHandler Click;
+        public event EventHandler<RowEventArgs> Click;
         public virtual void OnClick( RowEventArgs e )
         {
             if ( Click != null )
@@ -46,7 +46,7 @@ namespace Rock.Controls
             {
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.Text = "Delete";
-                lbDelete.Click += new EventHandler( lbDelete_Click );
+                lbDelete.Click += lbDelete_Click;
 
                 cell.Controls.Add( lbDelete );
             }
@@ -62,6 +62,6 @@ namespace Rock.Controls
             }
         }
 
-        internal event RowEventHandler LinkButtonClick;
+        internal event EventHandler<RowEventArgs> LinkButtonClick;
     }
 }

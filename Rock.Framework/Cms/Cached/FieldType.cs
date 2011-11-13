@@ -46,7 +46,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Core.FieldTypeService fieldTypeService = new Services.Core.FieldTypeService();
-                Rock.Models.Core.FieldType fieldTypeModel = fieldTypeService.GetFieldType( id );
+                Rock.Models.Core.FieldType fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
                     fieldType = new FieldType();

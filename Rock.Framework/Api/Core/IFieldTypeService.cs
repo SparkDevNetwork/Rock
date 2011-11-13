@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IFieldTypeService
     {
 		[OperationContract]
-        Rock.Models.Core.FieldType GetFieldType( string id );
+        Rock.Models.Core.FieldType Get( string id );
 
         [OperationContract]
         void UpdateFieldType( string id, Rock.Models.Core.FieldType FieldType );

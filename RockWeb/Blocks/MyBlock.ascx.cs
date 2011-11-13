@@ -44,14 +44,14 @@ namespace RockWeb.Blocks
             lItemTest.Text = itemTest;
 
             Rock.Services.Groups.GroupTypeService _service = new Rock.Services.Groups.GroupTypeService();
-            Rock.Models.Groups.GroupType groupType = _service.GetGroupType( 2 );
+            Rock.Models.Groups.GroupType groupType = _service.Get( 2 );
 
             foreach ( Rock.Models.Groups.GroupType parentType in groupType.ParentGroupTypes )
                 lParentGroups.Text += parentType.Name + ":";
             foreach ( Rock.Models.Groups.GroupType childType in groupType.ChildGroupTypes )
                 lChildGroups.Text += childType.Name + ":";
 
-            this.AttributesUpdated += new Rock.Cms.AttributesUpdatedEventHandler( MyBlock_AttributesUpdated );
+            this.AttributesUpdated += MyBlock_AttributesUpdated;
             this.AddAttributeUpdateTrigger(pnlAttributeValues);
 
             ShowAttributeValue();

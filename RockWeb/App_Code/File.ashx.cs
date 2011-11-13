@@ -29,7 +29,7 @@ namespace RockWeb
 			int id;
 			string anID = context.Request.QueryString[0];
 
-			Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
+			Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
 
 			context.Response.ContentType = file.MimeType;
 			context.Response.AddHeader("content-disposition", "inline;filename=" + file.FileName);

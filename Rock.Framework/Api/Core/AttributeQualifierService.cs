@@ -20,7 +20,7 @@ namespace Rock.Api.Core
     public partial class AttributeQualifierService : IAttributeQualifierService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeQualifier GetAttributeQualifier( string id )
+        public Rock.Models.Core.AttributeQualifier Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "View", currentUser ) )
                     return AttributeQualifier;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
@@ -73,7 +73,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                AttributeQualifierService.AttachAttributeQualifier( AttributeQualifier );
+                AttributeQualifierService.Add( AttributeQualifier );
                 AttributeQualifierService.Save( AttributeQualifier, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeQualifierService.DeleteAttributeQualifier( AttributeQualifier );
+                    AttributeQualifierService.Delete( AttributeQualifier );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

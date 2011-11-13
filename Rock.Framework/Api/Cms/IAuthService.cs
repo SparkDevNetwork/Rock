@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IAuthService
     {
 		[OperationContract]
-        Rock.Models.Cms.Auth GetAuth( string id );
+        Rock.Models.Cms.Auth Get( string id );
 
         [OperationContract]
         void UpdateAuth( string id, Rock.Models.Cms.Auth Auth );

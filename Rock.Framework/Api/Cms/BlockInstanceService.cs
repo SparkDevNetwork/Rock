@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class BlockInstanceService : IBlockInstanceService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlockInstance GetBlockInstance( string id )
+        public Rock.Models.Cms.BlockInstance Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance BlockInstance = BlockInstanceService.GetBlockInstance( int.Parse( id ) );
+                Rock.Models.Cms.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
                 if ( BlockInstance.Authorized( "View", currentUser ) )
                     return BlockInstance;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance existingBlockInstance = BlockInstanceService.GetBlockInstance( int.Parse( id ) );
+                Rock.Models.Cms.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
                 if ( existingBlockInstance.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                BlockInstanceService.AttachBlockInstance( BlockInstance );
+                BlockInstanceService.Add( BlockInstance );
                 BlockInstanceService.Save( BlockInstance, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance BlockInstance = BlockInstanceService.GetBlockInstance( int.Parse( id ) );
+                Rock.Models.Cms.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
                 if ( BlockInstance.Authorized( "Edit", currentUser ) )
                 {
-                    BlockInstanceService.DeleteBlockInstance( BlockInstance );
+                    BlockInstanceService.Delete( BlockInstance );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

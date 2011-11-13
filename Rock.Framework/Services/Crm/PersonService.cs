@@ -20,67 +20,12 @@ using Rock.Repository.Crm;
 
 namespace Rock.Services.Crm
 {
-    public partial class PersonService : Rock.Services.Service
+    public partial class PersonService : Rock.Services.Service<Rock.Models.Crm.Person>
     {
-        private IPersonRepository _repository;
-
-        public PersonService()
-			: this( new EntityPersonRepository() )
-        { }
-
-        public PersonService( IPersonRepository PersonRepository )
+        public Rock.Models.Crm.Person GetByGuid( Guid guid )
         {
-            _repository = PersonRepository;
-        }
-
-        public IQueryable<Rock.Models.Crm.Person> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Crm.Person GetPerson( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public Rock.Models.Crm.Person GetPersonByGuid( Guid guid )
-        {
-            return _repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-        public void AddPerson( Rock.Models.Crm.Person Person )
-        {
-            if ( Person.Guid == Guid.Empty )
-                Person.Guid = Guid.NewGuid();
-
-            _repository.Add( Person );
-        }
-
-        public void AttachPerson( Rock.Models.Crm.Person Person )
-        {
-            _repository.Attach( Person );
-        }
-
-		public void DeletePerson( Rock.Models.Crm.Person Person )
-        {
-            _repository.Delete( Person );
-        }
-
-        public void Save( Rock.Models.Crm.Person Person, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Person, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Person.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

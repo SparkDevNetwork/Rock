@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IFileService
     {
 		[OperationContract]
-        Rock.Models.Cms.File GetFile( string id );
+        Rock.Models.Cms.File Get( string id );
 
         [OperationContract]
         void UpdateFile( string id, Rock.Models.Cms.File File );

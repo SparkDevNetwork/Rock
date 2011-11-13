@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogPostService : Rock.Services.Service
+    public partial class BlogPostService : Rock.Services.Service<Rock.Models.Cms.BlogPost>
     {
-        private IBlogPostRepository _repository;
-
-        public BlogPostService()
-			: this( new EntityBlogPostRepository() )
-        { }
-
-        public BlogPostService( IBlogPostRepository BlogPostRepository )
-        {
-            _repository = BlogPostRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.BlogPost> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.BlogPost GetBlogPost( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddBlogPost( Rock.Models.Cms.BlogPost BlogPost )
-        {
-            if ( BlogPost.Guid == Guid.Empty )
-                BlogPost.Guid = Guid.NewGuid();
-
-            _repository.Add( BlogPost );
-        }
-
-        public void AttachBlogPost( Rock.Models.Cms.BlogPost BlogPost )
-        {
-            _repository.Attach( BlogPost );
-        }
-
-		public void DeleteBlogPost( Rock.Models.Cms.BlogPost BlogPost )
-        {
-            _repository.Delete( BlogPost );
-        }
-
-        public void Save( Rock.Models.Cms.BlogPost BlogPost, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( BlogPost, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = BlogPost.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class BlogTagService : IBlogTagService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogTag GetBlogTag( string id )
+        public Rock.Models.Cms.BlogTag Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "View", currentUser ) )
                     return BlogTag;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag existingBlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag existingBlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( existingBlogTag.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                BlogTagService.AttachBlogTag( BlogTag );
+                BlogTagService.Add( BlogTag );
                 BlogTagService.Save( BlogTag, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "Edit", currentUser ) )
                 {
-                    BlogTagService.DeleteBlogTag( BlogTag );
+                    BlogTagService.Delete( BlogTag );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

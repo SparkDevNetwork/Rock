@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class FileService : Rock.Services.Service
+    public partial class FileService : Rock.Services.Service<Rock.Models.Cms.File>
     {
-        private IFileRepository _repository;
-
-        public FileService()
-			: this( new EntityFileRepository() )
-        { }
-
-        public FileService( IFileRepository FileRepository )
-        {
-            _repository = FileRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.File> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.File GetFile( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddFile( Rock.Models.Cms.File File )
-        {
-            if ( File.Guid == Guid.Empty )
-                File.Guid = Guid.NewGuid();
-
-            _repository.Add( File );
-        }
-
-        public void AttachFile( Rock.Models.Cms.File File )
-        {
-            _repository.Attach( File );
-        }
-
-		public void DeleteFile( Rock.Models.Cms.File File )
-        {
-            _repository.Delete( File );
-        }
-
-        public void Save( Rock.Models.Cms.File File, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( File, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = File.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

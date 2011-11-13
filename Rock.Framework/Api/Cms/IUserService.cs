@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IUserService
     {
 		[OperationContract]
-        Rock.Models.Cms.User GetUser( string id );
+        Rock.Models.Cms.User Get( string id );
 
         [OperationContract]
         void UpdateUser( string id, Rock.Models.Cms.User User );
