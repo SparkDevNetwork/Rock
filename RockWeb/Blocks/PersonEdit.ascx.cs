@@ -25,11 +25,11 @@ namespace RockWeb.Blocks
                 PersonService personService = new PersonService();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personService.GetPerson( Convert.ToInt32( personId ) );
+                    person = personService.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personService.AddPerson( person );
+                    personService.Add( person );
                 }
 
                 txtFirstName.Text = person.FirstName;
@@ -51,18 +51,18 @@ namespace RockWeb.Blocks
                 PersonService personService = new PersonService();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personService.GetPerson( Convert.ToInt32( personId ) );
+                    person = personService.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personService.AddPerson( person );
+                    personService.Add( person );
                 }
 
                 person.FirstName = txtFirstName.Text;
                 person.NickName = txtNickName.Text;
                 person.LastName = txtLastName.Text;
                 if ( person.Guid == Guid.Empty )
-                    personService.AddPerson( person );
+                    personService.Add( person );
                 personService.Save( person, CurrentPersonId );
             }
         }

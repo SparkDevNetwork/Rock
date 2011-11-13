@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class SiteDomainService : ISiteDomainService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.SiteDomain GetSiteDomain( string id )
+        public Rock.Models.Cms.SiteDomain Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.GetSiteDomain( int.Parse( id ) );
+                Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
                 if ( SiteDomain.Authorized( "View", currentUser ) )
                     return SiteDomain;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                Rock.Models.Cms.SiteDomain existingSiteDomain = SiteDomainService.GetSiteDomain( int.Parse( id ) );
+                Rock.Models.Cms.SiteDomain existingSiteDomain = SiteDomainService.Get( int.Parse( id ) );
                 if ( existingSiteDomain.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                SiteDomainService.AttachSiteDomain( SiteDomain );
+                SiteDomainService.Add( SiteDomain );
                 SiteDomainService.Save( SiteDomain, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.GetSiteDomain( int.Parse( id ) );
+                Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
                 if ( SiteDomain.Authorized( "Edit", currentUser ) )
                 {
-                    SiteDomainService.DeleteSiteDomain( SiteDomain );
+                    SiteDomainService.Delete( SiteDomain );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

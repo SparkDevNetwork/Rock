@@ -59,7 +59,7 @@ namespace Rock.Cms.Cached
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-            Rock.Models.Cms.Site siteModel = siteService.GetSite( this.Id );
+            Rock.Models.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
                 siteService.LoadAttributes( siteModel );
@@ -95,7 +95,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-                Rock.Models.Cms.Site siteModel = siteService.GetSite( id );
+                Rock.Models.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
                     site = new Site();

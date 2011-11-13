@@ -30,8 +30,7 @@ namespace RockWeb.Blocks.Cms
             _page = Rock.Cms.Cached.Page.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
-            MembershipUser user = Membership.GetUser();
-            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
@@ -58,7 +57,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( _page.Authorized( "Configure", Membership.GetUser() ) )
+            if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -83,7 +82,7 @@ namespace RockWeb.Blocks.Cms
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
             blockInstanceService.Reorder(
-                blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
+                blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrid();
@@ -96,10 +95,10 @@ namespace RockWeb.Blocks.Cms
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                blockInstanceService.DeleteBlockInstance( blockInstance );
+                blockInstanceService.Delete( blockInstance );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
 
                 _page.FlushBlockInstances();
@@ -142,7 +141,7 @@ namespace RockWeb.Blocks.Cms
                 blockInstance.Zone = _zoneName;
 
                 Rock.Models.Cms.BlockInstance lastBlock =
-                    blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
+                    blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
                                                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastBlock != null )
@@ -150,10 +149,10 @@ namespace RockWeb.Blocks.Cms
                 else
                     blockInstance.Order = 0;
 
-                blockInstanceService.AddBlockInstance( blockInstance );
+                blockInstanceService.Add( blockInstance );
             }
             else
-                blockInstance = blockInstanceService.GetBlockInstance( blockInstanceId );
+                blockInstance = blockInstanceService.Get( blockInstanceId );
 
             blockInstance.Name = tbBlockName.Text;
             blockInstance.BlockId = Convert.ToInt32( ddlBlockType.SelectedValue );
@@ -174,7 +173,7 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            rGrid.DataSource = blockInstanceService.GetBlockInstancesByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
+            rGrid.DataSource = blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
             rGrid.DataBind();
         }
 
@@ -195,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
                             block.Description = block.Path;
 
-                            blockService.AddBlock( block );
+                            blockService.Add( block );
                             blockService.Save( block, CurrentPersonId );
                         }
                     }
@@ -213,7 +212,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void ShowEdit( int blockInstanceId )
         {
-            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( blockInstanceId );
+            Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( blockInstanceId );
             if ( blockInstance != null )
             {
                 hfBlockInstanceId.Value = blockInstance.Id.ToString();

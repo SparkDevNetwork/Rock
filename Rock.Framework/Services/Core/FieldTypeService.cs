@@ -20,72 +20,17 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class FieldTypeService : Rock.Services.Service
+    public partial class FieldTypeService : Rock.Services.Service<Rock.Models.Core.FieldType>
     {
-        private IFieldTypeRepository _repository;
-
-        public FieldTypeService()
-			: this( new EntityFieldTypeRepository() )
-        { }
-
-        public FieldTypeService( IFieldTypeRepository FieldTypeRepository )
+        public IEnumerable<Rock.Models.Core.FieldType> GetByGuid( Guid guid )
         {
-            _repository = FieldTypeRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.FieldType> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.FieldType GetFieldType( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Core.FieldType> GetFieldTypesByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Core.FieldType> GetByName( string name )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return Repository.Find( t => t.Name == name );
         }
 		
-        public IEnumerable<Rock.Models.Core.FieldType> GetFieldTypesByName( string name )
-        {
-            return _repository.Find( t => t.Name == name );
-        }
-		
-        public void AddFieldType( Rock.Models.Core.FieldType FieldType )
-        {
-            if ( FieldType.Guid == Guid.Empty )
-                FieldType.Guid = Guid.NewGuid();
-
-            _repository.Add( FieldType );
-        }
-
-        public void AttachFieldType( Rock.Models.Core.FieldType FieldType )
-        {
-            _repository.Attach( FieldType );
-        }
-
-		public void DeleteFieldType( Rock.Models.Core.FieldType FieldType )
-        {
-            _repository.Delete( FieldType );
-        }
-
-        public void Save( Rock.Models.Core.FieldType FieldType, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( FieldType, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = FieldType.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

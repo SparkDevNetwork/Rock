@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Util
 {
     [Table( "utilJob" )]
-    public partial class Job : ModelWithAttributes
+    public partial class Job : ModelWithAttributes<Job>
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool? System { get; set; }
 		
@@ -50,18 +47,25 @@ namespace Rock.Models.Util
 		[DataMember]
 		public string Class { get; set; }
 		
+		[MaxLength( 120 )]
 		[DataMember]
-		public DateTime StartTime { get; set; }
-		
-		[DataMember]
-		public DateTime EndTime { get; set; }
-		
-		[MaxLength( 35 )]
-		[DataMember]
-		public string Days { get; set; }
+		public string CronExpression { get; set; }
 		
 		[DataMember]
 		public DateTime? LastSuccessfulRun { get; set; }
+		
+		[DataMember]
+		public DateTime? LastRunDate { get; set; }
+		
+		[DataMember]
+		public int? LastRunDuration { get; set; }
+		
+		[MaxLength( 50 )]
+		[DataMember]
+		public string LastStatus { get; set; }
+		
+		[DataMember]
+		public string LastStatusMessage { get; set; }
 		
 		[MaxLength( 1000 )]
 		[DataMember]
@@ -91,8 +95,9 @@ namespace Rock.Models.Util
 
         public static Job Read(int id)
         {
-            return new Rock.Services.Util.JobService().GetJob( id );
+            return new Rock.Services.Util.JobService().Get( id );
         }
+
     }
 
     public partial class JobConfiguration : EntityTypeConfiguration<Job>

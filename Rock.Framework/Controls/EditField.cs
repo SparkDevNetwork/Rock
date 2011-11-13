@@ -18,7 +18,7 @@ namespace Rock.Controls
             this.ItemStyle.CssClass = "grid-icon-cell edit";
 
             EditFieldTemplate editFieldTemplate = new EditFieldTemplate();
-            editFieldTemplate.LinkButtonClick += new RowEventHandler( editFieldTemplate_LinkButtonClick );
+            editFieldTemplate.LinkButtonClick += editFieldTemplate_LinkButtonClick;
             this.ItemTemplate = editFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
@@ -29,7 +29,7 @@ namespace Rock.Controls
             OnClick( e );
         }
 
-        public event RowEventHandler Click;
+        public event EventHandler<RowEventArgs> Click;
         public virtual void OnClick( RowEventArgs e )
         {
             if ( Click != null )
@@ -46,7 +46,7 @@ namespace Rock.Controls
             {
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.Text = "Edit";
-                lbEdit.Click += new EventHandler( lbEdit_Click );
+                lbEdit.Click += lbEdit_Click;
 
                 cell.Controls.Add( lbEdit );
             }
@@ -62,6 +62,6 @@ namespace Rock.Controls
             }
         }
 
-        internal event RowEventHandler LinkButtonClick;
+        internal event EventHandler<RowEventArgs> LinkButtonClick;
     }
 }

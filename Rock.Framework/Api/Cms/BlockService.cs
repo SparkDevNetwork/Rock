@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class BlockService : IBlockService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Block GetBlock( string id )
+        public Rock.Models.Cms.Block Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block Block = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block Block = BlockService.Get( int.Parse( id ) );
                 if ( Block.Authorized( "View", currentUser ) )
                     return Block;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block existingBlock = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block existingBlock = BlockService.Get( int.Parse( id ) );
                 if ( existingBlock.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                BlockService.AttachBlock( Block );
+                BlockService.Add( Block );
                 BlockService.Save( Block, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block Block = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block Block = BlockService.Get( int.Parse( id ) );
                 if ( Block.Authorized( "Edit", currentUser ) )
                 {
-                    BlockService.DeleteBlock( Block );
+                    BlockService.Delete( Block );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

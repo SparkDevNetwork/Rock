@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IAttributeQualifierService
     {
 		[OperationContract]
-        Rock.Models.Core.AttributeQualifier GetAttributeQualifier( string id );
+        Rock.Models.Core.AttributeQualifier Get( string id );
 
         [OperationContract]
         void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier AttributeQualifier );

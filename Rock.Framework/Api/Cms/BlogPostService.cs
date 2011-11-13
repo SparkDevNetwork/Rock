@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class BlogPostService : IBlogPostService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPost GetBlogPost( string id )
+        public Rock.Models.Cms.BlogPost Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( BlogPost.Authorized( "View", currentUser ) )
                     return BlogPost;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost existingBlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost existingBlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( existingBlogPost.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                BlogPostService.AttachBlogPost( BlogPost );
+                BlogPostService.Add( BlogPost );
                 BlogPostService.Save( BlogPost, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( BlogPost.Authorized( "Edit", currentUser ) )
                 {
-                    BlogPostService.DeleteBlogPost( BlogPost );
+                    BlogPostService.Delete( BlogPost );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

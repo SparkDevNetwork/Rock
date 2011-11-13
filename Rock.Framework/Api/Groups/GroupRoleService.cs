@@ -20,7 +20,7 @@ namespace Rock.Api.Groups
     public partial class GroupRoleService : IGroupRoleService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.GroupRole GetGroupRole( string id )
+        public Rock.Models.Groups.GroupRole Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( GroupRole.Authorized( "View", currentUser ) )
                     return GroupRole;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole existingGroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole existingGroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( existingGroupRole.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
@@ -73,7 +73,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                GroupRoleService.AttachGroupRole( GroupRole );
+                GroupRoleService.Add( GroupRole );
                 GroupRoleService.Save( GroupRole, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( GroupRole.Authorized( "Edit", currentUser ) )
                 {
-                    GroupRoleService.DeleteGroupRole( GroupRole );
+                    GroupRoleService.Delete( GroupRole );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

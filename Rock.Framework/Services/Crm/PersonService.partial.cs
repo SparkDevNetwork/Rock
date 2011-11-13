@@ -29,7 +29,7 @@ namespace Rock.Services.Crm
             else
                 lastName = fullName;
 
-            return _repository.AsQueryable().
+            return Repository.AsQueryable().
                     Where( p => p.LastName.ToLower().StartsWith( lastName.ToLower() ) &&
                         ( p.NickName.ToLower().StartsWith( firstName.ToLower() ) ||
                         p.FirstName.StartsWith( firstName.ToLower() ) ) );

@@ -20,77 +20,22 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
-    public partial class GroupService : Rock.Services.Service
+    public partial class GroupService : Rock.Services.Service<Rock.Models.Groups.Group>
     {
-        private IGroupRepository _repository;
-
-        public GroupService()
-			: this( new EntityGroupRepository() )
-        { }
-
-        public GroupService( IGroupRepository GroupRepository )
+        public Rock.Models.Groups.Group GetByGuid( Guid guid )
         {
-            _repository = GroupRepository;
-        }
-
-        public IQueryable<Rock.Models.Groups.Group> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Groups.Group GetGroup( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public Rock.Models.Groups.Group GetGroupByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Groups.Group> GetByIsSecurityRole( bool isSecurityRole )
         {
-            return _repository.FirstOrDefault( t => t.Guid == guid );
+            return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Group> GetGroupsByIsSecurityRole( bool isSecurityRole )
+        public IEnumerable<Rock.Models.Groups.Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
-            return _repository.Find( t => t.IsSecurityRole == isSecurityRole );
+            return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Group> GetGroupsByParentGroupIdAndName( int? parentGroupId, string name )
-        {
-            return _repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
-        }
-		
-        public void AddGroup( Rock.Models.Groups.Group Group )
-        {
-            if ( Group.Guid == Guid.Empty )
-                Group.Guid = Guid.NewGuid();
-
-            _repository.Add( Group );
-        }
-
-        public void AttachGroup( Rock.Models.Groups.Group Group )
-        {
-            _repository.Attach( Group );
-        }
-
-		public void DeleteGroup( Rock.Models.Groups.Group Group )
-        {
-            _repository.Delete( Group );
-        }
-
-        public void Save( Rock.Models.Groups.Group Group, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Group, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Group.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

@@ -20,7 +20,7 @@ namespace Rock.Api.Util
     public partial class JobService : IJobService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Util.Job GetJob( string id )
+        public Rock.Models.Util.Job Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Util
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job Job = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "View", currentUser ) )
                     return Job;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job existingJob = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job existingJob = JobService.Get( int.Parse( id ) );
                 if ( existingJob.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
@@ -73,7 +73,7 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                JobService.AttachJob( Job );
+                JobService.Add( Job );
                 JobService.Save( Job, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job Job = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "Edit", currentUser ) )
                 {
-                    JobService.DeleteJob( Job );
+                    JobService.Delete( Job );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

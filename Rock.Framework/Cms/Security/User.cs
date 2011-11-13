@@ -142,7 +142,7 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
             {
@@ -175,7 +175,7 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
             {
@@ -247,7 +247,7 @@ namespace Rock.Cms.Security
 
                 try
                 {
-                    UserService.AddUser( user );
+                    UserService.Add( user );
                     UserService.Save( user, CurrentPersonId() );
                     status = MembershipCreateStatus.Success;
 
@@ -271,13 +271,13 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
             {
                 try
                 {
-                    UserService.DeleteUser( user );
+                    UserService.Delete( user );
                     return true;
                 }
                 catch ( SystemException ex )
@@ -392,7 +392,7 @@ namespace Rock.Cms.Security
             {
                 UserService UserService = new Services.Cms.UserService();
 
-                Rock.Models.Cms.User user = UserService.GetUser( ( int )providerUserKey );
+                Rock.Models.Cms.User user = UserService.Get( ( int )providerUserKey );
 
                 if ( user != null )
                     return GetUser( UserService, user, userIsOnline );
@@ -405,7 +405,7 @@ namespace Rock.Cms.Security
 
         private MembershipUser GetUser( UserService UserService, string username, bool userIsOnline )
         {
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
                 return GetUser( UserService, user, userIsOnline );
@@ -465,7 +465,7 @@ namespace Rock.Cms.Security
 
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
             {
@@ -513,7 +513,7 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, userName );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, userName );
 
             if ( user != null )
             {
@@ -530,7 +530,7 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User userModel = UserService.GetUserByApplicationNameAndUsername( applicationName, user.UserName );
+            Rock.Models.Cms.User userModel = UserService.GetByApplicationNameAndUsername( applicationName, user.UserName );
 
             if ( userModel != null )
             {
@@ -545,7 +545,7 @@ namespace Rock.Cms.Security
         {
             UserService UserService = new Services.Cms.UserService();
 
-            Rock.Models.Cms.User user = UserService.GetUserByApplicationNameAndUsername( applicationName, username );
+            Rock.Models.Cms.User user = UserService.GetByApplicationNameAndUsername( applicationName, username );
 
             if ( user != null )
                 return ValidateUser( UserService, user, password );

@@ -20,72 +20,17 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class PageRouteService : Rock.Services.Service
+    public partial class PageRouteService : Rock.Services.Service<Rock.Models.Cms.PageRoute>
     {
-        private IPageRouteRepository _repository;
-
-        public PageRouteService()
-			: this( new EntityPageRouteRepository() )
-        { }
-
-        public PageRouteService( IPageRouteRepository PageRouteRepository )
+        public IEnumerable<Rock.Models.Cms.PageRoute> GetByGuid( Guid guid )
         {
-            _repository = PageRouteRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.PageRoute> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.PageRoute GetPageRoute( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.PageRoute> GetPageRoutesByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Cms.PageRoute> GetByPageId( int pageId )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return Repository.Find( t => t.PageId == pageId );
         }
 		
-        public IEnumerable<Rock.Models.Cms.PageRoute> GetPageRoutesByPageId( int pageId )
-        {
-            return _repository.Find( t => t.PageId == pageId );
-        }
-		
-        public void AddPageRoute( Rock.Models.Cms.PageRoute PageRoute )
-        {
-            if ( PageRoute.Guid == Guid.Empty )
-                PageRoute.Guid = Guid.NewGuid();
-
-            _repository.Add( PageRoute );
-        }
-
-        public void AttachPageRoute( Rock.Models.Cms.PageRoute PageRoute )
-        {
-            _repository.Attach( PageRoute );
-        }
-
-		public void DeletePageRoute( Rock.Models.Cms.PageRoute PageRoute )
-        {
-            _repository.Delete( PageRoute );
-        }
-
-        public void Save( Rock.Models.Cms.PageRoute PageRoute, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( PageRoute, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = PageRoute.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Crm
 {
     [Table( "crmPhoneNumber" )]
-    public partial class PhoneNumber : ModelWithAttributes, IAuditable
+    public partial class PhoneNumber : ModelWithAttributes<PhoneNumber>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -64,8 +61,9 @@ namespace Rock.Models.Crm
 
         public static PhoneNumber Read(int id)
         {
-            return new Rock.Services.Crm.PhoneNumberService().GetPhoneNumber( id );
+            return new Rock.Services.Crm.PhoneNumberService().Get( id );
         }
+
     }
 
     public partial class PhoneNumberConfiguration : EntityTypeConfiguration<PhoneNumber>

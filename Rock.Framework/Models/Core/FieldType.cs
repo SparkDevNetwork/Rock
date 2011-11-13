@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreFieldType" )]
-    public partial class FieldType : Model, IAuditable
+    public partial class FieldType : Model<FieldType>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -71,8 +68,9 @@ namespace Rock.Models.Core
 
         public static FieldType Read(int id)
         {
-            return new Rock.Services.Core.FieldTypeService().GetFieldType( id );
+            return new Rock.Services.Core.FieldTypeService().Get( id );
         }
+
     }
 
     public partial class FieldTypeConfiguration : EntityTypeConfiguration<FieldType>

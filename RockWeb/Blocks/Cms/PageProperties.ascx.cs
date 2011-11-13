@@ -15,18 +15,15 @@ namespace RockWeb.Blocks.Cms
     {
         private Rock.Cms.Cached.Page _page = null;
         private string _zoneName = string.Empty;
-        MembershipUser user;
 
         protected override void OnInit( EventArgs e )
         {
             try
             {
-                user = Membership.GetUser();
-
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Cms.Cached.Page.Read( pageId );
 
-                if ( _page.Authorized( "Configure", user ) )
+                if ( _page.Authorized( "Configure", CurrentUser ) )
                 {
                     foreach ( Rock.Cms.Cached.Attribute attribute in _page.Attributes )
                     {
@@ -72,7 +69,7 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.Authorized( "Configure", user ) )
+            if (!Page.IsPostBack && _page.Authorized( "Configure", CurrentUser ) )
             {
                 LoadDropdowns();
 
@@ -97,7 +94,7 @@ namespace RockWeb.Blocks.Cms
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
                 Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page page = pageService.GetPage( _page.Id );
+                Rock.Models.Cms.Page page = pageService.Get( _page.Id );
 
                 page.Name = tbPageName.Text;
                 page.Title = tbPageTitle.Text;

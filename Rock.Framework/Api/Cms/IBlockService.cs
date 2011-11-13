@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IBlockService
     {
 		[OperationContract]
-        Rock.Models.Cms.Block GetBlock( string id );
+        Rock.Models.Cms.Block Get( string id );
 
         [OperationContract]
         void UpdateBlock( string id, Rock.Models.Cms.Block Block );

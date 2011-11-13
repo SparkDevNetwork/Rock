@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlog" )]
-    public partial class Blog : ModelWithAttributes, IAuditable
+    public partial class Blog : ModelWithAttributes<Blog>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[MaxLength( 75 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -85,8 +82,9 @@ namespace Rock.Models.Cms
 
         public static Blog Read(int id)
         {
-            return new Rock.Services.Cms.BlogService().GetBlog( id );
+            return new Rock.Services.Cms.BlogService().Get( id );
         }
+
     }
 
     public partial class BlogConfiguration : EntityTypeConfiguration<Blog>

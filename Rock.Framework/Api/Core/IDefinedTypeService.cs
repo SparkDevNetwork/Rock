@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IDefinedTypeService
     {
 		[OperationContract]
-        Rock.Models.Core.DefinedType GetDefinedType( string id );
+        Rock.Models.Core.DefinedType Get( string id );
 
         [OperationContract]
         void UpdateDefinedType( string id, Rock.Models.Core.DefinedType DefinedType );

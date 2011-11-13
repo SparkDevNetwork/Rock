@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IPageRouteService
     {
 		[OperationContract]
-        Rock.Models.Cms.PageRoute GetPageRoute( string id );
+        Rock.Models.Cms.PageRoute Get( string id );
 
         [OperationContract]
         void UpdatePageRoute( string id, Rock.Models.Cms.PageRoute PageRoute );

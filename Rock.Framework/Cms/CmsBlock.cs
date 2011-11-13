@@ -23,7 +23,7 @@ namespace Rock.Cms
     {
         #region Events
 
-        public event AttributesUpdatedEventHandler AttributesUpdated;
+        public event EventHandler<EventArgs> AttributesUpdated;
 
         #endregion
 
@@ -48,6 +48,15 @@ namespace Rock.Cms
         {
             get { return ( ( CmsPage )this.Page ).CurrentPersonId; }
         }
+
+        /// <summary>
+        /// Returns the currently logged in user.  If user is not logged in, returns null
+        /// </summary>
+        public MembershipUser CurrentUser
+        {
+            get { return ( ( CmsPage )this.Page ).CurrentUser; }
+        }
+
 
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
@@ -149,8 +158,7 @@ namespace Rock.Cms
 
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            MembershipUser user = Membership.GetUser();
-            if ( BlockInstance.Authorized( "Configure", user ) )
+            if ( BlockInstance.Authorized( "Configure", CurrentUser ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
@@ -261,7 +269,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public bool UserAuthorized( string action )
         {
-            return BlockInstance.Authorized( action, System.Web.Security.Membership.GetUser() );
+            return BlockInstance.Authorized( action, CurrentUser );
         }
 
         /// <summary>
@@ -302,7 +310,7 @@ namespace Rock.Cms
                         Button trigger = new Button();
                         trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         trigger.ID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id.ToString() );
-                        trigger.Click += new EventHandler( trigger_Click );
+                        trigger.Click += trigger_Click;
                         content.Controls.Add( trigger );
 
                         HiddenField triggerData = new HiddenField();
@@ -332,7 +340,7 @@ namespace Rock.Cms
                 aSecureBlock.Attributes.Add( "class", "security icon-button show-iframe-dialog" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Rock.Cms.Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
-                aSecureBlock.Attributes.Add( "title", "Security" );
+                aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 
                 // Move
@@ -397,10 +405,4 @@ namespace Rock.Cms
         #endregion
 
     }
-
-    #region Delegates
-
-    public delegate void AttributesUpdatedEventHandler(object sender, EventArgs e);
-
-    #endregion
 }

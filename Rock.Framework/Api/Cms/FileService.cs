@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class FileService : IFileService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.File GetFile( string id )
+        public Rock.Models.Cms.File Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                Rock.Models.Cms.File File = FileService.GetFile( int.Parse( id ) );
+                Rock.Models.Cms.File File = FileService.Get( int.Parse( id ) );
                 if ( File.Authorized( "View", currentUser ) )
                     return File;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                Rock.Models.Cms.File existingFile = FileService.GetFile( int.Parse( id ) );
+                Rock.Models.Cms.File existingFile = FileService.Get( int.Parse( id ) );
                 if ( existingFile.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                FileService.AttachFile( File );
+                FileService.Add( File );
                 FileService.Save( File, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                Rock.Models.Cms.File File = FileService.GetFile( int.Parse( id ) );
+                Rock.Models.Cms.File File = FileService.Get( int.Parse( id ) );
                 if ( File.Authorized( "Edit", currentUser ) )
                 {
-                    FileService.DeleteFile( File );
+                    FileService.Delete( File );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

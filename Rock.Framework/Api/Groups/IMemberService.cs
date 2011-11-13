@@ -18,7 +18,7 @@ namespace Rock.Api.Groups
     public partial interface IMemberService
     {
 		[OperationContract]
-        Rock.Models.Groups.Member GetMember( string id );
+        Rock.Models.Groups.Member Get( string id );
 
         [OperationContract]
         void UpdateMember( string id, Rock.Models.Groups.Member Member );

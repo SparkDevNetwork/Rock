@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsPageRoute" )]
-    public partial class PageRoute : ModelWithAttributes, IAuditable
+    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -61,8 +58,9 @@ namespace Rock.Models.Cms
 
         public static PageRoute Read(int id)
         {
-            return new Rock.Services.Cms.PageRouteService().GetPageRoute( id );
+            return new Rock.Services.Cms.PageRouteService().Get( id );
         }
+
     }
 
     public partial class PageRouteConfiguration : EntityTypeConfiguration<PageRoute>

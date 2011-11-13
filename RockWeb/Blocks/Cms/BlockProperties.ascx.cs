@@ -22,12 +22,10 @@ namespace RockWeb.Blocks.Cms
 
             try
             {
-                MembershipUser user = Membership.GetUser();
-
                 int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
                 _blockInstance = Rock.Cms.Cached.BlockInstance.Read( blockInstanceId );
 
-                if ( _blockInstance.Authorized( "Configure", user ) )
+                if ( _blockInstance.Authorized( "Configure", CurrentUser ) )
                 {
                     tbBlockName.Text = _blockInstance.Name;
                     tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
@@ -77,7 +75,7 @@ namespace RockWeb.Blocks.Cms
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.GetBlockInstance( _blockInstance.Id );
+                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
 
                 blockInstance.Name = tbBlockName.Text;
                 blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );

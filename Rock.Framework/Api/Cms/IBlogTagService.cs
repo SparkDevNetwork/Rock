@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IBlogTagService
     {
 		[OperationContract]
-        Rock.Models.Cms.BlogTag GetBlogTag( string id );
+        Rock.Models.Cms.BlogTag Get( string id );
 
         [OperationContract]
         void UpdateBlogTag( string id, Rock.Models.Cms.BlogTag BlogTag );

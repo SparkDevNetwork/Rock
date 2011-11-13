@@ -76,7 +76,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Core.AttributeService attributeService = new Services.Core.AttributeService();
-                Rock.Models.Core.Attribute attributeModel = attributeService.GetAttribute( id );
+                Rock.Models.Core.Attribute attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
                     attribute = Attribute.CopyModel( attributeModel );

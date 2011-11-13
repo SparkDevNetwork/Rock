@@ -20,7 +20,7 @@ namespace Rock.Api.Cms
     public partial class AuthService : IAuthService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Auth GetAuth( string id )
+        public Rock.Models.Cms.Auth Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth Auth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth Auth = AuthService.Get( int.Parse( id ) );
                 if ( Auth.Authorized( "View", currentUser ) )
                     return Auth;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth existingAuth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth existingAuth = AuthService.Get( int.Parse( id ) );
                 if ( existingAuth.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
@@ -73,7 +73,7 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                AuthService.AttachAuth( Auth );
+                AuthService.Add( Auth );
                 AuthService.Save( Auth, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth Auth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth Auth = AuthService.Get( int.Parse( id ) );
                 if ( Auth.Authorized( "Edit", currentUser ) )
                 {
-                    AuthService.DeleteAuth( Auth );
+                    AuthService.Delete( Auth );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -89,8 +89,8 @@ namespace Rock.Controls
             this.AllowPaging = true;
 
             GridPagerTemplate gridPagerTemplate = new GridPagerTemplate();
-            gridPagerTemplate.AddClick += new EventHandler( gridPagerTemplate_AddClick );
-            gridPagerTemplate.PageClick += new EventHandler( gridPagerTemplate_PageClick );
+            gridPagerTemplate.AddClick += gridPagerTemplate_AddClick;
+            gridPagerTemplate.PageClick += gridPagerTemplate_PageClick;
             this.PagerTemplate = gridPagerTemplate;
 
             this.ShowHeaderWhenEmpty = true;
@@ -350,7 +350,7 @@ namespace Rock.Controls
             DropDownList ddl = new DropDownList();
             ddl.ID = "ddlPageList";
             ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += new EventHandler( ddl_SelectedIndexChanged );
+            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             Label lbl = new Label();
             lbl.Text = "Select a page:";
@@ -367,7 +367,7 @@ namespace Rock.Controls
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
-            lbAdd.Click += new EventHandler( lbAdd_Click );
+            lbAdd.Click += lbAdd_Click;
             divActions.Controls.Add( lbAdd );
         }
 

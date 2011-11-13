@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlogCategory" )]
-    public partial class BlogCategory : ModelWithAttributes, IAuditable
+    public partial class BlogCategory : ModelWithAttributes<BlogCategory>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public int BlogId { get; set; }
 		
@@ -60,8 +57,9 @@ namespace Rock.Models.Cms
 
         public static BlogCategory Read(int id)
         {
-            return new Rock.Services.Cms.BlogCategoryService().GetBlogCategory( id );
+            return new Rock.Services.Cms.BlogCategoryService().Get( id );
         }
+
     }
 
     public partial class BlogCategoryConfiguration : EntityTypeConfiguration<BlogCategory>

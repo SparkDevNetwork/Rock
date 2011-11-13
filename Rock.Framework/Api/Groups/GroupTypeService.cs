@@ -20,7 +20,7 @@ namespace Rock.Api.Groups
     public partial class GroupTypeService : IGroupTypeService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.GroupType GetGroupType( string id )
+        public Rock.Models.Groups.GroupType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.GroupTypeService GroupTypeService = new Rock.Services.Groups.GroupTypeService();
-                Rock.Models.Groups.GroupType GroupType = GroupTypeService.GetGroupType( int.Parse( id ) );
+                Rock.Models.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
                 if ( GroupType.Authorized( "View", currentUser ) )
                     return GroupType;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupTypeService GroupTypeService = new Rock.Services.Groups.GroupTypeService();
-                Rock.Models.Groups.GroupType existingGroupType = GroupTypeService.GetGroupType( int.Parse( id ) );
+                Rock.Models.Groups.GroupType existingGroupType = GroupTypeService.Get( int.Parse( id ) );
                 if ( existingGroupType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
@@ -73,7 +73,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupTypeService GroupTypeService = new Rock.Services.Groups.GroupTypeService();
-                GroupTypeService.AttachGroupType( GroupType );
+                GroupTypeService.Add( GroupType );
                 GroupTypeService.Save( GroupType, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupTypeService GroupTypeService = new Rock.Services.Groups.GroupTypeService();
-                Rock.Models.Groups.GroupType GroupType = GroupTypeService.GetGroupType( int.Parse( id ) );
+                Rock.Models.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
                 if ( GroupType.Authorized( "Edit", currentUser ) )
                 {
-                    GroupTypeService.DeleteGroupType( GroupType );
+                    GroupTypeService.Delete( GroupType );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -20,7 +20,7 @@ namespace Rock.Api.Groups
     public partial class GroupService : IGroupService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Group GetGroup( string id )
+        public Rock.Models.Groups.Group Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group Group = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group Group = GroupService.Get( int.Parse( id ) );
                 if ( Group.Authorized( "View", currentUser ) )
                     return Group;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group existingGroup = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group existingGroup = GroupService.Get( int.Parse( id ) );
                 if ( existingGroup.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
@@ -73,7 +73,7 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                GroupService.AttachGroup( Group );
+                GroupService.Add( Group );
                 GroupService.Save( Group, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group Group = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group Group = GroupService.Get( int.Parse( id ) );
                 if ( Group.Authorized( "Edit", currentUser ) )
                 {
-                    GroupService.DeleteGroup( Group );
+                    GroupService.Delete( Group );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

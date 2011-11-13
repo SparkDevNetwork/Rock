@@ -70,7 +70,7 @@ namespace Rock.Cms
         {
             get
             {
-                MembershipUser user = Membership.GetUser();
+                MembershipUser user = CurrentUser;
                 if ( user != null )
                 {
                     if ( user.ProviderUserKey != null )
@@ -79,6 +79,26 @@ namespace Rock.Cms
                         return null;
                 }
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the currently logged in user.  Returns null if there is not a user logged in
+        /// </summary>
+        public MembershipUser CurrentUser
+        {
+            get
+            {
+                if ( Context.Items.Contains( "CurrentUser" ) )
+                {
+                    return ( MembershipUser )Context.Items["CurrentUser"];
+                }
+                else
+                {
+                    MembershipUser user = Membership.GetUser();
+                    Context.Items.Add( "CurrentUser", user );
+                    return user;
+                }
             }
         }
 
@@ -99,7 +119,7 @@ namespace Rock.Cms
                     else
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Person person = personService.GetPerson( personId.Value );
+                        Person person = personService.Get( personId.Value );
                         Context.Items.Add( "CurrentPerson", person );
                         return person;
                     }
@@ -212,7 +232,7 @@ namespace Rock.Cms
             }
 
             // Get current user/person info
-            MembershipUser user = Membership.GetUser();
+            MembershipUser user = CurrentUser;
 
             if ( user != null )
             {
@@ -229,7 +249,7 @@ namespace Rock.Cms
                     else
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Rock.Models.Crm.Person person = personService.GetPerson( personId );
+                        Rock.Models.Crm.Person person = personService.Get( personId );
                         if ( person != null )
                         {
                             UserName = person.FullName;

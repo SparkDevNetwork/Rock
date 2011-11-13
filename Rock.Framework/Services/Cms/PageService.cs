@@ -20,93 +20,17 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class PageService : Rock.Services.Service
+    public partial class PageService : Rock.Services.Service<Rock.Models.Cms.Page>
     {
-        private IPageRepository _repository;
-
-        public PageService()
-			: this( new EntityPageRepository() )
-        { }
-
-        public PageService( IPageRepository PageRepository )
+        public IEnumerable<Rock.Models.Cms.Page> GetByGuid( Guid guid )
         {
-            _repository = PageRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.Page> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.Page GetPage( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Page> GetPagesByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Cms.Page> GetByParentPageId( int? parentPageId )
         {
-            return _repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
+            return Repository.Find( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Page> GetPagesByParentPageId( int? parentPageId )
-        {
-            return _repository.Find( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
-        }
-		
-        public void AddPage( Rock.Models.Cms.Page Page )
-        {
-            if ( Page.Guid == Guid.Empty )
-                Page.Guid = Guid.NewGuid();
-
-            _repository.Add( Page );
-        }
-
-        public void AttachPage( Rock.Models.Cms.Page Page )
-        {
-            _repository.Attach( Page );
-        }
-
-		public void DeletePage( Rock.Models.Cms.Page Page )
-        {
-            _repository.Delete( Page );
-        }
-
-        public void Save( Rock.Models.Cms.Page Page, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Page, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Page.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
-
-        public void Reorder( List<Rock.Models.Cms.Page> Pages, int oldIndex, int newIndex, int? personId )
-        {
-            Rock.Models.Cms.Page movedPage = Pages[oldIndex];
-            Pages.RemoveAt( oldIndex );
-            if ( newIndex >= Pages.Count )
-                Pages.Add( movedPage );
-            else
-                Pages.Insert( newIndex, movedPage );
-
-            int order = 0;
-            foreach ( Rock.Models.Cms.Page Page in Pages )
-            {
-                if ( Page.Order != order )
-                {
-                    Page.Order = order;
-                    Save( Page, personId );
-                }
-                order++;
-            }
-        }
     }
 }

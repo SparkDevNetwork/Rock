@@ -27,7 +27,7 @@ namespace Rock.Services.Cms
             using ( XmlWriter writer = XmlWriter.Create( builder, settings ) )
             {
                 // get blog
-                Blog blog = this.GetBlog( key );
+                Blog blog = this.Get( key );
 
                 if ( blog == null )
                 {

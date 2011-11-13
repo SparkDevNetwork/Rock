@@ -20,7 +20,7 @@ namespace Rock.Api.Core
     public partial class DefinedTypeService : IDefinedTypeService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedType GetDefinedType( string id )
+        public Rock.Models.Core.DefinedType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "View", currentUser ) )
                     return DefinedType;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType existingDefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( existingDefinedType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
@@ -73,7 +73,7 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                DefinedTypeService.AttachDefinedType( DefinedType );
+                DefinedTypeService.Add( DefinedType );
                 DefinedTypeService.Save( DefinedType, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "Edit", currentUser ) )
                 {
-                    DefinedTypeService.DeleteDefinedType( DefinedType );
+                    DefinedTypeService.Delete( DefinedType );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -38,8 +38,7 @@ namespace RockWeb.Blocks.Cms
 
             lTitle.Text = iSecured.ToString();
 
-            MembershipUser user = Membership.GetUser();
-            if ( iSecured.Authorized( "Configure", Membership.GetUser() ) )
+            if ( iSecured.Authorized( "Configure", CurrentUser ) )
             {
                 ddlAction.DataSource = iSecured.SupportedActions;
                 ddlAction.DataBind();
@@ -72,7 +71,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.Authorized( "Configure", Membership.GetUser() ) )
+            if ( iSecured.Authorized( "Configure", CurrentUser ) )
             {
                 if (!Page.IsPostBack)
                     BindGrid();
@@ -116,10 +115,10 @@ namespace RockWeb.Blocks.Cms
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Models.Cms.Auth auth = authService.GetAuth( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Models.Cms.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
-                authService.DeleteAuth( auth );
+                authService.Delete( auth );
                 authService.Save( auth, CurrentPersonId );
 
                 Rock.Cms.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
@@ -150,7 +149,7 @@ namespace RockWeb.Blocks.Cms
             {
                 int id = ( int )rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
-                Rock.Models.Cms.Auth auth = authService.GetAuth( id );
+                Rock.Models.Cms.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
@@ -204,7 +203,7 @@ namespace RockWeb.Blocks.Cms
                 auth.UserOrRole = "U";
                 auth.UserOrRoleName = "*";
                 auth.Order = ++maxOrder;
-                authService.AddAuth( auth );
+                authService.Add( auth );
                 authService.Save( auth, CurrentPersonId );
 
                 actionUpdated = true;
@@ -251,7 +250,7 @@ namespace RockWeb.Blocks.Cms
                         auth.UserOrRole = "R";
                         auth.UserOrRoleName = ddlRoles.SelectedValue;
                         auth.Order = ++maxOrder;
-                        authService.AddAuth( auth );
+                        authService.Add( auth );
                         authService.Save( auth, CurrentPersonId );
 
                         actionUpdated = true;
@@ -306,7 +305,7 @@ namespace RockWeb.Blocks.Cms
                         auth.UserOrRole = "U";
                         auth.UserOrRoleName = li.Value;
                         auth.Order = ++maxOrder;
-                        authService.AddAuth( auth );
+                        authService.Add( auth );
                         authService.Save( auth, CurrentPersonId );
 
                         actionUpdated = true;

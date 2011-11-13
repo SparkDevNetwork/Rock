@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Groups
 {
     [Table( "groupsGroupRole" )]
-    public partial class GroupRole : ModelWithAttributes, IAuditable
+    public partial class GroupRole : ModelWithAttributes<GroupRole>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -66,8 +63,9 @@ namespace Rock.Models.Groups
 
         public static GroupRole Read(int id)
         {
-            return new Rock.Services.Groups.GroupRoleService().GetGroupRole( id );
+            return new Rock.Services.Groups.GroupRoleService().Get( id );
         }
+
     }
 
     public partial class GroupRoleConfiguration : EntityTypeConfiguration<GroupRole>

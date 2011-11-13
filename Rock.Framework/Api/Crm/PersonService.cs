@@ -20,7 +20,7 @@ namespace Rock.Api.Crm
     public partial class PersonService : IPersonService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.Person GetPerson( string id )
+        public Rock.Models.Crm.Person Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +30,7 @@ namespace Rock.Api.Crm
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
-                Rock.Models.Crm.Person Person = PersonService.GetPerson( int.Parse( id ) );
+                Rock.Models.Crm.Person Person = PersonService.Get( int.Parse( id ) );
                 if ( Person.Authorized( "View", currentUser ) )
                     return Person;
                 else
@@ -50,7 +50,7 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
-                Rock.Models.Crm.Person existingPerson = PersonService.GetPerson( int.Parse( id ) );
+                Rock.Models.Crm.Person existingPerson = PersonService.Get( int.Parse( id ) );
                 if ( existingPerson.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
@@ -73,7 +73,7 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
-                PersonService.AttachPerson( Person );
+                PersonService.Add( Person );
                 PersonService.Save( Person, ( int )currentUser.ProviderUserKey );
             }
         }
@@ -90,10 +90,10 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
-                Rock.Models.Crm.Person Person = PersonService.GetPerson( int.Parse( id ) );
+                Rock.Models.Crm.Person Person = PersonService.Get( int.Parse( id ) );
                 if ( Person.Authorized( "Edit", currentUser ) )
                 {
-                    PersonService.DeletePerson( Person );
+                    PersonService.Delete( Person );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IDefinedValueService
     {
 		[OperationContract]
-        Rock.Models.Core.DefinedValue GetDefinedValue( string id );
+        Rock.Models.Core.DefinedValue Get( string id );
 
         [OperationContract]
         void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValue DefinedValue );
