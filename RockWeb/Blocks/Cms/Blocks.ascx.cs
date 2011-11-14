@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Cms
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
                             block.Description = block.Path;
 
-                            blockService.Add( block );
+                            blockService.Add( block, CurrentPersonId );
                             Rock.Models.Cms.Block testBlock = block;
                             blockService.Save( block, CurrentPersonId );
                         }
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Cms
             Rock.Models.Cms.Block block = blockService.Get( ( int )e.Keys["id"] );
             if ( block != null )
             {
-                blockService.Delete( block );
+                blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
             }
 
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Cms
 				block.Description = tbDescription.Text;
 
 				if ( _action == "add" )
-					blockService.Add( block );
+                    blockService.Add( block, CurrentPersonId );
 				blockService.Save( block, CurrentPersonId );
 
 				Response.Redirect( "~/Bloc/list" );

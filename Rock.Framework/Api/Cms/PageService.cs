@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingPage.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
-                    PageService.Save( existingPage, ( int )currentUser.ProviderUserKey );
+                    PageService.Save( existingPage, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                PageService.Add( Page );
-                PageService.Save( Page, ( int )currentUser.ProviderUserKey );
+                PageService.Add( Page, currentUser.PersonId() );
+                PageService.Save( Page, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.Page Page = PageService.Get( int.Parse( id ) );
                 if ( Page.Authorized( "Edit", currentUser ) )
                 {
-                    PageService.Delete( Page );
+                    PageService.Delete( Page, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

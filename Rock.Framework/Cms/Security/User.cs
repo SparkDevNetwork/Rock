@@ -25,6 +25,8 @@ namespace Rock.Cms.Security
 
         private int newPasswordLength = 8;
 
+        #region Enums
+
         private enum FailureType
         {
           Password = 1,
@@ -37,6 +39,8 @@ namespace Rock.Cms.Security
             Facebook = 2, 
             ActiveDirectory = 3
         }
+
+        #endregion
 
         #region Properties
 
@@ -247,7 +251,7 @@ namespace Rock.Cms.Security
 
                 try
                 {
-                    UserService.Add( user );
+                    UserService.Add( user, CurrentPersonId() );
                     UserService.Save( user, CurrentPersonId() );
                     status = MembershipCreateStatus.Success;
 
@@ -277,7 +281,8 @@ namespace Rock.Cms.Security
             {
                 try
                 {
-                    UserService.Delete( user );
+                    UserService.Delete( user, CurrentPersonId() );
+                    UserService.Save( user, CurrentPersonId() );
                     return true;
                 }
                 catch ( SystemException ex )
@@ -653,12 +658,8 @@ namespace Rock.Cms.Security
                 user = Membership.GetUser();
 
             if ( user != null )
-            {
-                if ( user.ProviderUserKey != null )
-                    return ( int )user.ProviderUserKey;
-                else
-                    return null;
-            }
+                return user.PersonId();
+
             return null;
         }
 
@@ -690,5 +691,17 @@ namespace Rock.Cms.Security
         }
 
         #endregion
+
+    }
+
+    public static class MembershipExtension
+    {
+        public static int? PersonId( this System.Web.Security.MembershipUser user )
+        {
+            if ( user.ProviderUserKey != null )
+                return ( int )user.ProviderUserKey;
+            else
+                return null;
+        }
     }
 }

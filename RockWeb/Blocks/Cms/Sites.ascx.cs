@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
                 site.DefaultPage = page;
 
                 if ( _action == "add" )
-                    siteService.Add( site );
+                    siteService.Add( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
                 Response.Redirect( "~/site/list" );

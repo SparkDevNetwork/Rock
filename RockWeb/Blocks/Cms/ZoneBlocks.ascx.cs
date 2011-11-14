@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Cms
             Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                blockInstanceService.Delete( blockInstance );
+                blockInstanceService.Delete( blockInstance, CurrentPersonId );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
 
                 _page.FlushBlockInstances();
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Cms
                 else
                     blockInstance.Order = 0;
 
-                blockInstanceService.Add( blockInstance );
+                blockInstanceService.Add( blockInstance, CurrentPersonId );
             }
             else
                 blockInstance = blockInstanceService.Get( blockInstanceId );
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
                             block.Description = block.Path;
 
-                            blockService.Add( block );
+                            blockService.Add( block, CurrentPersonId );
                             blockService.Save( block, CurrentPersonId );
                         }
                     }

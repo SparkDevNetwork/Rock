@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingBlogTag.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-                    BlogTagService.Save( existingBlogTag, ( int )currentUser.ProviderUserKey );
+                    BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                BlogTagService.Add( BlogTag );
-                BlogTagService.Save( BlogTag, ( int )currentUser.ProviderUserKey );
+                BlogTagService.Add( BlogTag, currentUser.PersonId() );
+                BlogTagService.Save( BlogTag, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "Edit", currentUser ) )
                 {
-                    BlogTagService.Delete( BlogTag );
+                    BlogTagService.Delete( BlogTag, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

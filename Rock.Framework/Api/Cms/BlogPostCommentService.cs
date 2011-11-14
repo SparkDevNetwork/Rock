@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingBlogPostComment.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-                    BlogPostCommentService.Save( existingBlogPostComment, ( int )currentUser.ProviderUserKey );
+                    BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                BlogPostCommentService.Add( BlogPostComment );
-                BlogPostCommentService.Save( BlogPostComment, ( int )currentUser.ProviderUserKey );
+                BlogPostCommentService.Add( BlogPostComment, currentUser.PersonId() );
+                BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
                 if ( BlogPostComment.Authorized( "Edit", currentUser ) )
                 {
-                    BlogPostCommentService.Delete( BlogPostComment );
+                    BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

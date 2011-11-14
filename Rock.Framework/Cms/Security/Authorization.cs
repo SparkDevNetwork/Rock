@@ -191,7 +191,7 @@ namespace Rock.Cms.Security
 
                 // Delete the current authorizations for the target entity
                 foreach(Auth auth in authService.GetByEntityTypeAndEntityId(targetEntity.AuthEntity, targetEntity.Id))
-                    authService.Delete(auth);
+                    authService.Delete(auth, personId);
 
                 Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
 
@@ -212,7 +212,7 @@ namespace Rock.Cms.Security
                             auth.UserOrRole = rule.UserOrRole;
                             auth.UserOrRoleName = rule.UserOrRoleName;
 
-                            authService.Add(auth);
+                            authService.Add(auth, personId);
                             authService.Save(auth, personId);
 
                             newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.UserOrRole, rule.UserOrRoleName, rule.Order ) );

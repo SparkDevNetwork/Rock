@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Core
                 if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-                    AttributeQualifierService.Save( existingAttributeQualifier, ( int )currentUser.ProviderUserKey );
+                    AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                AttributeQualifierService.Add( AttributeQualifier );
-                AttributeQualifierService.Save( AttributeQualifier, ( int )currentUser.ProviderUserKey );
+                AttributeQualifierService.Add( AttributeQualifier, currentUser.PersonId() );
+                AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Core
                 Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeQualifierService.Delete( AttributeQualifier );
+                    AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

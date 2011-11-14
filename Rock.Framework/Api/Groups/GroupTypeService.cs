@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Groups
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Groups
                 if ( existingGroupType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
-                    GroupTypeService.Save( existingGroupType, ( int )currentUser.ProviderUserKey );
+                    GroupTypeService.Save( existingGroupType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupTypeService GroupTypeService = new Rock.Services.Groups.GroupTypeService();
-                GroupTypeService.Add( GroupType );
-                GroupTypeService.Save( GroupType, ( int )currentUser.ProviderUserKey );
+                GroupTypeService.Add( GroupType, currentUser.PersonId() );
+                GroupTypeService.Save( GroupType, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Groups
                 Rock.Models.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
                 if ( GroupType.Authorized( "Edit", currentUser ) )
                 {
-                    GroupTypeService.Delete( GroupType );
+                    GroupTypeService.Delete( GroupType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Core
                 if ( existingAttribute.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(Attribute);
-                    AttributeService.Save( existingAttribute, ( int )currentUser.ProviderUserKey );
+                    AttributeService.Save( existingAttribute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                AttributeService.Add( Attribute );
-                AttributeService.Save( Attribute, ( int )currentUser.ProviderUserKey );
+                AttributeService.Add( Attribute, currentUser.PersonId() );
+                AttributeService.Save( Attribute, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Core
                 Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeService.Delete( Attribute );
+                    AttributeService.Delete( Attribute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

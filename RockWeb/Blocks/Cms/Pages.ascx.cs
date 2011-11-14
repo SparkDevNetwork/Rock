@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Cms
             {
                 Rock.Cms.Cached.Page.Flush( page.Id );
 
-                pageService.Delete( page );
+                pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
 
                 _page.FlushChildPages();
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Cms
                 else
                     page.Order = 0;
 
-                pageService.Add( page );
+                pageService.Add( page, CurrentPersonId );
 
                 Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }

@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Cms
                     content.EntityValue = entityValue;
                     content.Approved = true;
                     content.ApprovedByPersonId = CurrentPersonId;
-                    service.Add( content );
+                    service.Add( content, CurrentPersonId );
                 }
 
                 content.Content = txtHtmlContentEditor.Text;

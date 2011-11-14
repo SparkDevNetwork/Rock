@@ -61,9 +61,9 @@ namespace Rock.Models
             if ( Adding != null )
                 Adding( this, e );
         }
-        public virtual void RaiseAddingEvent( out bool cancel )
+        public virtual void RaiseAddingEvent( out bool cancel, int? personId )
         {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this );
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
             OnAdding( e );
             cancel = e.Cancel;
         }
@@ -75,9 +75,9 @@ namespace Rock.Models
             if ( Added != null )
                 Added( this, e );
         }
-        public virtual void RaiseAddedEvent()
+        public virtual void RaiseAddedEvent( int? personId )
         {
-            OnAdded( new ModelUpdatedEventArgs( this ) );
+            OnAdded( new ModelUpdatedEventArgs( this, personId ) );
         }
 
         // Deleting
@@ -87,9 +87,9 @@ namespace Rock.Models
             if ( Deleting != null )
                 Deleting( this, e );
         }
-        public virtual void RaiseDeletingEvent( out bool cancel )
+        public virtual void RaiseDeletingEvent( out bool cancel, int? personId )
         {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this );
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
             OnDeleting( e );
             cancel = e.Cancel;
         }
@@ -101,9 +101,9 @@ namespace Rock.Models
             if ( Deleted != null )
                 Deleted( this, e );
         }
-        public virtual void RaiseDeletedEvent()
+        public virtual void RaiseDeletedEvent(int? personId)
         {
-            OnDeleted( new ModelUpdatedEventArgs( this ) );
+            OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
         }
 
         // Updating
@@ -113,9 +113,9 @@ namespace Rock.Models
             if ( Updating != null )
                 Updating( this, e );
         }
-        public virtual void RaiseUpdatingEvent( out bool cancel )
+        public virtual void RaiseUpdatingEvent( out bool cancel, int? personId )
         {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this );
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
             OnUpdating( e );
             cancel = e.Cancel;
         }
@@ -127,18 +127,28 @@ namespace Rock.Models
             if ( Updated != null )
                 Updated( this, e );
         }
-        public virtual void RaiseUpdatedEvent()
+        public virtual void RaiseUpdatedEvent( int? personId )
         {
-            OnUpdated( new ModelUpdatedEventArgs( this ) );
+            OnUpdated( new ModelUpdatedEventArgs( this, personId ) );
         }
 
         #endregion
     }
 
-    public class ModelUpdatingEventArgs : EventArgs
+    public class ModelUpdatedEventArgs : EventArgs
     {
         public readonly IModel Model;
+        public readonly int? PersonId;
 
+        public ModelUpdatedEventArgs( IModel model, int? personId )
+        {
+            Model = model;
+            PersonId = personId;
+        }
+    }
+
+    public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
+    {
         private bool cancel = false;
         public bool Cancel 
         { 
@@ -150,20 +160,10 @@ namespace Rock.Models
             }
 
         }
-
-        public ModelUpdatingEventArgs( IModel model )
+        public ModelUpdatingEventArgs( IModel model, int? personId )
+            : base( model, personId )
         {
-            Model = model;
         }
     }
 
-    public class ModelUpdatedEventArgs : EventArgs
-    {
-        public readonly IModel Model;
-
-        public ModelUpdatedEventArgs( IModel model )
-        {
-            Model = model;
-        }
-    }
 }

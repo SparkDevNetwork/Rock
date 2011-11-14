@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Crm
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Crm
                 if ( existingPhoneNumber.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
-                    PhoneNumberService.Save( existingPhoneNumber, ( int )currentUser.ProviderUserKey );
+                    PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                PhoneNumberService.Add( PhoneNumber );
-                PhoneNumberService.Save( PhoneNumber, ( int )currentUser.ProviderUserKey );
+                PhoneNumberService.Add( PhoneNumber, currentUser.PersonId() );
+                PhoneNumberService.Save( PhoneNumber, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Crm
                 Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
                 if ( PhoneNumber.Authorized( "Edit", currentUser ) )
                 {
-                    PhoneNumberService.Delete( PhoneNumber );
+                    PhoneNumberService.Delete( PhoneNumber, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -96,7 +96,7 @@ namespace Rock.Cms
                 }
 
                 if ( attribute.Id == 0 )
-                    attributeService.Add( attribute );
+                    attributeService.Add( attribute, currentPersonId );
                 else
                     Cached.Attribute.Flush( attribute.Id );
 

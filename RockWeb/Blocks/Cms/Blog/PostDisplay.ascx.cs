@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Cms.Blog
                 comment.PersonName = txtName.Text;
                 comment.PersonId = CurrentPersonId;
 
-                commentService.Add( comment );
+                commentService.Add( comment, CurrentPersonId );
                 commentService.Save( comment, CurrentPersonId );
 
                 // load comments

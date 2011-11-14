@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-                    HtmlContentService.Save( existingHtmlContent, ( int )currentUser.ProviderUserKey );
+                    HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                HtmlContentService.Add( HtmlContent );
-                HtmlContentService.Save( HtmlContent, ( int )currentUser.ProviderUserKey );
+                HtmlContentService.Add( HtmlContent, currentUser.PersonId() );
+                HtmlContentService.Save( HtmlContent, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "Edit", currentUser ) )
                 {
-                    HtmlContentService.Delete( HtmlContent );
+                    HtmlContentService.Delete( HtmlContent, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

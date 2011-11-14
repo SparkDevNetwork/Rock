@@ -64,7 +64,7 @@ namespace RockWeb.Blocks
             else
                 page.Order = 0;
 
-            pageService.Add( page );
+            pageService.Add( page, CurrentPersonId );
             pageService.Save( page, CurrentPersonId );
 
             BindGrid();
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks
             Rock.Models.Cms.Page page = pageService.Get((int)e.Keys["id"]);
             if ( page != null )
             {
-                pageService.Delete( page );
+                pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
             }
 

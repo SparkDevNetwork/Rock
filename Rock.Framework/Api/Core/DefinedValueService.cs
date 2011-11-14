@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Core
                 if ( existingDefinedValue.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-                    DefinedValueService.Save( existingDefinedValue, ( int )currentUser.ProviderUserKey );
+                    DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                DefinedValueService.Add( DefinedValue );
-                DefinedValueService.Save( DefinedValue, ( int )currentUser.ProviderUserKey );
+                DefinedValueService.Add( DefinedValue, currentUser.PersonId() );
+                DefinedValueService.Save( DefinedValue, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Core
                 Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
                 if ( DefinedValue.Authorized( "Edit", currentUser ) )
                 {
-                    DefinedValueService.Delete( DefinedValue );
+                    DefinedValueService.Delete( DefinedValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Core
                 if ( existingDefinedType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-                    DefinedTypeService.Save( existingDefinedType, ( int )currentUser.ProviderUserKey );
+                    DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                DefinedTypeService.Add( DefinedType );
-                DefinedTypeService.Save( DefinedType, ( int )currentUser.ProviderUserKey );
+                DefinedTypeService.Add( DefinedType, currentUser.PersonId() );
+                DefinedTypeService.Save( DefinedType, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Core
                 Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "Edit", currentUser ) )
                 {
-                    DefinedTypeService.Delete( DefinedType );
+                    DefinedTypeService.Delete( DefinedType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
