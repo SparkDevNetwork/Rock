@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingSiteDomain.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
-                    SiteDomainService.Save( existingSiteDomain, ( int )currentUser.ProviderUserKey );
+                    SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                SiteDomainService.Add( SiteDomain );
-                SiteDomainService.Save( SiteDomain, ( int )currentUser.ProviderUserKey );
+                SiteDomainService.Add( SiteDomain, currentUser.PersonId() );
+                SiteDomainService.Save( SiteDomain, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
                 if ( SiteDomain.Authorized( "Edit", currentUser ) )
                 {
-                    SiteDomainService.Delete( SiteDomain );
+                    SiteDomainService.Delete( SiteDomain, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

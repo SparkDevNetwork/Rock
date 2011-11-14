@@ -137,7 +137,7 @@ namespace Rock.Repository
                         if ( model != null )
                         {
                             bool cancel = false;
-                            model.RaiseUpdatingEvent( out cancel );
+                            model.RaiseUpdatingEvent( out cancel, PersonId );
                             if ( cancel )
                             {
                                 contextAdapter.ObjectContext.Detach( entry );
@@ -167,21 +167,21 @@ namespace Rock.Repository
             {
                 var model = modifiedEntity as Model<T>;
                 if (model != null)
-                    model.RaiseAddedEvent();
+                    model.RaiseAddedEvent( PersonId );
             }
 
             foreach ( object deletedEntity in deletedEntities )
             {
                 var model = deletedEntity as Model<T>;
                 if ( model != null )
-                    model.RaiseDeletedEvent();
+                    model.RaiseDeletedEvent( PersonId );
             }
 
             foreach ( object modifiedEntity in modifiedEntities )
             {
                 var model = modifiedEntity as Model<T>;
                 if ( model != null )
-                    model.RaiseUpdatedEvent();
+                    model.RaiseUpdatedEvent( PersonId );
             }
 
             return entityChanges;

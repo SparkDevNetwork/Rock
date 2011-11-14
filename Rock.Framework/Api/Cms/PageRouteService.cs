@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingPageRoute.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-                    PageRouteService.Save( existingPageRoute, ( int )currentUser.ProviderUserKey );
+                    PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                PageRouteService.Add( PageRoute );
-                PageRouteService.Save( PageRoute, ( int )currentUser.ProviderUserKey );
+                PageRouteService.Add( PageRoute, currentUser.PersonId() );
+                PageRouteService.Save( PageRoute, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
                 if ( PageRoute.Authorized( "Edit", currentUser ) )
                 {
-                    PageRouteService.Delete( PageRoute );
+                    PageRouteService.Delete( PageRoute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

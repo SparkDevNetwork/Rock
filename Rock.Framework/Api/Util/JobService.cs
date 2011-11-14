@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Util
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Util
                 if ( existingJob.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-                    JobService.Save( existingJob, ( int )currentUser.ProviderUserKey );
+                    JobService.Save( existingJob, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                JobService.Add( Job );
-                JobService.Save( Job, ( int )currentUser.ProviderUserKey );
+                JobService.Add( Job, currentUser.PersonId() );
+                JobService.Save( Job, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Util
                 Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "Edit", currentUser ) )
                 {
-                    JobService.Delete( Job );
+                    JobService.Delete( Job, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

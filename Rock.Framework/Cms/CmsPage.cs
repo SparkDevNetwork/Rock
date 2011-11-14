@@ -72,13 +72,9 @@ namespace Rock.Cms
             {
                 MembershipUser user = CurrentUser;
                 if ( user != null )
-                {
-                    if ( user.ProviderUserKey != null )
-                        return ( int )user.ProviderUserKey;
-                    else
-                        return null;
-                }
-                return null;
+                    return user.PersonId();
+                else
+                    return null;
             }
         }
 
@@ -237,11 +233,11 @@ namespace Rock.Cms
             if ( user != null )
             {
                 UserName = user.UserName;
+                int? personId = user.PersonId();
 
-                if ( user.ProviderUserKey != null && user.ProviderUserKey is int)
+                if ( personId.HasValue)
                 {
-                    int personId = ( int )user.ProviderUserKey;
-                    string personNameKey = "PersonName_" + personId.ToString();
+                    string personNameKey = "PersonName_" + personId.Value.ToString();
                     if ( Session[personNameKey] != null )
                     {
                         UserName = Session[personNameKey].ToString();
@@ -249,7 +245,7 @@ namespace Rock.Cms
                     else
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Rock.Models.Crm.Person person = personService.Get( personId );
+                        Rock.Models.Crm.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;

@@ -605,6 +605,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api<#= projectNamespace #>
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -645,7 +647,7 @@ namespace Rock.Api<#= projectNamespace #>
                 if ( existing<#= Entity #>.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-                    <#= Entity #>Service.Save( existing<#= Entity #>, ( int )currentUser.ProviderUserKey );
+                    <#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -664,8 +666,8 @@ namespace Rock.Api<#= projectNamespace #>
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= Entity #>Service.Add( <#= Entity #> );
-                <#= Entity #>Service.Save( <#= Entity #>, ( int )currentUser.ProviderUserKey );
+                <#= Entity #>Service.Add( <#= Entity #>, currentUser.PersonId() );
+                <#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
             }
         }
 
@@ -684,7 +686,7 @@ namespace Rock.Api<#= projectNamespace #>
                 <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
                 if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
                 {
-                    <#= Entity #>Service.Delete( <#= Entity #> );
+                    <#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

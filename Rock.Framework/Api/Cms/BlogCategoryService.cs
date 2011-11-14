@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingBlogCategory.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-                    BlogCategoryService.Save( existingBlogCategory, ( int )currentUser.ProviderUserKey );
+                    BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                BlogCategoryService.Add( BlogCategory );
-                BlogCategoryService.Save( BlogCategory, ( int )currentUser.ProviderUserKey );
+                BlogCategoryService.Add( BlogCategory, currentUser.PersonId() );
+                BlogCategoryService.Save( BlogCategory, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
                 if ( BlogCategory.Authorized( "Edit", currentUser ) )
                 {
-                    BlogCategoryService.Delete( BlogCategory );
+                    BlogCategoryService.Delete( BlogCategory, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

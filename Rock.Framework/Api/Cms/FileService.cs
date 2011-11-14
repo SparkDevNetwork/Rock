@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Cms
                 if ( existingFile.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
-                    FileService.Save( existingFile, ( int )currentUser.ProviderUserKey );
+                    FileService.Save( existingFile, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                FileService.Add( File );
-                FileService.Save( File, ( int )currentUser.ProviderUserKey );
+                FileService.Add( File, currentUser.PersonId() );
+                FileService.Save( File, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Cms
                 Rock.Models.Cms.File File = FileService.Get( int.Parse( id ) );
                 if ( File.Authorized( "Edit", currentUser ) )
                 {
-                    FileService.Delete( File );
+                    FileService.Delete( File, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

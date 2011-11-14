@@ -14,6 +14,8 @@ using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
@@ -54,7 +56,7 @@ namespace Rock.Api.Core
                 if ( existingEntityChange.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-                    EntityChangeService.Save( existingEntityChange, ( int )currentUser.ProviderUserKey );
+                    EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +75,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                EntityChangeService.Add( EntityChange );
-                EntityChangeService.Save( EntityChange, ( int )currentUser.ProviderUserKey );
+                EntityChangeService.Add( EntityChange, currentUser.PersonId() );
+                EntityChangeService.Save( EntityChange, currentUser.PersonId() );
             }
         }
 
@@ -93,7 +95,7 @@ namespace Rock.Api.Core
                 Rock.Models.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
                 if ( EntityChange.Authorized( "Edit", currentUser ) )
                 {
-                    EntityChangeService.Delete( EntityChange );
+                    EntityChangeService.Delete( EntityChange, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

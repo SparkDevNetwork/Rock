@@ -29,7 +29,7 @@ namespace RockWeb.Blocks
                 else
                 {
                     person = new Person();
-                    personService.Add( person );
+                    personService.Add( person, CurrentPersonId );
                 }
 
                 txtFirstName.Text = person.FirstName;
@@ -55,14 +55,14 @@ namespace RockWeb.Blocks
                 else
                 {
                     person = new Person();
-                    personService.Add( person );
+                    personService.Add( person, CurrentPersonId );
                 }
 
                 person.FirstName = txtFirstName.Text;
                 person.NickName = txtNickName.Text;
                 person.LastName = txtLastName.Text;
                 if ( person.Guid == Guid.Empty )
-                    personService.Add( person );
+                    personService.Add( person, CurrentPersonId );
                 personService.Save( person, CurrentPersonId );
             }
         }

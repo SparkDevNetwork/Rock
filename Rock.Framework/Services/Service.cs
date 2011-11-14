@@ -39,13 +39,13 @@ namespace Rock.Services
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 
-        public bool Add (T item)
+        public bool Add( T item, int? personId )
         {
             if ( item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
             bool cancel = false;
-            item.RaiseAddingEvent( out cancel );
+            item.RaiseAddingEvent( out cancel, personId );
             if ( !cancel )
             {
                 _repository.Add( item );
@@ -60,9 +60,17 @@ namespace Rock.Services
             _repository.Attach( item );
         }
 
-        public void Delete( T item )
+        public bool Delete( T item, int? personId  )
         {
-            _repository.Delete( item );
+            bool cancel = false;
+            item.RaiseAddingEvent( out cancel, personId );
+            if ( !cancel )
+            {
+                _repository.Delete( item );
+                return true;
+            }
+            else
+                return false;
         }
 
         public void Save( T item, int? personId )
@@ -74,7 +82,7 @@ namespace Rock.Services
                 Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
                 foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
                 {
-                    entityChangeService.Add( entityChange );
+                    entityChangeService.Add( entityChange, personId );
                     entityChangeService.Save( entityChange, personId );
                 }
             }
@@ -161,7 +169,7 @@ namespace Rock.Services
             if ( attributeValue == null )
             {
                 attributeValue = new Rock.Models.Core.AttributeValue();
-                attributeValueService.Add( attributeValue );
+                attributeValueService.Add( attributeValue, personId );
             }
 
             attributeValue.AttributeId = attribute.Id;
