@@ -179,7 +179,7 @@ namespace Rock.Models<#= projectNamespace #>
 						{
 							string colDesc = descProperty.Value.ToString();
 							int iStart = colDesc.ToLower().IndexOf("enum[");
-							if (iStart > 0)
+							if (iStart >= 0)
 							{
 								iStart += 5;
 								int iEnd = colDesc.IndexOf("]", iStart);

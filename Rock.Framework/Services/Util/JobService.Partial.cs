@@ -50,8 +50,7 @@ namespace Rock.Services.Util
             Rock.Helpers.Attributes.CreateAttributes( type, "Rock.Models.Util.Job", "Class", job.Class, null );
 
             // load up job attributes (parameters) 
-            JobService jobService = new JobService();
-            jobService.LoadAttributes( job );
+            Rock.Helpers.Attributes.LoadAttributes( job );
 
             JobDataMap map = new JobDataMap();
 

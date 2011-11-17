@@ -11,7 +11,7 @@ namespace Rock.Models
     /// If model needs to support attributes it should inherit from this base class instead of the Model class
     /// </summary>
     [IgnoreProperties(new[] { "AttributeValues" })]
-    public class ModelWithAttributes<T> : Model<T>
+    public class ModelWithAttributes<T> : Model<T>, IHasAttributes
     {
         // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
         // to tell WCF Data Services not to worry about the associated properties.
