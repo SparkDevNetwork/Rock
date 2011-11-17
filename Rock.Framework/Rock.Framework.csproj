@@ -201,6 +201,7 @@
     <Compile Include="Models\Cms\PageRoute.cs" />
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
+    <Compile Include="Models\IHasAttributes.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">

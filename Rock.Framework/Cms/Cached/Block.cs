@@ -49,9 +49,9 @@ namespace Rock.Cms.Cached
 
             if ( blockModel != null )
             {
-                blockService.LoadAttributes( blockModel );
+                Rock.Helpers.Attributes.LoadAttributes( blockModel );
                 foreach ( Rock.Models.Core.Attribute attribute in blockModel.Attributes )
-                    blockService.SaveAttributeValue( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                    Rock.Helpers.Attributes.SaveAttributeValue( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -90,7 +90,7 @@ namespace Rock.Cms.Cached
                     block.Description = blockModel.Description;
                     block.InstancePropertiesVerified = false;
 
-                    blockService.LoadAttributes( blockModel );
+                    Rock.Helpers.Attributes.LoadAttributes( blockModel );
 
                     block.AttributeValues = blockModel.AttributeValues;
 
