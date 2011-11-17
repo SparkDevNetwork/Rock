@@ -46,7 +46,7 @@ namespace Rock.Cms
             DefaultValue = defaultValue;
         }
 
-        internal bool UpdateAttribute( string entity, string entityQualifier, int entityQualiferId, int? currentPersonId )
+        internal bool UpdateAttribute( string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
 
@@ -54,15 +54,15 @@ namespace Rock.Cms
             Services.Core.FieldTypeService fieldTypeService = new Services.Core.FieldTypeService();
 
             Models.Core.Attribute attribute = attributeService.GetAttributesByEntityQualifierAndKey(
-                entity, entityQualifier, entityQualiferId, this.Key );
+                entity, entityQualifierColumn, entityQualifierValue, this.Key );
 
             if ( attribute == null )
             {
                 updated = true;
                 attribute = new Models.Core.Attribute();
                 attribute.Entity = entity;
-                attribute.EntityQualifier = entityQualifier;
-                attribute.EntityQualifierId = entityQualiferId;
+                attribute.EntityQualifierColumn = entityQualifierColumn;
+                attribute.EntityQualifierValue = entityQualifierValue;
                 attribute.Key = this.Key;
                 attribute.Order = int.MaxValue;
                 attribute.GridColumn = false;
