@@ -11,8 +11,8 @@ namespace Rock.Api.Crm.Address
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "StrikeIron" )]
     // TODO: Remove hardcoded attribute defaults once UI is created for setting values
-    [Rock.Attribute.Property( "User ID", "The Strike Iron User ID", "CD2548164B6BC1B2530C" )]
-    [Rock.Attribute.Property( "Password", "The Strike Iron Password", "ArenaSIService" )]
+    [Rock.Attribute.Property( "User ID", "The Strike Iron User ID", "" )]
+    [Rock.Attribute.Property( "Password", "The Strike Iron Password", "" )]
     public class StrikeIron : IGeocodeService, Rock.Attribute.IHasAttributes
     {
         public int Id { get { return 0; } }
@@ -20,7 +20,7 @@ namespace Rock.Api.Crm.Address
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         // TODO: Need to abstract a way to set these properties
-        public int Order { get { return 0; } }
+        public int Order { get { return 1; } }
 
         public bool Geocode( AddressStub address )
         {
