@@ -78,7 +78,7 @@ namespace RockWeb
 
             // Add API Service routes
             routes.MapPageRoute( "", "api/help", "~/wcfHelp.aspx" );
-            Rock.Api.ServiceHelper.AddRoutes( routes );
+            new Rock.Api.ServiceHelper( this.Server.MapPath("~/Extensions") ).AddRoutes( routes );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new RockRouteHandler() ) );
