@@ -20,67 +20,12 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class AttributeQualifierService : Rock.Services.Service
+    public partial class AttributeQualifierService : Rock.Services.Service<Rock.Models.Core.AttributeQualifier>
     {
-        private IAttributeQualifierRepository _repository;
-
-        public AttributeQualifierService()
-			: this( new EntityAttributeQualifierRepository() )
-        { }
-
-        public AttributeQualifierService( IAttributeQualifierRepository AttributeQualifierRepository )
+        public IEnumerable<Rock.Models.Core.AttributeQualifier> GetByAttributeId( int attributeId )
         {
-            _repository = AttributeQualifierRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.AttributeQualifier> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.AttributeQualifier GetAttributeQualifier( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.AttributeId == attributeId );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeQualifier> GetAttributeQualifiersByAttributeId( int attributeId )
-        {
-            return _repository.Find( t => t.AttributeId == attributeId );
-        }
-		
-        public void AddAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
-        {
-            if ( AttributeQualifier.Guid == Guid.Empty )
-                AttributeQualifier.Guid = Guid.NewGuid();
-
-            _repository.Add( AttributeQualifier );
-        }
-
-        public void AttachAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
-        {
-            _repository.Attach( AttributeQualifier );
-        }
-
-		public void DeleteAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
-        {
-            _repository.Delete( AttributeQualifier );
-        }
-
-        public void Save( Rock.Models.Core.AttributeQualifier AttributeQualifier, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( AttributeQualifier, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = AttributeQualifier.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

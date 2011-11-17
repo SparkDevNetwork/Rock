@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms.Blog
 
                 if ( blog == null )
                 {
-                    blog = blogService.GetBlog( blogId );
+                    blog = blogService.Get( blogId );
                     PageInstance.SaveSharedItem( "blog", blog );
                 }
 

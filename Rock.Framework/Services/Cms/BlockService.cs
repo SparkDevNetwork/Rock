@@ -20,77 +20,22 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlockService : Rock.Services.Service
+    public partial class BlockService : Rock.Services.Service<Rock.Models.Cms.Block>
     {
-        private IBlockRepository _repository;
-
-        public BlockService()
-			: this( new EntityBlockRepository() )
-        { }
-
-        public BlockService( IBlockRepository BlockRepository )
+        public IEnumerable<Rock.Models.Cms.Block> GetByGuid( Guid guid )
         {
-            _repository = BlockRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.Block> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.Block GetBlock( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Block> GetBlocksByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Cms.Block> GetByName( string name )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return Repository.Find( t => t.Name == name );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Block> GetBlocksByName( string name )
+        public IEnumerable<Rock.Models.Cms.Block> GetByPath( string path )
         {
-            return _repository.Find( t => t.Name == name );
+            return Repository.Find( t => t.Path == path );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Block> GetBlocksByPath( string path )
-        {
-            return _repository.Find( t => t.Path == path );
-        }
-		
-        public void AddBlock( Rock.Models.Cms.Block Block )
-        {
-            if ( Block.Guid == Guid.Empty )
-                Block.Guid = Guid.NewGuid();
-
-            _repository.Add( Block );
-        }
-
-        public void AttachBlock( Rock.Models.Cms.Block Block )
-        {
-            _repository.Attach( Block );
-        }
-
-		public void DeleteBlock( Rock.Models.Cms.Block Block )
-        {
-            _repository.Delete( Block );
-        }
-
-        public void Save( Rock.Models.Cms.Block Block, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Block, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Block.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

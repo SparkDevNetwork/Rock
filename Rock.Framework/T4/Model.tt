@@ -24,7 +24,7 @@
  
 <#
 	// Uncomment this line to debug the template generation
-	// System.Diagnostics.Debugger.Launch();
+	//System.Diagnostics.Debugger.Launch();
 	
 	// Database properties
     string databaseName = "RockChMS";
@@ -137,7 +137,7 @@ using Rock.Models;
 namespace Rock.Models<#= projectNamespace #>
 {
     [Table( "<#= oneTable.Name #>" )]
-    public partial class <#= Entity #> : <#= baseClass #><#= iAuditable #><#= iOrdered #>
+    public partial class <#= Entity #> : <#= baseClass #><<#= Entity #>><#= iAuditable #><#= iOrdered #>
     {
 <#
 			// Write the properties for each column in the table
@@ -156,7 +156,7 @@ namespace Rock.Models<#= projectNamespace #>
 					}
 				}
 				
-				if (column.Name != "Id")
+				if (column.Name != "Id" && column.Name != "Guid")
 				{
 					// If the column is a varchar with a specific length, add the [MaxLength]
 					// validation attribute
@@ -355,11 +355,12 @@ namespace Rock.Models<#= projectNamespace #>
 
         public static <#= Entity #> Read(<#= parameters #>)
         {
-            return new Rock.Services<#= projectNamespace #>.<#= Entity #>Service().Get<#= Entity #>( <#= vars #> );
+            return new Rock.Services<#= projectNamespace #>.<#= Entity #>Service().Get( <#= vars #> );
         }
 <#
 			}
 #>
+
     }
 
     public partial class <#= Entity #>Configuration : EntityTypeConfiguration<<#= Entity #>>
@@ -490,55 +491,9 @@ using Rock.Repository<#= projectNamespace #>;
 
 namespace Rock.Services<#= projectNamespace #>
 {
-    public partial class <#= Entity #>Service : Rock.Services.Service
+    public partial class <#= Entity #>Service : Rock.Services.Service<<#= QualifiedEntity #>>
     {
-        private I<#= Entity #>Repository _repository;
-
-        public <#= Entity #>Service()
-			: this( new Entity<#= Entity #>Repository() )
-        { }
-
-        public <#= Entity #>Service( I<#= Entity #>Repository <#= Entity #>Repository )
-        {
-            _repository = <#= Entity #>Repository;
-        }
-
-        public IQueryable<<#= QualifiedEntity #>> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
 <#
-			// Create the Get[Entity] method based on the table's (entity's) 
-			// primary keys
-			if (primaryKeys.Count > 0)
-			{
-				StringBuilder parameters = new StringBuilder();
-				StringBuilder linqClause = new StringBuilder();
-				
-				foreach(Column column in primaryKeys)
-				{
-					parameters.AppendFormat("{0}{1} {2}{3}",
-						parameters.Length > 0 ? ", " : "",
-						TemplateHelper.ConvertDataType(column),
-						column.Name.Substring(0,1).ToLower(),
-						column.Name.Substring(1));
-					
-					linqClause.AppendFormat("{0}t.{1} == {2}{3}",
-						linqClause.Length > 0 ? " && " : "",
-						column.Name,
-						column.Name.Substring(0,1).ToLower(),
-						column.Name.Substring(1));
-				}
-#>
-        public <#= QualifiedEntity #> Get<#= Entity #>( <#= parameters #> )
-        {
-            return _repository.FirstOrDefault( t => <#= linqClause #> );
-        }
-		
-<#
-			}
-
 			foreach(Index index in oneTable.Indexes)
 			{
 				if (index.IndexKeyType != IndexKeyType.DriPrimaryKey)
@@ -573,89 +528,13 @@ namespace Rock.Services<#= projectNamespace #>
 							TemplateHelper.WhereClause(column));
 					}
 #>
-        public <#= returnType #> Get<#= returnName #>By<#= getClause #>( <#= parameters #> )
+        public <#= returnType #> GetBy<#= getClause #>( <#= parameters #> )
         {
-            return _repository.<#= queryType #>( t => <#= linqClause #> )<#= orderByClause #>;
+            return Repository.<#= queryType #>( t => <#= linqClause #> )<#= orderByClause #>;
         }
 		
 <#
 				}
-			}
-#>
-        public void Add<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
-        {
-            if ( <#= Entity #>.Guid == Guid.Empty )
-                <#= Entity #>.Guid = Guid.NewGuid();
-
-            _repository.Add( <#= Entity #> );
-        }
-
-        public void Attach<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
-        {
-            _repository.Attach( <#= Entity #> );
-        }
-
-		public void Delete<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
-        {
-            _repository.Delete( <#= Entity #> );
-        }
-
-        public void Save( <#= QualifiedEntity #> <#= Entity #>, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( <#= Entity #>, personId );
-<#
-			if (Entity != "EntityChange")
-			{
-#>
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-<#
-			if (primaryKeys.Count == 1)
-			{
-#>
-                    entityChange.EntityId = <#= Entity #>.Id;
-<#
-			}
-#>
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-<#
-			}
-#>
-        }
-<#
-			if (iOrdered != "")
-			{
-#>
-
-        public void Reorder( List<<#= QualifiedEntity #>> <#= Entity #>s, int oldIndex, int newIndex, int? personId )
-        {
-            <#= QualifiedEntity #> moved<#= Entity #> = <#= Entity #>s[oldIndex];
-            <#= Entity #>s.RemoveAt( oldIndex );
-            if ( newIndex >= <#= Entity #>s.Count )
-                <#= Entity #>s.Add( moved<#= Entity #> );
-            else
-                <#= Entity #>s.Insert( newIndex, moved<#= Entity #> );
-
-            int order = 0;
-            foreach ( <#= QualifiedEntity #> <#= Entity #> in <#= Entity #>s )
-            {
-                if ( <#= Entity #>.Order != order )
-                {
-                    <#= Entity #>.Order = order;
-                    Save( <#= Entity #>, personId );
-                }
-                order++;
-            }
-        }
-<#
 			}
 #>
     }
@@ -666,8 +545,223 @@ namespace Rock.Services<#= projectNamespace #>
 		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 
 			GenerationEnvironment = new System.Text.StringBuilder();
+
+// Generate the REST Interface Class
+#>
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by the T4\Model.tt template.
+//
+//     Changes to this file will be lost when the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System.ServiceModel;
+
+namespace Rock.Api<#= projectNamespace #>
+{
+	[ServiceContract]
+    public partial interface I<#= Entity #>Service
+    {
+		[OperationContract]
+        <#= QualifiedEntity #> Get( string id );
+
+        [OperationContract]
+        void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> );
+
+        [OperationContract]
+        void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> );
+
+        [OperationContract]
+        void Delete<#= Entity #>( string id );
+    }
+}
+<#
+			// Write the REST Interface Class
+		    relativeOutputFilePath = @"..\..\Api\" + projectSubFolder + "I" + Entity + "Service.cs";
+		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
+
+			GenerationEnvironment = new System.Text.StringBuilder();
+
+// Generate the REST Class
+#>
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by the T4\Model.tt template.
+//
+//     Changes to this file will be lost when the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System.ServiceModel;
+using System.ServiceModel.Activation;
+using System.ServiceModel.Web;
+
+using Rock.Cms.Security;
+
+namespace Rock.Api<#= projectNamespace #>
+{
+	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
+    public partial class <#= Entity #>Service : I<#= Entity #>Service
+    {
+		[WebGet( UriTemplate = "{id}" )]
+        public <#= QualifiedEntity #> Get( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+                <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+                if ( <#= Entity #>.Authorized( "View", currentUser ) )
+                    return <#= Entity #>;
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+		
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
+        public void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+                <#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+                if ( existing<#= Entity #>.Authorized( "Edit", currentUser ) )
+                {
+                    uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+                    <#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+		[WebInvoke( Method = "POST", UriTemplate = "" )]
+        public void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+                <#= Entity #>Service.Add( <#= Entity #>, currentUser.PersonId() );
+                <#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
+            }
+        }
+
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
+        public void Delete<#= Entity #>( string id )
+        {
+            var currentUser = System.Web.Security.Membership.GetUser();
+            if ( currentUser == null )
+                throw new FaultException( "Must be logged in" );
+
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+
+                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+                <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+                if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
+                {
+                    <#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
+                }
+                else
+                    throw new FaultException( "Unauthorized" );
+            }
+        }
+
+    }
+}
+<#
+			// Write the REST Class
+		    relativeOutputFilePath = @"..\..\Api\" + projectSubFolder + Entity + "Service.cs";
+		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
+
+			GenerationEnvironment = new System.Text.StringBuilder();
 		}
 	}
+// Generate API Service Helper Class
+#>
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by the T4\Model.tt template.
+//
+//     Changes to this file will be lost when the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Web;
+using System.Web.Routing;
+using System.ServiceModel;
+using System.ServiceModel.Activation;
+
+namespace Rock.Api
+{
+    public static class ServiceHelper
+    {
+        public static void AddRoutes( RouteCollection routes )
+        {
+            var factory = new WebServiceHostFactory();
+<#
+		foreach ( KeyValuePair<string, string> entity in entities )
+		{
+			string routeName = "api/" + entity.Key.Replace("Rock.Models.", "").Replace(".","/");
+			string apiClass = entity.Key.Replace(".Models.", ".Api.");
+#>
+            routes.Add( new ServiceRoute( "<#= routeName #>", factory, typeof( <#= apiClass #>Service ) ) );
+<#
+		}
+#>
+
+            CustomServiceRoutesSection configSection = ( CustomServiceRoutesSection ) ConfigurationManager.GetSection( "CustomServiceRoutes" );
+            foreach ( ServiceRouteConfiguration route in configSection.ServiceRoutes )
+            {
+                Type routeType = Type.GetType( route.Type );
+                if (routeType != null)
+                    routes.Add( new ServiceRoute( route.Route, factory, routeType ) );
+            }
+		}
+    }
+}
+
+<#
+	// Write the Entity Framework Context Class
+    relativeOutputFilePath = @"..\..\Api\ServiceHelper.cs";
+    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
+	
+	GenerationEnvironment = new System.Text.StringBuilder();
+
 // Generate Repository Entity Framework Class
 #>
 //------------------------------------------------------------------------------
@@ -722,215 +816,6 @@ namespace Rock.EntityFramework
     relativeOutputFilePath = @"..\..\EntityFramework\RockContext.cs";
     TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 	
-    GenerationEnvironment = new System.Text.StringBuilder();
-// Generate Rest Service Interface Class
-#>
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by the T4\Model.tt template.
-//
-//     Changes to this file will be lost when the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
-//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
-using System.ServiceModel.Web;
-using System.Text;
-
-namespace RockWeb.WCF
-{
-    // Rest Verbs...
-    // GET = Retrieve
-    // PUT = Update
-    // POST = Create/Insert
-    // DELETE = Delete
-
-    [ServiceContract( Namespace = "", Name = "RestService" )]
-    public interface IRestService
-    {
-<#
-		foreach ( KeyValuePair<string, string> entity in entities )
-		{
-			string entityVar = entity.Value.Substring(0,1).ToLower() + entity.Value.Substring(1);
-#>
-		#region <#= entity.Value #>
-		
-		[OperationContract]
-        [WebInvoke(Method = "GET", UriTemplate = "<#= entity.Value.ToLower() #>/{id}", ResponseFormat = WebMessageFormat.Json )]
-        <#= entity.Key #> Get<#= entity.Value #>Json( string id );
-
-        [OperationContract]
-        [WebInvoke( Method = "GET", UriTemplate = "<#= entity.Value.ToLower() #>/{id}/xml", ResponseFormat = WebMessageFormat.Xml )]
-        <#= entity.Key #> Get<#= entity.Value #>Xml( string id );
-		
-        [OperationContract]
-        [WebInvoke( Method = "PUT", UriTemplate = "<#= entity.Value.ToLower() #>/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void Update<#= entity.Value #>( string id, <#= entity.Key #> <#= entityVar #> );
-
-        [OperationContract]
-        [WebInvoke( Method = "POST", UriTemplate = "<#= entity.Value.ToLower() #>", ResponseFormat = WebMessageFormat.Json )]
-        void Create<#= entity.Value #>( <#= entity.Key #> <#= entityVar #> );
-
-        [OperationContract]
-        [WebInvoke( Method = "DELETE", UriTemplate = "<#= entity.Value.ToLower() #>/{id}", ResponseFormat = WebMessageFormat.Json )]
-        void Delete<#= entity.Value #>( string id );
-
-		#endregion
-		
-<#
-		}
-#>
-    }
-}
-<#
-	// Write the Rest Service Interface Class
-    relativeOutputFilePath = @"..\..\..\RockWeb\App_Code\IRestService.cs";
-    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
-
-	GenerationEnvironment = new System.Text.StringBuilder();
-// Generate Rest Service Class
-#>
-//------------------------------------------------------------------------------
-// <auto-generated>
-//     This code was generated by the T4\Model.tt template.
-//
-//     Changes to this file will be lost when the code is regenerated.
-// </auto-generated>
-//------------------------------------------------------------------------------
-//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
-using System.ServiceModel.Activation;
-using System.Text;
-
-namespace RockWeb.WCF
-{
-    [AspNetCompatibilityRequirements(RequirementsMode=AspNetCompatibilityRequirementsMode.Allowed)]
-    public class RestService : IRestService
-    {
-<#
-		foreach ( KeyValuePair<string, string> entity in entities )
-		{
-			string entityVar = entity.Value.Substring(0,1).ToLower() + entity.Value.Substring(1);
-			string serviceNamespace = entity.Key.Replace("Models", "Services");
-
-#>
-		#region <#= entity.Value #>
-		
-        public <#= entity.Key #> Get<#= entity.Value #>Json( string id )
-        {
-            return Get<#= entity.Value #>( id );
-        }
-
-        public <#= entity.Key #> Get<#= entity.Value #>Xml( string id )
-        {
-            return Get<#= entity.Value #>( id );
-        }
-
-        private <#= entity.Key #> Get<#= entity.Value #>( string id )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
-                <#= entity.Key #> <#= entityVar #> = <#= entityVar #>Service.Get<#= entity.Value #>( int.Parse( id ) );
-                if ( <#= entityVar #>.Authorized( "View", currentUser ) )
-                    return <#= entityVar #>;
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-		
-        public void Update<#= entity.Value #>( string id, <#= entity.Key #> <#= entityVar #> )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
-                <#= entity.Key #> existing<#= entity.Value #> = <#= entityVar #>Service.Get<#= entity.Value #>( int.Parse( id ) );
-                if ( existing<#= entity.Value #>.Authorized( "Edit", currentUser ) )
-                {
-                    uow.objectContext.Entry(existing<#= entity.Value #>).CurrentValues.SetValues(<#= entityVar #>);
-                    <#= entityVar #>Service.Save( existing<#= entity.Value #>, ( int )currentUser.ProviderUserKey );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-
-        public void Create<#= entity.Value #>( <#= entity.Key #> <#= entityVar #> )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
-                <#= entityVar #>Service.Attach<#= entity.Value #>( <#= entityVar #> );
-                <#= entityVar #>Service.Save( <#= entityVar #>, ( int )currentUser.ProviderUserKey );
-            }
-        }
-
-        public void Delete<#= entity.Value #>( string id )
-        {
-            var currentUser = System.Web.Security.Membership.GetUser();
-            if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
-
-            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
-            {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                <#= serviceNamespace #>Service <#= entityVar #>Service = new <#= serviceNamespace #>Service();
-                <#= entity.Key #> <#= entity.Value #> = <#= entityVar #>Service.Get<#= entity.Value #>( int.Parse( id ) );
-                if ( <#= entity.Value #>.Authorized( "Edit", currentUser ) )
-                {
-                    <#= entityVar #>Service.Delete<#= entity.Value #>( <#= entity.Value #> );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
-            }
-        }
-
-		#endregion
-		
-<#
-		}
-#>
-    }
-}
-<#
-	// Write the Rest Service Class
-    relativeOutputFilePath = @"..\..\..\RockWeb\App_Code\RestService.svc.cs";
-    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
-
 	GenerationEnvironment = new System.Text.StringBuilder();
 #>
 

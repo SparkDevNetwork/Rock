@@ -126,7 +126,7 @@ namespace Rock.Cms.Cached
                     pageIds = new List<int>();
 
                     Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-                    foreach ( Rock.Models.Cms.Page page in pageService.GetPagesByParentPageId( this.Id ) )
+                    foreach ( Rock.Models.Cms.Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
                         pages.Add( Page.Read( page ) );
@@ -155,7 +155,7 @@ namespace Rock.Cms.Cached
 
                     // Load Layout Blocks
                     Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                    foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetBlockInstancesByLayout( this.Layout ) )
+                    foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         blockInstanceService.LoadAttributes( blockInstance );
@@ -163,7 +163,7 @@ namespace Rock.Cms.Cached
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetBlockInstancesByPageId( this.Id ) )
+                    foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         blockInstanceService.LoadAttributes( blockInstance );
@@ -182,7 +182,7 @@ namespace Rock.Cms.Cached
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
-            Rock.Models.Cms.Page pageModel = pageService.GetPage( this.Id );
+            Rock.Models.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
                 pageService.LoadAttributes( pageModel );
@@ -208,6 +208,11 @@ namespace Rock.Cms.Cached
         public void FlushBlockInstances()
         {
             blockInstanceIds = null;
+        }
+
+        public void FlushChildPages()
+        {
+            pageIds = null;
         }
 
         #endregion
@@ -382,7 +387,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
-                Rock.Models.Cms.Page pageModel = pageService.GetPage( id );
+                Rock.Models.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     pageService.LoadAttributes( pageModel );

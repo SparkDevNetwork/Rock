@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlogTag" )]
-    public partial class BlogTag : ModelWithAttributes
+    public partial class BlogTag : ModelWithAttributes<BlogTag>
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public int BlogId { get; set; }
 		
@@ -44,8 +41,9 @@ namespace Rock.Models.Cms
 
         public static BlogTag Read(int id)
         {
-            return new Rock.Services.Cms.BlogTagService().GetBlogTag( id );
+            return new Rock.Services.Cms.BlogTagService().Get( id );
         }
+
     }
 
     public partial class BlogTagConfiguration : EntityTypeConfiguration<BlogTag>

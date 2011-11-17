@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogCategoryService : Rock.Services.Service
+    public partial class BlogCategoryService : Rock.Services.Service<Rock.Models.Cms.BlogCategory>
     {
-        private IBlogCategoryRepository _repository;
-
-        public BlogCategoryService()
-			: this( new EntityBlogCategoryRepository() )
-        { }
-
-        public BlogCategoryService( IBlogCategoryRepository BlogCategoryRepository )
-        {
-            _repository = BlogCategoryRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.BlogCategory> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.BlogCategory GetBlogCategory( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
-        {
-            if ( BlogCategory.Guid == Guid.Empty )
-                BlogCategory.Guid = Guid.NewGuid();
-
-            _repository.Add( BlogCategory );
-        }
-
-        public void AttachBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
-        {
-            _repository.Attach( BlogCategory );
-        }
-
-		public void DeleteBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
-        {
-            _repository.Delete( BlogCategory );
-        }
-
-        public void Save( Rock.Models.Cms.BlogCategory BlogCategory, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( BlogCategory, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = BlogCategory.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

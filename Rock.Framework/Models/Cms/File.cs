@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsFile" )]
-    public partial class File : ModelWithAttributes
+    public partial class File : ModelWithAttributes<File>
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -70,8 +67,9 @@ namespace Rock.Models.Cms
 
         public static File Read(int id)
         {
-            return new Rock.Services.Cms.FileService().GetFile( id );
+            return new Rock.Services.Cms.FileService().Get( id );
         }
+
     }
 
     public partial class FileConfiguration : EntityTypeConfiguration<File>

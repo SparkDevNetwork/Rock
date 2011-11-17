@@ -45,7 +45,7 @@ namespace Rock.Cms.Cached
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.BlockService blockService = new Services.Cms.BlockService();
-            Rock.Models.Cms.Block blockModel = blockService.GetBlock( this.Id );
+            Rock.Models.Cms.Block blockModel = blockService.Get( this.Id );
 
             if ( blockModel != null )
             {
@@ -80,7 +80,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Cms.BlockService blockService = new Services.Cms.BlockService();
-                Rock.Models.Cms.Block blockModel = blockService.GetBlock( id );
+                Rock.Models.Cms.Block blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
                     block = new Block();

@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsHtmlContent" )]
-    public partial class HtmlContent : ModelWithAttributes, IAuditable
+    public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public int BlockId { get; set; }
 		
@@ -81,8 +78,9 @@ namespace Rock.Models.Cms
 
         public static HtmlContent Read(int id)
         {
-            return new Rock.Services.Cms.HtmlContentService().GetHtmlContent( id );
+            return new Rock.Services.Cms.HtmlContentService().Get( id );
         }
+
     }
 
     public partial class HtmlContentConfiguration : EntityTypeConfiguration<HtmlContent>

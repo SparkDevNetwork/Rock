@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsPage" )]
-    public partial class Page : ModelWithAttributes, IAuditable, IOrdered
+    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -123,8 +120,9 @@ namespace Rock.Models.Cms
 
         public static Page Read(int id)
         {
-            return new Rock.Services.Cms.PageService().GetPage( id );
+            return new Rock.Services.Cms.PageService().Get( id );
         }
+
     }
 
     public partial class PageConfiguration : EntityTypeConfiguration<Page>

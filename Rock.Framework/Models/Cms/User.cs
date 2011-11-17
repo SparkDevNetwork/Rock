@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsUser" )]
-    public partial class User : ModelWithAttributes, IAuditable
+    public partial class User : ModelWithAttributes<User>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[MaxLength( 255 )]
 		[DataMember]
 		public string Username { get; set; }
@@ -124,8 +121,9 @@ namespace Rock.Models.Cms
 
         public static User Read(int id)
         {
-            return new Rock.Services.Cms.UserService().GetUser( id );
+            return new Rock.Services.Cms.UserService().Get( id );
         }
+
     }
 
     public partial class UserConfiguration : EntityTypeConfiguration<User>

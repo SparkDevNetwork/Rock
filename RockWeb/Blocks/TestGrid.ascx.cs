@@ -20,19 +20,12 @@ namespace RockWeb.Blocks
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.EnableAdd = true;
             //rGrid.ClientAddScript = "return addItem();";
-            rGrid.EnableOrdering = true;
             rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
             rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
             rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0} td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this Page?');
-            }});
-    }});
-
     Sys.Application.add_load(function () {{
         $('{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this Page?');
@@ -53,7 +46,7 @@ namespace RockWeb.Blocks
 
         private void BindGrid()
         {
-            rGrid.DataSource = pageService.GetPagesByParentPageId( null ).ToList();
+            rGrid.DataSource = pageService.GetByParentPageId( null ).ToList();
             rGrid.DataBind();
         }
 
@@ -71,7 +64,7 @@ namespace RockWeb.Blocks
             else
                 page.Order = 0;
 
-            pageService.AddPage( page );
+            pageService.Add( page, CurrentPersonId );
             pageService.Save( page, CurrentPersonId );
 
             BindGrid();
@@ -79,10 +72,10 @@ namespace RockWeb.Blocks
 
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.GetPage((int)e.Keys["id"]);
+            Rock.Models.Cms.Page page = pageService.Get((int)e.Keys["id"]);
             if ( page != null )
             {
-                pageService.DeletePage( page );
+                pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
             }
 

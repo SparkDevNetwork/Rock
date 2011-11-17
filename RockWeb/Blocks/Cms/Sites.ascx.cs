@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( siteId > 0 )
                 {
-                    Rock.Models.Cms.Site site = siteService.GetSite( Convert.ToInt32( PageParameter( "SiteId" ) ) );
+                    Rock.Models.Cms.Site site = siteService.Get( Convert.ToInt32( PageParameter( "SiteId" ) ) );
                     tbName.Text = site.Name;
                     tbDescription.Text = site.Description;
 					//tbTheme.Text = site.Theme;
@@ -92,17 +92,17 @@ namespace RockWeb.Blocks.Cms
 
                 Rock.Models.Cms.Site site = _action == "add" ?
                     new Rock.Models.Cms.Site() :
-                    siteService.GetSite( _siteId );
+                    siteService.Get( _siteId );
 
                 site.Name = tbName.Text;
                 site.Description = tbDescription.Text;
 				site.Theme = ddlTheme.SelectedValue;
 
-                Rock.Models.Cms.Page page = pageService.GetPage( Convert.ToInt32( ddlDefaultPage.SelectedValue ) );
+                Rock.Models.Cms.Page page = pageService.Get( Convert.ToInt32( ddlDefaultPage.SelectedValue ) );
                 site.DefaultPage = page;
 
                 if ( _action == "add" )
-                    siteService.AddSite( site );
+                    siteService.Add( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
                 Response.Redirect( "~/site/list" );

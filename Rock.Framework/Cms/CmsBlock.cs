@@ -23,7 +23,7 @@ namespace Rock.Cms
     {
         #region Events
 
-        public event AttributesUpdatedEventHandler AttributesUpdated;
+        public event EventHandler<EventArgs> AttributesUpdated;
 
         #endregion
 
@@ -48,6 +48,15 @@ namespace Rock.Cms
         {
             get { return ( ( CmsPage )this.Page ).CurrentPersonId; }
         }
+
+        /// <summary>
+        /// Returns the currently logged in user.  If user is not logged in, returns null
+        /// </summary>
+        public MembershipUser CurrentUser
+        {
+            get { return ( ( CmsPage )this.Page ).CurrentUser; }
+        }
+
 
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
@@ -149,8 +158,7 @@ namespace Rock.Cms
 
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            MembershipUser user = Membership.GetUser();
-            if ( BlockInstance.Authorized( "Configure", user ) )
+            if ( BlockInstance.Authorized( "Configure", CurrentUser ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
@@ -192,9 +200,47 @@ namespace Rock.Cms
             base.Render( writer );
         }
 
+        /// <summary>
+        /// When an unhandled error occurs in a module, a notification box will be displayed.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnError( EventArgs e )
+        {
+            DisplayNotification( "Exception", Rock.Controls.NotificationBoxType.Error,
+                HttpContext.Current.Server.GetLastError().Message );
+
+            base.OnError( e );
+        }
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Clear all child controls and add a notification box with error or warning message
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        public void DisplayNotification( string title, Rock.Controls.NotificationBoxType type, string message )
+        {
+            this.Controls.Clear();
+
+            Rock.Controls.NotificationBox notification = new Controls.NotificationBox();
+            notification.Title = title;
+            notification.NotificationBoxType = type;
+            notification.Text = message;
+            this.Controls.Add( notification );
+        }
+
+        public void DisplayError( string message )
+        {
+            DisplayNotification( "Error", Rock.Controls.NotificationBoxType.Error, message );
+        }
+
+        public void DisplayWarning( string message )
+        {
+            DisplayNotification( "Warning", Rock.Controls.NotificationBoxType.Warning, message );
+        }
 
         /// <summary>
         /// Returns the current blockinstance value for the selected attribute
@@ -223,7 +269,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public bool UserAuthorized( string action )
         {
-            return BlockInstance.Authorized( action, System.Web.Security.Membership.GetUser() );
+            return BlockInstance.Authorized( action, CurrentUser );
         }
 
         /// <summary>
@@ -257,13 +303,14 @@ namespace Rock.Cms
 
             if ( canConfig || canEdit)
             {
+                // Attributes
                 CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
                     delegate( Control content )
                     {
                         Button trigger = new Button();
                         trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         trigger.ID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id.ToString() );
-                        trigger.Click += new EventHandler( trigger_Click );
+                        trigger.Click += trigger_Click;
                         content.Controls.Add( trigger );
 
                         HiddenField triggerData = new HiddenField();
@@ -279,37 +326,35 @@ namespace Rock.Cms
                 upTrigger.Attributes.Add( "style", "display:none" );
 
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                aAttributes.Attributes.Add( "class", "attributes icon-button attributes-show" );
-                aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockAttributes/{0}", BlockInstance.Id)));
-                aAttributes.Attributes.Add("title", "Block Attributes");
+                aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
+                aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockProperties/{0}", BlockInstance.Id)));
+                aAttributes.Attributes.Add("title", "Block Properties");
                 aAttributes.Attributes.Add("instance-id", BlockInstance.Id.ToString());
-                aAttributes.InnerText = "Attributes";
                 configControls.Add( aAttributes );
             }
 
             if ( canConfig )
             {
+                // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
-                aSecureBlock.Attributes.Add( "class", "security icon-button blockinstance-secure" );
+                aSecureBlock.Attributes.Add( "class", "security icon-button show-iframe-dialog" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Rock.Cms.Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
-                aSecureBlock.Attributes.Add( "title", "Security" );
-                aSecureBlock.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
-                aSecureBlock.InnerText = "Security";
+                aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 
+                // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aMoveBlock.Attributes.Add( "title", "Move" );
-                aMoveBlock.InnerText = "Move";
                 configControls.Add( aMoveBlock );
 
+                // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
                 aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aDeleteBlock.Attributes.Add( "title", "Delete" );
-                aDeleteBlock.InnerText = "Delete";
                 configControls.Add( aDeleteBlock );
             }
 
@@ -360,10 +405,4 @@ namespace Rock.Cms
         #endregion
 
     }
-
-    #region Delegates
-
-    public delegate void AttributesUpdatedEventHandler(object sender, EventArgs e);
-
-    #endregion
 }

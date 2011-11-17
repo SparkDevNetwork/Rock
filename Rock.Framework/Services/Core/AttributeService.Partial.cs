@@ -9,7 +9,7 @@ namespace Rock.Services.Core
     {
         public Rock.Models.Core.Attribute GetAttributesByEntityQualifierAndKey( string entity, string entityQualifier, int entityQualifierId, string key )
         {
-            return _repository.FirstOrDefault( t =>
+            return Repository.FirstOrDefault( t =>
                 t.Entity == entity &&
                 t.EntityQualifier == entityQualifier &&
                 t.EntityQualifierId == entityQualifierId &&

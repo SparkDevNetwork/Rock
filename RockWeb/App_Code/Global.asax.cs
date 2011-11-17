@@ -146,8 +146,9 @@ namespace RockWeb
                 routes.Add( route );
             }
 
-            var factory = new WebServiceHostFactory();
-            routes.Add(new ServiceRoute("Rest.svc", factory, typeof (WCF.RestService)));
+            // Add API Service routes
+            routes.MapPageRoute( "", "api/help", "~/wcfHelp.aspx" );
+            Rock.Api.ServiceHelper.AddRoutes( routes );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new RockRouteHandler() ) );
