@@ -3440,7 +3440,7 @@
         </member>
         <member name="M:Quartz.Job.IFileScanListener.FileUpdated(System.String)">
             <summary>
-            √?nforms that certain file has been updated.
+            √ènforms that certain file has been updated.
             </summary>
             <param name="fileName">Name of the file.</param>
         </member>

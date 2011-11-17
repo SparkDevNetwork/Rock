@@ -44,7 +44,7 @@ namespace Rock.Jobs
 
             // load job
             JobService jobService = new JobService();
-            Job job = jobService.GetJob(jobId);
+            Job job = jobService.Get(jobId);
 
             // set last run date
             job.LastRunDate = context.FireTimeUtc.Value.DateTime.ToLocalTime();

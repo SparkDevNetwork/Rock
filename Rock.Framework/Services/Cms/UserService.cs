@@ -20,82 +20,27 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class UserService : Rock.Services.Service
+    public partial class UserService : Rock.Services.Service<Rock.Models.Cms.User>
     {
-        private IUserRepository _repository;
-
-        public UserService()
-			: this( new EntityUserRepository() )
-        { }
-
-        public UserService( IUserRepository UserRepository )
+        public Rock.Models.Cms.User GetByApplicationNameAndUsername( string applicationName, string username )
         {
-            _repository = UserRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.User> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.User GetUser( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
         }
 		
-        public Rock.Models.Cms.User GetUserByApplicationNameAndUsername( string applicationName, string username )
+        public IEnumerable<Rock.Models.Cms.User> GetByApplicationNameAndEmail( string applicationName, string email )
         {
-            return _repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
+            return Repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
         }
 		
-        public IEnumerable<Rock.Models.Cms.User> GetUsersByApplicationNameAndEmail( string applicationName, string email )
+        public Rock.Models.Cms.User GetByGuid( Guid guid )
         {
-            return _repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
+            return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public Rock.Models.Cms.User GetUserByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Cms.User> GetByPersonId( int? personId )
         {
-            return _repository.FirstOrDefault( t => t.Guid == guid );
+            return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
 		
-        public IEnumerable<Rock.Models.Cms.User> GetUsersByPersonId( int? personId )
-        {
-            return _repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
-        }
-		
-        public void AddUser( Rock.Models.Cms.User User )
-        {
-            if ( User.Guid == Guid.Empty )
-                User.Guid = Guid.NewGuid();
-
-            _repository.Add( User );
-        }
-
-        public void AttachUser( Rock.Models.Cms.User User )
-        {
-            _repository.Attach( User );
-        }
-
-		public void DeleteUser( Rock.Models.Cms.User User )
-        {
-            _repository.Delete( User );
-        }
-
-        public void Save( Rock.Models.Cms.User User, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( User, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = User.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

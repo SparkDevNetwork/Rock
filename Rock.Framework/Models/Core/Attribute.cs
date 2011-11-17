@@ -37,10 +37,10 @@ namespace Rock.Models.Core
 		
 		[MaxLength( 50 )]
 		[DataMember]
-		public string EntityQualifier { get; set; }
+		public string EntityQualifierColumn { get; set; }
 		
 		[DataMember]
-		public int? EntityQualifierId { get; set; }
+		public string EntityQualifierValue { get; set; }
 		
 		[MaxLength( 50 )]
 		[DataMember]
