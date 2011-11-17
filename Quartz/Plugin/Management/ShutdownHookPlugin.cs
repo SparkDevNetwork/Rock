@@ -20,8 +20,6 @@
 using System;
 using System.Globalization;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Plugin.Management
@@ -36,8 +34,6 @@ namespace Quartz.Plugin.Management
     public class ShutdownHookPlugin : ISchedulerPlugin
     {
         private bool cleanShutdown = true;
-
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ShutdownHookPlugin));
 
         /// <summary> 
         /// Determine whether or not the plug-in is configured to cause a clean
@@ -59,18 +55,16 @@ namespace Quartz.Plugin.Management
         /// </summary>
         public virtual void Initialize(string pluginName, IScheduler scheduler)
         {
-            Log.InfoFormat(CultureInfo.InvariantCulture, "Registering Quartz Shutdown hook '{0}.", pluginName);
-
             AppDomain.CurrentDomain.ProcessExit += (sender, ea) =>
                                             {
-                                                Log.Info("Shutting down Quartz...");
+                                                
                                                 try
                                                 {
                                                     scheduler.Shutdown(CleanShutdown);
                                                 }
                                                 catch (SchedulerException e)
                                                 {
-                                                    Log.Info("Error shutting down Quartz: " + e.Message, e);
+                                                   
                                                 }
                                             };
         }

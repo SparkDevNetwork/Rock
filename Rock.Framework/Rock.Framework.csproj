@@ -151,6 +151,7 @@
     <Compile Include="Cms\Security\User.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Cms\SystemGuids.cs" />
     <Compile Include="Controls\ReorderField.cs" />
     <Compile Include="Controls\EditField.cs" />
     <Compile Include="Controls\DeleteField.cs">
@@ -179,6 +180,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Helpers\Reflection.cs" />
+    <Compile Include="Jobs\RockJobListener.cs" />
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />
@@ -368,6 +370,7 @@
     </Compile>
     <Compile Include="Services\IFeed.cs" />
     <Compile Include="Services\Service.cs" />
+    <Compile Include="Services\Util\JobService.Partial.cs" />
     <Compile Include="Services\Util\JobService.cs" />
     <Compile Include="T4\Model1.cs">
       <AutoGen>True</AutoGen>
@@ -445,6 +448,13 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Quartz\Quartz.csproj">
+      <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
+      <Name>Quartz</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

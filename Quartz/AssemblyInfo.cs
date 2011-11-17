@@ -1,6 +1,9 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security;
+
+
 
 #if NET_40
 #if DEBUG
@@ -18,6 +21,9 @@ using System.Runtime.InteropServices;
 
 #if NET_40
 [assembly: AssemblyProduct("Quarz.NET 2.0 beta 1 for .NET 4.0")]
+[assembly: SecurityRules( SecurityRuleSet.Level1 )]
+
+
 #else
 [assembly: AssemblyProduct("Quarz.NET 2.0 beta 1 for .NET 3.5 SP1")]
 #endif
@@ -32,6 +38,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("2.0.0.100")]
 
 [assembly: AssemblyDelaySign(false)]
-#if !NET_40
+
 [assembly: System.Security.AllowPartiallyTrustedCallers]
-#endif
+[assembly: AssemblyTitleAttribute( "Quartz" )]

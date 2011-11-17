@@ -19,8 +19,6 @@
 
 #endregion
 
-using Common.Logging;
-
 namespace Quartz.Listener
 {
     /// <summary>
@@ -43,21 +41,12 @@ namespace Quartz.Listener
     /// <seealso cref="ITriggerListener" />
     public abstract class TriggerListenerSupport : ITriggerListener
     {
-        private readonly ILog log;
-
         protected TriggerListenerSupport()
         {
-            log = LogManager.GetLogger(GetType());
+            
         }
 
-        /// <summary>
-        /// Get the <see cref="ILog" /> for this
-        /// class's category.  This should be used by subclasses for logging.
-        /// </summary>
-        protected ILog Log
-        {
-            get { return log; }
-        }
+
 
         /// <summary>
         /// Get the name of the <see cref="ITriggerListener"/>.
