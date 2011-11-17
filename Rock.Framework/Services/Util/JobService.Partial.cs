@@ -47,7 +47,7 @@ namespace Rock.Services.Util
 
             // create attributes if needed 
             // TODO: next line should be moved to Job creation UI, when it's created
-            Rock.Helpers.Attributes.CreateAttributes( type, "Rock.Models.Util.Job", "Class", job.Class, null );
+            //Rock.Helpers.Attributes.CreateAttributes( type, "Rock.Models.Util.Job", "Class", job.Class, null );
 
             // load up job attributes (parameters) 
             Rock.Helpers.Attributes.LoadAttributes( job );

@@ -180,7 +180,9 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Helpers\Reflection.cs" />
+    <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
+    <Compile Include="Jobs\TestJob.cs" />
     <Compile Include="Models\Cms\Auth.cs" />
     <Compile Include="Models\Cms\Blog.cs" />
     <Compile Include="Models\Cms\BlogCategory.cs" />
@@ -370,6 +372,7 @@
     </Compile>
     <Compile Include="Services\IFeed.cs" />
     <Compile Include="Services\Service.cs" />
+    <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Services\Util\JobService.Partial.cs" />
     <Compile Include="Services\Util\JobService.cs" />
     <Compile Include="T4\Model1.cs">

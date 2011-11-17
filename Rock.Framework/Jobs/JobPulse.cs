@@ -58,12 +58,6 @@ namespace Rock.Jobs
 		/// </summary>
 		public virtual void  Execute(IJobExecutionContext context)
 		{
-            /*
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-            string key1 = dataMap.GetString("key1");
-            string key2 = dataMap.GetString("key2");
-            */
 
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
