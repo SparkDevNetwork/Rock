@@ -199,6 +199,7 @@
     <Compile Include="Models\Cms\PageRoute.cs" />
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
+    <Compile Include="Models\IHasAttributes.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">
@@ -237,6 +238,7 @@
     <Compile Include="Models\Crm\Person.Partial.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Models\Util\Job.Partial.cs" />
     <Compile Include="Models\Util\Job.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Cms\EntityAuthRepository.cs" />

@@ -158,7 +158,7 @@ namespace Rock.Cms.Cached
                     foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
-                        blockInstanceService.LoadAttributes( blockInstance );
+                        Rock.Helpers.Attributes.LoadAttributes( blockInstance );
                         blockInstances.Add( BlockInstance.Read( blockInstance ) );
                     }
 
@@ -166,7 +166,7 @@ namespace Rock.Cms.Cached
                     foreach ( Rock.Models.Cms.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
-                        blockInstanceService.LoadAttributes( blockInstance );
+                        Rock.Helpers.Attributes.LoadAttributes( blockInstance );
                         blockInstances.Add( BlockInstance.Read( blockInstance ) );
                     }
 
@@ -185,10 +185,10 @@ namespace Rock.Cms.Cached
             Rock.Models.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
-                pageService.LoadAttributes( pageModel );
+                Rock.Helpers.Attributes.LoadAttributes( pageModel );
 
                 foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
-                    pageService.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                    Rock.Helpers.Attributes.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -390,7 +390,7 @@ namespace Rock.Cms.Cached
                 Rock.Models.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
-                    pageService.LoadAttributes( pageModel );
+                    Rock.Helpers.Attributes.LoadAttributes( pageModel );
 
                     page = Page.CopyModel( pageModel );
  
