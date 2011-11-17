@@ -25,8 +25,6 @@ using System.Configuration;
 using System.IO;
 using System.Reflection;
 
-using Common.Logging;
-
 using Quartz.Core;
 using Quartz.Impl.AdoJobStore;
 using Quartz.Impl.AdoJobStore.Common;
@@ -74,6 +72,8 @@ namespace Quartz.Impl
     /// <author>Anthony Eden</author>
     /// <author>Mohammad Rezaei</author>
     /// <author>Marko Lahma (.NET)</author>
+    /// 
+
     public class StdSchedulerFactory : ISchedulerFactory
     {
         private const string ConfigurationKeyPrefix = "quartz.";
@@ -129,16 +129,9 @@ namespace Quartz.Impl
 
         private PropertiesParser cfg;
 
-        private static readonly ILog log = LogManager.GetLogger(typeof (StdSchedulerFactory));
-
         private string SchedulerName
         {
             get { return cfg.GetStringProperty(PropertySchedulerInstanceName, "QuartzScheduler"); }
-        }
-
-        protected ILog Log
-        {
-            get { return log; }
         }
 
         /// <summary>
@@ -204,7 +197,7 @@ namespace Quartz.Impl
 
             NameValueCollection props = (NameValueCollection) ConfigurationManager.GetSection("quartz");
 
-            string requestedFile = Environment.GetEnvironmentVariable(PropertiesFile);
+            string requestedFile = null; // Environment.GetEnvironmentVariable( PropertiesFile );   commented out to allow quartz to run in medium security
             string propFileName = requestedFile != null && requestedFile.Trim().Length > 0 ? requestedFile : "~/quartz.config";
 
             // check for specials
@@ -217,11 +210,10 @@ namespace Quartz.Impl
                 {
                     PropertiesParser pp = PropertiesParser.ReadFromFileResource(propFileName);
                     props = pp.UnderlyingProperties;
-                    Log.Info(string.Format("Quartz.NET properties loaded from configuration file '{0}'", propFileName));
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Could not load properties for Quartz from file {0}: {1}".FormatInvariant(propFileName, ex.Message), ex);
+
                 }
 
             }
@@ -232,11 +224,9 @@ namespace Quartz.Impl
                 {
                     PropertiesParser pp = PropertiesParser.ReadFromEmbeddedAssemblyResource("Quartz.quartz.config");
                     props = pp.UnderlyingProperties;
-                    Log.Info("Default Quartz.NET properties loaded from embedded resource file");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Could not load default properties for Quartz from Quartz assembly: {0}".FormatInvariant(ex.Message), ex);
                 }
             }
             if (props == null)
@@ -257,12 +247,13 @@ Please add configuration to your application config file to correctly initialize
         private static NameValueCollection OverrideWithSysProps(NameValueCollection props)
         {
             NameValueCollection retValue = new NameValueCollection(props);
-            IDictionary vars = Environment.GetEnvironmentVariables();
+            // commented out to allow quartz to run in medium security
+            /*IDictionary vars = Environment.GetEnvironmentVariables();
 
             foreach (string key in vars.Keys)
             {
                 retValue.Set(key, vars[key] as string);
-            }
+            }*/
             return retValue;
         }
 
@@ -607,7 +598,6 @@ Please add configuration to your application config file to correctly initialize
                 try
                 {
                     objectSerializer = ObjectUtils.InstantiateType<IObjectSerializer>(loadHelper.LoadType(objectSerializerType));
-                    log.Info("Using custom implementation for object serializer: " + objectSerializerType);
 
                     ObjectUtils.SetObjectProperties(objectSerializer, tProps);
                 }
@@ -619,7 +609,6 @@ Please add configuration to your application config file to correctly initialize
             }
             else
             {
-                log.Info("Using default implementation for object serializer");
                 objectSerializer = new DefaultObjectSerializer();
             }
 
@@ -694,7 +683,6 @@ Please add configuration to your application config file to correctly initialize
                         }
 
                         ((JobStoreSupport) js).LockHandler = lockHandler;
-                        Log.Info("Using custom data access locking (synchronization): " + lockHandlerType);
                     }
                     catch (Exception e)
                     {
@@ -871,7 +859,6 @@ Please add configuration to your application config file to correctly initialize
                 try
                 {
                     threadExecutor = ObjectUtils.InstantiateType<IThreadExecutor>(loadHelper.LoadType(threadExecutorClass));
-                    log.Info("Using custom implementation for ThreadExecutor: " + threadExecutorClass);
 
                     ObjectUtils.SetObjectProperties(threadExecutor, tProps);
                 }
@@ -884,7 +871,6 @@ Please add configuration to your application config file to correctly initialize
             }
             else
             {
-                log.Info("Using default implementation for ThreadExecutor");
                 threadExecutor = new DefaultThreadExecutor();
             }
 
@@ -908,7 +894,6 @@ Please add configuration to your application config file to correctly initialize
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Couldn't generate instance Id!", e);
                         throw new SystemException("Cannot run without an instance id.");
                     }
                 }
@@ -1001,10 +986,6 @@ Please add configuration to your application config file to correctly initialize
 
                 jrsf.Initialize(sched);
                 qs.Initialize();
-
-                Log.Info("Quartz scheduler '{0}' initialized".FormatInvariant(sched.SchedulerName));
-
-                Log.Info("Quartz scheduler version: {0}".FormatInvariant(qs.Version));
 
                 // prevents the repository from being garbage collected
                 qs.AddNoGCObject(schedRep);

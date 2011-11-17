@@ -2390,12 +2390,6 @@
             </summary>
             <value>The lock owners.</value>
         </member>
-        <member name="P:Quartz.Impl.AdoJobStore.DBSemaphore.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
-        </member>
         <member name="P:Quartz.Impl.AdoJobStore.DBSemaphore.RequiresConnection">
             <summary>
             This Semaphore implementation does use the database.
@@ -3493,12 +3487,6 @@
             down.
             </summary>
         </member>
-        <member name="P:Quartz.Plugin.Xml.XMLSchedulingDataProcessorPlugin.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
-        </member>
         <member name="P:Quartz.Plugin.Xml.XMLSchedulingDataProcessorPlugin.FileNames">
             <summary> 
             Comma separated list of file names (with paths) to the XML files that should be read.
@@ -3967,12 +3955,6 @@
             Releases the trigger retry loop.
             </summary>
             <param name="trigger">The trigger.</param>
-        </member>
-        <member name="P:Quartz.Core.QuartzSchedulerThread.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
         </member>
         <member name="P:Quartz.Core.QuartzSchedulerThread.IdleWaitTime">
             <summary>
@@ -4861,12 +4843,6 @@
             that all jobs, triggers and calendars were deleted.
             </summary>
         </member>
-        <member name="P:Quartz.Listener.SchedulerListenerSupport.Log">
-            <summary>
-            Get the <see cref="T:Common.Logging.ILog"/> for this
-            type's category.  This should be used by subclasses for logging.
-            </summary>
-        </member>
         <member name="T:Quartz.IJobListener">
             <summary>
             The interface to be implemented by classes that want to be informed when a
@@ -5314,12 +5290,6 @@
             </para>
             </summary>
             <param name="context"></param>
-        </member>
-        <member name="P:Quartz.Job.NativeJob.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
         </member>
         <member name="T:Quartz.Job.NativeJob.StreamConsumer">
             <summary> 
@@ -6947,11 +6917,6 @@
             the <see cref="T:Quartz.IJob"/>'s <see cref="M:Quartz.IJob.Execute(Quartz.IJobExecutionContext)"/> method.</param>
             <returns></returns>
         </member>
-        <member name="P:Quartz.Plugin.History.LoggingTriggerHistoryPlugin.Log">
-            <summary>
-            Logger instance to use. Defaults to common logging.
-            </summary>
-        </member>
         <member name="P:Quartz.Plugin.History.LoggingTriggerHistoryPlugin.TriggerCompleteMessage">
             <summary> 
             Get or set the message that is printed upon the completion of a trigger's
@@ -8012,14 +7977,6 @@
             Shutdowns this instance.
             </summary>
         </member>
-        <member name="M:Quartz.Simpl.ZeroSizeThreadPool.Shutdown(System.Boolean)">
-            <summary>
-            Called by the QuartzScheduler to inform the <see cref="T:System.Threading.ThreadPool"/>
-            that it should free up all of it's resources because the scheduler is
-            shutting down.
-            </summary>
-            <param name="waitForJobsToComplete"></param>
-        </member>
         <member name="M:Quartz.Simpl.ZeroSizeThreadPool.RunInThread(Quartz.IThreadRunnable)">
             <summary>
             Execute the given <see cref="T:Quartz.IThreadRunnable"/> in the next
@@ -8048,12 +8005,6 @@
             The implementation of this method should block until there is at
             least one available thread.
             </remarks>
-        </member>
-        <member name="P:Quartz.Simpl.ZeroSizeThreadPool.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
         </member>
         <member name="P:Quartz.Simpl.ZeroSizeThreadPool.PoolSize">
             <summary>
@@ -8166,12 +8117,6 @@
             </summary>
             <param name="fileName">Name of the file.</param>
             <returns></returns>
-        </member>
-        <member name="P:Quartz.Job.FileScanJob.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
         </member>
         <member name="T:Quartz.Impl.AdoJobStore.ConnectionAndTransactionHolder">
             <summary>
@@ -8705,6 +8650,7 @@
             <author>Anthony Eden</author>
             <author>Mohammad Rezaei</author>
             <author>Marko Lahma (.NET)</author>
+            
         </member>
         <member name="T:Quartz.ISchedulerFactory">
             <summary>
@@ -10761,12 +10707,6 @@
             Get or set the datasource name.
             </summary>
         </member>
-        <member name="P:Quartz.Impl.AdoJobStore.JobStoreSupport.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
-        </member>
         <member name="P:Quartz.Impl.AdoJobStore.JobStoreSupport.TablePrefix">
             <summary> 
             Get or sets the prefix that should be pre-pended to all table names.
@@ -11099,12 +11039,6 @@
             </summary>
             <param name="context"></param>
             <param name="jobException"></param>
-        </member>
-        <member name="P:Quartz.Listener.JobListenerSupport.Log">
-            <summary>
-            Get the <see cref="T:Common.Logging.ILog"/> for this  class's category.  
-            This should be used by subclasses for logging.
-            </summary>
         </member>
         <member name="P:Quartz.Listener.JobListenerSupport.Name">
             <summary>
@@ -13537,11 +13471,6 @@
             <param name="context"></param>
             <seealso cref="M:Quartz.Plugin.History.LoggingJobHistoryPlugin.JobToBeExecuted(Quartz.IJobExecutionContext)"/>
         </member>
-        <member name="P:Quartz.Plugin.History.LoggingJobHistoryPlugin.Log">
-            <summary>
-            Logger instance to use. Defaults to common logging.
-            </summary>
-        </member>
         <member name="P:Quartz.Plugin.History.LoggingJobHistoryPlugin.JobSuccessMessage">
             <summary> 
             Get or sets the message that is logged when a Job successfully completes its 
@@ -14312,12 +14241,6 @@
             Returns a handle to the Scheduler with the given name, if it exists.
             </summary>
         </member>
-        <member name="P:Quartz.Impl.DirectSchedulerFactory.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
-        </member>
         <member name="P:Quartz.Impl.DirectSchedulerFactory.Instance">
             <summary>
             Gets the instance.
@@ -14975,12 +14898,6 @@
              <author>Marko Lahma (.NET)</author>
              <seealso cref="T:Quartz.ITriggerListener"/>
         </member>
-        <member name="P:Quartz.Listener.TriggerListenerSupport.Log">
-            <summary>
-            Get the <see cref="T:Common.Logging.ILog"/> for this
-            class's category.  This should be used by subclasses for logging.
-            </summary>
-        </member>
         <member name="P:Quartz.Listener.TriggerListenerSupport.Name">
             <summary>
             Get the name of the <see cref="T:Quartz.ITriggerListener"/>.
@@ -15566,12 +15483,6 @@
             in the scheduler will be ignored, and no error will be produced.
             </summary>
             <seealso cref="P:Quartz.Xml.XMLSchedulingDataProcessor.OverWriteExistingData"/>
-        </member>
-        <member name="P:Quartz.Xml.XMLSchedulingDataProcessor.Log">
-            <summary>
-            Gets the log.
-            </summary>
-            <value>The log.</value>
         </member>
         <member name="T:Quartz.Xml.XMLSchedulingDataProcessor.Constants">
             <summary>
@@ -19043,11 +18954,6 @@
         <member name="P:Quartz.Impl.AdoJobStore.DelegateInitializationArgs.UseProperties">
             <summary>
             Whether simple <see cref="T:System.Collections.Specialized.NameValueCollection"/> should be used (for serialization safety).
-            </summary>
-        </member>
-        <member name="P:Quartz.Impl.AdoJobStore.DelegateInitializationArgs.Logger">
-            <summary>
-            The logger to use during execution.
             </summary>
         </member>
         <member name="P:Quartz.Impl.AdoJobStore.DelegateInitializationArgs.TablePrefix">

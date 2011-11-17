@@ -50,18 +50,25 @@ namespace Rock.Models.Util
 		[DataMember]
 		public string Class { get; set; }
 		
+		[MaxLength( 120 )]
 		[DataMember]
-		public DateTime StartTime { get; set; }
-		
-		[DataMember]
-		public DateTime EndTime { get; set; }
-		
-		[MaxLength( 35 )]
-		[DataMember]
-		public string Days { get; set; }
+		public string CronExpression { get; set; }
 		
 		[DataMember]
 		public DateTime? LastSuccessfulRun { get; set; }
+		
+		[DataMember]
+		public DateTime? LastRunDate { get; set; }
+		
+		[DataMember]
+		public int? LastRunDuration { get; set; }
+		
+		[MaxLength( 50 )]
+		[DataMember]
+		public string LastStatus { get; set; }
+		
+		[DataMember]
+		public string LastStatusMessage { get; set; }
 		
 		[MaxLength( 1000 )]
 		[DataMember]
@@ -71,10 +78,10 @@ namespace Rock.Models.Util
 		public int? NotificationStatus { get; set; }
 		
 		[DataMember]
-		public DateTime? CreateDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
 		
 		[DataMember]
-		public DateTime? ModifyDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
 		
 		[DataMember]
 		public int? CreateByPersonId { get; set; }

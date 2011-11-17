@@ -27,8 +27,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Impl.AdoJobStore.Common;
 using Quartz.Impl.Matchers;
 using Quartz.Impl.Triggers;
@@ -80,7 +78,7 @@ namespace Quartz.Impl.AdoJobStore
         private bool acquireTriggersWithinLock;
         private bool makeThreadsDaemons;
         private bool doubleCheckLockMisfireHandler = true;
-        private readonly ILog log;
+
         private IObjectSerializer objectSerializer;
         private IThreadExecutor threadExecutor = new DefaultThreadExecutor();
         private bool schedulerRunning = false;
@@ -90,7 +88,6 @@ namespace Quartz.Impl.AdoJobStore
         /// </summary>
         protected JobStoreSupport()
         {
-            log = LogManager.GetLogger(GetType());
             delegateType = typeof (StdAdoDelegate);
         }
 
@@ -101,15 +98,6 @@ namespace Quartz.Impl.AdoJobStore
         {
             get { return dataSource; }
             set { dataSource = value; }
-        }
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-        protected ILog Log
-        {
-            get { return log; }
         }
 
         /// <summary> 
@@ -470,7 +458,6 @@ namespace Quartz.Impl.AdoJobStore
                             IDbProvider dbProvider = DBConnectionManager.Instance.GetDbProvider(DataSource);
                             var args = new DelegateInitializationArgs();
                             args.UseProperties = CanUseProperties;
-                            args.Logger = log;
                             args.TablePrefix = tablePrefix;
                             args.InstanceName = instanceName;
                             args.InstanceId = instanceId;
@@ -550,17 +537,14 @@ namespace Quartz.Impl.AdoJobStore
                         if (SelectWithLockSQL == null)
                         {
                             const string DefaultLockSql = "SELECT * FROM {0}LOCKS WITH (UPDLOCK,ROWLOCK) WHERE " + ColumnSchedulerName + " = {1} AND LOCK_NAME = @lockName";
-                            Log.Info("Detected usage of MSSQLDelegate - defaulting 'selectWithLockSQL' to '" + DefaultLockSql + "'.");
                             SelectWithLockSQL = DefaultLockSql;
                         }
                     }
 
-                    Log.Info("Using db table-based data access locking (synchronization).");
                     LockHandler = new StdRowLockSemaphore(TablePrefix, InstanceName, SelectWithLockSQL, DbProvider);
                 }
                 else
                 {
-                    Log.Info("Using thread monitor-based data access locking (synchronization).");
                     LockHandler = new SimpleSemaphore();
                 }
             }
@@ -646,7 +630,7 @@ namespace Quartz.Impl.AdoJobStore
             }
             catch (Exception sqle)
             {
-                Log.Warn("Database connection Shutdown unsuccessful.", sqle);
+                
             }
         }
 
@@ -671,7 +655,7 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 catch (LockException le)
                 {
-                    Log.Error("Error returning lock: " + le.Message, le);
+                   
                 }
             }
         }
@@ -716,15 +700,11 @@ namespace Quartz.Impl.AdoJobStore
                                                                 StatePausedBlocked,
                                                                 StatePausedBlocked);
 
-                Log.Info("Freed " + rows + " triggers from 'acquired' / 'blocked' state.");
-
                 // clean up misfired jobs
                 RecoverMisfiredJobs(conn, true);
 
                 // recover jobs marked for recovery that were not fully executed
                 IList<IOperableTrigger> recoveringJobTriggers = Delegate.SelectTriggersForRecoveringJobs(conn);
-                Log.Info("Recovering " + recoveringJobTriggers.Count +
-                         " jobs that were in-progress at the time of the last shut-down.");
 
                 foreach (IOperableTrigger trigger in recoveringJobTriggers)
                 {
@@ -734,7 +714,6 @@ namespace Quartz.Impl.AdoJobStore
                         StoreTrigger(conn, trigger, null, false, StateWaiting, false, true);
                     }
                 }
-                Log.Info("Recovery complete.");
 
                 // remove lingering 'complete' triggers...
                 IList<TriggerKey> triggersInState = Delegate.SelectTriggersInState(conn, StateComplete);
@@ -744,12 +723,11 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 if (triggersInState != null)
                 {
-                    Log.Info(string.Format(CultureInfo.InvariantCulture, "Removed {0} 'complete' triggers.", triggersInState.Count));
+                    
                 }
 
                 // clean up any fired trigger entries
                 int n = Delegate.DeleteFiredTriggers(conn);
-                Log.Info("Removed " + n + " stale fired job entries.");
             }
             catch (JobPersistenceException)
             {
@@ -782,21 +760,15 @@ namespace Quartz.Impl.AdoJobStore
 
             if (hasMoreMisfiredTriggers)
             {
-                Log.Info(
-                    "Handling the first " + misfiredTriggers.Count +
-                    " triggers that missed their scheduled fire-time.  " +
-                    "More misfired triggers remain to be processed.");
+                
             }
             else if (misfiredTriggers.Count > 0)
             {
-                Log.Info(
-                    "Handling " + misfiredTriggers.Count +
-                    " trigger(s) that missed their scheduled fire-time.");
+                
             }
             else
             {
-                Log.Debug(
-                    "Found 0 triggers that missed their scheduled fire-time.");
+                
                 return RecoverMisfiredJobsResult.NoOp;
             }
 
@@ -2607,12 +2579,10 @@ namespace Quartz.Impl.AdoJobStore
             {
                 try
                 {
-                    Log.Error("Error retrieving job, setting trigger state to ERROR.", jpe);
                     Delegate.UpdateTriggerState(conn, trigger.Key, StateError);
                 }
                 catch (Exception sqle)
                 {
-                    Log.Error("Unable to set trigger state to ERROR.", sqle);
                 }
                 throw;
             }
@@ -2725,7 +2695,6 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 else if (triggerInstCode == SchedulerInstruction.SetTriggerError)
                 {
-                    Log.Info("Trigger " + trigger.Key + " set to ERROR state.");
                     Delegate.UpdateTriggerState(conn, trigger.Key, StateError);
                     SignalSchedulingChangeOnTxCompletion(null);
                 }
@@ -2736,7 +2705,6 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 else if (triggerInstCode == SchedulerInstruction.SetAllJobTriggersError)
                 {
-                    Log.Info("All triggers of Job " + trigger.JobKey + " set to ERROR state.");
                     Delegate.UpdateTriggerStatesForJob(conn, trigger.JobKey, StateError);
                     SignalSchedulingChangeOnTxCompletion(null);
                 }
@@ -2801,8 +2769,7 @@ namespace Quartz.Impl.AdoJobStore
 
                 if (misfireCount == 0)
                 {
-                    Log.Debug(
-                        "Found 0 triggers that missed their scheduled fire-time.");
+
                 }
                 else
                 {
@@ -2992,10 +2959,6 @@ namespace Quartz.Impl.AdoJobStore
                 if ((foundThisScheduler == false) && (firstCheckIn == false))
                 {
                     // TODO: revisit when handle self-failed-out impl'ed (see TODO in clusterCheckIn() below)
-                    Log.Warn(
-                        "This scheduler instance (" + InstanceId + ") is still " +
-                        "active but was recovered by another instance in the cluster.  " +
-                        "This may cause inconsistent behavior.");
                 }
 
                 return failedInstances;
@@ -3033,8 +2996,6 @@ namespace Quartz.Impl.AdoJobStore
                     orphanedInstance.SchedulerInstanceId = name;
 
                     orphanedInstances.Add(orphanedInstance);
-
-                    Log.Warn("Found orphaned fired triggers for instance: " + orphanedInstance.SchedulerInstanceId);
                 }
             }
 
@@ -3084,9 +3045,6 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     foreach (SchedulerStateRecord rec in failedInstances)
                     {
-                        Log.Info("ClusterManager: Scanning for instance \"" + rec.SchedulerInstanceId +
-                                 "\"'s failed in-progress jobs.");
-
                         IList<FiredTriggerRecord> firedTriggerRecs =
                             Delegate.SelectInstancesFiredTriggerRecords(conn, rec.SchedulerInstanceId);
 
@@ -3151,8 +3109,6 @@ namespace Quartz.Impl.AdoJobStore
                                 }
                                 else
                                 {
-                                    Log.Warn("ClusterManager: failed job '" + jKey +
-                                             "' no longer exists, cannot schedule recovery.");
                                     otherCount++;
                                 }
                             }
@@ -3218,11 +3174,11 @@ namespace Quartz.Impl.AdoJobStore
         {
             if (val > 0)
             {
-                Log.Info(warning);
+
             }
             else
             {
-                Log.Debug(warning);
+
             }
         }
 
@@ -3277,9 +3233,6 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 catch (Exception e)
                 {
-                    Log.Error(
-                        "Unexpected exception closing Connection." +
-                        "  This is often due to a Connection being returned after or during shutdown.", e);
                 }
             }
         }
@@ -3302,7 +3255,7 @@ namespace Quartz.Impl.AdoJobStore
                 }
                 catch (Exception e)
                 {
-                    Log.Error("Couldn't rollback ADO.NET connection. " + e.Message, e);
+
                 }
             }
         }
@@ -3515,13 +3468,11 @@ namespace Quartz.Impl.AdoJobStore
                     res = jobStoreSupport.DoCheckin();
 
                     numFails = 0;
-                    jobStoreSupport.Log.Debug("ClusterManager: Check-in complete.");
                 }
                 catch (Exception e)
                 {
                     if (numFails%4 == 0)
                     {
-                        jobStoreSupport.Log.Error("ClusterManager: Error managing cluster: " + e.Message, e);
                     }
                     numFails++;
                 }
@@ -3599,8 +3550,6 @@ namespace Quartz.Impl.AdoJobStore
             {
                 try
                 {
-                    jobStoreSupport.Log.Debug("MisfireHandler: scanning for misfires...");
-
                     RecoverMisfiredJobsResult res = jobStoreSupport.DoRecoverMisfires();
                     numFails = 0;
                     return res;
@@ -3609,9 +3558,7 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     if (numFails%4 == 0)
                     {
-                        jobStoreSupport.Log.Error(
-                            "MisfireHandler: Error handling misfires: "
-                            + e.Message, e);
+
                     }
                     numFails++;
                 }

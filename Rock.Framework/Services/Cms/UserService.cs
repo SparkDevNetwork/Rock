@@ -43,7 +43,7 @@ namespace Rock.Services.Cms
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public User GetUserByApplicationNameAndUsername( string applicationName, string username )
+        public Rock.Models.Cms.User GetUserByApplicationNameAndUsername( string applicationName, string username )
         {
             return _repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
         }
@@ -53,7 +53,7 @@ namespace Rock.Services.Cms
             return _repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
         }
 		
-        public User GetUserByGuid( Guid guid )
+        public Rock.Models.Cms.User GetUserByGuid( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
         }

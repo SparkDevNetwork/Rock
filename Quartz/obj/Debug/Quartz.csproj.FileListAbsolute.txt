@@ -1,0 +1,6 @@
+D:\Development\build\4.0\Debug\Quartz\Quartz.dll
+D:\Development\build\4.0\Debug\Quartz\Quartz.pdb
+D:\Development\build\4.0\Debug\Quartz\Quartz.xml
+D:\Development\Rock-ChMS\Quartz\obj\Debug\ResolveAssemblyReference.cache
+D:\Development\Rock-ChMS\Quartz\obj\Debug\Quartz.dll
+D:\Development\Rock-ChMS\Quartz\obj\Debug\Quartz.pdb

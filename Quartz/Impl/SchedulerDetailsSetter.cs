@@ -19,8 +19,6 @@
 
 using System;
 
-using Common.Logging;
-
 using Quartz.Util;
 
 namespace Quartz.Impl
@@ -36,8 +34,6 @@ namespace Quartz.Impl
     /// <author>Marko Lahma (.NET)</author>
     internal static class SchedulerDetailsSetter
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(SchedulerDetailsSetter));
-
         internal static void SetDetails(object target, string schedulerName, string schedulerId)
         {
             Set(target, "InstanceName", schedulerName);
@@ -52,7 +48,6 @@ namespace Quartz.Impl
             } 
             catch (MemberAccessException)
             {
-                log.WarnFormat("Unable to set property {0} for {1}. Possibly older binary compilation.", propertyName, target);
             }
         }
     }

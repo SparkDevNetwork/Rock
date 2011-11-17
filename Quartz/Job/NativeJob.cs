@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
-using Common.Logging;
-
 namespace Quartz.Job
 {
 	/// <summary>
@@ -46,8 +44,6 @@ namespace Quartz.Job
     /// <author>Marko Lahma (.NET)</author>
     public class NativeJob : IJob
 	{
-	    private readonly ILog log;
-
 		/// <summary> 
 		/// Required parameter that specifies the name of the command (executable) 
 		/// to be ran.
@@ -88,22 +84,12 @@ namespace Quartz.Job
 	    private const string StreamTypeStandardOutput = "stdout";
 	    private const string StreamTypeError = "stderr";
 
-
-	    /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-	    protected ILog Log
-	    {
-	        get { return log; }
-	    }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="NativeJob"/> class.
         /// </summary>
 	    public NativeJob()
 	    {
-            log = LogManager.GetLogger(typeof(NativeJob));
+            
 	    }
 
 		/// <summary>
@@ -193,8 +179,6 @@ namespace Quartz.Job
 
                 temp = temp.Trim();
 
-                Log.Info(string.Format(CultureInfo.InvariantCulture, "About to run {0} {1}...", cmd[0], temp));
-
 				Process proc = new Process();
 			    
                 proc.StartInfo.FileName = cmd[0];
@@ -278,11 +262,9 @@ namespace Quartz.Job
                         {
                             if (type == StreamTypeError)
                             {
-                                enclosingInstance.Log.Warn(string.Format(CultureInfo.InvariantCulture, "{0}>{1}", type, line));
                             }
                             else
                             {
-                                enclosingInstance.Log.Info(string.Format(CultureInfo.InvariantCulture, "{0}>{1}", type, line));
                             }
                         }
                     }
@@ -290,7 +272,7 @@ namespace Quartz.Job
 			    }
 				catch (IOException ioe)
 				{
-					enclosingInstance.Log.Error(string.Format(CultureInfo.InvariantCulture, "Error consuming {0} stream of spawned process.", type), ioe);
+
 				}
 			}
 		}

@@ -43,7 +43,7 @@ namespace Rock.Services.Cms
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 		
-        public SiteDomain GetSiteDomainByDomain( string domain )
+        public Rock.Models.Cms.SiteDomain GetSiteDomainByDomain( string domain )
         {
             return _repository.FirstOrDefault( t => t.Domain == domain );
         }

@@ -69,20 +69,12 @@ namespace Quartz.Impl.AdoJobStore
                     bool found = false;
                     using (IDataReader rs = cmd.ExecuteReader())
                     {
-                        if (Log.IsDebugEnabled)
-                        {
-                            Log.Debug("Lock '" + lockName + "' is being obtained: " + Thread.CurrentThread.Name);
-                        }
 
                         found = rs.Read();
                     }
                     
                     if (!found)
                     {
-                        Log.Debug(
-                            "Inserting new lock row for lock: '" + lockName + "' being obtained by thread: " +
-                            Thread.CurrentThread.Name);
-
                         using (IDbCommand cmd2 = AdoUtil.PrepareCommand(conn, expandedInsertSQL))
                         {
                             AdoUtil.AddCommandParameter(cmd2, "lockName", lockName);
@@ -100,13 +92,6 @@ namespace Quartz.Impl.AdoJobStore
             }
             catch (Exception sqle)
             {
-                if (Log.IsDebugEnabled)
-                {
-                    Log.Debug(
-                        "Lock '" + lockName + "' was not obtained by: " +
-                        Thread.CurrentThread.Name);
-                }
-
                 throw new LockException("Failure obtaining db row lock: "
                                         + sqle.Message, sqle);
             }

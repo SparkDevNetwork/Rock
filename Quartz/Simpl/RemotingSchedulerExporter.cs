@@ -28,8 +28,6 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Serialization.Formatters;
 using System.Security;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Simpl
@@ -45,7 +43,6 @@ namespace Quartz.Simpl
         private const string DefaultBindName = "QuartzScheduler";
         private const string DefaultChannelName = "http";
 
-        private readonly ILog log;
         private int port = -1;
         private string bindName = DefaultBindName;
         private string channelName = DefaultChannelName;
@@ -55,7 +52,6 @@ namespace Quartz.Simpl
 
         public RemotingSchedulerExporter()
         {
-            log = LogManager.GetLogger(GetType());
         }
 
         public virtual void Bind(IRemotableQuartzScheduler scheduler)
@@ -74,19 +70,18 @@ namespace Quartz.Simpl
             try
             {
                 RemotingServices.Marshal((MarshalByRefObject)scheduler, bindName);
-                Log.Info(string.Format(CultureInfo.InvariantCulture, "Successfully marhalled remotable scheduler under name '{0}'", bindName));
             }
             catch (RemotingException ex)
             {
-                Log.Error("RemotingException during Bind", ex);
+
             }
             catch (SecurityException ex)
             {
-                Log.Error("SecurityException during Bind", ex);
+
             }
             catch (Exception ex)
             {
-                Log.Error("Exception during Bind", ex);
+
             }
         }
 
@@ -111,7 +106,6 @@ namespace Quartz.Simpl
                 string channelRegistrationKey = channelType + "_" + port;
                 if (registeredChannels.ContainsKey(channelRegistrationKey))
                 {
-                    Log.Warn(string.Format("Channel '{0}' already registered for port {1}, not registering again", channelType, port));
                     return;
                 }
                 IChannel chan;
@@ -128,16 +122,9 @@ namespace Quartz.Simpl
                     throw new ArgumentException("Unknown remoting channel type '" + channelType + "'");
                 }
 
-                Log.Info(string.Format(CultureInfo.InvariantCulture, "Registering remoting channel of type '{0}' to port ({1}) with name ({2})", chan.GetType(), port, chan.ChannelName));
-
                 ChannelServices.RegisterChannel(chan, false);
 
                 registeredChannels.Add(channelRegistrationKey, new object());
-                Log.Info("Remoting channel registered successfully");
-            }
-            else
-            {
-                log.Error("Cannot register remoting if port or channel type not specified");
             }
         }
 
@@ -155,25 +142,20 @@ namespace Quartz.Simpl
             try
             {
                 RemotingServices.Disconnect((MarshalByRefObject)scheduler);
-                Log.Info("Successfully disconnected remotable scheduler");
+
             }
             catch (ArgumentException ex)
             {
-                Log.Error("ArgumentException during Unbind", ex);
+
             }
             catch (SecurityException ex)
             {
-                Log.Error("SecurityException during Unbind", ex);
+
             }
             catch (Exception ex)
             {
-                Log.Error("Exception during Unbind", ex);
-            }
-        }
 
-        protected virtual ILog Log
-        {
-            get { return log; }
+            }
         }
 
         /// <summary>

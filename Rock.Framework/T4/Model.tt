@@ -544,7 +544,7 @@ namespace Rock.Services<#= projectNamespace #>
 				if (index.IndexKeyType != IndexKeyType.DriPrimaryKey)
 				{
 					string returnName = index.IsUnique ? Entity : Entity + "s";
-					string returnType = index.IsUnique ? Entity : string.Format("IEnumerable<{0}>", QualifiedEntity);
+					string returnType = index.IsUnique ? QualifiedEntity : string.Format("IEnumerable<{0}>", QualifiedEntity);
 					string queryType = index.IsUnique ? "FirstOrDefault" : "Find";
 					StringBuilder getClause = new StringBuilder();
 					StringBuilder parameters = new StringBuilder();

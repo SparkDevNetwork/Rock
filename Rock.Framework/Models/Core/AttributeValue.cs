@@ -35,7 +35,7 @@ namespace Rock.Models.Core
 		public int AttributeId { get; set; }
 		
 		[DataMember]
-		public int EntityId { get; set; }
+		public int? EntityId { get; set; }
 		
 		[DataMember]
 		public string Value { get; set; }

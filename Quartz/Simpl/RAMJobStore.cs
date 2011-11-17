@@ -23,8 +23,6 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Collection;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
@@ -51,7 +49,7 @@ namespace Quartz.Simpl
         private readonly Dictionary<TriggerKey, TriggerWrapper> triggersByKey = new Dictionary<TriggerKey, TriggerWrapper>(1000);
         private readonly Dictionary<string, IDictionary<JobKey, JobWrapper>> jobsByGroup = new Dictionary<string, IDictionary<JobKey, JobWrapper>>(25);
         private readonly Dictionary<string, IDictionary<TriggerKey, TriggerWrapper>> triggersByGroup = new Dictionary<string, IDictionary<TriggerKey, TriggerWrapper>>(25);
-        private readonly TreeSet<TriggerWrapper> timeTriggers = new TreeSet<TriggerWrapper>(new TriggerWrapperComparator());
+        private readonly TreeSet<TriggerWrapper> timeTriggers = new TreeSet<TriggerWrapper>( new TriggerWrapperComparator() );
 		private readonly Dictionary<string, ICalendar> calendarsByName = new Dictionary<string, ICalendar>(5);
 		private readonly List<TriggerWrapper> triggers = new List<TriggerWrapper>(1000);
 		private readonly object lockObject = new object();
@@ -60,15 +58,14 @@ namespace Quartz.Simpl
         private readonly Collection.HashSet<JobKey> blockedJobs = new Collection.HashSet<JobKey>();
 		private TimeSpan misfireThreshold = TimeSpan.FromSeconds(5);
 		private ISchedulerSignaler signaler;
-		
-		private readonly ILog log;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RAMJobStore"/> class.
         /// </summary>
 	    public RAMJobStore()
 	    {
-	        log = LogManager.GetLogger(GetType());
+	       
 	    }
 
 	    /// <summary> 
@@ -109,7 +106,6 @@ namespace Quartz.Simpl
 		public virtual void Initialize(ITypeLoadHelper loadHelper, ISchedulerSignaler s)
 		{
 			signaler = s;
-			Log.Info("RAMJobStore initialized.");
 		}
 
         /// <summary>
@@ -195,12 +191,6 @@ namespace Quartz.Simpl
                 }
             }
         }
-    
-
-	    protected ILog Log
-	    {
-	        get { return log; }
-	    }
 
 	    /// <summary>
 		/// Store the given <see cref="IJobDetail" /> and <see cref="ITrigger" />.
@@ -1734,7 +1724,6 @@ namespace Quartz.Simpl
 				{
 					if (triggerInstCode == SchedulerInstruction.DeleteTrigger)
 					{
-					    log.Debug("Deleting trigger");
                         DateTimeOffset? d = trigger.GetNextFireTimeUtc();
                         if (!d.HasValue)
 						{
@@ -1744,10 +1733,6 @@ namespace Quartz.Simpl
 							if (!d.HasValue)
 							{
 								RemoveTrigger(trigger.Key);
-							}
-						    else
-							{
-							    log.Debug("Deleting cancelled - trigger still active");
 							}
 						}
 						else
@@ -1764,13 +1749,11 @@ namespace Quartz.Simpl
 					}
                     else if (triggerInstCode == SchedulerInstruction.SetTriggerError)
 					{
-						Log.Info(string.Format(CultureInfo.InvariantCulture, "Trigger {0} set to ERROR state.", trigger.Key));
                         tw.state = InternalTriggerState.Error;
                         signaler.SignalSchedulingChange(null);
 					}
                     else if (triggerInstCode == SchedulerInstruction.SetAllJobTriggersError)
 					{
-						Log.Info(string.Format(CultureInfo.InvariantCulture, "All triggers of Job {0} set to ERROR state.", trigger.JobKey));
                         SetAllTriggersOfJobToState(trigger.JobKey, InternalTriggerState.Error);
                         signaler.SignalSchedulingChange(null);
 					}
