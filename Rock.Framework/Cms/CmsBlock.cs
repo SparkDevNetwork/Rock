@@ -371,22 +371,10 @@ namespace Rock.Cms
 
         #region Internal Methods
 
-        internal void VerifyInstanceAttributes()
+        internal void CreateAttributes()
         {
-            bool attributesUpdated = false;
-
-            using ( new Rock.Helpers.UnitOfWorkScope() )
-            {
-
-                Type type = this.GetType();
-                foreach ( object customAttribute in type.GetCustomAttributes( typeof( BlockInstancePropertyAttribute ), true ) )
-                {
-                    BlockInstancePropertyAttribute blockInstanceProperty = ( BlockInstancePropertyAttribute )customAttribute;
-                    attributesUpdated = blockInstanceProperty.UpdateAttribute( this.BlockInstance, CurrentPersonId ) || attributesUpdated;
-                }
-            }
-
-            if (attributesUpdated)
+            if ( Rock.Helpers.Attributes.CreateAttributes( this.GetType(),
+                "Rock.Models.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId, CurrentPersonId ) )
                 this.BlockInstance.ReloadAttributeValues();
 
             this.BlockInstance.Block.InstancePropertiesVerified = true;

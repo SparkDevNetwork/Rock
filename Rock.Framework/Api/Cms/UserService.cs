@@ -10,6 +10,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
@@ -18,8 +19,10 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/User")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class UserService : IUserService
+    public partial class UserService : IUserService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.User Get( string id )

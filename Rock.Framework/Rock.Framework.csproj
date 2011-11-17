@@ -41,6 +41,7 @@
       <HintPath>..\packages\Microsoft ADO.NET Entity Framework 4.1\Binaries\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -92,8 +93,14 @@
     <Compile Include="Api\Cms\SiteDomainService.cs" />
     <Compile Include="Api\Cms\SiteService.cs" />
     <Compile Include="Api\Cms\UserService.cs" />
-    <Compile Include="Api\CustomServiceRoutesSection.cs" />
-    <Compile Include="Api\ServiceRouteConfiguration.cs" />
+    <Compile Include="Api\Crm\AddressService.Partial.cs" />
+    <Compile Include="Api\Crm\Address\AddressStub.cs" />
+    <Compile Include="Api\Crm\Address\StrikeIron.cs" />
+    <Compile Include="Api\Crm\Address\IStandardizeService.cs" />
+    <Compile Include="Api\Crm\Address\IGeocodeService.cs" />
+    <Compile Include="Api\Crm\Address\ServiceObjects.cs" />
+    <Compile Include="Api\Crm\IAddressService.Partial.cs" />
+    <Compile Include="Api\IService.cs" />
     <Compile Include="Api\Core\AttributeQualifierService.cs" />
     <Compile Include="Api\Core\AttributeService.cs" />
     <Compile Include="Api\Core\AttributeValueService.cs" />
@@ -122,7 +129,6 @@
     <Compile Include="Api\Groups\MemberService.cs" />
     <Compile Include="Api\Cms\PageService.cs" />
     <Compile Include="Api\ServiceHelper.cs" />
-    <Compile Include="Api\ServiceRoutesConfiguration.cs" />
     <Compile Include="Api\Util\IJobService.cs" />
     <Compile Include="Api\Util\JobService.cs" />
     <Compile Include="Cms\Cached\Attribute.cs" />
@@ -138,7 +144,7 @@
     <Compile Include="Cms\CmsBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Cms\BlockInstancePropertyAttribute.cs" />
+    <Compile Include="Cms\AttributePropertyAttribute.cs" />
     <Compile Include="Cms\RockRouteHandler.cs" />
     <Compile Include="Cms\Security\Authorization.cs" />
     <Compile Include="Cms\Security\ISecured.cs" />
@@ -167,6 +173,7 @@
     <Compile Include="FieldTypes\FieldQualifier.cs" />
     <Compile Include="FieldTypes\IFieldType.cs" />
     <Compile Include="FieldTypes\Text.cs" />
+    <Compile Include="Helpers\Attributes.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
     <Compile Include="Helpers\HttpModule.cs" />
     <Compile Include="Helpers\PageReference.cs">
@@ -307,6 +314,16 @@
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\Util\EntityJobRepository.cs" />
     <Compile Include="Repository\Util\IJobRepository.cs" />
+    <Compile Include="Service References\ServiceObjects.GeoCoder\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\StrikeIron.USAddressVerification\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Services\Cms\AuthService.cs" />
     <Compile Include="Services\Cms\BlockInstanceService.cs" />
     <Compile Include="Services\Cms\BlockService.cs" />
@@ -363,10 +380,70 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
+    <None Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
+    <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.wsdl" />
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.DistanceBetweenInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.DistanceToWaterInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.GeocodeCityWorldwideInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.Location.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.Location_V3.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.ReverseAddress.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ServiceObjects.GeoCoder\Rock.Framework.ServiceObjects.GeoCoder.ZipCodeInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\Rock.Framework.StrikeIron.USAddressVerification.SubscriptionInfo.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\USAddressVerification5.wsdl" />
     <None Include="T4\Model.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Model1.cs</LastGenOutput>
     </None>
+    <None Include="Service References\StrikeIron.USAddressVerification\configuration91.svcinfo" />
+    <None Include="Service References\StrikeIron.USAddressVerification\configuration.svcinfo" />
+    <None Include="Service References\StrikeIron.USAddressVerification\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <Content Include="web.config" />
+    <Content Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </Content>
+    <Content Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -377,6 +454,12 @@
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
     </ProjectReference>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
+    <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
