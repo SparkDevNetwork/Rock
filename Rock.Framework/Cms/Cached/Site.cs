@@ -62,11 +62,11 @@ namespace Rock.Cms.Cached
             Rock.Models.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
-                Rock.Helpers.Attributes.LoadAttributes( siteModel );
+                Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
                     foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
-                        Rock.Helpers.Attributes.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -109,7 +109,7 @@ namespace Rock.Cms.Cached
                     site.FacebookAppId = siteModel.FacebookAppId;
                     site.FacebookAppSecret = siteModel.FacebookAppSecret;
 
-                    Rock.Helpers.Attributes.LoadAttributes( siteModel );
+                    Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                     foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
                     {

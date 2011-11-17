@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rock.Models
+namespace Rock.Attribute
 {
     public interface IHasAttributes
     {
