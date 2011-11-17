@@ -23,12 +23,12 @@ using Rock.Repository.Util;
 
 namespace Rock.Services.Util
 {
-    public partial class JobService : Rock.Services.Service
+    public partial class JobService
     {
 		
         public IEnumerable<Rock.Models.Util.Job> GetActiveJobs()
         {
-            return _repository.Find( t => t.Active == true );
+            return Repository.Find( t => t.Active == true );
         }
 
         public IJobDetail BuildQuartzJob(Job job)
@@ -45,12 +45,23 @@ namespace Rock.Services.Util
                 type = Type.GetType( thetype );
             }
 
+            // create attributes if needed 
+            // TODO: next line should be moved to Job creation UI, when it's created
+            Rock.Helpers.Attributes.CreateAttributes( type, "Rock.Models.Util.Job", "Class", job.Class, null );
+
+            // load up job attributes (parameters) 
+            JobDataMap map = new JobDataMap();
+
+            foreach ( KeyValuePair<string, KeyValuePair<string, string>> attrib in job.AttributeValues )
+            {
+                map.Add( attrib.Key, attrib.Value.Value );
+            }
+
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
             .WithDescription( job.Id.ToString() )
             .WithIdentity( new Guid().ToString(), job.Name )
-            .UsingJobData( "key1", "key 1 value" )
-            .UsingJobData( "key2", "key 2 value" )
+            .UsingJobData(map)
             .Build();
 
             return jobDetail;

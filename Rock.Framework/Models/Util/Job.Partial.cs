@@ -26,44 +26,15 @@ using Rock.Models;
 
 namespace Rock.Models.Util
 {
-    public partial class Job : ModelWithAttributes
+    public partial class Job : ModelWithAttributes<Job>
     {
-        public IJobDetail GetQuartzJob()
+        public enum JobNotificationStatus
         {
-            // build the type object, will depend if the class is in an assembly or the App_Code folder
-            Type type = null;
-            if ( this.Assemby == string.Empty || this.Assemby == null )
-            {
-                type = BuildManager.GetType( this.Class, false );
-            }
-            else
-            {
-                string thetype = string.Format( "{0}, {1}", this.Class, this.Assemby );
-                type = Type.GetType(thetype);
-            }
-
-            // create the quartz job object
-            IJobDetail job = JobBuilder.Create( type )
-            .WithDescription( this.Id.ToString() )
-            .WithIdentity( new Guid().ToString(), this.Name )
-            .UsingJobData( "key1", "key 1 value" )
-            .UsingJobData( "key2", "key 2 value" )
-            .Build();
-
-            return job;
-        }
-
-        public ITrigger GetQuartzTrigger()
-        {            
-            // create quartz trigger
-            ITrigger trigger = ( ICronTrigger )TriggerBuilder.Create()
-                .WithIdentity( new Guid().ToString(), this.Name )
-                .WithCronSchedule( this.CronExpression )
-                .StartNow()
-                .Build();
-
-            return trigger;
-        }
+            All = 1,
+            Success = 2,
+            Error = 3,
+            None = 4
+        };
     }
 
 }

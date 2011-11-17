@@ -33,7 +33,10 @@ namespace Rock.Jobs
 	/// </summary>
 	/// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
-    public class JobPulse : IJob
+
+    [AttributeProperty( "Email Server", "Domain name of your SMTP server", "smtp.yourdomain.com" )]
+    [AttributeProperty( "Email Server Port", "Port of the email server", "25" )]
+    public class TestJob : IJob
 	{
         
         
@@ -44,7 +47,7 @@ namespace Rock.Jobs
 		/// scheduler can instantiate the class whenever it needs.
 		/// </para>
 		/// </summary>
-		public JobPulse()
+		public TestJob()
 		{
 		}
 		

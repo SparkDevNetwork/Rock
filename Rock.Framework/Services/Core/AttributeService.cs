@@ -20,93 +20,17 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class AttributeService : Rock.Services.Service
+    public partial class AttributeService : Rock.Services.Service<Rock.Models.Core.Attribute>
     {
-        private IAttributeRepository _repository;
-
-        public AttributeService()
-			: this( new EntityAttributeRepository() )
-        { }
-
-        public AttributeService( IAttributeRepository AttributeRepository )
+        public IEnumerable<Rock.Models.Core.Attribute> GetByEntity( string entity )
         {
-            _repository = AttributeRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.Attribute> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.Attribute GetAttribute( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Core.Attribute> GetAttributesByEntity( string entity )
+        public Rock.Models.Core.Attribute GetByGuid( Guid guid )
         {
-            return _repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
+            return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public Rock.Models.Core.Attribute GetAttributeByGuid( Guid guid )
-        {
-            return _repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-        public void AddAttribute( Rock.Models.Core.Attribute Attribute )
-        {
-            if ( Attribute.Guid == Guid.Empty )
-                Attribute.Guid = Guid.NewGuid();
-
-            _repository.Add( Attribute );
-        }
-
-        public void AttachAttribute( Rock.Models.Core.Attribute Attribute )
-        {
-            _repository.Attach( Attribute );
-        }
-
-		public void DeleteAttribute( Rock.Models.Core.Attribute Attribute )
-        {
-            _repository.Delete( Attribute );
-        }
-
-        public void Save( Rock.Models.Core.Attribute Attribute, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Attribute, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Attribute.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
-
-        public void Reorder( List<Rock.Models.Core.Attribute> Attributes, int oldIndex, int newIndex, int? personId )
-        {
-            Rock.Models.Core.Attribute movedAttribute = Attributes[oldIndex];
-            Attributes.RemoveAt( oldIndex );
-            if ( newIndex >= Attributes.Count )
-                Attributes.Add( movedAttribute );
-            else
-                Attributes.Insert( newIndex, movedAttribute );
-
-            int order = 0;
-            foreach ( Rock.Models.Core.Attribute Attribute in Attributes )
-            {
-                if ( Attribute.Order != order )
-                {
-                    Attribute.Order = order;
-                    Save( Attribute, personId );
-                }
-                order++;
-            }
-        }
     }
 }
