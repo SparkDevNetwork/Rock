@@ -374,7 +374,7 @@ namespace Rock.Cms
         internal void CreateAttributes()
         {
             if ( Rock.Helpers.Attributes.CreateAttributes( this.GetType(),
-                "Rock.Models.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId, CurrentPersonId ) )
+                "Rock.Models.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
                 this.BlockInstance.ReloadAttributeValues();
 
             this.BlockInstance.Block.InstancePropertiesVerified = true;
