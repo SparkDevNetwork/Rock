@@ -102,7 +102,6 @@ namespace RockWeb
             WebRequest request = WebRequest.Create( url );
             WebResponse response = request.GetResponse();
 
-
             // add cache item again
             AddCallBack();
         }

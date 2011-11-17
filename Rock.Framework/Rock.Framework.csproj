@@ -144,7 +144,7 @@
     <Compile Include="Cms\CmsBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Cms\AttributePropertyAttribute.cs" />
+    <Compile Include="Attribute\PropertyAttribute.cs" />
     <Compile Include="Cms\RockRouteHandler.cs" />
     <Compile Include="Cms\Security\Authorization.cs" />
     <Compile Include="Cms\Security\ISecured.cs" />
@@ -173,7 +173,7 @@
     <Compile Include="FieldTypes\FieldQualifier.cs" />
     <Compile Include="FieldTypes\IFieldType.cs" />
     <Compile Include="FieldTypes\Text.cs" />
-    <Compile Include="Helpers\Attributes.cs" />
+    <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
     <Compile Include="Helpers\HttpModule.cs" />
     <Compile Include="Helpers\PageReference.cs">
@@ -203,7 +203,7 @@
     <Compile Include="Models\Cms\PageRoute.cs" />
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
-    <Compile Include="Models\IHasAttributes.cs" />
+    <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">
