@@ -70,15 +70,31 @@ namespace Rock.Cms
         {
             get
             {
-                MembershipUser user = Membership.GetUser();
+                MembershipUser user = CurrentUser;
                 if ( user != null )
+                    return user.PersonId();
+                else
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the currently logged in user.  Returns null if there is not a user logged in
+        /// </summary>
+        public MembershipUser CurrentUser
+        {
+            get
+            {
+                if ( Context.Items.Contains( "CurrentUser" ) )
                 {
-                    if ( user.ProviderUserKey != null )
-                        return ( int )user.ProviderUserKey;
-                    else
-                        return null;
+                    return ( MembershipUser )Context.Items["CurrentUser"];
                 }
-                return null;
+                else
+                {
+                    MembershipUser user = Membership.GetUser();
+                    Context.Items.Add( "CurrentUser", user );
+                    return user;
+                }
             }
         }
 
@@ -99,7 +115,7 @@ namespace Rock.Cms
                     else
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Person person = personService.GetPerson( personId.Value );
+                        Person person = personService.Get( personId.Value );
                         Context.Items.Add( "CurrentPerson", person );
                         return person;
                     }
@@ -212,16 +228,16 @@ namespace Rock.Cms
             }
 
             // Get current user/person info
-            MembershipUser user = Membership.GetUser();
+            MembershipUser user = CurrentUser;
 
             if ( user != null )
             {
                 UserName = user.UserName;
+                int? personId = user.PersonId();
 
-                if ( user.ProviderUserKey != null && user.ProviderUserKey is int)
+                if ( personId.HasValue)
                 {
-                    int personId = ( int )user.ProviderUserKey;
-                    string personNameKey = "PersonName_" + personId.ToString();
+                    string personNameKey = "PersonName_" + personId.Value.ToString();
                     if ( Session[personNameKey] != null )
                     {
                         UserName = Session[personNameKey].ToString();
@@ -229,7 +245,7 @@ namespace Rock.Cms
                     else
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Rock.Models.Crm.Person person = personService.GetPerson( personId );
+                        Rock.Models.Crm.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;
@@ -270,22 +286,22 @@ namespace Rock.Cms
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canEditPage = PageInstance.Authorized( "Edit", user );
+                    bool canConfigPage = PageInstance.Authorized( "Configure", user );
 
                     // Add config elements
-                    if (canEditPage)
+                    if (canConfigPage)
                         AddConfigElements();
 
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Cms.Cached.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
                         // Get current user's permissions for the block instance
-                        bool canView = blockInstance.Authorized( "View", user );
+                        bool canConfig = blockInstance.Authorized( "Configure", user );
                         bool canEdit = blockInstance.Authorized( "Edit", user );
-                        bool canConfig = blockInstance.Authorized( "Configure", user );  
+                        bool canView = blockInstance.Authorized( "View", user );
 
                         // If user can't view and they haven't logged in, redirect to the login page
-                        if ( !canView )
+                        if ( !canConfig && !canEdit && !canView )
                         {
                             if ( user == null || !user.IsApproved )
                                 FormsAuthentication.RedirectToLoginPage();
@@ -299,7 +315,7 @@ namespace Rock.Cms
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
-                                ( canEdit || canConfig ? "can-edit " : "" ) +
+                                ( canConfig || canEdit ? "can-configure " : "" ) +
                                 HtmlHelper.CssClassFormat( blockInstance.Block.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
@@ -373,7 +389,7 @@ namespace Rock.Cms
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( PageInstance.IncludeAdminFooter && canEditPage)
+                    if ( PageInstance.IncludeAdminFooter && canConfigPage)
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -391,78 +407,32 @@ namespace Rock.Cms
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
-                        aBlockConfig.Attributes.Add( "Title", "Show Block Configuration" );
-                        aBlockConfig.InnerText = "BlockSettings";
+                        aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
 
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
-                        aAttributes.Attributes.Add( "class", "attributes icon-button" );
-                        aAttributes.Attributes.Add( "href", "#" );
-                        aAttributes.Attributes.Add( "Title", "Show Page Attributes" );
-                        aAttributes.InnerText = "Page Attributes";
+                        aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
+                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
+                        aAttributes.Attributes.Add( "title", "Page Properties" );
 
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
-                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button" );
-                        aChildPages.Attributes.Add( "href", "#" );
-                        aChildPages.Attributes.Add( "Title", "Show Child Pages" );
-                        aChildPages.InnerText = "Child Pages";
+                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-iframe-dialog" );
+                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
+                        aChildPages.Attributes.Add( "Title", "Child Pages" );
 
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
-                        aPageZones.Attributes.Add( "Title", "Show Page Zones" );
-                        aPageZones.InnerText = "Page Zones";
+                        aPageZones.Attributes.Add( "Title", "Page Zones" );
 
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.Attributes.Add( "class", "page-security icon-button" );
+                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-iframe-dialog" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                             Rock.Cms.Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
-                        aPageSecurity.Attributes.Add( "instance-id", PageInstance.Id.ToString() );
-                        aPageSecurity.InnerText = "Page Security";
-
-                        string footerScript = @"
-    $(document).ready(function () {
-
-        $('#cms-admin-footer .block-config').click(function (ev) {
-            $('.block-configuration').toggle();
-            $('.block-instance').toggleClass('outline');
-            return false;
-        });
-
-        $('#cms-admin-footer .page-zones').click(function (ev) {
-            $('.zone-configuration').toggle();
-            $('.zone-instance').toggleClass('outline');
-            return false;
-        });
-
-        $('#cms-admin-footer .page-security').click(function (ev) {
-
-            var instanceId = $(this).attr('instance-id')
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-            
-            $('#modalDiv').dialog('option', 'title', 'Page Security');
-
-            $('#modalDiv').dialog('open');
-            
-            return false;
-
-        });
-
-    });
-";
-
-                        this.ClientScript.RegisterClientScriptBlock( this.GetType(), "cms-admin-footer", footerScript, true );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -530,6 +500,7 @@ namespace Rock.Cms
         private void AddConfigElements()
         {
             string script = @"
+
     $(document).ready(function () {
 
         $('#modalDiv').dialog({ 
@@ -539,49 +510,22 @@ namespace Rock.Cms
             modal: true
         })
 
-        $('a.zone-blocks').click(function () {
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-            $('#modalDiv').dialog('option', 'title', 'Zone Blocks');
-            $('#modalDiv').dialog('open');
-            return false;
-        });
-
-        $('a.attributes-show').click(function () {
-
-            var instanceId = $(this).attr('instance-id')
+        $('a.show-iframe-dialog').click(function () {
 
             $('#modalIFrame').attr('src', $(this).attr('href'));
 
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
+            $('#modalDiv').bind('dialogclose', function (event, ui) {
+                if ($(this).attr('instance-id') != undefined)
+                    $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
                 $('#modalDiv').unbind('dialogclose');
                 $('#modalIFrame').attr('src', '');
             });
-            
-            $('#modalDiv').dialog('option', 'title', 'Block Attributes');
+
+            if ($(this).attr('title') != undefined)
+                $('#modalDiv').dialog('option', 'title', $(this).attr('title'));
 
             $('#modalDiv').dialog('open');
-            
-            return false;
 
-        });
-
-        $('a.blockinstance-secure').click(function () {
-
-            var instanceId = $(this).attr('instance-id')
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function(event, ui) {
-                $('#blck-cnfg-trggr-' + instanceId).click();
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-            
-            $('#modalDiv').dialog('option', 'title', 'Block Security');
-
-            $('#modalDiv').dialog('open');
-            
             return false;
 
         });
@@ -598,6 +542,18 @@ namespace Rock.Cms
             {
                 alert('block instance delete logic goes here!');
             }
+            return false;
+        });
+
+        $('#cms-admin-footer .block-config').click(function () {
+            $('.block-configuration').toggle();
+            $('.block-instance').toggleClass('outline');
+            return false;
+        });
+
+        $('#cms-admin-footer .page-zones').click(function () {
+            $('.zone-configuration').toggle();
+            $('.zone-instance').toggleClass('outline');
             return false;
         });
 
@@ -630,7 +586,7 @@ namespace Rock.Cms
                 parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance can-edit" );
+                zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
@@ -641,7 +597,7 @@ namespace Rock.Cms
 
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfig.Controls.Add( aBlockConfig );
-                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-iframe-dialog" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format("~/ZoneBlocks/{0}/{1}", PageInstance.Id, zoneControl.Value.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );

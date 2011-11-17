@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreAttributeQualifier" )]
-    public partial class AttributeQualifier : Model, IAuditable
+    public partial class AttributeQualifier : Model<AttributeQualifier>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -68,8 +65,9 @@ namespace Rock.Models.Core
 
         public static AttributeQualifier Read(int id)
         {
-            return new Rock.Services.Core.AttributeQualifierService().GetAttributeQualifier( id );
+            return new Rock.Services.Core.AttributeQualifierService().Get( id );
         }
+
     }
 
     public partial class AttributeQualifierConfiguration : EntityTypeConfiguration<AttributeQualifier>

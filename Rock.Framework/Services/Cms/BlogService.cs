@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogService : Rock.Services.Service
+    public partial class BlogService : Rock.Services.Service<Rock.Models.Cms.Blog>
     {
-        private IBlogRepository _repository;
-
-        public BlogService()
-			: this( new EntityBlogRepository() )
-        { }
-
-        public BlogService( IBlogRepository BlogRepository )
-        {
-            _repository = BlogRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.Blog> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.Blog GetBlog( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddBlog( Rock.Models.Cms.Blog Blog )
-        {
-            if ( Blog.Guid == Guid.Empty )
-                Blog.Guid = Guid.NewGuid();
-
-            _repository.Add( Blog );
-        }
-
-        public void AttachBlog( Rock.Models.Cms.Blog Blog )
-        {
-            _repository.Attach( Blog );
-        }
-
-		public void DeleteBlog( Rock.Models.Cms.Blog Blog )
-        {
-            _repository.Delete( Blog );
-        }
-
-        public void Save( Rock.Models.Cms.Blog Blog, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( Blog, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = Blog.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

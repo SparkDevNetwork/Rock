@@ -6,7 +6,7 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.Framework.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.Framework.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{C01AF4D0-812D-412E-ACA5-EE87864C5D46}|Rock.Custom.CCV.Framework.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -27,6 +27,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3AD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "Quartz\Quartz.csproj", "{AEF8823B-E45B-4B35-A4D0-C08C1196D017}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Custom.CCV.Framework", "Rock.Custom.CCV.Framework\Rock.Custom.CCV.Framework.csproj", "{C01AF4D0-812D-412E-ACA5-EE87864C5D46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C01AF4D0-812D-412E-ACA5-EE87864C5D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C01AF4D0-812D-412E-ACA5-EE87864C5D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C01AF4D0-812D-412E-ACA5-EE87864C5D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C01AF4D0-812D-412E-ACA5-EE87864C5D46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

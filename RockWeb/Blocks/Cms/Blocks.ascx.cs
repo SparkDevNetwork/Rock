@@ -37,13 +37,16 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-			_action = PageParameter( "action" ).ToLower();
-            switch ( _action )
+            if ( !Page.IsPostBack )
             {
-                case "":
-                case "list":
-                    BindGrid();
-                    break;
+                _action = PageParameter( "action" ).ToLower();
+                switch ( _action )
+                {
+                    case "":
+                    case "list":
+                        BindGrid();
+                        break;
+                }
             }
         }
 
@@ -68,7 +71,8 @@ namespace RockWeb.Blocks.Cms
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
                             block.Description = block.Path;
 
-                            blockService.AddBlock( block );
+                            blockService.Add( block, CurrentPersonId );
+                            Rock.Models.Cms.Block testBlock = block;
                             blockService.Save( block, CurrentPersonId );
                         }
                     }
@@ -86,7 +90,7 @@ namespace RockWeb.Blocks.Cms
             rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
-    $(document).ready(function() {{
+    Sys.Application.add_load(function () {{
         $('td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this Block?');
             }});
@@ -114,7 +118,7 @@ namespace RockWeb.Blocks.Cms
 
 				if ( blockId > 0 )
 				{
-					Rock.Models.Cms.Block block = blockService.GetBlock( Convert.ToInt32( PageParameter( "BlockId" ) ) );
+					Rock.Models.Cms.Block block = blockService.Get( Convert.ToInt32( PageParameter( "BlockId" ) ) );
                     if (block == null)
                         throw new System.Exception( "Invalid Block Id" );
 
@@ -139,10 +143,10 @@ namespace RockWeb.Blocks.Cms
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
             Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
-            Rock.Models.Cms.Block block = blockService.GetBlock( ( int )e.Keys["id"] );
+            Rock.Models.Cms.Block block = blockService.Get( ( int )e.Keys["id"] );
             if ( block != null )
             {
-                blockService.DeleteBlock( block );
+                blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
             }
 
@@ -162,14 +166,14 @@ namespace RockWeb.Blocks.Cms
 
 				Rock.Models.Cms.Block block = _action == "add" ?
 					new Rock.Models.Cms.Block() :
-					blockService.GetBlock( _blockId );
+					blockService.Get( _blockId );
 
 				block.Path = tbPath.Text;
 				block.Name = tbName.Text;
 				block.Description = tbDescription.Text;
 
 				if ( _action == "add" )
-					blockService.AddBlock( block );
+                    blockService.Add( block, CurrentPersonId );
 				blockService.Save( block, CurrentPersonId );
 
 				Response.Redirect( "~/Bloc/list" );

@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Util
 {
     [Table( "utilJob" )]
-    public partial class Job : ModelWithAttributes
+    public partial class Job : ModelWithAttributes<Job>
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool? System { get; set; }
 		
@@ -98,8 +95,9 @@ namespace Rock.Models.Util
 
         public static Job Read(int id)
         {
-            return new Rock.Services.Util.JobService().GetJob( id );
+            return new Rock.Services.Util.JobService().Get( id );
         }
+
     }
 
     public partial class JobConfiguration : EntityTypeConfiguration<Job>

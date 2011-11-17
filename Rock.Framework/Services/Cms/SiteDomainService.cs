@@ -20,77 +20,22 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class SiteDomainService : Rock.Services.Service
+    public partial class SiteDomainService : Rock.Services.Service<Rock.Models.Cms.SiteDomain>
     {
-        private ISiteDomainRepository _repository;
-
-        public SiteDomainService()
-			: this( new EntitySiteDomainRepository() )
-        { }
-
-        public SiteDomainService( ISiteDomainRepository SiteDomainRepository )
+        public Rock.Models.Cms.SiteDomain GetByDomain( string domain )
         {
-            _repository = SiteDomainRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.SiteDomain> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.SiteDomain GetSiteDomain( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.FirstOrDefault( t => t.Domain == domain );
         }
 		
-        public Rock.Models.Cms.SiteDomain GetSiteDomainByDomain( string domain )
+        public IEnumerable<Rock.Models.Cms.SiteDomain> GetByGuid( Guid guid )
         {
-            return _repository.FirstOrDefault( t => t.Domain == domain );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.SiteDomain> GetSiteDomainsByGuid( Guid guid )
+        public IEnumerable<Rock.Models.Cms.SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
         {
-            return _repository.Find( t => t.Guid == guid );
+            return Repository.Find( t => t.SiteId == siteId && t.Domain == domain );
         }
 		
-        public IEnumerable<Rock.Models.Cms.SiteDomain> GetSiteDomainsBySiteIdAndDomain( int siteId, string domain )
-        {
-            return _repository.Find( t => t.SiteId == siteId && t.Domain == domain );
-        }
-		
-        public void AddSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
-        {
-            if ( SiteDomain.Guid == Guid.Empty )
-                SiteDomain.Guid = Guid.NewGuid();
-
-            _repository.Add( SiteDomain );
-        }
-
-        public void AttachSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
-        {
-            _repository.Attach( SiteDomain );
-        }
-
-		public void DeleteSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
-        {
-            _repository.Delete( SiteDomain );
-        }
-
-        public void Save( Rock.Models.Cms.SiteDomain SiteDomain, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( SiteDomain, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = SiteDomain.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

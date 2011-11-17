@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Cms
                                 user.LastActivityDate = DateTime.Now;
                                 user.LastLoginDate = DateTime.Now;
 
-                                userService.AddUser( user );
+                                userService.Add( user, person.Id );
                                 userService.Save( user, person.Id );
 
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet

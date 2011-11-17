@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Cms.Blog
             skipCount = (takeCount * currentPage) - takeCount;
 
             DisplayList();
-            this.AttributesUpdated += new Rock.Cms.AttributesUpdatedEventHandler( BlogPosts_AttributesUpdated );
+            this.AttributesUpdated += BlogPosts_AttributesUpdated;
             //this.AddAttributeUpdateTrigger( upPosts );
         }
 
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Cms.Blog
 
                 if ( blog == null )
                 {
-                    blog = blogService.GetBlog( blogId );
+                    blog = blogService.Get( blogId );
                     PageInstance.SaveSharedItem( "blog", blog );
                 }
 

@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class HtmlContentService : Rock.Services.Service
+    public partial class HtmlContentService : Rock.Services.Service<Rock.Models.Cms.HtmlContent>
     {
-        private IHtmlContentRepository _repository;
-
-        public HtmlContentService()
-			: this( new EntityHtmlContentRepository() )
-        { }
-
-        public HtmlContentService( IHtmlContentRepository HtmlContentRepository )
-        {
-            _repository = HtmlContentRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.HtmlContent> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.HtmlContent GetHtmlContent( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
-        {
-            if ( HtmlContent.Guid == Guid.Empty )
-                HtmlContent.Guid = Guid.NewGuid();
-
-            _repository.Add( HtmlContent );
-        }
-
-        public void AttachHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
-        {
-            _repository.Attach( HtmlContent );
-        }
-
-		public void DeleteHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
-        {
-            _repository.Delete( HtmlContent );
-        }
-
-        public void Save( Rock.Models.Cms.HtmlContent HtmlContent, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( HtmlContent, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = HtmlContent.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

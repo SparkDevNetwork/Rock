@@ -1,4 +1,15 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Security.ascx.cs" Inherits="RockWeb.Blocks.Cms.Security" %>
+<script type="text/javascript">
+
+    Sys.Application.add_load(function () {
+        $('ol[id$=cblRoleActionList]').hide();
+        $('a.show-action-list').click(function () {
+            $('ol[id$=cblRoleActionList]').toggle('fast');
+            return false;
+        });
+    });
+
+</script>
 <asp:UpdatePanel id="upPanel" runat="server" class="admin-dialog">
 <ContentTemplate>
     
@@ -9,9 +20,9 @@
 
     <div class="dialog-note"><asp:Literal ID="lActionNote" runat="server"/></div>
 
-    <Rock:Grid ID="rGrid" runat="server" ShowHeaderWhenEmpty="true" 
-        onrowdatabound="rGrid_RowDataBound">
+    <Rock:Grid ID="rGrid" runat="server" onrowdatabound="rGrid_RowDataBound">
         <Columns>
+            <Rock:ReorderField />
             <asp:TemplateField>
                 <HeaderTemplate>Allow/Deny</HeaderTemplate>
                 <HeaderStyle HorizontalAlign="Left" />
@@ -25,7 +36,7 @@
                 </ItemTemplate>
             </asp:TemplateField>
             <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-            <Rock:DeleteField />
+            <Rock:DeleteField OnClick="rGrid_Delete" />
         </Columns>
     </Rock:Grid>
 
@@ -39,6 +50,7 @@
     <asp:Panel ID="pnlAddRole" runat="server" Visible="false">
         <asp:Label ID="lblRoles" runat="server" Text="Role" AssociatedControlID="ddlRoles"></asp:Label> 
         <asp:DropDownList ID="ddlRoles" runat="server" AutoPostBack="true" onselectedindexchanged="ddlRoles_SelectedIndexChanged"></asp:DropDownList>
+        <a class="show-action-list" href="#">...</a>
         <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="OrderedList"></asp:CheckBoxList>
         <asp:LinkButton ID="lbAddRole" runat="server" Text="Add" onclick="lbAddRole_Click"></asp:LinkButton>
     </asp:Panel>
@@ -50,6 +62,8 @@
         <asp:CheckBoxList ID="cbUsers" runat="server"></asp:CheckBoxList>
         <asp:LinkButton ID="lbAddUser" runat="server" Text="Add" onclick="lbAddUser_Click"></asp:LinkButton>
     </asp:Panel>
+
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
 
 </ContentTemplate>
 </asp:UpdatePanel>

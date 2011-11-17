@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsBlockInstance" )]
-    public partial class BlockInstance : ModelWithAttributes, IAuditable, IOrdered
+    public partial class BlockInstance : ModelWithAttributes<BlockInstance>, IAuditable, IOrdered
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -82,8 +79,9 @@ namespace Rock.Models.Cms
 
         public static BlockInstance Read(int id)
         {
-            return new Rock.Services.Cms.BlockInstanceService().GetBlockInstance( id );
+            return new Rock.Services.Cms.BlockInstanceService().Get( id );
         }
+
     }
 
     public partial class BlockInstanceConfiguration : EntityTypeConfiguration<BlockInstance>

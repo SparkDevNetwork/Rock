@@ -20,88 +20,12 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class DefinedValueService : Rock.Services.Service
+    public partial class DefinedValueService : Rock.Services.Service<Rock.Models.Core.DefinedValue>
     {
-        private IDefinedValueRepository _repository;
-
-        public DefinedValueService()
-			: this( new EntityDefinedValueRepository() )
-        { }
-
-        public DefinedValueService( IDefinedValueRepository DefinedValueRepository )
+        public IEnumerable<Rock.Models.Core.DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
-            _repository = DefinedValueRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.DefinedValue> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.DefinedValue GetDefinedValue( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Core.DefinedValue> GetDefinedValuesByDefinedTypeId( int definedTypeId )
-        {
-            return _repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
-        }
-		
-        public void AddDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
-        {
-            if ( DefinedValue.Guid == Guid.Empty )
-                DefinedValue.Guid = Guid.NewGuid();
-
-            _repository.Add( DefinedValue );
-        }
-
-        public void AttachDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
-        {
-            _repository.Attach( DefinedValue );
-        }
-
-		public void DeleteDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
-        {
-            _repository.Delete( DefinedValue );
-        }
-
-        public void Save( Rock.Models.Core.DefinedValue DefinedValue, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( DefinedValue, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = DefinedValue.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
-
-        public void Reorder( List<Rock.Models.Core.DefinedValue> DefinedValues, int oldIndex, int newIndex, int? personId )
-        {
-            Rock.Models.Core.DefinedValue movedDefinedValue = DefinedValues[oldIndex];
-            DefinedValues.RemoveAt( oldIndex );
-            if ( newIndex >= DefinedValues.Count )
-                DefinedValues.Add( movedDefinedValue );
-            else
-                DefinedValues.Insert( newIndex, movedDefinedValue );
-
-            int order = 0;
-            foreach ( Rock.Models.Core.DefinedValue DefinedValue in DefinedValues )
-            {
-                if ( DefinedValue.Order != order )
-                {
-                    DefinedValue.Order = order;
-                    Save( DefinedValue, personId );
-                }
-                order++;
-            }
-        }
     }
 }

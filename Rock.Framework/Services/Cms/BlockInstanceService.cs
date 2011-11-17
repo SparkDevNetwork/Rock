@@ -20,98 +20,22 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlockInstanceService : Rock.Services.Service
+    public partial class BlockInstanceService : Rock.Services.Service<Rock.Models.Cms.BlockInstance>
     {
-        private IBlockInstanceRepository _repository;
-
-        public BlockInstanceService()
-			: this( new EntityBlockInstanceRepository() )
-        { }
-
-        public BlockInstanceService( IBlockInstanceRepository BlockInstanceRepository )
+        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayout( string layout )
         {
-            _repository = BlockInstanceRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.BlockInstance> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.BlockInstance GetBlockInstance( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByLayout( string layout )
+        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByPageId( int? pageId )
         {
-            return _repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
+            return Repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByPageId( int? pageId )
+        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
         {
-            return _repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
+            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetBlockInstancesByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
-        {
-            return _repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
-        }
-		
-        public void AddBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
-        {
-            if ( BlockInstance.Guid == Guid.Empty )
-                BlockInstance.Guid = Guid.NewGuid();
-
-            _repository.Add( BlockInstance );
-        }
-
-        public void AttachBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
-        {
-            _repository.Attach( BlockInstance );
-        }
-
-		public void DeleteBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
-        {
-            _repository.Delete( BlockInstance );
-        }
-
-        public void Save( Rock.Models.Cms.BlockInstance BlockInstance, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( BlockInstance, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = BlockInstance.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
-
-        public void Reorder( List<Rock.Models.Cms.BlockInstance> BlockInstances, int oldIndex, int newIndex, int? personId )
-        {
-            Rock.Models.Cms.BlockInstance movedBlockInstance = BlockInstances[oldIndex];
-            BlockInstances.RemoveAt( oldIndex );
-            if ( newIndex >= BlockInstances.Count )
-                BlockInstances.Add( movedBlockInstance );
-            else
-                BlockInstances.Insert( newIndex, movedBlockInstance );
-
-            int order = 0;
-            foreach ( Rock.Models.Cms.BlockInstance BlockInstance in BlockInstances )
-            {
-                if ( BlockInstance.Order != order )
-                {
-                    BlockInstance.Order = order;
-                    Save( BlockInstance, personId );
-                }
-                order++;
-            }
-        }
     }
 }

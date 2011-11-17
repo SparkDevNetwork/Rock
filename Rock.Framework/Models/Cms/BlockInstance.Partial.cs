@@ -9,6 +9,11 @@ namespace Rock.Models.Cms
 {
     public partial class BlockInstance
     {
+        public override List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
+
         public override string ToString()
         {
             return this.Name;

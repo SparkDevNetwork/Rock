@@ -190,8 +190,8 @@ namespace Rock.Cms.Security
                 AuthService authService = new AuthService();
 
                 // Delete the current authorizations for the target entity
-                foreach(Auth auth in authService.GetAuthsByEntityTypeAndEntityId(targetEntity.AuthEntity, targetEntity.Id))
-                    authService.DeleteAuth(auth);
+                foreach(Auth auth in authService.GetByEntityTypeAndEntityId(targetEntity.AuthEntity, targetEntity.Id))
+                    authService.Delete(auth, personId);
 
                 Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
 
@@ -212,7 +212,7 @@ namespace Rock.Cms.Security
                             auth.UserOrRole = rule.UserOrRole;
                             auth.UserOrRoleName = rule.UserOrRoleName;
 
-                            authService.AddAuth(auth);
+                            authService.Add(auth, personId);
                             authService.Save(auth, personId);
 
                             newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.UserOrRole, rule.UserOrRoleName, rule.Order ) );
@@ -257,7 +257,7 @@ namespace Rock.Cms.Security
                     try
                     {
                         Rock.Services.Crm.PersonService personService = new Services.Crm.PersonService();
-                        Rock.Models.Crm.Person person = personService.GetPersonByGuid( new Guid( UserOrRoleName ) );
+                        Rock.Models.Crm.Person person = personService.GetByGuid( new Guid( UserOrRoleName ) );
                         return person.FullName + " (User)";
                     }
                     catch

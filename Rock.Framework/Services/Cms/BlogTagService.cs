@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogTagService : Rock.Services.Service
+    public partial class BlogTagService : Rock.Services.Service<Rock.Models.Cms.BlogTag>
     {
-        private IBlogTagRepository _repository;
-
-        public BlogTagService()
-			: this( new EntityBlogTagRepository() )
-        { }
-
-        public BlogTagService( IBlogTagRepository BlogTagRepository )
-        {
-            _repository = BlogTagRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.BlogTag> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.BlogTag GetBlogTag( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddBlogTag( Rock.Models.Cms.BlogTag BlogTag )
-        {
-            if ( BlogTag.Guid == Guid.Empty )
-                BlogTag.Guid = Guid.NewGuid();
-
-            _repository.Add( BlogTag );
-        }
-
-        public void AttachBlogTag( Rock.Models.Cms.BlogTag BlogTag )
-        {
-            _repository.Attach( BlogTag );
-        }
-
-		public void DeleteBlogTag( Rock.Models.Cms.BlogTag BlogTag )
-        {
-            _repository.Delete( BlogTag );
-        }
-
-        public void Save( Rock.Models.Cms.BlogTag BlogTag, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( BlogTag, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = BlogTag.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

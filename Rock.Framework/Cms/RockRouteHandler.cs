@@ -41,7 +41,7 @@ namespace Rock.Cms
 			else
 			{
 				Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
-				Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetSiteDomainByDomain( requestContext.HttpContext.Request.Url.Host );
+				Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
 				if ( siteDomain != null && siteDomain.Site != null && siteDomain.Site.DefaultPageId != null )
 					pageId = siteDomain.Site.DefaultPageId.Value.ToString();
 			}

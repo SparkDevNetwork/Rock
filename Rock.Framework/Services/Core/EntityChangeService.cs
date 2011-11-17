@@ -20,55 +20,12 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
-    public partial class EntityChangeService : Rock.Services.Service
+    public partial class EntityChangeService : Rock.Services.Service<Rock.Models.Core.EntityChange>
     {
-        private IEntityChangeRepository _repository;
-
-        public EntityChangeService()
-			: this( new EntityEntityChangeRepository() )
-        { }
-
-        public EntityChangeService( IEntityChangeRepository EntityChangeRepository )
+        public IEnumerable<Rock.Models.Core.EntityChange> GetByChangeSet( Guid changeSet )
         {
-            _repository = EntityChangeRepository;
-        }
-
-        public IQueryable<Rock.Models.Core.EntityChange> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Core.EntityChange GetEntityChange( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.ChangeSet == changeSet );
         }
 		
-        public IEnumerable<Rock.Models.Core.EntityChange> GetEntityChangesByChangeSet( Guid changeSet )
-        {
-            return _repository.Find( t => t.ChangeSet == changeSet );
-        }
-		
-        public void AddEntityChange( Rock.Models.Core.EntityChange EntityChange )
-        {
-            if ( EntityChange.Guid == Guid.Empty )
-                EntityChange.Guid = Guid.NewGuid();
-
-            _repository.Add( EntityChange );
-        }
-
-        public void AttachEntityChange( Rock.Models.Core.EntityChange EntityChange )
-        {
-            _repository.Attach( EntityChange );
-        }
-
-		public void DeleteEntityChange( Rock.Models.Core.EntityChange EntityChange )
-        {
-            _repository.Delete( EntityChange );
-        }
-
-        public void Save( Rock.Models.Core.EntityChange EntityChange, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( EntityChange, personId );
-        }
     }
 }

@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Cms.Blog
             }
 
             Rock.Services.Cms.BlogPostService postService = new Rock.Services.Cms.BlogPostService();
-            post = postService.GetBlogPost( postId );
+            post = postService.Get( postId );
 
             lTitle.Text = post.Title;
             lContents.Text = post.Content;
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Cms.Blog
                 comment.PersonName = txtName.Text;
                 comment.PersonId = CurrentPersonId;
 
-                commentService.AddBlogPostComment( comment );
+                commentService.Add( comment, CurrentPersonId );
                 commentService.Save( comment, CurrentPersonId );
 
                 // load comments

@@ -20,62 +20,7 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
-    public partial class BlogPostCommentService : Rock.Services.Service
+    public partial class BlogPostCommentService : Rock.Services.Service<Rock.Models.Cms.BlogPostComment>
     {
-        private IBlogPostCommentRepository _repository;
-
-        public BlogPostCommentService()
-			: this( new EntityBlogPostCommentRepository() )
-        { }
-
-        public BlogPostCommentService( IBlogPostCommentRepository BlogPostCommentRepository )
-        {
-            _repository = BlogPostCommentRepository;
-        }
-
-        public IQueryable<Rock.Models.Cms.BlogPostComment> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Cms.BlogPostComment GetBlogPostComment( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
-        }
-		
-        public void AddBlogPostComment( Rock.Models.Cms.BlogPostComment BlogPostComment )
-        {
-            if ( BlogPostComment.Guid == Guid.Empty )
-                BlogPostComment.Guid = Guid.NewGuid();
-
-            _repository.Add( BlogPostComment );
-        }
-
-        public void AttachBlogPostComment( Rock.Models.Cms.BlogPostComment BlogPostComment )
-        {
-            _repository.Attach( BlogPostComment );
-        }
-
-		public void DeleteBlogPostComment( Rock.Models.Cms.BlogPostComment BlogPostComment )
-        {
-            _repository.Delete( BlogPostComment );
-        }
-
-        public void Save( Rock.Models.Cms.BlogPostComment BlogPostComment, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( BlogPostComment, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = BlogPostComment.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

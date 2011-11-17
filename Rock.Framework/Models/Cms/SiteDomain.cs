@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsSiteDomain" )]
-    public partial class SiteDomain : ModelWithAttributes, IAuditable
+    public partial class SiteDomain : ModelWithAttributes<SiteDomain>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -61,8 +58,9 @@ namespace Rock.Models.Cms
 
         public static SiteDomain Read(int id)
         {
-            return new Rock.Services.Cms.SiteDomainService().GetSiteDomain( id );
+            return new Rock.Services.Cms.SiteDomainService().Get( id );
         }
+
     }
 
     public partial class SiteDomainConfiguration : EntityTypeConfiguration<SiteDomain>

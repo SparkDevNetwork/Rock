@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            this.AttributesUpdated += new AttributesUpdatedEventHandler( PageXslt_AttributesUpdated );
+            this.AttributesUpdated += PageXslt_AttributesUpdated;
             //this.AddAttributeUpdateTrigger( upContent );
 			//upContent.ContentTemplateContainer.Controls.Add( )
 
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
 
 			int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
 
-			XDocument pageXml = rootPage.MenuXml( levelsDeep, System.Web.Security.Membership.GetUser() );
+			XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentUser );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );
