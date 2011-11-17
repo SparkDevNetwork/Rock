@@ -72,7 +72,7 @@ namespace Rock.Models.Util
 		public string NotificationEmails { get; set; }
 		
 		[DataMember(Name = "NotificationStatus")]
-		internal int? NotificationStatusInternal { get; set; }
+		internal int NotificationStatusInternal { get; set; }
 
 		[NotMapped]
 		public JobNotificationStatus NotificationStatus
