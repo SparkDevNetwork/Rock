@@ -11,7 +11,7 @@ namespace Rock.Api.Crm.Address
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "ServiceObjects" )]
     // TODO: Remove hardcoded attribute defaults once UI is created for setting values
-    [Rock.Attribute.Property( "License Key", "The Service Objects License Key", "WS34-YEW2-KGL3" )]
+    [Rock.Attribute.Property( "License Key", "The Service Objects License Key", "" )]
     public class ServiceObjects : IGeocodeService, Rock.Attribute.IHasAttributes
     {
         public int Id { get { return 0; } }
@@ -19,7 +19,7 @@ namespace Rock.Api.Crm.Address
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         // TODO: Need to abstract a way to set these property 
-        public int Order { get { return 1; } }
+        public int Order { get { return 0; } }
 
         public bool Geocode( AddressStub address )
         {
