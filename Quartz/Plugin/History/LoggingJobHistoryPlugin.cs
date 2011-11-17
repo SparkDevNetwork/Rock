@@ -20,8 +20,6 @@
 using System;
 using System.Globalization;
 
-using Common.Logging;
-
 using Quartz.Impl.Matchers;
 using Quartz.Spi;
 
@@ -265,17 +263,6 @@ namespace Quartz.Plugin.History
         private string jobWasVetoedMessage =
             "Job {1}.{0} was vetoed.  It was to be fired (by trigger {4}.{3}) at: {2:HH:mm:ss MM/dd/yyyy}";
 
-        private ILog log = LogManager.GetLogger(typeof (LoggingJobHistoryPlugin));
-
-        /// <summary>
-        /// Logger instance to use. Defaults to common logging.
-        /// </summary>
-        public ILog Log
-        {
-            get { return log; }
-            set { log = value; }
-        }
-
         /// <summary> 
         /// Get or sets the message that is logged when a Job successfully completes its 
         /// execution.
@@ -366,10 +353,6 @@ namespace Quartz.Plugin.History
         /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
         public virtual void JobToBeExecuted(IJobExecutionContext context)
         {
-            if (!Log.IsInfoEnabled)
-            {
-                return;
-            }
 
             ITrigger trigger = context.Trigger;
 
@@ -379,8 +362,6 @@ namespace Quartz.Plugin.History
                         context.JobDetail.Key.Name, context.JobDetail.Key.Group, SystemTime.UtcNow(), trigger.Key.Name, trigger.Key.Group,
                         trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), context.RefireCount
                     };
-
-            Log.Info(String.Format(CultureInfo.InvariantCulture, JobToBeFiredMessage, args));
         }
 
 
@@ -399,11 +380,6 @@ namespace Quartz.Plugin.History
 
             if (jobException != null)
             {
-                if (!Log.IsWarnEnabled)
-                {
-                    return;
-                }
-
                 string errMsg = jobException.Message;
                 args =
                     new object[]
@@ -411,15 +387,10 @@ namespace Quartz.Plugin.History
                             context.JobDetail.Key.Name, context.JobDetail.Key.Group, SystemTime.UtcNow(), trigger.Key.Name, trigger.Key.Group,
                             trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), context.RefireCount, errMsg
                         };
-
-                Log.Warn(String.Format(CultureInfo.InvariantCulture, JobFailedMessage, args), jobException);
             }
             else
             {
-                if (!Log.IsInfoEnabled)
-                {
-                    return;
-                }
+                
 
                 string result = Convert.ToString(context.Result, CultureInfo.InvariantCulture);
                 args =
@@ -428,8 +399,6 @@ namespace Quartz.Plugin.History
                             context.JobDetail.Key.Name, context.JobDetail.Key.Group, SystemTime.UtcNow(), trigger.Key.Name, trigger.Key.Group,
                             trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), context.RefireCount, result
                         };
-
-                Log.Info(String.Format(CultureInfo.InvariantCulture, JobSuccessMessage, args));
             }
         }
 
@@ -443,11 +412,7 @@ namespace Quartz.Plugin.History
         /// <seealso cref="JobToBeExecuted(IJobExecutionContext)"/>
         public virtual void JobExecutionVetoed(IJobExecutionContext context)
         {
-            if (!Log.IsInfoEnabled)
-            {
-                return;
-            }
-
+            
             ITrigger trigger = context.Trigger;
 
             object[] args =
@@ -456,8 +421,6 @@ namespace Quartz.Plugin.History
                         context.JobDetail.Key.Name, context.JobDetail.Key.Group, SystemTime.UtcNow(), trigger.Key.Name, trigger.Key.Group,
                         trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), context.RefireCount
                     };
-
-            Log.Info(String.Format(CultureInfo.InvariantCulture, JobWasVetoedMessage, args));
         }
     }
 }

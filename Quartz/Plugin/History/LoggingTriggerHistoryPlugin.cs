@@ -20,8 +20,6 @@
 using System;
 using System.Globalization;
 
-using Common.Logging;
-
 using Quartz.Impl.Matchers;
 using Quartz.Spi;
 
@@ -212,17 +210,6 @@ namespace Quartz.Plugin.History
         private string triggerFiredMessage = "Trigger {1}.{0} fired job {6}.{5} at: {4:HH:mm:ss MM/dd/yyyy} ";
         private string triggerMisfiredMessage = "Trigger {1}.{0} misfired job {6}.{5}  at: {4:HH:mm:ss MM/dd/yyyy}.  Should have fired at: {3:HH:mm:ss MM/dd/yyyy}";
         private string triggerCompleteMessage = "Trigger {1}.{0} completed firing job {6}.{5} at {4:HH:mm:ss MM/dd/yyyy} with resulting trigger instruction code: {9}";
-        
-        private ILog log = LogManager.GetLogger(typeof (LoggingTriggerHistoryPlugin));
-
-        /// <summary>
-        /// Logger instance to use. Defaults to common logging.
-        /// </summary>
-        public ILog Log
-        {
-            get { return log; }
-            set { log = value; }
-        }
 
         /// <summary> 
         /// Get or set the message that is printed upon the completion of a trigger's
@@ -304,19 +291,12 @@ namespace Quartz.Plugin.History
         /// <param name="context">The <see cref="IJobExecutionContext" /> that will be passed to the <see cref="IJob" />'s <see cref="IJob.Execute" /> method.</param>
         public virtual void TriggerFired(ITrigger trigger, IJobExecutionContext context)
         {
-            if (!Log.IsInfoEnabled)
-            {
-                return;
-            }
-
             object[] args =
                 new object[]
                     {
                         trigger.Key.Name, trigger.Key.Group, trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), SystemTime.UtcNow(),
                         context.JobDetail.Key.Name, context.JobDetail.Key.Group, context.RefireCount
                     };
-
-            Log.Info(String.Format(CultureInfo.InvariantCulture, TriggerFiredMessage, args));
         }
 
         /// <summary>
@@ -332,10 +312,6 @@ namespace Quartz.Plugin.History
         /// <param name="trigger">The <see cref="ITrigger" /> that has misfired.</param>
         public virtual void TriggerMisfired(ITrigger trigger)
         {
-            if (!Log.IsInfoEnabled)
-            {
-                return;
-            }
 
             object[] args =
                 new object[]
@@ -344,7 +320,6 @@ namespace Quartz.Plugin.History
                         trigger.JobKey.Name, trigger.JobKey.Group
                     };
 
-            Log.Info(String.Format(CultureInfo.InvariantCulture, TriggerMisfiredMessage, args));
         }
 
         /// <summary>
@@ -359,11 +334,6 @@ namespace Quartz.Plugin.History
         /// <param name="triggerInstructionCode">The result of the call on the <see cref="IOperableTrigger" />'s <see cref="IOperableTrigger.Triggered" />  method.</param>
         public virtual void TriggerComplete(ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode)
         {
-            if (!Log.IsInfoEnabled)
-            {
-                return;
-            }
-
             string instrCode = "UNKNOWN";
             if (triggerInstructionCode == SchedulerInstruction.DeleteTrigger)
             {
@@ -392,8 +362,6 @@ namespace Quartz.Plugin.History
                         trigger.Key.Name, trigger.Key.Group, trigger.GetPreviousFireTimeUtc(), trigger.GetNextFireTimeUtc(), SystemTime.UtcNow(),
                         context.JobDetail.Key.Name, context.JobDetail.Key.Group, context.RefireCount, triggerInstructionCode, instrCode
                     };
-
-            Log.Info(String.Format(CultureInfo.InvariantCulture, TriggerCompleteMessage, args));
         }
 
         /// <summary>

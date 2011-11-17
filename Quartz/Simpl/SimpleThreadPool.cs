@@ -22,8 +22,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Simpl
@@ -44,7 +42,6 @@ namespace Quartz.Simpl
     /// <author>Marko Lahma (.NET)</author>
     public class SimpleThreadPool : IThreadPool
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(SimpleThreadPool));
         private const int DefaultThreadPoolSize = 10;
 
         private readonly object nextRunnableLock = new object();
@@ -196,9 +193,7 @@ namespace Quartz.Simpl
             // Active worker threads will shut down after finishing their
             // current job.
             lock (nextRunnableLock)
-            {
-                log.Debug("Shutting down threadpool...");
-                
+            {                
                 isShutdown = true;
 
                 if (workers == null) // case where the pool wasn't even initialize()ed
@@ -237,8 +232,6 @@ namespace Quartz.Simpl
                         LinkedListNode<WorkerThread> wt = busyWorkers.First;
                         try
                         {
-                            log.DebugFormat(CultureInfo.InvariantCulture, "Waiting for thread {0} to shut down", wt.Value.Name);
-
                             // note: with waiting infinite time the
                             // application may appear to 'hang'.
                             Monitor.Wait(nextRunnableLock, 2000);
@@ -261,11 +254,9 @@ namespace Quartz.Simpl
                         {
                         }
                     }
-                    
-                    log.Debug("No executing jobs remaining, all threads stopped.");
+
                 }
-                
-                log.Debug("Shutdown of threadpool complete.");
+
             }
         }
 
@@ -496,7 +487,6 @@ namespace Quartz.Simpl
                     }
                     catch (Exception exceptionInRunnable)
                     {
-                        log.Error("Error while executing the Runnable: ", exceptionInRunnable);
                     }
                     finally
                     {
@@ -533,8 +523,6 @@ namespace Quartz.Simpl
                 	    shouldRun = run;
                     }
                 }
-
-                log.Debug("WorkerThread is shut down");
             }
         }
     }

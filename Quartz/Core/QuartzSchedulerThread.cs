@@ -23,8 +23,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Core
@@ -40,7 +38,6 @@ namespace Quartz.Core
     /// <author>Marko Lahma (.NET)</author>
     public class QuartzSchedulerThread : QuartzThread
     {
-        private readonly ILog log;
         private QuartzScheduler qs;
         private QuartzSchedulerResources qsRsrcs;
         private readonly object sigLock = new object();
@@ -59,15 +56,6 @@ namespace Quartz.Core
         private TimeSpan idleWaitTime = DefaultIdleWaitTime;
         private int idleWaitVariablness = 7*1000;
         private TimeSpan dbFailureRetryInterval = TimeSpan.FromSeconds(15);
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-        protected ILog Log
-        {
-            get { return log; }
-        }
 
         /// <summary>
         /// Sets the idle wait time.
@@ -120,7 +108,6 @@ namespace Quartz.Core
         internal QuartzSchedulerThread(QuartzScheduler qs, QuartzSchedulerResources qsRsrcs, 
                                        bool setDaemon, int threadPrio) : base(qsRsrcs.ThreadName)
         {
-            log = LogManager.GetLogger(GetType());
             //ThreadGroup generatedAux = qs.SchedulerThreadGroup;
             this.qs = qs;
             this.qsRsrcs = qsRsrcs;
@@ -277,10 +264,6 @@ namespace Quartz.Core
                             triggers = qsRsrcs.JobStore.AcquireNextTriggers(
                                 now + idleWaitTime, Math.Min(availThreadCount, qsRsrcs.MaxBatchSize), qsRsrcs.BatchTimeWindow);
                             lastAcquireFailed = false;
-                            if (log.IsDebugEnabled)
-                            {
-                                log.DebugFormat("Batch acquisition of {0} triggers", (triggers == null ? 0 : triggers.Count));
-                            }
                         }
                         catch (JobPersistenceException jpe)
                         {
@@ -296,8 +279,7 @@ namespace Quartz.Core
                         {
                             if (!lastAcquireFailed)
                             {
-                                Log.Error("quartzSchedulerThreadLoop: RuntimeException "
-                                          + e.Message, e);
+                               
                             }
                             lastAcquireFailed = true;
                         }
@@ -389,7 +371,6 @@ namespace Quartz.Core
                             // TODO SQL exception?
                             if (exception != null &&  (exception is DbException || exception.InnerException is DbException))
                             {
-                                Log.Error("DbException while firing trigger " + trigger, exception);
                                 // db connection must have failed... keep
                                 // retrying until it's up...
                                 ReleaseTriggerRetryLoop(trigger);
@@ -457,7 +438,6 @@ namespace Quartz.Core
                                     // scheduler being shutdown or a bug in the thread pool or
                                     // a thread pool being used concurrently - which the docs
                                     // say not to do...
-                                    Log.Error("ThreadPool.runInThread() return false!");
                                     qsRsrcs.JobStore.TriggeredJobComplete(trigger, bndle.JobDetail,
                                                                           SchedulerInstruction.
                                                                               SetAllJobTriggersError);
@@ -501,10 +481,6 @@ namespace Quartz.Core
                 }
                 catch (Exception re)
                 {
-                    if (Log != null)
-                    {
-                        Log.Error("Runtime error occurred in main trigger firing loop.", re);
-                    }
                 }
             } // while (!halted)
 
@@ -535,7 +511,6 @@ namespace Quartz.Core
                     }
                     catch (Exception e)
                     {
-                        Log.Error("ReleaseTriggerRetryLoop: Exception " + e.Message, e);
                         // db connection must have failed... keep
                         // retrying until it's up...
                         ReleaseTriggerRetryLoop(trigger);
@@ -638,11 +613,11 @@ namespace Quartz.Core
                     }
                     catch (ThreadInterruptedException e)
                     {
-                        Log.Error(string.Format(CultureInfo.InvariantCulture, "ReleaseTriggerRetryLoop: InterruptedException {0}", e.Message), e);
+                        
                     }
                     catch (Exception e)
                     {
-                        Log.Error(string.Format(CultureInfo.InvariantCulture, "ReleaseTriggerRetryLoop: Exception {0}", e.Message), e);
+                        
                     }
                 }
             }
@@ -650,7 +625,7 @@ namespace Quartz.Core
             {
                 if (retryCount == 0)
                 {
-                    Log.Info("ReleaseTriggerRetryLoop: connection restored.");
+                   
                 }
             }
         }
@@ -685,11 +660,11 @@ namespace Quartz.Core
                     }
                     catch (ThreadInterruptedException e)
                     {
-                        Log.Error(string.Format(CultureInfo.InvariantCulture, "ReleaseTriggerRetryLoop: InterruptedException {0}", e.Message), e);
+                        
                     }
                     catch (Exception e)
                     {
-                        Log.Error(string.Format(CultureInfo.InvariantCulture, "ReleaseTriggerRetryLoop: Exception {0}", e.Message), e);
+                       
                     }
                 }
             }
@@ -697,7 +672,7 @@ namespace Quartz.Core
             {
                 if (retryCount == 0)
                 {
-                    Log.Info("ReleaseTriggerRetryLoop: connection restored.");
+                  
                 }
             }
         }

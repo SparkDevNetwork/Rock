@@ -22,7 +22,6 @@
 using System;
 using System.Threading;
 
-using Common.Logging;
 using Quartz.Collection;
 using Quartz.Impl.AdoJobStore.Common;
 using Quartz.Util;
@@ -37,7 +36,6 @@ namespace Quartz.Impl.AdoJobStore
     /// <author>Marko Lahma (.NET)</author>
     public abstract class DBSemaphore : StdAdoConstants, ISemaphore, ITablePrefixAware
     {
-        private readonly ILog log;
         private const string ThreadContextKeyLockOwners = "qrtz_dbs_lck_owners";
         private string sql;
         private String insertSql;
@@ -61,7 +59,6 @@ namespace Quartz.Impl.AdoJobStore
         /// <param name="dbProvider">The db provider.</param>
         public DBSemaphore(string tablePrefix, string schedName, string defaultSQL, string defaultInsertSQL, IDbProvider dbProvider)
         {
-            log = LogManager.GetLogger(GetType());
             this.schedName = schedName;
             this.tablePrefix = tablePrefix;
             SQL = defaultSQL;
@@ -77,16 +74,6 @@ namespace Quartz.Impl.AdoJobStore
         {
             get { return LogicalThreadContext.GetData<HashSet<string>>(ThreadContextKeyLockOwners); }
             set { LogicalThreadContext.SetData(ThreadContextKeyLockOwners, value); }
-        }
-
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-        protected ILog Log
-        {
-            get { return log; }
         }
 
         private static HashSet<string> ThreadLocks
@@ -123,25 +110,13 @@ namespace Quartz.Impl.AdoJobStore
         {
             lockName = string.Intern(lockName);
 
-            if (Log.IsDebugEnabled)
-            {
-                Log.DebugFormat("Lock '{0}' is desired by: {1}", lockName, Thread.CurrentThread.Name);
-            }
             if (!IsLockOwner(conn, lockName))
             {
                 ExecuteSQL(conn, lockName, expandedSQL, expandedInsertSQL);
 
-                if (Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat("Lock '{0}' given to: {1}", lockName, Thread.CurrentThread.Name);
-                }
                 ThreadLocks.Add(lockName);
                 //getThreadLocksObtainer().put(lockName, new
                 // Exception("Obtainer..."));
-            }
-            else if (log.IsDebugEnabled)
-            {
-                Log.DebugFormat("Lock '{0}' Is already owned by: {1}", lockName, Thread.CurrentThread.Name);
             }
 
             return true;
@@ -160,19 +135,8 @@ namespace Quartz.Impl.AdoJobStore
 
             if (IsLockOwner(conn, lockName))
             {
-                if (Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat("Lock '{0}' returned by: {1}", lockName, Thread.CurrentThread.Name);
-                }
                 ThreadLocks.Remove(lockName);
                 //getThreadLocksObtainer().remove(lockName);
-            }
-            else if (Log.IsDebugEnabled)
-            {
-                Log.WarnFormat("Lock '{0}' attempt to return by: {1} -- but not owner!",
-                    new Exception("stack-trace of wrongful returner"),
-                    lockName, 
-                    Thread.CurrentThread.Name);
             }
         }
 

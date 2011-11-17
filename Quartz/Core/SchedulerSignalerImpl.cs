@@ -19,8 +19,6 @@
 
 using System;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Core
@@ -33,7 +31,6 @@ namespace Quartz.Core
 	/// <author>Marko Lahma (.NET)</author>
 	public class SchedulerSignalerImpl : ISchedulerSignaler
 	{
-		private ILog log = LogManager.GetLogger(typeof (SchedulerSignalerImpl));
         protected QuartzScheduler sched;
         protected QuartzSchedulerThread schedThread;
 
@@ -41,8 +38,6 @@ namespace Quartz.Core
         {
             this.sched = sched;
             this.schedThread = schedThread;
-
-            log.Info("Initialized Scheduler Signaller of type: " + GetType());
         }
 
 
@@ -58,7 +53,6 @@ namespace Quartz.Core
 			}
 			catch (SchedulerException se)
 			{
-				log.Error("Error notifying listeners of trigger misfire.", se);
 				sched.NotifySchedulerListenersError("Error notifying listeners of trigger misfire.", se);
 			}
 		}

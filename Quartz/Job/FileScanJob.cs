@@ -21,8 +21,6 @@ using System;
 using System.Globalization;
 using System.IO;
 
-using Common.Logging;
-
 namespace Quartz.Job
 {
 	/// <summary> 
@@ -65,23 +63,12 @@ namespace Quartz.Job
 	    
 	    private const string LastModifiedTime = "LAST_MODIFIED_TIME";
 
-        private readonly ILog log;
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-	    protected ILog Log
-	    {
-	        get { return log; }
-	    }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="FileScanJob"/> class.
         /// </summary>
 	    public FileScanJob()
 	    {
-	        log = LogManager.GetLogger(typeof (FileScanJob));
 	    }
 
 	    /// <summary>
@@ -149,19 +136,13 @@ namespace Quartz.Job
 
 			if (newDate == DateTime.MinValue)
 			{
-				Log.Warn(string.Format(CultureInfo.InvariantCulture, "File '{0}' does not exist.", fileName));
 				return;
 			}
 
             if (lastDate != DateTime.MinValue && (newDate != lastDate && newDate < maxAgeDate))
 			{
 				// notify call back...
-				Log.Info(string.Format(CultureInfo.InvariantCulture, "File '{0}' updated, notifying listener.", fileName));
 				listener.FileUpdated(fileName);
-			}
-			else
-			{
-				Log.Debug(string.Format(CultureInfo.InvariantCulture, "File '{0}' unchanged.", fileName));
 			}
 
 			context.JobDetail.JobDataMap.Put(LastModifiedTime, newDate);
