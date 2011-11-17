@@ -50,6 +50,9 @@ namespace Rock.Services.Util
             Rock.Helpers.Attributes.CreateAttributes( type, "Rock.Models.Util.Job", "Class", job.Class, null );
 
             // load up job attributes (parameters) 
+            JobService jobService = new JobService();
+            jobService.LoadAttributes( job );
+
             JobDataMap map = new JobDataMap();
 
             foreach ( KeyValuePair<string, KeyValuePair<string, string>> attrib in job.AttributeValues )
