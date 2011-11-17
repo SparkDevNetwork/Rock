@@ -34,8 +34,8 @@ namespace Rock.Jobs
 	/// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [AttributeProperty( "Email Server", "Domain name of your SMTP server", "smtp.yourdomain.com" )]
-    [AttributeProperty( "Email Server Port", "Port of the email server", "25" )]
+    [Rock.Attribute.Property( "Email Server", "Domain name of your SMTP server", "smtp.yourdomain.com" )]
+    [Rock.Attribute.Property( "Email Server Port", "Port of the email server", "25" )]
     public class TestJob : IJob
 	{
         

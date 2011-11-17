@@ -6,9 +6,9 @@ using System.Web;
 
 using Rock.Cms;
 
-namespace Rock.Helpers
+namespace Rock.Attribute
 {
-    public static class Attributes
+    public static class Helper
     {
         public static bool CreateAttributes( Type type, string entity, int? currentPersonId )
         {
@@ -21,9 +21,9 @@ namespace Rock.Helpers
 
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
-                foreach ( object customAttribute in type.GetCustomAttributes( typeof( AttributePropertyAttribute ), true ) )
+                foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
                 {
-                    AttributePropertyAttribute blockInstanceProperty = ( AttributePropertyAttribute )customAttribute;
+                    var blockInstanceProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
                     attributesUpdated = blockInstanceProperty.UpdateAttribute( 
                         entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
                 }
@@ -32,14 +32,16 @@ namespace Rock.Helpers
             return attributesUpdated;
         }
 
-        public static void LoadAttributes( Rock.Models.IHasAttributes model )
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
             List<Rock.Models.Core.Attribute> attributes = new List<Rock.Models.Core.Attribute>();
             Dictionary<string, KeyValuePair<string, string>> attributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
-            Type modelType = model.GetType().BaseType;
+            Type modelType = item.GetType();
+            if (item is Rock.Models.IModel)
+                modelType = modelType.BaseType;
             string entityType = modelType.FullName;
 
             foreach ( PropertyInfo propertyInfo in modelType.GetProperties() )
@@ -52,18 +54,18 @@ namespace Rock.Helpers
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
-                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( model, null ).ToString() == attribute.EntityQualifierValue ) ) )
+                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( item, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
                     attributes.Add( attribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( model.Id ) ) );
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( item.Id ) ) );
                 }
             }
 
-            model.Attributes = attributes;
-            model.AttributeValues = attributeValues;
+            item.Attributes = attributes;
+            item.AttributeValues = attributeValues;
         }
 
-        public static void SaveAttributeValue( Rock.Models.IHasAttributes model, Rock.Models.Core.Attribute attribute, string value, int? personId )
+        public static void SaveAttributeValue( Rock.Attribute.IHasAttributes model, Rock.Models.Core.Attribute attribute, string value, int? personId )
         {
             Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
 
