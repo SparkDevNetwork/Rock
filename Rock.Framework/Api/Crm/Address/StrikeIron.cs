@@ -10,24 +10,30 @@ namespace Rock.Api.Crm.Address
 {
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "StrikeIron" )]
-    public class StrikeIron : IGeocodeService
+    // TODO: Remove hardcoded attribute defaults once UI is created for setting values
+    [Rock.Attribute.Property( "User ID", "The Strike Iron User ID", "" )]
+    [Rock.Attribute.Property( "Password", "The Strike Iron Password", "" )]
+    public class StrikeIron : IGeocodeService, Rock.Attribute.IHasAttributes
     {
+        public int Id { get { return 0; } }
+        public List<Models.Core.Attribute> Attributes { get; set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+
         // TODO: Need to abstract a way to set these properties
-        public int Order { get { return 0; } }
-
-        [System.ComponentModel.Description("User ID")]
-        public string UserID { get { return "CD2548164B6BC1B2530C"; } }
-
-        [System.ComponentModel.Description( "Password" )]
-        public string Password { get { return "ArenaSIService"; } }
+        public int Order { get { return 1; } }
 
         public bool Geocode( AddressStub address )
         {
             if ( address != null )
             {
+                // TODO: next line should be moved to Job creation UI, when it's created
+                Rock.Attribute.Helper.CreateAttributes( this.GetType(), "Rock.Api.Crm.Address.StrikeIron", string.Empty, string.Empty, null );
+
+                Rock.Attribute.Helper.LoadAttributes( this );
+
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = this.UserID;
-                registeredUser.Password = this.Password;
+                registeredUser.UserID = AttributeValues["UserID"].Value;
+                registeredUser.Password = AttributeValues["Password"].Value;
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
