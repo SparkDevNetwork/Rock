@@ -11,6 +11,7 @@
 		<sectionGroup name="common">
 			<section name="logging" type="Common.Logging.ConfigurationSectionHandler, Common.Logging"/>
 		</sectionGroup>
+        <section requirePermission="false" name="CustomServiceRoutes" type="Rock.Api.CustomServiceRoutesSection, Rock.Framework"/>
 	</configSections>
 
 	<common>
@@ -41,6 +42,7 @@
 
 	<system.web>
 		<trace enabled="false" />
+		<!--<trust level="Medium"/>-->
 		<compilation debug="true" targetFramework="4.0">
 			<assemblies>
 				<add assembly="EntityFramework, Version=4.1.0.0, Culture=neutral, PublicKeyToken=B77A5C561934E089" />
@@ -67,6 +69,11 @@
 				<add tagPrefix="recaptcha" assembly="Recaptcha" namespace="Recaptcha" />
 			</controls>
 		</pages>
+		
+		<!--<httpModules>
+			<add name="CCVHttpModule" type="Rock.Custom.CCV.HttpModule, Rock.Custom.CCV.Framework"/>
+		</httpModules>-->		
+		
 	</system.web>
 	
 	<system.webServer>
@@ -84,8 +91,23 @@
 			<webHttpEndpoint>
 				<standardEndpoint name="" helpEnabled="true" automaticFormatSelectionEnabled="true"/>
 			</webHttpEndpoint>
-		</standardEndpoints>
-	</system.serviceModel>
+	    </standardEndpoints>
+        <bindings>
+            <basicHttpBinding>
+                <binding name="DOTSGeoCoderSoap" />
+                <binding name="USAddressVerificationSoap" />
+            </basicHttpBinding>
+        </bindings>
+        <client>
+            <endpoint address="http://ws.serviceobjects.com/gcr/GeoCoder.asmx"
+                binding="basicHttpBinding" bindingConfiguration="DOTSGeoCoderSoap"
+                contract="ServiceObjects.GeoCoder.DOTSGeoCoderSoap" name="DOTSGeoCoderSoap" />
+            <endpoint address="http://ws.strikeiron.com/StrikeIron/USAddressVerification5/USAddressVerification"
+                binding="basicHttpBinding" bindingConfiguration="USAddressVerificationSoap"
+                contract="StrikeIron.USAddressVerification.USAddressVerificationSoap"
+                name="USAddressVerificationSoap" />
+        </client>
+    </system.serviceModel>
 	
 	<facebookSettings appId="{app id}" appSecret="{app secret}" />
 	
