@@ -11,7 +11,7 @@ public partial class wcfHelp : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        List<RouteUrl> routes = new List<RouteUrl>();
+        var routes = new List<RouteUrl>();
 
         foreach(object route in RouteTable.Routes)
             if ( route is ServiceRoute )
@@ -20,16 +20,22 @@ public partial class wcfHelp : System.Web.UI.Page
                 routes.Add( new RouteUrl( serviceRoute.Url.Replace( "/{*pathInfo}", string.Empty ) ) );
             }
 
+        routes.Sort();
         gvRoutes.DataSource = routes;
         gvRoutes.DataBind();
     }
 
-    protected class RouteUrl
+    protected class RouteUrl : IComparable
     {
         public string Url { get; set; }
         public RouteUrl( string url )
         {
             Url = url;
+        }
+
+        public int CompareTo( object obj )
+        {
+            return Url.CompareTo( ( ( RouteUrl )obj ).Url );
         }
     }
 }

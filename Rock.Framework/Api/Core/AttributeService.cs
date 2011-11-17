@@ -10,6 +10,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
@@ -18,8 +19,10 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/Attribute")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class AttributeService : IAttributeService
+    public partial class AttributeService : IAttributeService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.Attribute Get( string id )

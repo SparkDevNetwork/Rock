@@ -10,6 +10,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
@@ -18,8 +19,10 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/HtmlContent")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class HtmlContentService : IHtmlContentService
+    public partial class HtmlContentService : IHtmlContentService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.HtmlContent Get( string id )

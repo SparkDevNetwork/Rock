@@ -348,11 +348,11 @@ namespace Rock.Cms
                                     cmsBlock.PageInstance = PageInstance;
                                     cmsBlock.BlockInstance = blockInstance;
 
-                                    // If the block's BlockInstanceProperty values have not yet been verified verify them.
+                                    // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
-                                        cmsBlock.VerifyInstanceAttributes();
+                                        cmsBlock.CreateAttributes();
 
                                     // Add the block configuration scripts and icons if user is authorized
                                     AddBlockConfig(blockWrapper, cmsBlock, blockInstance, canConfig, canEdit);
@@ -529,6 +529,21 @@ namespace Rock.Cms
             return false;
 
         });
+
+        $('div.zone-instance').sortable({
+            appendTo: 'body',
+            connectWith: 'div.zone-instance',
+            handle: 'a.block-move',
+            opacity: 0.6,
+            start: function(event, ui) {
+                var start_pos = ui.item.index();
+                ui.item.data('start_pos', start_pos);
+                $('div.zone-instance').addClass('outline');
+            },
+            stop: function(event, ui) {
+                $('div.zone-instance').removeClass('outline');
+            }
+        }).disableSelection();
 
         $('a.blockinstance-move').click(function () {
             var elementId = $(this).attr('href');

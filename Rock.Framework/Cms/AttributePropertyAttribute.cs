@@ -6,7 +6,7 @@ using System.Web;
 namespace Rock.Cms
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class BlockInstancePropertyAttribute : System.Attribute
+    public class AttributePropertyAttribute : System.Attribute
     {
         public string FieldTypeAssembly { get; set; }
         public string FieldTypeClass { get; set; }
@@ -15,27 +15,27 @@ namespace Rock.Cms
         public string Description { get; set; }
         public string DefaultValue { get; set; }
 
-        public BlockInstancePropertyAttribute( string name )
+        public AttributePropertyAttribute( string name )
             : this( name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public BlockInstancePropertyAttribute( string name, string description )
+        public AttributePropertyAttribute( string name, string description )
             : this( name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public BlockInstancePropertyAttribute( string name, string description, string defaultValue )
+        public AttributePropertyAttribute( string name, string description, string defaultValue )
             : this( name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public BlockInstancePropertyAttribute( string name, string key, string description, string defaultValue )
+        public AttributePropertyAttribute( string name, string key, string description, string defaultValue )
             : this( key, name, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public BlockInstancePropertyAttribute( string name, string key, string description, string defaultValue, 
+        public AttributePropertyAttribute( string name, string key, string description, string defaultValue, 
             string fieldTypeAssembly, string fieldTypeClass)
         {
             FieldTypeAssembly = fieldTypeAssembly;
@@ -46,7 +46,7 @@ namespace Rock.Cms
             DefaultValue = defaultValue;
         }
 
-        internal bool UpdateAttribute( Cms.Cached.BlockInstance blockInstance, int? currentPersonId )
+        internal bool UpdateAttribute( string entity, string entityQualifier, int entityQualiferId, int? currentPersonId )
         {
             bool updated = false;
 
@@ -54,15 +54,15 @@ namespace Rock.Cms
             Services.Core.FieldTypeService fieldTypeService = new Services.Core.FieldTypeService();
 
             Models.Core.Attribute attribute = attributeService.GetAttributesByEntityQualifierAndKey(
-                "Rock.Models.Cms.BlockInstance", "BlockId", blockInstance.BlockId, this.Key );
+                entity, entityQualifier, entityQualiferId, this.Key );
 
             if ( attribute == null )
             {
                 updated = true;
                 attribute = new Models.Core.Attribute();
-                attribute.Entity = "Rock.Models.Cms.BlockInstance";
-                attribute.EntityQualifier = "BlockId";
-                attribute.EntityQualifierId = blockInstance.BlockId;
+                attribute.Entity = entity;
+                attribute.EntityQualifier = entityQualifier;
+                attribute.EntityQualifierId = entityQualiferId;
                 attribute.Key = this.Key;
                 attribute.Order = int.MaxValue;
                 attribute.GridColumn = false;
