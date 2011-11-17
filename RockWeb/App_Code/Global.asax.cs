@@ -44,7 +44,6 @@ namespace RockWeb
             {
 
                 ISchedulerFactory sf;
-                NameValueCollection properties = new NameValueCollection();
 
                 // create scheduler
                 sf = new StdSchedulerFactory();
@@ -54,10 +53,23 @@ namespace RockWeb
                 JobService jobService = new JobService();
                 foreach ( Job job in jobService.GetActiveJobs() )
                 {
-                    IJobDetail jobDetail = jobService.BuildQuartzJob(job);
-                    ITrigger jobTrigger = jobService.BuildQuartzTrigger(job);
+                    try
+                    {
+                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                    sched.ScheduleJob( jobDetail, jobTrigger );
+                        sched.ScheduleJob( jobDetail, jobTrigger );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // create a friendly error message
+                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assemby, ex.Message );
+                        job.LastStatusMessage = message;
+                        job.LastStatus = "Error Loading Job";
+                        
+                        //TODO: line below generates an exception
+                        //jobService.Save( job, null );
+                    }
                 }
 
                 // set up the listener to report back from jobs as they complete
