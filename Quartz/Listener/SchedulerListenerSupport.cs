@@ -17,7 +17,6 @@
  */
 #endregion
 
-using Common.Logging;
 
 namespace Quartz.Listener
 {
@@ -33,20 +32,8 @@ namespace Quartz.Listener
     /// <seealso cref="ISchedulerListener" />
     public abstract class SchedulerListenerSupport : ISchedulerListener
     {
-        private readonly ILog log;
-
         protected SchedulerListenerSupport()
         {
-            log = LogManager.GetLogger(GetType());
-        }
-
-        /// <summary>
-        /// Get the <see cref="ILog" /> for this
-        /// type's category.  This should be used by subclasses for logging.
-        /// </summary>
-        protected ILog Log
-        {
-            get { return log; }
         }
 
         public virtual void JobScheduled(ITrigger trigger)

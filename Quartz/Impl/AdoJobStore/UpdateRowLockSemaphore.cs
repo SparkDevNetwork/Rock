@@ -77,16 +77,10 @@ namespace Quartz.Impl.AdoJobStore
                 {
                     AdoUtil.AddCommandParameter(cmd, "lockName", lockName);
 
-                    if (Log.IsDebugEnabled)
-                    {
-                        Log.Debug("Lock '" + lockName + "' is being obtained: " + Thread.CurrentThread.Name);
-                    }
-
                     int numUpdate = cmd.ExecuteNonQuery();
 
                     if (numUpdate < 1)
                     {
-                        Log.DebugFormat("Inserting new lock row for lock: '{0}' being obtained by thread: {1}", lockName, Thread.CurrentThread.Name);
                         using (IDbCommand cmd2 = AdoUtil.PrepareCommand(conn, expandedInsertSQL))
                         {
                             AdoUtil.AddCommandParameter(cmd2, "lockName", lockName);
@@ -105,13 +99,6 @@ namespace Quartz.Impl.AdoJobStore
             }
             catch (Exception sqle)
             {
-                if (Log.IsDebugEnabled)
-                {
-                    Log.Debug(
-                        "Lock '" + lockName + "' was not obtained by: " +
-                        Thread.CurrentThread.Name);
-                }
-
                 throw new LockException(
                     "Failure obtaining db row lock: " + sqle.Message, sqle);
             }

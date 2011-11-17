@@ -27,8 +27,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-using Common.Logging;
-
 using Quartz.Impl.Matchers;
 using Quartz.Impl.Triggers;
 using Quartz.Spi;
@@ -46,7 +44,6 @@ namespace Quartz.Impl.AdoJobStore
     /// <author>Marko Lahma (.NET)</author>
     public class StdAdoDelegate : StdAdoConstants, IDriverDelegate, ICommandAccessor
     {
-        private ILog logger;
         private string tablePrefix = DefaultTablePrefix;
         private string instanceId;
         private string schedName;
@@ -63,7 +60,6 @@ namespace Quartz.Impl.AdoJobStore
         /// </summary>
         public virtual void Initialize(DelegateInitializationArgs args)
         {
-            logger = args.Logger;
             tablePrefix = args.TablePrefix;
             schedName = args.InstanceName;
             instanceId = args.InstanceId;
@@ -128,7 +124,6 @@ namespace Quartz.Impl.AdoJobStore
 
         public virtual void AddTriggerPersistenceDelegate(ITriggerPersistenceDelegate del)
         {
-            logger.Debug("Adding TriggerPersistenceDelegate of type: " + del.GetType());
             del.Initialize(tablePrefix, schedName, this);
             triggerPersistenceDelegates.Add(del);
         }
@@ -621,10 +616,6 @@ namespace Quartz.Impl.AdoJobStore
         {
             using (IDbCommand cmd = PrepareCommand(conn, ReplaceTablePrefix(SqlDeleteJobDetail)))
             {
-                if (logger.IsDebugEnabled)
-                {
-                    logger.Debug("Deleting job: " + jobKey);
-                }
                 AddCommandParameter(cmd, "jobName", jobKey.Name);
                 AddCommandParameter(cmd, "jobGroup", jobKey.Group);
                 return cmd.ExecuteNonQuery();
@@ -1391,10 +1382,6 @@ namespace Quartz.Impl.AdoJobStore
                     }
                     else
                     {
-                        if (logger.IsDebugEnabled)
-                        {
-                            logger.Debug("No job for trigger '" +triggerKey + "'.");
-                        }
                         return null;
                     }
                 }
@@ -2017,7 +2004,6 @@ namespace Quartz.Impl.AdoJobStore
                     }
                     if (null == cal)
                     {
-                        logger.Warn("Couldn't find calendar with name '" + calendarName + "'.");
                     }
                     return cal;
                 }

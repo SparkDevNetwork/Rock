@@ -20,8 +20,6 @@
 using System;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Simpl
@@ -42,23 +40,16 @@ namespace Quartz.Simpl
     /// <author>Marko Lahma (.NET)</author>
     public class ZeroSizeThreadPool : IThreadPool
     {
-        private readonly ILog log;
+        public void Shutdown( bool waitForJobsToComplete )
+        {
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZeroSizeThreadPool"/> class.
         /// </summary>
         public ZeroSizeThreadPool()
         {
-            log = LogManager.GetLogger(GetType());
-        }
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-        protected virtual ILog Log
-        {
-            get { return log; }
         }
 
         /// <summary>
@@ -102,17 +93,6 @@ namespace Quartz.Simpl
         public virtual void Shutdown()
         {
             Shutdown(true);
-        }
-
-        /// <summary>
-        /// Called by the QuartzScheduler to inform the <see cref="ThreadPool"/>
-        /// that it should free up all of it's resources because the scheduler is
-        /// shutting down.
-        /// </summary>
-        /// <param name="waitForJobsToComplete"></param>
-        public virtual void Shutdown(bool waitForJobsToComplete)
-        {
-            Log.Debug("shutdown complete");
         }
 
         /// <summary>

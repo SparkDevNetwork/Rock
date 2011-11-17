@@ -58,7 +58,6 @@ namespace Quartz.Impl.AdoJobStore
 
             base.Initialize(loadHelper, signaler);
 
-            Log.Info("JobStoreCMT initialized.");
         }
 
         /// <summary>
@@ -77,7 +76,6 @@ namespace Quartz.Impl.AdoJobStore
             }
             catch (SqlException sqle)
             {
-                Log.Warn("Database connection shutdown unsuccessful.", sqle);
             }
         }
 
