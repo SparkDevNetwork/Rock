@@ -15,9 +15,9 @@ using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
-    [AttributeProperty( "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
-    [AttributeProperty( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
-    [AttributeProperty( "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3" )]
+    [Rock.Attribute.Property( "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
+    [Rock.Attribute.Property( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
+    [Rock.Attribute.Property( "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3" )]
     public partial class PageXslt : Rock.Cms.CmsBlock
     {
 		private static readonly string ROOT_PAGE = "RootPage";

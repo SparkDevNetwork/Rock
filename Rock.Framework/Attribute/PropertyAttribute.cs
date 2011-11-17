@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Rock.Cms
+namespace Rock.Attribute
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class AttributePropertyAttribute : System.Attribute
+    public class PropertyAttribute : System.Attribute
     {
         public string FieldTypeAssembly { get; set; }
         public string FieldTypeClass { get; set; }
@@ -15,27 +15,27 @@ namespace Rock.Cms
         public string Description { get; set; }
         public string DefaultValue { get; set; }
 
-        public AttributePropertyAttribute( string name )
+        public PropertyAttribute( string name )
             : this( name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public AttributePropertyAttribute( string name, string description )
+        public PropertyAttribute( string name, string description )
             : this( name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public AttributePropertyAttribute( string name, string description, string defaultValue )
+        public PropertyAttribute( string name, string description, string defaultValue )
             : this( name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public AttributePropertyAttribute( string name, string key, string description, string defaultValue )
+        public PropertyAttribute( string name, string key, string description, string defaultValue )
             : this( key, name, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public AttributePropertyAttribute( string name, string key, string description, string defaultValue, 
+        public PropertyAttribute( string name, string key, string description, string defaultValue, 
             string fieldTypeAssembly, string fieldTypeClass)
         {
             FieldTypeAssembly = fieldTypeAssembly;
@@ -98,7 +98,7 @@ namespace Rock.Cms
                 if ( attribute.Id == 0 )
                     attributeService.Add( attribute, currentPersonId );
                 else
-                    Cached.Attribute.Flush( attribute.Id );
+                    Rock.Cms.Cached.Attribute.Flush( attribute.Id );
 
                 attributeService.Save( attribute, currentPersonId );
 

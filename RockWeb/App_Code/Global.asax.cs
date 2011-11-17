@@ -68,6 +68,7 @@ namespace RockWeb
                         job.LastStatus = "Error Loading Job";
                         
                         //TODO: line below generates an exception
+                        // inner exception "New transaction is not allowed because there are other threads running in the session." on EntityRepository line 164     Context.SaveChanges();
                         //jobService.Save( job, null );
                     }
                 }
@@ -101,7 +102,6 @@ namespace RockWeb
             string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
             WebRequest request = WebRequest.Create( url );
             WebResponse response = request.GetResponse();
-
 
             // add cache item again
             AddCallBack();
