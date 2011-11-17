@@ -139,10 +139,10 @@ namespace Rock.Services
 
                 foreach ( Rock.Models.Core.Attribute attribute in attributeService.GetByEntity( entityType ) )
                 {
-                    if ( string.IsNullOrEmpty( attribute.EntityQualifier ) ||
-                        ( properties.ContainsKey( attribute.EntityQualifier.ToLower() ) &&
-                        ( !attribute.EntityQualifierId.HasValue ||
-                        ( int )properties[attribute.EntityQualifier.ToLower()].GetValue( model, null ) == attribute.EntityQualifierId.Value ) ) )
+                    if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
+                        ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
+                        ( string.IsNullOrEmpty(attribute.EntityQualifierValue) ||
+                        properties[attribute.EntityQualifierColumn.ToLower()].GetValue( model, null ).ToString() == attribute.EntityQualifierValue ) ) )
                     {
                         attributes.Add( attribute );
                         attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( model.Id ) ) );

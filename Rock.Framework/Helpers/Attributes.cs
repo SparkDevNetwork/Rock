@@ -11,10 +11,10 @@ namespace Rock.Helpers
     {
         public static bool CreateAttributes( Type type, string entity, int? currentPersonId )
         {
-            return CreateAttributes( type, entity, String.Empty, 0, currentPersonId );
+            return CreateAttributes( type, entity, String.Empty, String.Empty, currentPersonId );
         }
         
-        public static bool CreateAttributes( Type type, string entity, string entityQualifier, int entityQualiferId, int? currentPersonId )
+        public static bool CreateAttributes( Type type, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool attributesUpdated = false;
 
@@ -24,7 +24,7 @@ namespace Rock.Helpers
                 {
                     AttributePropertyAttribute blockInstanceProperty = ( AttributePropertyAttribute )customAttribute;
                     attributesUpdated = blockInstanceProperty.UpdateAttribute( 
-                        entity, entityQualifier, entityQualiferId, currentPersonId) || attributesUpdated;
+                        entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
                 }
             }
 

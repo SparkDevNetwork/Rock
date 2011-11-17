@@ -75,10 +75,10 @@ namespace Rock.Models.Util
 		public int? NotificationStatus { get; set; }
 		
 		[DataMember]
-		public DateTime? CreateDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
 		
 		[DataMember]
-		public DateTime? ModifyDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
 		
 		[DataMember]
 		public int? CreateByPersonId { get; set; }
