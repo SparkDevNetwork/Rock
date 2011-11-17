@@ -60,9 +60,9 @@ namespace Rock.Cms.Cached
 
             if ( blockInstanceModel != null )
             {
-                blockInstanceService.LoadAttributes( blockInstanceModel );
+                Rock.Helpers.Attributes.LoadAttributes( blockInstanceModel );
                 foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-                    blockInstanceService.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                    Rock.Helpers.Attributes.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -75,7 +75,7 @@ namespace Rock.Cms.Cached
 
                 if ( blockInstanceModel != null )
                 {
-                    blockInstanceService.LoadAttributes( blockInstanceModel );
+                    Rock.Helpers.Attributes.LoadAttributes( blockInstanceModel );
                     this.AttributeValues = blockInstanceModel.AttributeValues;
 
                     this.AttributeIds = new List<int>();
@@ -138,7 +138,7 @@ namespace Rock.Cms.Cached
                 Rock.Models.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
                 if ( blockInstanceModel != null )
                 {
-                    blockInstanceService.LoadAttributes( blockInstanceModel );
+                    Rock.Helpers.Attributes.LoadAttributes( blockInstanceModel );
 
                     blockInstance = BlockInstance.CopyModel( blockInstanceModel );
 
