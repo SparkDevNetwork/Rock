@@ -61,35 +61,13 @@ namespace Rock.Jobs
 		/// </summary>
 		public virtual void  Execute(IJobExecutionContext context)
 		{
-            /*
+            
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            string key1 = dataMap.GetString("key1");
-            string key2 = dataMap.GetString("key2");
-            */
-
-            using ( new Rock.Helpers.UnitOfWorkScope() )
-            {
-                AttributeService attribService = new AttributeService();
-                AttributeValueService attributeValueService = new AttributeValueService();
-
-                Rock.Models.Core.Attribute jobPulseAttrib = attribService.GetByGuid( SystemGuids.JOB_PULSE_ATTRIBUTE_GUID );
-                Rock.Models.Core.AttributeValue jobPulseAttribValue = jobPulseAttrib.AttributeValues.FirstOrDefault();
-
-                // create attribute value if one does not exist
-                if ( jobPulseAttribValue == null )
-                {
-                    jobPulseAttribValue = new AttributeValue();
-                    jobPulseAttribValue.AttributeId = jobPulseAttrib.Id;
-                    attributeValueService.Add( jobPulseAttribValue, null );
-                }
-
-                // store todays date and time
-                jobPulseAttribValue.Value = DateTime.Now.ToString();
-
-                // save attribute
-                attributeValueService.Save( jobPulseAttribValue, null );
-            }
+            string key1 = dataMap.GetString( "EmailServer" );
+            string key2 = dataMap.GetString( "EmailServerPort" );
+            
+            // I don't do much
 		}
 
 	}
