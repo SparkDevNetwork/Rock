@@ -8,9 +8,6 @@ namespace Rock.Api.Crm
     public partial interface IAddressService
     {
         [OperationContract]
-        AddressStub Get( string id );
-        
-        [OperationContract]
         AddressStub Geocode( AddressStub address );
 
         [OperationContract]

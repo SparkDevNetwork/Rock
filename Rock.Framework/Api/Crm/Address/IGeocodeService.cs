@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rock.Api.Crm.Address
 {
-    interface IGeocodeService
+    public interface IGeocodeService : Rock.Attribute.IHasAttributes
     {
         int Order { get; }
         bool Geocode( AddressStub address );

@@ -5,8 +5,9 @@ using System.Text;
 
 namespace Rock.Api.Crm.Address
 {
-    interface IStandardizeService
+    public interface IStandardizeService : Rock.Attribute.IHasAttributes
     {
+        int Order { get; }
         bool Standardize( AddressStub address );
     }
 
