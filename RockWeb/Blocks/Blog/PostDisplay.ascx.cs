@@ -11,7 +11,7 @@ using System.Configuration;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
-namespace RockWeb.Blocks.Cms.Blog
+namespace RockWeb.Blocks.Blog
 {
     public partial class PostDisplay : Rock.Cms.CmsBlock
     {

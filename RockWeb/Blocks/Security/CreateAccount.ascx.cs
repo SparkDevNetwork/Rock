@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Rock.Models.Cms;
 using Rock.Repository.Cms;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Blocks.Security
 {
     public partial class CreateAccount : Rock.Cms.CmsBlock
     {

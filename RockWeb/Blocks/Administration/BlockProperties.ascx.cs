@@ -9,7 +9,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Blocks.Administration
 {
     public partial class BlockProperties : Rock.Cms.CmsBlock
     {

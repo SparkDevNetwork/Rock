@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Blocks.Administration
 {
     public partial class Sites : Rock.Cms.CmsBlock
     {

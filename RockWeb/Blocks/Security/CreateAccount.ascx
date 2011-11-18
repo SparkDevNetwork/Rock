@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CreateAccount.ascx.cs" Inherits="RockWeb.Blocks.Cms.CreateAccount" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CreateAccount.ascx.cs" Inherits="RockWeb.Blocks.Security.CreateAccount" %>
 
 <h2>
     Create a New Account</h2>
