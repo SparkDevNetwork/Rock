@@ -68,8 +68,7 @@ namespace Rock.Attribute
         public static void SaveAttributeValue( Rock.Attribute.IHasAttributes model, Rock.Models.Core.Attribute attribute, string value, int? personId )
         {
             Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
-
-            Rock.Models.Core.AttributeValue attributeValue = attribute.AttributeValues.Where( v => v.EntityId == model.Id ).FirstOrDefault();
+            Rock.Models.Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
 
             if ( attributeValue == null )
             {

@@ -11,24 +11,37 @@ namespace Rock.Api.Crm.Address
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "ServiceObjects" )]
     // TODO: Remove hardcoded attribute defaults once UI is created for setting values
+    [Rock.Attribute.Property( "Order" )]
     [Rock.Attribute.Property( "License Key", "The Service Objects License Key", "" )]
-    public class ServiceObjects : IGeocodeService, Rock.Attribute.IHasAttributes
+    public class ServiceObjects : IGeocodeService
     {
         public int Id { get { return 0; } }
         public List<Models.Core.Attribute> Attributes { get; set; }
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
-        // TODO: Need to abstract a way to set these property 
-        public int Order { get { return 0; } }
+        public int Order 
+        { 
+            get 
+            { 
+                int order = 0;
+                if (AttributeValues.ContainsKey("Order"))
+                    if (!(Int32.TryParse(AttributeValues["Order"].Value, out order)))
+                        order = 0;
+                return order;
+            } 
+        }
+
+        public ServiceObjects()
+        {
+            // TODO: next line should be moved to Job creation UI, when it's created
+            Rock.Attribute.Helper.CreateAttributes( this.GetType(), "Rock.Api.Crm.Address.ServiceObjects", string.Empty, string.Empty, null );
+            Rock.Attribute.Helper.LoadAttributes( this );
+        }
 
         public bool Geocode( AddressStub address )
         {
             if ( address != null )
             {
-                // TODO: next line should be moved to Job creation UI, when it's created
-                Rock.Attribute.Helper.CreateAttributes( this.GetType(), "Rock.Api.Crm.Address.ServiceObjects", string.Empty, string.Empty, null );
-
-                Rock.Attribute.Helper.LoadAttributes( this );
                 string licenseKey = AttributeValues["LicenseKey"].Value;
 
                 var client = new DOTSGeoCoderSoapClient();
