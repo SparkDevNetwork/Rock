@@ -51,3 +51,7 @@ http://code.google.com/intl/en-US/apis/maps/faq.html#tos
 Rock ChMS is intended to be packaged in such a way as to be compliant with the above
 statements from the Google Maps API Terms of Service.  Any changes made by the user-admin
 should be done with the Google Maps API Terms of Service in mind to maintain compliance.
+
+
+Quartz.Net Job Scheduling Framework v2.0
+Apache License, Version 2.0.

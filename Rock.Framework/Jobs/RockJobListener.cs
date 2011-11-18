@@ -93,7 +93,7 @@ namespace Rock.Jobs
                     sendMessage = true;
             }
 
-            jobService.Save( job, 1 );
+            jobService.Save( job, null );
 
             // send notification
             if ( sendMessage )
