@@ -51,7 +51,7 @@ namespace RockWeb
 
                 // get list of active jobs
                 JobService jobService = new JobService();
-                foreach ( Job job in jobService.GetActiveJobs() )
+                foreach ( Job job in jobService.GetActiveJobs().ToList() )
                 {
                     try
                     {
@@ -67,9 +67,7 @@ namespace RockWeb
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
                         
-                        //TODO: line below generates an exception
-                        // inner exception "New transaction is not allowed because there are other threads running in the session." on EntityRepository line 164     Context.SaveChanges();
-                        //jobService.Save( job, null );
+                        jobService.Save( job, null );
                     }
                 }
 
