@@ -9,7 +9,7 @@ using System.Text;
 using Rock.Models.Cms;
 using Rock.Helpers;
 
-namespace RockWeb.Blocks.Cms.Blog
+namespace RockWeb.Blocks.Blog
 {
     public partial class Categories : Rock.Cms.CmsBlock
     {

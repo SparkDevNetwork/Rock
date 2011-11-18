@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Posts.ascx.cs" Inherits="RockWeb.Blocks.Cms.Blog.Posts" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Posts.ascx.cs" Inherits="RockWeb.Blocks.Blog.Posts" %>
 
 
     <asp:Literal ID="lPosts" runat="server"></asp:Literal>

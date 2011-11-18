@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Controls;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Blocks.Administration
 {
     public partial class ZoneBlocks : Rock.Cms.CmsBlock
     {

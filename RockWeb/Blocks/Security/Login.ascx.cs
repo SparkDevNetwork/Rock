@@ -9,7 +9,7 @@ using Rock.Cms;
 using Rock.Services.Cms;
 using Rock.Services.Crm;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Blocks.Security
 {
     public partial class Login : CmsBlock
     {
