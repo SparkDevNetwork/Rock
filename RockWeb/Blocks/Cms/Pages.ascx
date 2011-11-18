@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
 
-    <Rock:Grid ID="rGrid" runat="server" PageSize="3" >
+    <Rock:Grid ID="rGrid" runat="server" PageSize="10" >
         <Columns>
             <Rock:ReorderField />
             <asp:BoundField DataField="Name" HeaderText="Name" />
