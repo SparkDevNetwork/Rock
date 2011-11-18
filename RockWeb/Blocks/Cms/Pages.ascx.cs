@@ -15,10 +15,12 @@ namespace RockWeb.Blocks.Cms
 	{
         #region Fields
 
+        private bool canConfigure = false;
         private Rock.Cms.Cached.Page _page = null;
         private Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
 
         #endregion
+
 
         #region Control Methods
 
@@ -26,8 +28,12 @@ namespace RockWeb.Blocks.Cms
         {
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Cms.Cached.Page.Read( pageId );
+            if ( _page != null )
+                canConfigure = _page.Authorized( "Configure", CurrentUser );
+            else
+                canConfigure = PageInstance.Authorized("Configure", CurrentUser);
 
-            if ( _page.Authorized( "Configure", CurrentUser ) )
+            if (canConfigure)
             {
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
@@ -53,7 +59,7 @@ namespace RockWeb.Blocks.Cms
         {
             nbMessage.Visible = false;
 
-            if ( _page.Authorized( "Configure", CurrentUser ) )
+            if ( canConfigure )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -77,7 +83,11 @@ namespace RockWeb.Blocks.Cms
 
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
-            pageService.Reorder( pageService.GetByParentPageId( _page.Id ).ToList(),
+            int? parentPageId = null;
+            if (_page != null)
+                parentPageId = _page.Id;
+
+            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrid();
@@ -98,7 +108,8 @@ namespace RockWeb.Blocks.Cms
                 pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
 
-                _page.FlushChildPages();
+                if (_page != null)
+                    _page.FlushChildPages();
             }
 
             BindGrid();
@@ -134,8 +145,18 @@ namespace RockWeb.Blocks.Cms
             if ( pageId == 0 )
             {
                 page = new Rock.Models.Cms.Page();
-                page.ParentPageId = _page.Id;
-                page.SiteId = _page.Site.Id;
+
+                if ( _page != null )
+                {
+                    page.ParentPageId = _page.Id;
+                    page.SiteId = _page.Site.Id;
+                }
+                else
+                {
+                    page.ParentPageId = null;
+                    page.SiteId = PageInstance.Site.Id;
+                }
+
                 page.Title = tbPageName.Text;
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
@@ -151,7 +172,8 @@ namespace RockWeb.Blocks.Cms
 
                 pageService.Add( page, CurrentPersonId );
 
-                Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
+                if (_page != null)
+                    Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
                 page = pageService.Get( pageId );
@@ -161,7 +183,8 @@ namespace RockWeb.Blocks.Cms
 
             pageService.Save( page, CurrentPersonId );
 
-            _page.FlushChildPages();
+            if ( _page != null ) 
+                _page.FlushChildPages();
 
             BindGrid();
 
@@ -174,7 +197,11 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            rGrid.DataSource = pageService.GetByParentPageId( _page.Id ).ToList();
+            int? parentPageId = null;
+            if ( _page != null )
+                parentPageId = _page.Id;
+
+            rGrid.DataSource = pageService.GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
@@ -198,7 +225,10 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 hfPageId.Value = "0";
-                ddlLayout.Text = _page.Layout;
+                if ( _page != null )
+                    ddlLayout.Text = _page.Layout;
+                else
+                    ddlLayout.Text = PageInstance.Layout;
                 tbPageName.Text = string.Empty;
             }
 
