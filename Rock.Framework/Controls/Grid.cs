@@ -83,18 +83,22 @@ namespace Rock.Controls
             this.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            this.EmptyDataRowStyle.CssClass = "grid-footer";
             this.PagerStyle.CssClass = "grid-footer";
 
             // Paging Support
             this.AllowPaging = true;
 
-            GridPagerTemplate gridPagerTemplate = new GridPagerTemplate();
-            gridPagerTemplate.AddClick += gridPagerTemplate_AddClick;
-            gridPagerTemplate.PageClick += gridPagerTemplate_PageClick;
-            this.PagerTemplate = gridPagerTemplate;
+            EmptyDataTemplate emptyDataTemplate = new EmptyDataTemplate();
+            emptyDataTemplate.AddClick += gridPagerTemplate_AddClick;
+            this.EmptyDataTemplate = emptyDataTemplate;
+
+            PagerTemplate pagerTemplate = new PagerTemplate();
+            pagerTemplate.AddClick += gridPagerTemplate_AddClick;
+            pagerTemplate.PageClick += gridPagerTemplate_PageClick;
+            this.PagerTemplate = pagerTemplate;
 
             this.ShowHeaderWhenEmpty = true;
-            this.EmptyDataText = "No Results";
 
             base.OnInit( e );
         }
@@ -339,13 +343,42 @@ namespace Rock.Controls
 
     #region Templates
 
-    internal class GridPagerTemplate : ITemplate
+    internal class EmptyDataTemplate : ITemplate
+    {
+        public void InstantiateIn( Control container )
+        {
+            HtmlGenericControl div = new HtmlGenericControl( "div" );
+            div.Attributes.Add( "class", "paging" );
+            container.Controls.Add( div );
+
+            HtmlGenericControl divActions = new HtmlGenericControl( "div" );
+            divActions.Attributes.Add( "class", "actions" );
+            container.Controls.Add( divActions );
+
+            LinkButton lbAdd = new LinkButton();
+            lbAdd.ID = "lbAdd";
+            lbAdd.CssClass = "add";
+            lbAdd.Text = "Add";
+            lbAdd.Click += lbAdd_Click;
+            divActions.Controls.Add( lbAdd );
+        }
+
+        void lbAdd_Click( object sender, EventArgs e )
+        {
+            if ( AddClick != null )
+                AddClick( sender, e );
+        }
+
+        internal event EventHandler AddClick;
+    }
+
+    internal class PagerTemplate : ITemplate
     {
         public void  InstantiateIn(Control container)
         {
-            HtmlGenericControl divPaging = new HtmlGenericControl( "div" );
-            divPaging.Attributes.Add( "class", "paging" );
-            container.Controls.Add( divPaging );
+            HtmlGenericControl div = new HtmlGenericControl( "div" );
+            div.Attributes.Add( "class", "paging" );
+            container.Controls.Add( div );
 
             DropDownList ddl = new DropDownList();
             ddl.ID = "ddlPageList";
@@ -356,8 +389,8 @@ namespace Rock.Controls
             lbl.Text = "Select a page:";
             lbl.AssociatedControlID = "ddlPageList";
 
-            divPaging.Controls.Add( lbl );
-            divPaging.Controls.Add( ddl );
+            div.Controls.Add( lbl );
+            div.Controls.Add( ddl );
 
             HtmlGenericControl divActions = new HtmlGenericControl( "div" );
             divActions.Attributes.Add( "class", "actions" );
