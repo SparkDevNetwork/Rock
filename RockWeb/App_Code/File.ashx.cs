@@ -1,41 +1,118 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Web;
-using System.Text;
-
-using Rock.Services.Cms;
-using Rock.Models.Cms;
-
 
 namespace RockWeb
 {
     /// <summary>
     /// Handles retrieving file data from storage
     /// </summary>
-    public class File : IHttpHandler
+    public class File : IHttpAsyncHandler
     {
-        protected string guid = string.Empty;
+
+		public File()
+		{
+		}
+
+		/// <summary>
+		/// Called to initialize an asynchronous call to the HTTP handler. 
+		/// </summary>
+		/// <param name="context">An HttpContext that provides references to intrinsic server objects used to service HTTP requests.</param>
+		/// <param name="cb">The AsyncCallback to call when the asynchronous method call is complete.</param>
+		/// <param name="extraData">Any state data needed to process the request.</param>
+		/// <returns>An IAsyncResult that contains information about the status of the process.</returns>
+		public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
+		{
+			try
+			{
+				string anID = context.Request.QueryString[0];
+
+				if ( string.IsNullOrEmpty( anID ) )
+				{
+					throw new Exception( "file id must be provided" );
+				}
+
+				int id = -1;
+				Guid guid = new Guid();
+
+				if ( ! ( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
+				{
+					throw new Exception( "file id key must be a guid or an int" );
+				}
+				
+				SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
+				conn.Open();
+				SqlCommand cmd = conn.CreateCommand();
+				cmd.CommandText = "cmsFile_sp_getByID";
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.Add( new SqlParameter( "@Id", id ) );
+				cmd.Parameters.Add( new SqlParameter( "@Guid", guid ) );
+				
+				// store our Command to be later retrieved by EndProcessRequest
+				context.Items.Add( "cmd", cmd );
+
+				// start async DB read
+				return cmd.BeginExecuteReader( cb, context,
+					CommandBehavior.SequentialAccess |  // doesn't load whole column into memory
+					CommandBehavior.SingleRow |         // performance improve since we only want one row
+					CommandBehavior.CloseConnection );  // close connection immediately after read
+			}
+			catch ( Exception ex )
+			{
+				// TODO: log this error
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = ex.Message;
+				context.Response.End();
+				// to avoid compilation errors
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Provides an end method for an asynchronous process. 
+		/// </summary>
+		/// <param name="result">An IAsyncResult that contains information about the status of the process.</param>
+		public void EndProcessRequest( IAsyncResult result )
+		{
+			HttpContext context = (HttpContext)result.AsyncState;
+
+			try
+			{
+				// restore the command from the context
+				SqlCommand cmd = (SqlCommand)context.Items["cmd"];
+				using ( SqlDataReader reader = cmd.EndExecuteReader( result ) )
+				{
+					reader.Read();
+					context.Response.Clear();
+					context.Response.BinaryWrite( (byte[])reader["Data"] );
+					context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", reader["FileName"] ) );
+					context.Response.ContentType = (string)reader["MimeType"];
+					context.Response.Flush();
+					context.Response.End();
+					reader.Close();
+				}
+			}
+			catch ( Exception ex )
+			{
+				// TODO: log this error
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = ex.Message;
+				context.Response.Flush();
+				context.Response.End();
+			}
+		}
 
         public void ProcessRequest( HttpContext context )
         {
-			if ( context.Request.QueryString == null )
-				return;
-
-            context.Response.Clear();
-
-			FileService fileService = new FileService();
-
-			int id;
-			string anID = context.Request.QueryString[0];
-
-			Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
-
-			context.Response.ContentType = file.MimeType;
-			context.Response.AddHeader("content-disposition", "inline;filename=" + file.FileName);
-			context.Response.BinaryWrite( file.Data );
-			context.Response.Flush();
-			context.Response.End();
+			throw new NotImplementedException( "The method or operation is not implemented. This is an asynchronous file handler." );
         }
 
         public bool IsReusable
@@ -45,21 +122,5 @@ namespace RockWeb
                 return false;
             }
         }
-
-		/// <summary>
-		/// Renders an Error image
-		/// </summary>
-		/// <param name="context">HttpContext of current request</param>
-		/// <param name="errorMessage">error message text to render</param>
-		private void renderErrorImage( HttpContext context, string errorMessage )
-		{
-			context.Response.Clear();
-			context.Response.ContentType = "image/jpeg";
-			Bitmap bitmap = new Bitmap( 7 * errorMessage.Length, 30 );	// width based on error message
-			Graphics g = Graphics.FromImage( bitmap );
-			g.FillRectangle( new SolidBrush( Color.LightSalmon ), 0, 0, bitmap.Width, bitmap.Height ); // background
-			g.DrawString( errorMessage, new Font( "Tahoma", 10, FontStyle.Bold ), new SolidBrush( Color.DarkRed ), new PointF( 5, 5 ) );
-			bitmap.Save( context.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg );
-		}
     }
 }
