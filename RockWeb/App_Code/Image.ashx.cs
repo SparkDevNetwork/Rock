@@ -7,17 +7,13 @@
 // http://imageresizing.net/docs/reference
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Web;
-using System.Text;
 
 using Rock.Services.Cms;
-using Rock.Models.Cms;
-
 using ImageResizer;
-using System.Collections.Specialized;
 
 namespace RockWeb
 {
@@ -26,8 +22,6 @@ namespace RockWeb
     /// </summary>
     public class Image : IHttpHandler
     {
-        protected string guid = string.Empty;
-
         public void ProcessRequest( HttpContext context )
         {
 			if ( context.Request.QueryString == null || context.Request.QueryString.Count == 0)
@@ -41,22 +35,32 @@ namespace RockWeb
 			string anID = context.Request.QueryString[0];
 			int id;
 
-			// Fetch the file...
-			Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
-
-			// is it cached?
-			string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-			string physFilePath = context.Request.MapPath( string.Format( "~/cache/{0}", cacheName ) );
-			bool cached = FetchFromCache( file, physFilePath );
-
-			// Image resizing requested?
-			if ( ! cached && WantsImageResizing( context ) )
+			try
 			{
-				ResizeAndCache( context, file, physFilePath );
-			}
+				// Fetch the file...
+				Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
 
-			// Post process
-			SendFile( context, file );
+				// is it cached?
+				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
+				string physFilePath = context.Request.MapPath( string.Format( "~/cache/{0}", cacheName ) );
+				bool cached = FetchFromCache( file, physFilePath );
+
+				// Image resizing requested?
+				if ( !cached && WantsImageResizing( context ) )
+				{
+					ResizeAndCache( context, file, physFilePath );
+				}
+
+				// Post process
+				SendFile( context, file );
+			}
+			catch ( Exception ex )
+			{
+				// TODO: log this error
+				context.Response.StatusDescription = ex.Message;
+				context.Response.StatusCode = 500;
+				context.Response.End();
+			}
         }
 
 		private static void ResizeAndCache( HttpContext context, Rock.Models.Cms.File file, string physFilePath )
@@ -96,7 +100,12 @@ namespace RockWeb
 			return cached;
 		}
 
-		private bool WantsImageResizing( HttpContext context )
+		/// <summary>
+		/// A small utility method to determine if we need to use the ImageResizer.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns>True if the request desires image resizing/manipulation; false otherwise.</returns>
+		private static bool WantsImageResizing( HttpContext context )
 		{
 			NameValueCollection nvc = context.Request.QueryString;
 			return ( nvc["maxwidth"] != null || nvc["maxheight"] != null || nvc["width"] != null ||
@@ -121,7 +130,11 @@ namespace RockWeb
         }
 
 		/// <summary>
-		/// Utility method to renders an error image.  Not sure if I like this idea.
+		/// Not Currently Used.
+		/// 
+		/// Utility method to renders an error image to the output stream.
+		/// Not sure if I like this idea, but it would generate the errorMessages
+		/// as an image in red text.
 		/// </summary>
 		/// <param name="context">HttpContext of current request</param>
 		/// <param name="errorMessage">error message text to render</param>
