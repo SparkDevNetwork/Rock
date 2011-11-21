@@ -458,9 +458,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MEF\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Quartz\Quartz.csproj">
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>

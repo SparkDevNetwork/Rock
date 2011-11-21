@@ -8,7 +8,7 @@ namespace Rock.Cms.Cached
     /// Information about a blockInstance that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
-    public class BlockInstance : Security.ISecured
+    public class BlockInstance : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
         /// Use Static Read() method to instantiate a new BlockInstance object
@@ -24,7 +24,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -41,6 +41,13 @@ namespace Rock.Cms.Cached
                     attributes.Add( Attribute.Read( id ) );
 
                 return attributes;
+            }
+
+            set
+            {
+                this.AttributeIds = new List<int>();
+                foreach ( Rock.Cms.Cached.Attribute attribute in value )
+                    this.AttributeIds.Add( attribute.Id );
             }
         }
 
@@ -61,7 +68,7 @@ namespace Rock.Cms.Cached
             if ( blockInstanceModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
-                foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
+                foreach ( Rock.Cms.Cached.Attribute attribute in blockInstanceModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
@@ -76,15 +83,13 @@ namespace Rock.Cms.Cached
                 if ( blockInstanceModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
+
                     this.AttributeValues = blockInstanceModel.AttributeValues;
 
                     this.AttributeIds = new List<int>();
                     if ( blockInstanceModel.Attributes != null )
-                        foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-                        {
+                        foreach ( Rock.Cms.Cached.Attribute attribute in blockInstanceModel.Attributes )
                             this.AttributeIds.Add( attribute.Id );
-                            Attribute.Read( attribute );
-                        }
                 }
             }
         }
@@ -164,11 +169,8 @@ namespace Rock.Cms.Cached
 
             blockInstance.AttributeIds = new List<int>();
             if (blockInstanceModel.Attributes != null)
-                foreach ( Rock.Models.Core.Attribute attribute in blockInstanceModel.Attributes )
-                {
+                foreach ( Rock.Cms.Cached.Attribute attribute in blockInstanceModel.Attributes )
                     blockInstance.AttributeIds.Add( attribute.Id );
-                    Attribute.Read( attribute );
-                }
 
             blockInstance.AuthEntity = blockInstanceModel.AuthEntity;
             blockInstance.SupportedActions = blockInstanceModel.SupportedActions;

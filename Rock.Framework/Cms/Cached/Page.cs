@@ -14,7 +14,7 @@ namespace Rock.Cms.Cached
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
-    public class Page : Security.ISecured
+    public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
         /// Use Static Read() method to instantiate a new Page object
@@ -63,7 +63,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -80,6 +80,13 @@ namespace Rock.Cms.Cached
                     attributes.Add( Attribute.Read( id ) );
 
                 return attributes;
+            }
+
+            set
+            {
+                this.AttributeIds = new List<int>();
+                foreach ( Rock.Cms.Cached.Attribute attribute in value )
+                    this.AttributeIds.Add( attribute.Id );
             }
         }
 
@@ -187,7 +194,7 @@ namespace Rock.Cms.Cached
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
 
-                foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
+                foreach ( Rock.Cms.Cached.Attribute attribute in pageModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
@@ -427,11 +434,8 @@ namespace Rock.Cms.Cached
             page.RequiresEncryption = pageModel.RequiresEncryption;
 
             if (pageModel.Attributes != null)
-                foreach ( Rock.Models.Core.Attribute attribute in pageModel.Attributes )
-                {
+                foreach ( Rock.Cms.Cached.Attribute attribute in pageModel.Attributes )
                     page.AttributeIds.Add( attribute.Id );
-                    Attribute.Read( attribute );
-                }
 
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;

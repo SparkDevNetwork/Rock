@@ -20,7 +20,7 @@ namespace Rock.Models
         /// Collection of attributes for an instance of a model
         /// </summary>
         [NotMapped]
-        public List<Rock.Models.Core.Attribute> Attributes { get; set; }
+        public List<Rock.Cms.Cached.Attribute> Attributes { get; set; }
 
         /// <summary>
         /// Lightweight collection of attribute name and values

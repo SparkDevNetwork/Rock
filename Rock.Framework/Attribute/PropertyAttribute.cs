@@ -8,42 +8,46 @@ namespace Rock.Attribute
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class PropertyAttribute : System.Attribute
     {
-        public string FieldTypeAssembly { get; set; }
-        public string FieldTypeClass { get; set; }
+        // TODO: Add a way to group attributes...
+
         public string Key { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string DefaultValue { get; set; }
+        public int Order { get; set; }
+        public string FieldTypeAssembly { get; set; }
+        public string FieldTypeClass { get; set; }
 
-        public PropertyAttribute( string name )
-            : this( name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
+        public PropertyAttribute(int order, string name )
+            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public PropertyAttribute( string name, string description )
-            : this( name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
+        public PropertyAttribute(int order, string name, string description )
+            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public PropertyAttribute( string name, string description, string defaultValue )
-            : this( name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
+        public PropertyAttribute(int order, string name, string description, string defaultValue )
+            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public PropertyAttribute( string name, string key, string description, string defaultValue )
-            : this( key, name, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
+        public PropertyAttribute(int order, string name, string key, string description, string defaultValue )
+            : this(order, name, key, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
-        public PropertyAttribute( string name, string key, string description, string defaultValue, 
+        public PropertyAttribute(int order, string name, string key, string description, string defaultValue, 
             string fieldTypeAssembly, string fieldTypeClass)
         {
-            FieldTypeAssembly = fieldTypeAssembly;
-            FieldTypeClass = fieldTypeClass;
             Key = key;
             Name = name;
             Description = description;
             DefaultValue = defaultValue;
+            Order = order;
+            FieldTypeAssembly = fieldTypeAssembly;
+            FieldTypeClass = fieldTypeClass;
         }
 
         internal bool UpdateAttribute( string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
@@ -64,7 +68,6 @@ namespace Rock.Attribute
                 attribute.EntityQualifierColumn = entityQualifierColumn;
                 attribute.EntityQualifierValue = entityQualifierValue;
                 attribute.Key = this.Key;
-                attribute.Order = int.MaxValue;
                 attribute.GridColumn = false;
             }
             else
@@ -72,6 +75,7 @@ namespace Rock.Attribute
                 if ( attribute.Name != this.Name ||
                     attribute.DefaultValue != this.DefaultValue ||
                     attribute.Description != this.Description ||
+                    attribute.Order != this.Order ||
                     attribute.FieldType.Assembly != this.FieldTypeAssembly ||
                     attribute.FieldType.Class != this.FieldTypeClass )
                     updated = true;
@@ -82,11 +86,8 @@ namespace Rock.Attribute
                 attribute.Name = this.Name;
                 attribute.Description = this.Description;
                 attribute.DefaultValue = this.DefaultValue;
+                attribute.Order = this.Order;
 
-				// Q for David: Upon first use, immediately after adding a new
-				// BlockInstanceProperty in a block, the attribute.FieldType was null
-				// so I changed this below to fall into the 'if' block on that case too.
-				// Is this correct or should the attribute have had a FieldType? (Nick)
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != this.FieldTypeAssembly ||
                     attribute.FieldType.Class != this.FieldTypeClass )
                 {

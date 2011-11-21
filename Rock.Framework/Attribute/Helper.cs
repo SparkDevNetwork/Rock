@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock.Cms;
 
@@ -34,7 +37,7 @@ namespace Rock.Attribute
 
         public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
-            List<Rock.Models.Core.Attribute> attributes = new List<Rock.Models.Core.Attribute>();
+            List<Rock.Cms.Cached.Attribute> attributes = new List<Rock.Cms.Cached.Attribute>();
             Dictionary<string, KeyValuePair<string, string>> attributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
@@ -56,7 +59,7 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
                     properties[attribute.EntityQualifierColumn.ToLower()].GetValue( item, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
-                    attributes.Add( attribute );
+                    attributes.Add( Rock.Cms.Cached.Attribute.Read( attribute ));
                     attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( item.Id ) ) );
                 }
             }
@@ -65,7 +68,7 @@ namespace Rock.Attribute
             item.AttributeValues = attributeValues;
         }
 
-        public static void SaveAttributeValue( Rock.Attribute.IHasAttributes model, Rock.Models.Core.Attribute attribute, string value, int? personId )
+        public static void SaveAttributeValue( IHasAttributes model, Rock.Cms.Cached.Attribute attribute, string value, int? personId )
         {
             Rock.Services.Core.AttributeValueService attributeValueService = new Rock.Services.Core.AttributeValueService();
             Rock.Models.Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
@@ -85,5 +88,51 @@ namespace Rock.Attribute
             model.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, value );
         }
 
+        public static List<HtmlGenericControl> GetEditControls(  IHasAttributes item, bool setValue)
+        {
+            List<HtmlGenericControl> controls = new List<HtmlGenericControl>();
+
+            foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
+            {
+                HtmlGenericControl li = new HtmlGenericControl( "li" );
+                li.ID = string.Format( "attribute-{0}", attribute.Id );
+                li.Attributes.Add( "attribute-key", attribute.Key );
+                li.ClientIDMode = ClientIDMode.AutoID;
+                controls.Add( li );
+
+                Label lbl = new Label();
+                lbl.ClientIDMode = ClientIDMode.AutoID;
+                lbl.Text = attribute.Name;
+                lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                li.Controls.Add( lbl );
+
+                Control attributeControl = attribute.CreateControl(item.AttributeValues[attribute.Key].Value, setValue );
+                attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                li.Controls.Add( attributeControl );
+
+                if ( !string.IsNullOrEmpty( attribute.Description ) )
+                {
+                    HtmlAnchor a = new HtmlAnchor();
+                    a.ClientIDMode = ClientIDMode.AutoID;
+                    a.Attributes.Add( "class", "attribute-description tooltip" );
+                    a.InnerHtml = "<span>" + attribute.Description + "</span>";
+
+                    li.Controls.Add( a );
+                }
+            }
+
+            return controls;
+        }
+
+        public static void GetEditValues( Control parentControl, IHasAttributes item)
+        {
+            foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
+            {
+                Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
+                if ( control != null )
+                    item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
+            }
+        }
     }
 }

@@ -12,13 +12,14 @@ namespace Rock.Api.Crm.Address
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "StrikeIron" )]
-    [Rock.Attribute.Property( "Order" )]
-    [Rock.Attribute.Property( "User ID", "The Strike Iron User ID", "" )]
-    [Rock.Attribute.Property( "Password", "The Strike Iron Password", "" )]
+    [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
+    [Rock.Attribute.Property( 1, "Active", "Active", "Should Service be used?", "True", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 2, "User ID", "The Strike Iron User ID", "" )]
+    [Rock.Attribute.Property( 3, "Password", "The Strike Iron Password", "" )]
     public class StrikeIron : IGeocodeService
     {
         public int Id { get { return 0; } }
-        public List<Models.Core.Attribute> Attributes { get; set; }
+        public List<Rock.Cms.Cached.Attribute> Attributes { get; set; }
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         public int Order 

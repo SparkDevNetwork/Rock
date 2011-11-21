@@ -23,8 +23,8 @@ namespace Rock.Api.Crm
         {
             if ( address != null )
             {
-                foreach ( IGeocodeService service in GeocodeContainer.Instance.Services )
-                    if ( service.Geocode(address) )
+                foreach ( KeyValuePair<int, IGeocodeService> service in GeocodeContainer.Instance.Services )
+                    if ( service.Value.Geocode(address) )
                         return address;
 
                 address.ResultCode = "No Match";
@@ -39,8 +39,8 @@ namespace Rock.Api.Crm
         {
             if ( address != null )
             {
-                foreach ( IStandardizeService service in StandardizeContainer.Instance.Services )
-                    if ( service.Standardize( address ) )
+                foreach ( KeyValuePair<int, IStandardizeService> service in StandardizeContainer.Instance.Services )
+                    if ( service.Value.Standardize( address ) )
                         return address;
 
                 address.ResultCode = "No Match";

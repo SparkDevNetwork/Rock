@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web;
@@ -8,15 +9,16 @@ using Rock.Framework.ServiceObjects.GeoCoder;
 
 namespace Rock.Api.Crm.Address
 {
+    [Description("Service Objects Geocoding Service")]
     [Export( typeof( IGeocodeService ) )]
     [ExportMetadata( "ServiceName", "ServiceObjects" )]
-    // TODO: Remove hardcoded attribute defaults once UI is created for setting values
-    [Rock.Attribute.Property( "Order" )]
-    [Rock.Attribute.Property( "License Key", "The Service Objects License Key", "" )]
+    [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
+    [Rock.Attribute.Property( 1, "Active", "Active", "Should Service be used?", "True", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 2, "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : IGeocodeService
     {
         public int Id { get { return 0; } }
-        public List<Models.Core.Attribute> Attributes { get; set; }
+        public List<Rock.Cms.Cached.Attribute> Attributes { get; set; }
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
         public int Order 

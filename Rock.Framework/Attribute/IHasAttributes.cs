@@ -8,7 +8,7 @@ namespace Rock.Attribute
     public interface IHasAttributes
     {
         int Id { get; }
-        List<Rock.Models.Core.Attribute> Attributes { get; set; }
+        List<Rock.Cms.Cached.Attribute> Attributes { get; set; }
         Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Rock.Api.Crm.Address
     {
         private static StandardizeContainer instance;
 
-        public List<IStandardizeService> Services { get; private set; }
+        public Dictionary<int, IStandardizeService> Services { get; private set; }
 
         private CompositionContainer container;
 
@@ -37,7 +37,7 @@ namespace Rock.Api.Crm.Address
 
         public void Refresh()
         {
-            Services = new List<IStandardizeService>();
+            Services = new Dictionary<int, IStandardizeService>();
 
             var catalog = new AggregateCatalog();
             catalog.Catalogs.Add( new AssemblyCatalog( typeof( ServiceHelper ).Assembly ) );
@@ -60,9 +60,10 @@ namespace Rock.Api.Crm.Address
                     services[i.Value.Order].Add( i );
                 }
 
+                int id = 0;
                 foreach ( KeyValuePair<int, List<Lazy<IStandardizeService, IStandardizeServiceData>>> entry in services )
                     foreach ( Lazy<IStandardizeService, IStandardizeServiceData> service in entry.Value )
-                        Services.Add( service.Value );
+                        Services.Add(id++, service.Value );
             }
             catch ( CompositionException ex )
             {
