@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/PageRoute")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class PageRouteService : IPageRouteService
+    public partial class PageRouteService : IPageRouteService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.PageRoute GetPageRoute( string id )
+        public Rock.Models.Cms.PageRoute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                Rock.Models.Cms.PageRoute PageRoute = PageRouteService.GetPageRoute( int.Parse( id ) );
+                Rock.Models.Cms.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
                 if ( PageRoute.Authorized( "View", currentUser ) )
                     return PageRoute;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                Rock.Models.Cms.PageRoute existingPageRoute = PageRouteService.GetPageRoute( int.Parse( id ) );
+                Rock.Models.Cms.PageRoute existingPageRoute = PageRouteService.Get( int.Parse( id ) );
                 if ( existingPageRoute.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-                    PageRouteService.Save( existingPageRoute, ( int )currentUser.ProviderUserKey );
+                    PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                PageRouteService.AttachPageRoute( PageRoute );
-                PageRouteService.Save( PageRoute, ( int )currentUser.ProviderUserKey );
+                PageRouteService.Add( PageRoute, currentUser.PersonId() );
+                PageRouteService.Save( PageRoute, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                Rock.Models.Cms.PageRoute PageRoute = PageRouteService.GetPageRoute( int.Parse( id ) );
+                Rock.Models.Cms.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
                 if ( PageRoute.Authorized( "Edit", currentUser ) )
                 {
-                    PageRouteService.DeletePageRoute( PageRoute );
+                    PageRouteService.Delete( PageRoute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

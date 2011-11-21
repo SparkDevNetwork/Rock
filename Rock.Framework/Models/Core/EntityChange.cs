@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreEntityChange" )]
-    public partial class EntityChange : ModelWithAttributes
+    public partial class EntityChange : ModelWithAttributes<EntityChange>
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public Guid ChangeSet { get; set; }
 		
@@ -57,8 +54,9 @@ namespace Rock.Models.Core
 
         public static EntityChange Read(int id)
         {
-            return new Rock.Services.Core.EntityChangeService().GetEntityChange( id );
+            return new Rock.Services.Core.EntityChangeService().Get( id );
         }
+
     }
 
     public partial class EntityChangeConfiguration : EntityTypeConfiguration<EntityChange>

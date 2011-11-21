@@ -41,7 +41,6 @@ namespace Quartz.Impl.AdoJobStore
         public override void Initialize(ITypeLoadHelper loadHelper, ISchedulerSignaler signaler)
         {
             base.Initialize(loadHelper, signaler);
-            Log.Info("JobStoreTX initialized.");
         }
 
         /// <summary>

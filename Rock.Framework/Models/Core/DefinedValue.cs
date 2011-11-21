@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreDefinedValue" )]
-    public partial class DefinedValue : ModelWithAttributes, IAuditable, IOrdered
+    public partial class DefinedValue : ModelWithAttributes<DefinedValue>, IAuditable, IOrdered
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -67,8 +64,9 @@ namespace Rock.Models.Core
 
         public static DefinedValue Read(int id)
         {
-            return new Rock.Services.Core.DefinedValueService().GetDefinedValue( id );
+            return new Rock.Services.Core.DefinedValueService().Get( id );
         }
+
     }
 
     public partial class DefinedValueConfiguration : EntityTypeConfiguration<DefinedValue>

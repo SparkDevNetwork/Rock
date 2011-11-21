@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreAttributeValue" )]
-    public partial class AttributeValue : Model, IAuditable
+    public partial class AttributeValue : Model<AttributeValue>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -63,8 +60,9 @@ namespace Rock.Models.Core
 
         public static AttributeValue Read(int id)
         {
-            return new Rock.Services.Core.AttributeValueService().GetAttributeValue( id );
+            return new Rock.Services.Core.AttributeValueService().Get( id );
         }
+
     }
 
     public partial class AttributeValueConfiguration : EntityTypeConfiguration<AttributeValue>

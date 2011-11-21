@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/Blog")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlogService : IBlogService
+    public partial class BlogService : IBlogService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Blog GetBlog( string id )
+        public Rock.Models.Cms.Blog Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
-                Rock.Models.Cms.Blog Blog = BlogService.GetBlog( int.Parse( id ) );
+                Rock.Models.Cms.Blog Blog = BlogService.Get( int.Parse( id ) );
                 if ( Blog.Authorized( "View", currentUser ) )
                     return Blog;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
-                Rock.Models.Cms.Blog existingBlog = BlogService.GetBlog( int.Parse( id ) );
+                Rock.Models.Cms.Blog existingBlog = BlogService.Get( int.Parse( id ) );
                 if ( existingBlog.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
-                    BlogService.Save( existingBlog, ( int )currentUser.ProviderUserKey );
+                    BlogService.Save( existingBlog, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
-                BlogService.AttachBlog( Blog );
-                BlogService.Save( Blog, ( int )currentUser.ProviderUserKey );
+                BlogService.Add( Blog, currentUser.PersonId() );
+                BlogService.Save( Blog, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
-                Rock.Models.Cms.Blog Blog = BlogService.GetBlog( int.Parse( id ) );
+                Rock.Models.Cms.Blog Blog = BlogService.Get( int.Parse( id ) );
                 if ( Blog.Authorized( "Edit", currentUser ) )
                 {
-                    BlogService.DeleteBlog( Blog );
+                    BlogService.Delete( Blog, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

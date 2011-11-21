@@ -17,8 +17,6 @@
  */
 #endregion
 
-using Common.Logging;
-
 using Quartz.Spi;
 
 namespace Quartz.Listener
@@ -41,23 +39,12 @@ namespace Quartz.Listener
     /// <seealso cref="IJobListener" />
     public abstract class JobListenerSupport : IJobListener
     {
-        private readonly ILog log;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="JobListenerSupport"/> class.
         /// </summary>
         protected JobListenerSupport()
         {
-            log = LogManager.GetLogger(GetType());
-        }
-
-        /// <summary>
-        /// Get the <see cref="ILog" /> for this  class's category.  
-        /// This should be used by subclasses for logging.
-        /// </summary>
-        protected ILog Log
-        {
-            get { return log; }
+           
         }
 
         /// <summary>

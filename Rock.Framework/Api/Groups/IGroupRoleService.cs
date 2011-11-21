@@ -18,7 +18,7 @@ namespace Rock.Api.Groups
     public partial interface IGroupRoleService
     {
 		[OperationContract]
-        Rock.Models.Groups.GroupRole GetGroupRole( string id );
+        Rock.Models.Groups.GroupRole Get( string id );
 
         [OperationContract]
         void UpdateGroupRole( string id, Rock.Models.Groups.GroupRole GroupRole );

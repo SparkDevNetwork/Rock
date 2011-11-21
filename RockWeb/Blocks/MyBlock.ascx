@@ -6,14 +6,16 @@
         $('#getjson-button').live('click', function () {
             alert('calling rest');
             $.ajax({
-                type: "GET",
-                dataType: 'json',
-                url: '/Rest.svc/person/1',
+                type: "PUT",
+                contentType: "application/json",
+                dataType: "json",
+                data: '{ "Street1":"14224 N 184th ave", "City":"Surprise", "State":"AZ", "Zip":"85388" }',
+                url: 'http://localhost:6229/RockWeb/api/Crm/Address/Geocode',
                 success: function (data, status, xhr) {
-                    alert(data.FirstName + ' ' + data.LastName)
+                    alert(data.Street1)
                 },
                 error: function (xhr, status, error) {
-                    alert(error);
+                    alert(status + ' ' + error + ' ' + xhr.responseText);
                 }
             });
         });

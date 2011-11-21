@@ -18,7 +18,7 @@ namespace Rock.Api.Crm
     public partial interface IPersonService
     {
 		[OperationContract]
-        Rock.Models.Crm.Person GetPerson( string id );
+        Rock.Models.Crm.Person Get( string id );
 
         [OperationContract]
         void UpdatePerson( string id, Rock.Models.Crm.Person Person );

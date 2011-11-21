@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/FieldType")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class FieldTypeService : IFieldTypeService
+    public partial class FieldTypeService : IFieldTypeService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.FieldType GetFieldType( string id )
+        public Rock.Models.Core.FieldType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
-                Rock.Models.Core.FieldType FieldType = FieldTypeService.GetFieldType( int.Parse( id ) );
+                Rock.Models.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
                 if ( FieldType.Authorized( "View", currentUser ) )
                     return FieldType;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
-                Rock.Models.Core.FieldType existingFieldType = FieldTypeService.GetFieldType( int.Parse( id ) );
+                Rock.Models.Core.FieldType existingFieldType = FieldTypeService.Get( int.Parse( id ) );
                 if ( existingFieldType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
-                    FieldTypeService.Save( existingFieldType, ( int )currentUser.ProviderUserKey );
+                    FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
-                FieldTypeService.AttachFieldType( FieldType );
-                FieldTypeService.Save( FieldType, ( int )currentUser.ProviderUserKey );
+                FieldTypeService.Add( FieldType, currentUser.PersonId() );
+                FieldTypeService.Save( FieldType, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
-                Rock.Models.Core.FieldType FieldType = FieldTypeService.GetFieldType( int.Parse( id ) );
+                Rock.Models.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
                 if ( FieldType.Authorized( "Edit", currentUser ) )
                 {
-                    FieldTypeService.DeleteFieldType( FieldType );
+                    FieldTypeService.Delete( FieldType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

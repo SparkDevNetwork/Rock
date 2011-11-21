@@ -20,8 +20,6 @@
 using System;
 using System.Globalization;
 
-using Common.Logging;
-
 using Quartz.Spi;
 using Quartz.Util;
 
@@ -37,8 +35,6 @@ namespace Quartz.Simpl
 	/// <author>Marko Lahma (.NET)</author>
 	public class SimpleJobFactory : IJobFactory
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (SimpleJobFactory));
-
 	    /// <summary>
 	    /// Called by the scheduler at the time of the trigger firing, in order to
 	    /// produce a <see cref="IJob" /> instance on which to call Execute.
@@ -63,11 +59,6 @@ namespace Quartz.Simpl
 			Type jobType = jobDetail.JobType;
 			try
 			{
-				if (Log.IsDebugEnabled)
-				{
-					Log.Debug(string.Format(CultureInfo.InvariantCulture, "Producing instance of Job '{0}', class={1}", jobDetail.Key, jobType.FullName));
-				}
-
 				return ObjectUtils.InstantiateType<IJob>(jobType);
 			}
 			catch (Exception e)

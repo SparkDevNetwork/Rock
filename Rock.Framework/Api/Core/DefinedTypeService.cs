@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/DefinedType")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class DefinedTypeService : IDefinedTypeService
+    public partial class DefinedTypeService : IDefinedTypeService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedType GetDefinedType( string id )
+        public Rock.Models.Core.DefinedType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "View", currentUser ) )
                     return DefinedType;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType existingDefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( existingDefinedType.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-                    DefinedTypeService.Save( existingDefinedType, ( int )currentUser.ProviderUserKey );
+                    DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                DefinedTypeService.AttachDefinedType( DefinedType );
-                DefinedTypeService.Save( DefinedType, ( int )currentUser.ProviderUserKey );
+                DefinedTypeService.Add( DefinedType, currentUser.PersonId() );
+                DefinedTypeService.Save( DefinedType, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.GetDefinedType( int.Parse( id ) );
+                Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "Edit", currentUser ) )
                 {
-                    DefinedTypeService.DeleteDefinedType( DefinedType );
+                    DefinedTypeService.Delete( DefinedType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/AttributeValue")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class AttributeValueService : IAttributeValueService
+    public partial class AttributeValueService : IAttributeValueService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeValue GetAttributeValue( string id )
+        public Rock.Models.Core.AttributeValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( AttributeValue.Authorized( "View", currentUser ) )
                     return AttributeValue;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue existingAttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue existingAttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( existingAttributeValue.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
-                    AttributeValueService.Save( existingAttributeValue, ( int )currentUser.ProviderUserKey );
+                    AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                AttributeValueService.AttachAttributeValue( AttributeValue );
-                AttributeValueService.Save( AttributeValue, ( int )currentUser.ProviderUserKey );
+                AttributeValueService.Add( AttributeValue, currentUser.PersonId() );
+                AttributeValueService.Save( AttributeValue, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.GetAttributeValue( int.Parse( id ) );
+                Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( AttributeValue.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeValueService.DeleteAttributeValue( AttributeValue );
+                    AttributeValueService.Delete( AttributeValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

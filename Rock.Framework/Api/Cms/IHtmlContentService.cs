@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface IHtmlContentService
     {
 		[OperationContract]
-        Rock.Models.Cms.HtmlContent GetHtmlContent( string id );
+        Rock.Models.Cms.HtmlContent Get( string id );
 
         [OperationContract]
         void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContent HtmlContent );

@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Groups
 {
     [Table( "groupsGroupType" )]
-    public partial class GroupType : ModelWithAttributes, IAuditable
+    public partial class GroupType : ModelWithAttributes<GroupType>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -72,8 +69,9 @@ namespace Rock.Models.Groups
 
         public static GroupType Read(int id)
         {
-            return new Rock.Services.Groups.GroupTypeService().GetGroupType( id );
+            return new Rock.Services.Groups.GroupTypeService().Get( id );
         }
+
     }
 
     public partial class GroupTypeConfiguration : EntityTypeConfiguration<GroupType>

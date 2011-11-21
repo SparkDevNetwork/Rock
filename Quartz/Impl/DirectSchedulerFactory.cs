@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using Common.Logging;
 
 using Quartz.Core;
 using Quartz.Simpl;
@@ -72,7 +71,6 @@ namespace Quartz.Impl
 	/// <seealso cref="ThreadPool" />
 	public class DirectSchedulerFactory : ISchedulerFactory
 	{
-		private readonly ILog log;
         public const string DefaultInstanceId = "SIMPLE_NON_CLUSTERED";
         public const string DefaultSchedulerName = "SimpleQuartzScheduler";
         private static readonly DefaultThreadExecutor DefaultThreadExecutor = new DefaultThreadExecutor();
@@ -81,15 +79,6 @@ namespace Quartz.Impl
 
         private bool initialized;
         private static readonly DirectSchedulerFactory instance = new DirectSchedulerFactory();
-
-        /// <summary>
-        /// Gets the log.
-        /// </summary>
-        /// <value>The log.</value>
-	    public ILog Log
-	    {
-	        get { return log; }
-	    }
 
 	    /// <summary>
 		/// Gets the instance.
@@ -115,7 +104,7 @@ namespace Quartz.Impl
         /// </summary>
 		protected internal DirectSchedulerFactory()
 		{
-		    log = LogManager.GetLogger(GetType());
+		   
 		}
 
 		/// <summary>
@@ -329,10 +318,6 @@ namespace Quartz.Impl
                     pluginEntry.Value.Initialize(pluginEntry.Key, scheduler);
                 }
             }
-
-            Log.Info(string.Format(CultureInfo.InvariantCulture, "Quartz scheduler '{0}", scheduler.SchedulerName));
-
-            Log.Info(string.Format(CultureInfo.InvariantCulture, "Quartz scheduler version: {0}", qs.Version));
 
             SchedulerRepository schedRep = SchedulerRepository.Instance;
 

@@ -18,7 +18,7 @@ namespace Rock.Api.Crm
     public partial interface IPhoneNumberService
     {
 		[OperationContract]
-        Rock.Models.Crm.PhoneNumber GetPhoneNumber( string id );
+        Rock.Models.Crm.PhoneNumber Get( string id );
 
         [OperationContract]
         void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber );

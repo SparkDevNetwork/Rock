@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IEntityChangeService
     {
 		[OperationContract]
-        Rock.Models.Core.EntityChange GetEntityChange( string id );
+        Rock.Models.Core.EntityChange Get( string id );
 
         [OperationContract]
         void UpdateEntityChange( string id, Rock.Models.Core.EntityChange EntityChange );

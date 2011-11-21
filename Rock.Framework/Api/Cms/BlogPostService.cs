@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/BlogPost")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlogPostService : IBlogPostService
+    public partial class BlogPostService : IBlogPostService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPost GetBlogPost( string id )
+        public Rock.Models.Cms.BlogPost Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( BlogPost.Authorized( "View", currentUser ) )
                     return BlogPost;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost existingBlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost existingBlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( existingBlogPost.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
-                    BlogPostService.Save( existingBlogPost, ( int )currentUser.ProviderUserKey );
+                    BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                BlogPostService.AttachBlogPost( BlogPost );
-                BlogPostService.Save( BlogPost, ( int )currentUser.ProviderUserKey );
+                BlogPostService.Add( BlogPost, currentUser.PersonId() );
+                BlogPostService.Save( BlogPost, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.GetBlogPost( int.Parse( id ) );
+                Rock.Models.Cms.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( BlogPost.Authorized( "Edit", currentUser ) )
                 {
-                    BlogPostService.DeleteBlogPost( BlogPost );
+                    BlogPostService.Delete( BlogPost, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

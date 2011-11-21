@@ -1,0 +1,8 @@
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\bin\Debug\Rock.Custom.CCV.ClientTestApp.exe
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\bin\Debug\Rock.Custom.CCV.ClientTestApp.pdb
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.csprojResolveAssemblyReference.cache
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.Form1.resources
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.Properties.Resources.resources
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.csproj.GenerateResource.Cache
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.exe
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\Rock.Custom.CCV.ClientTestApp\Rock.Custom.CCV.ClientTestApp\obj\x86\Debug\Rock.Custom.CCV.ClientTestApp.pdb

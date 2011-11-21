@@ -22,8 +22,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 
-using Common.Logging;
-
 using Quartz.Impl.AdoJobStore;
 using Quartz.Impl.AdoJobStore.Common;
 
@@ -43,7 +41,6 @@ namespace Quartz.Util
         public const string PropertyDbPrefix = "quartz.db.";
         
         private static readonly DBConnectionManager instance = new DBConnectionManager();
-	    private static readonly ILog log = LogManager.GetLogger(typeof (DBConnectionManager));
 
         private readonly Dictionary<string, IDbProvider> providers = new Dictionary<string, IDbProvider>();
 
@@ -77,7 +74,6 @@ namespace Quartz.Util
         /// <param name="provider">The provider.</param>
         public virtual void AddConnectionProvider(string dataSourceName, IDbProvider provider)
 		{
-            log.Info(string.Format("Registering datasource '{0}' with db provider: '{1}'", dataSourceName, provider));
 			providers[dataSourceName] = provider;
 		}
 

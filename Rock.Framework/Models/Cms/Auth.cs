@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Cms
 {
     [Table( "cmsAuth" )]
-    public partial class Auth : ModelWithAttributes, IAuditable, IOrdered
+    public partial class Auth : ModelWithAttributes<Auth>, IAuditable, IOrdered
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[MaxLength( 200 )]
 		[DataMember]
 		public string EntityType { get; set; }
@@ -73,8 +70,9 @@ namespace Rock.Models.Cms
 
         public static Auth Read(int id)
         {
-            return new Rock.Services.Cms.AuthService().GetAuth( id );
+            return new Rock.Services.Cms.AuthService().Get( id );
         }
+
     }
 
     public partial class AuthConfiguration : EntityTypeConfiguration<Auth>

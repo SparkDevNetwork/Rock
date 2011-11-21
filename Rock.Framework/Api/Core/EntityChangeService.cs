@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/EntityChange")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class EntityChangeService : IEntityChangeService
+    public partial class EntityChangeService : IEntityChangeService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.EntityChange GetEntityChange( string id )
+        public Rock.Models.Core.EntityChange Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                Rock.Models.Core.EntityChange EntityChange = EntityChangeService.GetEntityChange( int.Parse( id ) );
+                Rock.Models.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
                 if ( EntityChange.Authorized( "View", currentUser ) )
                     return EntityChange;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                Rock.Models.Core.EntityChange existingEntityChange = EntityChangeService.GetEntityChange( int.Parse( id ) );
+                Rock.Models.Core.EntityChange existingEntityChange = EntityChangeService.Get( int.Parse( id ) );
                 if ( existingEntityChange.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-                    EntityChangeService.Save( existingEntityChange, ( int )currentUser.ProviderUserKey );
+                    EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                EntityChangeService.AttachEntityChange( EntityChange );
-                EntityChangeService.Save( EntityChange, ( int )currentUser.ProviderUserKey );
+                EntityChangeService.Add( EntityChange, currentUser.PersonId() );
+                EntityChangeService.Save( EntityChange, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                Rock.Models.Core.EntityChange EntityChange = EntityChangeService.GetEntityChange( int.Parse( id ) );
+                Rock.Models.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
                 if ( EntityChange.Authorized( "Edit", currentUser ) )
                 {
-                    EntityChangeService.DeleteEntityChange( EntityChange );
+                    EntityChangeService.Delete( EntityChange, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/Block")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlockService : IBlockService
+    public partial class BlockService : IBlockService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Block GetBlock( string id )
+        public Rock.Models.Cms.Block Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block Block = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block Block = BlockService.Get( int.Parse( id ) );
                 if ( Block.Authorized( "View", currentUser ) )
                     return Block;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block existingBlock = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block existingBlock = BlockService.Get( int.Parse( id ) );
                 if ( existingBlock.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
-                    BlockService.Save( existingBlock, ( int )currentUser.ProviderUserKey );
+                    BlockService.Save( existingBlock, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                BlockService.AttachBlock( Block );
-                BlockService.Save( Block, ( int )currentUser.ProviderUserKey );
+                BlockService.Add( Block, currentUser.PersonId() );
+                BlockService.Save( Block, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                Rock.Models.Cms.Block Block = BlockService.GetBlock( int.Parse( id ) );
+                Rock.Models.Cms.Block Block = BlockService.Get( int.Parse( id ) );
                 if ( Block.Authorized( "Edit", currentUser ) )
                 {
-                    BlockService.DeleteBlock( Block );
+                    BlockService.Delete( Block, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

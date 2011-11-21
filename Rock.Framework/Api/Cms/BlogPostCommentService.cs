@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/BlogPostComment")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlogPostCommentService : IBlogPostCommentService
+    public partial class BlogPostCommentService : IBlogPostCommentService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPostComment GetBlogPostComment( string id )
+        public Rock.Models.Cms.BlogPostComment Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.GetBlogPostComment( int.Parse( id ) );
+                Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
                 if ( BlogPostComment.Authorized( "View", currentUser ) )
                     return BlogPostComment;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                Rock.Models.Cms.BlogPostComment existingBlogPostComment = BlogPostCommentService.GetBlogPostComment( int.Parse( id ) );
+                Rock.Models.Cms.BlogPostComment existingBlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
                 if ( existingBlogPostComment.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-                    BlogPostCommentService.Save( existingBlogPostComment, ( int )currentUser.ProviderUserKey );
+                    BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                BlogPostCommentService.AttachBlogPostComment( BlogPostComment );
-                BlogPostCommentService.Save( BlogPostComment, ( int )currentUser.ProviderUserKey );
+                BlogPostCommentService.Add( BlogPostComment, currentUser.PersonId() );
+                BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.GetBlogPostComment( int.Parse( id ) );
+                Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
                 if ( BlogPostComment.Authorized( "Edit", currentUser ) )
                 {
-                    BlogPostCommentService.DeleteBlogPostComment( BlogPostComment );
+                    BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

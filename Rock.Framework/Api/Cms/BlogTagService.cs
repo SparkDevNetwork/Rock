@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/BlogTag")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlogTagService : IBlogTagService
+    public partial class BlogTagService : IBlogTagService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogTag GetBlogTag( string id )
+        public Rock.Models.Cms.BlogTag Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "View", currentUser ) )
                     return BlogTag;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag existingBlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag existingBlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( existingBlogTag.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-                    BlogTagService.Save( existingBlogTag, ( int )currentUser.ProviderUserKey );
+                    BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                BlogTagService.AttachBlogTag( BlogTag );
-                BlogTagService.Save( BlogTag, ( int )currentUser.ProviderUserKey );
+                BlogTagService.Add( BlogTag, currentUser.PersonId() );
+                BlogTagService.Save( BlogTag, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.GetBlogTag( int.Parse( id ) );
+                Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "Edit", currentUser ) )
                 {
-                    BlogTagService.DeleteBlogTag( BlogTag );
+                    BlogTagService.Delete( BlogTag, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

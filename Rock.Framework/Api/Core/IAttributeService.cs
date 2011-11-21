@@ -18,7 +18,7 @@ namespace Rock.Api.Core
     public partial interface IAttributeService
     {
 		[OperationContract]
-        Rock.Models.Core.Attribute GetAttribute( string id );
+        Rock.Models.Core.Attribute Get( string id );
 
         [OperationContract]
         void UpdateAttribute( string id, Rock.Models.Core.Attribute Attribute );

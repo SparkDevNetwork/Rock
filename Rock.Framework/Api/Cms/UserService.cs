@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/User")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class UserService : IUserService
+    public partial class UserService : IUserService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.User GetUser( string id )
+        public Rock.Models.Cms.User Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User User = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User User = UserService.Get( int.Parse( id ) );
                 if ( User.Authorized( "View", currentUser ) )
                     return User;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User existingUser = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User existingUser = UserService.Get( int.Parse( id ) );
                 if ( existingUser.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
-                    UserService.Save( existingUser, ( int )currentUser.ProviderUserKey );
+                    UserService.Save( existingUser, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                UserService.AttachUser( User );
-                UserService.Save( User, ( int )currentUser.ProviderUserKey );
+                UserService.Add( User, currentUser.PersonId() );
+                UserService.Save( User, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                Rock.Models.Cms.User User = UserService.GetUser( int.Parse( id ) );
+                Rock.Models.Cms.User User = UserService.Get( int.Parse( id ) );
                 if ( User.Authorized( "Edit", currentUser ) )
                 {
-                    UserService.DeleteUser( User );
+                    UserService.Delete( User, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

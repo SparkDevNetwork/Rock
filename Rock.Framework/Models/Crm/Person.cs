@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Crm
 {
     [Table( "crmPerson" )]
-    public partial class Person : ModelWithAttributes, IAuditable
+    public partial class Person : ModelWithAttributes<Person>, IAuditable
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -92,8 +89,9 @@ namespace Rock.Models.Crm
 
         public static Person Read(int id)
         {
-            return new Rock.Services.Crm.PersonService().GetPerson( id );
+            return new Rock.Services.Crm.PersonService().Get( id );
         }
+
     }
 
     public partial class PersonConfiguration : EntityTypeConfiguration<Person>

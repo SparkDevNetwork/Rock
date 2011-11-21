@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Util
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Util/Job")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class JobService : IJobService
+    public partial class JobService : IJobService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Util.Job GetJob( string id )
+        public Rock.Models.Util.Job Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Util
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job Job = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "View", currentUser ) )
                     return Job;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job existingJob = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job existingJob = JobService.Get( int.Parse( id ) );
                 if ( existingJob.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-                    JobService.Save( existingJob, ( int )currentUser.ProviderUserKey );
+                    JobService.Save( existingJob, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                JobService.AttachJob( Job );
-                JobService.Save( Job, ( int )currentUser.ProviderUserKey );
+                JobService.Add( Job, currentUser.PersonId() );
+                JobService.Save( Job, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                Rock.Models.Util.Job Job = JobService.GetJob( int.Parse( id ) );
+                Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "Edit", currentUser ) )
                 {
-                    JobService.DeleteJob( Job );
+                    JobService.Delete( Job, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

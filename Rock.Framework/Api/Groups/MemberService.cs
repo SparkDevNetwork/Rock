@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Groups
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Groups/Member")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class MemberService : IMemberService
+    public partial class MemberService : IMemberService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Member GetMember( string id )
+        public Rock.Models.Groups.Member Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member Member = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member Member = MemberService.Get( int.Parse( id ) );
                 if ( Member.Authorized( "View", currentUser ) )
                     return Member;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member existingMember = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member existingMember = MemberService.Get( int.Parse( id ) );
                 if ( existingMember.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
-                    MemberService.Save( existingMember, ( int )currentUser.ProviderUserKey );
+                    MemberService.Save( existingMember, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                MemberService.AttachMember( Member );
-                MemberService.Save( Member, ( int )currentUser.ProviderUserKey );
+                MemberService.Add( Member, currentUser.PersonId() );
+                MemberService.Save( Member, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                Rock.Models.Groups.Member Member = MemberService.GetMember( int.Parse( id ) );
+                Rock.Models.Groups.Member Member = MemberService.Get( int.Parse( id ) );
                 if ( Member.Authorized( "Edit", currentUser ) )
                 {
-                    MemberService.DeleteMember( Member );
+                    MemberService.Delete( Member, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
