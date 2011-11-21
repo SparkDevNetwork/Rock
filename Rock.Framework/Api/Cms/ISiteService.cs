@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface ISiteService
     {
 		[OperationContract]
-        Rock.Models.Cms.Site GetSite( string id );
+        Rock.Models.Cms.Site Get( string id );
 
         [OperationContract]
         void UpdateSite( string id, Rock.Models.Cms.Site Site );

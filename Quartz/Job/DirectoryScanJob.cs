@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using Common.Logging;
-
 namespace Quartz.Job
 {
     ///<summary>
@@ -41,11 +39,8 @@ namespace Quartz.Job
 
         private const string LAST_MODIFIED_TIME = "LAST_MODIFIED_TIME";
 
-        private readonly ILog log;
-
         public DirectoryScanJob()
         {
-            log = LogManager.GetLogger(GetType());
         }
 
        /// <summary>
@@ -108,7 +103,6 @@ namespace Quartz.Job
 
             if (updatedFiles == null)
             {
-                log.Warn("Directory '" + dirName + "' does not exist.");
                 return;
             }
 
@@ -122,12 +116,7 @@ namespace Quartz.Job
             if (updatedFiles.Length > 0)
             {
                 // notify call back...
-                log.Info("Directory '" + dirName + "' contents updated, notifying listener.");
                 listener.FilesUpdatedOrAdded(updatedFiles);
-            }
-            else if (log.IsDebugEnabled)
-            {
-                log.Debug("Directory '" + dirName + "' contents unchanged.");
             }
 
             // It is the JobDataMap on the JobDetail which is actually stateful

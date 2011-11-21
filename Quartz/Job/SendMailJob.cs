@@ -21,9 +21,6 @@ using System;
 using System.Globalization;
 using System.Net.Mail;
 
-using Common.Logging;
-
-
 namespace Quartz.Job
 {
 	/// <summary>
@@ -34,7 +31,6 @@ namespace Quartz.Job
 	/// <author>Marko Lahma (.NET)</author>
 	public class SendMailJob : IJob
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (SendMailJob));
 
     	/// <summary> The host name of the smtp server. REQUIRED.</summary>
 		public const string PropertySmtpHost = "smtp_host";
@@ -105,8 +101,6 @@ namespace Quartz.Job
 			}
 
 			string mailDesc = string.Format(CultureInfo.InvariantCulture, "'{0}' to: {1}", subject, to);
-
-			Log.Info(string.Format(CultureInfo.InvariantCulture, "Sending message {0}", mailDesc));
 
 			try
 			{

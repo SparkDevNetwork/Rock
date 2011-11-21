@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/Site")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class SiteService : ISiteService
+    public partial class SiteService : ISiteService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Site GetSite( string id )
+        public Rock.Models.Cms.Site Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site Site = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site Site = SiteService.Get( int.Parse( id ) );
                 if ( Site.Authorized( "View", currentUser ) )
                     return Site;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site existingSite = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site existingSite = SiteService.Get( int.Parse( id ) );
                 if ( existingSite.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
-                    SiteService.Save( existingSite, ( int )currentUser.ProviderUserKey );
+                    SiteService.Save( existingSite, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                SiteService.AttachSite( Site );
-                SiteService.Save( Site, ( int )currentUser.ProviderUserKey );
+                SiteService.Add( Site, currentUser.PersonId() );
+                SiteService.Save( Site, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                Rock.Models.Cms.Site Site = SiteService.GetSite( int.Parse( id ) );
+                Rock.Models.Cms.Site Site = SiteService.Get( int.Parse( id ) );
                 if ( Site.Authorized( "Edit", currentUser ) )
                 {
-                    SiteService.DeleteSite( Site );
+                    SiteService.Delete( Site, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

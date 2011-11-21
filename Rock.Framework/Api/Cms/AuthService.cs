@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/Auth")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class AuthService : IAuthService
+    public partial class AuthService : IAuthService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Auth GetAuth( string id )
+        public Rock.Models.Cms.Auth Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth Auth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth Auth = AuthService.Get( int.Parse( id ) );
                 if ( Auth.Authorized( "View", currentUser ) )
                     return Auth;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth existingAuth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth existingAuth = AuthService.Get( int.Parse( id ) );
                 if ( existingAuth.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
-                    AuthService.Save( existingAuth, ( int )currentUser.ProviderUserKey );
+                    AuthService.Save( existingAuth, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                AuthService.AttachAuth( Auth );
-                AuthService.Save( Auth, ( int )currentUser.ProviderUserKey );
+                AuthService.Add( Auth, currentUser.PersonId() );
+                AuthService.Save( Auth, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                Rock.Models.Cms.Auth Auth = AuthService.GetAuth( int.Parse( id ) );
+                Rock.Models.Cms.Auth Auth = AuthService.Get( int.Parse( id ) );
                 if ( Auth.Authorized( "Edit", currentUser ) )
                 {
-                    AuthService.DeleteAuth( Auth );
+                    AuthService.Delete( Auth, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

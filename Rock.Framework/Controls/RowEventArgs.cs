@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Rock.Controls
 {
-    public delegate void RowEventHandler( object sender, RowEventArgs e );
+    //public delegate void RowEventHandler( object sender, RowEventArgs e );
     public class RowEventArgs : EventArgs
     {
         public int RowIndex { get; private set; }

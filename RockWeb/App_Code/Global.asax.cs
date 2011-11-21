@@ -8,10 +8,19 @@ using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
 
+using System.Web.Caching;
+using System.Net;
+using System.Configuration;
+using System.Web.Compilation;
+using System.Collections.Specialized;
+
 using Rock.Cms;
 using Rock.Cms.Security;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
+using Rock.Jobs;
+using Rock.Services.Util;
+using Rock.Models.Util;
 
 using Quartz;
 using Quartz.Impl;
@@ -24,10 +33,76 @@ namespace RockWeb
         // global Quartz scheduler for jobs
         IScheduler sched = null;
 
+        // cache callback object
+        private static CacheItemRemovedCallback OnCacheRemove = null;
+
         protected void Application_Start( object sender, EventArgs e )
         {
+            // setup and launch the jobs infrastructure if running under IIS
+            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+            if ( runJobsInContext )
+            {
+
+                ISchedulerFactory sf;
+
+                // create scheduler
+                sf = new StdSchedulerFactory();
+                sched = sf.GetScheduler();  
+
+                // get list of active jobs
+                JobService jobService = new JobService();
+                foreach ( Job job in jobService.GetActiveJobs().ToList() )
+                {
+                    try
+                    {
+                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
+
+                        sched.ScheduleJob( jobDetail, jobTrigger );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // create a friendly error message
+                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assemby, ex.Message );
+                        job.LastStatusMessage = message;
+                        job.LastStatus = "Error Loading Job";
+                        
+                        jobService.Save( job, null );
+                    }
+                }
+
+                // set up the listener to report back from jobs as they complete
+                sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+
+                // start the scheduler
+                sched.Start();
+
+                // add call back to keep IIS process awake at night
+                AddCallBack();
+            }
+            
             RegisterRoutes( RouteTable.Routes );
-            Authorization.Load();
+            Rock.Cms.Security.Authorization.Load();
+        }
+
+        private void AddCallBack()
+        {
+            OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
+            HttpRuntime.Cache.Insert( "IISCallBack", 600, null,
+                DateTime.Now.AddSeconds( 600 ), Cache.NoSlidingExpiration,
+                CacheItemPriority.NotRemovable, OnCacheRemove );
+        }
+
+        public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
+        {
+            // call a page on the site to keep IIS alive
+            //var test = HttpContext.Current.Request.Url.Host; 
+            string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
+            WebRequest request = WebRequest.Create( url );
+            WebResponse response = request.GetResponse();
+
+            // add cache item again
+            AddCallBack();
         }
 
         protected void Session_Start( object sender, EventArgs e )
@@ -57,7 +132,13 @@ namespace RockWeb
 
         protected void Application_End( object sender, EventArgs e )
         {
-
+            // close out jobs infrastructure if running under IIS
+            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+            if ( runJobsInContext )
+            {
+                if ( sched != null )
+                    sched.Shutdown();
+            }
         }
 
         private void RegisterRoutes( RouteCollection routes )
@@ -77,7 +158,7 @@ namespace RockWeb
 
             // Add API Service routes
             routes.MapPageRoute( "", "api/help", "~/wcfHelp.aspx" );
-            Rock.Api.ServiceHelper.AddRoutes( routes );
+            new Rock.Api.ServiceHelper( this.Server.MapPath("~/Extensions") ).AddRoutes( routes );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new RockRouteHandler() ) );

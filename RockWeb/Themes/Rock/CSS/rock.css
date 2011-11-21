@@ -20,6 +20,11 @@ body.dialog {
     background: #d0cece;
 }
 
+div.admin-dialog 
+{
+    color: #333333
+}
+
 a {
     color: #406b89;
     text-decoration: none;
@@ -370,4 +375,9 @@ footer {
 #dialog .grid-table 
 {
     width: 500px;
+}
+
+.admin-dialog li
+{
+    text-align:left;
 }

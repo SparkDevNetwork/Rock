@@ -23,11 +23,8 @@ using Rock.Models;
 namespace Rock.Models.Core
 {
     [Table( "coreAttribute" )]
-    public partial class Attribute : Model, IAuditable, IOrdered
+    public partial class Attribute : Model<Attribute>, IAuditable, IOrdered
     {
-		[DataMember]
-		public Guid Guid { get; set; }
-		
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -40,10 +37,10 @@ namespace Rock.Models.Core
 		
 		[MaxLength( 50 )]
 		[DataMember]
-		public string EntityQualifier { get; set; }
+		public string EntityQualifierColumn { get; set; }
 		
 		[DataMember]
-		public int? EntityQualifierId { get; set; }
+		public string EntityQualifierValue { get; set; }
 		
 		[MaxLength( 50 )]
 		[DataMember]
@@ -92,8 +89,9 @@ namespace Rock.Models.Core
 
         public static Attribute Read(int id)
         {
-            return new Rock.Services.Core.AttributeService().GetAttribute( id );
+            return new Rock.Services.Core.AttributeService().Get( id );
         }
+
     }
 
     public partial class AttributeConfiguration : EntityTypeConfiguration<Attribute>

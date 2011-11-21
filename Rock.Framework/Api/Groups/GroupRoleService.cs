@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Groups
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Groups/GroupRole")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class GroupRoleService : IGroupRoleService
+    public partial class GroupRoleService : IGroupRoleService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.GroupRole GetGroupRole( string id )
+        public Rock.Models.Groups.GroupRole Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( GroupRole.Authorized( "View", currentUser ) )
                     return GroupRole;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole existingGroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole existingGroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( existingGroupRole.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
-                    GroupRoleService.Save( existingGroupRole, ( int )currentUser.ProviderUserKey );
+                    GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                GroupRoleService.AttachGroupRole( GroupRole );
-                GroupRoleService.Save( GroupRole, ( int )currentUser.ProviderUserKey );
+                GroupRoleService.Add( GroupRole, currentUser.PersonId() );
+                GroupRoleService.Save( GroupRole, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.GetGroupRole( int.Parse( id ) );
+                Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( GroupRole.Authorized( "Edit", currentUser ) )
                 {
-                    GroupRoleService.DeleteGroupRole( GroupRole );
+                    GroupRoleService.Delete( GroupRole, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

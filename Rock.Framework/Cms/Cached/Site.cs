@@ -59,14 +59,14 @@ namespace Rock.Cms.Cached
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-            Rock.Models.Cms.Site siteModel = siteService.GetSite( this.Id );
+            Rock.Models.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
-                siteService.LoadAttributes( siteModel );
+                Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
                     foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
-                        siteService.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -95,7 +95,7 @@ namespace Rock.Cms.Cached
             else
             {
                 Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();
-                Rock.Models.Cms.Site siteModel = siteService.GetSite( id );
+                Rock.Models.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
                     site = new Site();
@@ -109,7 +109,7 @@ namespace Rock.Cms.Cached
                     site.FacebookAppId = siteModel.FacebookAppId;
                     site.FacebookAppSecret = siteModel.FacebookAppSecret;
 
-                    siteService.LoadAttributes( siteModel );
+                    Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                     foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
                     {

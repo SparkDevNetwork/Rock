@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Groups
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Groups/Group")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class GroupService : IGroupService
+    public partial class GroupService : IGroupService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Group GetGroup( string id )
+        public Rock.Models.Groups.Group Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Groups
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group Group = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group Group = GroupService.Get( int.Parse( id ) );
                 if ( Group.Authorized( "View", currentUser ) )
                     return Group;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group existingGroup = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group existingGroup = GroupService.Get( int.Parse( id ) );
                 if ( existingGroup.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
-                    GroupService.Save( existingGroup, ( int )currentUser.ProviderUserKey );
+                    GroupService.Save( existingGroup, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                GroupService.AttachGroup( Group );
-                GroupService.Save( Group, ( int )currentUser.ProviderUserKey );
+                GroupService.Add( Group, currentUser.PersonId() );
+                GroupService.Save( Group, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                Rock.Models.Groups.Group Group = GroupService.GetGroup( int.Parse( id ) );
+                Rock.Models.Groups.Group Group = GroupService.Get( int.Parse( id ) );
                 if ( Group.Authorized( "Edit", currentUser ) )
                 {
-                    GroupService.DeleteGroup( Group );
+                    GroupService.Delete( Group, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

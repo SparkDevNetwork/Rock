@@ -18,7 +18,7 @@ namespace Rock.Api.Cms
     public partial interface ISiteDomainService
     {
 		[OperationContract]
-        Rock.Models.Cms.SiteDomain GetSiteDomain( string id );
+        Rock.Models.Cms.SiteDomain Get( string id );
 
         [OperationContract]
         void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomain SiteDomain );

@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/Attribute")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class AttributeService : IAttributeService
+    public partial class AttributeService : IAttributeService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.Attribute GetAttribute( string id )
+        public Rock.Models.Core.Attribute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute Attribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "View", currentUser ) )
                     return Attribute;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute existingAttribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute existingAttribute = AttributeService.Get( int.Parse( id ) );
                 if ( existingAttribute.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(Attribute);
-                    AttributeService.Save( existingAttribute, ( int )currentUser.ProviderUserKey );
+                    AttributeService.Save( existingAttribute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                AttributeService.AttachAttribute( Attribute );
-                AttributeService.Save( Attribute, ( int )currentUser.ProviderUserKey );
+                AttributeService.Add( Attribute, currentUser.PersonId() );
+                AttributeService.Save( Attribute, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                Rock.Models.Core.Attribute Attribute = AttributeService.GetAttribute( int.Parse( id ) );
+                Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeService.DeleteAttribute( Attribute );
+                    AttributeService.Delete( Attribute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

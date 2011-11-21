@@ -15,9 +15,9 @@ using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
-    [BlockInstanceProperty( "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
-    [BlockInstanceProperty( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
-	[BlockInstanceProperty( "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3")]
+    [Rock.Attribute.Property( "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
+    [Rock.Attribute.Property( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
+    [Rock.Attribute.Property( "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3" )]
     public partial class PageXslt : Rock.Cms.CmsBlock
     {
 		private static readonly string ROOT_PAGE = "RootPage";
@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            this.AttributesUpdated += new AttributesUpdatedEventHandler( PageXslt_AttributesUpdated );
+            this.AttributesUpdated += PageXslt_AttributesUpdated;
             //this.AddAttributeUpdateTrigger( upContent );
 			//upContent.ContentTemplateContainer.Controls.Add( )
 
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
 
 			int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
 
-			XDocument pageXml = rootPage.MenuXml( levelsDeep, System.Web.Security.Membership.GetUser() );
+			XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentUser );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );

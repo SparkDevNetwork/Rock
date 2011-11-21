@@ -15,7 +15,7 @@ namespace Rock.Services.Cms
 	{
         public IQueryable<Rock.Models.Cms.Auth> GetAuths( string entityType, int? entityId, string action)
 		{
-            return _repository.AsQueryable().
+            return Repository.AsQueryable().
                     Where( A => A.EntityType == entityType && 
                         A.EntityId == entityId && 
                         A.Action == action ).

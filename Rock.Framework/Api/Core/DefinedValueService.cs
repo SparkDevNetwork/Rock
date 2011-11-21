@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/DefinedValue")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class DefinedValueService : IDefinedValueService
+    public partial class DefinedValueService : IDefinedValueService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedValue GetDefinedValue( string id )
+        public Rock.Models.Core.DefinedValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.GetDefinedValue( int.Parse( id ) );
+                Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
                 if ( DefinedValue.Authorized( "View", currentUser ) )
                     return DefinedValue;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                Rock.Models.Core.DefinedValue existingDefinedValue = DefinedValueService.GetDefinedValue( int.Parse( id ) );
+                Rock.Models.Core.DefinedValue existingDefinedValue = DefinedValueService.Get( int.Parse( id ) );
                 if ( existingDefinedValue.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-                    DefinedValueService.Save( existingDefinedValue, ( int )currentUser.ProviderUserKey );
+                    DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                DefinedValueService.AttachDefinedValue( DefinedValue );
-                DefinedValueService.Save( DefinedValue, ( int )currentUser.ProviderUserKey );
+                DefinedValueService.Add( DefinedValue, currentUser.PersonId() );
+                DefinedValueService.Save( DefinedValue, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.GetDefinedValue( int.Parse( id ) );
+                Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
                 if ( DefinedValue.Authorized( "Edit", currentUser ) )
                 {
-                    DefinedValueService.DeleteDefinedValue( DefinedValue );
+                    DefinedValueService.Delete( DefinedValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

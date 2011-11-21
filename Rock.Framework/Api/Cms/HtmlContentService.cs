@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/HtmlContent")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class HtmlContentService : IHtmlContentService
+    public partial class HtmlContentService : IHtmlContentService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.HtmlContent GetHtmlContent( string id )
+        public Rock.Models.Cms.HtmlContent Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "View", currentUser ) )
                     return HtmlContent;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent existingHtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent existingHtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-                    HtmlContentService.Save( existingHtmlContent, ( int )currentUser.ProviderUserKey );
+                    HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                HtmlContentService.AttachHtmlContent( HtmlContent );
-                HtmlContentService.Save( HtmlContent, ( int )currentUser.ProviderUserKey );
+                HtmlContentService.Add( HtmlContent, currentUser.PersonId() );
+                HtmlContentService.Save( HtmlContent, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.GetHtmlContent( int.Parse( id ) );
+                Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "Edit", currentUser ) )
                 {
-                    HtmlContentService.DeleteHtmlContent( HtmlContent );
+                    HtmlContentService.Delete( HtmlContent, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

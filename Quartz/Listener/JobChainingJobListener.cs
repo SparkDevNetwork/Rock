@@ -99,15 +99,13 @@ namespace Quartz.Listener
                 return;
             }
 
-            Log.Info(string.Format(CultureInfo.InvariantCulture, "Job '{0}' will now chain to Job '{1}'", context.JobDetail.Key, sj));
-
             try
             {
                 context.Scheduler.TriggerJob(sj);
             }
             catch (SchedulerException se)
             {
-                Log.Error(string.Format(CultureInfo.InvariantCulture, "Error encountered during chaining to Job '{0}'", sj), se);
+               
             }
         }
     }

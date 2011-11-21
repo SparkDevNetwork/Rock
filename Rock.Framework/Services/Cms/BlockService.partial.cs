@@ -40,7 +40,7 @@ namespace Rock.Services.Cms
             }
 
             // Now remove from the list any that are already registered (via the path)
-            var registered = from r in _repository.GetAll() select r.Path;
+            var registered = from r in Repository.GetAll() select r.Path;
             return ( from u in list.Except( registered ) select new Block { Path = u, Guid = Guid.NewGuid() } );
         }
 	}

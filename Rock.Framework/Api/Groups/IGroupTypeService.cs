@@ -18,7 +18,7 @@ namespace Rock.Api.Groups
     public partial interface IGroupTypeService
     {
 		[OperationContract]
-        Rock.Models.Groups.GroupType GetGroupType( string id );
+        Rock.Models.Groups.GroupType Get( string id );
 
         [OperationContract]
         void UpdateGroupType( string id, Rock.Models.Groups.GroupType GroupType );

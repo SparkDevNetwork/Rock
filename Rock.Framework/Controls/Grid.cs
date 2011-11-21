@@ -83,18 +83,24 @@ namespace Rock.Controls
             this.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            this.EmptyDataRowStyle.CssClass = "grid-footer";
             this.PagerStyle.CssClass = "grid-footer";
+
+            EmptyDataTemplate emptyDataTemplate = new EmptyDataTemplate();
+            emptyDataTemplate.AddClick += gridPagerTemplate_AddClick;
+            this.EmptyDataTemplate = emptyDataTemplate;
 
             // Paging Support
             this.AllowPaging = true;
+            this.PageIndex = 1;
+            this.PageSize = 20;
 
-            GridPagerTemplate gridPagerTemplate = new GridPagerTemplate();
-            gridPagerTemplate.AddClick += new EventHandler( gridPagerTemplate_AddClick );
-            gridPagerTemplate.PageClick += new EventHandler( gridPagerTemplate_PageClick );
-            this.PagerTemplate = gridPagerTemplate;
+            PagerTemplate pagerTemplate = new PagerTemplate();
+            pagerTemplate.AddClick += gridPagerTemplate_AddClick;
+            pagerTemplate.PageClick += gridPagerTemplate_PageClick;
+            this.PagerTemplate = pagerTemplate;
 
             this.ShowHeaderWhenEmpty = true;
-            this.EmptyDataText = "No Results";
 
             base.OnInit( e );
         }
@@ -129,9 +135,6 @@ namespace Rock.Controls
                 Rock.Cms.CmsPage.AddScriptLink( Page, "~/Scripts/jquery.tablesorter.min.js" );
 
                 string script = string.Format( @"
-    $(document).ready(function() {{
-        $('#{0}').tablesorter();
-    }});
     Sys.Application.add_load(function () {{
         $('#{0}').tablesorter();
     }});
@@ -161,6 +164,10 @@ namespace Rock.Controls
                         ddl.Items.Add( li );
                     }
                 }
+
+                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
+                if ( ddl != null )
+                    ddl.SelectedValue = this.PageSize.ToString();
                 
                 // Set Action Controls
                 LinkButton lbAdd = pagerRow.Cells[0].FindControl( "lbAdd" ) as LinkButton;
@@ -200,11 +207,14 @@ namespace Rock.Controls
                 // Set Paging Controls
                 DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
                 if ( ddl != null )
-                {
-                    this.PageIndex = ddl.SelectedIndex;
-                    EventArgs eventArgs = new EventArgs();
-                    OnGridRebind( eventArgs );
-                }
+                    this.PageIndex = ddl.SelectedIndex >= 0 ? ddl.SelectedIndex : 0;
+
+                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
+                if ( ddl != null )
+                    this.PageSize = Int32.Parse(ddl.SelectedValue);
+
+                EventArgs eventArgs = new EventArgs();
+                OnGridRebind( eventArgs );
             }
         }
 
@@ -342,25 +352,13 @@ namespace Rock.Controls
 
     #region Templates
 
-    internal class GridPagerTemplate : ITemplate
+    internal class EmptyDataTemplate : ITemplate
     {
-        public void  InstantiateIn(Control container)
+        public void InstantiateIn( Control container )
         {
-            HtmlGenericControl divPaging = new HtmlGenericControl( "div" );
-            divPaging.Attributes.Add( "class", "paging" );
-            container.Controls.Add( divPaging );
-
-            DropDownList ddl = new DropDownList();
-            ddl.ID = "ddlPageList";
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += new EventHandler( ddl_SelectedIndexChanged );
-
-            Label lbl = new Label();
-            lbl.Text = "Select a page:";
-            lbl.AssociatedControlID = "ddlPageList";
-
-            divPaging.Controls.Add( lbl );
-            divPaging.Controls.Add( ddl );
+            HtmlGenericControl div = new HtmlGenericControl( "div" );
+            div.Attributes.Add( "class", "paging" );
+            container.Controls.Add( div );
 
             HtmlGenericControl divActions = new HtmlGenericControl( "div" );
             divActions.Attributes.Add( "class", "actions" );
@@ -370,7 +368,70 @@ namespace Rock.Controls
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
-            lbAdd.Click += new EventHandler( lbAdd_Click );
+            lbAdd.Click += lbAdd_Click;
+            divActions.Controls.Add( lbAdd );
+        }
+
+        void lbAdd_Click( object sender, EventArgs e )
+        {
+            if ( AddClick != null )
+                AddClick( sender, e );
+        }
+
+        internal event EventHandler AddClick;
+    }
+
+    internal class PagerTemplate : ITemplate
+    {
+        public void  InstantiateIn(Control container)
+        {
+            HtmlGenericControl div = new HtmlGenericControl( "div" );
+            div.Attributes.Add( "class", "paging" );
+            container.Controls.Add( div );
+
+            DropDownList ddl = new DropDownList();
+            ddl.ID = "ddlPageList";
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
+
+            Label lbl = new Label();
+            lbl.Text = "Select Page:";
+            lbl.AssociatedControlID = "ddlPageList";
+
+            div.Controls.Add( lbl );
+            div.Controls.Add( ddl );
+
+            Label lblPages = new Label();
+            lbl.ID = "lblPages";
+            div.Controls.Add( lblPages );
+
+            div.Controls.Add( new LiteralControl( "&nbsp;&nbsp;&nbsp;&nbsp;" ) );
+
+            ddl = new DropDownList();
+            ddl.ID = "ddlPageSize";
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
+            ddl.Items.Add( new ListItem( "5", "5" ) );
+            ddl.Items.Add( new ListItem( "20", "20" ) );
+            ddl.Items.Add( new ListItem( "100", "100" ) );
+            ddl.Items.Add( new ListItem( "1000", "1000" ) );
+
+            lbl = new Label();
+            lbl.Text = "Page Size:";
+            lbl.AssociatedControlID = "ddlPageSize";
+
+            div.Controls.Add( lbl );
+            div.Controls.Add( ddl );
+
+            HtmlGenericControl divActions = new HtmlGenericControl( "div" );
+            divActions.Attributes.Add( "class", "actions" );
+            container.Controls.Add( divActions );
+
+            LinkButton lbAdd = new LinkButton();
+            lbAdd.ID = "lbAdd";
+            lbAdd.CssClass = "add";
+            lbAdd.Text = "Add";
+            lbAdd.Click += lbAdd_Click;
             divActions.Controls.Add( lbAdd );
         }
 

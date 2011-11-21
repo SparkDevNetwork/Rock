@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Cms
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Cms/BlogCategory")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class BlogCategoryService : IBlogCategoryService
+    public partial class BlogCategoryService : IBlogCategoryService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogCategory GetBlogCategory( string id )
+        public Rock.Models.Cms.BlogCategory Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Cms
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.GetBlogCategory( int.Parse( id ) );
+                Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
                 if ( BlogCategory.Authorized( "View", currentUser ) )
                     return BlogCategory;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                Rock.Models.Cms.BlogCategory existingBlogCategory = BlogCategoryService.GetBlogCategory( int.Parse( id ) );
+                Rock.Models.Cms.BlogCategory existingBlogCategory = BlogCategoryService.Get( int.Parse( id ) );
                 if ( existingBlogCategory.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-                    BlogCategoryService.Save( existingBlogCategory, ( int )currentUser.ProviderUserKey );
+                    BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                BlogCategoryService.AttachBlogCategory( BlogCategory );
-                BlogCategoryService.Save( BlogCategory, ( int )currentUser.ProviderUserKey );
+                BlogCategoryService.Add( BlogCategory, currentUser.PersonId() );
+                BlogCategoryService.Save( BlogCategory, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.GetBlogCategory( int.Parse( id ) );
+                Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
                 if ( BlogCategory.Authorized( "Edit", currentUser ) )
                 {
-                    BlogCategoryService.DeleteBlogCategory( BlogCategory );
+                    BlogCategoryService.Delete( BlogCategory, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

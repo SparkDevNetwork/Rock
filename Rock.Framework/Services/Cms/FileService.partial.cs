@@ -12,7 +12,7 @@ namespace Rock.Services.Cms
 		public Rock.Models.Cms.File GetByGuid( string guidString )
         {
 			Guid guid = new Guid( guidString );
-			return _repository.FirstOrDefault( f => f.Guid == guid );
+			return Repository.FirstOrDefault( f => f.Guid == guid );
         }
     }
 }

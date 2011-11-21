@@ -20,67 +20,12 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
-    public partial class GroupTypeService : Rock.Services.Service
+    public partial class GroupTypeService : Rock.Services.Service<Rock.Models.Groups.GroupType>
     {
-        private IGroupTypeRepository _repository;
-
-        public GroupTypeService()
-			: this( new EntityGroupTypeRepository() )
-        { }
-
-        public GroupTypeService( IGroupTypeRepository GroupTypeRepository )
+        public IEnumerable<Rock.Models.Groups.GroupType> GetByGuid( Guid guid )
         {
-            _repository = GroupTypeRepository;
-        }
-
-        public IQueryable<Rock.Models.Groups.GroupType> Queryable()
-        {
-            return _repository.AsQueryable();
-        }
-
-        public Rock.Models.Groups.GroupType GetGroupType( int id )
-        {
-            return _repository.FirstOrDefault( t => t.Id == id );
+            return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Groups.GroupType> GetGroupTypesByGuid( Guid guid )
-        {
-            return _repository.Find( t => t.Guid == guid );
-        }
-		
-        public void AddGroupType( Rock.Models.Groups.GroupType GroupType )
-        {
-            if ( GroupType.Guid == Guid.Empty )
-                GroupType.Guid = Guid.NewGuid();
-
-            _repository.Add( GroupType );
-        }
-
-        public void AttachGroupType( Rock.Models.Groups.GroupType GroupType )
-        {
-            _repository.Attach( GroupType );
-        }
-
-		public void DeleteGroupType( Rock.Models.Groups.GroupType GroupType )
-        {
-            _repository.Delete( GroupType );
-        }
-
-        public void Save( Rock.Models.Groups.GroupType GroupType, int? personId )
-        {
-            List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( GroupType, personId );
-
-			if ( entityChanges != null )
-            {
-                Rock.Services.Core.EntityChangeService entityChangeService = new Rock.Services.Core.EntityChangeService();
-
-                foreach ( Rock.Models.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChange.EntityId = GroupType.Id;
-                    entityChangeService.AddEntityChange ( entityChange );
-                    entityChangeService.Save( entityChange, personId );
-                }
-            }
-        }
     }
 }

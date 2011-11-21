@@ -10,17 +10,22 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.Composition;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
+using Rock.Cms.Security;
+
 namespace Rock.Api.Core
 {
+    [Export(typeof(IService))]
+    [ExportMetadata("RouteName", "api/Core/AttributeQualifier")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class AttributeQualifierService : IAttributeQualifierService
+    public partial class AttributeQualifierService : IAttributeQualifierService, IService
     {
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeQualifier GetAttributeQualifier( string id )
+        public Rock.Models.Core.AttributeQualifier Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -30,7 +35,7 @@ namespace Rock.Api.Core
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "View", currentUser ) )
                     return AttributeQualifier;
                 else
@@ -50,11 +55,11 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
                     uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-                    AttributeQualifierService.Save( existingAttributeQualifier, ( int )currentUser.ProviderUserKey );
+                    AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
@@ -73,8 +78,8 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                AttributeQualifierService.AttachAttributeQualifier( AttributeQualifier );
-                AttributeQualifierService.Save( AttributeQualifier, ( int )currentUser.ProviderUserKey );
+                AttributeQualifierService.Add( AttributeQualifier, currentUser.PersonId() );
+                AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId() );
             }
         }
 
@@ -90,10 +95,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.GetAttributeQualifier( int.Parse( id ) );
+                Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
-                    AttributeQualifierService.DeleteAttributeQualifier( AttributeQualifier );
+                    AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

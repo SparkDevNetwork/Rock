@@ -12,58 +12,52 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.Configuration;
+using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Routing;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
+using System.Web;
+using System.Web.Routing;
 
 namespace Rock.Api
 {
-    public static class ServiceHelper
+    public class ServiceHelper
     {
-        public static void AddRoutes( RouteCollection routes )
-        {
-            var factory = new WebServiceHostFactory();
-            routes.Add( new ServiceRoute( "api/Cms/Auth", factory, typeof( Rock.Api.Cms.AuthService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/Block", factory, typeof( Rock.Api.Cms.BlockService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/BlockInstance", factory, typeof( Rock.Api.Cms.BlockInstanceService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/Blog", factory, typeof( Rock.Api.Cms.BlogService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/BlogCategory", factory, typeof( Rock.Api.Cms.BlogCategoryService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/BlogPost", factory, typeof( Rock.Api.Cms.BlogPostService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/BlogPostComment", factory, typeof( Rock.Api.Cms.BlogPostCommentService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/BlogTag", factory, typeof( Rock.Api.Cms.BlogTagService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/File", factory, typeof( Rock.Api.Cms.FileService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/HtmlContent", factory, typeof( Rock.Api.Cms.HtmlContentService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/Page", factory, typeof( Rock.Api.Cms.PageService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/PageRoute", factory, typeof( Rock.Api.Cms.PageRouteService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/Site", factory, typeof( Rock.Api.Cms.SiteService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/SiteDomain", factory, typeof( Rock.Api.Cms.SiteDomainService ) ) );
-            routes.Add( new ServiceRoute( "api/Cms/User", factory, typeof( Rock.Api.Cms.UserService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/Attribute", factory, typeof( Rock.Api.Core.AttributeService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/AttributeQualifier", factory, typeof( Rock.Api.Core.AttributeQualifierService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/AttributeValue", factory, typeof( Rock.Api.Core.AttributeValueService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/DefinedType", factory, typeof( Rock.Api.Core.DefinedTypeService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/DefinedValue", factory, typeof( Rock.Api.Core.DefinedValueService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/EntityChange", factory, typeof( Rock.Api.Core.EntityChangeService ) ) );
-            routes.Add( new ServiceRoute( "api/Core/FieldType", factory, typeof( Rock.Api.Core.FieldTypeService ) ) );
-            routes.Add( new ServiceRoute( "api/Crm/Person", factory, typeof( Rock.Api.Crm.PersonService ) ) );
-            routes.Add( new ServiceRoute( "api/Crm/PhoneNumber", factory, typeof( Rock.Api.Crm.PhoneNumberService ) ) );
-            routes.Add( new ServiceRoute( "api/Groups/Group", factory, typeof( Rock.Api.Groups.GroupService ) ) );
-            routes.Add( new ServiceRoute( "api/Groups/GroupRole", factory, typeof( Rock.Api.Groups.GroupRoleService ) ) );
-            routes.Add( new ServiceRoute( "api/Groups/GroupType", factory, typeof( Rock.Api.Groups.GroupTypeService ) ) );
-            routes.Add( new ServiceRoute( "api/Groups/Member", factory, typeof( Rock.Api.Groups.MemberService ) ) );
-            routes.Add( new ServiceRoute( "api/Util/Job", factory, typeof( Rock.Api.Util.JobService ) ) );
+        private CompositionContainer container;
 
-            CustomServiceRoutesSection configSection = ( CustomServiceRoutesSection ) ConfigurationManager.GetSection( "CustomServiceRoutes" );
-            foreach ( ServiceRouteConfiguration route in configSection.ServiceRoutes )
+        [ImportMany(typeof(IService))]
+        IEnumerable<Lazy<IService, IServiceData>> services;
+
+        public void AddRoutes( RouteCollection routes )
+        {
+            try
             {
-                Type routeType = Type.GetType( route.Type );
-                if (routeType != null)
-                    routes.Add( new ServiceRoute( route.Route, factory, routeType ) );
+                container.ComposeParts( this );
+
+                var factory = new WebServiceHostFactory();
+
+                foreach ( Lazy<IService, IServiceData> i in services )
+                    routes.Add( new ServiceRoute( i.Metadata.RouteName, factory, i.Value.GetType() ) );
+            }
+            catch ( CompositionException ex )
+            {
             }
 		}
+
+        public ServiceHelper(string extensionFolder)
+        {
+            var catalog = new AggregateCatalog();
+            catalog.Catalogs.Add( new AssemblyCatalog( typeof( ServiceHelper ).Assembly ) );
+
+            if ( Directory.Exists( extensionFolder ) )
+                catalog.Catalogs.Add( new DirectoryCatalog( extensionFolder ) );
+
+            container = new CompositionContainer( catalog );
+        }
     }
 }
 

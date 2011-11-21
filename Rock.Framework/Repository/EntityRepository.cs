@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Objects;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -93,9 +94,102 @@ namespace Rock.Repository
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public List<Rock.Models.Core.EntityChange> Save( T entity, int? PersonId )
+        public List<Rock.Models.Core.EntityChange> Save( int? PersonId )
         {
-            List<Rock.Models.Core.EntityChange> entityChanges = null;
+            var entityChanges = new List<Models.Core.EntityChange>();
+
+            _context.ChangeTracker.DetectChanges();
+
+            List<object> addedEntities = new List<object>();
+            List<object> deletedEntities = new List<object>();
+            List<object> modifiedEntities = new List<object>();
+
+            var contextAdapter = ( ( IObjectContextAdapter )Context );
+
+            foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
+                System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
+            {
+                switch ( entry.State )
+                {
+                    case System.Data.EntityState.Added:
+
+                        entityChanges.Concat( GetEntityChanges( entry.Entity ) );
+
+                        addedEntities.Add( entry.Entity );
+
+                        if ( entry.Entity is IAuditable )
+                        {
+                            IAuditable auditable = ( IAuditable )entry.Entity;
+                            auditable.CreatedByPersonId = PersonId;
+                            auditable.CreatedDateTime = DateTime.Now;
+                            auditable.ModifiedByPersonId = PersonId;
+                            auditable.ModifiedDateTime = DateTime.Now;
+                        }
+                        break;
+
+                    case System.Data.EntityState.Deleted:
+                        deletedEntities.Add( entry.Entity );
+                        break;
+
+                    case System.Data.EntityState.Modified:
+
+                        var model = entry.Entity as Model<T>;
+                        if ( model != null )
+                        {
+                            bool cancel = false;
+                            model.RaiseUpdatingEvent( out cancel, PersonId );
+                            if ( cancel )
+                            {
+                                contextAdapter.ObjectContext.Detach( entry );
+                            }
+                            else
+                            {
+                                entityChanges.Concat( GetEntityChanges( model ) );
+
+                                modifiedEntities.Add( modifiedEntities );
+
+                                if ( model is IAuditable )
+                                {
+                                    IAuditable auditable = ( IAuditable )model;
+                                    auditable.ModifiedByPersonId = PersonId;
+                                    auditable.ModifiedDateTime = DateTime.Now;
+                                }
+                            }
+                        }
+
+                        break;
+                }
+            }
+
+            Context.SaveChanges();
+
+            foreach ( object modifiedEntity in addedEntities )
+            {
+                var model = modifiedEntity as Model<T>;
+                if (model != null)
+                    model.RaiseAddedEvent( PersonId );
+            }
+
+            foreach ( object deletedEntity in deletedEntities )
+            {
+                var model = deletedEntity as Model<T>;
+                if ( model != null )
+                    model.RaiseDeletedEvent( PersonId );
+            }
+
+            foreach ( object modifiedEntity in modifiedEntities )
+            {
+                var model = modifiedEntity as Model<T>;
+                if ( model != null )
+                    model.RaiseUpdatedEvent( PersonId );
+            }
+
+            return entityChanges;
+        }
+
+        private List<Rock.Models.Core.EntityChange> GetEntityChanges( object entity )
+        {
+            List<Rock.Models.Core.EntityChange> entityChanges = new List<Models.Core.EntityChange>();
 
             // Do not track changes on the 'EntityChange' entity type. 
             if ( !( entity is Rock.Models.Core.EntityChange ) )
@@ -131,22 +225,6 @@ namespace Rock.Repository
                     }
                 }
             }
-
-            if (entity is IAuditable)
-            {
-                IAuditable auditable = (IAuditable)entity;
-
-                if (Context.Entry(entity).State == System.Data.EntityState.Added)
-                {
-                    auditable.CreatedByPersonId = PersonId;
-                    auditable.CreatedDateTime = DateTime.Now;
-                }
-
-                auditable.ModifiedByPersonId = PersonId;
-                auditable.ModifiedDateTime = DateTime.Now;
-            }
-
-            Context.SaveChanges();
 
             return entityChanges;
         }

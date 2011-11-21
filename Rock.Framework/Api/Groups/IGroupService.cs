@@ -18,7 +18,7 @@ namespace Rock.Api.Groups
     public partial interface IGroupService
     {
 		[OperationContract]
-        Rock.Models.Groups.Group GetGroup( string id );
+        Rock.Models.Groups.Group Get( string id );
 
         [OperationContract]
         void UpdateGroup( string id, Rock.Models.Groups.Group Group );

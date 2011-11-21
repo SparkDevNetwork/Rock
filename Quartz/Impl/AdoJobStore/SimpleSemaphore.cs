@@ -21,8 +21,6 @@ using System;
 using System.Globalization;
 using System.Threading;
 
-using Common.Logging;
-
 using Quartz.Collection;
 using Quartz.Impl.AdoJobStore.Common;
 using Quartz.Util;
@@ -41,12 +39,11 @@ namespace Quartz.Impl.AdoJobStore
 	{
 	    private const string KeyThreadLockOwners = "qrtz_ssemaphore_lock_owners";
 
-		private readonly ILog log;
 		private readonly HashSet<string> locks = new HashSet<string>();
 
 	    public SimpleSemaphore()
 	    {
-	        log = LogManager.GetLogger(GetType());
+	        
 	    }
 
 
@@ -79,16 +76,8 @@ namespace Quartz.Impl.AdoJobStore
 			{
 				lockName = String.Intern(lockName);
 
-				if (log.IsDebugEnabled)
-					log.Debug("Lock '" + lockName + "' is desired by: " + Thread.CurrentThread.Name);
-
 				if (!IsLockOwner(conn, lockName))
 				{
-					if (log.IsDebugEnabled)
-					{
-						log.Debug("Lock '" + lockName + "' is being obtained: " + Thread.CurrentThread.Name);
-					}
-					
 					while (locks.Contains(lockName))
 					{
 						try
@@ -97,23 +86,12 @@ namespace Quartz.Impl.AdoJobStore
 						}
 						catch (ThreadInterruptedException)
 						{
-							if (log.IsDebugEnabled)
-							{
-								log.Debug("Lock '" + lockName + "' was not obtained by: " + Thread.CurrentThread.Name);
-							}
+							
 						}
 					}
 
-					if (log.IsDebugEnabled)
-					{
-						log.Debug(string.Format(CultureInfo.InvariantCulture, "Lock '{0}' given to: {1}", lockName, Thread.CurrentThread.Name));
-					}
 					ThreadLocks.Add(lockName);
 					locks.Add(lockName);
-				}
-				else if (log.IsDebugEnabled)
-				{
-					log.Debug(string.Format(CultureInfo.InvariantCulture, "Lock '{0}' already owned by: {1} -- but not owner!", lockName, Thread.CurrentThread.Name), new Exception("stack-trace of wrongful returner"));
 				}
 
 				return true;
@@ -131,17 +109,9 @@ namespace Quartz.Impl.AdoJobStore
 
 				if (IsLockOwner(conn, lockName))
 				{
-					if (log.IsDebugEnabled)
-					{
-						log.Debug(string.Format(CultureInfo.InvariantCulture, "Lock '{0}' retuned by: {1}", lockName, Thread.CurrentThread.Name));
-					}
 					ThreadLocks.Remove(lockName);
 					locks.Remove(lockName);
 					Monitor.PulseAll(this);
-				}
-				else if (log.IsDebugEnabled)
-				{
-					log.Debug(string.Format(CultureInfo.InvariantCulture, "Lock '{0}' attempt to retun by: {1} -- but not owner!", lockName, Thread.CurrentThread.Name), new Exception("stack-trace of wrongful returner"));
 				}
 			}
 		}
