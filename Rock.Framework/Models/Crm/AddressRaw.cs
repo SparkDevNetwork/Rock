@@ -20,40 +20,17 @@ using System.Text;
 
 using Rock.Models;
 
-namespace Rock.Models.Cms
+namespace Rock.Models.Crm
 {
-    [Table( "cmsBlog" )]
-    public partial class Blog : ModelWithAttributes<Blog>, IAuditable
+    [Table( "crmAddressRaw" )]
+    public partial class AddressRaw : ModelWithAttributes<AddressRaw>, IAuditable
     {
-		[MaxLength( 75 )]
+		[MaxLength( 360 )]
 		[DataMember]
-		public string Name { get; set; }
-		
-		[MaxLength( 200 )]
-		[DataMember]
-		public string Subtitle { get; set; }
-		
-		[MaxLength( 2000 )]
-		[DataMember]
-		public string Description { get; set; }
+		public string RawAddress { get; set; }
 		
 		[DataMember]
-		public bool ModerateComments { get; set; }
-		
-		[MaxLength( 250 )]
-		[DataMember]
-		public string PublicPublishingPoint { get; set; }
-		
-		[MaxLength( 250 )]
-		[DataMember]
-		public string PublicFeedAddress { get; set; }
-		
-		[MaxLength( 250 )]
-		[DataMember]
-		public string CopyrightStatement { get; set; }
-		
-		[DataMember]
-		public bool AllowComments { get; set; }
+		public int AddressId { get; set; }
 		
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
@@ -68,29 +45,26 @@ namespace Rock.Models.Cms
 		public int? ModifiedByPersonId { get; set; }
 		
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Blog"; } }
+		public override string AuthEntity { get { return "Crm.AddressRaw"; } }
 
-		public virtual ICollection<BlogCategory> BlogCategories { get; set; }
+		public virtual Address Address { get; set; }
 
-		public virtual ICollection<BlogPost> BlogPosts { get; set; }
+		public virtual Person CreatedByPerson { get; set; }
 
-		public virtual ICollection<BlogTag> BlogTags { get; set; }
+		public virtual Person ModifiedByPerson { get; set; }
 
-		public virtual Crm.Person CreatedByPerson { get; set; }
-
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static Blog Read(int id)
+        public static AddressRaw Read(int id)
         {
-            return new Rock.Services.Cms.BlogService().Get( id );
+            return new Rock.Services.Crm.AddressRawService().Get( id );
         }
 
     }
 
-    public partial class BlogConfiguration : EntityTypeConfiguration<Blog>
+    public partial class AddressRawConfiguration : EntityTypeConfiguration<AddressRaw>
     {
-        public BlogConfiguration()
+        public AddressRawConfiguration()
         {
+			this.HasRequired( p => p.Address ).WithMany( p => p.AddressRaws ).HasForeignKey( p => p.AddressId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

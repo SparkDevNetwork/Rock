@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Blog
                 // print categories as an un-ordered list
                 output.Append( "<ul>" );
 
-                foreach ( Rock.Models.Cms.BlogCategory category in blog.BlogCategorys.OrderBy( c => c.Name ) )
+                foreach ( Rock.Models.Cms.BlogCategory category in blog.BlogCategories.OrderBy( c => c.Name ) )
                 {
                     output.Append( "<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a></li>" );
                 }

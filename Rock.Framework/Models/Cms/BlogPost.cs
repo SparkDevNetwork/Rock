@@ -59,7 +59,7 @@ namespace Rock.Models.Cms
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogPost"; } }
 
-		public virtual ICollection<BlogCategory> BlogCategorys { get; set; }
+		public virtual ICollection<BlogCategory> BlogCategories { get; set; }
 
 		public virtual ICollection<BlogPostComment> BlogPostComments { get; set; }
 
