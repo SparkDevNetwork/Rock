@@ -26,7 +26,7 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Cms.Block> Blocks { get; set; }
         public DbSet<Rock.Models.Cms.BlockInstance> BlockInstances { get; set; }
         public DbSet<Rock.Models.Cms.Blog> Blogs { get; set; }
-        public DbSet<Rock.Models.Cms.BlogCategory> BlogCategorys { get; set; }
+        public DbSet<Rock.Models.Cms.BlogCategory> BlogCategories { get; set; }
         public DbSet<Rock.Models.Cms.BlogPost> BlogPosts { get; set; }
         public DbSet<Rock.Models.Cms.BlogPostComment> BlogPostComments { get; set; }
         public DbSet<Rock.Models.Cms.BlogTag> BlogTags { get; set; }
@@ -44,7 +44,9 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Core.DefinedValue> DefinedValues { get; set; }
         public DbSet<Rock.Models.Core.EntityChange> EntityChanges { get; set; }
         public DbSet<Rock.Models.Core.FieldType> FieldTypes { get; set; }
-        public DbSet<Rock.Models.Crm.Person> Persons { get; set; }
+        public DbSet<Rock.Models.Crm.Address> Addresses { get; set; }
+        public DbSet<Rock.Models.Crm.AddressRaw> AddressRaws { get; set; }
+        public DbSet<Rock.Models.Crm.Person> People { get; set; }
         public DbSet<Rock.Models.Crm.PhoneNumber> PhoneNumbers { get; set; }
         public DbSet<Rock.Models.Groups.Group> Groups { get; set; }
         public DbSet<Rock.Models.Groups.GroupRole> GroupRoles { get; set; }
@@ -76,6 +78,8 @@ namespace Rock.EntityFramework
             modelBuilder.Configurations.Add( new Rock.Models.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Core.FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Models.Crm.AddressConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Models.Crm.AddressRawConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Crm.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Crm.PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Groups.GroupConfiguration() );

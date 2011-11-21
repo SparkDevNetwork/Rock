@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Blog
 
                 // add category and tag filters if requested
                 if ( categoryId != 0 )
-                    qPosts = qPosts.Where( p => p.BlogCategorys.Any(c => c.Id == categoryId ));
+                    qPosts = qPosts.Where( p => p.BlogCategories.Any(c => c.Id == categoryId ));
 
                 if ( tagId != 0 )
                     qPosts = qPosts.Where( p => p.BlogTags.Any( t => t.Id == tagId ) );
@@ -134,11 +134,11 @@ namespace RockWeb.Blocks.Blog
                         sb.Append( "         Posted " );
 
                         // determine categories
-                        if ( post.BlogCategorys.Count > 0 )
+                        if ( post.BlogCategories.Count > 0 )
                         {
                             sb.Append( "in <ul>" );
 
-                            foreach ( BlogCategory category in post.BlogCategorys )
+                            foreach ( BlogCategory category in post.BlogCategories )
                             {
                                 sb.Append( "<li><a href=\"" + PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Category", category.Id.ToString() }, { "BlogId", blogId.ToString() } } ) + "\">" + category.Name + "</a></li?" );
                             }
