@@ -38,7 +38,7 @@ namespace RockWeb
 			try
 			{
 				// Fetch the file...
-				Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.GetFile( id ) : fileService.GetByGuid( anID );
+				Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
 
 				// is it cached?
 				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
