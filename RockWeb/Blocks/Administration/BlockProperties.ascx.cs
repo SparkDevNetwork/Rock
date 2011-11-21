@@ -30,34 +30,8 @@ namespace RockWeb.Blocks.Administration
                     tbBlockName.Text = _blockInstance.Name;
                     tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
 
-                    foreach ( Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes )
-                    {
-                        HtmlGenericControl li = new HtmlGenericControl( "li" );
-                        li.ID = string.Format( "attribute-{0}", attribute.Id );
-                        li.ClientIDMode = ClientIDMode.AutoID;
+                    foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack ) )
                         olProperties.Controls.Add( li );
-
-                        Label lbl = new Label();
-                        lbl.ClientIDMode = ClientIDMode.AutoID;
-                        lbl.Text = attribute.Name;
-                        lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                        li.Controls.Add( lbl );
-
-                        Control attributeControl = attribute.CreateControl( _blockInstance.AttributeValues[attribute.Key].Value, !Page.IsPostBack );
-                        attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
-                        attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                        li.Controls.Add( attributeControl );
-
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
-                        {
-                            HtmlAnchor a = new HtmlAnchor();
-                            a.ClientIDMode = ClientIDMode.AutoID;
-                            a.Attributes.Add( "class", "attribute-description tooltip" );
-                            a.InnerHtml = "<span>" + attribute.Description + "</span>";
-
-                            li.Controls.Add( a );
-                        }
-                    }
                 }
                 else
                 {
@@ -81,13 +55,7 @@ namespace RockWeb.Blocks.Administration
                 blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
 
-                foreach ( Rock.Cms.Cached.Attribute attribute in _blockInstance.Attributes )
-                {
-                    Control control = olProperties.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
-                    if ( control != null )
-                        _blockInstance.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
-                }
-
+                Rock.Attribute.Helper.GetEditValues( olProperties, blockInstance );
                 _blockInstance.SaveAttributeValues( CurrentPersonId );
 
                 Rock.Cms.Cached.BlockInstance.Flush( _blockInstance.Id );

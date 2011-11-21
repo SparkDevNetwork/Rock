@@ -13,7 +13,7 @@ namespace Rock.Api.Crm.Address
     {
         private static GeocodeContainer instance;
 
-        public List<IGeocodeService> Services { get; private set; }
+        public Dictionary<int, IGeocodeService> Services { get; private set; }
 
         private CompositionContainer container;
 
@@ -37,7 +37,7 @@ namespace Rock.Api.Crm.Address
 
         public void Refresh()
         {
-            Services = new List<IGeocodeService>();
+            Services = new Dictionary<int, IGeocodeService>();
 
             var catalog = new AggregateCatalog();
             catalog.Catalogs.Add( new AssemblyCatalog( typeof( ServiceHelper ).Assembly ) );
@@ -60,9 +60,10 @@ namespace Rock.Api.Crm.Address
                     services[i.Value.Order].Add( i );
                 }
 
+                int id = 0;
                 foreach ( KeyValuePair<int, List<Lazy<IGeocodeService, IGeocodeServiceData>>> entry in services )
                     foreach ( Lazy<IGeocodeService, IGeocodeServiceData> service in entry.Value )
-                        Services.Add( service.Value );
+                        Services.Add(id++, service.Value );
             }
             catch ( CompositionException ex )
             {

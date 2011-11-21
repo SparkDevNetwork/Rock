@@ -65,7 +65,7 @@ namespace Rock.Cms.Cached
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
-                    foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
+                    foreach ( Rock.Cms.Cached.Attribute attribute in siteModel.Attributes )
                         Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
@@ -111,11 +111,8 @@ namespace Rock.Cms.Cached
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 
-                    foreach ( Rock.Models.Core.Attribute attribute in siteModel.Attributes )
-                    {
+                    foreach ( Rock.Cms.Cached.Attribute attribute in siteModel.Attributes )
                         site.AttributeIds.Add( attribute.Id );
-                        Attribute.Read( attribute );
-                    }
 
                     site.AttributeValues = siteModel.AttributeValues;
 

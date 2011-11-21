@@ -21,7 +21,6 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
