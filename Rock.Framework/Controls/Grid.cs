@@ -86,12 +86,14 @@ namespace Rock.Controls
             this.EmptyDataRowStyle.CssClass = "grid-footer";
             this.PagerStyle.CssClass = "grid-footer";
 
-            // Paging Support
-            this.AllowPaging = true;
-
             EmptyDataTemplate emptyDataTemplate = new EmptyDataTemplate();
             emptyDataTemplate.AddClick += gridPagerTemplate_AddClick;
             this.EmptyDataTemplate = emptyDataTemplate;
+
+            // Paging Support
+            this.AllowPaging = true;
+            this.PageIndex = 1;
+            this.PageSize = 20;
 
             PagerTemplate pagerTemplate = new PagerTemplate();
             pagerTemplate.AddClick += gridPagerTemplate_AddClick;
@@ -162,6 +164,10 @@ namespace Rock.Controls
                         ddl.Items.Add( li );
                     }
                 }
+
+                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
+                if ( ddl != null )
+                    ddl.SelectedValue = this.PageSize.ToString();
                 
                 // Set Action Controls
                 LinkButton lbAdd = pagerRow.Cells[0].FindControl( "lbAdd" ) as LinkButton;
@@ -201,11 +207,14 @@ namespace Rock.Controls
                 // Set Paging Controls
                 DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
                 if ( ddl != null )
-                {
-                    this.PageIndex = ddl.SelectedIndex;
-                    EventArgs eventArgs = new EventArgs();
-                    OnGridRebind( eventArgs );
-                }
+                    this.PageIndex = ddl.SelectedIndex >= 0 ? ddl.SelectedIndex : 0;
+
+                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
+                if ( ddl != null )
+                    this.PageSize = Int32.Parse(ddl.SelectedValue);
+
+                EventArgs eventArgs = new EventArgs();
+                OnGridRebind( eventArgs );
             }
         }
 
@@ -386,8 +395,30 @@ namespace Rock.Controls
             ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             Label lbl = new Label();
-            lbl.Text = "Select a page:";
+            lbl.Text = "Select Page:";
             lbl.AssociatedControlID = "ddlPageList";
+
+            div.Controls.Add( lbl );
+            div.Controls.Add( ddl );
+
+            Label lblPages = new Label();
+            lbl.ID = "lblPages";
+            div.Controls.Add( lblPages );
+
+            div.Controls.Add( new LiteralControl( "&nbsp;&nbsp;&nbsp;&nbsp;" ) );
+
+            ddl = new DropDownList();
+            ddl.ID = "ddlPageSize";
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
+            ddl.Items.Add( new ListItem( "5", "5" ) );
+            ddl.Items.Add( new ListItem( "20", "20" ) );
+            ddl.Items.Add( new ListItem( "100", "100" ) );
+            ddl.Items.Add( new ListItem( "1000", "1000" ) );
+
+            lbl = new Label();
+            lbl.Text = "Page Size:";
+            lbl.AssociatedControlID = "ddlPageSize";
 
             div.Controls.Add( lbl );
             div.Controls.Add( ddl );
