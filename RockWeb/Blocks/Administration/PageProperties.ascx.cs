@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.Administration
 
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
+                ddlParentPage.SelectedValue = _page.ParentPage != null ? _page.ParentPage.Id.ToString() : "0";
                 ddlLayout.Text = _page.Layout;
                 ddlMenuWhen.SelectedValue = ( ( Int32 )_page.DisplayInNavWhen ).ToString();
                 cbMenuDescription.Checked = _page.MenuDisplayDescription;
@@ -96,8 +97,19 @@ namespace RockWeb.Blocks.Administration
                 Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
                 Rock.Models.Cms.Page page = pageService.Get( _page.Id );
 
+                int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
+                if ( page.ParentPageId != parentPage )
+                {
+                    if (page.ParentPageId.HasValue)
+                        Rock.Cms.Cached.Page.Flush( page.ParentPageId.Value );
+
+                    if (parentPage != 0)
+                        Rock.Cms.Cached.Page.Flush( parentPage );
+                }
+
                 page.Name = tbPageName.Text;
                 page.Title = tbPageTitle.Text;
+                page.ParentPageId = parentPage;
                 page.Layout = ddlLayout.Text;
                 page.DisplayInNavWhen = ( Rock.Models.Cms.DisplayInNavWhen )Enum.Parse( typeof( Rock.Models.Cms.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                 page.MenuDisplayDescription = cbMenuDescription.Checked;
@@ -132,12 +144,25 @@ namespace RockWeb.Blocks.Administration
 
         private void LoadDropdowns()
         {
+            ddlParentPage.Items.Clear();
+            ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
+            foreach(var page in new Rock.Services.Cms.PageService().GetByParentPageId(null))
+                AddPage(page, 1);
+
             ddlLayout.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx.cs" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx.cs" ) ) ) );
 
             ddlMenuWhen.BindToEnum( typeof( Rock.Models.Cms.DisplayInNavWhen ) );
+        }
+
+        private void AddPage( Rock.Models.Cms.Page page, int level )
+        {
+            string pageName = new string('-', level) + page.Name;
+            ddlParentPage.Items.Add(new ListItem(pageName, page.Id.ToString()));
+            foreach(var childPage in page.Pages)
+                AddPage(childPage, level + 1);
         }
     }
 }
