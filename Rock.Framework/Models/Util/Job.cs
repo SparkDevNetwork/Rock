@@ -71,7 +71,7 @@ namespace Rock.Models.Util
 		[DataMember]
 		public string NotificationEmails { get; set; }
 		
-		[DataMember(Name = "NotificationStatus")]
+		[DataMember]
 		internal int NotificationStatusInternal { get; set; }
 
 		[NotMapped]
@@ -111,6 +111,7 @@ namespace Rock.Models.Util
     {
         public JobConfiguration()
         {
+			this.Property( p => p.NotificationStatusInternal ).HasColumnName( "NotificationStatus" );
 			this.HasOptional( p => p.CreateByPerson ).WithMany().HasForeignKey( p => p.CreateByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

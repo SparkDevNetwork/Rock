@@ -61,7 +61,7 @@ namespace Rock.Models.Cms
 		[DataMember]
 		public bool MenuDisplayChildPages { get; set; }
 		
-		[DataMember(Name = "DisplayInNavWhen")]
+		[DataMember]
 		internal int DisplayInNavWhenInternal { get; set; }
 
 		[NotMapped]
@@ -129,6 +129,7 @@ namespace Rock.Models.Cms
     {
         public PageConfiguration()
         {
+			this.Property( p => p.DisplayInNavWhenInternal ).HasColumnName( "DisplayInNavWhen" );
 			this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId );
 			this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

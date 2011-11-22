@@ -858,11 +858,14 @@ namespace Rock.Cms
                 url = "page/" + pageRef.PageId;
 
                 // add parms to the url
-                string delimitor = "?";
-                foreach ( KeyValuePair<string, string> parm in parms )
+                if ( parms != null )
                 {
-                    url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
-                    delimitor = "&";
+                    string delimitor = "?";
+                    foreach ( KeyValuePair<string, string> parm in parms )
+                    {
+                        url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        delimitor = "&";
+                    }
                 }
             }
             
