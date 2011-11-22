@@ -145,6 +145,11 @@ namespace Rock.Models<#= projectNamespace #>
     public partial class <#= Entity #> : <#= baseClass #><<#= Entity #>><#= iAuditable #><#= iOrdered #>
     {
 <#
+			// Keep track of any foreign key relationship that a table has to itself, and any 
+			// many-to-many relationship. These need to be defined explicitely in the model's 
+			// Configuration class
+			List<string> specialReferences  = new List<string>();
+			
 			// Write the properties for each column in the table
 			foreach(Column column in oneTable.Columns)
 			{
@@ -192,7 +197,7 @@ namespace Rock.Models<#= projectNamespace #>
 								{
 									string enumName = colDesc.Substring(iStart, iEnd - iStart);
 									
-									dataMember = "[DataMember(Name = \"" + column.Name + "\")]";
+									dataMember = "[DataMember]";
 									
 									property = 
 									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
@@ -203,6 +208,8 @@ namespace Rock.Models<#= projectNamespace #>
 									"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
 									"\t\t}";
 
+									specialReferences.Add(string.Format(
+										"this.Property( p => p.{0}Internal ).HasColumnName( \"{0}\" );", column.Name));
 								}
 							}
 						}						
@@ -229,11 +236,6 @@ namespace Rock.Models<#= projectNamespace #>
 		[NotMapped]
 		public override string AuthEntity { get { return "<#= Namespace #>.<#= Entity #>"; } }
 <#
-			// Keep track of any foreign key relationship that a table has to itself, and any 
-			// many-to-many relationship. These need to be defined explicitely in the model's 
-			// Configuration class
-			List<string> specialReferences  = new List<string>();
-			
 			// Process any related child table relationships 
 			System.Data.DataTable dt = oneTable.EnumForeignKeys();
 			foreach(System.Data.DataRow row in dt.Rows)

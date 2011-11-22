@@ -60,6 +60,14 @@ namespace Rock.Cms.Cached
             }
         }
 
+        public string Url
+        {
+            get
+            {
+                return CmsPage.BuildUrl( new Rock.Helpers.PageReference( this.Id, -1 ), null, null );
+            }
+        }
+
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
@@ -503,7 +511,8 @@ namespace Rock.Cms.Cached
 				XElement pageElement = new XElement( "page",
 					new XAttribute( "id", this.Id ),
 					new XAttribute( "title", this.Title ?? this.Name ),
-					new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
+                    new XAttribute( "url", this.Url),
+                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
 					new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
 					new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
 					new XElement( "description", this.Description ?? "" ),

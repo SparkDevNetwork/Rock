@@ -63,7 +63,7 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public string StandardizeService { get; set; }
 		
-		[DataMember(Name = "StandardizeResult")]
+		[DataMember]
 		internal int StandardizeResultInternal { get; set; }
 
 		[NotMapped]
@@ -80,7 +80,7 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public string GeocodeService { get; set; }
 		
-		[DataMember(Name = "GeocodeResult")]
+		[DataMember]
 		internal int GeocodeResultInternal { get; set; }
 
 		[NotMapped]
@@ -123,6 +123,8 @@ namespace Rock.Models.Crm
     {
         public AddressConfiguration()
         {
+			this.Property( p => p.StandardizeResultInternal ).HasColumnName( "StandardizeResult" );
+			this.Property( p => p.GeocodeResultInternal ).HasColumnName( "GeocodeResult" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
