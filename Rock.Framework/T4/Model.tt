@@ -806,6 +806,7 @@ public class TemplateHelper
 			case "char" : return "string";
 			case "text" : return "string";
 			case "ntext" : return "string";
+			case "float" : return "double";
 			default: return column.DataType.ToString();
 		}
 	}

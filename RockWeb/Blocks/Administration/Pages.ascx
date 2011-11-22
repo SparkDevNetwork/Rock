@@ -6,6 +6,7 @@
     <Rock:Grid ID="rGrid" runat="server" PageSize="10" >
         <Columns>
             <Rock:ReorderField />
+            <asp:BoundField DataField="Id" HeaderText="Id" />
             <asp:BoundField DataField="Name" HeaderText="Name" />
             <asp:BoundField DataField="Layout" HeaderText="Layout"  />
             <Rock:EditField OnClick="rGrid_Edit" />

@@ -25,6 +25,10 @@ namespace Rock.Models.Crm
     [Table( "crmAddress" )]
     public partial class Address : ModelWithAttributes<Address>, IAuditable
     {
+		[MaxLength( 400 )]
+		[DataMember]
+		public string Raw { get; set; }
+		
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Street1 { get; set; }
@@ -50,17 +54,24 @@ namespace Rock.Models.Crm
 		public string Zip { get; set; }
 		
 		[DataMember]
-		public float latitude { get; set; }
+		public double Latitude { get; set; }
 		
 		[DataMember]
-		public float longitude { get; set; }
+		public double Longitude { get; set; }
 		
 		[MaxLength( 50 )]
 		[DataMember]
 		public string StandardizeService { get; set; }
 		
-		[DataMember]
-		public int? StandardizeResultCode { get; set; }
+		[DataMember(Name = "StandardizeResult")]
+		internal int StandardizeResultInternal { get; set; }
+
+		[NotMapped]
+		public StandardizeResult StandardizeResult
+		{
+			get { return (StandardizeResult)this.StandardizeResultInternal; }
+			set { this.StandardizeResultInternal = (int)value; }
+		}
 		
 		[DataMember]
 		public DateTime? StandardizeDate { get; set; }
@@ -69,8 +80,15 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public string GeocodeService { get; set; }
 		
-		[DataMember]
-		public int? GeocodeResultCode { get; set; }
+		[DataMember(Name = "GeocodeResult")]
+		internal int GeocodeResultInternal { get; set; }
+
+		[NotMapped]
+		public GeocodeResult GeocodeResult
+		{
+			get { return (GeocodeResult)this.GeocodeResultInternal; }
+			set { this.GeocodeResultInternal = (int)value; }
+		}
 		
 		[DataMember]
 		public DateTime? GeocodeDate { get; set; }
@@ -89,8 +107,6 @@ namespace Rock.Models.Crm
 		
 		[NotMapped]
 		public override string AuthEntity { get { return "Crm.Address"; } }
-
-		public virtual ICollection<AddressRaw> AddressRaws { get; set; }
 
 		public virtual Person CreatedByPerson { get; set; }
 

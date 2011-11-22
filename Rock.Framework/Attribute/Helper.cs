@@ -88,51 +88,53 @@ namespace Rock.Attribute
             model.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, value );
         }
 
-        public static List<HtmlGenericControl> GetEditControls(  IHasAttributes item, bool setValue)
+        public static List<HtmlGenericControl> GetEditControls( IHasAttributes item, bool setValue )
         {
             List<HtmlGenericControl> controls = new List<HtmlGenericControl>();
 
-            foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
-            {
-                HtmlGenericControl li = new HtmlGenericControl( "li" );
-                li.ID = string.Format( "attribute-{0}", attribute.Id );
-                li.Attributes.Add( "attribute-key", attribute.Key );
-                li.ClientIDMode = ClientIDMode.AutoID;
-                controls.Add( li );
-
-                Label lbl = new Label();
-                lbl.ClientIDMode = ClientIDMode.AutoID;
-                lbl.Text = attribute.Name;
-                lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                li.Controls.Add( lbl );
-
-                Control attributeControl = attribute.CreateControl(item.AttributeValues[attribute.Key].Value, setValue );
-                attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
-                attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                li.Controls.Add( attributeControl );
-
-                if ( !string.IsNullOrEmpty( attribute.Description ) )
+            if ( item.Attributes != null )
+                foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
                 {
-                    HtmlAnchor a = new HtmlAnchor();
-                    a.ClientIDMode = ClientIDMode.AutoID;
-                    a.Attributes.Add( "class", "attribute-description tooltip" );
-                    a.InnerHtml = "<span>" + attribute.Description + "</span>";
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    li.ID = string.Format( "attribute-{0}", attribute.Id );
+                    li.Attributes.Add( "attribute-key", attribute.Key );
+                    li.ClientIDMode = ClientIDMode.AutoID;
+                    controls.Add( li );
 
-                    li.Controls.Add( a );
+                    Label lbl = new Label();
+                    lbl.ClientIDMode = ClientIDMode.AutoID;
+                    lbl.Text = attribute.Name;
+                    lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                    li.Controls.Add( lbl );
+
+                    Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value, setValue );
+                    attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                    attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                    li.Controls.Add( attributeControl );
+
+                    if ( !string.IsNullOrEmpty( attribute.Description ) )
+                    {
+                        HtmlAnchor a = new HtmlAnchor();
+                        a.ClientIDMode = ClientIDMode.AutoID;
+                        a.Attributes.Add( "class", "attribute-description tooltip" );
+                        a.InnerHtml = "<span>" + attribute.Description + "</span>";
+
+                        li.Controls.Add( a );
+                    }
                 }
-            }
 
             return controls;
         }
 
-        public static void GetEditValues( Control parentControl, IHasAttributes item)
+        public static void GetEditValues( Control parentControl, IHasAttributes item )
         {
-            foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
-            {
-                Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
-                if ( control != null )
-                    item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
-            }
+            if ( item.Attributes != null )
+                foreach ( Rock.Cms.Cached.Attribute attribute in item.Attributes )
+                {
+                    Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
+                    if ( control != null )
+                        item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
+                }
         }
     }
 }

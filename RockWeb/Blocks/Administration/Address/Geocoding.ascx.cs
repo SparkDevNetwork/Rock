@@ -8,10 +8,10 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Api.Crm.Address;
+using Rock.Address;
 using Rock.Controls;
 
-namespace RockWeb.Blocks.Administration
+namespace RockWeb.Blocks.Administration.Address
 {
     public partial class Geocoding : Rock.Cms.CmsBlock
 	{
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
             var services = GeocodeContainer.Instance.Services.ToList();
-            KeyValuePair<int, IGeocodeService> movedItem = services[e.OldIndex];
+            KeyValuePair<int, GeocodeService> movedItem = services[e.OldIndex];
             services.RemoveAt( e.OldIndex );
             if ( e.NewIndex >= services.Count )
                 services.Add( movedItem );
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Administration
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
                 int order = 0;
-                foreach ( KeyValuePair<int, IGeocodeService> service in services )
+                foreach ( KeyValuePair<int, GeocodeService> service in services )
                 {
                     foreach ( Rock.Cms.Cached.Attribute attribute in service.Value.Attributes )
                         if ( attribute.Key == "Order" )
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            IGeocodeService service = GeocodeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )];
+            GeocodeService service = GeocodeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )];
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
@@ -126,12 +126,12 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var dataSource = new List<ServiceDesc>();
-            foreach ( KeyValuePair<int, IGeocodeService> service in GeocodeContainer.Instance.Services )
+            var dataSource = new List<ServiceDescription>();
+            foreach ( KeyValuePair<int, GeocodeService> service in GeocodeContainer.Instance.Services )
             {
-                Type type = service.GetType();
+                Type type = service.Value.GetType();
                 Rock.Attribute.Helper.CreateAttributes( type, type.FullName, string.Empty, string.Empty, null );
-                dataSource.Add( new ServiceDesc( service.Key, service.Value ) );
+                dataSource.Add( new ServiceDescription( service.Key, service.Value ) );
             }
 
             rGrid.DataSource = dataSource;
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int serviceId, bool setValues )
         {
-            IGeocodeService service = GeocodeContainer.Instance.Services[serviceId];
+            GeocodeService service = GeocodeContainer.Instance.Services[serviceId];
             hfServiceId.Value = serviceId.ToString();
 
             olProperties.Controls.Clear();
@@ -154,32 +154,4 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
     }
-
-    class ServiceDesc
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool Active { get; set; }
-
-        public ServiceDesc( int id, IGeocodeService service )
-        {
-            Id = id;
-
-            Type type = service.GetType();
-
-            Name = type.Name;
-
-            var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
-            if ( descAttributes != null )
-                foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
-                    Description = descAttribute.Description;
-
-            if ( service.AttributeValues.ContainsKey( "Active" ) )
-                Active = bool.Parse( service.AttributeValues["Active"].Value );
-            else
-                Active = true;
-        }
-    }
-
 }

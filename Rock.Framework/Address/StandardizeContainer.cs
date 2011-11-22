@@ -7,18 +7,18 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-namespace Rock.Api.Crm.Address
+namespace Rock.Address
 {
     public class StandardizeContainer
     {
         private static StandardizeContainer instance;
 
-        public Dictionary<int, IStandardizeService> Services { get; private set; }
+        public Dictionary<int, StandardizeService> Services { get; private set; }
 
         private CompositionContainer container;
 
-        [ImportMany( typeof( IStandardizeService ) )]
-        IEnumerable<Lazy<IStandardizeService, IStandardizeServiceData>> geocodingServices;
+        [ImportMany( typeof( StandardizeService ) )]
+        IEnumerable<Lazy<StandardizeService, IStandardizeServiceData>> geocodingServices;
 
         private StandardizeContainer() 
         {
@@ -37,10 +37,10 @@ namespace Rock.Api.Crm.Address
 
         public void Refresh()
         {
-            Services = new Dictionary<int, IStandardizeService>();
+            Services = new Dictionary<int, StandardizeService>();
 
             var catalog = new AggregateCatalog();
-            catalog.Catalogs.Add( new AssemblyCatalog( typeof( ServiceHelper ).Assembly ) );
+            catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
 
             string extensionFolder = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), "Extensions" );
             if ( Directory.Exists( extensionFolder ) )
@@ -52,17 +52,17 @@ namespace Rock.Api.Crm.Address
             {
                 container.ComposeParts( this );
 
-                var services = new SortedDictionary<int, List<Lazy<IStandardizeService, IStandardizeServiceData>>>();
-                foreach ( Lazy<IStandardizeService, IStandardizeServiceData> i in geocodingServices )
+                var services = new SortedDictionary<int, List<Lazy<StandardizeService, IStandardizeServiceData>>>();
+                foreach ( Lazy<StandardizeService, IStandardizeServiceData> i in geocodingServices )
                 {
                     if ( !services.ContainsKey( i.Value.Order ) )
-                        services.Add( i.Value.Order, new List<Lazy<IStandardizeService, IStandardizeServiceData>>() );
+                        services.Add( i.Value.Order, new List<Lazy<StandardizeService, IStandardizeServiceData>>() );
                     services[i.Value.Order].Add( i );
                 }
 
                 int id = 0;
-                foreach ( KeyValuePair<int, List<Lazy<IStandardizeService, IStandardizeServiceData>>> entry in services )
-                    foreach ( Lazy<IStandardizeService, IStandardizeServiceData> service in entry.Value )
+                foreach ( KeyValuePair<int, List<Lazy<StandardizeService, IStandardizeServiceData>>> entry in services )
+                    foreach ( Lazy<StandardizeService, IStandardizeServiceData> service in entry.Value )
                         Services.Add(id++, service.Value );
             }
             catch ( CompositionException ex )

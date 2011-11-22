@@ -51,6 +51,8 @@ namespace RockWeb.Blocks.Administration
                 Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
                 Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
 
+                Rock.Attribute.Helper.LoadAttributes( blockInstance );
+
                 blockInstance.Name = tbBlockName.Text;
                 blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );

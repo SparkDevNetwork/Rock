@@ -64,6 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Address\ServiceDescription.cs" />
+    <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Api\Cms\AuthService.cs" />
     <Compile Include="Api\Cms\BlockInstanceService.cs" />
     <Compile Include="Api\Cms\BlockService.cs" />
@@ -93,18 +95,22 @@
     <Compile Include="Api\Cms\SiteDomainService.cs" />
     <Compile Include="Api\Cms\SiteService.cs" />
     <Compile Include="Api\Cms\UserService.cs" />
+    <Compile Include="Api\Crm\AddressService.cs" />
     <Compile Include="Api\Crm\AddressService.Partial.cs" />
-    <Compile Include="Api\Crm\Address\AddressStub.cs" />
-    <Compile Include="Api\Crm\Address\GeocodeContainer.cs">
+    <Compile Include="Address\AddressStub.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Api\Crm\Address\StandardizeContainer.cs">
+    <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Api\Crm\Address\StrikeIron.cs" />
-    <Compile Include="Api\Crm\Address\IStandardizeService.cs" />
-    <Compile Include="Api\Crm\Address\IGeocodeService.cs" />
-    <Compile Include="Api\Crm\Address\ServiceObjects.cs" />
+    <Compile Include="Address\StandardizeContainer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Address\Geocode\StrikeIron.cs" />
+    <Compile Include="Address\StandardizeService.cs" />
+    <Compile Include="Address\GeocodeService.cs" />
+    <Compile Include="Address\Geocode\ServiceObjects.cs" />
+    <Compile Include="Api\Crm\IAddressService.cs" />
     <Compile Include="Api\Crm\IAddressService.Partial.cs" />
     <Compile Include="Api\IService.cs" />
     <Compile Include="Api\Core\AttributeQualifierService.cs" />
@@ -211,7 +217,7 @@
     <Compile Include="Models\Cms\User.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Models\Crm\Address.cs" />
-    <Compile Include="Models\Crm\AddressRaw.cs" />
+    <Compile Include="Models\Crm\Address.Partial.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">
@@ -297,11 +303,9 @@
     <Compile Include="Repository\Core\IDefinedValueRepository.cs" />
     <Compile Include="Repository\Core\IEntityChangeRepository.cs" />
     <Compile Include="Repository\Core\IFieldTypeRepository.cs" />
-    <Compile Include="Repository\Crm\EntityAddressRawRepository.cs" />
     <Compile Include="Repository\Crm\EntityAddressRepository.cs" />
     <Compile Include="Repository\Crm\EntityPersonRepository.cs" />
     <Compile Include="Repository\Crm\EntityPhoneNumberRepository.cs" />
-    <Compile Include="Repository\Crm\IAddressRawRepository.cs" />
     <Compile Include="Repository\Crm\IAddressRepository.cs" />
     <Compile Include="Repository\Crm\IPersonRepository.cs" />
     <Compile Include="Repository\Crm\IPhoneNumberRepository.cs" />
@@ -369,8 +373,8 @@
     <Compile Include="Services\Core\DefinedValueService.cs" />
     <Compile Include="Services\Core\EntityChangeService.cs" />
     <Compile Include="Services\Core\FieldTypeService.cs" />
-    <Compile Include="Services\Crm\AddressRawService.cs" />
     <Compile Include="Services\Crm\AddressService.cs" />
+    <Compile Include="Services\Crm\AddressService.partial.cs" />
     <Compile Include="Services\Crm\PersonService.partial.cs" />
     <Compile Include="Services\Crm\PersonService.cs" />
     <Compile Include="Services\Crm\PhoneNumberService.cs" />

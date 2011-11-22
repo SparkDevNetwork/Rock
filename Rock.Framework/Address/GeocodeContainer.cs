@@ -7,18 +7,18 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-namespace Rock.Api.Crm.Address
+namespace Rock.Address
 {
     public class GeocodeContainer
     {
         private static GeocodeContainer instance;
 
-        public Dictionary<int, IGeocodeService> Services { get; private set; }
+        public Dictionary<int, GeocodeService> Services { get; private set; }
 
         private CompositionContainer container;
 
-        [ImportMany( typeof( IGeocodeService ) )]
-        IEnumerable<Lazy<IGeocodeService, IGeocodeServiceData>> geocodingServices;
+        [ImportMany( typeof( GeocodeService ) )]
+        IEnumerable<Lazy<GeocodeService, IGeocodeServiceData>> geocodingServices;
 
         private GeocodeContainer() 
         {
@@ -37,10 +37,10 @@ namespace Rock.Api.Crm.Address
 
         public void Refresh()
         {
-            Services = new Dictionary<int, IGeocodeService>();
+            Services = new Dictionary<int, GeocodeService>();
 
             var catalog = new AggregateCatalog();
-            catalog.Catalogs.Add( new AssemblyCatalog( typeof( ServiceHelper ).Assembly ) );
+            catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
 
             string extensionFolder = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), "Extensions" );
             if ( Directory.Exists( extensionFolder ) )
@@ -52,17 +52,17 @@ namespace Rock.Api.Crm.Address
             {
                 container.ComposeParts( this );
 
-                var services = new SortedDictionary<int, List<Lazy<IGeocodeService, IGeocodeServiceData>>>();
-                foreach ( Lazy<IGeocodeService, IGeocodeServiceData> i in geocodingServices )
+                var services = new SortedDictionary<int, List<Lazy<GeocodeService, IGeocodeServiceData>>>();
+                foreach ( Lazy<GeocodeService, IGeocodeServiceData> i in geocodingServices )
                 {
                     if ( !services.ContainsKey( i.Value.Order ) )
-                        services.Add( i.Value.Order, new List<Lazy<IGeocodeService, IGeocodeServiceData>>() );
+                        services.Add( i.Value.Order, new List<Lazy<GeocodeService, IGeocodeServiceData>>() );
                     services[i.Value.Order].Add( i );
                 }
 
                 int id = 0;
-                foreach ( KeyValuePair<int, List<Lazy<IGeocodeService, IGeocodeServiceData>>> entry in services )
-                    foreach ( Lazy<IGeocodeService, IGeocodeServiceData> service in entry.Value )
+                foreach ( KeyValuePair<int, List<Lazy<GeocodeService, IGeocodeServiceData>>> entry in services )
+                    foreach ( Lazy<GeocodeService, IGeocodeServiceData> service in entry.Value )
                         Services.Add(id++, service.Value );
             }
             catch ( CompositionException ex )
