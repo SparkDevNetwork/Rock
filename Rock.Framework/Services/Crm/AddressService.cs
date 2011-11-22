@@ -22,14 +22,19 @@ namespace Rock.Services.Crm
 {
     public partial class AddressService : Rock.Services.Service<Rock.Models.Crm.Address>
     {
-        public IEnumerable<Rock.Models.Crm.Address> GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
+        public Rock.Models.Crm.Address GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
         {
-            return Repository.Find( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
+            return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
         }
 		
         public Rock.Models.Crm.Address GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
+        }
+		
+        public Rock.Models.Crm.Address GetByRaw( string raw )
+        {
+            return Repository.FirstOrDefault( t => ( t.Raw == raw || ( raw == null && t.Raw == null ) ) );
         }
 		
     }

@@ -52,11 +52,20 @@ namespace Rock.Custom.CCV.ClientTestApp
                 XDocument xdoc = XDocument.Parse( Response );
                 if ( xdoc != null )
                 {
-                    string service = xdoc.Root.Element( string.Format( "{{{0}}}Service", ns ) ).Value;
+                    string street1 = xdoc.Root.Element( string.Format( "{{{0}}}Street1", ns ) ).Value;
+                    string street2 = xdoc.Root.Element( string.Format( "{{{0}}}Street2", ns ) ).Value;
+                    string city = xdoc.Root.Element( string.Format( "{{{0}}}City", ns ) ).Value;
+                    string state = xdoc.Root.Element( string.Format( "{{{0}}}State", ns ) ).Value;
+                    string zip = xdoc.Root.Element( string.Format( "{{{0}}}Zip", ns ) ).Value;
+                    string geocodeService = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeService", ns ) ).Value;
+                    string geocodeResult = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeResult", ns ) ).Value;
+                    string standardizeService = xdoc.Root.Element( string.Format( "{{{0}}}StandardizeService", ns ) ).Value;
+                    string standardizeResult = xdoc.Root.Element( string.Format( "{{{0}}}StandardizeResult", ns ) ).Value;
                     string latitude = xdoc.Root.Element( string.Format( "{{{0}}}Latitude", ns ) ).Value;
                     string longitude = xdoc.Root.Element( string.Format( "{{{0}}}Longitude", ns ) ).Value;
 
-                    lblGeocoded.Text = string.Format( "{0}: {1} {2}", service, latitude, longitude );
+                    lblStandardized.Text = string.Format( "{0}: {1} {2} {3}, {4} {5}", standardizeService, street1, street2, city, state, zip  );
+                    lblGeocoded.Text = string.Format( "{0}: {1} {2}", geocodeService, latitude, longitude );
                 }
             }
         }

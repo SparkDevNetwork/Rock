@@ -1,10 +1,9 @@
 using System.ServiceModel;
 
-using Rock.Api.Crm.Address;
+using Rock.Address;
 
 namespace Rock.Api.Crm
 {
-	[ServiceContract]
     public partial interface IAddressService
     {
         [OperationContract]

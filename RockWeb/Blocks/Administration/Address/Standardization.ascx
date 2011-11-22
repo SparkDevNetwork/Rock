@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Geocoding.ascx.cs" Inherits="RockWeb.Blocks.Administration.Geocoding" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Standardization.ascx.cs" Inherits="RockWeb.Blocks.Administration.Address.Standardization" %>
 
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
@@ -17,7 +17,7 @@
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
         
         <asp:HiddenField ID="hfServiceId" runat="server" />
-        <asp:ValidationSummary ID="vsPages" runat="server" CssClass="failureNotification" ValidationGroup="GeocodingValidationGroup"/>
+        <asp:ValidationSummary ID="vsPages" runat="server" CssClass="failureNotification" ValidationGroup="StandardizationValidationGroup"/>
         <fieldset>
             <legend>Service Properties</legend>
             <ol id="olProperties" runat="server">
@@ -25,7 +25,7 @@
         </fieldset>
         <br />
         <asp:Button id="btnCancel" runat="server" Text="Cancel" CausesValidation="false" OnClick="btnCancel_Click" />
-        <asp:Button ID="btnSave" runat="server" Text="Save" ValidationGroup="GeocodingValidationGroup" CssClass="button" onclick="btnSave_Click" />
+        <asp:Button ID="btnSave" runat="server" Text="Save" ValidationGroup="StandardizationValidationGroup" CssClass="button" onclick="btnSave_Click" />
 
     </asp:Panel>
 
