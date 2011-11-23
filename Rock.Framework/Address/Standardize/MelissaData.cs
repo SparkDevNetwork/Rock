@@ -9,12 +9,23 @@ using Rock.Framework.MelissaData.Service;
 
 namespace Rock.Address.Standardize
 {
+    /// <summary>
+    /// The AddressCheck service from <a href="http://www.melissadata.com/">Melissa Data</a>
+    /// </summary>
     [Description( "Address Standardization service from Melissa Data" )]
     [Export( typeof( StandardizeService ) )]
     [ExportMetadata( "ServiceName", "MelissaData" )]
     [Rock.Attribute.Property( 1, "Customer Id", "The Melissa Data Customer ID", "" )]
     public class MelissaData : StandardizeService
     {
+        /// <summary>
+        /// Standardizes the address
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="result">The AddressCheck result code</param>
+        /// <returns>
+        /// True/False value of whether the address was standardized succesfully
+        /// </returns>
         public override bool Standardize( Rock.Models.Crm.Address address, out string result )
         {
             if ( address != null )

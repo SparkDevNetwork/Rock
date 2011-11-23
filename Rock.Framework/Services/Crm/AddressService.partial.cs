@@ -16,6 +16,12 @@ namespace Rock.Services.Crm
 {
 	public partial class AddressService
 	{
+        /// <summary>
+        /// Standardizes the specified <see cref="Rock.Address.AddressStub"/>
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         public Rock.Models.Crm.Address Standardize( Rock.Address.AddressStub address, int? personId )
         {
             Rock.Models.Crm.Address addressModel = GetByAddressStub( address, personId );
@@ -25,16 +31,23 @@ namespace Rock.Services.Crm
             return addressModel;
         }
 
+        /// <summary>
+        /// Standardizes the specified <see cref="Rock.Models.Crm.Address"/>
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="personId">The person id.</param>
         public void Standardize( Rock.Models.Crm.Address address, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
 
+            // Try each of the standardization services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeService, Rock.Address.IStandardizeServiceData>> service in Rock.Address.StandardizeContainer.Instance.Services )
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     string result;
                     bool success = service.Value.Value.Standardize( address, out result );
 
+                    // Log the results of the service
                     Models.Core.ServiceLog log = new Models.Core.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Address Standardize";
@@ -45,6 +58,7 @@ namespace Rock.Services.Crm
                     logService.Add( log, personId );
                     logService.Save( log, personId );
 
+                    // If succesful, set the results and stop processing
                     if ( success )
                     {
                         address.StandardizeService = service.Value.Metadata.ServiceName;
@@ -59,6 +73,12 @@ namespace Rock.Services.Crm
             Save( address, personId );
         }
 
+        /// <summary>
+        /// Geocodes the specified <see cref="Rock.Address.AddressStub"/>
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         public Rock.Models.Crm.Address Geocode( Rock.Address.AddressStub address, int? personId )
         {
             Rock.Models.Crm.Address addressModel = GetByAddressStub( address, personId );
@@ -68,16 +88,23 @@ namespace Rock.Services.Crm
             return addressModel;
         }
 
+        /// <summary>
+        /// Geocodes the specified <see cref="Rock.Models.Crm.Address"/>
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="personId">The person id.</param>
         public void Geocode( Rock.Models.Crm.Address address, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
 
+            // Try each of the geocoding services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeService, Rock.Address.IGeocodeServiceData>> service in Rock.Address.GeocodeContainer.Instance.Services )
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     string result;
                     bool success = service.Value.Value.Geocode( address, out result );
 
+                    // Log the results of the service
                     Models.Core.ServiceLog log = new Models.Core.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Address Geocode";
@@ -88,6 +115,7 @@ namespace Rock.Services.Crm
                     logService.Add( log, personId );
                     logService.Save( log, personId );
 
+                    // If succesful, set the results and stop processing
                     if ( success  )
                     {
                         address.GeocodeService = service.Value.Metadata.ServiceName;
@@ -102,6 +130,14 @@ namespace Rock.Services.Crm
             Save( address, personId );
         }
 
+        /// <summary>
+        /// Looks for an existing address model first by searching for a raw value, and then by the street, 
+        /// city, state, and zip of the specified address stub.  If a match is not found, then a new address
+        /// block is returned.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         private Rock.Models.Crm.Address GetByAddressStub( Rock.Address.AddressStub address, int? personId )
         {
             string raw = address.Raw;

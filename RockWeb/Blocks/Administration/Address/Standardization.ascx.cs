@@ -14,6 +14,10 @@ using Rock.Controls;
 
 namespace RockWeb.Blocks.Administration.Address
 {
+    /// <summary>
+    /// Used to manage the <see cref="Rock.Address.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
+    /// of the attributes specified in each class
+    /// </summary>
     public partial class Standardization : Rock.Cms.CmsBlock
 	{
         #region Control Methods
@@ -58,6 +62,11 @@ namespace RockWeb.Blocks.Administration.Address
 
         #region Grid Events
 
+        /// <summary>
+        /// Handles the GridReorder event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
             var services = StandardizeContainer.Instance.Services.ToList();
@@ -85,11 +94,21 @@ namespace RockWeb.Blocks.Administration.Address
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Edit event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"], true );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void rGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
@@ -99,12 +118,22 @@ namespace RockWeb.Blocks.Administration.Address
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             hfServiceId.Value = string.Empty;
             pnlDetails.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             StandardizeService service = StandardizeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )].Value;
@@ -125,6 +154,9 @@ namespace RockWeb.Blocks.Administration.Address
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var dataSource = new List<ServiceDescription>();
@@ -140,6 +172,11 @@ namespace RockWeb.Blocks.Administration.Address
             rGrid.DataBind();
         }
 
+        /// <summary>
+        /// Shows the edit panel
+        /// </summary>
+        /// <param name="serviceId">The service id.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId, bool setValues )
         {
             StandardizeService service = StandardizeContainer.Instance.Services[serviceId].Value;

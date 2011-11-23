@@ -9,14 +9,22 @@ using System.Web;
 
 namespace Rock.Address
 {
+    /// <summary>
+    /// Singleton class that uses MEF to load and cache all of the StandardizeService classes
+    /// </summary>
     public class StandardizeContainer
     {
         private static StandardizeContainer instance;
 
+        /// <summary>
+        /// Gets the services.
+        /// </summary>
         public Dictionary<int, Lazy<StandardizeService, IStandardizeServiceData>> Services { get; private set; }
 
+        // MEF Container
         private CompositionContainer container;
 
+        // MEF Import Definition
         [ImportMany( typeof( StandardizeService ) )]
         IEnumerable<Lazy<StandardizeService, IStandardizeServiceData>> geocodingServices;
 
@@ -25,6 +33,9 @@ namespace Rock.Address
             Refresh();
         }
 
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
         public static StandardizeContainer Instance
         {
             get
@@ -35,23 +46,33 @@ namespace Rock.Address
             }
         }
 
+        /// <summary>
+        /// Forces a reloading of all the StandardizeService classes
+        /// </summary>
         public void Refresh()
         {
             Services = new Dictionary<int, Lazy<StandardizeService, IStandardizeServiceData>>();
 
+            // Create the MEF Catalog
             var catalog = new AggregateCatalog();
+
+            // Add the currently running assembly to the Catalog
             catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
 
+            // Add all the assemblies in the 'Extensions' subdirectory
             string extensionFolder = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), "Extensions" );
             if ( Directory.Exists( extensionFolder ) )
                 catalog.Catalogs.Add( new DirectoryCatalog( extensionFolder ) );
 
+            // Create the container from the catalog
             container = new CompositionContainer( catalog );
 
             try
             {
+                // Compose the MEF container with any classes that export the same definition
                 container.ComposeParts( this );
 
+                // Create a temporary sorted dictionary of the classes so that they can be executed in a specific order
                 var services = new SortedDictionary<int, List<Lazy<StandardizeService, IStandardizeServiceData>>>();
                 foreach ( Lazy<StandardizeService, IStandardizeServiceData> i in geocodingServices )
                 {
@@ -60,6 +81,7 @@ namespace Rock.Address
                     services[i.Value.Order].Add( i );
                 }
 
+                // Add each class found through MEF into the Services property value in the correct order
                 int id = 0;
                 foreach ( KeyValuePair<int, List<Lazy<StandardizeService, IStandardizeServiceData>>> entry in services )
                     foreach ( Lazy<StandardizeService, IStandardizeServiceData> service in entry.Value )
