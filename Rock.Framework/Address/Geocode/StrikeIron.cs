@@ -9,6 +9,9 @@ using Rock.Framework.StrikeIron.USAddressVerification;
 
 namespace Rock.Address.Geocode
 {
+    /// <summary>
+    /// The USAddressVerification service from <a href="http://www.strikeiron.com/Home.aspx">StrikeIron</a>
+    /// </summary>
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( GeocodeService ) )]
     [ExportMetadata( "ServiceName", "StrikeIron" )]
@@ -16,6 +19,14 @@ namespace Rock.Address.Geocode
     [Rock.Attribute.Property( 2, "Password", "The Strike Iron Password", "" )]
     public class StrikeIron : GeocodeService
     {
+        /// <summary>
+        /// Geocodes the specified address.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>
+        /// True/False value of whether the address was standardized was succesfully
+        /// </returns>
         public override bool Geocode( Rock.Models.Crm.Address address, out string result )
         {
             if ( address != null )

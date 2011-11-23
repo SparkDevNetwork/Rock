@@ -15,6 +15,11 @@ namespace Rock.Api.Crm
 {
     public partial class AddressService 
     {
+        /// <summary>
+        /// Geocodes the specified address.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
         public AddressStub Geocode( AddressStub address )
         {
@@ -36,6 +41,11 @@ namespace Rock.Api.Crm
                 throw new FaultException( "Invalid Address" );
         }
 
+        /// <summary>
+        /// Standardizes the specified address.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
         public AddressStub Standardize( AddressStub address )
         {
