@@ -6,7 +6,7 @@ using System.Text;
 namespace Rock.Address
 {
     [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
-    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "True", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
     public abstract class StandardizeService : Rock.Attribute.IHasAttributes
     {
         public int Id { get { return 0; } }
@@ -25,7 +25,7 @@ namespace Rock.Address
             }
         }
 
-        public abstract bool Standardize( Rock.Models.Crm.Address address );
+        public abstract bool Standardize( Rock.Models.Crm.Address address, out string result );
 
         public StandardizeService()
         {

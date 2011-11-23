@@ -15,7 +15,7 @@ namespace Rock.Address.Geocode
     [Rock.Attribute.Property( 2, "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : GeocodeService
     {
-        public override bool Geocode( Rock.Models.Crm.Address address )
+        public override bool Geocode( Rock.Models.Crm.Address address, out string result )
         {
             if ( address != null )
             {
@@ -31,25 +31,20 @@ namespace Rock.Address.Geocode
                     address.Zip,
                     licenseKey );
 
-                address.GeocodeService = "ServiceObjects";
-                address.Latitude = double.Parse( location.Latitude );
-                address.Longitude = double.Parse( location.Longitude );
+                result = location.Level;
 
-                switch ( location.Level )
+                if ( location.Level == "S" || location.Level == "P" )
                 {
-                    case "S":
-                    case "P":
-                        address.GeocodeResult = Models.Crm.GeocodeResult.Exact;
-                        return true;
+                    address.Latitude = double.Parse( location.Latitude );
+                    address.Longitude = double.Parse( location.Longitude );
 
-                    default:
-                        address.GeocodeResult = Models.Crm.GeocodeResult.Partial;
-                        return false;
+                    return true;
                 }
-
             }
+            else
+                result = "Null Address";
 
-            return true;
+            return false;
         }
     }
 }

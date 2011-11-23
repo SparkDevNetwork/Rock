@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="urn:MelissaDataAddressCheckService" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Service" targetNamespace="urn:MelissaDataAddressCheckService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:MelissaDataAddressCheckService">
+      <xsd:element name="doAddressCheck">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element xmlns:q1="urn:mdWebServiceAddress" minOccurs="0" maxOccurs="1" name="Request" type="q1:RequestArray" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="doAddressCheckResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element xmlns:q2="urn:mdWebServiceAddress" minOccurs="0" maxOccurs="1" name="doAddressCheckResult" type="q2:ResponseArray" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:mdWebServiceAddress">
+      <xsd:complexType name="RequestArray">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="1" name="TransmissionReference" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="CustomerID" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="OptAddressParsed" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="unbounded" name="Record">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="RecordID" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Company" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="LastName" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Urbanization" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="AddressLine1" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="AddressLine2" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Suite" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="City" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="State" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Zip" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Plus4" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Country" type="xsd:string" />
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ResponseArray">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="1" name="Version" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TransmissionReference" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="Results" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TotalRecords" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="unbounded" name="Record">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element minOccurs="0" maxOccurs="1" name="RecordID" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Results" type="xsd:string" />
+                <xsd:element minOccurs="0" maxOccurs="1" name="Address">
+                  <xsd:complexType>
+                    <xsd:sequence>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Company" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Urbanization">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Address1" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Address2" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Suite" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="PrivateMailBox" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="City">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Abbreviation" type="xsd:string" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="State">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Abbreviation" type="xsd:string" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Zip" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Plus4" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="CarrierRoute" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="DeliveryPointCode" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="DeliveryPointCheckDigit" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="CongressionalDistrict" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Type">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Address">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Code" type="xsd:string" />
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Description" type="xsd:string" />
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Zip">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Code" type="xsd:string" />
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Description" type="xsd:string" />
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Country">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Abbreviation" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                      <xsd:element minOccurs="0" maxOccurs="1" name="AddressKey" type="xsd:string" />
+                      <xsd:element minOccurs="0" maxOccurs="1" name="Parsed">
+                        <xsd:complexType>
+                          <xsd:sequence>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="StreetName" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="AddressRange" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Suffix" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Direction">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Post" type="xsd:string" />
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Pre" type="xsd:string" />
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Suite">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Range" type="xsd:string" />
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="PrivateMailbox">
+                              <xsd:complexType>
+                                <xsd:sequence>
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Name" type="xsd:string" />
+                                  <xsd:element minOccurs="0" maxOccurs="1" name="Range" type="xsd:string" />
+                                </xsd:sequence>
+                              </xsd:complexType>
+                            </xsd:element>
+                            <xsd:element minOccurs="0" maxOccurs="1" name="Garbage" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="RouteService" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="LockBox" type="xsd:string" />
+                            <xsd:element minOccurs="0" maxOccurs="1" name="DeliveryInstallation" type="xsd:string" />
+                          </xsd:sequence>
+                        </xsd:complexType>
+                      </xsd:element>
+                    </xsd:sequence>
+                  </xsd:complexType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IService_doAddressCheck_InputMessage">
+    <wsdl:part name="parameters" element="tns:doAddressCheck" />
+  </wsdl:message>
+  <wsdl:message name="IService_doAddressCheck_OutputMessage">
+    <wsdl:part name="parameters" element="tns:doAddressCheckResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IService">
+    <wsdl:operation name="doAddressCheck">
+      <wsdl:input wsaw:Action="urn:MelissaDataAddressCheckService/IService/doAddressCheck" message="tns:IService_doAddressCheck_InputMessage" />
+      <wsdl:output wsaw:Action="urn:MelissaDataAddressCheckService/IService/doAddressCheckResponse" message="tns:IService_doAddressCheck_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IService" type="tns:IService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="doAddressCheck">
+      <soap:operation soapAction="urn:MelissaDataAddressCheckService/IService/doAddressCheck" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Service">
+    <wsdl:port name="BasicHttpBinding_IService" binding="tns:BasicHttpBinding_IService">
+      <soap:address location="https://addresscheck.melissadata.net/v2/SOAP/Service.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

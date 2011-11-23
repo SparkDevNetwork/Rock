@@ -16,7 +16,7 @@ namespace Rock.Address.Standardize
     [Rock.Attribute.Property( 2, "Password", "The Strike Iron Password", "" )]
     public class StrikeIron : StandardizeService
     {
-        public override bool Standardize( Rock.Models.Crm.Address address )
+        public override bool Standardize( Rock.Models.Crm.Address address, out string result )
         {
             if ( address != null )
             {
@@ -29,7 +29,7 @@ namespace Rock.Address.Standardize
 
                 var client = new USAddressVerificationSoapClient();
 
-                SIWsOutputOfUSAddress result;
+                SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
                     address.Street1,
@@ -41,19 +41,18 @@ namespace Rock.Address.Standardize
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
-                    out result );
+                    out verifyResult );
 
-                if (result != null)
+                if (verifyResult != null)
                 {
-                    if ( result.ServiceStatus.StatusNbr == 200 )
+                    result = verifyResult.ServiceStatus.StatusNbr.ToString();
+
+                    if ( verifyResult.ServiceStatus.StatusNbr == 200 )
                     {
-                        USAddress usAddress = result.ServiceResult;
+                        USAddress usAddress = verifyResult.ServiceResult;
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.StandardizeService = "StrikeIron";
-                            address.StandardizeResult = Models.Crm.StandardizeResult.Exact;
-
                             address.Street1 = usAddress.AddressLine1;
                             address.Street2 = usAddress.AddressLine2;
                             address.City = usAddress.City;
@@ -63,7 +62,7 @@ namespace Rock.Address.Standardize
                             if ( usAddress.GeoCode != null )
                             {
                                 address.GeocodeService = "StrikeIron";
-                                address.GeocodeResult = Models.Crm.GeocodeResult.Exact;
+                                address.GeocodeResult = "200";
                                 address.GeocodeDate = DateTime.Now;
 
                                 address.Latitude = usAddress.GeoCode.Latitude;
@@ -74,11 +73,13 @@ namespace Rock.Address.Standardize
                         }
                     }
                 }
-
-                return false;
+                else
+                    result = "Null Result";
             }
+            else
+                result = "Null Address";
 
-            return true;
+            return false;
         }
     }
 }

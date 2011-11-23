@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\ServiceDescription.cs" />
+    <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Api\Cms\AuthService.cs" />
     <Compile Include="Api\Cms\BlockInstanceService.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Models\Cms\SiteDomain.cs" />
     <Compile Include="Models\Cms\User.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
+    <Compile Include="Models\Core\ServiceLog.cs" />
     <Compile Include="Models\Crm\Address.cs" />
     <Compile Include="Models\Crm\Address.Partial.cs" />
     <Compile Include="Models\IOrdered.cs" />
@@ -296,6 +298,7 @@
     <Compile Include="Repository\Core\EntityDefinedValueRepository.cs" />
     <Compile Include="Repository\Core\EntityEntityChangeRepository.cs" />
     <Compile Include="Repository\Core\EntityFieldTypeRepository.cs" />
+    <Compile Include="Repository\Core\EntityServiceLogRepository.cs" />
     <Compile Include="Repository\Core\IAttributeQualifierRepository.cs" />
     <Compile Include="Repository\Core\IAttributeRepository.cs" />
     <Compile Include="Repository\Core\IAttributeValueRepository.cs" />
@@ -303,6 +306,7 @@
     <Compile Include="Repository\Core\IDefinedValueRepository.cs" />
     <Compile Include="Repository\Core\IEntityChangeRepository.cs" />
     <Compile Include="Repository\Core\IFieldTypeRepository.cs" />
+    <Compile Include="Repository\Core\IServiceLogRepository.cs" />
     <Compile Include="Repository\Crm\EntityAddressRepository.cs" />
     <Compile Include="Repository\Crm\EntityPersonRepository.cs" />
     <Compile Include="Repository\Crm\EntityPhoneNumberRepository.cs" />
@@ -333,6 +337,11 @@
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\Util\EntityJobRepository.cs" />
     <Compile Include="Repository\Util\IJobRepository.cs" />
+    <Compile Include="Service References\MelissaData.Service\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Service References\ServiceObjects.GeoCoder\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -373,6 +382,7 @@
     <Compile Include="Services\Core\DefinedValueService.cs" />
     <Compile Include="Services\Core\EntityChangeService.cs" />
     <Compile Include="Services\Core\FieldTypeService.cs" />
+    <Compile Include="Services\Core\ServiceLogService.cs" />
     <Compile Include="Services\Crm\AddressService.cs" />
     <Compile Include="Services\Crm\AddressService.partial.cs" />
     <Compile Include="Services\Crm\PersonService.partial.cs" />
@@ -402,6 +412,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="Service References\MelissaData.Service\Rock.Framework.MelissaData.Service.ResponseArray.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\MelissaData.Service\Service.wsdl" />
     <None Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -459,6 +473,12 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+    <None Include="Service References\MelissaData.Service\configuration91.svcinfo" />
+    <None Include="Service References\MelissaData.Service\configuration.svcinfo" />
+    <None Include="Service References\MelissaData.Service\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
     <Content Include="web.config" />
     <Content Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
@@ -481,6 +501,7 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <WCFMetadataStorage Include="Service References\MelissaData.Service\" />
     <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
     <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
   </ItemGroup>

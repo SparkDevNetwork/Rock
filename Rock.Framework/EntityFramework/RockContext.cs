@@ -44,6 +44,7 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Core.DefinedValue> DefinedValues { get; set; }
         public DbSet<Rock.Models.Core.EntityChange> EntityChanges { get; set; }
         public DbSet<Rock.Models.Core.FieldType> FieldTypes { get; set; }
+        public DbSet<Rock.Models.Core.ServiceLog> ServiceLogs { get; set; }
         public DbSet<Rock.Models.Crm.Address> Addresses { get; set; }
         public DbSet<Rock.Models.Crm.Person> People { get; set; }
         public DbSet<Rock.Models.Crm.PhoneNumber> PhoneNumbers { get; set; }
@@ -77,6 +78,7 @@ namespace Rock.EntityFramework
             modelBuilder.Configurations.Add( new Rock.Models.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Core.FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Models.Core.ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Crm.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Crm.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Models.Crm.PhoneNumberConfiguration() );

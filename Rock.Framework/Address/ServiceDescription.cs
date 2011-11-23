@@ -28,7 +28,7 @@ namespace Rock.Address
             if ( service.AttributeValues.ContainsKey( "Active" ) )
                 Active = bool.Parse( service.AttributeValues["Active"].Value );
             else
-                Active = true;
+                Active = false;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Rock.Address
     {
         private static StandardizeContainer instance;
 
-        public Dictionary<int, StandardizeService> Services { get; private set; }
+        public Dictionary<int, Lazy<StandardizeService, IStandardizeServiceData>> Services { get; private set; }
 
         private CompositionContainer container;
 
@@ -37,7 +37,7 @@ namespace Rock.Address
 
         public void Refresh()
         {
-            Services = new Dictionary<int, StandardizeService>();
+            Services = new Dictionary<int, Lazy<StandardizeService, IStandardizeServiceData>>();
 
             var catalog = new AggregateCatalog();
             catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
@@ -63,7 +63,7 @@ namespace Rock.Address
                 int id = 0;
                 foreach ( KeyValuePair<int, List<Lazy<StandardizeService, IStandardizeServiceData>>> entry in services )
                     foreach ( Lazy<StandardizeService, IStandardizeServiceData> service in entry.Value )
-                        Services.Add(id++, service.Value );
+                        Services.Add(id++, service );
             }
             catch ( CompositionException ex )
             {
