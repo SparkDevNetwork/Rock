@@ -56,8 +56,7 @@
             this.tbStreet1.Name = "tbStreet1";
             this.tbStreet1.Size = new System.Drawing.Size( 267, 20 );
             this.tbStreet1.TabIndex = 1;
-            this.tbStreet1.Text = "7007 W Happy Valley Rd";
-            this.tbStreet1.TextChanged += new System.EventHandler( this.tbStreet1_TextChanged );
+            this.tbStreet1.Text = "7007 West Happy Valley Road";
             // 
             // tbCity
             // 
@@ -81,7 +80,6 @@
             this.tbZip.Name = "tbZip";
             this.tbZip.Size = new System.Drawing.Size( 77, 20 );
             this.tbZip.TabIndex = 7;
-            this.tbZip.Text = "85383";
             // 
             // lblStandardizedL
             // 

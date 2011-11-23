@@ -47,9 +47,9 @@ namespace Rock.Address
             this.Latitude = addressModel.Latitude;
             this.Longitude = addressModel.Longitude;
             this.StandardizeService = addressModel.StandardizeService;
-            this.StandardizeResult = addressModel.StandardizeResult.ToString();
+            this.StandardizeResult = addressModel.StandardizeResult;
             this.GeocodeService = addressModel.GeocodeService;
-            this.GeocodeResult = addressModel.GeocodeResult.ToString();
+            this.GeocodeResult = addressModel.GeocodeResult;
         }
     }
 

@@ -16,7 +16,7 @@ namespace Rock.Address.Geocode
     [Rock.Attribute.Property( 2, "Password", "The Strike Iron Password", "" )]
     public class StrikeIron : GeocodeService
     {
-        public override bool Geocode( Rock.Models.Crm.Address address )
+        public override bool Geocode( Rock.Models.Crm.Address address, out string result )
         {
             if ( address != null )
             {
@@ -29,7 +29,7 @@ namespace Rock.Address.Geocode
 
                 var client = new USAddressVerificationSoapClient();
 
-                SIWsOutputOfUSAddress result;
+                SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
                     address.Street1,
@@ -41,19 +41,18 @@ namespace Rock.Address.Geocode
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
-                    out result );
+                    out verifyResult );
 
-                if (result != null)
+                if (verifyResult != null)
                 {
-                    if ( result.ServiceStatus.StatusNbr == 200 )
+                    result = verifyResult.ServiceStatus.StatusNbr.ToString();
+
+                    if ( verifyResult.ServiceStatus.StatusNbr == 200 )
                     {
-                        USAddress usAddress = result.ServiceResult;
+                        USAddress usAddress = verifyResult.ServiceResult;
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.GeocodeService = "StrikeIron";
-                            address.GeocodeResult = Models.Crm.GeocodeResult.Exact;
-
                             address.Latitude = usAddress.GeoCode.Latitude;
                             address.Longitude = usAddress.GeoCode.Longitude;
 
@@ -61,11 +60,13 @@ namespace Rock.Address.Geocode
                         }
                     }
                 }
-
-                return false;
+                else
+                    result = "Null Result";
             }
+            else
+                result = "Null Address";
 
-            return true;
+            return false;
         }
     }
 }

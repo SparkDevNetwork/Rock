@@ -59,36 +59,30 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public double Longitude { get; set; }
 		
+		[DataMember]
+		public DateTime? StandardizeAttempt { get; set; }
+		
 		[MaxLength( 50 )]
 		[DataMember]
 		public string StandardizeService { get; set; }
 		
+		[MaxLength( 50 )]
 		[DataMember]
-		internal int StandardizeResultInternal { get; set; }
-
-		[NotMapped]
-		public StandardizeResult StandardizeResult
-		{
-			get { return (StandardizeResult)this.StandardizeResultInternal; }
-			set { this.StandardizeResultInternal = (int)value; }
-		}
+		public string StandardizeResult { get; set; }
 		
 		[DataMember]
 		public DateTime? StandardizeDate { get; set; }
+		
+		[DataMember]
+		public DateTime? GeocodeAttempt { get; set; }
 		
 		[MaxLength( 50 )]
 		[DataMember]
 		public string GeocodeService { get; set; }
 		
+		[MaxLength( 50 )]
 		[DataMember]
-		internal int GeocodeResultInternal { get; set; }
-
-		[NotMapped]
-		public GeocodeResult GeocodeResult
-		{
-			get { return (GeocodeResult)this.GeocodeResultInternal; }
-			set { this.GeocodeResultInternal = (int)value; }
-		}
+		public string GeocodeResult { get; set; }
 		
 		[DataMember]
 		public DateTime? GeocodeDate { get; set; }
@@ -123,8 +117,6 @@ namespace Rock.Models.Crm
     {
         public AddressConfiguration()
         {
-			this.Property( p => p.StandardizeResultInternal ).HasColumnName( "StandardizeResult" );
-			this.Property( p => p.GeocodeResultInternal ).HasColumnName( "GeocodeResult" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

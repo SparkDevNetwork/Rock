@@ -17,21 +17,4 @@ namespace Rock.Models.Crm
                     this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
     }
-
-    public enum GeocodeResult
-    {
-        None = 0,
-        NoMatch = 1,
-        Partial = 2,
-        Exact = 3,
-    }
-
-    public enum StandardizeResult
-    {
-        None = 0,
-        NoMatch = 1,
-        Changed = 2,
-        Exact = 3,
-    }
-
 }

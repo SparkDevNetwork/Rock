@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -60,7 +61,7 @@ namespace RockWeb.Blocks.Administration.Address
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
             var services = GeocodeContainer.Instance.Services.ToList();
-            KeyValuePair<int, GeocodeService> movedItem = services[e.OldIndex];
+            var movedItem = services[e.OldIndex];
             services.RemoveAt( e.OldIndex );
             if ( e.NewIndex >= services.Count )
                 services.Add( movedItem );
@@ -70,11 +71,11 @@ namespace RockWeb.Blocks.Administration.Address
             using ( new Rock.Helpers.UnitOfWorkScope() )
             {
                 int order = 0;
-                foreach ( KeyValuePair<int, GeocodeService> service in services )
+                foreach ( KeyValuePair<int, Lazy<GeocodeService, IGeocodeServiceData>> service in services )
                 {
-                    foreach ( Rock.Cms.Cached.Attribute attribute in service.Value.Attributes )
+                    foreach ( Rock.Cms.Cached.Attribute attribute in service.Value.Value.Attributes )
                         if ( attribute.Key == "Order" )
-                            Rock.Attribute.Helper.SaveAttributeValue( service.Value, attribute, order.ToString(), CurrentPersonId );
+                            Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
                     order++;
                 }
             }
@@ -106,7 +107,7 @@ namespace RockWeb.Blocks.Administration.Address
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            GeocodeService service = GeocodeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )];
+            GeocodeService service = GeocodeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )].Value;
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
@@ -127,11 +128,12 @@ namespace RockWeb.Blocks.Administration.Address
         private void BindGrid()
         {
             var dataSource = new List<ServiceDescription>();
-            foreach ( KeyValuePair<int, GeocodeService> service in GeocodeContainer.Instance.Services )
+            foreach ( KeyValuePair<int, Lazy<GeocodeService, IGeocodeServiceData>> service in GeocodeContainer.Instance.Services )
             {
-                Type type = service.Value.GetType();
-                Rock.Attribute.Helper.CreateAttributes( type, type.FullName, string.Empty, string.Empty, null );
-                dataSource.Add( new ServiceDescription( service.Key, service.Value ) );
+                Type type = service.Value.Value.GetType();
+                if ( Rock.Attribute.Helper.CreateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
+                    Rock.Attribute.Helper.LoadAttributes( service.Value.Value );
+                dataSource.Add( new ServiceDescription( service.Key, service.Value.Value ) );
             }
 
             rGrid.DataSource = dataSource;
@@ -140,7 +142,7 @@ namespace RockWeb.Blocks.Administration.Address
 
         protected void ShowEdit( int serviceId, bool setValues )
         {
-            GeocodeService service = GeocodeContainer.Instance.Services[serviceId];
+            GeocodeService service = GeocodeContainer.Instance.Services[serviceId].Value;
             hfServiceId.Value = serviceId.ToString();
 
             olProperties.Controls.Clear();

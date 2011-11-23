@@ -25,11 +25,12 @@ namespace Rock.Api.Crm
                 if ( currentUser != null )
                     personId = currentUser.PersonId();
 
-                Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
-
-                Rock.Models.Crm.Address addressModel = addressService.Geocode( address, personId );
-
-                return new AddressStub( addressModel );
+                using ( new Rock.Helpers.UnitOfWorkScope() )
+                {
+                    Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
+                    Rock.Models.Crm.Address addressModel = addressService.Geocode( address, personId );
+                    return new AddressStub( addressModel );
+                }
             }
             else
                 throw new FaultException( "Invalid Address" );
@@ -45,11 +46,13 @@ namespace Rock.Api.Crm
                 if ( currentUser != null )
                     personId = currentUser.PersonId();
 
-                Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
+                using ( new Rock.Helpers.UnitOfWorkScope() )
+                {
+                    Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
+                    Rock.Models.Crm.Address addressModel = addressService.Standardize( address, personId );
+                    return new AddressStub( addressModel );
+                }
 
-                Rock.Models.Crm.Address addressModel = addressService.Standardize( address, personId );
-
-                return new AddressStub( addressModel );
             }
             else
                 throw new FaultException( "Invalid Address" );
