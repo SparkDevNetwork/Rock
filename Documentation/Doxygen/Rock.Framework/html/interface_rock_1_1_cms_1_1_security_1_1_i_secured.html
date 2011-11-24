@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_cms_1_1_security.html">Security</a>      </li>
       <li class="navelem"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">ISecured</a>      </li>
@@ -124,14 +125,16 @@ Inheritance diagram for Rock.Cms.Security.ISecured:</div>
 <area href="class_rock_1_1_models_1_1_core_1_1_defined_type.html" alt="Rock.Models.Core.DefinedType" shape="rect" coords="1210,1064,1442,1088"/>
 <area href="class_rock_1_1_models_1_1_core_1_1_defined_value.html" alt="Rock.Models.Core.DefinedValue" shape="rect" coords="1210,1120,1442,1144"/>
 <area href="class_rock_1_1_models_1_1_core_1_1_entity_change.html" alt="Rock.Models.Core.EntityChange" shape="rect" coords="1210,1176,1442,1200"/>
-<area href="class_rock_1_1_models_1_1_crm_1_1_person.html" alt="Rock.Models.Crm.Person" shape="rect" coords="1210,1232,1442,1256"/>
-<area href="class_rock_1_1_models_1_1_crm_1_1_phone_number.html" alt="Rock.Models.Crm.PhoneNumber" shape="rect" coords="1210,1288,1442,1312"/>
-<area href="class_rock_1_1_models_1_1_groups_1_1_group.html" alt="Rock.Models.Groups.Group" shape="rect" coords="1210,1344,1442,1368"/>
-<area href="class_rock_1_1_models_1_1_groups_1_1_group_role.html" alt="Rock.Models.Groups.GroupRole" shape="rect" coords="1210,1400,1442,1424"/>
-<area href="class_rock_1_1_models_1_1_groups_1_1_group_type.html" alt="Rock.Models.Groups.GroupType" shape="rect" coords="1210,1456,1442,1480"/>
-<area href="class_rock_1_1_models_1_1_groups_1_1_member.html" alt="Rock.Models.Groups.Member" shape="rect" coords="1210,1512,1442,1536"/>
-<area href="class_rock_1_1_models_1_1_util_1_1_job.html" alt="Rock.Models.Util.Job" shape="rect" coords="1210,1568,1442,1592"/>
-<area href="class_rock_1_1_models_1_1_util_1_1_job.html" alt="Rock.Models.Util.Job" shape="rect" coords="1210,1624,1442,1648"/>
+<area href="class_rock_1_1_models_1_1_core_1_1_service_log.html" alt="Rock.Models.Core.ServiceLog" shape="rect" coords="1210,1232,1442,1256"/>
+<area href="class_rock_1_1_models_1_1_crm_1_1_address.html" alt="Rock.Models.Crm.Address" shape="rect" coords="1210,1288,1442,1312"/>
+<area href="class_rock_1_1_models_1_1_crm_1_1_person.html" alt="Rock.Models.Crm.Person" shape="rect" coords="1210,1344,1442,1368"/>
+<area href="class_rock_1_1_models_1_1_crm_1_1_phone_number.html" alt="Rock.Models.Crm.PhoneNumber" shape="rect" coords="1210,1400,1442,1424"/>
+<area href="class_rock_1_1_models_1_1_groups_1_1_group.html" alt="Rock.Models.Groups.Group" shape="rect" coords="1210,1456,1442,1480"/>
+<area href="class_rock_1_1_models_1_1_groups_1_1_group_role.html" alt="Rock.Models.Groups.GroupRole" shape="rect" coords="1210,1512,1442,1536"/>
+<area href="class_rock_1_1_models_1_1_groups_1_1_group_type.html" alt="Rock.Models.Groups.GroupType" shape="rect" coords="1210,1568,1442,1592"/>
+<area href="class_rock_1_1_models_1_1_groups_1_1_member.html" alt="Rock.Models.Groups.Member" shape="rect" coords="1210,1624,1442,1648"/>
+<area href="class_rock_1_1_models_1_1_util_1_1_job.html" alt="Rock.Models.Util.Job" shape="rect" coords="1210,1680,1442,1704"/>
+<area href="class_rock_1_1_models_1_1_util_1_1_job.html" alt="Rock.Models.Util.Job" shape="rect" coords="1210,1736,1442,1760"/>
 </map>
  </div></div>
 
@@ -139,23 +142,127 @@ Inheritance diagram for Rock.Cms.Security.ISecured:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1279b863132c46b52caa5d0e795c797e"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::Authorized" ref="a1279b863132c46b52caa5d0e795c797e" args="(string action, System.Web.Security.MembershipUser user)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Authorized</b> (string action, System.Web.Security.MembershipUser user)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a625551e53d506f9b27e565cded76b378"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::DefaultAuthorization" ref="a625551e53d506f9b27e565cded76b378" args="(string action)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultAuthorization</b> (string action)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a1279b863132c46b52caa5d0e795c797e">Authorized</a> (string action, System.Web.Security.MembershipUser user)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a625551e53d506f9b27e565cded76b378">DefaultAuthorization</a> (string action)</td></tr>
 <tr><td colspan="2"><h2><a name="properties"></a>
 Properties</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a131fc5fd113072de996ea777462f85ef"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::AuthEntity" ref="a131fc5fd113072de996ea777462f85ef" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7921f2bee0fcd8071255032b7afb602b"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::Id" ref="a7921f2bee0fcd8071255032b7afb602b" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa1a22d12662ecdd01d6a79981b61062"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::ParentAuthority" ref="aaa1a22d12662ecdd01d6a79981b61062" args="" -->
-<a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">ISecured</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParentAuthority</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a649ffda130c30785af8e52cb1975b937"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::SupportedActions" ref="a649ffda130c30785af8e52cb1975b937" args="" -->
-List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SupportedActions</b><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a131fc5fd113072de996ea777462f85ef">AuthEntity</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a7921f2bee0fcd8071255032b7afb602b">Id</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">ISecured</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#aaa1a22d12662ecdd01d6a79981b61062">ParentAuthority</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a649ffda130c30785af8e52cb1975b937">SupportedActions</a><code> [get]</code></td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a1279b863132c46b52caa5d0e795c797e"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::Authorized" ref="a1279b863132c46b52caa5d0e795c797e" args="(string action, System.Web.Security.MembershipUser user)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Rock.Cms.Security.ISecured.Authorized </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">System.Web.Security.MembershipUser&#160;</td>
+          <td class="paramname"><em>user</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#a799e6f55c831d0dafb93485ec01ad9a5">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a739d1d8ef40ee91c1ec8190b70956c8d">Rock.Cms.Cached.BlockInstance</a>, and <a class="el" href="class_rock_1_1_models_1_1_model-g.html#af33f04167e3f56c3b2f74ba58640aab4">Rock.Models.Model&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a625551e53d506f9b27e565cded76b378"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::DefaultAuthorization" ref="a625551e53d506f9b27e565cded76b378" args="(string action)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Rock.Cms.Security.ISecured.DefaultAuthorization </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>action</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#a36b68fdfabfe06761d9ca8e9af8ba216">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#adf620af78549787c94e6516948e87ce8">Rock.Cms.Cached.BlockInstance</a>, <a class="el" href="class_rock_1_1_models_1_1_model-g.html#af97ca9d6a0d296425d85eaba99619ba9">Rock.Models.Model&lt; T &gt;</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html#ac969e4a2069851d8b9f56bee82665910">Rock.Models.Cms.Auth</a>, and <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_user.html#a81198133df02a87afea1ab4ea2f3e71b">Rock.Models.Cms.User</a>.</p>
+
+</div>
+</div>
+<hr/><h2>Property Documentation</h2>
+<a class="anchor" id="a131fc5fd113072de996ea777462f85ef"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::AuthEntity" ref="a131fc5fd113072de996ea777462f85ef" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Cms.Security.ISecured.AuthEntity<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#ac70acd3b8586b6bbba60d39c1386b9be">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a0c4b5206fed042cb31e3443716e94701">Rock.Cms.Cached.BlockInstance</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_user.html#a1a20b813a9ca772ff435a9405cc27490">Rock.Models.Cms.User</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_page.html#a33ee5555d7f20ed535bb3204424e1abd">Rock.Models.Cms.Page</a>, <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html#a4e6f7dd81efe7f79be1a597d5e2a22d0">Rock.Models.Crm.Address</a>, <a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html#aefcab7a76c829dd89561309577a4a807">Rock.Models.Util.Job</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_site.html#a63e1514613f5c9a942af652dd65bd3b5">Rock.Models.Cms.Site</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html#a6fd9c3c0e447c3b9f8c13cbe457642a9">Rock.Models.Core.Attribute</a>, <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html#aa9282c73604f2c3cc3ddd6419f9d7fee">Rock.Models.Crm.Person</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog.html#a3d5fd99167c4f155a503c909e0d27c08">Rock.Models.Cms.Blog</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_html_content.html#a1577bea7d9d053d7a99c3625c2fe2015">Rock.Models.Cms.HtmlContent</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block_instance.html#ad2f71633617bd8795251c113a4762f0a">Rock.Models.Cms.BlockInstance</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html#ad806bbd59718992ba7af222230a301a1">Rock.Models.Cms.Auth</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_file.html#abd56bd4eb67ae80019b71fb00bdff730">Rock.Models.Cms.File</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post_comment.html#a8bde6c5ac5ec896c4bd81ce275fd59f9">Rock.Models.Cms.BlogPostComment</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#ab6ae85b15f2c1e4055164ba84c88bf60">Rock.Models.Cms.BlogPost</a>, <a class="el" href="class_rock_1_1_models_1_1_groups_1_1_group.html#a1b1830110a7d6e38db01ba9ea8492bbc">Rock.Models.Groups.Group</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_field_type.html#a33b0c1b149e0634877e2015b7382c1e8">Rock.Models.Core.FieldType</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute_qualifier.html#a7fb625a774df1b47492f47e1071acc08">Rock.Models.Core.AttributeQualifier</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_defined_type.html#a46e7221d0d6b338ed077835557218150">Rock.Models.Core.DefinedType</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_defined_value.html#a239be60a32dad44b837fd6130458d5c3">Rock.Models.Core.DefinedValue</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html#a5ed99dcf0cdceae90d98cf3d47847586">Rock.Models.Cms.Block</a>, <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_phone_number.html#a358ed50ae08d8b5c87cd605209366031">Rock.Models.Crm.PhoneNumber</a>, <a class="el" href="class_rock_1_1_models_1_1_groups_1_1_group_role.html#aacd6ea747b608e1d7bbed226df326907">Rock.Models.Groups.GroupRole</a>, <a class="el" href="class_rock_1_1_models_1_1_groups_1_1_group_type.html#aae54519f735eae2d1bc69ed383667725">Rock.Models.Groups.GroupType</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute_value.html#aef0cdb5552f84336ed6cb4737c20ca6f">Rock.Models.Core.AttributeValue</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a90b51165ea5da3f96526a2b8ed7b1f26">Rock.Models.Core.EntityChange</a>, <a class="el" href="class_rock_1_1_models_1_1_groups_1_1_member.html#a24c6d97728d3caafe97330f8932b3186">Rock.Models.Groups.Member</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_page_route.html#a6fe7f3c013704ef6f3dcd7820fc509f1">Rock.Models.Cms.PageRoute</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_site_domain.html#afd2560ff77fe45d5bef3068706291e51">Rock.Models.Cms.SiteDomain</a>, <a class="el" href="class_rock_1_1_models_1_1_core_1_1_service_log.html#ac9d5aed569589ec86e07acf98dfca019">Rock.Models.Core.ServiceLog</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_category.html#a7fd98af4ffa88a997a5f6dae32e62c50">Rock.Models.Cms.BlogCategory</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_tag.html#ab42143b747476f97cad6e7c837afd4d4">Rock.Models.Cms.BlogTag</a>, and <a class="el" href="class_rock_1_1_models_1_1_model-g.html#a6ebb5f6ef736c4d73c4a49a374a0a2dc">Rock.Models.Model&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a7921f2bee0fcd8071255032b7afb602b"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::Id" ref="a7921f2bee0fcd8071255032b7afb602b" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Cms.Security.ISecured.Id<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#a270c449393ac7649e4fc40e602fd9909">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_models_1_1_model-g.html#aaa57afc3ddc9b35bf014b18b290ba99a">Rock.Models.Model&lt; T &gt;</a>, and <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#af9ab3d3a7fc3287cc01366830e8d5ac2">Rock.Cms.Cached.BlockInstance</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aaa1a22d12662ecdd01d6a79981b61062"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::ParentAuthority" ref="aaa1a22d12662ecdd01d6a79981b61062" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">ISecured</a> Rock.Cms.Security.ISecured.ParentAuthority<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#a0b4bab9bb00b8f0ec43fe21033c919f1">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a4cdfe9a11d2dffaea21a9d6c18ac1ad7">Rock.Cms.Cached.BlockInstance</a>, and <a class="el" href="class_rock_1_1_models_1_1_model-g.html#a51507513e3a88dae8b6404d1b4d4a3b1">Rock.Models.Model&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a649ffda130c30785af8e52cb1975b937"></a><!-- doxytag: member="Rock::Cms::Security::ISecured::SupportedActions" ref="a649ffda130c30785af8e52cb1975b937" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">List&lt;string&gt; Rock.Cms.Security.ISecured.SupportedActions<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html#a4d3c36c20f7beaf9aac38436d9c35c97">Rock.Cms.Cached.Page</a>, <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#ad6aed4bd6f7d0f29581f48455ccb8cf3">Rock.Cms.Cached.BlockInstance</a>, <a class="el" href="class_rock_1_1_models_1_1_model-g.html#a30fbe3dda7ac52791591b0609e1c1956">Rock.Models.Model&lt; T &gt;</a>, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block_instance.html#a668b90353fd71ed6e6e653613e14503f">Rock.Models.Cms.BlockInstance</a>, and <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_page.html#a7ea42da4f8e806098e4a60847e5ff40d">Rock.Models.Cms.Page</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
-<li>Rock.Framework/Cms/Security/ISecured.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Cms/Security/<a class="el" href="_i_secured_8cs.html">ISecured.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -163,7 +270,7 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -175,7 +282,7 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:34 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:22:58 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

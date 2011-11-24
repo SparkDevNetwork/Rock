@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services.html">Services</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services_1_1_util.html">Util</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_services_1_1_util_1_1_job_service.html">JobService</a>      </li>
@@ -104,18 +105,82 @@ Inheritance diagram for Rock.Services.Util.JobService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2474d7935d786ef3108338b658069161"></a><!-- doxytag: member="Rock::Services::Util::JobService::GetByGuid" ref="a2474d7935d786ef3108338b658069161" args="(Guid guid)" -->
-IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByGuid</b> (Guid guid)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac49574170f1fc64bd956d206e60477b5"></a><!-- doxytag: member="Rock::Services::Util::JobService::GetActiveJobs" ref="ac49574170f1fc64bd956d206e60477b5" args="()" -->
-IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetActiveJobs</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af25fa5140a942d172ee524ba43a3f558"></a><!-- doxytag: member="Rock::Services::Util::JobService::BuildQuartzJob" ref="af25fa5140a942d172ee524ba43a3f558" args="(Job job)" -->
-IJobDetail&#160;</td><td class="memItemRight" valign="bottom"><b>BuildQuartzJob</b> (<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a> job)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a01b4e7adc022dbea4cadd5a7d0b42932"></a><!-- doxytag: member="Rock::Services::Util::JobService::BuildQuartzTrigger" ref="a01b4e7adc022dbea4cadd5a7d0b42932" args="(Job job)" -->
-ITrigger&#160;</td><td class="memItemRight" valign="bottom"><b>BuildQuartzTrigger</b> (<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a> job)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_util_1_1_job_service.html#a2474d7935d786ef3108338b658069161">GetByGuid</a> (Guid guid)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_util_1_1_job_service.html#ac49574170f1fc64bd956d206e60477b5">GetActiveJobs</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IJobDetail&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_util_1_1_job_service.html#af25fa5140a942d172ee524ba43a3f558">BuildQuartzJob</a> (<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a> job)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">ITrigger&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_util_1_1_job_service.html#a01b4e7adc022dbea4cadd5a7d0b42932">BuildQuartzTrigger</a> (<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a> job)</td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="af25fa5140a942d172ee524ba43a3f558"></a><!-- doxytag: member="Rock::Services::Util::JobService::BuildQuartzJob" ref="af25fa5140a942d172ee524ba43a3f558" args="(Job job)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IJobDetail Rock.Services.Util.JobService.BuildQuartzJob </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a>&#160;</td>
+          <td class="paramname"><em>job</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a01b4e7adc022dbea4cadd5a7d0b42932"></a><!-- doxytag: member="Rock::Services::Util::JobService::BuildQuartzTrigger" ref="a01b4e7adc022dbea4cadd5a7d0b42932" args="(Job job)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ITrigger Rock.Services.Util.JobService.BuildQuartzTrigger </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Job</a>&#160;</td>
+          <td class="paramname"><em>job</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac49574170f1fc64bd956d206e60477b5"></a><!-- doxytag: member="Rock::Services::Util::JobService::GetActiveJobs" ref="ac49574170f1fc64bd956d206e60477b5" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a>&gt; Rock.Services.Util.JobService.GetActiveJobs </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2474d7935d786ef3108338b658069161"></a><!-- doxytag: member="Rock::Services::Util::JobService::GetByGuid" ref="a2474d7935d786ef3108338b658069161" args="(Guid guid)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_util_1_1_job.html">Rock.Models.Util.Job</a>&gt; Rock.Services.Util.JobService.GetByGuid </td>
+          <td>(</td>
+          <td class="paramtype">Guid&#160;</td>
+          <td class="paramname"><em>guid</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>Rock.Framework/Services/Util/JobService.cs</li>
-<li>Rock.Framework/Services/Util/JobService.Partial.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Util/<a class="el" href="_services_2_util_2_job_service_8cs.html">JobService.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Util/<a class="el" href="_job_service_8_partial_8cs.html">JobService.Partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -123,7 +188,7 @@ ITrigger&#160;</td><td class="memItemRight" valign="bottom"><b>BuildQuartzTrigge
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -135,7 +200,7 @@ ITrigger&#160;</td><td class="memItemRight" valign="bottom"><b>BuildQuartzTrigge
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:47 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:07 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

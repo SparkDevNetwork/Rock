@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_api.html">Api</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_api_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_api_1_1_cms_1_1_block_service.html">BlockService</a>      </li>
@@ -105,17 +106,100 @@ Inheritance diagram for Rock.Api.Cms.BlockService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace39db70f1c2d56925f975916b7e8fd1"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::Get" ref="ace39db70f1c2d56925f975916b7e8fd1" args="(string id)" -->
-<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Get</b> (string id)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9ec3964db39f7f897f0013f96cdb941"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::UpdateBlock" ref="af9ec3964db39f7f897f0013f96cdb941" args="(string id, Rock.Models.Cms.Block Block)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateBlock</b> (string id, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> Block)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10ea8dd8579a1567fe719f18ef8a942b"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::CreateBlock" ref="a10ea8dd8579a1567fe719f18ef8a942b" args="(Rock.Models.Cms.Block Block)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>CreateBlock</b> (<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> Block)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeb53b3fdec02ac52177e851f26a029b9"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::DeleteBlock" ref="aeb53b3fdec02ac52177e851f26a029b9" args="(string id)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>DeleteBlock</b> (string id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_api_1_1_cms_1_1_block_service.html#ace39db70f1c2d56925f975916b7e8fd1">Get</a> (string id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_api_1_1_cms_1_1_block_service.html#af9ec3964db39f7f897f0013f96cdb941">UpdateBlock</a> (string id, <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> Block)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_api_1_1_cms_1_1_block_service.html#a10ea8dd8579a1567fe719f18ef8a942b">CreateBlock</a> (<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> Block)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_api_1_1_cms_1_1_block_service.html#aeb53b3fdec02ac52177e851f26a029b9">DeleteBlock</a> (string id)</td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a10ea8dd8579a1567fe719f18ef8a942b"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::CreateBlock" ref="a10ea8dd8579a1567fe719f18ef8a942b" args="(Rock.Models.Cms.Block Block)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Cms.BlockService.CreateBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&#160;</td>
+          <td class="paramname"><em>Block</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_api_1_1_cms_1_1_i_block_service.html#ab6c906ea4b9d0888a9d7a2ca93b42f40">Rock.Api.Cms.IBlockService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aeb53b3fdec02ac52177e851f26a029b9"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::DeleteBlock" ref="aeb53b3fdec02ac52177e851f26a029b9" args="(string id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Cms.BlockService.DeleteBlock </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_api_1_1_cms_1_1_i_block_service.html#a452be9fd36545c8d79be9ca39d2b5db2">Rock.Api.Cms.IBlockService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ace39db70f1c2d56925f975916b7e8fd1"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::Get" ref="ace39db70f1c2d56925f975916b7e8fd1" args="(string id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> Rock.Api.Cms.BlockService.Get </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_api_1_1_cms_1_1_i_block_service.html#a6dcb7a1a163183c3ccefac9f3c50a28b">Rock.Api.Cms.IBlockService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="af9ec3964db39f7f897f0013f96cdb941"></a><!-- doxytag: member="Rock::Api::Cms::BlockService::UpdateBlock" ref="af9ec3964db39f7f897f0013f96cdb941" args="(string id, Rock.Models.Cms.Block Block)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Cms.BlockService.UpdateBlock </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&#160;</td>
+          <td class="paramname"><em>Block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_api_1_1_cms_1_1_i_block_service.html#a3cfd62644f6c3eb935351b5b2a960c84">Rock.Api.Cms.IBlockService</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>Rock.Framework/Api/Cms/BlockService.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Api/Cms/<a class="el" href="_api_2_cms_2_block_service_8cs.html">BlockService.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -123,7 +207,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>DeleteBlock</b> (stri
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -135,7 +219,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>DeleteBlock</b> (stri
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:31 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:22:56 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_api.html">Api</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_api_1_1_crm.html">Crm</a>      </li>
       <li class="navelem"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html">IAddressService</a>      </li>
@@ -104,15 +105,161 @@ Inheritance diagram for Rock.Api.Crm.IAddressService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae02a48a2216155ccf6d96bd59b0ac8d3"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Get" ref="ae02a48a2216155ccf6d96bd59b0ac8d3" args="(string id)" -->
-<a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Get</b> (string id)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7ce3998808e3350cb59f61ea0717fa01"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Geocode" ref="a7ce3998808e3350cb59f61ea0717fa01" args="(AddressStub address)" -->
-<a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Geocode</b> (<a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_1_1_address_stub.html">AddressStub</a> address)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf0b625f612bd473a58f53fe7393f3b3"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Standardize" ref="aaf0b625f612bd473a58f53fe7393f3b3" args="(AddressStub address)" -->
-<a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Standardize</b> (<a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_1_1_address_stub.html">AddressStub</a> address)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#a6a1dacefb7b4f1388ca4e4bfe0219f5a">Get</a> (string id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#ae61dbb9be7a606b2c0c350c2f5771ef3">UpdateAddress</a> (string id, <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a> Address)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#a6bc7d6a24d4fe07f419c54088a787479">CreateAddress</a> (<a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a> Address)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#a763c38dd057eb27993a8eb3b94ab2176">DeleteAddress</a> (string id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#a7ce3998808e3350cb59f61ea0717fa01">Geocode</a> (<a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a> address)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Geocodes the specified address.  <a href="#a7ce3998808e3350cb59f61ea0717fa01"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interface_rock_1_1_api_1_1_crm_1_1_i_address_service.html#aaf0b625f612bd473a58f53fe7393f3b3">Standardize</a> (<a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a> address)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Standardizes the specified address.  <a href="#aaf0b625f612bd473a58f53fe7393f3b3"></a><br/></td></tr>
 </table>
-<hr/>The documentation for this interface was generated from the following file:<ul>
-<li>Rock.Framework/Api/Crm/IAddressService.Partial.cs</li>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a6bc7d6a24d4fe07f419c54088a787479"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::CreateAddress" ref="a6bc7d6a24d4fe07f419c54088a787479" args="(Rock.Models.Crm.Address Address)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Crm.IAddressService.CreateAddress </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a>&#160;</td>
+          <td class="paramname"><em>Address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#a8bee87a82cad66394dc18e4daa455bac">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a763c38dd057eb27993a8eb3b94ab2176"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::DeleteAddress" ref="a763c38dd057eb27993a8eb3b94ab2176" args="(string id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Crm.IAddressService.DeleteAddress </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#a6af224dc4b0e844b3e7bd25461be51e9">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a7ce3998808e3350cb59f61ea0717fa01"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Geocode" ref="a7ce3998808e3350cb59f61ea0717fa01" args="(AddressStub address)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a> Rock.Api.Crm.IAddressService.Geocode </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td>
+          <td class="paramname"><em>address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Geocodes the specified address. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">address</td><td>The address.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd></dd></dl>
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#a122d3260dcc466dd1322cdc841c88a30">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6a1dacefb7b4f1388ca4e4bfe0219f5a"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Get" ref="a6a1dacefb7b4f1388ca4e4bfe0219f5a" args="(string id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a> Rock.Api.Crm.IAddressService.Get </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#ade996a8d689a718c236a80388cae54d2">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aaf0b625f612bd473a58f53fe7393f3b3"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::Standardize" ref="aaf0b625f612bd473a58f53fe7393f3b3" args="(AddressStub address)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a> Rock.Api.Crm.IAddressService.Standardize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_address_1_1_address_stub.html">AddressStub</a>&#160;</td>
+          <td class="paramname"><em>address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Standardizes the specified address. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">address</td><td>The address.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd></dd></dl>
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#a3ef072a0bb28d9376e9dfd8625432a91">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ae61dbb9be7a606b2c0c350c2f5771ef3"></a><!-- doxytag: member="Rock::Api::Crm::IAddressService::UpdateAddress" ref="ae61dbb9be7a606b2c0c350c2f5771ef3" args="(string id, Rock.Models.Crm.Address Address)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Api.Crm.IAddressService.UpdateAddress </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_rock_1_1_models_1_1_crm_1_1_address.html">Rock.Models.Crm.Address</a>&#160;</td>
+          <td class="paramname"><em>Address</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_rock_1_1_api_1_1_crm_1_1_address_service.html#aa0d09cfad26e415470fd8f329fe9702e">Rock.Api.Crm.AddressService</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this interface was generated from the following files:<ul>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Api/Crm/<a class="el" href="_i_address_service_8cs.html">IAddressService.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Api/Crm/<a class="el" href="_i_address_service_8_partial_8cs.html">IAddressService.Partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -120,7 +267,7 @@ Public Member Functions</h2></td></tr>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -132,7 +279,7 @@ Public Member Functions</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:32 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:22:56 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services.html">Services</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_block_service.html">BlockService</a>      </li>
@@ -104,20 +105,68 @@ Inheritance diagram for Rock.Services.Cms.BlockService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a014a5e66193c46679b0a6dae905033c1"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByGuid" ref="a014a5e66193c46679b0a6dae905033c1" args="(Guid guid)" -->
-IEnumerable<br class="typebreak"/>
-&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByGuid</b> (Guid guid)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa382f621365422240de3bed3888c2049"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByName" ref="aa382f621365422240de3bed3888c2049" args="(string name)" -->
-IEnumerable<br class="typebreak"/>
-&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByName</b> (string name)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a46ce90238dfd6e3cc6e37d20dbc1cbfa"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByPath" ref="a46ce90238dfd6e3cc6e37d20dbc1cbfa" args="(string path)" -->
-IEnumerable<br class="typebreak"/>
-&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByPath</b> (string path)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable<br class="typebreak"/>
+&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_block_service.html#a014a5e66193c46679b0a6dae905033c1">GetByGuid</a> (Guid guid)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable<br class="typebreak"/>
+&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_block_service.html#aa382f621365422240de3bed3888c2049">GetByName</a> (string name)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable<br class="typebreak"/>
+&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_block_service.html#a46ce90238dfd6e3cc6e37d20dbc1cbfa">GetByPath</a> (string path)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">IEnumerable<br class="typebreak"/>
 &lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_block_service.html#af96881804468db02301a128964813b5c">GetUnregisteredBlocks</a> (string physWebAppPath)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a list of Blocks on the filesystem that have not yet been registered in the repository.  <a href="#af96881804468db02301a128964813b5c"></a><br/></td></tr>
 </table>
 <hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a014a5e66193c46679b0a6dae905033c1"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByGuid" ref="a014a5e66193c46679b0a6dae905033c1" args="(Guid guid)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&gt; Rock.Services.Cms.BlockService.GetByGuid </td>
+          <td>(</td>
+          <td class="paramtype">Guid&#160;</td>
+          <td class="paramname"><em>guid</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa382f621365422240de3bed3888c2049"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByName" ref="aa382f621365422240de3bed3888c2049" args="(string name)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&gt; Rock.Services.Cms.BlockService.GetByName </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a46ce90238dfd6e3cc6e37d20dbc1cbfa"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetByPath" ref="a46ce90238dfd6e3cc6e37d20dbc1cbfa" args="(string path)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block.html">Rock.Models.Cms.Block</a>&gt; Rock.Services.Cms.BlockService.GetByPath </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>path</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="af96881804468db02301a128964813b5c"></a><!-- doxytag: member="Rock::Services::Cms::BlockService::GetUnregisteredBlocks" ref="af96881804468db02301a128964813b5c" args="(string physWebAppPath)" -->
 <div class="memitem">
 <div class="memproto">
@@ -145,8 +194,8 @@ IEnumerable<br class="typebreak"/>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>Rock.Framework/Services/Cms/BlockService.cs</li>
-<li>Rock.Framework/Services/Cms/BlockService.partial.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Cms/<a class="el" href="_services_2_cms_2_block_service_8cs.html">BlockService.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Cms/<a class="el" href="_block_service_8partial_8cs.html">BlockService.partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -154,7 +203,7 @@ IEnumerable<br class="typebreak"/>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -166,7 +215,7 @@ IEnumerable<br class="typebreak"/>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:46 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:07 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

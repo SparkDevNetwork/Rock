@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_models.html">Models</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_models_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html">BlogPost</a>      </li>
@@ -111,56 +112,322 @@ Inheritance diagram for Rock.Models.Cms.BlogPost:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><b>PostStatus</b> { <b>Published</b> =  1, 
-<b>Draft</b> =  2
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a9d6c4632ab16fb04312fa3a2ba5b5b0f">PostStatus</a> { <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a9d6c4632ab16fb04312fa3a2ba5b5b0f">Published</a> =  1, 
+<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a9d6c4632ab16fb04312fa3a2ba5b5b0f">Draft</a> =  2
  }</td></tr>
 <tr><td colspan="2"><h2><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa41e35f5f4e4cf1a19332d820a195ae2"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Read" ref="aa41e35f5f4e4cf1a19332d820a195ae2" args="(int id)" -->
-static <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html">BlogPost</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Read</b> (int id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html">BlogPost</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#aa41e35f5f4e4cf1a19332d820a195ae2">Read</a> (int id)</td></tr>
 <tr><td colspan="2"><h2><a name="properties"></a>
 Properties</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a971455e9210e68f8d9e6d75ecdb6a0b7"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogId" ref="a971455e9210e68f8d9e6d75ecdb6a0b7" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>BlogId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54f7e51138eec4dfdb61aa0481d7e464"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Title" ref="a54f7e51138eec4dfdb61aa0481d7e464" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>Title</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab62a275fe009d52ac18da6c2d1803746"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Content" ref="ab62a275fe009d52ac18da6c2d1803746" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>Content</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa4059628bb664d255b5db0ad329f2d22"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::AuthorId" ref="aa4059628bb664d255b5db0ad329f2d22" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>AuthorId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a72e176af1e0e6a485ad6c869464cf1d5"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::State" ref="a72e176af1e0e6a485ad6c869464cf1d5" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>State</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aed8a9910a11091e5dee790ed25ef5553"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::PublishDate" ref="aed8a9910a11091e5dee790ed25ef5553" args="" -->
-DateTime&#160;</td><td class="memItemRight" valign="bottom"><b>PublishDate</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac470928408e7ce1ac0fb21b458f33eea"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedDateTime" ref="ac470928408e7ce1ac0fb21b458f33eea" args="" -->
-DateTime&#160;</td><td class="memItemRight" valign="bottom"><b>CreatedDateTime</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95b76fd8d94fe1c3cd7ff98e10b3c7b1"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedDateTime" ref="a95b76fd8d94fe1c3cd7ff98e10b3c7b1" args="" -->
-DateTime&#160;</td><td class="memItemRight" valign="bottom"><b>ModifiedDateTime</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac87108939a00af12233a6f1834202ac9"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedByPersonId" ref="ac87108939a00af12233a6f1834202ac9" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>CreatedByPersonId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdbe6ab9cf17bef2ac4e2f8d2a920ceb"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedByPersonId" ref="abdbe6ab9cf17bef2ac4e2f8d2a920ceb" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>ModifiedByPersonId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab6ae85b15f2c1e4055164ba84c88bf60"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::AuthEntity" ref="ab6ae85b15f2c1e4055164ba84c88bf60" args="" -->
-override string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac8a9f152aa574a7ecf645eddf0bc8b32"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogCategorys" ref="ac8a9f152aa574a7ecf645eddf0bc8b32" args="" -->
-virtual ICollection&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_category.html">BlogCategory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BlogCategorys</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a895762ca4c5aa10996fc8f93a1e41e87"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogPostComments" ref="a895762ca4c5aa10996fc8f93a1e41e87" args="" -->
-virtual ICollection<br class="typebreak"/>
-&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post_comment.html">BlogPostComment</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BlogPostComments</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbe12f5526dfb86196710db9a7846273"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogTags" ref="afbe12f5526dfb86196710db9a7846273" args="" -->
-virtual ICollection&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_tag.html">BlogTag</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>BlogTags</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af416d06005bbba56b8f76885f1e7e087"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Blog" ref="af416d06005bbba56b8f76885f1e7e087" args="" -->
-virtual <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog.html">Blog</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Blog</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e7ef5a8dbf57cd7cdc96ad8c2968149"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Author" ref="a2e7ef5a8dbf57cd7cdc96ad8c2968149" args="" -->
-virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Author</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a76bd07a74ac76af4dc852a2305ee81d1"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedByPerson" ref="a76bd07a74ac76af4dc852a2305ee81d1" args="" -->
-virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><b>CreatedByPerson</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8cef2f8ded097c939463188eeaa2872f"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedByPerson" ref="a8cef2f8ded097c939463188eeaa2872f" args="" -->
-virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ModifiedByPerson</b><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a971455e9210e68f8d9e6d75ecdb6a0b7">BlogId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a54f7e51138eec4dfdb61aa0481d7e464">Title</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#ab62a275fe009d52ac18da6c2d1803746">Content</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#aa4059628bb664d255b5db0ad329f2d22">AuthorId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a72e176af1e0e6a485ad6c869464cf1d5">State</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DateTime&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#aed8a9910a11091e5dee790ed25ef5553">PublishDate</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DateTime&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#ac470928408e7ce1ac0fb21b458f33eea">CreatedDateTime</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">DateTime&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a95b76fd8d94fe1c3cd7ff98e10b3c7b1">ModifiedDateTime</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#ac87108939a00af12233a6f1834202ac9">CreatedByPersonId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#abdbe6ab9cf17bef2ac4e2f8d2a920ceb">ModifiedByPersonId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">override string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#ab6ae85b15f2c1e4055164ba84c88bf60">AuthEntity</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual ICollection&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_category.html">BlogCategory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a2aa0865b7a0ad019724bc852ac19f398">BlogCategories</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual ICollection<br class="typebreak"/>
+&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post_comment.html">BlogPostComment</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a895762ca4c5aa10996fc8f93a1e41e87">BlogPostComments</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual ICollection&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_tag.html">BlogTag</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#afbe12f5526dfb86196710db9a7846273">BlogTags</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog.html">Blog</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#af416d06005bbba56b8f76885f1e7e087">Blog</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a2e7ef5a8dbf57cd7cdc96ad8c2968149">Author</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a76bd07a74ac76af4dc852a2305ee81d1">CreatedByPerson</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a8cef2f8ded097c939463188eeaa2872f">ModifiedByPerson</a><code> [get, set]</code></td></tr>
 </table>
+<hr/><h2>Member Enumeration Documentation</h2>
+<a class="anchor" id="a9d6c4632ab16fb04312fa3a2ba5b5b0f"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::PostStatus" ref="a9d6c4632ab16fb04312fa3a2ba5b5b0f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html#a9d6c4632ab16fb04312fa3a2ba5b5b0f">Rock::Models::Cms::BlogPost::PostStatus</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a9d6c4632ab16fb04312fa3a2ba5b5b0f"></a><!-- doxytag: member="Published" ref="a9d6c4632ab16fb04312fa3a2ba5b5b0f" args="" -->Published</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a9d6c4632ab16fb04312fa3a2ba5b5b0f"></a><!-- doxytag: member="Draft" ref="a9d6c4632ab16fb04312fa3a2ba5b5b0f" args="" -->Draft</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="aa41e35f5f4e4cf1a19332d820a195ae2"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Read" ref="aa41e35f5f4e4cf1a19332d820a195ae2" args="(int id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post.html">BlogPost</a> Rock.Models.Cms.BlogPost.Read </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td><code> [inline, static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<hr/><h2>Property Documentation</h2>
+<a class="anchor" id="ab6ae85b15f2c1e4055164ba84c88bf60"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::AuthEntity" ref="ab6ae85b15f2c1e4055164ba84c88bf60" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">override string Rock.Models.Cms.BlogPost.AuthEntity<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="class_rock_1_1_models_1_1_model-g.html#a6ebb5f6ef736c4d73c4a49a374a0a2dc">Rock.Models.Model&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a2e7ef5a8dbf57cd7cdc96ad8c2968149"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Author" ref="a2e7ef5a8dbf57cd7cdc96ad8c2968149" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a> Rock.Models.Cms.BlogPost.Author<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa4059628bb664d255b5db0ad329f2d22"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::AuthorId" ref="aa4059628bb664d255b5db0ad329f2d22" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Cms.BlogPost.AuthorId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af416d06005bbba56b8f76885f1e7e087"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Blog" ref="af416d06005bbba56b8f76885f1e7e087" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog.html">Blog</a> Rock.Models.Cms.BlogPost.Blog<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2aa0865b7a0ad019724bc852ac19f398"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogCategories" ref="a2aa0865b7a0ad019724bc852ac19f398" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ICollection&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_category.html">BlogCategory</a>&gt; Rock.Models.Cms.BlogPost.BlogCategories<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a971455e9210e68f8d9e6d75ecdb6a0b7"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogId" ref="a971455e9210e68f8d9e6d75ecdb6a0b7" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Cms.BlogPost.BlogId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a895762ca4c5aa10996fc8f93a1e41e87"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogPostComments" ref="a895762ca4c5aa10996fc8f93a1e41e87" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ICollection&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_post_comment.html">BlogPostComment</a>&gt; Rock.Models.Cms.BlogPost.BlogPostComments<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afbe12f5526dfb86196710db9a7846273"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::BlogTags" ref="afbe12f5526dfb86196710db9a7846273" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ICollection&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_blog_tag.html">BlogTag</a>&gt; Rock.Models.Cms.BlogPost.BlogTags<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab62a275fe009d52ac18da6c2d1803746"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Content" ref="ab62a275fe009d52ac18da6c2d1803746" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Cms.BlogPost.Content<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a76bd07a74ac76af4dc852a2305ee81d1"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedByPerson" ref="a76bd07a74ac76af4dc852a2305ee81d1" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a> Rock.Models.Cms.BlogPost.CreatedByPerson<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac87108939a00af12233a6f1834202ac9"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedByPersonId" ref="ac87108939a00af12233a6f1834202ac9" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Cms.BlogPost.CreatedByPersonId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_models_1_1_i_auditable.html#a33e9bdc590aa33d8087e73bba3e0c584">Rock.Models.IAuditable</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac470928408e7ce1ac0fb21b458f33eea"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::CreatedDateTime" ref="ac470928408e7ce1ac0fb21b458f33eea" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DateTime Rock.Models.Cms.BlogPost.CreatedDateTime<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_models_1_1_i_auditable.html#a42e6a8dbb2fd92f2554014a03402c058">Rock.Models.IAuditable</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8cef2f8ded097c939463188eeaa2872f"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedByPerson" ref="a8cef2f8ded097c939463188eeaa2872f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.Person</a> Rock.Models.Cms.BlogPost.ModifiedByPerson<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abdbe6ab9cf17bef2ac4e2f8d2a920ceb"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedByPersonId" ref="abdbe6ab9cf17bef2ac4e2f8d2a920ceb" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Cms.BlogPost.ModifiedByPersonId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_models_1_1_i_auditable.html#a51bfea61e98998780e4137da60cd2a11">Rock.Models.IAuditable</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a95b76fd8d94fe1c3cd7ff98e10b3c7b1"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::ModifiedDateTime" ref="a95b76fd8d94fe1c3cd7ff98e10b3c7b1" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DateTime Rock.Models.Cms.BlogPost.ModifiedDateTime<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_models_1_1_i_auditable.html#a769f26ae7058926f93400f9b80399e03">Rock.Models.IAuditable</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aed8a9910a11091e5dee790ed25ef5553"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::PublishDate" ref="aed8a9910a11091e5dee790ed25ef5553" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DateTime Rock.Models.Cms.BlogPost.PublishDate<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a72e176af1e0e6a485ad6c869464cf1d5"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::State" ref="a72e176af1e0e6a485ad6c869464cf1d5" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Cms.BlogPost.State<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a54f7e51138eec4dfdb61aa0481d7e464"></a><!-- doxytag: member="Rock::Models::Cms::BlogPost::Title" ref="a54f7e51138eec4dfdb61aa0481d7e464" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Cms.BlogPost.Title<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>Rock.Framework/Models/Cms/BlogPost.cs</li>
-<li>Rock.Framework/Models/Cms/BlogPost.Partial.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Models/Cms/<a class="el" href="_blog_post_8cs.html">BlogPost.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Models/Cms/<a class="el" href="_blog_post_8_partial_8cs.html">BlogPost.Partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -168,7 +435,7 @@ virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.P
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -180,7 +447,7 @@ virtual <a class="el" href="class_rock_1_1_models_1_1_crm_1_1_person.html">Crm.P
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:40 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:02 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>
