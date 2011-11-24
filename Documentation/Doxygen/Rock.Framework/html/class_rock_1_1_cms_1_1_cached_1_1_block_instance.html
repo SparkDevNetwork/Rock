@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_cms_1_1_cached.html">Cached</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html">BlockInstance</a>      </li>
@@ -92,7 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">Rock.Cms.Cached.BlockInstance Class Reference</div>  </div>
 </div>
 <div class="contents">
-<!-- doxytag: class="Rock::Cms::Cached::BlockInstance" --><!-- doxytag: inherits="Rock::Cms::Security::ISecured" -->
+<!-- doxytag: class="Rock::Cms::Cached::BlockInstance" --><!-- doxytag: inherits="Rock::Cms::Security::ISecured,Rock::Attribute::IHasAttributes" -->
 <p>Information about a blockInstance that is required by the rendering engine. This information will be cached by the engine.  
  <a href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#details">More...</a></p>
 <div class="dynheader">
@@ -102,6 +103,7 @@ Inheritance diagram for Rock.Cms.Cached.BlockInstance:</div>
   <img src="class_rock_1_1_cms_1_1_cached_1_1_block_instance.png" usemap="#Rock.Cms.Cached.BlockInstance_map" alt=""/>
   <map id="Rock.Cms.Cached.BlockInstance_map" name="Rock.Cms.Cached.BlockInstance_map">
 <area href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html" alt="Rock.Cms.Security.ISecured" shape="rect" coords="0,0,198,24"/>
+<area href="interface_rock_1_1_attribute_1_1_i_has_attributes.html" alt="Rock.Attribute.IHasAttributes" shape="rect" coords="208,0,406,24"/>
 </map>
  </div></div>
 
@@ -109,16 +111,11 @@ Inheritance diagram for Rock.Cms.Cached.BlockInstance:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a755ed5f96f1ce7773bb06e1cc70f9088"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::SaveAttributeValues" ref="a755ed5f96f1ce7773bb06e1cc70f9088" args="(int?personId)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SaveAttributeValues</b> (int?personId)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a773e4ed71caf3a386efe79a9f2f543dc"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ReloadAttributeValues" ref="a773e4ed71caf3a386efe79a9f2f543dc" args="()" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>ReloadAttributeValues</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec5759a8d45db262905a4a494e059150"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ToString" ref="aec5759a8d45db262905a4a494e059150" args="()" -->
-override string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a739d1d8ef40ee91c1ec8190b70956c8d"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Authorized" ref="a739d1d8ef40ee91c1ec8190b70956c8d" args="(string action, System.Web.Security.MembershipUser user)" -->
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>Authorized</b> (string action, System.Web.Security.MembershipUser user)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf620af78549787c94e6516948e87ce8"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::DefaultAuthorization" ref="adf620af78549787c94e6516948e87ce8" args="(string action)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultAuthorization</b> (string action)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a755ed5f96f1ce7773bb06e1cc70f9088">SaveAttributeValues</a> (int?personId)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a773e4ed71caf3a386efe79a9f2f543dc">ReloadAttributeValues</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">override string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#aec5759a8d45db262905a4a494e059150">ToString</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a739d1d8ef40ee91c1ec8190b70956c8d">Authorized</a> (string action, System.Web.Security.MembershipUser user)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#adf620af78549787c94e6516948e87ce8">DefaultAuthorization</a> (string action)</td></tr>
 <tr><td colspan="2"><h2><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html">BlockInstance</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#ae1b4eb82924d99d95a08180abc16c57b">Read</a> (<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_block_instance.html">Rock.Models.Cms.BlockInstance</a> blockInstanceModel)</td></tr>
@@ -129,35 +126,73 @@ Static Public Member Functions</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes blockInstance from cache.  <a href="#a1b7b7ea813371156f3f7e74fe9e33c31"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="properties"></a>
 Properties</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9ab3d3a7fc3287cc01366830e8d5ac2"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Id" ref="af9ab3d3a7fc3287cc01366830e8d5ac2" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c445c048ed313055b1f27c43f60d04c"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Name" ref="a4c445c048ed313055b1f27c43f60d04c" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>Name</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a965484c2b2723e6bad2577a5876188f8"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Zone" ref="a965484c2b2723e6bad2577a5876188f8" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>Zone</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a331f4b1e9c8b0652b4dc8c4a29681a9a"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Order" ref="a331f4b1e9c8b0652b4dc8c4a29681a9a" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Order</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acf7318d173b65a5d656632aa4c4a5ff9"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::OutputCacheDuration" ref="acf7318d173b65a5d656632aa4c4a5ff9" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>OutputCacheDuration</b><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#af9ab3d3a7fc3287cc01366830e8d5ac2">Id</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a4c445c048ed313055b1f27c43f60d04c">Name</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a965484c2b2723e6bad2577a5876188f8">Zone</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a331f4b1e9c8b0652b4dc8c4a29681a9a">Order</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#acf7318d173b65a5d656632aa4c4a5ff9">OutputCacheDuration</a><code> [get, set]</code></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">Dictionary&lt; string, <br class="typebreak"/>
 KeyValuePair&lt; string, string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a32178c3fb92d77bc3e24626326c3bdca">AttributeValues</a><code> [get, set]</code></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Dictionary of all attributes and their values.  <a href="#a32178c3fb92d77bc3e24626326c3bdca"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">List&lt; <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_attribute.html">Rock.Cms.Cached.Attribute</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a0515cc2fcca424f454b2126255fc7274">Attributes</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">List&lt; <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_attribute.html">Rock.Cms.Cached.Attribute</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a0515cc2fcca424f454b2126255fc7274">Attributes</a><code> [get, set]</code></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">List of attributes associated with the <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html" title="Information about a blockInstance that is required by the rendering engine. This information will be ...">BlockInstance</a>. This object will not include values. To get values associated with the current page instance, use the AttributeValues.  <a href="#a0515cc2fcca424f454b2126255fc7274"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa358cc87743680edb2fb26c0243f72d2"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::BlockId" ref="aa358cc87743680edb2fb26c0243f72d2" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>BlockId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9184f7a157d016ae7035e0a2e7a1fa44"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Block" ref="a9184f7a157d016ae7035e0a2e7a1fa44" args="" -->
-<a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block.html">Block</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Block</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0c4b5206fed042cb31e3443716e94701"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::AuthEntity" ref="a0c4b5206fed042cb31e3443716e94701" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4cdfe9a11d2dffaea21a9d6c18ac1ad7"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ParentAuthority" ref="a4cdfe9a11d2dffaea21a9d6c18ac1ad7" args="" -->
-<a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">Security.ISecured</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ParentAuthority</b><code> [get]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad6aed4bd6f7d0f29581f48455ccb8cf3"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::SupportedActions" ref="ad6aed4bd6f7d0f29581f48455ccb8cf3" args="" -->
-List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>SupportedActions</b><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#aa358cc87743680edb2fb26c0243f72d2">BlockId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block.html">Block</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a9184f7a157d016ae7035e0a2e7a1fa44">Block</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a0c4b5206fed042cb31e3443716e94701">AuthEntity</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">Security.ISecured</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#a4cdfe9a11d2dffaea21a9d6c18ac1ad7">ParentAuthority</a><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html#ad6aed4bd6f7d0f29581f48455ccb8cf3">SupportedActions</a><code> [get, set]</code></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Information about a blockInstance that is required by the rendering engine. This information will be cached by the engine. </p>
 </div><hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a739d1d8ef40ee91c1ec8190b70956c8d"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Authorized" ref="a739d1d8ef40ee91c1ec8190b70956c8d" args="(string action, System.Web.Security.MembershipUser user)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool Rock.Cms.Cached.BlockInstance.Authorized </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">System.Web.Security.MembershipUser&#160;</td>
+          <td class="paramname"><em>user</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline, virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a1279b863132c46b52caa5d0e795c797e">Rock.Cms.Security.ISecured</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="adf620af78549787c94e6516948e87ce8"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::DefaultAuthorization" ref="adf620af78549787c94e6516948e87ce8" args="(string action)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Rock.Cms.Cached.BlockInstance.DefaultAuthorization </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>action</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a625551e53d506f9b27e565cded76b378">Rock.Cms.Security.ISecured</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a1b7b7ea813371156f3f7e74fe9e33c31"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Flush" ref="a1b7b7ea813371156f3f7e74fe9e33c31" args="(int id)" -->
 <div class="memitem">
 <div class="memproto">
@@ -235,19 +270,70 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
 
 </div>
 </div>
+<a class="anchor" id="a773e4ed71caf3a386efe79a9f2f543dc"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ReloadAttributeValues" ref="a773e4ed71caf3a386efe79a9f2f543dc" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.Cached.BlockInstance.ReloadAttributeValues </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a755ed5f96f1ce7773bb06e1cc70f9088"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::SaveAttributeValues" ref="a755ed5f96f1ce7773bb06e1cc70f9088" args="(int?personId)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.Cached.BlockInstance.SaveAttributeValues </td>
+          <td>(</td>
+          <td class="paramtype">int?&#160;</td>
+          <td class="paramname"><em>personId</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aec5759a8d45db262905a4a494e059150"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ToString" ref="aec5759a8d45db262905a4a494e059150" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">override string Rock.Cms.Cached.BlockInstance.ToString </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/><h2>Property Documentation</h2>
 <a class="anchor" id="a0515cc2fcca424f454b2126255fc7274"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Attributes" ref="a0515cc2fcca424f454b2126255fc7274" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">List&lt;<a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_attribute.html">Rock.Cms.Cached.Attribute</a>&gt; Rock.Cms.Cached.BlockInstance.Attributes<code> [get]</code></td>
+          <td class="memname">List&lt;<a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_attribute.html">Rock.Cms.Cached.Attribute</a>&gt; Rock.Cms.Cached.BlockInstance.Attributes<code> [get, set]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>List of attributes associated with the <a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block_instance.html" title="Information about a blockInstance that is required by the rendering engine. This information will be ...">BlockInstance</a>. This object will not include values. To get values associated with the current page instance, use the AttributeValues. </p>
+
+<p>Implements <a class="el" href="interface_rock_1_1_attribute_1_1_i_has_attributes.html#a41291089b025f367de779c3898064d72">Rock.Attribute.IHasAttributes</a>.</p>
 
 </div>
 </div>
@@ -264,10 +350,150 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
 
 <p>Dictionary of all attributes and their values. </p>
 
+<p>Implements <a class="el" href="interface_rock_1_1_attribute_1_1_i_has_attributes.html#ad75c076f3a31bce1af63bd7848570859">Rock.Attribute.IHasAttributes</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0c4b5206fed042cb31e3443716e94701"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::AuthEntity" ref="a0c4b5206fed042cb31e3443716e94701" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Cms.Cached.BlockInstance.AuthEntity<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a131fc5fd113072de996ea777462f85ef">Rock.Cms.Security.ISecured</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9184f7a157d016ae7035e0a2e7a1fa44"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Block" ref="a9184f7a157d016ae7035e0a2e7a1fa44" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_block.html">Block</a> Rock.Cms.Cached.BlockInstance.Block<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa358cc87743680edb2fb26c0243f72d2"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::BlockId" ref="aa358cc87743680edb2fb26c0243f72d2" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Cms.Cached.BlockInstance.BlockId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af9ab3d3a7fc3287cc01366830e8d5ac2"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Id" ref="af9ab3d3a7fc3287cc01366830e8d5ac2" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Cms.Cached.BlockInstance.Id<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_attribute_1_1_i_has_attributes.html#af8bf3d353b39e098543d3cb7c4889c8e">Rock.Attribute.IHasAttributes</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a4c445c048ed313055b1f27c43f60d04c"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Name" ref="a4c445c048ed313055b1f27c43f60d04c" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Cms.Cached.BlockInstance.Name<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a331f4b1e9c8b0652b4dc8c4a29681a9a"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Order" ref="a331f4b1e9c8b0652b4dc8c4a29681a9a" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Cms.Cached.BlockInstance.Order<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acf7318d173b65a5d656632aa4c4a5ff9"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::OutputCacheDuration" ref="acf7318d173b65a5d656632aa4c4a5ff9" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Cms.Cached.BlockInstance.OutputCacheDuration<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4cdfe9a11d2dffaea21a9d6c18ac1ad7"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::ParentAuthority" ref="a4cdfe9a11d2dffaea21a9d6c18ac1ad7" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html">Security.ISecured</a> Rock.Cms.Cached.BlockInstance.ParentAuthority<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#aaa1a22d12662ecdd01d6a79981b61062">Rock.Cms.Security.ISecured</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad6aed4bd6f7d0f29581f48455ccb8cf3"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::SupportedActions" ref="ad6aed4bd6f7d0f29581f48455ccb8cf3" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">List&lt;string&gt; Rock.Cms.Cached.BlockInstance.SupportedActions<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Implements <a class="el" href="interface_rock_1_1_cms_1_1_security_1_1_i_secured.html#a649ffda130c30785af8e52cb1975b937">Rock.Cms.Security.ISecured</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a965484c2b2723e6bad2577a5876188f8"></a><!-- doxytag: member="Rock::Cms::Cached::BlockInstance::Zone" ref="a965484c2b2723e6bad2577a5876188f8" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Cms.Cached.BlockInstance.Zone<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>Rock.Framework/Cms/Cached/BlockInstance.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Cms/Cached/<a class="el" href="_cms_2_cached_2_block_instance_8cs.html">BlockInstance.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -275,7 +501,7 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -287,7 +513,7 @@ List&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Suppo
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:34 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:22:58 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

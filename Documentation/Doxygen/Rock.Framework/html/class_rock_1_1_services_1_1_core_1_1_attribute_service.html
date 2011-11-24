@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services.html">Services</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services_1_1_core.html">Core</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_services_1_1_core_1_1_attribute_service.html">AttributeService</a>      </li>
@@ -104,17 +105,88 @@ Inheritance diagram for Rock.Services.Core.AttributeService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88e62427a487498d9cb3059d3d91c7a2"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetByEntity" ref="a88e62427a487498d9cb3059d3d91c7a2" args="(string entity)" -->
-IEnumerable<br class="typebreak"/>
-&lt; <a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByEntity</b> (string entity)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a172fbb9c82bba7ee4857ec1257b0bfad"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetByGuid" ref="a172fbb9c82bba7ee4857ec1257b0bfad" args="(Guid guid)" -->
-<a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GetByGuid</b> (Guid guid)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afd2a3110691a37bb73448b542851b370"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetAttributesByEntityQualifierAndKey" ref="afd2a3110691a37bb73448b542851b370" args="(string entity, string entityQualifierColumn, string entityQualifierValue, string key)" -->
-<a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GetAttributesByEntityQualifierAndKey</b> (string entity, string entityQualifierColumn, string entityQualifierValue, string key)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable<br class="typebreak"/>
+&lt; <a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_core_1_1_attribute_service.html#a88e62427a487498d9cb3059d3d91c7a2">GetByEntity</a> (string entity)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_core_1_1_attribute_service.html#a172fbb9c82bba7ee4857ec1257b0bfad">GetByGuid</a> (Guid guid)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_core_1_1_attribute_service.html#afd2a3110691a37bb73448b542851b370">GetAttributesByEntityQualifierAndKey</a> (string entity, string entityQualifierColumn, string entityQualifierValue, string key)</td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="afd2a3110691a37bb73448b542851b370"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetAttributesByEntityQualifierAndKey" ref="afd2a3110691a37bb73448b542851b370" args="(string entity, string entityQualifierColumn, string entityQualifierValue, string key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a> Rock.Services.Core.AttributeService.GetAttributesByEntityQualifierAndKey </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entityQualifierColumn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entityQualifierValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a88e62427a487498d9cb3059d3d91c7a2"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetByEntity" ref="a88e62427a487498d9cb3059d3d91c7a2" args="(string entity)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a>&gt; Rock.Services.Core.AttributeService.GetByEntity </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entity</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a172fbb9c82bba7ee4857ec1257b0bfad"></a><!-- doxytag: member="Rock::Services::Core::AttributeService::GetByGuid" ref="a172fbb9c82bba7ee4857ec1257b0bfad" args="(Guid guid)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_attribute.html">Rock.Models.Core.Attribute</a> Rock.Services.Core.AttributeService.GetByGuid </td>
+          <td>(</td>
+          <td class="paramtype">Guid&#160;</td>
+          <td class="paramname"><em>guid</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>Rock.Framework/Services/Core/AttributeService.cs</li>
-<li>Rock.Framework/Services/Core/AttributeService.Partial.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Core/<a class="el" href="_services_2_core_2_attribute_service_8cs.html">AttributeService.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Core/<a class="el" href="_attribute_service_8_partial_8cs.html">AttributeService.Partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -122,7 +194,7 @@ IEnumerable<br class="typebreak"/>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -134,7 +206,7 @@ IEnumerable<br class="typebreak"/>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:47 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:07 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

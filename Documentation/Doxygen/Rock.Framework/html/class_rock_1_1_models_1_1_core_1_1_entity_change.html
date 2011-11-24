@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_models.html">Models</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_models_1_1_core.html">Core</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html">EntityChange</a>      </li>
@@ -109,29 +110,145 @@ Inheritance diagram for Rock.Models.Core.EntityChange:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a707e0d11e7409c58966b70d5611a0fad"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::Read" ref="a707e0d11e7409c58966b70d5611a0fad" args="(int id)" -->
-static <a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html">EntityChange</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Read</b> (int id)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html">EntityChange</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a707e0d11e7409c58966b70d5611a0fad">Read</a> (int id)</td></tr>
 <tr><td colspan="2"><h2><a name="properties"></a>
 Properties</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3d707cea009ae6db92af9bc8c20b58b2"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::ChangeSet" ref="a3d707cea009ae6db92af9bc8c20b58b2" args="" -->
-Guid&#160;</td><td class="memItemRight" valign="bottom"><b>ChangeSet</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0dbca28b39c46a806cb6a7726fdac9c4"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::ChangeType" ref="a0dbca28b39c46a806cb6a7726fdac9c4" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>ChangeType</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a87ecd781e0611083458a04bf154a0cfa"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::EntityType" ref="a87ecd781e0611083458a04bf154a0cfa" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>EntityType</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab311c1e434501d1ba1459894e7c83519"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::EntityId" ref="ab311c1e434501d1ba1459894e7c83519" args="" -->
-int&#160;</td><td class="memItemRight" valign="bottom"><b>EntityId</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a985a05971017d8d1e535be9b201e08cc"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::Property" ref="a985a05971017d8d1e535be9b201e08cc" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>Property</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a07b62b1afd9225c8a4e044ce1ae78143"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::OriginalValue" ref="a07b62b1afd9225c8a4e044ce1ae78143" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>OriginalValue</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a413490a5b4a89106a498380dbada90bf"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::CurrentValue" ref="a413490a5b4a89106a498380dbada90bf" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>CurrentValue</b><code> [get, set]</code></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a90b51165ea5da3f96526a2b8ed7b1f26"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::AuthEntity" ref="a90b51165ea5da3f96526a2b8ed7b1f26" args="" -->
-override string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity</b><code> [get]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">Guid&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a3d707cea009ae6db92af9bc8c20b58b2">ChangeSet</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a0dbca28b39c46a806cb6a7726fdac9c4">ChangeType</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a87ecd781e0611083458a04bf154a0cfa">EntityType</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#ab311c1e434501d1ba1459894e7c83519">EntityId</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a985a05971017d8d1e535be9b201e08cc">Property</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a07b62b1afd9225c8a4e044ce1ae78143">OriginalValue</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a413490a5b4a89106a498380dbada90bf">CurrentValue</a><code> [get, set]</code></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">override string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html#a90b51165ea5da3f96526a2b8ed7b1f26">AuthEntity</a><code> [get]</code></td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a707e0d11e7409c58966b70d5611a0fad"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::Read" ref="a707e0d11e7409c58966b70d5611a0fad" args="(int id)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="class_rock_1_1_models_1_1_core_1_1_entity_change.html">EntityChange</a> Rock.Models.Core.EntityChange.Read </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td><code> [inline, static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<hr/><h2>Property Documentation</h2>
+<a class="anchor" id="a90b51165ea5da3f96526a2b8ed7b1f26"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::AuthEntity" ref="a90b51165ea5da3f96526a2b8ed7b1f26" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">override string Rock.Models.Core.EntityChange.AuthEntity<code> [get]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="class_rock_1_1_models_1_1_model-g.html#a6ebb5f6ef736c4d73c4a49a374a0a2dc">Rock.Models.Model&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a3d707cea009ae6db92af9bc8c20b58b2"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::ChangeSet" ref="a3d707cea009ae6db92af9bc8c20b58b2" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Guid Rock.Models.Core.EntityChange.ChangeSet<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0dbca28b39c46a806cb6a7726fdac9c4"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::ChangeType" ref="a0dbca28b39c46a806cb6a7726fdac9c4" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Core.EntityChange.ChangeType<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a413490a5b4a89106a498380dbada90bf"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::CurrentValue" ref="a413490a5b4a89106a498380dbada90bf" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Core.EntityChange.CurrentValue<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab311c1e434501d1ba1459894e7c83519"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::EntityId" ref="ab311c1e434501d1ba1459894e7c83519" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Rock.Models.Core.EntityChange.EntityId<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a87ecd781e0611083458a04bf154a0cfa"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::EntityType" ref="a87ecd781e0611083458a04bf154a0cfa" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Core.EntityChange.EntityType<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a07b62b1afd9225c8a4e044ce1ae78143"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::OriginalValue" ref="a07b62b1afd9225c8a4e044ce1ae78143" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Core.EntityChange.OriginalValue<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a985a05971017d8d1e535be9b201e08cc"></a><!-- doxytag: member="Rock::Models::Core::EntityChange::Property" ref="a985a05971017d8d1e535be9b201e08cc" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string Rock.Models.Core.EntityChange.Property<code> [get, set]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>Rock.Framework/Models/Core/EntityChange.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Models/Core/<a class="el" href="_entity_change_8cs.html">EntityChange.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -139,7 +256,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -151,7 +268,7 @@ override string&#160;</td><td class="memItemRight" valign="bottom"><b>AuthEntity
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:42 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:03 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

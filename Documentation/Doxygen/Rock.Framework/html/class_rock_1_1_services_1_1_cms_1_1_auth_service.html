@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services.html">Services</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_services_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_auth_service.html">AuthService</a>      </li>
@@ -104,16 +105,91 @@ Inheritance diagram for Rock.Services.Cms.AuthService:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89bc8821e2fe9d7456d3c09c9e5e6fe4"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetByEntityTypeAndEntityId" ref="a89bc8821e2fe9d7456d3c09c9e5e6fe4" args="(string entityType, int?entityId)" -->
-IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByEntityTypeAndEntityId</b> (string entityType, int?entityId)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2b3cf3f1c20b6d53d47bccdfdeed6ce"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetByGuid" ref="ae2b3cf3f1c20b6d53d47bccdfdeed6ce" args="(Guid guid)" -->
-IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetByGuid</b> (Guid guid)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e7326a6e5b0a04d218b924e713e8d31"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetAuths" ref="a9e7326a6e5b0a04d218b924e713e8d31" args="(string entityType, int?entityId, string action)" -->
-IQueryable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetAuths</b> (string entityType, int?entityId, string action)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_auth_service.html#a89bc8821e2fe9d7456d3c09c9e5e6fe4">GetByEntityTypeAndEntityId</a> (string entityType, int?entityId)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IEnumerable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_auth_service.html#ae2b3cf3f1c20b6d53d47bccdfdeed6ce">GetByGuid</a> (Guid guid)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">IQueryable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_services_1_1_cms_1_1_auth_service.html#a9e7326a6e5b0a04d218b924e713e8d31">GetAuths</a> (string entityType, int?entityId, string action)</td></tr>
 </table>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a9e7326a6e5b0a04d218b924e713e8d31"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetAuths" ref="a9e7326a6e5b0a04d218b924e713e8d31" args="(string entityType, int?entityId, string action)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IQueryable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a>&gt; Rock.Services.Cms.AuthService.GetAuths </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entityType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int?&#160;</td>
+          <td class="paramname"><em>entityId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a89bc8821e2fe9d7456d3c09c9e5e6fe4"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetByEntityTypeAndEntityId" ref="a89bc8821e2fe9d7456d3c09c9e5e6fe4" args="(string entityType, int?entityId)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a>&gt; Rock.Services.Cms.AuthService.GetByEntityTypeAndEntityId </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>entityType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int?&#160;</td>
+          <td class="paramname"><em>entityId</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae2b3cf3f1c20b6d53d47bccdfdeed6ce"></a><!-- doxytag: member="Rock::Services::Cms::AuthService::GetByGuid" ref="ae2b3cf3f1c20b6d53d47bccdfdeed6ce" args="(Guid guid)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IEnumerable&lt;<a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">Rock.Models.Cms.Auth</a>&gt; Rock.Services.Cms.AuthService.GetByGuid </td>
+          <td>(</td>
+          <td class="paramtype">Guid&#160;</td>
+          <td class="paramname"><em>guid</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>Rock.Framework/Services/Cms/AuthService.cs</li>
-<li>Rock.Framework/Services/Cms/AuthService.partial.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Cms/<a class="el" href="_services_2_cms_2_auth_service_8cs.html">AuthService.cs</a></li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Services/Cms/<a class="el" href="_auth_service_8partial_8cs.html">AuthService.partial.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -121,7 +197,7 @@ IQueryable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -133,7 +209,7 @@ IQueryable&lt; <a class="el" href="class_rock_1_1_models_1_1_cms_1_1_auth.html">
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:46 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:23:07 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

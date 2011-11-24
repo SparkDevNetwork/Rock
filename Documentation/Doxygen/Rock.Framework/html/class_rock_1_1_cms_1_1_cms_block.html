@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -76,7 +77,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="nav-path" class="navpath">
     <ul>
-      <li class="navelem"><b>Rock</b>      </li>
+      <li class="navelem"><a class="el" href="namespace_rock.html">Rock</a>      </li>
       <li class="navelem"><a class="el" href="namespace_rock_1_1_cms.html">Cms</a>      </li>
       <li class="navelem"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html">CmsBlock</a>      </li>
     </ul>
@@ -100,14 +101,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a914880d4509b00a60962ef1471361b04"></a><!-- doxytag: member="Rock::Cms::CmsBlock::AddAttributeUpdateTrigger" ref="a914880d4509b00a60962ef1471361b04" args="(UpdatePanel updatePanel)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>AddAttributeUpdateTrigger</b> (UpdatePanel updatePanel)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a179607c7c0dd749476b33f86ef42cdc7">DisplayNotification</a> (string title, Rock.Controls.NotificationBoxType type, string message)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a914880d4509b00a60962ef1471361b04">AddAttributeUpdateTrigger</a> (UpdatePanel updatePanel)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a179607c7c0dd749476b33f86ef42cdc7">DisplayNotification</a> (string title, <a class="el" href="namespace_rock_1_1_controls.html#af647f80f6f3d3b6babdc9fd0a7a6734d">Rock.Controls.NotificationBoxType</a> type, string message)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all child controls and add a notification box with error or warning message.  <a href="#a179607c7c0dd749476b33f86ef42cdc7"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7a2bcac7f2253bdd5d182b56e842801f"></a><!-- doxytag: member="Rock::Cms::CmsBlock::DisplayError" ref="a7a2bcac7f2253bdd5d182b56e842801f" args="(string message)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>DisplayError</b> (string message)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9d411976652217b94e6734bbfd36e299"></a><!-- doxytag: member="Rock::Cms::CmsBlock::DisplayWarning" ref="a9d411976652217b94e6734bbfd36e299" args="(string message)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>DisplayWarning</b> (string message)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a7a2bcac7f2253bdd5d182b56e842801f">DisplayError</a> (string message)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a9d411976652217b94e6734bbfd36e299">DisplayWarning</a> (string message)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#af0aa76553e867c60f0bdd1826274286d">AttributeValue</a> (string key)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the current blockinstance value for the selected attribute If the attribute doesn't exist a null value is returned.  <a href="#af0aa76553e867c60f0bdd1826274286d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a6cec537c923575f3c6b84cbcf3dc08e0">UserAuthorized</a> (string action)</td></tr>
@@ -134,8 +132,7 @@ Protected Member Functions</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">When a control renders it's content to the page, this method will also check to see if the block instance of this control has been configured for output caching, and if so, the contents will also be rendered to a string variable that will gets cached in the default MemoryCache for use next time by the <a class="el" href="class_rock_1_1_cms_1_1_cms_page.html#a911cb36074ffd0d243b7bb4f392c282c" title="Loads all of the configured blocks for the current page into the control tree.">CmsPage.OnInit()</a> method when rendering the control content.  <a href="#a8f89f32cf842c7e8cc43393a85c6a888"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">override void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#ae07dce7b2b5b10715d4e14d120fcb6a6">OnError</a> (EventArgs e)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">When an unhandled error occurs in a module, a notification box will be displayed.  <a href="#ae07dce7b2b5b10715d4e14d120fcb6a6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeb7a5677ea54b263d14eb1ea46b2b329"></a><!-- doxytag: member="Rock::Cms::CmsBlock::trigger_Click" ref="aeb7a5677ea54b263d14eb1ea46b2b329" args="(object sender, EventArgs e)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><b>trigger_Click</b> (object sender, EventArgs e)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#aeb7a5677ea54b263d14eb1ea46b2b329">trigger_Click</a> (object sender, EventArgs e)</td></tr>
 <tr><td colspan="2"><h2><a name="properties"></a>
 Properties</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_rock_1_1_cms_1_1_cached_1_1_page.html">Rock.Cms.Cached.Page</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#a03e82ca5dd38226086b5986e24ef3f60">PageInstance</a><code> [get, set]</code></td></tr>
@@ -152,12 +149,28 @@ Properties</h2></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Relative path to the current theme and layout folder. Useful for setting paths to theme resource files  Client Side:  <a href="#a8db42f66f42283a0d2b20a22340c65b3"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="events"></a>
 Events</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac93f95201de7b5da35408201f01f8d78"></a><!-- doxytag: member="Rock::Cms::CmsBlock::AttributesUpdated" ref="ac93f95201de7b5da35408201f01f8d78" args="" -->
-EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AttributesUpdated</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html#ac93f95201de7b5da35408201f01f8d78">AttributesUpdated</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_rock_1_1_cms_1_1_cms_block.html" title="CmsBlock is the base abstract class that all Blocks should inherit from.">CmsBlock</a> is the base abstract class that all Blocks should inherit from. </p>
 </div><hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a914880d4509b00a60962ef1471361b04"></a><!-- doxytag: member="Rock::Cms::CmsBlock::AddAttributeUpdateTrigger" ref="a914880d4509b00a60962ef1471361b04" args="(UpdatePanel updatePanel)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.CmsBlock.AddAttributeUpdateTrigger </td>
+          <td>(</td>
+          <td class="paramtype">UpdatePanel&#160;</td>
+          <td class="paramname"><em>updatePanel</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a24a3c13dd7cd86b86409145bbcf6ad0f"></a><!-- doxytag: member="Rock::Cms::CmsBlock::AddCacheItem" ref="a24a3c13dd7cd86b86409145bbcf6ad0f" args="(object value)" -->
 <div class="memitem">
 <div class="memproto">
@@ -331,6 +344,23 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
 
 </div>
 </div>
+<a class="anchor" id="a7a2bcac7f2253bdd5d182b56e842801f"></a><!-- doxytag: member="Rock::Cms::CmsBlock::DisplayError" ref="a7a2bcac7f2253bdd5d182b56e842801f" args="(string message)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.CmsBlock.DisplayError </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>message</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a179607c7c0dd749476b33f86ef42cdc7"></a><!-- doxytag: member="Rock::Cms::CmsBlock::DisplayNotification" ref="a179607c7c0dd749476b33f86ef42cdc7" args="(string title, Rock.Controls.NotificationBoxType type, string message)" -->
 <div class="memitem">
 <div class="memproto">
@@ -344,7 +374,7 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Rock.Controls.NotificationBoxType&#160;</td>
+          <td class="paramtype"><a class="el" href="namespace_rock_1_1_controls.html#af647f80f6f3d3b6babdc9fd0a7a6734d">Rock.Controls.NotificationBoxType</a>&#160;</td>
           <td class="paramname"><em>type</em>, </td>
         </tr>
         <tr>
@@ -371,6 +401,23 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a9d411976652217b94e6734bbfd36e299"></a><!-- doxytag: member="Rock::Cms::CmsBlock::DisplayWarning" ref="a9d411976652217b94e6734bbfd36e299" args="(string message)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.CmsBlock.DisplayWarning </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>message</em></td><td>)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
 
 </div>
 </div>
@@ -538,6 +585,33 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
 
 </div>
 </div>
+<a class="anchor" id="aeb7a5677ea54b263d14eb1ea46b2b329"></a><!-- doxytag: member="Rock::Cms::CmsBlock::trigger_Click" ref="aeb7a5677ea54b263d14eb1ea46b2b329" args="(object sender, EventArgs e)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rock.Cms.CmsBlock.trigger_Click </td>
+          <td>(</td>
+          <td class="paramtype">object&#160;</td>
+          <td class="paramname"><em>sender</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">EventArgs&#160;</td>
+          <td class="paramname"><em>e</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline, protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a6cec537c923575f3c6b84cbcf3dc08e0"></a><!-- doxytag: member="Rock::Cms::CmsBlock::UserAuthorized" ref="a6cec537c923575f3c6b84cbcf3dc08e0" args="(string action)" -->
 <div class="memitem">
 <div class="memproto">
@@ -659,8 +733,22 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
 
 </div>
 </div>
+<hr/><h2>Event Documentation</h2>
+<a class="anchor" id="ac93f95201de7b5da35408201f01f8d78"></a><!-- doxytag: member="Rock::Cms::CmsBlock::AttributesUpdated" ref="ac93f95201de7b5da35408201f01f8d78" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EventHandler&lt;EventArgs&gt; Rock.Cms.CmsBlock.AttributesUpdated</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>Rock.Framework/Cms/CmsBlock.cs</li>
+<li>C:/Users/dturner/Dropbox/Projects/SparkDevNetwork/Rock-ChMS/Rock.Framework/Cms/<a class="el" href="_cms_block_8cs.html">CmsBlock.cs</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -668,7 +756,7 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Properties</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Properties</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Events</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -680,7 +768,7 @@ EventHandler&lt; EventArgs &gt;&#160;</td><td class="memItemRight" valign="botto
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 18 2011 00:39:33 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 24 2011 05:22:58 for RockChMS by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>
