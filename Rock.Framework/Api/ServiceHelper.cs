@@ -23,15 +23,28 @@ using System.ServiceModel.Activation;
 using System.Web;
 using System.Web.Routing;
 
+/// <summary>
+/// REST Api
+/// </summary>
 namespace Rock.Api
 {
+    /// <summary>
+    /// Helper class that is used by the Global.ascx.cs class to load all <see cref="Rock.Api.IService"/> 
+    /// classes found through MEF and add service routes for them.  
+    /// </summary>
     public class ServiceHelper
     {
+        // MEF Container
         private CompositionContainer container;
 
+        // MEF Import definition
         [ImportMany(typeof(IService))]
         IEnumerable<Lazy<IService, IServiceData>> services;
 
+        /// <summary>
+        /// Adds service routes for every the routes.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
         public void AddRoutes( RouteCollection routes )
         {
             try

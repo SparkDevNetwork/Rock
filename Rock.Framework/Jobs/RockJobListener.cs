@@ -9,11 +9,12 @@ using Rock.Models.Util;
 
 using Quartz;
 
-/// <summary>
-/// Summary description for JobListener
-/// </summary>
 namespace Rock.Jobs
 {
+
+    /// <summary>
+    /// Summary description for JobListener
+    /// </summary>
     public class RockJobListener : IJobListener
     {
         public string Name
