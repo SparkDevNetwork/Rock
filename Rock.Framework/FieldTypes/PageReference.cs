@@ -10,7 +10,6 @@ namespace Rock.FieldTypes
     /// </summary>
     public class PageReference : Field
     {
-
         // assumed output is = "int1,int2"
         // where int1 = page id
         // and int2 = route id

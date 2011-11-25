@@ -25,9 +25,11 @@ using Rock.Services.Core;
 using Rock.Cms;
 using Rock.Models.Core;
 
+/// <summary>
+/// Jobs to run unattended in background
+/// </summary
 namespace Rock.Jobs
 {
-	
 	/// <summary>
 	/// Job to keep a heartbeat of the job process so we know when the jobs stop working
 	/// </summary>
@@ -35,7 +37,6 @@ namespace Rock.Jobs
     /// <author>Spark Development Network</author>
     public class JobPulse : IJob
 	{
-        
         
         /// <summary> 
 		/// Empty constructor for job initilization

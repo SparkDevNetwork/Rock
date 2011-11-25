@@ -23,23 +23,108 @@ namespace Rock.Cms.Cached
 
         #region Properties
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the layout.
+        /// </summary>
         public string Layout { get; private set; }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
         public int Order { get; private set; }
+
+        /// <summary>
+        /// Gets the duration of the output cache.
+        /// </summary>
+        /// <value>
+        /// The duration of the output cache.
+        /// </value>
         public int OutputCacheDuration { get; private set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
         public string Title { get; private set; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets the icon URL.
+        /// </summary>
 		public string IconUrl { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the page administration footer should be displayed on the page
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the footer should be displayed; otherwise, <c>false</c>.
+        /// </value>
         public bool IncludeAdminFooter { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether to display the page description in the page navigation menu.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if description should be displayed; otherwise, <c>false</c>.
+        /// </value>
         public bool MenuDisplayDescription { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether page icon should be included in the page navigation menu.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if icon should be included; otherwise, <c>false</c>.
+        /// </value>
         public bool MenuDisplayIcon { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the pages child pages should be displayed in the page navigation menu.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if child pages should be included; otherwise, <c>false</c>.
+        /// </value>
         public bool MenuDisplayChildPages { get; private set; }
+
+        /// <summary>
+        /// Gets a <see cref="Models.Cms.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
+        /// </summary>
         public Models.Cms.DisplayInNavWhen DisplayInNavWhen { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the page requires SSL encryption.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if requires encryption; otherwise, <c>false</c>.
+        /// </value>
         public bool RequiresEncryption { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the page should use viewstate
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if viewstate should be enabled; otherwise, <c>false</c>.
+        /// </value>
         public bool EnableViewstate { get; private set; }
 
-        private int _routeId = -1;
+        /// <summary>
+        /// Gets or sets the route id.
+        /// </summary>
+        /// <value>
+        /// The route id.
+        /// </value>
         public int RouteId 
         {
             get
@@ -51,7 +136,11 @@ namespace Rock.Cms.Cached
                 _routeId = value;
             }
         }
+        private int _routeId = -1;
 
+        /// <summary>
+        /// Gets a <see cref="Rock.Helpers.PageReference"/> for the current page
+        /// </summary>
         public PageReference PageReference 
         {
             get
@@ -60,6 +149,9 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Gets the URL to the current page using the page/{id} route.
+        /// </summary>
         public string Url
         {
             get
@@ -73,7 +165,6 @@ namespace Rock.Cms.Cached
         /// </summary>
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
-        private List<int> AttributeIds = new List<int>();
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
@@ -97,10 +188,19 @@ namespace Rock.Cms.Cached
                     this.AttributeIds.Add( attribute.Id );
             }
         }
+        private List<int> AttributeIds = new List<int>();
 
+        /// <summary>
+        /// Gets or sets the layout path for the page
+        /// </summary>
+        /// <value>
+        /// The layout path.
+        /// </value>
         public string LayoutPath { get; set; }
 
-        private int? ParentPageId;
+        /// <summary>
+        /// Gets the parent <see cref="Page"/> object.
+        /// </summary>
         public Page ParentPage
         {
             get
@@ -111,8 +211,11 @@ namespace Rock.Cms.Cached
                     return null;
             }
         }
+        private int? ParentPageId;
 
-        private int? SiteId;
+        /// <summary>
+        /// Gets the <see cref="Site"/> object for the page.
+        /// </summary>
         public Site Site
         {
             get
@@ -123,8 +226,11 @@ namespace Rock.Cms.Cached
                     return null;
             }
         }
+        private int? SiteId;
 
-        private List<int> pageIds = null;
+        /// <summary>
+        /// Gets a List of child <see cref="Page"/> objects.
+        /// </summary>
         public List<Page> Pages
         {
             get
@@ -151,8 +257,11 @@ namespace Rock.Cms.Cached
                 return pages;
             }
         }
+        private List<int> pageIds = null;
 
-        private List<int> blockInstanceIds = null;
+        /// <summary>
+        /// Gets a List of all the <see cref="BlockInstance"/> objects configured for the page and the page's layout.
+        /// </summary>
         public List<BlockInstance> BlockInstances
         {
             get
@@ -189,11 +298,16 @@ namespace Rock.Cms.Cached
                 return blockInstances;
             }
         }
+        private List<int> blockInstanceIds = null;
 
         #endregion
 
         #region Public Methods
 
+        /// <summary>
+        /// Saves the attribute values for the page
+        /// </summary>
+        /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.PageService pageService = new Services.Cms.PageService();
@@ -207,6 +321,12 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// <c>true</c> or <c>false</c> value of whether the page can be displayed in a navigation menu 
+        /// based on the <see cref="DisplayInNavWhen"/> property value and the security of the currently logged in user
+        /// </summary>
+        /// <param name="user">The current user.</param>
+        /// <returns></returns>
         public bool DisplayInNav( System.Web.Security.MembershipUser user )
         {
             switch ( this.DisplayInNavWhen )
@@ -220,11 +340,17 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Flushes the cached block instances.
+        /// </summary>
         public void FlushBlockInstances()
         {
             blockInstanceIds = null;
         }
 
+        /// <summary>
+        /// Flushes the cached child pages.
+        /// </summary>
         public void FlushChildPages()
         {
             pageIds = null;
@@ -283,6 +409,12 @@ namespace Rock.Cms.Cached
             CmsPage.AddCSSLink( page, href );
         }
 
+        /// <summary>
+        /// Adds a new CSS link that will be added to the page header prior to the page being rendered
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="href">The href.</param>
+        /// <param name="mediaType">MediaType to use in the css link.</param>
         public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
         {
             CmsPage.AddCSSLink( page, href, mediaType );
@@ -419,6 +551,7 @@ namespace Rock.Cms.Cached
             }
         }
 
+        // Copies the Model object to the Cached object
         private static Page CopyModel( Rock.Models.Cms.Page pageModel )
         {
             Page page = new Page();
@@ -461,6 +594,12 @@ namespace Rock.Cms.Cached
             cache.Remove( Page.CacheKey( id ) );
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return this.Name;
@@ -470,20 +609,45 @@ namespace Rock.Cms.Cached
 
         #region ISecure Implementation
 
+        /// <summary>
+        /// Gets or sets the auth entity.
+        /// </summary>
+        /// <value>
+        /// The auth entity.
+        /// </value>
         public string AuthEntity { get; set; }
 
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
         public Security.ISecured ParentAuthority
         {
             get { return this.ParentPage; }
         }
 
+        /// <summary>
+        /// A list of actions that this class supports.
+        /// </summary>
         public List<string> SupportedActions { get; set; }
 
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="user">The user.</param>
+        /// <returns></returns>
         public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
         {
             return Rock.Cms.Security.Authorization.Authorized( this, action, user );
         }
 
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
         public bool DefaultAuthorization( string action )
         {
             return action == "View";
@@ -493,11 +657,22 @@ namespace Rock.Cms.Cached
 
         #region Menu XML Methods
 
+        /// <summary>
+        /// Returns XML for a page menu.  XML will be 1 level deep
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns></returns>
         public XDocument MenuXml( System.Web.Security.MembershipUser user )
         {
             return MenuXml( 1, user );
         }
 
+        /// <summary>
+        /// Returns XML for a page menu.
+        /// </summary>
+        /// <param name="levelsDeep">The page levels deep.</param>
+        /// <param name="user">The user.</param>
+        /// <returns></returns>
         public XDocument MenuXml( int levelsDeep, System.Web.Security.MembershipUser user )
         {
             XElement menuElement = MenuXmlElement( levelsDeep, user );

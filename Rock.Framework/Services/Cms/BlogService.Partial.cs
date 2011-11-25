@@ -13,6 +13,15 @@ namespace Rock.Services.Cms
 {
     public partial class BlogService: IFeed
     {
+        /// <summary>
+        /// Returns the feed.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="count">The count.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="contentType">Type of the content.</param>
+        /// <returns></returns>
         public string ReturnFeed( int key, int count, string format, out string errorMessage, out string contentType )
         {
             errorMessage = string.Empty;

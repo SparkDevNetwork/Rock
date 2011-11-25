@@ -23,6 +23,9 @@ namespace Rock.Cms
     {
         #region Events
 
+        /// <summary>
+        /// Occurs when the block instance properties are updated.
+        /// </summary>
         public event EventHandler<EventArgs> AttributesUpdated;
 
         #endregion
@@ -57,7 +60,6 @@ namespace Rock.Cms
             get { return ( ( CmsPage )this.Page ).CurrentUser; }
         }
 
-
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
         /// </summary>
@@ -70,8 +72,8 @@ namespace Rock.Cms
         /// Relative path to the current theme and layout folder.  Useful for setting paths to
         /// theme resource files
         /// <example>
-        /// Client Side: <img src='<%= ThemePath %>/Images/avatar.gif' />
-        /// Server Side: myImg.ImageUrl = ThemePath + "/Images/avatar.gif";
+        /// Client Side: <c><img src='<%= ThemePath %>/Images/avatar.gif' /></c>
+        /// Server Side: <c>myImg.ImageUrl = ThemePath + "/Images/avatar.gif";</c>
         /// </example>
         /// </summary>
         public string ThemePath
@@ -156,6 +158,10 @@ namespace Rock.Cms
                 this.PageInstance.Id, BlockInstance.Id, key );
         }
 
+        /// <summary>
+        /// Adds an update trigger for when the block instance properties are updated.
+        /// </summary>
+        /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
             if ( BlockInstance.Authorized( "Configure", CurrentUser ) )
@@ -232,11 +238,19 @@ namespace Rock.Cms
             this.Controls.Add( notification );
         }
 
+        /// <summary>
+        /// Clear all child controls and add a notification box with an error message
+        /// </summary>
+        /// <param name="message">The message.</param>
         public void DisplayError( string message )
         {
             DisplayNotification( "Error", Rock.Controls.NotificationBoxType.Error, message );
         }
 
+        /// <summary>
+        /// Clear all child controls and add a notification box with a warning message
+        /// </summary>
+        /// <param name="message">The message.</param>
         public void DisplayWarning( string message )
         {
             DisplayNotification( "Warning", Rock.Controls.NotificationBoxType.Warning, message );
@@ -291,7 +305,7 @@ namespace Rock.Cms
         }
 
         /// <summary>
-        /// Adds iconts to the configuration area of a block instance.  Can be overridden to
+        /// Adds icons to the configuration area of a block instance.  Can be overridden to
         /// add additionsl icons
         /// </summary>
         /// <param name="canConfig"></param>
@@ -361,6 +375,11 @@ namespace Rock.Cms
             return configControls;
         }
 
+        /// <summary>
+        /// Handles the Click event of the trigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void trigger_Click( object sender, EventArgs e )
         {
             if ( AttributesUpdated != null )
@@ -371,6 +390,9 @@ namespace Rock.Cms
 
         #region Internal Methods
 
+        /// <summary>
+        /// Creates and or updates any attributes defined for the block
+        /// </summary>
         internal void CreateAttributes()
         {
             if ( Rock.Attribute.Helper.CreateAttributes( this.GetType(),
@@ -384,6 +406,11 @@ namespace Rock.Cms
 
         #region Event Handlers
 
+        /// <summary>
+        /// Handles the BlockInstanceAttributesUpdated event of the CmsBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Cms.BlockInstanceAttributesUpdatedEventArgs"/> instance containing the event data.</param>
         void CmsBlock_BlockInstanceAttributesUpdated( object sender, BlockInstanceAttributesUpdatedEventArgs e )
         {
             if ( e.BlockInstanceID == BlockInstance.Id && AttributesUpdated != null )

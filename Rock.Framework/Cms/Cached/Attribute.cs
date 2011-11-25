@@ -5,8 +5,8 @@ using System.Runtime.Caching;
 namespace Rock.Cms.Cached
 {
     /// <summary>
-    /// Information about a attribute that is required by the rendering engine.
-    /// This information will be cached by the engine
+    /// Information about an attribute that is required by the rendering engine.
+    /// This information will be cached by Rock
     /// </summary>
     public class Attribute
     {
@@ -15,20 +15,64 @@ namespace Rock.Cms.Cached
         /// </summary>
         private Attribute() { }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the key.
+        /// </summary>
         public string Key { get; private set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating if this attribute should be displayed in a column when this attribute's parent object is
+        /// listed in a grid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if it should be added as a column; otherwise, <c>false</c>.
+        /// </value>
         public bool GridColumn { get; private set; }
+
+        /// <summary>
+        /// Gets the default value for the attribute
+        /// </summary>
         public string DefaultValue { get; private set; }
+
+        /// <summary>
+        /// Gets the qualifier values if any have been defined for the attribute
+        /// </summary>
         public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; private set; }
 
         private int FieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets the type of the field.
+        /// </summary>
+        /// <value>
+        /// The type of the field.
+        /// </value>
         public FieldType FieldType 
         {
             get { return FieldType.Read( FieldTypeId ); }
         }
 
+        /// <summary>
+        /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="setValue">if set to <c>true</c> set the control's value</param>
+        /// <returns></returns>
         public System.Web.UI.Control CreateControl( string value, bool setValue)
         {
             this.FieldType.Field.QualifierValues = this.QualifierValues;
@@ -91,6 +135,11 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Copies the properties of a <see cref="Rock.Models.Core.Attribute"/> object to a <see cref="Attribute"/> object/>
+        /// </summary>
+        /// <param name="attributeModel">The attribute model.</param>
+        /// <returns></returns>
         public static Attribute CopyModel( Rock.Models.Core.Attribute attributeModel )
         {
             Attribute attribute = new Attribute();

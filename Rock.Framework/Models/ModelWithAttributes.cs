@@ -8,7 +8,7 @@ using System.Web;
 namespace Rock.Models
 {
     /// <summary>
-    /// If model needs to support attributes it should inherit from this base class instead of the Model class
+    /// Represents a model with attributes. 
     /// </summary>
     [IgnoreProperties(new[] { "AttributeValues" })]
     public class ModelWithAttributes<T> : Model<T>, Rock.Attribute.IHasAttributes
@@ -17,14 +17,21 @@ namespace Rock.Models
         // to tell WCF Data Services not to worry about the associated properties.
 
         /// <summary>
-        /// Collection of attributes for an instance of a model
+        /// List of attributes associated with the object.  This property will not include the attribute values.
+        /// The <see cref="AttributeValues"/> property should be used to get attribute values
         /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
         [NotMapped]
         public List<Rock.Cms.Cached.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// Lightweight collection of attribute name and values
+        /// Dictionary of all attributes and their value.
         /// </summary>
+        /// <value>
+        /// The attribute values.
+        /// </value>
         [NotMapped]
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
     }

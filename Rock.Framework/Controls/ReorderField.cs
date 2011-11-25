@@ -10,9 +10,20 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Controls
 {
+    /// <summary>
+    /// <see cref="Grid"/> Column for reordering rows in a grid
+    /// </summary>
     [ToolboxData( "<{0}:ReorderField runat=server></{0}:ReorderField>" )]
     public class ReorderField : TemplateField
     {
+        /// <summary>
+        /// Performs basic instance initialization for a data control field.
+        /// </summary>
+        /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+        /// <returns>
+        /// Always returns false.
+        /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
             Grid grid = control as Grid;
@@ -59,6 +70,9 @@ namespace Rock.Controls
         }
     }
 
+    /// <summary>
+    /// Template used by the <see cref="ReorderField"/> control
+    /// </summary>
     public class ReorderFieldTemplate : ITemplate
     {
         public void InstantiateIn( Control container )

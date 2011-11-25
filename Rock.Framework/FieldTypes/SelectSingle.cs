@@ -13,17 +13,27 @@ namespace Rock.FieldTypes
     /// </summary>
     public class SelectSingle : Field
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectSingle"/> class.
+        /// </summary>
         public SelectSingle()
             : base()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SelectSingle"/> class.
+        /// </summary>
+        /// <param name="qualifierValues">The qualifier values.</param>
         public SelectSingle( Dictionary<string, KeyValuePair<string, string>> qualifierValues )
             : base( qualifierValues )
         {
         }
 
         private List<FieldQualifier> qualifiers = null;
+        /// <summary>
+        /// Gets the qualifiers.
+        /// </summary>
         public override List<FieldQualifier> Qualifiers
         {
             get
@@ -54,6 +64,12 @@ namespace Rock.FieldTypes
             }
         }
 
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public override bool IsValid( string value, out string message )
         {
             if (!this.QualifierValues["Values"].Value.Split( ',' ).Contains(value))
@@ -65,6 +81,12 @@ namespace Rock.FieldTypes
             return base.IsValid( value, out message );
         }
 
+        /// <summary>
+        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="setValue"></param>
+        /// <returns></returns>
         public override Control CreateControl(string value, bool setValue)
         {
             ListControl listControl;
@@ -90,6 +112,11 @@ namespace Rock.FieldTypes
             return listControl;
         }
 
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control"></param>
+        /// <returns></returns>
         public override string ReadValue( Control control )
         {
             if ( control != null && control is ListControl )

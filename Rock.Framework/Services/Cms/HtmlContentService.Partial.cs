@@ -11,6 +11,12 @@ namespace Rock.Services.Cms
 {
     public partial class HtmlContentService
     {
+        /// <summary>
+        /// Gets the active content by block id and entity value.
+        /// </summary>
+        /// <param name="blockId">The block id.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
         public Rock.Models.Cms.HtmlContent GetActiveContentByBlockKey( int blockId, string entityValue )
         {
             // return the most recently approved item

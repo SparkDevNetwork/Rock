@@ -10,6 +10,9 @@ namespace Rock.Models.Crm
 {
     public partial class Address
     {
+        /// <summary>
+        /// Updates the raw value by concatenating all the parts of the address
+        /// </summary>
         internal void UpdateRaw()
         {
             if ( this.Raw.Trim() == string.Empty )

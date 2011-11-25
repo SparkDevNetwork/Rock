@@ -25,11 +25,20 @@ namespace Rock.Services.Util
 {
     public partial class JobService
     {
+        /// <summary>
+        /// Gets the active jobs.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Rock.Models.Util.Job> GetActiveJobs()
         {
             return Repository.Find( t => t.Active == true );
         }
 
+        /// <summary>
+        /// Builds the quartz job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns></returns>
         public IJobDetail BuildQuartzJob(Job job)
         {
             // build the type object, will depend if the class is in an assembly or the App_Code folder
@@ -68,6 +77,11 @@ namespace Rock.Services.Util
             return jobDetail;
         }
 
+        /// <summary>
+        /// Builds the quartz trigger.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns></returns>
         public ITrigger BuildQuartzTrigger(Job job)
         {
             // create quartz trigger

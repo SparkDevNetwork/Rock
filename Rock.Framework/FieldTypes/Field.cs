@@ -14,17 +14,35 @@ namespace Rock.FieldTypes
     /// </summary>
     public abstract class Field : IFieldType
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Field"/> class.
+        /// </summary>
         public Field()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Field"/> class.
+        /// </summary>
+        /// <param name="qualifierValues">The qualifier values.</param>
         public Field( Dictionary<string, KeyValuePair<string, string>> qualifierValues )
         {
             this.QualifierValues = qualifierValues;
         }
 
+        /// <summary>
+        /// Gets or sets the qualifier values.
+        /// </summary>
+        /// <value>
+        /// The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
+        /// key contains the qualifier name, and the KeyValuePair's value contains the qualifier
+        /// value
+        /// </value>
         public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; set; }
 
+        /// <summary>
+        /// Gets the qualifiers.
+        /// </summary>
         public virtual List<FieldQualifier> Qualifiers
         {
             get { return null; }

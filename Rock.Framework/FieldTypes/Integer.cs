@@ -6,10 +6,16 @@ using System.Web;
 namespace Rock.FieldTypes
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and dispaly a numeric value
     /// </summary>
     public class Integer : Field
     {
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public override bool IsValid( string value, out string message )
         {
             int result;

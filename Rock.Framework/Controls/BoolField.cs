@@ -8,9 +8,20 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Controls
 {
+    /// <summary>
+    /// <see cref="Grid"/> Column to display a boolean value.
+    /// </summary>
     [ToolboxData( "<{0}:BoolField runat=server></{0}:BoolField>" )]
     public class BoolField : BoundField
     {
+        /// <summary>
+        /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+        /// </summary>
+        /// <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
+        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField"/>.</param>
+        /// <returns>
+        /// false in all cases.
+        /// </returns>
         public override bool Initialize( bool enableSorting, Control control )
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
@@ -19,6 +30,14 @@ namespace Rock.Controls
             return base.Initialize( enableSorting, control );
         }
 
+        /// <summary>
+        /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+        /// </summary>
+        /// <param name="dataValue">The field value to format.</param>
+        /// <param name="encode">true to encode the value; otherwise, false.</param>
+        /// <returns>
+        /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString"/>.
+        /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
             bool boolValue = false;

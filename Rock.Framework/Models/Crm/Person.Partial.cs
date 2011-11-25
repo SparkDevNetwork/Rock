@@ -11,6 +11,9 @@ namespace Rock.Models.Crm
     //[MetadataType(typeof(CommentPerson))]
     public partial class Person
     {
+        /// <summary>
+        /// Gets the full name.
+        /// </summary>
         public string FullName
         {
             get
@@ -19,6 +22,12 @@ namespace Rock.Models.Crm
             }
         }
 
+        /// <summary>
+        /// Gets or sets the birth date.
+        /// </summary>
+        /// <value>
+        /// The birth date.
+        /// </value>
         [NotMapped]
         public DateTime BirthDate
         {

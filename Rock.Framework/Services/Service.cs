@@ -9,35 +9,67 @@ using Rock.Repository;
 //using Rock.Models.Core;
 //using Rock.Services.Core;
 
+/// <summary>
+/// Rock POCO service layer
+/// </summary>
 namespace Rock.Services
 {
+    /// <summary>
+    /// Generic POCO service class
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Service<T> where T : Rock.Models.Model<T>
     {
         private IRepository<T> _repository;
+        /// <summary>
+        /// Gets the repository.
+        /// </summary>
         protected IRepository<T> Repository 
         {
             get { return _repository; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
+        /// </summary>
         public Service()
 			: this( new EntityRepository<T>() )
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="Repository">The repository.</param>
         public Service( IRepository<T> Repository )
         {
             _repository = Repository;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IQueryable<T>"/> list of all models
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<T> Queryable()
         {
             return _repository.AsQueryable();
         }
 
+        /// Gets the first model matching the where expression.  Returns null if no models 
+        /// match.
+        /// </summary>
+        /// <param name="where">where expression</param>
+        /// <returns></returns>
         public T Get( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
 
+        /// <summary>
+        /// Adds the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         public bool Add( T item, int? personId )
         {
             if ( item.Guid == Guid.Empty )
@@ -54,11 +86,21 @@ namespace Rock.Services
                 return false;
         }
 
+        /// <summary>
+        /// Attaches the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void Attach( T item )
         {
             _repository.Attach( item );
         }
 
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         public bool Delete( T item, int? personId  )
         {
             bool cancel = false;
@@ -72,6 +114,11 @@ namespace Rock.Services
                 return false;
         }
 
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person id.</param>
         public void Save( T item, int? personId )
         {
             List<Rock.Models.Core.EntityChange> entityChanges = _repository.Save( personId );
@@ -87,6 +134,13 @@ namespace Rock.Services
             }
         }
 
+        /// <summary>
+        /// Reorders the specified items.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <param name="personId">The person id.</param>
         public void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
         {
             T movedItem = items[oldIndex];

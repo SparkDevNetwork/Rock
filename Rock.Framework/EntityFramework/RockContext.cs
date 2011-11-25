@@ -20,6 +20,9 @@ using System.Web;
 
 namespace Rock.EntityFramework
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class RockContext : DbContext
     {
         public DbSet<Rock.Models.Cms.Auth> Auths { get; set; }

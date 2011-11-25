@@ -19,6 +19,9 @@ using Rock.Services.Cms;
 using Rock.Helpers;
 using Rock.Cms.Security;
 
+/// <summary>
+/// Classes used for rendering the Rock Content Management System (CMS)
+/// </summary>
 namespace Rock.Cms
 {
     /// <summary>
@@ -35,6 +38,9 @@ namespace Rock.Cms
 
         #region Protected Variables
 
+        /// <summary>
+        /// The full name of the currently logged in user
+        /// </summary>
         protected string UserName = string.Empty;
 
         #endregion
@@ -128,7 +134,10 @@ namespace Rock.Cms
                 Context.Items.Add( "CurrentPerson", value );
             }
         }
-
+        
+        /// <summary>
+        /// Gets the root url path
+        /// </summary>
         public string AppPath
         {
             get
@@ -137,6 +146,9 @@ namespace Rock.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the full url path to the current theme folder
+        /// </summary>
         public string ThemePath
         {
             get
@@ -161,6 +173,17 @@ namespace Rock.Cms
 
         #region Protected Methods
 
+        /// <summary>
+        /// Find the <see cref="System.Web.UI.Control"/> for the specified zone name.  First looks in the
+        /// <see cref="Zones"/> property to see if it has been defined.  If not will then Recurse through 
+        /// the controls on the page to find a control who's id ends with the specified zone name.
+        /// </summary>
+        /// <remarks>
+        /// If an existing zone <see cref="System.Web.UI.Control"/> cannot be found, the <see cref="Form"/> control
+        /// is returned
+        /// </remarks>
+        /// <param name="zoneName">Name of the zone.</param>
+        /// <returns></returns>
         protected virtual Control FindZone( string zoneName )
         {
             // First look in the Zones dictionary
@@ -219,6 +242,7 @@ namespace Rock.Cms
         /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
+            // Add the ScriptManager to each page
             ScriptManager sm = ScriptManager.GetCurrent( this.Page );
             if ( sm == null )
             {
@@ -230,6 +254,8 @@ namespace Rock.Cms
             // Get current user/person info
             MembershipUser user = CurrentUser;
 
+            // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
+            // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
                 UserName = user.UserName;
@@ -267,6 +293,8 @@ namespace Rock.Cms
                     Response.Redirect( redirectUrl ); 
                 }
                 
+                // Verify that the current user is allowed to view the page.  If not, and 
+                // the user hasn't logged in yet, redirect to the login page
                 if ( !PageInstance.Authorized( "View", user ) )
                 {
                     if ( user == null || !user.IsApproved )
@@ -403,30 +431,35 @@ namespace Rock.Cms
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
 
+                        // Block Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
                         aBlockConfig.Attributes.Add( "href", "#" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
 
+                        // Page Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
                         aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
                         aAttributes.Attributes.Add( "title", "Page Properties" );
 
+                        // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-iframe-dialog" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
 
+                        // Page Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "page-zones icon-button" );
                         aPageZones.Attributes.Add( "href", "#" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
 
+                        // Page Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "page-security icon-button show-iframe-dialog" );
@@ -448,14 +481,22 @@ namespace Rock.Cms
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             Page.Header.DataBind();
         }
-        
-        
+
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -497,6 +538,7 @@ namespace Rock.Cms
 
         #region CMS Admin Content
 
+        // Adds the neccessary script elements for managing the page/zone/blocks
         private void AddConfigElements()
         {
             string script = @"
@@ -624,6 +666,7 @@ namespace Rock.Cms
 
         }
 
+        // Adds the configuration html elements for editing a block
         private void AddBlockConfig( Rock.Controls.HtmlGenericContainer blockWrapper, CmsBlock cmsBlock, 
             Cached.BlockInstance blockInstance, bool canConfig, bool canEdit )
         {
@@ -651,13 +694,19 @@ namespace Rock.Cms
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
+        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddCSSLink( System.Web.UI.Page page, string href )
         {
             AddCSSLink( page, href, string.Empty );
         }
 
+        /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
+        /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">Type of the media to use for the css link.</param>
         public static void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
         {
             System.Web.UI.HtmlControls.HtmlLink htmlLink = new System.Web.UI.HtmlControls.HtmlLink();
@@ -674,6 +723,8 @@ namespace Rock.Cms
         /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered
         /// </summary>
+        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
+        /// <param name="htmlLink">A <see cref="System.Web.UI.HtmlControls.HtmlLink"/> control</param>
         public static void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
         {
             if ( page != null && page.Header != null )
@@ -733,7 +784,7 @@ namespace Rock.Cms
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">Current System.Web.UI.Page</param>
+        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
         /// <param name="href">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( System.Web.UI.Page page, string path )
         {
@@ -967,6 +1018,9 @@ namespace Rock.Cms
 
     #region Event Argument Classes
 
+    /// <summary>
+    /// Event Argument used when block instance properties are updated
+    /// </summary>
     internal class BlockInstanceAttributesUpdatedEventArgs : EventArgs
     {
         public int BlockInstanceID { get; private set; }
@@ -977,17 +1031,42 @@ namespace Rock.Cms
         }
     }
 
+    /// <summary>
+    /// JSON Object used for client/server communication
+    /// </summary>
     internal class JsonResult
     {
+        /// <summary>
+        /// Gets or sets the action.
+        /// </summary>
+        /// <value>
+        /// The action.
+        /// </value>
         public string Action { get; set; }
+
+        /// <summary>
+        /// Gets or sets the result.
+        /// </summary>
+        /// <value>
+        /// The result.
+        /// </value>
         public object Result { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonResult"/> class.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="result">The result.</param>
         public JsonResult( string action, object result )
         {
             Action = action;
             Result = result;
         }
 
+        /// <summary>
+        /// Serializes this instance.
+        /// </summary>
+        /// <returns></returns>
         public string Serialize()
         {
             System.Web.Script.Serialization.JavaScriptSerializer serializer =

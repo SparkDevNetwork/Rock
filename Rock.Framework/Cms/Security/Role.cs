@@ -16,9 +16,24 @@ namespace Rock.Cms.Security
         /// </summary>
         private Role() { }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the GUID.
+        /// </summary>
         public Guid Guid { get; private set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the users that belong to the role
+        /// </summary>
         public List<string> Users { get; private set; }
 
         /// <summary>
@@ -85,6 +100,10 @@ namespace Rock.Cms.Security
             }
         }
 
+        /// <summary>
+        /// Returns a list of all the possible Roles
+        /// </summary>
+        /// <returns></returns>
         public static List<Role> AllRoles()
         {
             List<Role> roles = new List<Role>();

@@ -15,10 +15,35 @@ namespace Rock.Cms.Cached
         /// </summary>
         private BlockInstance() { }
 
+        /// <summary>
+        /// The Id
+        /// </summary>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets the zone.
+        /// </summary>
         public string Zone { get; private set; }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
         public int Order { get; private set; }
+
+        /// <summary>
+        /// Gets the duration of the output cache. If value is 0, the output will not be cached
+        /// </summary>
+        /// <value>
+        /// The duration of the output cache.
+        /// </value>
         public int OutputCacheDuration { get; private set; }
 
         /// <summary>
@@ -51,7 +76,14 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Gets the block id.
+        /// </summary>
         public int BlockId { get; private set; }
+
+        /// <summary>
+        /// Gets the block.
+        /// </summary>
         public Block Block
         {
             get
@@ -60,6 +92,10 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.BlockInstanceService blockInstanceService = new Services.Cms.BlockInstanceService();
@@ -73,6 +109,9 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Reloads the attribute values.
+        /// </summary>
         public void ReloadAttributeValues()
         {
             using ( new Rock.Helpers.UnitOfWorkScope() )
@@ -94,6 +133,12 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return this.Name;
@@ -192,20 +237,43 @@ namespace Rock.Cms.Cached
 
         #region ISecure Implementation
 
+        /// <summary>
+        /// The auth entity. The auth entity is a unique identifier for each type of class that implements
+        /// the <see cref="ISecured"/> interface.
+        /// </summary>
         public string AuthEntity { get; set; }
 
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
         public Security.ISecured ParentAuthority
         {
             get { return null; }
         }
 
+        /// <summary>
+        /// The list of actions that this class supports.
+        /// </summary>
         public List<string> SupportedActions { get; set; }
 
+        /// <summary>
+        /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="user">The user.</param>
+        /// <returns></returns>
         public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
         {
             return Rock.Cms.Security.Authorization.Authorized( this, action, user );
         }
 
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// returna <c>true</c> if they will be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
         public bool DefaultAuthorization( string action )
         {
             return action == "View";

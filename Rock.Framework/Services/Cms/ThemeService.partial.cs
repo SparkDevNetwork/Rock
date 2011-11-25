@@ -15,6 +15,10 @@ namespace Rock.Services.Cms
 	{
 		private string _themePath;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ThemeService"/> class.
+        /// </summary>
+        /// <param name="rootPath">The root path.</param>
 		public ThemeService( string rootPath )
 		{
 			_themePath = rootPath;
@@ -41,6 +45,11 @@ namespace Rock.Services.Cms
 			return list.ToArray();
 		}
 
+        /// <summary>
+        /// Gets the theme layout names.
+        /// </summary>
+        /// <param name="themeName">Name of the theme.</param>
+        /// <returns></returns>
 		public string[] GetThemeLayoutNames( string themeName )
 		{
 			string path = string.Format( @"{0}{1}\Layouts\", _themePath, themeName );
