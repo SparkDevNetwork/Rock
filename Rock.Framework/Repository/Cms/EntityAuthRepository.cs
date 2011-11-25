@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Auth POCO Repository class
+	/// </summary>
     public partial class EntityAuthRepository : EntityRepository<Rock.Models.Cms.Auth>, IAuthRepository
     {
     }

@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// User POCO Repository class
+	/// </summary>
     public partial class EntityUserRepository : EntityRepository<Rock.Models.Cms.User>, IUserRepository
     {
     }

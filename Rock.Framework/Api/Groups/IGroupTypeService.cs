@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Groups
 {
+	/// <summary>
+	/// Represents a REST WCF service for GroupTypes
+	/// </summary>
 	[ServiceContract]
     public partial interface IGroupTypeService
     {
+		/// <summary>
+		/// Gets a GroupType object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Groups.GroupType Get( string id );
 
+		/// <summary>
+		/// Updates a GroupType object
+		/// </summary>
         [OperationContract]
         void UpdateGroupType( string id, Rock.Models.Groups.GroupType GroupType );
 
+		/// <summary>
+		/// Creates a new GroupType object
+		/// </summary>
         [OperationContract]
         void CreateGroupType( Rock.Models.Groups.GroupType GroupType );
 
+		/// <summary>
+		/// Deletes a GroupType object
+		/// </summary>
         [OperationContract]
         void DeleteGroupType( string id );
     }

@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Groups
 {
+	/// <summary>
+	/// REST WCF service for GroupRoles
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Groups/GroupRole")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class GroupRoleService : IGroupRoleService, IService
     {
+		/// <summary>
+		/// Gets a GroupRole object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Groups.GroupRole Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Groups
             }
         }
 		
+		/// <summary>
+		/// Updates a GroupRole object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateGroupRole( string id, Rock.Models.Groups.GroupRole GroupRole )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Creates a new GroupRole object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateGroupRole( Rock.Models.Groups.GroupRole GroupRole )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Deletes a GroupRole object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteGroupRole( string id )
         {

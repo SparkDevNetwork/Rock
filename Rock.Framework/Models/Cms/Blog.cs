@@ -22,73 +22,182 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Blog POCO Entity.
+    /// </summary>
     [Table( "cmsBlog" )]
     public partial class Blog : ModelWithAttributes<Blog>, IAuditable
     {
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 75 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Subtitle.
+        /// </summary>
+        /// <value>
+        /// Subtitle.
+        /// </value>
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Subtitle { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
 		[MaxLength( 2000 )]
 		[DataMember]
 		public string Description { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Moderate Comments.
+        /// </summary>
+        /// <value>
+        /// Moderate Comments.
+        /// </value>
 		[DataMember]
 		public bool ModerateComments { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Public Publishing Point.
+        /// </summary>
+        /// <value>
+        /// Public Publishing Point.
+        /// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string PublicPublishingPoint { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Public Feed Address.
+        /// </summary>
+        /// <value>
+        /// Public Feed Address.
+        /// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string PublicFeedAddress { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Copyright Statement.
+        /// </summary>
+        /// <value>
+        /// Copyright Statement.
+        /// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string CopyrightStatement { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Allow Comments.
+        /// </summary>
+        /// <value>
+        /// Allow Comments.
+        /// </value>
 		[DataMember]
 		public bool AllowComments { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.Blog"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog Categories.
+        /// </summary>
+        /// <value>
+        /// Collection of Blog Categories.
+        /// </value>
 		public virtual ICollection<BlogCategory> BlogCategories { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog Posts.
+        /// </summary>
+        /// <value>
+        /// Collection of Blog Posts.
+        /// </value>
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog Tags.
+        /// </summary>
+        /// <value>
+        /// Collection of Blog Tags.
+        /// </value>
 		public virtual ICollection<BlogTag> BlogTags { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static Blog Read(int id)
-        {
-            return new Rock.Services.Cms.BlogService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Blog Configuration class.
+    /// </summary>
     public partial class BlogConfiguration : EntityTypeConfiguration<Blog>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogConfiguration"/> class.
+        /// </summary>
         public BlogConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

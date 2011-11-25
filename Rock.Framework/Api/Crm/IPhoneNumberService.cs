@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// Represents a REST WCF service for PhoneNumbers
+	/// </summary>
 	[ServiceContract]
     public partial interface IPhoneNumberService
     {
+		/// <summary>
+		/// Gets a PhoneNumber object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Crm.PhoneNumber Get( string id );
 
+		/// <summary>
+		/// Updates a PhoneNumber object
+		/// </summary>
         [OperationContract]
         void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber );
 
+		/// <summary>
+		/// Creates a new PhoneNumber object
+		/// </summary>
         [OperationContract]
         void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber );
 
+		/// <summary>
+		/// Deletes a PhoneNumber object
+		/// </summary>
         [OperationContract]
         void DeletePhoneNumber( string id );
     }

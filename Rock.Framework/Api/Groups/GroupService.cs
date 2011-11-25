@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Groups
 {
+	/// <summary>
+	/// REST WCF service for Groups
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Groups/Group")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class GroupService : IGroupService, IService
     {
+		/// <summary>
+		/// Gets a Group object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Groups.Group Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Groups
             }
         }
 		
+		/// <summary>
+		/// Updates a Group object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateGroup( string id, Rock.Models.Groups.Group Group )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Creates a new Group object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateGroup( Rock.Models.Groups.Group Group )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Deletes a Group object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteGroup( string id )
         {

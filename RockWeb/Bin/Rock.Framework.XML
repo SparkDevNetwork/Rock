@@ -429,7 +429,7 @@
         </member>
         <member name="T:Rock.Models.IAuditable">
             <summary>
-            Represents a model that tracks who and when a model was created and last updated
+            Represents a model that tracks when the model was created and last updated and by who
             </summary>
         </member>
         <member name="P:Rock.Models.IAuditable.Id">
@@ -2779,6 +2779,18 @@
             present for the type, it's value will be returned, otherwise the type name will be returned
             </summary>
             <param name="type">The type.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.ExtensionMethods">
+            <summary>
+            Extension Methods
+            </summary>
+        </member>
+        <member name="M:Rock.ExtensionMethods.SplitCase(System.String)">
+            <summary>
+            Splits a Camel or Pascal cased identifier into seperate words.
+            </summary>
+            <param name="str">The identifier.</param>
             <returns></returns>
         </member>
         <member name="T:Rock.Address.Standardize.StrikeIron">

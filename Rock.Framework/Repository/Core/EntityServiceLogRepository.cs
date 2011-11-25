@@ -19,6 +19,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Service Log POCO Repository class
+	/// </summary>
     public partial class EntityServiceLogRepository : EntityRepository<Rock.Models.Core.ServiceLog>, IServiceLogRepository
     {
     }

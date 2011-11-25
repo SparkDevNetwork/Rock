@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Util
 {
+	/// <summary>
+	/// Represents a REST WCF service for Jobs
+	/// </summary>
 	[ServiceContract]
     public partial interface IJobService
     {
+		/// <summary>
+		/// Gets a Job object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Util.Job Get( string id );
 
+		/// <summary>
+		/// Updates a Job object
+		/// </summary>
         [OperationContract]
         void UpdateJob( string id, Rock.Models.Util.Job Job );
 
+		/// <summary>
+		/// Creates a new Job object
+		/// </summary>
         [OperationContract]
         void CreateJob( Rock.Models.Util.Job Job );
 
+		/// <summary>
+		/// Deletes a Job object
+		/// </summary>
         [OperationContract]
         void DeleteJob( string id );
     }

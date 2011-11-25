@@ -20,24 +20,49 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// User POCO Service Layer class
+	/// </summary>
     public partial class UserService : Rock.Services.Service<Rock.Models.Cms.User>
     {
-        public Rock.Models.Cms.User GetByApplicationNameAndUsername( string applicationName, string username )
+		/// <summary>
+		/// Gets User by Application Name And Username
+		/// </summary>
+		/// <param name="applicationName">Application Name.</param>
+		/// <param name="username">Username.</param>
+		/// <returns>User object.<returns>
+	    public Rock.Models.Cms.User GetByApplicationNameAndUsername( string applicationName, string username )
         {
             return Repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
         }
 		
-        public IEnumerable<Rock.Models.Cms.User> GetByApplicationNameAndEmail( string applicationName, string email )
+		/// <summary>
+		/// Gets Users by Application Name And Email
+		/// </summary>
+		/// <param name="applicationName">Application Name.</param>
+		/// <param name="email">Email.</param>
+		/// <returns>An enumerable list of User objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.User> GetByApplicationNameAndEmail( string applicationName, string email )
         {
             return Repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
         }
 		
-        public Rock.Models.Cms.User GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets User by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>User object.<returns>
+	    public Rock.Models.Cms.User GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.User> GetByPersonId( int? personId )
+		/// <summary>
+		/// Gets Users by Person Id
+		/// </summary>
+		/// <param name="personId">Person Id.</param>
+		/// <returns>An enumerable list of User objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.User> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }

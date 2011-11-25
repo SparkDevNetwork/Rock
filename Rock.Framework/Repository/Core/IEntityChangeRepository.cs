@@ -16,6 +16,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Represents a Entity Change POCO Repository class
+	/// </summary>
     public interface IEntityChangeRepository : IRepository<Rock.Models.Core.EntityChange>
     {
     }

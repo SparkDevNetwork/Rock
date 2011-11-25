@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// Represents a REST WCF service for AttributeValues
+	/// </summary>
 	[ServiceContract]
     public partial interface IAttributeValueService
     {
+		/// <summary>
+		/// Gets a AttributeValue object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Core.AttributeValue Get( string id );
 
+		/// <summary>
+		/// Updates a AttributeValue object
+		/// </summary>
         [OperationContract]
         void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValue AttributeValue );
 
+		/// <summary>
+		/// Creates a new AttributeValue object
+		/// </summary>
         [OperationContract]
         void CreateAttributeValue( Rock.Models.Core.AttributeValue AttributeValue );
 
+		/// <summary>
+		/// Deletes a AttributeValue object
+		/// </summary>
         [OperationContract]
         void DeleteAttributeValue( string id );
     }

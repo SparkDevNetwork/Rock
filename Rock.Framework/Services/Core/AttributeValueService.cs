@@ -20,19 +20,38 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Attribute Value POCO Service Layer class
+	/// </summary>
     public partial class AttributeValueService : Rock.Services.Service<Rock.Models.Core.AttributeValue>
     {
-        public Rock.Models.Core.AttributeValue GetByAttributeIdAndEntityId( int attributeId, int? entityId )
+		/// <summary>
+		/// Gets Attribute Value by Attribute Id And Entity Id
+		/// </summary>
+		/// <param name="attributeId">Attribute Id.</param>
+		/// <param name="entityId">Entity Id.</param>
+		/// <returns>AttributeValue object.<returns>
+	    public Rock.Models.Core.AttributeValue GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
             return Repository.FirstOrDefault( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeValue> GetByEntityId( int? entityId )
+		/// <summary>
+		/// Gets Attribute Values by Entity Id
+		/// </summary>
+		/// <param name="entityId">Entity Id.</param>
+		/// <returns>An enumerable list of AttributeValue objects.<returns>
+	    public IEnumerable<Rock.Models.Core.AttributeValue> GetByEntityId( int? entityId )
         {
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
-        public IEnumerable<Rock.Models.Core.AttributeValue> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Attribute Values by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of AttributeValue objects.<returns>
+	    public IEnumerable<Rock.Models.Core.AttributeValue> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }

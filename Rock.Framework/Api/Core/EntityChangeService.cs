@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// REST WCF service for EntityChanges
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Core/EntityChange")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class EntityChangeService : IEntityChangeService, IService
     {
+		/// <summary>
+		/// Gets a EntityChange object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.EntityChange Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Core
             }
         }
 		
+		/// <summary>
+		/// Updates a EntityChange object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateEntityChange( string id, Rock.Models.Core.EntityChange EntityChange )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Creates a new EntityChange object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateEntityChange( Rock.Models.Core.EntityChange EntityChange )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Deletes a EntityChange object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteEntityChange( string id )
         {

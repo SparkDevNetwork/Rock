@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Block POCO Repository class
+	/// </summary>
     public interface IBlockRepository : IRepository<Rock.Models.Cms.Block>
     {
     }

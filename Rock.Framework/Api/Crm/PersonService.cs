@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// REST WCF service for People
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Crm/Person")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class PersonService : IPersonService, IService
     {
+		/// <summary>
+		/// Gets a Person object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Crm.Person Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Crm
             }
         }
 		
+		/// <summary>
+		/// Updates a Person object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePerson( string id, Rock.Models.Crm.Person Person )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Creates a new Person object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePerson( Rock.Models.Crm.Person Person )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Deletes a Person object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePerson( string id )
         {

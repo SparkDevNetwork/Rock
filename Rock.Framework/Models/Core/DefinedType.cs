@@ -22,57 +22,142 @@ using Rock.Models;
 
 namespace Rock.Models.Core
 {
+    /// <summary>
+    /// Defined Type POCO Entity.
+    /// </summary>
     [Table( "coreDefinedType" )]
     public partial class DefinedType : ModelWithAttributes<DefinedType>, IAuditable, IOrdered
     {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Field Type Id.
+        /// </summary>
+        /// <value>
+        /// Field Type Id.
+        /// </value>
 		[DataMember]
 		public int? FieldTypeId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
 		[DataMember]
 		public int Order { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.DefinedType"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// Collection of Defined Values.
+        /// </value>
 		public virtual ICollection<DefinedValue> DefinedValues { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Field Type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="FieldType"> object.
+        /// </value>
 		public virtual FieldType FieldType { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static DefinedType Read(int id)
-        {
-            return new Rock.Services.Core.DefinedTypeService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Defined Type Configuration class.
+    /// </summary>
     public partial class DefinedTypeConfiguration : EntityTypeConfiguration<DefinedType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedTypeConfiguration"/> class.
+        /// </summary>
         public DefinedTypeConfiguration()
         {
 			this.HasOptional( p => p.FieldType ).WithMany( p => p.DefinedTypes ).HasForeignKey( p => p.FieldTypeId );

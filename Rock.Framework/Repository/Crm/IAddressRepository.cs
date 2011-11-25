@@ -16,6 +16,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Represents a Address POCO Repository class
+	/// </summary>
     public interface IAddressRepository : IRepository<Rock.Models.Crm.Address>
     {
     }

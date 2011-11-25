@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Groups
 {
+	/// <summary>
+	/// Represents a REST WCF service for GroupRoles
+	/// </summary>
 	[ServiceContract]
     public partial interface IGroupRoleService
     {
+		/// <summary>
+		/// Gets a GroupRole object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Groups.GroupRole Get( string id );
 
+		/// <summary>
+		/// Updates a GroupRole object
+		/// </summary>
         [OperationContract]
         void UpdateGroupRole( string id, Rock.Models.Groups.GroupRole GroupRole );
 
+		/// <summary>
+		/// Creates a new GroupRole object
+		/// </summary>
         [OperationContract]
         void CreateGroupRole( Rock.Models.Groups.GroupRole GroupRole );
 
+		/// <summary>
+		/// Deletes a GroupRole object
+		/// </summary>
         [OperationContract]
         void DeleteGroupRole( string id );
     }

@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Site Domain POCO Repository class
+	/// </summary>
     public interface ISiteDomainRepository : IRepository<Rock.Models.Cms.SiteDomain>
     {
     }

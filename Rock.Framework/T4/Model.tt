@@ -21,6 +21,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
 
 <#@ import namespace="Microsoft.SqlServer.Management.Common" #>
 <#@ import namespace="Microsoft.SqlServer.Management.Smo" #>
@@ -141,6 +142,9 @@ using Rock.Models;
 
 namespace Rock.Models<#= projectNamespace #>
 {
+    /// <summary>
+    /// <#= TemplateHelper.SplitCase( Entity ) #> POCO Entity.
+    /// </summary>
     [Table( "<#= oneTable.Name #>" )]
     public partial class <#= Entity #> : <#= baseClass #><<#= Entity #>><#= iAuditable #><#= iOrdered #>
     {
@@ -153,21 +157,34 @@ namespace Rock.Models<#= projectNamespace #>
 			// Write the properties for each column in the table
 			foreach(Column column in oneTable.Columns)
 			{
-				// Add the [Key] attribute for all primary key columns
-				if (column.InPrimaryKey)
+				if (column.Name != "Id" && column.Name != "Guid")
 				{
-					primaryKeys.Add(column);
-					
-					if (column.Name != "Id")
+					// Get the column description
+					string colDesc = "";
+					ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
+					if (descProperty != null)
+						colDesc = descProperty.Value.ToString();
+#>
+        /// <summary>
+        /// Gets or sets the <#= TemplateHelper.SplitCase(column.Name) #>.
+        /// </summary>
+        /// <value>
+        /// <#= TemplateHelper.ColumnDescription(column) #>.
+        /// </value>
+<#
+					// Add the [Key] attribute for all primary key columns
+					if (column.InPrimaryKey)
 					{
+						primaryKeys.Add(column);
+					
+						if (column.Name != "Id")
+						{
 #>
 		[Key]
 <#
+						}
 					}
-				}
 				
-				if (column.Name != "Id" && column.Name != "Guid")
-				{
 					// If the column is a varchar with a specific length, add the [MaxLength]
 					// validation attribute
 					if ((column.DataType.ToString() == "varchar" || column.DataType.ToString() == "nvarchar") && column.DataType.MaximumLength > 0)
@@ -183,11 +200,8 @@ namespace Rock.Models<#= projectNamespace #>
 					if (column.DataType.ToString() == "int")
 					{
 						// Check for enumeration in the description property in the format enum[NameOfEnum]
-						ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
-						
-						if (descProperty != null)
+						if (colDesc != "")
 						{
-							string colDesc = descProperty.Value.ToString();
 							int iStart = colDesc.ToLower().IndexOf("enum[");
 							if (iStart >= 0)
 							{
@@ -233,6 +247,9 @@ namespace Rock.Models<#= projectNamespace #>
 				}
 			}
 #>
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "<#= Namespace #>.<#= Entity #>"; } }
 <#
@@ -291,7 +308,13 @@ namespace Rock.Models<#= projectNamespace #>
 						relatedNamespace += ".";
 				
 #>
-
+        
+		/// <summary>
+        /// Gets or sets the <#= TemplateHelper.SplitCase(pls.Pluralize(propertyName)) #>.
+        /// </summary>
+        /// <value>
+        /// Collection of <#= TemplateHelper.SplitCase(pls.Pluralize(propertyName)) #>.
+        /// </value>
 		public virtual ICollection<<#= relatedNamespace #><#= relatedEntity #>> <#= pls.Pluralize(propertyName) #> { get; set; }
 <#	
 				}
@@ -334,7 +357,13 @@ namespace Rock.Models<#= projectNamespace #>
 								relationshipType, propertyName, pls.Pluralize( Entity), colName ));
 				}
 #>
-
+        
+		/// <summary>
+        /// Gets or sets the <#= TemplateHelper.SplitCase(propertyName) #>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="<#= relatedNamespace #><#= relatedEntity #>"> object.
+        /// </value>
 		public virtual <#= relatedNamespace #><#= relatedEntity #> <#= propertyName #> { get; set; }
 <#
 			}
@@ -371,8 +400,14 @@ namespace Rock.Models<#= projectNamespace #>
 
     }
 
+    /// <summary>
+    /// <#= TemplateHelper.SplitCase( Entity ) #> Configuration class.
+    /// </summary>
     public partial class <#= Entity #>Configuration : EntityTypeConfiguration<<#= Entity #>>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= Entity #>Configuration"/> class.
+        /// </summary>
         public <#= Entity #>Configuration()
         {
 <#
@@ -430,6 +465,9 @@ using Rock.Models<#= projectNamespace #>;
 
 namespace Rock.Repository<#= projectNamespace #>
 {
+	/// <summary>
+	/// Represents a <#= TemplateHelper.SplitCase( Entity ) #> POCO Repository class
+	/// </summary>
     public interface I<#= Entity #>Repository : IRepository<<#= QualifiedEntity #>>
     {
     }
@@ -464,6 +502,9 @@ using Rock.Models<#= projectNamespace #>;
 
 namespace Rock.Repository<#= projectNamespace #>
 {
+	/// <summary>
+	/// <#= TemplateHelper.SplitCase( Entity ) #> POCO Repository class
+	/// </summary>
     public partial class Entity<#= Entity #>Repository : EntityRepository<<#= QualifiedEntity #>>, I<#= Entity #>Repository
     {
     }
@@ -499,6 +540,9 @@ using Rock.Repository<#= projectNamespace #>;
 
 namespace Rock.Services<#= projectNamespace #>
 {
+	/// <summary>
+	/// <#= TemplateHelper.SplitCase( Entity ) #> POCO Service Layer class
+	/// </summary>
     public partial class <#= Entity #>Service : Rock.Services.Service<<#= QualifiedEntity #>>
     {
 <#
@@ -508,7 +552,9 @@ namespace Rock.Services<#= projectNamespace #>
 				{
 					string returnName = index.IsUnique ? Entity : pls.Pluralize( Entity );
 					string returnType = index.IsUnique ? QualifiedEntity : string.Format("IEnumerable<{0}>", QualifiedEntity);
+					string returnTypeDesc = index.IsUnique ? Entity + " object"  : "An enumerable list of " + Entity + " objects";
 					string queryType = index.IsUnique ? "FirstOrDefault" : "Find";
+					StringBuilder paramClause = new StringBuilder();
 					StringBuilder getClause = new StringBuilder();
 					StringBuilder parameters = new StringBuilder();
 					StringBuilder linqClause = new StringBuilder();
@@ -525,6 +571,11 @@ namespace Rock.Services<#= projectNamespace #>
 							getClause.Length > 0 ? "And" : "",
 							column.Name);
 						
+						paramClause.AppendFormat("\n\t\t/// <param name=\"{0}{1}\">{2}.</param>",
+							column.Name.Substring(0,1).ToLower(),
+							column.Name.Substring(1),
+							TemplateHelper.ColumnDescription(column));
+							
 						parameters.AppendFormat("{0}{1} {2}{3}",
 							parameters.Length > 0 ? ", " : "",
 							TemplateHelper.ConvertDataType(column),
@@ -536,7 +587,11 @@ namespace Rock.Services<#= projectNamespace #>
 							TemplateHelper.WhereClause(column));
 					}
 #>
-        public <#= returnType #> GetBy<#= getClause #>( <#= parameters #> )
+		/// <summary>
+		/// Gets <#= TemplateHelper.SplitCase( returnName ) #> by <#= TemplateHelper.SplitCase(getClause.ToString()) #>
+		/// </summary><#= paramClause #>
+		/// <returns><#= returnTypeDesc #>.<returns>
+	    public <#= returnType #> GetBy<#= getClause #>( <#= parameters #> )
         {
             return Repository.<#= queryType #>( t => <#= linqClause #> )<#= orderByClause #>;
         }
@@ -572,18 +627,33 @@ using System.ServiceModel;
 
 namespace Rock.Api<#= projectNamespace #>
 {
+	/// <summary>
+	/// Represents a REST WCF service for <#= pls.Pluralize( Entity ) #>
+	/// </summary>
 	[ServiceContract]
     public partial interface I<#= Entity #>Service
     {
+		/// <summary>
+		/// Gets a <#= Entity #> object
+		/// </summary>
 		[OperationContract]
         <#= QualifiedEntity #> Get( string id );
 
+		/// <summary>
+		/// Updates a <#= Entity #> object
+		/// </summary>
         [OperationContract]
         void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> );
 
+		/// <summary>
+		/// Creates a new <#= Entity #> object
+		/// </summary>
         [OperationContract]
         void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> );
 
+		/// <summary>
+		/// Deletes a <#= Entity #> object
+		/// </summary>
         [OperationContract]
         void Delete<#= Entity #>( string id );
     }
@@ -618,11 +688,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api<#= projectNamespace #>
 {
+	/// <summary>
+	/// REST WCF service for <#= pls.Pluralize( Entity ) #>
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/<#= QualifiedEntity.Replace("Rock.Models.", "").Replace(".","/") #>")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class <#= Entity #>Service : I<#= Entity #>Service, IService
     {
+		/// <summary>
+		/// Gets a <#= Entity #> object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public <#= QualifiedEntity #> Get( string id )
         {
@@ -642,6 +718,9 @@ namespace Rock.Api<#= projectNamespace #>
             }
         }
 		
+		/// <summary>
+		/// Updates a <#= Entity #> object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> )
         {
@@ -665,6 +744,9 @@ namespace Rock.Api<#= projectNamespace #>
             }
         }
 
+		/// <summary>
+		/// Creates a new <#= Entity #> object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
         {
@@ -682,6 +764,9 @@ namespace Rock.Api<#= projectNamespace #>
             }
         }
 
+		/// <summary>
+		/// Deletes a <#= Entity #> object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void Delete<#= Entity #>( string id )
         {
@@ -738,6 +823,9 @@ using System.Web;
 
 namespace Rock.EntityFramework
 {
+	/// <summary>
+	/// Entity Framework Context
+	/// </summary
     public partial class RockContext : DbContext
     {
 <#
@@ -749,6 +837,11 @@ namespace Rock.EntityFramework
 		}
 #>
 
+        /// <summary>
+        /// This method is called when the context has been initialized, but
+        /// before the model has been locked down and used to initialize the context. 
+        /// </summary>
+        /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
 <#
@@ -826,6 +919,17 @@ public class TemplateHelper
 			sb.AppendFormat(" || ( {1} == null && t.{0} == null ) )", column.Name, columnName);
 		}
 		return sb.ToString();
+	}
+
+	// Get the column description
+	public static string ColumnDescription(Column column)
+	{
+		string colDesc = "";
+		ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
+		if (descProperty != null)
+			return descProperty.Value.ToString();
+		else
+			return SplitCase(column.Name);
 	}
 
 	// Get namespace from table name.  Namespace will be the text prior to the first
@@ -911,6 +1015,11 @@ public class TemplateHelper
 
         return attributes;
     }
+
+	public static string SplitCase(string str)
+	{
+        return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+	}
 
 }
 

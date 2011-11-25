@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for HtmlContents
+	/// </summary>
 	[ServiceContract]
     public partial interface IHtmlContentService
     {
+		/// <summary>
+		/// Gets a HtmlContent object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.HtmlContent Get( string id );
 
+		/// <summary>
+		/// Updates a HtmlContent object
+		/// </summary>
         [OperationContract]
         void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContent HtmlContent );
 
+		/// <summary>
+		/// Creates a new HtmlContent object
+		/// </summary>
         [OperationContract]
         void CreateHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent );
 
+		/// <summary>
+		/// Deletes a HtmlContent object
+		/// </summary>
         [OperationContract]
         void DeleteHtmlContent( string id );
     }

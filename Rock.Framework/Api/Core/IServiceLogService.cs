@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// Represents a REST WCF service for ServiceLogs
+	/// </summary>
 	[ServiceContract]
     public partial interface IServiceLogService
     {
+		/// <summary>
+		/// Gets a ServiceLog object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Core.ServiceLog Get( string id );
 
+		/// <summary>
+		/// Updates a ServiceLog object
+		/// </summary>
         [OperationContract]
         void UpdateServiceLog( string id, Rock.Models.Core.ServiceLog ServiceLog );
 
+		/// <summary>
+		/// Creates a new ServiceLog object
+		/// </summary>
         [OperationContract]
         void CreateServiceLog( Rock.Models.Core.ServiceLog ServiceLog );
 
+		/// <summary>
+		/// Deletes a ServiceLog object
+		/// </summary>
         [OperationContract]
         void DeleteServiceLog( string id );
     }

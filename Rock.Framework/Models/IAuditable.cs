@@ -6,9 +6,9 @@ using System.Text;
 namespace Rock.Models
 {
     /// <summary>
-    /// Represents a model that tracks who and when a model was created and last updated
+    /// Represents a model that tracks when the model was created and last updated and by who
     /// </summary>
-    internal interface IAuditable
+    public interface IAuditable
     {
         /// <summary>
         /// Gets the id.

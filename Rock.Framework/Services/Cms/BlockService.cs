@@ -20,19 +20,37 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Block POCO Service Layer class
+	/// </summary>
     public partial class BlockService : Rock.Services.Service<Rock.Models.Cms.Block>
     {
-        public IEnumerable<Rock.Models.Cms.Block> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Blocks by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of Block objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Block> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Block> GetByName( string name )
+		/// <summary>
+		/// Gets Blocks by Name
+		/// </summary>
+		/// <param name="name">Name.</param>
+		/// <returns>An enumerable list of Block objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Block> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Block> GetByPath( string path )
+		/// <summary>
+		/// Gets Blocks by Path
+		/// </summary>
+		/// <param name="path">Path.</param>
+		/// <returns>An enumerable list of Block objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Block> GetByPath( string path )
         {
             return Repository.Find( t => t.Path == path );
         }

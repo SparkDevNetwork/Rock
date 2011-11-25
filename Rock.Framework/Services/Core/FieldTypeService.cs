@@ -20,14 +20,27 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Field Type POCO Service Layer class
+	/// </summary>
     public partial class FieldTypeService : Rock.Services.Service<Rock.Models.Core.FieldType>
     {
-        public IEnumerable<Rock.Models.Core.FieldType> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Field Types by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of FieldType objects.<returns>
+	    public IEnumerable<Rock.Models.Core.FieldType> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Core.FieldType> GetByName( string name )
+		/// <summary>
+		/// Gets Field Types by Name
+		/// </summary>
+		/// <param name="name">Name.</param>
+		/// <returns>An enumerable list of FieldType objects.<returns>
+	    public IEnumerable<Rock.Models.Core.FieldType> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }

@@ -20,14 +20,27 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Attribute POCO Service Layer class
+	/// </summary>
     public partial class AttributeService : Rock.Services.Service<Rock.Models.Core.Attribute>
     {
-        public IEnumerable<Rock.Models.Core.Attribute> GetByEntity( string entity )
+		/// <summary>
+		/// Gets Attributes by Entity
+		/// </summary>
+		/// <param name="entity">Entity.</param>
+		/// <returns>An enumerable list of Attribute objects.<returns>
+	    public IEnumerable<Rock.Models.Core.Attribute> GetByEntity( string entity )
         {
             return Repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
         }
 		
-        public Rock.Models.Core.Attribute GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Attribute by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>Attribute object.<returns>
+	    public Rock.Models.Core.Attribute GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }

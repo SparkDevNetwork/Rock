@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for Blocks
+	/// </summary>
 	[ServiceContract]
     public partial interface IBlockService
     {
+		/// <summary>
+		/// Gets a Block object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.Block Get( string id );
 
+		/// <summary>
+		/// Updates a Block object
+		/// </summary>
         [OperationContract]
         void UpdateBlock( string id, Rock.Models.Cms.Block Block );
 
+		/// <summary>
+		/// Creates a new Block object
+		/// </summary>
         [OperationContract]
         void CreateBlock( Rock.Models.Cms.Block Block );
 
+		/// <summary>
+		/// Deletes a Block object
+		/// </summary>
         [OperationContract]
         void DeleteBlock( string id );
     }

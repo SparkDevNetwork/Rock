@@ -20,14 +20,27 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
+	/// <summary>
+	/// Group Role POCO Service Layer class
+	/// </summary>
     public partial class GroupRoleService : Rock.Services.Service<Rock.Models.Groups.GroupRole>
     {
-        public IEnumerable<Rock.Models.Groups.GroupRole> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Group Roles by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of GroupRole objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.GroupRole> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Groups.GroupRole> GetByOrder( int? order )
+		/// <summary>
+		/// Gets Group Roles by Order
+		/// </summary>
+		/// <param name="order">Order.</param>
+		/// <returns>An enumerable list of GroupRole objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.GroupRole> GetByOrder( int? order )
         {
             return Repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
         }

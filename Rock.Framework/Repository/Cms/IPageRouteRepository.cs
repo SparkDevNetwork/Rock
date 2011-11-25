@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Page Route POCO Repository class
+	/// </summary>
     public interface IPageRouteRepository : IRepository<Rock.Models.Cms.PageRoute>
     {
     }

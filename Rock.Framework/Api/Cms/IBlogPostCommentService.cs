@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for BlogPostComments
+	/// </summary>
 	[ServiceContract]
     public partial interface IBlogPostCommentService
     {
+		/// <summary>
+		/// Gets a BlogPostComment object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.BlogPostComment Get( string id );
 
+		/// <summary>
+		/// Updates a BlogPostComment object
+		/// </summary>
         [OperationContract]
         void UpdateBlogPostComment( string id, Rock.Models.Cms.BlogPostComment BlogPostComment );
 
+		/// <summary>
+		/// Creates a new BlogPostComment object
+		/// </summary>
         [OperationContract]
         void CreateBlogPostComment( Rock.Models.Cms.BlogPostComment BlogPostComment );
 
+		/// <summary>
+		/// Deletes a BlogPostComment object
+		/// </summary>
         [OperationContract]
         void DeleteBlogPostComment( string id );
     }

@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Html Content POCO Repository class
+	/// </summary>
     public partial class EntityHtmlContentRepository : EntityRepository<Rock.Models.Cms.HtmlContent>, IHtmlContentRepository
     {
     }

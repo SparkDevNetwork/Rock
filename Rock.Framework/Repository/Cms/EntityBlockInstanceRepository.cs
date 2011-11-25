@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Block Instance POCO Repository class
+	/// </summary>
     public partial class EntityBlockInstanceRepository : EntityRepository<Rock.Models.Cms.BlockInstance>, IBlockInstanceRepository
     {
     }

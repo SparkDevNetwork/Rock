@@ -20,19 +20,39 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Block Instance POCO Service Layer class
+	/// </summary>
     public partial class BlockInstanceService : Rock.Services.Service<Rock.Models.Cms.BlockInstance>
     {
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayout( string layout )
+		/// <summary>
+		/// Gets Block Instances by Layout
+		/// </summary>
+		/// <param name="layout">Layout.</param>
+		/// <returns>An enumerable list of BlockInstance objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayout( string layout )
         {
             return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByPageId( int? pageId )
+		/// <summary>
+		/// Gets Block Instances by Page Id
+		/// </summary>
+		/// <param name="pageId">Page Id.</param>
+		/// <returns>An enumerable list of BlockInstance objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.BlockInstance> GetByPageId( int? pageId )
         {
             return Repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
+		/// <summary>
+		/// Gets Block Instances by Layout And Page Id And Zone
+		/// </summary>
+		/// <param name="layout">Layout.</param>
+		/// <param name="pageId">Page Id.</param>
+		/// <param name="zone">Zone.</param>
+		/// <returns>An enumerable list of BlockInstance objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.BlockInstance> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
         {
             return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
         }

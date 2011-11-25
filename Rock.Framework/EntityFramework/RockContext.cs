@@ -20,9 +20,9 @@ using System.Web;
 
 namespace Rock.EntityFramework
 {
-    /// <summary>
-    /// 
-    /// </summary>
+	/// <summary>
+	/// Entity Framework Context
+	/// </summary
     public partial class RockContext : DbContext
     {
         public DbSet<Rock.Models.Cms.Auth> Auths { get; set; }
@@ -57,6 +57,11 @@ namespace Rock.EntityFramework
         public DbSet<Rock.Models.Groups.Member> Members { get; set; }
         public DbSet<Rock.Models.Util.Job> Jobs { get; set; }
 
+        /// <summary>
+        /// This method is called when the context has been initialized, but
+        /// before the model has been locked down and used to initialize the context. 
+        /// </summary>
+        /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             modelBuilder.Configurations.Add( new Rock.Models.Cms.AuthConfiguration() );

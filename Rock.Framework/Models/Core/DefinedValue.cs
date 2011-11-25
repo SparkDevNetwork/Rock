@@ -22,55 +22,134 @@ using Rock.Models;
 
 namespace Rock.Models.Core
 {
+    /// <summary>
+    /// Defined Value POCO Entity.
+    /// </summary>
     [Table( "coreDefinedValue" )]
     public partial class DefinedValue : ModelWithAttributes<DefinedValue>, IAuditable, IOrdered
     {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Defined Type Id.
+        /// </summary>
+        /// <value>
+        /// Defined Type Id.
+        /// </value>
 		[DataMember]
 		public int DefinedTypeId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
 		[DataMember]
 		public int Order { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.DefinedValue"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Defined Type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedType"> object.
+        /// </value>
 		public virtual DefinedType DefinedType { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static DefinedValue Read(int id)
-        {
-            return new Rock.Services.Core.DefinedValueService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Defined Value Configuration class.
+    /// </summary>
     public partial class DefinedValueConfiguration : EntityTypeConfiguration<DefinedValue>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueConfiguration"/> class.
+        /// </summary>
         public DefinedValueConfiguration()
         {
 			this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId );

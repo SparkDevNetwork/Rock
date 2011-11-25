@@ -20,19 +20,38 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
+	/// <summary>
+	/// Group POCO Service Layer class
+	/// </summary>
     public partial class GroupService : Rock.Services.Service<Rock.Models.Groups.Group>
     {
-        public Rock.Models.Groups.Group GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Group by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>Group object.<returns>
+	    public Rock.Models.Groups.Group GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Group> GetByIsSecurityRole( bool isSecurityRole )
+		/// <summary>
+		/// Gets Groups by Is Security Role
+		/// </summary>
+		/// <param name="isSecurityRole">Is Security Role.</param>
+		/// <returns>An enumerable list of Group objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.Group> GetByIsSecurityRole( bool isSecurityRole )
         {
             return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
+		/// <summary>
+		/// Gets Groups by Parent Group Id And Name
+		/// </summary>
+		/// <param name="parentGroupId">Parent Group Id.</param>
+		/// <param name="name">Name.</param>
+		/// <returns>An enumerable list of Group objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }

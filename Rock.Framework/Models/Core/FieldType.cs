@@ -22,59 +22,144 @@ using Rock.Models;
 
 namespace Rock.Models.Core
 {
+    /// <summary>
+    /// Field Type POCO Entity.
+    /// </summary>
     [Table( "coreFieldType" )]
     public partial class FieldType : Model<FieldType>, IAuditable
     {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Assembly.
+        /// </summary>
+        /// <value>
+        /// Assembly.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Assembly { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Class.
+        /// </summary>
+        /// <value>
+        /// Class.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Class { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.FieldType"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Attributes.
+        /// </summary>
+        /// <value>
+        /// Collection of Attributes.
+        /// </value>
 		public virtual ICollection<Attribute> Attributes { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// Collection of Defined Types.
+        /// </value>
 		public virtual ICollection<DefinedType> DefinedTypes { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static FieldType Read(int id)
-        {
-            return new Rock.Services.Core.FieldTypeService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Field Type Configuration class.
+    /// </summary>
     public partial class FieldTypeConfiguration : EntityTypeConfiguration<FieldType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldTypeConfiguration"/> class.
+        /// </summary>
         public FieldTypeConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

@@ -20,9 +20,17 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
+	/// <summary>
+	/// Group Type POCO Service Layer class
+	/// </summary>
     public partial class GroupTypeService : Rock.Services.Service<Rock.Models.Groups.GroupType>
     {
-        public IEnumerable<Rock.Models.Groups.GroupType> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Group Types by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of GroupType objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.GroupType> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }

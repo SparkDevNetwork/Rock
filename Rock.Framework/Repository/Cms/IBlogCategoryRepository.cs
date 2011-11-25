@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Blog Category POCO Repository class
+	/// </summary>
     public interface IBlogCategoryRepository : IRepository<Rock.Models.Cms.BlogCategory>
     {
     }

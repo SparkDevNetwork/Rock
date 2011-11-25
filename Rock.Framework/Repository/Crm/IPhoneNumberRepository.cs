@@ -16,6 +16,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Represents a Phone Number POCO Repository class
+	/// </summary>
     public interface IPhoneNumberRepository : IRepository<Rock.Models.Crm.PhoneNumber>
     {
     }

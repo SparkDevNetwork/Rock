@@ -20,6 +20,9 @@ using Rock.Repository.Crm;
 
 namespace Rock.Services.Crm
 {
+	/// <summary>
+	/// Phone Number POCO Service Layer class
+	/// </summary>
     public partial class PhoneNumberService : Rock.Services.Service<Rock.Models.Crm.PhoneNumber>
     {
     }

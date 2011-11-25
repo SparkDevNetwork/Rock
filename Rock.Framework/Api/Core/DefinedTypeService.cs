@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// REST WCF service for DefinedTypes
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Core/DefinedType")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class DefinedTypeService : IDefinedTypeService, IService
     {
+		/// <summary>
+		/// Gets a DefinedType object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.DefinedType Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Core
             }
         }
 		
+		/// <summary>
+		/// Updates a DefinedType object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateDefinedType( string id, Rock.Models.Core.DefinedType DefinedType )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Creates a new DefinedType object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateDefinedType( Rock.Models.Core.DefinedType DefinedType )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Deletes a DefinedType object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteDefinedType( string id )
         {

@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// REST WCF service for PhoneNumbers
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Crm/PhoneNumber")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class PhoneNumberService : IPhoneNumberService, IService
     {
+		/// <summary>
+		/// Gets a PhoneNumber object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Crm.PhoneNumber Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Crm
             }
         }
 		
+		/// <summary>
+		/// Updates a PhoneNumber object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Creates a new PhoneNumber object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Deletes a PhoneNumber object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePhoneNumber( string id )
         {

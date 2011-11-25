@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// Represents a REST WCF service for People
+	/// </summary>
 	[ServiceContract]
     public partial interface IPersonService
     {
+		/// <summary>
+		/// Gets a Person object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Crm.Person Get( string id );
 
+		/// <summary>
+		/// Updates a Person object
+		/// </summary>
         [OperationContract]
         void UpdatePerson( string id, Rock.Models.Crm.Person Person );
 
+		/// <summary>
+		/// Creates a new Person object
+		/// </summary>
         [OperationContract]
         void CreatePerson( Rock.Models.Crm.Person Person );
 
+		/// <summary>
+		/// Deletes a Person object
+		/// </summary>
         [OperationContract]
         void DeletePerson( string id );
     }

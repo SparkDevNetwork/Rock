@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Util
 {
+	/// <summary>
+	/// REST WCF service for Jobs
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Util/Job")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class JobService : IJobService, IService
     {
+		/// <summary>
+		/// Gets a Job object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Util.Job Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Util
             }
         }
 		
+		/// <summary>
+		/// Updates a Job object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateJob( string id, Rock.Models.Util.Job Job )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Util
             }
         }
 
+		/// <summary>
+		/// Creates a new Job object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateJob( Rock.Models.Util.Job Job )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Util
             }
         }
 
+		/// <summary>
+		/// Deletes a Job object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteJob( string id )
         {

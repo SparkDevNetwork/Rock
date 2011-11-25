@@ -20,6 +20,9 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Blog Category POCO Service Layer class
+	/// </summary>
     public partial class BlogCategoryService : Rock.Services.Service<Rock.Models.Cms.BlogCategory>
     {
     }

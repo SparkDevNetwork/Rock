@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// REST WCF service for Addresses
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Crm/Address")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class AddressService : IAddressService, IService
     {
+		/// <summary>
+		/// Gets a Address object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Crm.Address Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Crm
             }
         }
 		
+		/// <summary>
+		/// Updates a Address object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAddress( string id, Rock.Models.Crm.Address Address )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Creates a new Address object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAddress( Rock.Models.Crm.Address Address )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Crm
             }
         }
 
+		/// <summary>
+		/// Deletes a Address object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAddress( string id )
         {

@@ -16,6 +16,9 @@ using Rock.Models.Util;
 
 namespace Rock.Repository.Util
 {
+	/// <summary>
+	/// Represents a Job POCO Repository class
+	/// </summary>
     public interface IJobRepository : IRepository<Rock.Models.Util.Job>
     {
     }
