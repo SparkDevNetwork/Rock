@@ -20,19 +20,38 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Site Domain POCO Service Layer class
+	/// </summary>
     public partial class SiteDomainService : Rock.Services.Service<Rock.Models.Cms.SiteDomain>
     {
-        public Rock.Models.Cms.SiteDomain GetByDomain( string domain )
+		/// <summary>
+		/// Gets Site Domain by Domain
+		/// </summary>
+		/// <param name="domain">Domain.</param>
+		/// <returns>SiteDomain object.<returns>
+	    public Rock.Models.Cms.SiteDomain GetByDomain( string domain )
         {
             return Repository.FirstOrDefault( t => t.Domain == domain );
         }
 		
-        public IEnumerable<Rock.Models.Cms.SiteDomain> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Site Domains by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of SiteDomain objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.SiteDomain> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
+		/// <summary>
+		/// Gets Site Domains by Site Id And Domain
+		/// </summary>
+		/// <param name="siteId">Site Id.</param>
+		/// <param name="domain">Domain.</param>
+		/// <returns>An enumerable list of SiteDomain objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
         {
             return Repository.Find( t => t.SiteId == siteId && t.Domain == domain );
         }

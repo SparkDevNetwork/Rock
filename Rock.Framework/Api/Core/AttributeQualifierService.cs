@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// REST WCF service for AttributeQualifiers
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Core/AttributeQualifier")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class AttributeQualifierService : IAttributeQualifierService, IService
     {
+		/// <summary>
+		/// Gets a AttributeQualifier object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.AttributeQualifier Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Core
             }
         }
 		
+		/// <summary>
+		/// Updates a AttributeQualifier object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Creates a new AttributeQualifier object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Deletes a AttributeQualifier object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAttributeQualifier( string id )
         {

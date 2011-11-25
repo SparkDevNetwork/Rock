@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Groups
 {
+	/// <summary>
+	/// REST WCF service for GroupTypes
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Groups/GroupType")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class GroupTypeService : IGroupTypeService, IService
     {
+		/// <summary>
+		/// Gets a GroupType object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Groups.GroupType Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Groups
             }
         }
 		
+		/// <summary>
+		/// Updates a GroupType object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateGroupType( string id, Rock.Models.Groups.GroupType GroupType )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Creates a new GroupType object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateGroupType( Rock.Models.Groups.GroupType GroupType )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Groups
             }
         }
 
+		/// <summary>
+		/// Deletes a GroupType object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteGroupType( string id )
         {

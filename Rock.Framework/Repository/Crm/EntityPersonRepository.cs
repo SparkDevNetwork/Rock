@@ -19,6 +19,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Person POCO Repository class
+	/// </summary>
     public partial class EntityPersonRepository : EntityRepository<Rock.Models.Crm.Person>, IPersonRepository
     {
     }

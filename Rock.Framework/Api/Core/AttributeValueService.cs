@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// REST WCF service for AttributeValues
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Core/AttributeValue")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class AttributeValueService : IAttributeValueService, IService
     {
+		/// <summary>
+		/// Gets a AttributeValue object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Core.AttributeValue Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Core
             }
         }
 		
+		/// <summary>
+		/// Updates a AttributeValue object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValue AttributeValue )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Creates a new AttributeValue object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Core
             }
         }
 
+		/// <summary>
+		/// Deletes a AttributeValue object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAttributeValue( string id )
         {

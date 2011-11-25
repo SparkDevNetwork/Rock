@@ -22,55 +22,142 @@ using Rock.Models;
 
 namespace Rock.Models.Util
 {
+    /// <summary>
+    /// Job POCO Entity.
+    /// </summary>
     [Table( "utilJob" )]
     public partial class Job : ModelWithAttributes<Job>
     {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
 		[DataMember]
 		public bool? System { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Active.
+        /// </summary>
+        /// <value>
+        /// Active.
+        /// </value>
 		[DataMember]
 		public bool? Active { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
 		[MaxLength( 500 )]
 		[DataMember]
 		public string Description { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Assemby.
+        /// </summary>
+        /// <value>
+        /// Assemby.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Assemby { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Class.
+        /// </summary>
+        /// <value>
+        /// Class.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Class { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Cron Expression.
+        /// </summary>
+        /// <value>
+        /// Cron Expression.
+        /// </value>
 		[MaxLength( 120 )]
 		[DataMember]
 		public string CronExpression { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Last Successful Run.
+        /// </summary>
+        /// <value>
+        /// Last Successful Run.
+        /// </value>
 		[DataMember]
 		public DateTime? LastSuccessfulRun { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Last Run Date.
+        /// </summary>
+        /// <value>
+        /// Last Run Date.
+        /// </value>
 		[DataMember]
 		public DateTime? LastRunDate { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Last Run Duration.
+        /// </summary>
+        /// <value>
+        /// Number of seconds that the last job took to finish..
+        /// </value>
 		[DataMember]
 		public int? LastRunDuration { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Last Status.
+        /// </summary>
+        /// <value>
+        /// Last Status.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string LastStatus { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Last Status Message.
+        /// </summary>
+        /// <value>
+        /// Last Status Message.
+        /// </value>
 		[DataMember]
 		public string LastStatusMessage { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Notification Emails.
+        /// </summary>
+        /// <value>
+        /// Notification Emails.
+        /// </value>
 		[MaxLength( 1000 )]
 		[DataMember]
 		public string NotificationEmails { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Notification Status.
+        /// </summary>
+        /// <value>
+        /// Valid valids = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
+        /// </value>
 		[DataMember]
 		internal int NotificationStatusInternal { get; set; }
 
@@ -81,34 +168,74 @@ namespace Rock.Models.Util
 			set { this.NotificationStatusInternal = (int)value; }
 		}
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Create By Person Id.
+        /// </summary>
+        /// <value>
+        /// Create By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreateByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Util.Job"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Create By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreateByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static Job Read(int id)
-        {
-            return new Rock.Services.Util.JobService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Job Configuration class.
+    /// </summary>
     public partial class JobConfiguration : EntityTypeConfiguration<Job>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobConfiguration"/> class.
+        /// </summary>
         public JobConfiguration()
         {
 			this.Property( p => p.NotificationStatusInternal ).HasColumnName( "NotificationStatus" );

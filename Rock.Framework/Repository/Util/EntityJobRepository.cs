@@ -19,6 +19,9 @@ using Rock.Models.Util;
 
 namespace Rock.Repository.Util
 {
+	/// <summary>
+	/// Job POCO Repository class
+	/// </summary>
     public partial class EntityJobRepository : EntityRepository<Rock.Models.Util.Job>, IJobRepository
     {
     }

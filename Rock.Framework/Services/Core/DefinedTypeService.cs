@@ -20,6 +20,9 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Defined Type POCO Service Layer class
+	/// </summary>
     public partial class DefinedTypeService : Rock.Services.Service<Rock.Models.Core.DefinedType>
     {
     }

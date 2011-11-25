@@ -20,14 +20,27 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Page Route POCO Service Layer class
+	/// </summary>
     public partial class PageRouteService : Rock.Services.Service<Rock.Models.Cms.PageRoute>
     {
-        public IEnumerable<Rock.Models.Cms.PageRoute> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Page Routes by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of PageRoute objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.PageRoute> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Cms.PageRoute> GetByPageId( int pageId )
+		/// <summary>
+		/// Gets Page Routes by Page Id
+		/// </summary>
+		/// <param name="pageId">Page Id.</param>
+		/// <returns>An enumerable list of PageRoute objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.PageRoute> GetByPageId( int pageId )
         {
             return Repository.Find( t => t.PageId == pageId );
         }

@@ -22,61 +22,152 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Blog Post Comment POCO Entity.
+    /// </summary>
     [Table( "cmsBlogPostComment" )]
     public partial class BlogPostComment : ModelWithAttributes<BlogPostComment>, IAuditable
     {
+        /// <summary>
+        /// Gets or sets the Post Id.
+        /// </summary>
+        /// <value>
+        /// Post Id.
+        /// </value>
 		[DataMember]
 		public int PostId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
 		[DataMember]
 		public int? PersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Person Name.
+        /// </summary>
+        /// <value>
+        /// Person Name.
+        /// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string PersonName { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Comment Date.
+        /// </summary>
+        /// <value>
+        /// Comment Date.
+        /// </value>
 		[DataMember]
 		public DateTime? CommentDate { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Email Address.
+        /// </summary>
+        /// <value>
+        /// Email Address.
+        /// </value>
 		[MaxLength( 150 )]
 		[DataMember]
 		public string EmailAddress { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Comment.
+        /// </summary>
+        /// <value>
+        /// Comment.
+        /// </value>
 		[DataMember]
 		public string Comment { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogPostComment"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Post.
+        /// </summary>
+        /// <value>
+        /// A <see cref="BlogPost"> object.
+        /// </value>
 		public virtual BlogPost Post { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person Person { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static BlogPostComment Read(int id)
-        {
-            return new Rock.Services.Cms.BlogPostCommentService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Blog Post Comment Configuration class.
+    /// </summary>
     public partial class BlogPostCommentConfiguration : EntityTypeConfiguration<BlogPostComment>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogPostCommentConfiguration"/> class.
+        /// </summary>
         public BlogPostCommentConfiguration()
         {
 			this.HasRequired( p => p.Post ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PostId );

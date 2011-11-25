@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Block Instance POCO Repository class
+	/// </summary>
     public interface IBlockInstanceRepository : IRepository<Rock.Models.Cms.BlockInstance>
     {
     }

@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a User POCO Repository class
+	/// </summary>
     public interface IUserRepository : IRepository<Rock.Models.Cms.User>
     {
     }

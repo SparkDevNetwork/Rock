@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// REST WCF service for HtmlContents
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Cms/HtmlContent")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class HtmlContentService : IHtmlContentService, IService
     {
+		/// <summary>
+		/// Gets a HtmlContent object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.HtmlContent Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Cms
             }
         }
 		
+		/// <summary>
+		/// Updates a HtmlContent object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContent HtmlContent )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Creates a new HtmlContent object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Deletes a HtmlContent object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteHtmlContent( string id )
         {

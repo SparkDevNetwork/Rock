@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// Represents a REST WCF service for FieldTypes
+	/// </summary>
 	[ServiceContract]
     public partial interface IFieldTypeService
     {
+		/// <summary>
+		/// Gets a FieldType object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Core.FieldType Get( string id );
 
+		/// <summary>
+		/// Updates a FieldType object
+		/// </summary>
         [OperationContract]
         void UpdateFieldType( string id, Rock.Models.Core.FieldType FieldType );
 
+		/// <summary>
+		/// Creates a new FieldType object
+		/// </summary>
         [OperationContract]
         void CreateFieldType( Rock.Models.Core.FieldType FieldType );
 
+		/// <summary>
+		/// Deletes a FieldType object
+		/// </summary>
         [OperationContract]
         void DeleteFieldType( string id );
     }

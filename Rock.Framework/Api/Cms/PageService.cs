@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// REST WCF service for Pages
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Cms/Page")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class PageService : IPageService, IService
     {
+		/// <summary>
+		/// Gets a Page object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.Page Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Cms
             }
         }
 		
+		/// <summary>
+		/// Updates a Page object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePage( string id, Rock.Models.Cms.Page Page )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Creates a new Page object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePage( Rock.Models.Cms.Page Page )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Deletes a Page object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePage( string id )
         {

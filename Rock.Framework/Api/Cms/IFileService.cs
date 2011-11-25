@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for Files
+	/// </summary>
 	[ServiceContract]
     public partial interface IFileService
     {
+		/// <summary>
+		/// Gets a File object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.File Get( string id );
 
+		/// <summary>
+		/// Updates a File object
+		/// </summary>
         [OperationContract]
         void UpdateFile( string id, Rock.Models.Cms.File File );
 
+		/// <summary>
+		/// Creates a new File object
+		/// </summary>
         [OperationContract]
         void CreateFile( Rock.Models.Cms.File File );
 
+		/// <summary>
+		/// Deletes a File object
+		/// </summary>
         [OperationContract]
         void DeleteFile( string id );
     }

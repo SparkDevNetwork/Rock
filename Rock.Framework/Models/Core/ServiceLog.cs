@@ -22,42 +22,85 @@ using Rock.Models;
 
 namespace Rock.Models.Core
 {
+    /// <summary>
+    /// Service Log POCO Entity.
+    /// </summary>
     [Table( "coreServiceLog" )]
     public partial class ServiceLog : ModelWithAttributes<ServiceLog>
     {
+        /// <summary>
+        /// Gets or sets the Time.
+        /// </summary>
+        /// <value>
+        /// Time.
+        /// </value>
 		[DataMember]
 		public DateTime? Time { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Input.
+        /// </summary>
+        /// <value>
+        /// Input.
+        /// </value>
 		[DataMember]
 		public string Input { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Type.
+        /// </summary>
+        /// <value>
+        /// Type.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Type { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Result.
+        /// </summary>
+        /// <value>
+        /// Result.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Result { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Success.
+        /// </summary>
+        /// <value>
+        /// Success.
+        /// </value>
 		[DataMember]
 		public bool Success { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.ServiceLog"; } }
 
-        public static ServiceLog Read(int id)
-        {
-            return new Rock.Services.Core.ServiceLogService().Get( id );
-        }
-
     }
 
+    /// <summary>
+    /// Service Log Configuration class.
+    /// </summary>
     public partial class ServiceLogConfiguration : EntityTypeConfiguration<ServiceLog>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceLogConfiguration"/> class.
+        /// </summary>
         public ServiceLogConfiguration()
         {
 		}

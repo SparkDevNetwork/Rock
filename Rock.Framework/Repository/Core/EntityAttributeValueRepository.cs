@@ -19,6 +19,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Attribute Value POCO Repository class
+	/// </summary>
     public partial class EntityAttributeValueRepository : EntityRepository<Rock.Models.Core.AttributeValue>, IAttributeValueRepository
     {
     }

@@ -20,6 +20,9 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// File POCO Service Layer class
+	/// </summary>
     public partial class FileService : Rock.Services.Service<Rock.Models.Cms.File>
     {
     }

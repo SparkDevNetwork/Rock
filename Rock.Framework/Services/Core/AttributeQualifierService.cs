@@ -20,9 +20,17 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Attribute Qualifier POCO Service Layer class
+	/// </summary>
     public partial class AttributeQualifierService : Rock.Services.Service<Rock.Models.Core.AttributeQualifier>
     {
-        public IEnumerable<Rock.Models.Core.AttributeQualifier> GetByAttributeId( int attributeId )
+		/// <summary>
+		/// Gets Attribute Qualifiers by Attribute Id
+		/// </summary>
+		/// <param name="attributeId">Attribute Id.</param>
+		/// <returns>An enumerable list of AttributeQualifier objects.<returns>
+	    public IEnumerable<Rock.Models.Core.AttributeQualifier> GetByAttributeId( int attributeId )
         {
             return Repository.Find( t => t.AttributeId == attributeId );
         }

@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// REST WCF service for Users
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Cms/User")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class UserService : IUserService, IService
     {
+		/// <summary>
+		/// Gets a User object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.User Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Cms
             }
         }
 		
+		/// <summary>
+		/// Updates a User object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateUser( string id, Rock.Models.Cms.User User )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Creates a new User object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateUser( Rock.Models.Cms.User User )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Deletes a User object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteUser( string id )
         {

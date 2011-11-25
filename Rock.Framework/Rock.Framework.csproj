@@ -178,6 +178,7 @@
     <Compile Include="Controls\HtmlGenericContainer.cs" />
     <Compile Include="Controls\NotificationBox.cs" />
     <Compile Include="Controls\RowEventArgs.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FieldTypes\Boolean.cs" />
     <Compile Include="FieldTypes\PageReference.cs" />
     <Compile Include="FieldTypes\Integer.cs" />
@@ -406,11 +407,6 @@
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Services\Util\JobService.Partial.cs" />
     <Compile Include="Services\Util\JobService.cs" />
-    <Compile Include="T4\Model1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>

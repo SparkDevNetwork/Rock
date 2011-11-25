@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Page POCO Repository class
+	/// </summary>
     public interface IPageRepository : IRepository<Rock.Models.Cms.Page>
     {
     }

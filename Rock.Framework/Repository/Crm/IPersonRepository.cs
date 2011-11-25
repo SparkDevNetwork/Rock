@@ -16,6 +16,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Represents a Person POCO Repository class
+	/// </summary>
     public interface IPersonRepository : IRepository<Rock.Models.Crm.Person>
     {
     }

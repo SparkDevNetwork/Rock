@@ -16,6 +16,9 @@ using Rock.Models.Groups;
 
 namespace Rock.Repository.Groups
 {
+	/// <summary>
+	/// Represents a Group POCO Repository class
+	/// </summary>
     public interface IGroupRepository : IRepository<Rock.Models.Groups.Group>
     {
     }

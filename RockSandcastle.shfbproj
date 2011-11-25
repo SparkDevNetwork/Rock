@@ -24,7 +24,7 @@
     <CopyrightHref>http://www.sparkdevnetwork.org</CopyrightHref>
     <CopyrightText>Spark Development Network</CopyrightText>
     <HelpTitle>Rock ChMS</HelpTitle>
-    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Internals, Protected, SealedProtected, InheritedFrameworkInternalMembers</VisibleItems>
     <VendorName>Spark Development Network</VendorName>
     <ProductTitle>Rock ChMS</ProductTitle>
     <DocumentationSources>
@@ -32,18 +32,22 @@
     </DocumentationSources>
     <ProjectSummary>Rock Framework</ProjectSummary>
     <RootNamespaceContainer>True</RootNamespaceContainer>
-    <RootNamespaceTitle>Rock</RootNamespaceTitle>
-    <SdkLinkTarget>Self</SdkLinkTarget>
+    <RootNamespaceTitle>Rock Framework</RootNamespaceTitle>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
     <SyntaxFilters>CSharp</SyntaxFilters>
-    <BinaryTOC>False</BinaryTOC>
+    <BinaryTOC>True</BinaryTOC>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="Rock.Address" isDocumented="True" xmlns="">Address Standardization and Geocoding</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Address.Geocode" isDocumented="True" xmlns="">Address Geocoding</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Address.Standardize" isDocumented="True" xmlns="">Address Standardization</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api" isDocumented="True" xmlns="">WCF REST Interface</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Framework.MelissaData.Service" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="Rock.Framework.ServiceObjects.GeoCoder" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="Rock.Framework.StrikeIron.USAddressVerification" isDocumented="False" xmlns="" /></NamespaceSummaries>
+      <NamespaceSummaryItem name="Rock.Address.Geocode" isDocumented="True" xmlns="">Address Geocoding</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="Rock.Address.Standardize" isDocumented="True" xmlns="">Address Standardization</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="Rock.Api" isDocumented="True" xmlns="">WCF REST Interface</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="Rock.Framework.MelissaData.Service" isDocumented="False" xmlns="" />
+      <NamespaceSummaryItem name="Rock.Framework.ServiceObjects.GeoCoder" isDocumented="False" xmlns="" />
+      <NamespaceSummaryItem name="Rock.Framework.StrikeIron.USAddressVerification" isDocumented="False" xmlns="" />
+    </NamespaceSummaries>
+    <NamingMethod>MemberName</NamingMethod>
+    <PresentationStyle>hana</PresentationStyle>
+    <Preliminary>True</Preliminary>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in
        order for Visual Studio to perform the build.  The others are optional

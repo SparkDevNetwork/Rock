@@ -22,48 +22,115 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Blog Category POCO Entity.
+    /// </summary>
     [Table( "cmsBlogCategory" )]
     public partial class BlogCategory : ModelWithAttributes<BlogCategory>, IAuditable
     {
+        /// <summary>
+        /// Gets or sets the Blog Id.
+        /// </summary>
+        /// <value>
+        /// Blog Id.
+        /// </value>
 		[DataMember]
 		public int BlogId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogCategory"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog Posts.
+        /// </summary>
+        /// <value>
+        /// Collection of Blog Posts.
+        /// </value>
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Blog"> object.
+        /// </value>
 		public virtual Blog Blog { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static BlogCategory Read(int id)
-        {
-            return new Rock.Services.Cms.BlogCategoryService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Blog Category Configuration class.
+    /// </summary>
     public partial class BlogCategoryConfiguration : EntityTypeConfiguration<BlogCategory>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogCategoryConfiguration"/> class.
+        /// </summary>
         public BlogCategoryConfiguration()
         {
 			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategories ).Map( m => { m.MapLeftKey("BlogPostId"); m.MapRightKey("BlogCategoryId"); m.ToTable("cmsBlogPostCategory" ); } );

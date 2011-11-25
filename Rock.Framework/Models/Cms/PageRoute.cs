@@ -22,49 +22,116 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Page Route POCO Entity.
+    /// </summary>
     [Table( "cmsPageRoute" )]
     public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
     {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
 		[DataMember]
 		public int PageId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Route.
+        /// </summary>
+        /// <value>
+        /// Route.
+        /// </value>
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Route { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.PageRoute"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Page.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Page"> object.
+        /// </value>
 		public virtual Page Page { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static PageRoute Read(int id)
-        {
-            return new Rock.Services.Cms.PageRouteService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Page Route Configuration class.
+    /// </summary>
     public partial class PageRouteConfiguration : EntityTypeConfiguration<PageRoute>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteConfiguration"/> class.
+        /// </summary>
         public PageRouteConfiguration()
         {
 			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId );

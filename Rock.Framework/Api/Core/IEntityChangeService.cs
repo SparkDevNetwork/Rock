@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// Represents a REST WCF service for EntityChanges
+	/// </summary>
 	[ServiceContract]
     public partial interface IEntityChangeService
     {
+		/// <summary>
+		/// Gets a EntityChange object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Core.EntityChange Get( string id );
 
+		/// <summary>
+		/// Updates a EntityChange object
+		/// </summary>
         [OperationContract]
         void UpdateEntityChange( string id, Rock.Models.Core.EntityChange EntityChange );
 
+		/// <summary>
+		/// Creates a new EntityChange object
+		/// </summary>
         [OperationContract]
         void CreateEntityChange( Rock.Models.Core.EntityChange EntityChange );
 
+		/// <summary>
+		/// Deletes a EntityChange object
+		/// </summary>
         [OperationContract]
         void DeleteEntityChange( string id );
     }

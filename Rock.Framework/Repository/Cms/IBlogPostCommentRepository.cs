@@ -16,6 +16,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Represents a Blog Post Comment POCO Repository class
+	/// </summary>
     public interface IBlogPostCommentRepository : IRepository<Rock.Models.Cms.BlogPostComment>
     {
     }

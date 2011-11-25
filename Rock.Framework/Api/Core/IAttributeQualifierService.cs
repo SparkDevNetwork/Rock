@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Core
 {
+	/// <summary>
+	/// Represents a REST WCF service for AttributeQualifiers
+	/// </summary>
 	[ServiceContract]
     public partial interface IAttributeQualifierService
     {
+		/// <summary>
+		/// Gets a AttributeQualifier object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Core.AttributeQualifier Get( string id );
 
+		/// <summary>
+		/// Updates a AttributeQualifier object
+		/// </summary>
         [OperationContract]
         void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier AttributeQualifier );
 
+		/// <summary>
+		/// Creates a new AttributeQualifier object
+		/// </summary>
         [OperationContract]
         void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier );
 
+		/// <summary>
+		/// Deletes a AttributeQualifier object
+		/// </summary>
         [OperationContract]
         void DeleteAttributeQualifier( string id );
     }

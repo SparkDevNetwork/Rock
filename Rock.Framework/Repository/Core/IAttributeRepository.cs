@@ -16,6 +16,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Represents a Attribute POCO Repository class
+	/// </summary>
     public interface IAttributeRepository : IRepository<Rock.Models.Core.Attribute>
     {
     }

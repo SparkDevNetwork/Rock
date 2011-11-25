@@ -20,14 +20,27 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Page POCO Service Layer class
+	/// </summary>
     public partial class PageService : Rock.Services.Service<Rock.Models.Cms.Page>
     {
-        public IEnumerable<Rock.Models.Cms.Page> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Pages by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of Page objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Page> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Page> GetByParentPageId( int? parentPageId )
+		/// <summary>
+		/// Gets Pages by Parent Page Id
+		/// </summary>
+		/// <param name="parentPageId">Parent Page Id.</param>
+		/// <returns>An enumerable list of Page objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Page> GetByParentPageId( int? parentPageId )
         {
             return Repository.Find( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
         }

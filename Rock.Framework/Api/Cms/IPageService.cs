@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for Pages
+	/// </summary>
 	[ServiceContract]
     public partial interface IPageService
     {
+		/// <summary>
+		/// Gets a Page object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.Page Get( string id );
 
+		/// <summary>
+		/// Updates a Page object
+		/// </summary>
         [OperationContract]
         void UpdatePage( string id, Rock.Models.Cms.Page Page );
 
+		/// <summary>
+		/// Creates a new Page object
+		/// </summary>
         [OperationContract]
         void CreatePage( Rock.Models.Cms.Page Page );
 
+		/// <summary>
+		/// Deletes a Page object
+		/// </summary>
         [OperationContract]
         void DeletePage( string id );
     }

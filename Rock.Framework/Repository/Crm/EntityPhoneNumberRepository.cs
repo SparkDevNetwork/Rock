@@ -19,6 +19,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Phone Number POCO Repository class
+	/// </summary>
     public partial class EntityPhoneNumberRepository : EntityRepository<Rock.Models.Crm.PhoneNumber>, IPhoneNumberRepository
     {
     }

@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// REST WCF service for BlockInstances
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Cms/BlockInstance")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class BlockInstanceService : IBlockInstanceService, IService
     {
+		/// <summary>
+		/// Gets a BlockInstance object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.BlockInstance Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Cms
             }
         }
 		
+		/// <summary>
+		/// Updates a BlockInstance object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstance BlockInstance )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Creates a new BlockInstance object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Deletes a BlockInstance object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlockInstance( string id )
         {

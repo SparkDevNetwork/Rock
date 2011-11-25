@@ -16,6 +16,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Represents a Attribute Qualifier POCO Repository class
+	/// </summary>
     public interface IAttributeQualifierRepository : IRepository<Rock.Models.Core.AttributeQualifier>
     {
     }

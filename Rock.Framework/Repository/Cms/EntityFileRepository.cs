@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// File POCO Repository class
+	/// </summary>
     public partial class EntityFileRepository : EntityRepository<Rock.Models.Cms.File>, IFileRepository
     {
     }

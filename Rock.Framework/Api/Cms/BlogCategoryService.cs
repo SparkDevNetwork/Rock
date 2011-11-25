@@ -19,11 +19,17 @@ using Rock.Cms.Security;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// REST WCF service for BlogCategories
+	/// </summary>
     [Export(typeof(IService))]
     [ExportMetadata("RouteName", "api/Cms/BlogCategory")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class BlogCategoryService : IBlogCategoryService, IService
     {
+		/// <summary>
+		/// Gets a BlogCategory object
+		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Models.Cms.BlogCategory Get( string id )
         {
@@ -43,6 +49,9 @@ namespace Rock.Api.Cms
             }
         }
 		
+		/// <summary>
+		/// Updates a BlogCategory object
+		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategory BlogCategory )
         {
@@ -66,6 +75,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Creates a new BlogCategory object
+		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
         {
@@ -83,6 +95,9 @@ namespace Rock.Api.Cms
             }
         }
 
+		/// <summary>
+		/// Deletes a BlogCategory object
+		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogCategory( string id )
         {

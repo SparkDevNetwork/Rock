@@ -20,19 +20,37 @@ using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {
+	/// <summary>
+	/// Member POCO Service Layer class
+	/// </summary>
     public partial class MemberService : Rock.Services.Service<Rock.Models.Groups.Member>
     {
-        public IEnumerable<Rock.Models.Groups.Member> GetByGroupId( int groupId )
+		/// <summary>
+		/// Gets Members by Group Id
+		/// </summary>
+		/// <param name="groupId">Group Id.</param>
+		/// <returns>An enumerable list of Member objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.Member> GetByGroupId( int groupId )
         {
             return Repository.Find( t => t.GroupId == groupId );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Member> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Members by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of Member objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.Member> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
         }
 		
-        public IEnumerable<Rock.Models.Groups.Member> GetByPersonId( int personId )
+		/// <summary>
+		/// Gets Members by Person Id
+		/// </summary>
+		/// <param name="personId">Person Id.</param>
+		/// <returns>An enumerable list of Member objects.<returns>
+	    public IEnumerable<Rock.Models.Groups.Member> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );
         }

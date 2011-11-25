@@ -20,6 +20,9 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Html Content POCO Service Layer class
+	/// </summary>
     public partial class HtmlContentService : Rock.Services.Service<Rock.Models.Cms.HtmlContent>
     {
     }

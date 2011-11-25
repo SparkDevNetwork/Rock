@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for Sites
+	/// </summary>
 	[ServiceContract]
     public partial interface ISiteService
     {
+		/// <summary>
+		/// Gets a Site object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.Site Get( string id );
 
+		/// <summary>
+		/// Updates a Site object
+		/// </summary>
         [OperationContract]
         void UpdateSite( string id, Rock.Models.Cms.Site Site );
 
+		/// <summary>
+		/// Creates a new Site object
+		/// </summary>
         [OperationContract]
         void CreateSite( Rock.Models.Cms.Site Site );
 
+		/// <summary>
+		/// Deletes a Site object
+		/// </summary>
         [OperationContract]
         void DeleteSite( string id );
     }

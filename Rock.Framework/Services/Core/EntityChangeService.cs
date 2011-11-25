@@ -20,9 +20,17 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Entity Change POCO Service Layer class
+	/// </summary>
     public partial class EntityChangeService : Rock.Services.Service<Rock.Models.Core.EntityChange>
     {
-        public IEnumerable<Rock.Models.Core.EntityChange> GetByChangeSet( Guid changeSet )
+		/// <summary>
+		/// Gets Entity Changes by Change Set
+		/// </summary>
+		/// <param name="changeSet">Change Set.</param>
+		/// <returns>An enumerable list of EntityChange objects.<returns>
+	    public IEnumerable<Rock.Models.Core.EntityChange> GetByChangeSet( Guid changeSet )
         {
             return Repository.Find( t => t.ChangeSet == changeSet );
         }

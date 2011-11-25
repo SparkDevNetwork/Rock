@@ -19,6 +19,9 @@ using Rock.Models.Crm;
 
 namespace Rock.Repository.Crm
 {
+	/// <summary>
+	/// Address POCO Repository class
+	/// </summary>
     public partial class EntityAddressRepository : EntityRepository<Rock.Models.Crm.Address>, IAddressRepository
     {
     }

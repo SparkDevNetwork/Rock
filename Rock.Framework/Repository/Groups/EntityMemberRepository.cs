@@ -19,6 +19,9 @@ using Rock.Models.Groups;
 
 namespace Rock.Repository.Groups
 {
+	/// <summary>
+	/// Member POCO Repository class
+	/// </summary>
     public partial class EntityMemberRepository : EntityRepository<Rock.Models.Groups.Member>, IMemberRepository
     {
     }

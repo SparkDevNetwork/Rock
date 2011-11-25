@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for BlogTags
+	/// </summary>
 	[ServiceContract]
     public partial interface IBlogTagService
     {
+		/// <summary>
+		/// Gets a BlogTag object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.BlogTag Get( string id );
 
+		/// <summary>
+		/// Updates a BlogTag object
+		/// </summary>
         [OperationContract]
         void UpdateBlogTag( string id, Rock.Models.Cms.BlogTag BlogTag );
 
+		/// <summary>
+		/// Creates a new BlogTag object
+		/// </summary>
         [OperationContract]
         void CreateBlogTag( Rock.Models.Cms.BlogTag BlogTag );
 
+		/// <summary>
+		/// Deletes a BlogTag object
+		/// </summary>
         [OperationContract]
         void DeleteBlogTag( string id );
     }

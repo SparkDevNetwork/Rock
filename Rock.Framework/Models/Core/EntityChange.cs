@@ -22,45 +22,94 @@ using Rock.Models;
 
 namespace Rock.Models.Core
 {
+    /// <summary>
+    /// Entity Change POCO Entity.
+    /// </summary>
     [Table( "coreEntityChange" )]
     public partial class EntityChange : ModelWithAttributes<EntityChange>
     {
+        /// <summary>
+        /// Gets or sets the Change Set.
+        /// </summary>
+        /// <value>
+        /// Change Set.
+        /// </value>
 		[DataMember]
 		public Guid ChangeSet { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Change Type.
+        /// </summary>
+        /// <value>
+        /// Change Type.
+        /// </value>
 		[MaxLength( 10 )]
 		[DataMember]
 		public string ChangeType { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Entity Type.
+        /// </summary>
+        /// <value>
+        /// Entity Type.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string EntityType { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
 		[DataMember]
 		public int EntityId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Property.
+        /// </summary>
+        /// <value>
+        /// Property.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Property { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Original Value.
+        /// </summary>
+        /// <value>
+        /// Original Value.
+        /// </value>
 		[DataMember]
 		public string OriginalValue { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Current Value.
+        /// </summary>
+        /// <value>
+        /// Current Value.
+        /// </value>
 		[DataMember]
 		public string CurrentValue { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.EntityChange"; } }
 
-        public static EntityChange Read(int id)
-        {
-            return new Rock.Services.Core.EntityChangeService().Get( id );
-        }
-
     }
 
+    /// <summary>
+    /// Entity Change Configuration class.
+    /// </summary>
     public partial class EntityChangeConfiguration : EntityTypeConfiguration<EntityChange>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityChangeConfiguration"/> class.
+        /// </summary>
         public EntityChangeConfiguration()
         {
 		}

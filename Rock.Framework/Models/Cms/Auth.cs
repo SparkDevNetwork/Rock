@@ -22,61 +22,146 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Auth POCO Entity.
+    /// </summary>
     [Table( "cmsAuth" )]
     public partial class Auth : ModelWithAttributes<Auth>, IAuditable, IOrdered
     {
+        /// <summary>
+        /// Gets or sets the Entity Type.
+        /// </summary>
+        /// <value>
+        /// Entity Type.
+        /// </value>
 		[MaxLength( 200 )]
 		[DataMember]
 		public string EntityType { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
 		[DataMember]
 		public int? EntityId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
 		[DataMember]
 		public int Order { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Allow Or Deny.
+        /// </summary>
+        /// <value>
+        /// A = Allow, D = Deny.
+        /// </value>
 		[DataMember]
 		public string AllowOrDeny { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the User Or Role.
+        /// </summary>
+        /// <value>
+        /// U = User, R = Role.
+        /// </value>
 		[DataMember]
 		public string UserOrRole { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Action.
+        /// </summary>
+        /// <value>
+        /// Action.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Action { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the User Or Role Name.
+        /// </summary>
+        /// <value>
+        /// User Or Role Name.
+        /// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string UserOrRoleName { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.Auth"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Modified By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"> object.
+        /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-        public static Auth Read(int id)
-        {
-            return new Rock.Services.Cms.AuthService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Auth Configuration class.
+    /// </summary>
     public partial class AuthConfiguration : EntityTypeConfiguration<Auth>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
+        /// </summary>
         public AuthConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );

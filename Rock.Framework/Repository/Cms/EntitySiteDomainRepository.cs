@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Site Domain POCO Repository class
+	/// </summary>
     public partial class EntitySiteDomainRepository : EntityRepository<Rock.Models.Cms.SiteDomain>, ISiteDomainRepository
     {
     }

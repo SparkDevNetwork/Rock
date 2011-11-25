@@ -22,32 +22,63 @@ using Rock.Models;
 
 namespace Rock.Models.Cms
 {
+    /// <summary>
+    /// Blog Tag POCO Entity.
+    /// </summary>
     [Table( "cmsBlogTag" )]
     public partial class BlogTag : ModelWithAttributes<BlogTag>
     {
+        /// <summary>
+        /// Gets or sets the Blog Id.
+        /// </summary>
+        /// <value>
+        /// Blog Id.
+        /// </value>
 		[DataMember]
 		public int BlogId { get; set; }
 		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Name { get; set; }
 		
+        /// <summary>
+        /// Gets the auth entity.
+        /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Cms.BlogTag"; } }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog Posts.
+        /// </summary>
+        /// <value>
+        /// Collection of Blog Posts.
+        /// </value>
 		public virtual ICollection<BlogPost> BlogPosts { get; set; }
-
+        
+		/// <summary>
+        /// Gets or sets the Blog.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Blog"> object.
+        /// </value>
 		public virtual Blog Blog { get; set; }
-
-        public static BlogTag Read(int id)
-        {
-            return new Rock.Services.Cms.BlogTagService().Get( id );
-        }
 
     }
 
+    /// <summary>
+    /// Blog Tag Configuration class.
+    /// </summary>
     public partial class BlogTagConfiguration : EntityTypeConfiguration<BlogTag>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogTagConfiguration"/> class.
+        /// </summary>
         public BlogTagConfiguration()
         {
 			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogTags ).HasForeignKey( p => p.BlogId );

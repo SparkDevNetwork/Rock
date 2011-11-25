@@ -20,14 +20,28 @@ using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
+	/// <summary>
+	/// Auth POCO Service Layer class
+	/// </summary>
     public partial class AuthService : Rock.Services.Service<Rock.Models.Cms.Auth>
     {
-        public IEnumerable<Rock.Models.Cms.Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
+		/// <summary>
+		/// Gets Auths by Entity Type And Entity Id
+		/// </summary>
+		/// <param name="entityType">Entity Type.</param>
+		/// <param name="entityId">Entity Id.</param>
+		/// <returns>An enumerable list of Auth objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
         {
             return Repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
         }
 		
-        public IEnumerable<Rock.Models.Cms.Auth> GetByGuid( Guid guid )
+		/// <summary>
+		/// Gets Auths by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>An enumerable list of Auth objects.<returns>
+	    public IEnumerable<Rock.Models.Cms.Auth> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
         }

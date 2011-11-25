@@ -19,6 +19,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Field Type POCO Repository class
+	/// </summary>
     public partial class EntityFieldTypeRepository : EntityRepository<Rock.Models.Core.FieldType>, IFieldTypeRepository
     {
     }

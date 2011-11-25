@@ -16,6 +16,9 @@ using Rock.Models.Core;
 
 namespace Rock.Repository.Core
 {
+	/// <summary>
+	/// Represents a Defined Type POCO Repository class
+	/// </summary>
     public interface IDefinedTypeRepository : IRepository<Rock.Models.Core.DefinedType>
     {
     }

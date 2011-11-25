@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Crm
 {
+	/// <summary>
+	/// Represents a REST WCF service for Addresses
+	/// </summary>
 	[ServiceContract]
     public partial interface IAddressService
     {
+		/// <summary>
+		/// Gets a Address object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Crm.Address Get( string id );
 
+		/// <summary>
+		/// Updates a Address object
+		/// </summary>
         [OperationContract]
         void UpdateAddress( string id, Rock.Models.Crm.Address Address );
 
+		/// <summary>
+		/// Creates a new Address object
+		/// </summary>
         [OperationContract]
         void CreateAddress( Rock.Models.Crm.Address Address );
 
+		/// <summary>
+		/// Deletes a Address object
+		/// </summary>
         [OperationContract]
         void DeleteAddress( string id );
     }

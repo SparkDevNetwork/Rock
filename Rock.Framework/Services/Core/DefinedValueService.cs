@@ -20,9 +20,17 @@ using Rock.Repository.Core;
 
 namespace Rock.Services.Core
 {
+	/// <summary>
+	/// Defined Value POCO Service Layer class
+	/// </summary>
     public partial class DefinedValueService : Rock.Services.Service<Rock.Models.Core.DefinedValue>
     {
-        public IEnumerable<Rock.Models.Core.DefinedValue> GetByDefinedTypeId( int definedTypeId )
+		/// <summary>
+		/// Gets Defined Values by Defined Type Id
+		/// </summary>
+		/// <param name="definedTypeId">Defined Type Id.</param>
+		/// <returns>An enumerable list of DefinedValue objects.<returns>
+	    public IEnumerable<Rock.Models.Core.DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
             return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }

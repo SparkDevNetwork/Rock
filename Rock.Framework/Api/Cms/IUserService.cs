@@ -14,18 +14,33 @@ using System.ServiceModel;
 
 namespace Rock.Api.Cms
 {
+	/// <summary>
+	/// Represents a REST WCF service for Users
+	/// </summary>
 	[ServiceContract]
     public partial interface IUserService
     {
+		/// <summary>
+		/// Gets a User object
+		/// </summary>
 		[OperationContract]
         Rock.Models.Cms.User Get( string id );
 
+		/// <summary>
+		/// Updates a User object
+		/// </summary>
         [OperationContract]
         void UpdateUser( string id, Rock.Models.Cms.User User );
 
+		/// <summary>
+		/// Creates a new User object
+		/// </summary>
         [OperationContract]
         void CreateUser( Rock.Models.Cms.User User );
 
+		/// <summary>
+		/// Deletes a User object
+		/// </summary>
         [OperationContract]
         void DeleteUser( string id );
     }

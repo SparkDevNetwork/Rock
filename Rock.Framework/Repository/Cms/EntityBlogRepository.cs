@@ -19,6 +19,9 @@ using Rock.Models.Cms;
 
 namespace Rock.Repository.Cms
 {
+	/// <summary>
+	/// Blog POCO Repository class
+	/// </summary>
     public partial class EntityBlogRepository : EntityRepository<Rock.Models.Cms.Blog>, IBlogRepository
     {
     }
