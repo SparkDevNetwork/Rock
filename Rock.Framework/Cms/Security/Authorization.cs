@@ -7,6 +7,9 @@ using System.Web;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
 
+/// <summary>
+/// Classes used for managing user authentication and authorization
+/// </summary>
 namespace Rock.Cms.Security
 {
     public static class Authorization
@@ -17,8 +20,7 @@ namespace Rock.Cms.Security
         /// ID, third is the action, and the fourth dimension is a list of AuthRules for the action.
         /// </summary>
         public static Dictionary<string, Dictionary<int, Dictionary<string, List<AuthRule>>>> Authorizations { get; set; }
-
-
+        
         /// <summary>
         /// Load the static Authorizations object
         /// </summary>
@@ -52,6 +54,12 @@ namespace Rock.Cms.Security
             }
         }
 
+        /// <summary>
+        /// Reloads the authorizations for the specified entity and action.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <param name="action">The action.</param>
         public static void ReloadAction( string entityType, int entityId, string action )
         {
             // If there's no Authorizations object, create it
@@ -150,6 +158,13 @@ namespace Rock.Cms.Security
                 return entity.DefaultAuthorization( action );
         }
 
+        /// <summary>
+        /// Returns the authorization rules for the specified entity and action.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
         public static List<AuthRule> AuthRules( string entityType, int entityId, string action )
         {
             List<AuthRule> rules = new List<AuthRule>();
@@ -167,18 +182,34 @@ namespace Rock.Cms.Security
             return rules;
         }
 
+        /// <summary>
+        /// Encodes the entity type name for use in a URL
+        /// </summary>
+        /// <param name="iSecuredType">Type of the i secured.</param>
+        /// <returns></returns>
         public static string EncodeEntityTypeName( Type iSecuredType )
         {
             byte[] b = Encoding.UTF8.GetBytes( iSecuredType.AssemblyQualifiedName );
             return Convert.ToBase64String( b );
         }
 
+        /// <summary>
+        /// Decodes the entity type name.
+        /// </summary>
+        /// <param name="encodedTypeName">Name of the encoded type.</param>
+        /// <returns></returns>
         public static string DecodeEntityTypeName( string encodedTypeName )
         {
             byte[] b = Convert.FromBase64String( encodedTypeName );
             return Encoding.UTF8.GetString( b );
         }
 
+        /// <summary>
+        /// Copies the authorizations from one <see cref="ISecured"/> object to another
+        /// </summary>
+        /// <param name="sourceEntity">The source entity.</param>
+        /// <param name="targetEntity">The target entity.</param>
+        /// <param name="personId">The person id.</param>
         public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, int? personId )
         {
             using ( new Rock.Helpers.UnitOfWorkScope() )
@@ -240,12 +271,49 @@ namespace Rock.Cms.Security
     /// </summary>
     public class AuthRule
     {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this is an allow or deny rule.  Acceptable values are "A" or "D".
+        /// </summary>
+        /// <value>
+        /// The allow or deny.
+        /// </value>
         public string AllowOrDeny { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this is for a User or a Role.  Acceptable values are "U" or "R"
+        /// </summary>
+        /// <value>
+        /// The user or role.
+        /// </value>
         public string UserOrRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the user or role.
+        /// </summary>
+        /// <value>
+        /// The name of the user or role.
+        /// </value>
         public string UserOrRoleName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
         public string DisplayName
         {
             get
@@ -273,6 +341,14 @@ namespace Rock.Cms.Security
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthRule"/> class.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="allowOrDeny">Allow or Deny ("A" or "D").</param>
+        /// <param name="userOrRole">User or Role ("U" or "R").</param>
+        /// <param name="userOrRoleName">Name of the user or role.</param>
+        /// <param name="order">The order.</param>
         public AuthRule( int id, string allowOrDeny, string userOrRole, string userOrRoleName, int order )
         {
             Id = id;

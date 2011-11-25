@@ -15,14 +15,34 @@ namespace Rock.Cms.Cached
         /// </summary>
         private Block() { }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the path to the block control
+        /// </summary>
         public string Path { get; private set; }
+
+        /// <summary>
+        /// Gets the name of block
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
         public string Description { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
+        /// verified for the block.  If not, Rock will create and/or update the attributes associated with the block.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
+        /// </value>
         public bool InstancePropertiesVerified { get; internal set; }
-
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -42,6 +62,15 @@ namespace Rock.Cms.Cached
             }
         }
 
+        /// <summary>
+        /// Gets the attribute values.
+        /// </summary>
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+
+        /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.BlockService blockService = new Services.Cms.BlockService();

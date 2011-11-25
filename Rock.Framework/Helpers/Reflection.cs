@@ -8,13 +8,28 @@ using System.Web.Compilation;
 
 namespace Rock.Helpers
 {
+    /// <summary>
+    /// Static helper methods for using Reflection
+    /// </summary>
     public static class Reflection
     {
+        /// <summary>
+        /// Finds the all the types that implement or inherit from the baseType.  The baseType
+        /// will not be included in the result
+        /// </summary>
+        /// <param name="baseType">base type.</param>
+        /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes ( Type baseType )
         {
             return FindTypes( baseType, false );
         }
 
+        /// <summary>
+        /// Finds the all the types that implement or inherit from the baseType.  
+        /// </summary>
+        /// <param name="baseType">base type.</param>
+        /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
+        /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType )
         {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
@@ -87,6 +102,12 @@ namespace Rock.Helpers
             return types;
         }
 
+        /// <summary>
+        /// Returns the name of the type.  If a <see cref="System.ComponentModel.DescriptionAttribute"/> is 
+        /// present for the type, it's value will be returned, otherwise the type name will be returned
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public static string ClassName(Type type)
         {
             object[] attributes = type.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), true);

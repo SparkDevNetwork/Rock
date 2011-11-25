@@ -10,9 +10,15 @@ using System.Web.UI.WebControls;
 // enable client side validation using jQuery see
 // http://www.mourfield.com/Article/70/using-the-jquery-validation-plugin-to-build-a-data-annotations-aspnet-validator
 
+/// <summary>
+/// Rock Validators
+/// </summary>
 namespace Rock.Validation
 {
     //[ToolboxData("<{0}:DataAnnotationValidator runat="server"></{0}:DataAnnotationValidator>")]
+    /// <summary>
+    /// Data Annotation Validator for validating based on data attributes
+    /// </summary>
     public class DataAnnotationValidator : BaseValidator
     {
         #region Properties
@@ -31,6 +37,12 @@ namespace Rock.Validation
 
         #region Methods
 
+        /// <summary>
+        /// When overridden in a derived class, this method contains the code to determine whether the value in the input control is valid.
+        /// </summary>
+        /// <returns>
+        /// true if the value in the input control is valid; otherwise, false.
+        /// </returns>
         protected override bool EvaluateIsValid()
         {
             // get the type that we are going to validate

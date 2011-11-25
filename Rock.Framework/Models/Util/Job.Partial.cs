@@ -28,6 +28,9 @@ namespace Rock.Models.Util
 {
     public partial class Job : ModelWithAttributes<Job>
     {
+        /// <summary>
+        /// Job notification status
+        /// </summary>
         public enum JobNotificationStatus
         {
             All = 1,

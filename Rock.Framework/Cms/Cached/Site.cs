@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
+/// <summary>
+/// Cached objects used by the Rock Content Management System
+/// </summary>
 namespace Rock.Cms.Cached
 {
     /// <summary>
@@ -15,20 +18,60 @@ namespace Rock.Cms.Cached
         /// </summary>
         private Site() { }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the org id.
+        /// </summary>
         public string OrgId { get; private set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets the theme.
+        /// </summary>
         public string Theme { get; private set; }
+
+        /// <summary>
+        /// Gets the favicon URL.
+        /// </summary>
         public string FaviconUrl { get; private set; }
+
+        /// <summary>
+        /// Gets the apple touch URL.
+        /// </summary>
         public string AppleTouchUrl { get; private set; }
+
+        /// <summary>
+        /// Gets the attribute values.
+        /// </summary>
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+
+        /// <summary>
+        /// Gets the facebook app id.
+        /// </summary>
         public string FacebookAppId { get; private set; }
+
+        /// <summary>
+        /// Gets the facebook app secret.
+        /// </summary>
         public string FacebookAppSecret { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
+
         /// <summary>
-        /// List of attributes associated with the site.  This object will not include values.
+        /// Gets a list of attributes associated with the site.  This object will not include values.
         /// To get values associated with the current site instance, use the AttributeValues
         /// </summary>
         public List<Rock.Cms.Cached.Attribute> Attributes
@@ -44,7 +87,9 @@ namespace Rock.Cms.Cached
             }
         }
 
-        private int? DefaultPageId;
+        /// <summary>
+        /// Gets the default page.
+        /// </summary>
         public Page DefaultPage
         {
             get
@@ -55,7 +100,12 @@ namespace Rock.Cms.Cached
                     return null;
             }
         }
+        private int? DefaultPageId;
 
+        /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
             Rock.Services.Cms.SiteService siteService = new Services.Cms.SiteService();

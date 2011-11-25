@@ -16,6 +16,11 @@ namespace Rock.Services.Crm
 {
 	public partial class PersonService
 	{
+        /// <summary>
+        /// Gets a list of people with a matching full name
+        /// </summary>
+        /// <param name="fullName">The full name.</param>
+        /// <returns></returns>
         public IQueryable<Person> GetByFullName( string fullName )
         {
             string firstName = string.Empty;

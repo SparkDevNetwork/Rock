@@ -5,6 +5,9 @@ using System.ServiceModel.Web;
 
 using Rock.Cms.Security;
 
+/// <summary>
+/// Address Standardization and Geocoding
+/// </summary>
 namespace Rock.Address
 {
     /// <summary>

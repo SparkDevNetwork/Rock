@@ -15,10 +15,29 @@ namespace Rock.Cms.Cached
         /// </summary>
         private FieldType() { }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the path.
+        /// </summary>
         public string Path { get; private set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
         public string Description { get; private set; }
+
+        /// <summary>
+        /// Gets the field 
+        /// </summary>
         public Rock.FieldTypes.IFieldType Field { get; private set; }
 
         #region Static Methods

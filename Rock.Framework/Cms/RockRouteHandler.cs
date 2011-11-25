@@ -10,6 +10,9 @@ using System.IO;
 
 namespace Rock.Cms
 {
+    /// <summary>
+    /// Rock custom route handler
+    /// </summary>
     public class RockRouteHandler : IRouteHandler
     {
         /// <summary>

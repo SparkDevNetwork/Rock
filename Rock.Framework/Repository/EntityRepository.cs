@@ -13,10 +13,17 @@ using Rock.Helpers;
 
 namespace Rock.Repository
 {
+    /// <summary>
+    /// Repository for working with the Entity Framework
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class EntityRepository<T> : IRepository<T> where T : class
     {
         private DbContext _context;
 
+        /// <summary>
+        /// Gets the context.
+        /// </summary>
         internal DbContext Context
         {
             get
@@ -33,10 +40,17 @@ namespace Rock.Repository
 
         internal DbSet<T> _objectSet;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository&lt;T&gt;"/> class.
+        /// </summary>
         public EntityRepository() :
             this( new Rock.EntityFramework.RockContext() )
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityRepository&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="objectContext">The object context.</param>
         public EntityRepository( DbContext objectContext )
         {
             _context = objectContext;

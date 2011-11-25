@@ -13,6 +13,12 @@ namespace Rock.FieldTypes
     /// </summary>
     public class Color : Field
     {
+        /// <summary>
+        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="setValue"></param>
+        /// <returns></returns>
         public override Control CreateControl(string value, bool setValue)
         {
             DropDownList ddl = new DropDownList();
@@ -30,6 +36,11 @@ namespace Rock.FieldTypes
             return ddl;
         }
 
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control"></param>
+        /// <returns></returns>
         public override string ReadValue( Control control )
         {
             if ( control != null && control is DropDownList )

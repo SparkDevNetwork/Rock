@@ -11,6 +11,10 @@ namespace Rock.FieldTypes
     public class SelectMulti : Field
     {
         private List<FieldQualifier> qualifiers = null;
+
+        /// <summary>
+        /// Gets the qualifiers.
+        /// </summary>
         public override List<FieldQualifier> Qualifiers
         {
             get

@@ -42,9 +42,9 @@ namespace Rock.Api
         IEnumerable<Lazy<IService, IServiceData>> services;
 
         /// <summary>
-        /// Adds service routes for every the routes.
+        /// Adds service routes for every <see cref="IService"/> class found through MEF.
         /// </summary>
-        /// <param name="routes">The routes.</param>
+        /// <param name="routes">The route collection.</param>
         public void AddRoutes( RouteCollection routes )
         {
             try
@@ -61,6 +61,12 @@ namespace Rock.Api
             }
 		}
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceHelper"/> class.  Creates the MEF catalog
+        /// and container.  Will load all <see cref="IService"/> classes in the Rock.Framework or any dll in 
+        /// the Extensions folder
+        /// </summary>
+        /// <param name="extensionFolder">The extension folder.</param>
         public ServiceHelper(string extensionFolder)
         {
             var catalog = new AggregateCatalog();

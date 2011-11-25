@@ -17,6 +17,9 @@ namespace Rock.Jobs
     /// </summary>
     public class RockJobListener : IJobListener
     {
+        /// <summary>
+        /// Get the name of the <see cref="IJobListener"/>.
+        /// </summary>
         public string Name
         {
             get
@@ -25,20 +28,47 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockJobListener"/> class.
+        /// </summary>
         public RockJobListener()
         {
         }
-
-
-
+        
+        /// <summary>
+        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
+        /// is about to be executed (an associated <see cref="ITrigger"/>
+        /// has occurred).
+        /// <para>
+        /// This method will not be invoked if the execution of the Job was vetoed
+        /// by a <see cref="ITriggerListener"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="context"></param>
+        /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
         public void JobToBeExecuted( IJobExecutionContext context )
         {
         }
 
+        /// <summary>
+        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
+        /// was about to be executed (an associated <see cref="ITrigger"/>
+        /// has occurred), but a <see cref="ITriggerListener"/> vetoed it's
+        /// execution.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <seealso cref="JobToBeExecuted(IJobExecutionContext)"/>
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
         }
 
+        /// <summary>
+        /// Called by the <see cref="IScheduler"/> after a <see cref="IJobDetail"/>
+        /// has been executed, and be for the associated <see cref="IOperableTrigger"/>'s
+        /// <see cref="IOperableTrigger.Triggered"/> method has been called.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="jobException"></param>
         public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
         {
             StringBuilder message = new StringBuilder();

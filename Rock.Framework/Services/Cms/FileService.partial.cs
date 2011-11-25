@@ -9,6 +9,11 @@ namespace Rock.Services.Cms
 {
     public partial class FileService
     {
+        /// <summary>
+        /// Gets the file by GUID.
+        /// </summary>
+        /// <param name="guidString">The GUID string.</param>
+        /// <returns></returns>
 		public Rock.Models.Cms.File GetByGuid( string guidString )
         {
 			Guid guid = new Guid( guidString );

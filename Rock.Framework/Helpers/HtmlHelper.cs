@@ -5,9 +5,15 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Web;
 
+/// <summary>
+/// Helper classes
+/// </summary
 namespace Rock.Helpers
 {
-    public class HtmlHelper
+    /// <summary>
+    /// Provides helper methods for use in rendering HTML
+    /// </summary>
+    public static class HtmlHelper
     {
 
         /// <summary>

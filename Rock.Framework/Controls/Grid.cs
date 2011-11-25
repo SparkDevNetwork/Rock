@@ -9,13 +9,25 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
+/// <summary>
+/// Rock Server Controls
+/// </summary>
 namespace Rock.Controls
 {
+    /// <summary>
+    /// Rock Grid Control
+    /// </summary>
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
         #region Properties
 
+        /// <summary>
+        /// Gets or sets a value indicating whether client-side sorting should be enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if client-sid sorting should be enabled; otherwise, <c>false</c>.
+        /// </value>
         [
         Category( "Behavior" ),
         DefaultValue( false ),
@@ -34,6 +46,12 @@ namespace Rock.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether adding should be enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if adding is enabled; otherwise, <c>false</c>.
+        /// </value>
         [
         Category( "Behavior" ),
         DefaultValue( false ),
@@ -52,6 +70,12 @@ namespace Rock.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the client script to be called when user clicks tha add icon
+        /// </summary>
+        /// <value>
+        /// The client add script.
+        /// </value>
         [
         Category( "Behavior" ),
         Description( "Client Add Script" )
@@ -74,6 +98,10 @@ namespace Rock.Controls
 
         #region Overridden Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
         protected override void OnInit( EventArgs e )
         {
             Rock.Cms.CmsPage.AddCSSLink( Page, "~/CSS/grid.css" );
@@ -105,6 +133,10 @@ namespace Rock.Controls
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -144,6 +176,10 @@ namespace Rock.Controls
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
             base.OnDataBound( e );
@@ -180,6 +216,10 @@ namespace Rock.Controls
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
         protected override void OnRowDataBound( GridViewRowEventArgs e )
         {
             base.OnRowDataBound( e );
@@ -199,6 +239,11 @@ namespace Rock.Controls
 
         #region Internal Methods
 
+        /// <summary>
+        /// Handles the PageClick event of the gridPagerTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void gridPagerTemplate_PageClick( object sender, EventArgs e )
         {
             GridViewRow pagerRow = this.BottomPagerRow;
@@ -218,6 +263,11 @@ namespace Rock.Controls
             }
         }
 
+        /// <summary>
+        /// Handles the AddClick event of the gridPagerTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void gridPagerTemplate_AddClick( object sender, EventArgs e )
         {
             OnGridAdd( e );
@@ -227,6 +277,10 @@ namespace Rock.Controls
 
         #region Callback Methods/Events
 
+        /// <summary>
+        /// Raises the appropriate events for the <see cref="T:System.Web.UI.WebControls.GridView"/> control when it posts back to the server.
+        /// </summary>
+        /// <param name="eventArgument">The event argument from which to create a <see cref="T:System.Web.UI.WebControls.CommandEventArgs"/> for the event or events that are raised.</param>
         void IPostBackEventHandler.RaisePostBackEvent( string eventArgument )
         {
             if ( eventArgument.StartsWith( "re-order:" ) )
@@ -256,21 +310,45 @@ namespace Rock.Controls
 
         #region Events
 
+        /// <summary>
+        /// Occurs when [grid reorder].
+        /// </summary>
         public event GridReorderEventHandler GridReorder;
+
+        /// <summary>
+        /// Raises the <see cref="E:GridReorder"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
         protected virtual void OnGridReorder( GridReorderEventArgs e )
         {
             if ( GridReorder != null )
                 GridReorder( this, e );
         }
 
+        /// <summary>
+        /// Occurs when [grid add].
+        /// </summary>
         public event GridAddEventHandler GridAdd;
+
+        /// <summary>
+        /// Raises the <see cref="E:GridAdd"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected virtual void OnGridAdd( EventArgs e )
         {
             if ( GridAdd != null )
                 GridAdd( this, e );
         }
 
+        /// <summary>
+        /// Occurs when [grid rebind].
+        /// </summary>
         public event GridRebindEventHandler GridRebind;
+
+        /// <summary>
+        /// Raises the <see cref="E:GridRebind"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected virtual void OnGridRebind( EventArgs e )
         {
             if ( GridRebind != null )
@@ -282,27 +360,70 @@ namespace Rock.Controls
 
     #region Delegates
 
+    /// <summary>
+    /// Delegate used for raising the grid reorder event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
     public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );
+
+    /// <summary>
+    /// Delegate used for raising the grid add event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
     public delegate void GridAddEventHandler( object sender, EventArgs e);
+
+    /// <summary>
+    /// Delegate used for raising the grid rebind event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
     public delegate void GridRebindEventHandler( object sender, EventArgs e );
 
     #endregion
 
     #region Event Handlers
 
+    /// <summary>
+    /// Grid Reorder Event Argument
+    /// </summary>
     public class GridReorderEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets the data key.
+        /// </summary>
         public string DataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the old index.
+        /// </summary>
         public int OldIndex { get; private set; }
+
+        /// <summary>
+        /// Gets the new index.
+        /// </summary>
         public int NewIndex { get; private set; }
 
         private bool _cancel = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether the reorder event should be cancelled
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if cancelled; otherwise, <c>false</c>.
+        /// </value>
         public bool Cancel
         {
             get { return _cancel; }
             set { _cancel = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridReorderEventArgs"/> class.
+        /// </summary>
+        /// <param name="dataKey">The data key.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
         public GridReorderEventArgs( string dataKey, int oldIndex, int newIndex )
         {
             DataKey = dataKey;
@@ -315,6 +436,9 @@ namespace Rock.Controls
 
     #region Helper Classes
 
+    /// <summary>
+    /// JSON Result  
+    /// </summary>
     internal class JsonResult
     {
         public string Action { get; set; }
@@ -352,8 +476,15 @@ namespace Rock.Controls
 
     #region Templates
 
+    /// <summary>
+    /// Template used for an empty data row in the <see cref="Grid"/> control
+    /// </summary>
     internal class EmptyDataTemplate : ITemplate
     {
+        /// <summary>
+        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// </summary>
+        /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
         {
             HtmlGenericControl div = new HtmlGenericControl( "div" );
@@ -381,8 +512,15 @@ namespace Rock.Controls
         internal event EventHandler AddClick;
     }
 
+    /// <summary>
+    /// Template used for the pager row in the <see cref="Grid"/> control
+    /// </summary>
     internal class PagerTemplate : ITemplate
     {
+        /// <summary>
+        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// </summary>
+        /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void  InstantiateIn(Control container)
         {
             HtmlGenericControl div = new HtmlGenericControl( "div" );
@@ -435,19 +573,36 @@ namespace Rock.Controls
             divActions.Controls.Add( lbAdd );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void ddl_SelectedIndexChanged( object sender, EventArgs e )
         {
             if (PageClick != null)
                 PageClick( sender, e );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void lbAdd_Click( object sender, EventArgs e )
         {
             if (AddClick != null)
                 AddClick( sender, e );
         }
 
+        /// <summary>
+        /// Occurs when [page click].
+        /// </summary>
         internal event EventHandler PageClick;
+
+        /// <summary>
+        /// Occurs when [add click].
+        /// </summary>
         internal event EventHandler AddClick;
     }
 

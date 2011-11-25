@@ -22,6 +22,10 @@ namespace Rock.Helpers
         private int _routeId = -1;
         
         // public properties
+
+        /// <summary>
+        /// Gets the page id.
+        /// </summary>
         public int PageId 
         {
             get
@@ -30,6 +34,9 @@ namespace Rock.Helpers
             }            
         }
 
+        /// <summary>
+        /// Gets the route id.
+        /// </summary>
         public int RouteId
         {
             get
@@ -38,6 +45,12 @@ namespace Rock.Helpers
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
         public bool IsValid
         {
             get
@@ -50,6 +63,10 @@ namespace Rock.Helpers
         }
 
         // constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageReference"/> class.
+        /// </summary>
         public PageReference(){}
 
         public PageReference( string reference )
@@ -63,6 +80,11 @@ namespace Rock.Helpers
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageReference"/> class.
+        /// </summary>
+        /// <param name="pageId">The page id.</param>
+        /// <param name="routeId">The route id.</param>
         public PageReference( int pageId, int routeId )
         {
             _pageId = pageId;

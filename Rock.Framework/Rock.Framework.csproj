@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Rock.Framework.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -96,6 +97,8 @@
     <Compile Include="Api\Cms\SiteDomainService.cs" />
     <Compile Include="Api\Cms\SiteService.cs" />
     <Compile Include="Api\Cms\UserService.cs" />
+    <Compile Include="Api\Core\IServiceLogService.cs" />
+    <Compile Include="Api\Core\ServiceLogService.cs" />
     <Compile Include="Api\Crm\AddressService.cs" />
     <Compile Include="Api\Crm\AddressService.Partial.cs" />
     <Compile Include="Address\AddressStub.cs">
