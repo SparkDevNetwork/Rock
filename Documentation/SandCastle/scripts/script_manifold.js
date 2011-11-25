@@ -1,7 +1,22 @@
-registerEventHandler(window, 'load', getInstanceDelegate(this, "LoadPage"));
-registerEventHandler(window, 'unload', getInstanceDelegate(this, "Window_Unload"));
-registerEventHandler(window, 'beforeprint', getInstanceDelegate(this, "set_to_print"));
-registerEventHandler(window, 'afterprint', getInstanceDelegate(this, "reset_form"));
+window.onload=LoadPage;
+window.onunload=Window_Unload;
+//window.onresize=ResizeWindow;
+window.onbeforeprint = set_to_print;
+window.onafterprint = reset_form;
+
+var languageFilter;
+var data;
+var tf;
+var mf;
+var lang = 'CSharp';
+
+var vbDeclaration;
+var vbUsage;
+var csLang;
+var cLang;
+var jsharpLang;
+var jsLang;
+var xamlLang;
 
 var scrollPos = 0;
 
@@ -56,53 +71,45 @@ function HideSelect()
 					break;
 				case "csharp":
 					for (m=0; m<spanEles.length; m++)
-					{					
+					{
 						if (spanEles[m].getAttribute("codeLanguage") == "CSharp" && spanEles[m].style.display != "none" && n < i)
 							i = n;
 					}
 					break;
 				case "managedcplusplus":
 					for (m=0; m<spanEles.length; m++)
-					{					
+					{
 						if (spanEles[m].getAttribute("codeLanguage") == "ManagedCPlusPlus" && spanEles[m].style.display != "none" && n < i)
 							i = n;
 					}
 					break;
 				case "jsharp":
 					for (m=0; m<spanEles.length; m++)
-					{					
+					{
 						if (spanEles[m].getAttribute("codeLanguage") == "JSharp" && spanEles[m].style.display != "none" && n < i)
 							i = n;
 					}
 					break;
 				case "jscript":
 					for (m=0; m<spanEles.length; m++)
-					{					
+					{
 						if (spanEles[m].getAttribute("codeLanguage") == "JScript" && spanEles[m].style.display != "none" && n < i)
 							i = n;
 					}
-					break;				
+					break;
 				case "xaml":
 					//alert(lan);
 					for (m=0; m<spanEles.length; m++)
-					{					
+					{
 						if (spanEles[m].getAttribute("codeLanguage") == "XAML" && spanEles[m].style.display != "none" && n <i)
-							i = n;				
+							i = n;
 					}
 					break;
 				case "javascript":
-					//alert(lan);
 					for (m=0; m<spanEles.length; m++)
 					{					
 						if (spanEles[m].getAttribute("codeLanguage") == "JavaScript" && spanEles[m].style.display != "none" && n <i)
 							i = n;				
-					}
-					break;
-				case "fsharp":
-					for (m=0; m<spanEles.length; m++)
-					{					
-						if (spanEles[m].getAttribute("codeLanguage") == "FSharp" && spanEles[m].style.display != "none" && n < i)
-							i = n;
 					}
 					break;
 			}							
@@ -128,8 +135,10 @@ function UnHideSelect()
 
 function InitSectionStates()
 {
-    sectionStatesInitialized = true;
+   sectionStatesInitialized = true;
+    
     if (globals == null) globals = GetGlobals();
+
     // SectionStates has the format:
     //
     //     firstSectionId:state;secondSectionId:state;thirdSectionId:state; ... ;lastSectionId:state
@@ -199,10 +208,11 @@ function OnLoadImage(eventObj)
     var elem;
     if(document.all) elem = eventObj.srcElement;
     else elem = eventObj.target;
+
         
     if ((sectionStates[elem.id] == "e"))
 		ExpandSection(elem);
-	else
+	else if((sectionStates[elem.id] == "c"))
 		CollapseSection(elem);
 }
 
@@ -212,27 +222,25 @@ function OnLoadImage(eventObj)
 **********
 */
 
-var docSettings;
-var mainSection;
-
 function LoadPage()
 {
 	// If not initialized, grab the DTE.Globals object
-    if (globals == null) 
-        globals = GetGlobals();
+	if (globals == null) globals = GetGlobals();
+	
+	// show correct language
+	LoadLanguages();
+	LoadMembersOptions();
+	
+	Set_up_checkboxes();
 
-	// docSettings has settings for the current document, 
-	//     which include persistent and non-persistent keys for checkbox filters and expand/collapse section states
-	// persistKeys is an array of the checkbox ids to persist
-	if (docSettings == null) 
-	{
-        docSettings = new Array();
-        persistKeys = new Array();
-	}
+	DisplayLanguages();
+	
+	DisplayFilteredMembers();
+		
+	ChangeMembersOptionsFilterLabel();
 	
     if (!sectionStatesInitialized) 
 	    InitSectionStates(); 
-
 	var imgElements = document.getElementsByName("toggleSwitch");
 	
 	for (i = 0; i < imgElements.length; i++)
@@ -245,27 +253,36 @@ function LoadPage()
 	
 	SetCollapseAll();
 
+//	ResizeWindow();
 	// split screen
-	mainSection = document.getElementById("mainSection");
-	if (!mainSection)
-	    mainSection = document.getElementById("mainSectionMHS");
-	    
-	var screen = new SplitScreen('header', mainSection.id);
+	var screen = new SplitScreen('header', 'mainSection');
 
-	// init devlang filter checkboxes
-	SetupDevlangsFilter();
-	
-	// init memberlist filter checkboxes for protected, inherited, etc
-	SetupMemberOptionsFilter();
-	
-	// init memberlist platforms filter checkboxes, e.g. .Net Framework, CompactFramework, XNA, Silverlight, etc.
-	SetupMemberFrameworksFilter();
+	// filtering dropdowns
+	if (document.getElementById('languageSpan') != null) {
+		var languageMenu = new Dropdown('languageFilterToolTip', 'languageSpan');
+		languageFilter = new Selector('languageSpan');
+        languageFilter.register(codeBlockHandler); 
+        languageFilter.register(styleSheetHandler); 
+        languageFilter.register(persistenceHandler);
+        languageFilter.register(languageHandler);
+        toggleLanguage('languageSpan', 'x-lang', 'CSharp');
+        toggleInlineStyle('cs');
+	}
+	if (document.getElementById('membersOptionsFilterToolTip') != null) {
+		var languageMenu = new Dropdown('membersOptionsFilterToolTip', 'membersOptionsSpan');
+	}
 
-	// removes blank target from in the self links for Microsoft Help System
-	RemoveTargetBlank();
-
-    // set gardien image to the bottom of header or Microsoft Help System
-	SetBackground('headerBottom');
+	data = new DataStore('docs');
+    registerEventHandler(window, 'load', function() {if (languageFilter != null) languageFilter.select(data)});
+    
+    // process tab behavior for syntax, snippets, type and member sections
+    tf = new TypeFilter();
+    mf = new MemberFilter();
+    setUpSyntax();
+    setUpSnippets();
+    setUpType();
+    setUpAllMembers();
+    var mainSection = document.getElementById("mainSection");
 	
 	// vs70.js did this to allow up/down arrow scrolling, I think
 	try { mainSection.setActive(); } catch(e) { }
@@ -277,23 +294,40 @@ function LoadPage()
 
 function Window_Unload()
 {
-    // for each key in persistArray, write the key/value pair to globals
-    for (var i = 0; i < persistKeys.length; i++)
-        Save(persistKeys[i],docSettings[persistKeys[i]]);
-    
-    // save the expand/collapse section states
-    SaveSections();
+	SaveLanguages();
+	SaveMembersOptions();
+	SaveSections();
 }
 
-// removes blank target from in the self links for Microsoft Help System
-function RemoveTargetBlank() {
-    var elems = document.getElementsByTagName("a");
-    for (var i = 0; i < elems.length; i++) {
-        if (elems[i].getAttribute("target") == "_blank" &&
-        elems[i].getAttribute("href", 2).indexOf("#", 0) == 0)
-            elems[i].removeAttribute("target");
-    }
+/*
+function ResizeWindow()
+{
+	if (document.body.clientWidth==0) return;
+	var header = document.all.item("header");
+	var mainSection = document.all.item("mainSection");
+	if (mainSection == null) return;
+	
+	
+	document.body.scroll = "no"
+	mainSection.style.overflow= "auto";
+	header.style.width= document.body.offsetWidth - 2;
+	//mainSection.style.paddingRight = "20px"; // Width issue code
+	mainSection.style.width= document.body.offsetWidth - 2;
+	mainSection.style.top=0;  
+	if (document.body.offsetHeight > header.offsetHeight + 10)
+		mainSection.style.height= document.body.offsetHeight - (header.offsetHeight + 2);
+	else
+		mainSection.style.height=0;
+	
+	try
+	{
+		mainSection.setActive();
+	}
+	catch(e)
+	{
+	}
 }
+*/
 
 function set_to_print()
 {
@@ -313,7 +347,7 @@ function set_to_print()
 			document.all[i].style.margin = "0px 0px 0px 0px";
 			document.all[i].style.width = "100%";
 		}
-		if (document.all[i].id == mainSection.id)
+		if (document.all[i].id == "mainSection")
 		{
 			document.all[i].style.overflow = "visible";
 			document.all[i].style.top = "5px";
@@ -329,6 +363,110 @@ function reset_form()
 	 document.location.reload();
 }
 
+function Set_up_checkboxes()
+{
+	var checkbox;
+	
+	checkbox = document.getElementById("vbDeclarationCheckbox");
+	if(checkbox != null)
+	{
+		if(vbDeclaration == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("vbUsageCheckbox");
+	if(checkbox != null)
+	{
+		if(vbUsage == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+		
+	checkbox = document.getElementById("csCheckbox");
+	if(checkbox != null)
+	{
+		if(csLang == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+		
+	checkbox = document.getElementById("cCheckbox");
+	if(checkbox != null)
+	{
+		if(cLang == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("jsharpCheckbox");
+	if(checkbox != null)
+	{
+		if(jsharpLang == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+		
+	checkbox = document.getElementById("jsCheckbox");
+	if(checkbox != null)
+	{
+		if(jsLang == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("xamlCheckbox");
+	if(checkbox != null)
+	{
+		if(xamlLang == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("inheritedCheckbox");
+	if(checkbox != null)
+	{
+		if(inheritedMembers == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("protectedCheckbox");
+	if(checkbox != null)
+	{
+		if(protectedMembers == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("netcfCheckbox");
+	if(checkbox != null)
+	{
+		if(netcfMembersOnly == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+	
+	checkbox = document.getElementById("netXnaCheckbox");
+	if(checkbox != null)
+	{
+		if(netXnaMembersOnly == "on")
+			checkbox.checked = true;
+		else
+			checkbox.checked = false;
+	}
+}
+
 /*	
 **********
 **********   End
@@ -342,72 +480,390 @@ function reset_form()
 **********
 */
 
-var devlangsMenu;
-var devlangsDropdown;
-var memberOptionsMenu;
-var memberOptionsDropdown;
-var memberFrameworksMenu;
-var memberFrameworksDropdown;
-var dropdowns = new Array();
-
-// initialize the devlang filter dropdown menu
-function SetupDevlangsFilter()
+function SetLanguage(key)
 {
-    var divNode = document.getElementById('devlangsMenu');
-	if (divNode == null)
-	    return;
-
-	var checkboxNodes = divNode.getElementsByTagName("input");
+    var i = 0;
+	if(vbDeclaration == "on")
+		i++;
+	if(vbUsage == "on")
+		i++;
+	if(csLang == "on")
+		i++;
+	if(cLang == "on")
+		i++;
+	if(jsharpLang == "on")
+		i++;
+	if(jsLang == "on")
+		i++;
+	if(xamlLang == "on")
+		i++;
 	
-	if (checkboxNodes.length == 1)
+	if(key.id == "vbDeclarationCheckbox")
 	{
-	    // only one checkbox, so we don't need a menu
-	    // get the devlang and use it to display the correct devlang spans
-	    // a one-checkbox setting like this is NOT persisted, nor is it set from the persisted globals
-	    var checkboxData = checkboxNodes[0].getAttribute('data');
-        var dataSplits = checkboxData.split(',');
-        var devlang = "";
-        if (dataSplits.length > 1)
-            devlang = dataSplits[1];
-	    styleSheetHandler(devlang);
+	    if(vbDeclaration == "on")
+		{
+		    if(i == 1)
+			{
+			    key.checked = true;
+				return;
+			}
+			vbDeclaration = "off";
+		}
+		else
+			vbDeclaration = "on";
 	}
+	if(key.id == "vbUsageCheckbox")
+	{
+		if(vbUsage == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+				
+			vbUsage = "off";
+		}
+		else
+			vbUsage = "on";
+	}
+	if(key.id == "csCheckbox")
+	{
+		if(csLang == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+			
+			csLang = "off";
+		}
+		else
+			csLang = "on";
+	}
+	if(key.id == "cCheckbox")
+	{
+		if(cLang == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+				
+			cLang = "off";
+		}
+		else
+			cLang = "on";
+	}
+	if(key.id == "jsharpCheckbox")
+	{
+		if(jsharpLang == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+				
+			jsharpLang = "off";
+		}
+		else
+			jsharpLang = "on";
+	}
+	if(key.id == "jsCheckbox")
+	{
+		if(jsLang == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+				
+			jsLang = "off";
+		}
+		else
+			jsLang = "on";
+	}
+	if(key.id == "xamlCheckbox")
+	{
+		if(xamlLang == "on")
+		{
+			if(i == 1)
+			{
+				key.checked = true;
+				return;
+			}
+				
+			xamlLang = "off";
+		}
+		else
+			xamlLang = "on";
+	}
+	
+	DisplayLanguages();
+}
+
+function DisplayLanguages()
+{
+	var spanElements = document.getElementsByTagName("span");
+	var x = 0;
+	if(vbDeclaration == "on")
+		x++;
+	if(vbUsage == "on")
+		x++;
+	if(csLang == "on")
+		x++;
+	if(cLang == "on")
+		x++;
+	if(jsharpLang == "on")
+		x++;
+	if(jsLang == "on")
+		x++;
+	if(xamlLang == "on")
+		x++;
+
+	var i;
+	for(i = 0; i < spanElements.length; ++i)
+	{
+	    if(spanElements[i].getAttribute("codeLanguage") != null)
+		{
+		    if(spanElements[i].getAttribute("codeLanguage") == "VisualBasic")
+			{
+				if(vbDeclaration == "on" || vbUsage == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "VisualBasicDeclaration")
+			{
+			
+				if(vbDeclaration == "on")
+					spanElements[i].style.display = "";
+				else{
+				
+					spanElements[i].style.display = "none";
+					}
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "VisualBasicUsage")
+			{
+				if(vbUsage == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "CSharp")
+			{
+				if(csLang == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "ManagedCPlusPlus")
+			{
+				if(cLang == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "JSharp")
+			{
+				if(jsharpLang == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "JScript")
+			{
+				if(jsLang == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			if(spanElements[i].getAttribute("codeLanguage") == "XAML")
+			{
+				if(xamlLang == "on")
+					spanElements[i].style.display = "";
+				else
+					spanElements[i].style.display = "none";
+			}
+			
+			if(spanElements[i].getAttribute("codeLanguage") == "NotVisualBasicUsage")
+			{
+				if((x == 1) && (vbUsage == "on"))
+				{
+					spanElements[i].style.display = "none";
+				}
+				else
+				{
+					spanElements[i].style.display = "";
+				}
+			}
+		}
+	}
+	ChangeLanguageFilterLabel();
+}
+
+function ChangeLanguageFilterLabel()
+{	
+	var i = 0;
+	if(vbDeclaration == "on")
+		i++;
+	if(vbUsage == "on")
+		i++;
+	if(csLang == "on")
+		i++;
+	if(cLang == "on")
+		i++;
+	if(jsharpLang == "on")
+		i++;
+	if(jsLang == "on")
+		i++;
+	if(xamlLang == "on")
+		i++;
+		
+	var labelElement;
+	
+	labelElement = document.getElementById("showAllLabel");
+	
+	if(labelElement == null)
+		return;
+		
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("multipleLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("vbLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("csLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("cLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("jsharpLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("jsLabel");
+	labelElement.style.display = "none";
+	
+	labelElement = document.getElementById("xamlLabel");
+	labelElement.style.display = "none";
+	
+	if(i == 7)
+	{
+		labelElement = document.getElementById("showAllLabel");
+		labelElement.style.display = "inline";
+	}
+	else if ((i > 1) && (i < 7))
+	{
+		if((i == 2) && ((vbDeclaration == "on") && (vbUsage == "on")))
+		{
+			labelElement = document.getElementById("vbLabel");
+			labelElement.style.display = "inline";
+		}
+		else
+		{
+			labelElement = document.getElementById("multipleLabel");
+			labelElement.style.display = "inline";
+		}
+	}
+	else if (i == 1)
+	{
+		if(vbDeclaration == "on" || vbUsage == "on")
+		{
+			labelElement = document.getElementById("vbLabel");
+			labelElement.style.display = "inline";
+		}
+		if(csLang == "on")
+		{
+			labelElement = document.getElementById("csLabel");
+			labelElement.style.display = "inline";
+		}
+		if(cLang == "on")
+		{
+			labelElement = document.getElementById("cLabel");
+			labelElement.style.display = "inline";
+		}
+		if(jsharpLang == "on")
+		{
+			labelElement = document.getElementById("jsharpLabel");
+			labelElement.style.display = "inline";
+		}
+		if(jsLang == "on")
+		{
+			labelElement = document.getElementById("jsLabel");
+			labelElement.style.display = "inline";
+		}
+		if(xamlLang == "on")
+		{
+			labelElement = document.getElementById("xamlLabel");
+			labelElement.style.display = "inline";
+		}
+	}
+}
+
+function LoadLanguages()
+{
+	var value;
+	value = Load("vbDeclaration");
+	if(value == null)
+		vbDeclaration = "on";
 	else
-	{
-	    // setup the dropdown menu
-        devlangsMenu = new CheckboxMenu("devlangsMenu", docSettings, persistKeys, globals);
-		devlangsDropdown = new Dropdown('devlangsDropdown', 'devlangsMenu', 'header');
-		dropdowns.push(devlangsDropdown);
+		vbDeclaration = value;
+		
+	value = Load("vbUsage");
+	if(value == null)
+		vbUsage = "on";
+	else
+		vbUsage = value;
+		
+	value = Load("csLang");
+	if(value == null)
+		csLang = "on";
+	else
+		csLang = value;
+		
+	value = Load("cLang");
+	if(value == null)
+		cLang = "on";
+	else
+		cLang = value;
+	
+	value = Load("jsharpLang");
+	if(value == null)
+		jsharpLang = "on";
+	else
+		jsharpLang = value;
+		
+	value = Load("jsLang");
+	if(value == null)
+		jsLang = "on";
+	else
+		jsLang = value;
 
-        // update the label of the dropdown menu
-        SetDropdownMenuLabel(devlangsMenu, devlangsDropdown);
-        
-        // toggle the document's display docSettings
-	    codeBlockHandler();
-	    styleSheetHandler("");
-	}
+	value = Load("xamlLang");
+	if(value == null)
+		xamlLang = "on";
+	else
+		xamlLang = value;
 }
 
-
-// called onclick in a devlang filter checkbox
-// tasks to perform at this event are:
-//   toggle the check state of the checkbox that was clicked
-//   update the user's devlang preference, based on devlang checkbox states
-//   update stylesheet based on user's devlang preference
-//   show/hide snippets/syntax based on user's devlang preference
-//   
-function SetLanguage(checkbox)
+function SaveLanguages()
 {
-    // toggle the check state of the checkbox that was clicked
-    devlangsMenu.ToggleCheckState(checkbox.id);
-    
-    // update the label of the dropdown menu
-    SetDropdownMenuLabel(devlangsMenu, devlangsDropdown);
-	
-    // update the display of the document's items that are dependent on the devlang setting
-	codeBlockHandler();
-	styleSheetHandler("");
-	
+	Save("vbDeclaration", vbDeclaration);
+	Save("vbUsage", vbUsage);
+	Save("csLang", csLang);
+	Save("cLang", cLang);
+	Save("jsharpLang", jsharpLang);
+	Save("jsLang", jsLang);
+	Save("xamlLang", xamlLang);
 }
+
 /*	
 **********
 **********   End Language Filtering
@@ -421,87 +877,39 @@ function SetLanguage(checkbox)
 **********
 */
 
-// initialize the memberlist dropdown menu for protected, inherited, etc
-function SetupMemberOptionsFilter()
+function SetMembersOptions(key)
 {
-	if (document.getElementById('memberOptionsMenu') != null) {
-        memberOptionsMenu = new CheckboxMenu("memberOptionsMenu", docSettings, persistKeys, globals);
-		memberOptionsDropdown = new Dropdown('memberOptionsDropdown', 'memberOptionsMenu', 'header');
-		dropdowns.push(memberOptionsDropdown);
-
-        // update the label of the dropdown menu
-        SetDropdownMenuLabel(memberOptionsMenu, memberOptionsDropdown);
-        
-        // show/hide memberlist rows based on the current docSettings
-	    memberlistHandler();
-	}
-}
-
-// sets the background to an element for Microsoft Help 3 system
-function SetBackground(id) {
-    var elem = document.getElementById(id);
-    if (elem) {
-        var img = document.getElementById(id + "Image");
-        if (img) {
-            elem.setAttribute("background", img.getAttribute("src"));
-        }
-    }
-}
-
-function SetupMemberFrameworksFilter()
-{
-	if (document.getElementById('memberFrameworksMenu') != null) 
+	if(key.id == "inheritedCheckbox")
 	{
-        memberFrameworksMenu = new CheckboxMenu("memberFrameworksMenu", docSettings, persistKeys, globals);
-		memberFrameworksDropdown = new Dropdown('memberFrameworksDropdown', 'memberFrameworksMenu', 'header');
-		dropdowns.push(memberFrameworksDropdown);
-
-        // update the label of the dropdown menu
-        SetDropdownMenuLabel(memberFrameworksMenu, memberFrameworksDropdown);
-        
-        // show/hide memberlist rows based on the current docSettings
-	    memberlistHandler();
+		if(key.checked == true)
+			inheritedMembers = "on";
+		else
+			inheritedMembers = "off";
 	}
-}
-
-function SetMemberOptions(checkbox, groupName)
-{
-    var checkboxGroup = new Array();
-    if (groupName == "vis")
-    {
-        if (document.getElementById('PublicCheckbox') != null)
-            checkboxGroup.push('PublicCheckbox');
-        if (document.getElementById('ProtectedCheckbox') != null)
-            checkboxGroup.push('ProtectedCheckbox');
-    }
-    else if (groupName == "decl")
-    {
-        if (document.getElementById('DeclaredCheckbox') != null)
-            checkboxGroup.push('DeclaredCheckbox');
-        if (document.getElementById('InheritedCheckbox') != null)
-            checkboxGroup.push('InheritedCheckbox');
-    }
-    
-    // toggle the check state of the checkbox that was clicked
-    memberOptionsMenu.ToggleGroupCheckState(checkbox.id, checkboxGroup);
-    
-    // update the label of the dropdown menu
-    SetDropdownMenuLabel(memberOptionsMenu, memberOptionsDropdown);
+	if(key.id == "protectedCheckbox")
+	{
+		if(key.checked == true)
+			protectedMembers = "on";
+		else
+			protectedMembers = "off";
+	}
+	if(key.id == "netcfCheckbox")
+	{
+		if(key.checked == true)
+			netcfMembersOnly = "on";
+		else
+			netcfMembersOnly = "off";
+	}
+	if(key.id == "netXnaCheckbox")
+	{
+		if(key.checked == true)
+			netXnaMembersOnly = "on";
+		else
+			netXnaMembersOnly = "off";
+	}
+	DisplayFilteredMembers();
 	
-    // update the display of the document's items that are dependent on the member options settings
-    memberlistHandler();
-}
-
-function SetMemberFrameworks(checkbox)
-{
-    // toggle the check state of the checkbox that was clicked
-    memberFrameworksMenu.ToggleCheckState(checkbox.id);
-    
-    // update the label of the dropdown menu
-    SetDropdownMenuLabel(memberFrameworksMenu, memberFrameworksDropdown);
-	
-    // update the display of the document's items that are dependent on the member platforms settings
-    memberlistHandler();
+	ChangeMembersOptionsFilterLabel();
 }
 
 function DisplayFilteredMembers()
@@ -511,34 +919,71 @@ function DisplayFilteredMembers()
 	
 	for(i = 0; i < iAllMembers.length; ++i)
 	{
-		if (((iAllMembers[i].notSupportedOnXna == "true") && (netXnaMembersOnly == "on")) ||
+		if (((iAllMembers[i].getAttribute("protected") == "true") && (protectedMembers == "off")) ||
+		    ((iAllMembers[i].notSupportedOnXna == "true") && (netXnaMembersOnly == "on")) ||
 			((iAllMembers[i].getAttribute("name") == "inheritedMember") && (inheritedMembers == "off")) ||
 			((iAllMembers[i].getAttribute("notSupportedOn") == "netcf") && (netcfMembersOnly == "on")))
 			iAllMembers[i].style.display = "none";
 		else
 			iAllMembers[i].style.display = "";
 	}
-	
-	// protected members are in separate collapseable sections in vs2005, so expand or collapse the sections
-	ExpandCollapseProtectedMemberSections();
 }
 
-function ExpandCollapseProtectedMemberSections()
-{
-	var imgElements = document.getElementsByName("toggleSwitch");
-	var i;
-	// Family
-	for(i = 0; i < imgElements.length; ++i)
+function ChangeMembersOptionsFilterLabel()
+{	
+
+	var showAllMembersLabelElement = document.getElementById("showAllMembersLabel");
+	var filteredMembersLabelElement = document.getElementById("filteredMembersLabel");
+	
+	if(showAllMembersLabelElement == null || filteredMembersLabelElement == null)
+		return;
+		
+	if ((inheritedMembers=="off") || (protectedMembers=="off") || (netXnaMembersOnly == "on") || (netcfMembersOnly=="on"))
 	{
-		if(imgElements[i].id.indexOf("protected", 0) == 0)
-		{
-	        if ((sectionStates[imgElements[i].id] == "e" && protectedMembers == "off") || 
-	            (sectionStates[imgElements[i].id] == "c" && protectedMembers == "on"))
-			{
-				ExpandCollapse(imgElements[i]);
-			}
-		}
+		filteredMembersLabelElement.style.display = "inline";
+	    showAllMembersLabelElement.style.display = "none";
 	}
+	else
+	{
+		filteredMembersLabelElement.style.display = "none";
+	    showAllMembersLabelElement.style.display = "inline";
+	}
+}
+
+function LoadMembersOptions()
+{
+	var value;
+	value = Load("inheritedMembers");
+	if(value == null)
+		inheritedMembers = "on";
+	else
+		inheritedMembers = value;
+		
+	value = Load("protectedMembers");
+	if(value == null)
+		protectedMembers = "on";
+	else
+		protectedMembers = value;
+		
+	value = Load("netcfMembersOnly");
+	if(value == null)
+		netcfMembersOnly = "off";
+	else
+		netcfMembersOnly = value;
+	
+	value = Load("netXnaMembersOnly");
+	if(value == null)
+		netXnaMembersOnly = "off";
+	else
+		netXnaMembersOnly = value;
+}
+
+function SaveMembersOptions()
+{
+	Save("inheritedMembers", inheritedMembers);
+	Save("protectedMembers", protectedMembers);
+	Save("netcfMembersOnly", netcfMembersOnly);
+	Save("netXnaMembersOnly", netXnaMembersOnly);
 }
 
 /*	
@@ -901,7 +1346,6 @@ function formatMailToLink(anchor)
 
 var globals;
 
-// get global vars from persistent store			
 function GetGlobals()
 {
 	var tmp;
@@ -1181,6 +1625,73 @@ function sendfeedback(subject, id,alias){
 	var url = location.href;
 	// Need to replace the double quotes with single quotes for the mailto to work.
 	var rExpSingleQuotes = /\'\'"/gi;
-	var title = document.getElementsByTagName("TITLE")[0].innerText.replace(rExp, "''");
+
+	var title;
+	if(document.getElementsByTagName("TITLE")[0].innerText) title = document.getElementsByTagName("TITLE")[0].innerText.replace(rExp, "''") 
+	else title = document.getElementsByTagName("TITLE")[0].textContent.replace(rExp, "''");
 	location.href = "mailto:" + alias + "?subject=" + subject + title + "&body=Topic%20ID:%20" + id + "%0d%0aURL:%20" + url + "%0d%0a%0d%0aComments:%20";
 }
+
+function setUpSyntax() {
+    var syntaxSection = document.getElementById('syntaxCodeBlocks');
+    if (syntaxSection == null) return;
+    
+    processSection(syntaxSection, 'x-lang', lang, true, true, true, true);
+}
+
+function setUpSnippets() {
+    var divs = document.getElementsByTagName("DIV");
+   
+    for (var i = 0; i < divs.length; i++)
+    {
+        var name =  divs[i].getAttribute("name");
+        if (name == null || name != "snippetGroup") continue;
+        processSection(divs[i], 'x-lang', lang, true, true, true, true);
+    }
+}
+
+function setUpType() {
+    var typeSection = document.getElementById("typeSection");
+    if (typeSection == null) return;
+    
+    processSection(typeSection, 'value', 'all', true, false, true, false);
+}
+
+function setUpAllMembers() {
+    var allMembersSection = document.getElementById("allMembersSection");
+    if (allMembersSection == null) return;
+    
+    processSection(allMembersSection, 'value', 'all', true, false, true, false);
+}
+
+function processSection(section, attribute, value, toggleClassValue, toggleStyleValue, curvedToggleClassValue, registerValue) {
+    var nodes = section.childNodes;
+        
+    var curvedTabId;
+    var tabId;
+    var blockId;
+       
+    if (nodes.length != 2) return;
+    
+    if (nodes[0].tagName == 'TABLE') {
+        var rows = nodes[0].getElementsByTagName('tr');
+           
+        if (rows.length != 2) return;
+        
+        curvedTabId = rows[0].getAttribute('id');
+        tabId = rows[1].getAttribute('id');
+    }
+  
+    if(nodes[1].tagName == 'DIV') {
+        blockId = nodes[1].getAttribute('id');
+    }
+       
+    if (toggleClassValue) toggleClass(tabId,attribute,value,'activeTab','tab');
+	if (toggleStyleValue) toggleStyle(blockId,attribute,value,'display','block','none');
+    if (curvedToggleClassValue) curvedToggleClass(curvedTabId, attribute, value);
+    
+    if (languageFilter == null) return;
+    
+    if (registerValue) languageFilter.registerTabbedArea(curvedTabId, tabId, blockId);
+}
+
