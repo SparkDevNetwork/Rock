@@ -1,157 +1,227 @@
-//function codeBlockHandler(id, data, value)
-function codeBlockHandler()
+function codeBlockHandler(id, data, value, curvedTabCollections, tabCollections, blockCollections)
 {
-    // handle groups of snippets to make sure at least one from the group is always shown
-    HandleSnippetGroups();
+    var names = value.split(' ');
     
-    // handle any remaining snippets that aren't in groups
-	var spanElements = document.getElementsByTagName("span");
-	for(var i = 0; i < spanElements.length; ++i)
-	{
-	    var devlang = spanElements[i].getAttribute("codeLanguage");
-	    if (devlang == null) continue;
-	    
-	    if (HasSnippetGroupAncestor(spanElements[i])) continue;
-	    
-        var checkboxId = GetDevlangCheckboxId(devlang);
-	    if (checkboxId != null && checkboxId != "")
-	    {
-            if (docSettings[checkboxId] == "on")
-		        spanElements[i].style.display = "";
-            else
-		        spanElements[i].style.display = "none";
-	    }
+    //Blocks
+    for(var blockCount = 0; blockCount < blockCollections.length; blockCount++)
+    {
+        toggleStyle(blockCollections[blockCount], 'x-lang', names[0], 'display', 'block', 'none');
+    }
+       
+   //curvedTabs
+   for(var curvedTabCount = 0; curvedTabCount < curvedTabCollections.length; curvedTabCount++)
+   {
+        curvedToggleClass(curvedTabCollections[curvedTabCount], 'x-lang',names[0]);
+   }
+
+   //Tabs
+   for(var tabCount = 0; tabCount < tabCollections.length; tabCount++)
+   {
+        toggleClass(tabCollections[tabCount], 'x-lang', names[0], 'activeTab', 'tab');
+   }    
+}
+
+function styleSheetHandler(id, data, value, curvedTabCollections, tabCollections, blockCollections)
+{
+    var names = value.split(' ');
+    var name = names[1];
+    toggleInlineStyle(name);
+}
+
+function persistenceHandler(id, data, value, curvedTabCollections, tabCollections, blockCollections)
+{
+    data.set('lang', value);
+    data.save();
+}
+
+function languageHandler(id, data, value, curvedTabCollections, tabCollections, blockCollections)
+{
+	var names = value.split(' ');
+	toggleLanguage(id, 'x-lang', names[0]);
+}
+
+toggleInlineStyle = function(name)
+{
+	var sd = getStyleDictionary();
+	if (name == 'cs') {
+		sd['span.cs'].display = 'inline';
+		sd['span.vb'].display = 'none';
+		sd['span.cpp'].display = 'none';
+    	} else if (name == 'vb') {
+		sd['span.cs'].display = 'none';
+		sd['span.vb'].display = 'inline';
+		sd['span.cpp'].display = 'none';
+	} else if (name == 'cpp') {
+		sd['span.cs'].display = 'none';
+		sd['span.vb'].display = 'none';
+		sd['span.cpp'].display = 'inline';
+	} else {
 	}
 }
 
-function HasSnippetGroupAncestor(object)
+toggleLanguage = function(id, data, value)
 {
-    var parent = object.parentElement;
-    if (parent == null) return false;
-    
-    var className = parent.className;
-    if (className != null && className == "snippetgroup")
-        return true
+	var tNodes = getChildNodes('languageFilterToolTip');
+	
+	for(var labelCount=0; labelCount < tNodes.length; labelCount++)
+	{
+		if(tNodes[labelCount].tagName != 'IMG' && tNodes[labelCount].tagName != '/IMG')
+		{
+            if(tNodes[labelCount].getAttribute('id').indexOf(value) >= 0)
+			{
+				tNodes[labelCount].style['display'] = 'inline';
+			}
+			else
+			{
+				tNodes[labelCount].style['display'] = 'none';
+			}
+		}
+	}
+		
+	var languageNodes = getChildNodes(id);
 
-    return HasSnippetGroupAncestor(parent);
+	for(var languageCount=0; languageCount < languageNodes.length; languageCount++)
+	{
+		if(languageNodes[languageCount].tagName == 'DIV');
+		{
+			if(languageNodes[languageCount].getAttribute('id'))
+		    {
+		        var imageNodes = getChildNodes(languageNodes[languageCount].getAttribute('id'))[0];
+                if (languageNodes[languageCount].getAttribute('id') == value)
+		        {
+			        imageNodes.src = radioSelectImage.src;
+		        }
+		        else
+		        {
+			        imageNodes.src = radioUnSelectImage.src;
+		        }
+            }
+		}
+	}
 }
 
-function HandleSnippetGroups()
+toggleStyle = function(blocks, attributeName, attributeValue, styleName, trueStyleValue, falseStyleValue) 
 {
-    var divs = document.getElementsByTagName("DIV");
-    var divclass;
-    for (var i = 0; i < divs.length; i++)
+    var blockNodes = getChildNodes(blocks);
+    
+    for(var blockCount=0; blockCount < blockNodes.length; blockCount++)
     {
-        divclass = divs[i].className;
-        if (divclass == null || divclass != "snippetgroup") continue;
-        
-        // if all snippets in this group would be hidden by filtering display them all anyhow
-        var unfilteredCount = GetUnfilteredSnippetCount(divs[i]);
-        
-	    var spanElements = divs[i].getElementsByTagName("span");
-	    for(var j = 0; j < spanElements.length; ++j)
-	    {
-	        var devlang = spanElements[j].getAttribute("codeLanguage");
-	        if (devlang == null) continue;
+        var blockElement = blockNodes[blockCount].getAttribute(attributeName);
+        if (blockElement == attributeValue) blockNodes[blockCount].style[styleName] = trueStyleValue;
+        else blockNodes[blockCount].style[styleName] = falseStyleValue;
+    }
+}
 
-            var checkboxId = GetDevlangCheckboxId(devlang);
-	        
-	        // for filtered devlangs, determine whether they should be shown/hidden
-	        if (checkboxId != null && checkboxId != "")
-	        {
-	            if (unfilteredCount == 0 || docSettings[checkboxId] == "on")
-		            spanElements[j].style.display = "";
-                else
-		            spanElements[j].style.display = "none";
-	        }
+curvedToggleClass = function(curvedTabs, attributeName, attributeValue) 
+{
+   var curvedTabNodes = getChildNodes(curvedTabs);
+   
+   for(var curvedTabCount=0; curvedTabCount < curvedTabNodes.length; curvedTabCount++)
+   {
+        var curvedTabElement = curvedTabNodes[curvedTabCount].getAttribute(attributeName);
+	    if (curvedTabElement == attributeValue)
+	    {
+	        if (curvedTabNodes[curvedTabCount].className == 'leftTab' || curvedTabNodes[curvedTabCount].className == 'activeLeftTab')
+		    {
+		        curvedTabNodes[curvedTabCount].className = 'activeLeftTab';
+		    }
+		    else if(curvedTabNodes[curvedTabCount].className == 'rightTab' || curvedTabNodes[curvedTabCount].className == 'activeRightTab')
+		    {
+		        curvedTabNodes[curvedTabCount].className = 'activeRightTab';
+		    }
+		    else if(curvedTabNodes[curvedTabCount].className == 'middleTab' || curvedTabNodes[curvedTabCount].className == 'activeMiddleTab')
+		    {
+			    curvedTabNodes[curvedTabCount].className = 'activeMiddleTab';
+		    }
+	    }
+	    else
+	    {
+		    if (curvedTabNodes[curvedTabCount].className == 'leftTab' || curvedTabNodes[curvedTabCount].className == 'activeLeftTab')
+		    {
+		        curvedTabNodes[curvedTabCount].className = 'leftTab';
+		    }
+		    else if(curvedTabNodes[curvedTabCount].className == 'rightTab' || curvedTabNodes[curvedTabCount].className == 'activeRightTab')
+		    {
+		        curvedTabNodes[curvedTabCount].className = 'rightTab';
+		    }
+		    else if(curvedTabNodes[curvedTabCount].className == 'middleTab' || curvedTabNodes[curvedTabCount].className == 'activeMiddleTab')
+		    {
+			    curvedTabNodes[curvedTabCount].className = 'middleTab';
+		    }
 	    }
     }
 }
 
-function GetUnfilteredSnippetCount(group)
+toggleClass = function(tabs, attributeName, attributeValue, trueClass, falseClass) 
 {
-    var count = 0;
-    var spanElements = group.getElementsByTagName("span");
-    for(var i = 0; i < spanElements.length; ++i)
-    {
-        var devlang = spanElements[i].getAttribute("codeLanguage");
-        var checkboxId = GetDevlangCheckboxId(devlang);
-        if (checkboxId != null && checkboxId != "")
-        {
-            if (docSettings[checkboxId] == "on")
-	            count++;
+   var tabNodes = getChildNodes(tabs);
+   
+   for(var tabCount=0; tabCount < tabNodes.length; tabCount++)
+   {
+	    var tabElement = tabNodes[tabCount].getAttribute(attributeName);
+	
+	    if (tabElement == attributeValue)
+	    {
+		    if(tabNodes[tabCount].className == 'leftGrad' || tabNodes[tabCount].className == 'activeLeftGrad')
+		    { 											
+		        tabNodes[tabCount].className = 'activeLeftGrad';
+		    }
+	        else if (tabNodes[tabCount].className == 'rightGrad' || tabNodes[tabCount].className == 'activeRightGrad')
+		    { 
+		        tabNodes[tabCount].className = 'activeRightGrad';
+		    }
+            else tabNodes[tabCount].className = trueClass;
         }
+	    else
+	    {
+		    if(tabNodes[tabCount].className == 'leftGrad' || tabNodes[tabCount].className == 'activeLeftGrad') 
+		    {									
+			    tabNodes[tabCount].className = 'leftGrad';
+		    }
+	        else if (tabNodes[tabCount].className == 'rightGrad' || tabNodes[tabCount].className == 'activeRightGrad')
+		    { 
+			    tabNodes[tabCount].className = 'rightGrad';
+		    }
+		    else tabNodes[tabCount].className = falseClass;
+	    }
     }
-    return count;
 }
 
-function GetDevlangCheckboxId(devlang)
+getChildNodes = function(node)
 {
-    switch (devlang)
+    var element = document.getElementById(node);
+
+    // get the children
+	if (element.tagName == 'TABLE') 
+	{
+	    // special handling for tables
+		var bodies = element.tBodies;
+		for(i = 0; i < bodies.length; i++) 
+		{
+		    var nodes = bodies[i].rows;
+		    return nodes;
+	    } 
+    }
+    else 
     {
-        case "VisualBasic":
-        case "VisualBasicDeclaration":
-        case "VisualBasicUsage":
-            return devlangsMenu.GetCheckboxId("VisualBasic");
-        case "CSharp":
-            return devlangsMenu.GetCheckboxId("CSharp");
-        case "ManagedCPlusPlus":
-            return devlangsMenu.GetCheckboxId("ManagedCPlusPlus");
-        case "JScript":
-            return devlangsMenu.GetCheckboxId("JScript");
-        case "JSharp":
-            return devlangsMenu.GetCheckboxId("JSharp");
-        case "JavaScript":
-            return devlangsMenu.GetCheckboxId("JavaScript");
-        case "XAML":
-            return devlangsMenu.GetCheckboxId("XAML");
-        case "FSharp":
-            return devlangsMenu.GetCheckboxId("FSharp");
-        default:
-            return "";
-    }
+	    // all other cases
+		var nodes = element.childNodes;
+		return nodes;
+	}
 }
 
-// update stylesheet display settings for spans to show according to user's devlang preference
-function styleSheetHandler(oneDevlang)
-{
-    var devlang = (oneDevlang != "") ? oneDevlang : GetDevlangPreference();
-
-    var sd = getStyleDictionary();
-
-    if (devlang == 'cs') {
-        sd['span.cs'].display = 'inline';
-        sd['span.vb'].display = 'none';
-        sd['span.cpp'].display = 'none';
-        sd['span.nu'].display = 'none';
-        sd['span.fs'].display = 'none';
-    } else if (devlang == 'vb') {
-        sd['span.cs'].display = 'none';
-        sd['span.vb'].display = 'inline';
-        sd['span.cpp'].display = 'none';
-        sd['span.nu'].display = 'none';
-        sd['span.fs'].display = 'none';
-    } else if (devlang == 'cpp') {
-        sd['span.cs'].display = 'none';
-        sd['span.vb'].display = 'none';
-        sd['span.cpp'].display = 'inline';
-        sd['span.nu'].display = 'none';
-        sd['span.fs'].display = 'none';
-    } else if (devlang == 'nu') {
-        sd['span.cs'].display = 'none';
-        sd['span.vb'].display = 'none';
-        sd['span.cpp'].display = 'none';
-        sd['span.nu'].display = 'inline';
-        sd['span.fs'].display = 'none';
-    } else if (devlang == 'fs') {
-        sd['span.cs'].display = 'none';
-        sd['span.vb'].display = 'none';
-        sd['span.cpp'].display = 'none';
-        sd['span.nu'].display = 'none';
-        sd['span.fs'].display = 'inline';
+process = function(list, methodName, typeName) {
+    var listNodes = getChildNodes(list);
+     
+    for(var i=0; i < listNodes.length; i++) 
+    {
+	    var listElement = listNodes[i];
+	    
+	    if (typeName == 'type' && tf != null) getInstanceDelegate(tf,methodName)(listElement);
+        else if (typeName == 'member' && mf != null) getInstanceDelegate(mf, methodName)(listElement);
     }
 }
-
+		
 function getStyleDictionary() {
 		var styleDictionary = new Array();
 
@@ -185,165 +255,74 @@ function getStyleDictionary() {
 		return(styleDictionary);
 }
 
-function GetDevlangPreference()
+function toggleCheck(imageElement)
 {
-    var devlangCheckboxIds = devlangsMenu.GetCheckboxIds();
-    var checkedCount = 0;
-    var devlang;
-    for (var key in devlangCheckboxIds)
-    {
-        if (docSettings[devlangCheckboxIds[key]] == "on")
-        {
-            checkedCount++;
-            checkboxData = devlangsMenu.GetCheckboxData(devlangCheckboxIds[key]);
-            var dataSplits = checkboxData.split(',');
-            if (dataSplits.length > 1)
-                devlang = dataSplits[1];
-        }
-    }
-    return (checkedCount == 1 ? devlang : "nu");
-}
-
-
-
-function memberlistHandler()
-{
-   // get all the <tr> nodes in the document
-	var allRows = document.getElementsByTagName("tr");
-	var i;
-
-	for(i = 0; i < allRows.length; ++i)
+	if(imageElement.src == checkBoxSelectImage.src)
 	{
-	    var memberdata = allRows[i].getAttribute("data");
-	    if (memberdata != null)
-        {
-	        if ((ShowBasedOnInheritance(memberdata) == false) || 
-	            (ShowBasedOnVisibility(memberdata) == false) || 
-	            (ShowBasedOnFramework(memberdata) == false) )
-			        allRows[i].style.display = "none";
-		    else
-			    allRows[i].style.display = "";
-        }
+		imageElement.src = checkBoxUnSelectImage.src;
+		return false;
 	}
-
-	ShowHideFrameworkImages();
-	ShowHideFrameworkSpans();
-}
-
-function ShowHideFrameworkImages()
-{
-    // show/hide img nodes for filtered framework icons
-    // get all the <img> nodes in the document
-	var allImgs = document.getElementsByTagName("img");
-
-	for(var i = 0; i < allImgs.length; i++)
+	else
 	{
-	    var imgdata = allImgs[i].getAttribute("data");
-	    if (imgdata != null)
-        {
-	        var checkboxId = imgdata + "Checkbox";            
-            if (docSettings[checkboxId] != "on")
-	        {
-		        allImgs[i].style.display = "none";
-	        }
-		    else
-			    allImgs[i].style.display = "";
-        }
+		imageElement.src = checkBoxSelectImage.src;
+		return true;
 	}
 }
 
-function ShowHideFrameworkSpans()
+function mouseOverCheck(imageElement, selected, unselected, selected_hover, unselected_hover)
 {
-    // show/hide img nodes for filtered framework icons
-    // get all the <img> nodes in the document
-	var allImgs = document.getElementsByTagName("span");
-
-	for(var i = 0; i < allImgs.length; i++)
+	if(imageElement.src == selected.src)
 	{
-	    var imgdata = allImgs[i].getAttribute("data");
-	    if (imgdata != null)
-        {
-	        var checkboxId = imgdata + "Checkbox";            
-            if (docSettings[checkboxId] != "on")
-	        {
-		        allImgs[i].style.display = "none";
-	        }
-		    else
-			    allImgs[i].style.display = "";
-        }
+		imageElement.src = selected_hover.src;
+	}
+	else if(imageElement.src == unselected.src)
+	{
+		imageElement.src = unselected_hover.src;
 	}
 }
 
-function ShowBasedOnVisibility(memberdata)
+
+function mouseOutCheck(imageElement, selected, unselected, selected_hover, unselected_hover)
 {
-    var isPublic = (memberdata.indexOf("public") != -1);
-    var isProtected = (memberdata.indexOf("protected") != -1);
-    var isPrivate = (memberdata.indexOf("private") != -1);
-    var isExplicitII = (memberdata.indexOf("explicit") != -1);
-    
-    // if the public checkbox doesn't exist, default to showPublic == true
-    var publicCheck = docSettings["PublicCheckbox"];
-    var showPublic = (publicCheck == null) ? true : (publicCheck == "on");
-    
-    // if the protected checkbox doesn't exist, default to showProtected == true
-    var protectedCheck = docSettings["ProtectedCheckbox"];
-    var showProtected = (protectedCheck == null) ? true : (protectedCheck == "on");
-  
-    if ( (showProtected && isProtected) || (showPublic && isPublic) || isExplicitII || isPrivate)
-        return true;
-
-    return false;
-}
-
-function ShowBasedOnInheritance(memberdata)
-{
-    var isInherited = (memberdata.indexOf("inherited") != -1);
-    var isDeclared = (memberdata.indexOf("declared") != -1);
-    
-    // if the inherited checkbox doesn't exist, default to showInherited == true
-    var inheritedCheck = docSettings["InheritedCheckbox"];
-    var showInherited = (inheritedCheck == null) ? true : (inheritedCheck == "on");
-    
-    // if the declared checkbox doesn't exist, default to showDeclared == true
-    var declaredCheck = docSettings["DeclaredCheckbox"];
-    var showDeclared = (declaredCheck == null) ? true : (declaredCheck == "on");
-    
-    if ( (showInherited && isInherited) || (showDeclared && isDeclared) )
-        return true;
-
-    return false;
-}
-
-function ShowBasedOnFramework(memberdata) {
-
-    var splitData = memberdata.split(";");
-    var foundNotNetfw = false;
-    var frameworkFilter = document.getElementById('memberFrameworksMenu') != null;
-
-    for (var i = 0; i < splitData.length; i++) {
-
-        if (splitData[i] == "notNetfw") {
-            foundNotNetfw = true;
-            continue;
-        }
-        if (docSettings[splitData[i] + "Checkbox"] == "on")
-            return true;
-    }
-    if (!foundNotNetfw && docSettings["netfwCheckbox"] == "on")
-        return true;
-    if (foundNotNetfw && docSettings["netfwCheckbox"] == null && !frameworkFilter)
-        return true;
-
-    return false;
-}
-
-
-function SetDropdownMenuLabel(menu, dropdown)
-{	
-    var dropdownLabelId = menu.GetDropdownLabelId();
-	dropdown.SetActivatorLabel(dropdownLabelId);
-	for (var i = 0; i < dropdowns.length; i++)
+	if(imageElement.src == selected_hover.src)
 	{
-	    dropdowns[i].reposition();
+		imageElement.src = selected.src;
+	}
+	else if(imageElement.src == unselected_hover.src)
+	{
+		imageElement.src = unselected.src;
 	}
 }
+
+function toggleSelect(imageElement, section)
+{
+	if(imageElement.src == twirlSelectImage.src)
+	{
+		imageElement.src = twirlUnSelectImage.src;
+		section.style['display'] = 'none'; 
+	}
+	else
+	{
+		imageElement.src = twirlSelectImage.src;
+		section.style['display'] = 'block';
+	}
+}
+
+function changeLanguage(data, name, style) {
+    if (languageFilter == null) return;
+    
+    languageFilter.changeLanguage(data, name, style);
+}
+
+function processSubgroup(subgroup, typeName) {
+    if (typeName == 'type' && tf != null) tf.subgroup = subgroup;
+    else if (typeName == 'member' && mf != null) mf.subgroup = subgroup;
+}
+
+function toggleCheckState(visibility, value) {
+    if (mf == null) return;
+    mf[visibility] = value;
+}
+
+	
+	
