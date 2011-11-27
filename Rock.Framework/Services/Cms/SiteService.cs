@@ -29,7 +29,7 @@ namespace Rock.Services.Cms
 		/// Gets Sites by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Site objects.<returns>
+		/// <returns>An enumerable list of Site objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Site> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );

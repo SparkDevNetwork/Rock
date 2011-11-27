@@ -153,7 +153,7 @@ namespace Rock.Models.Cms
         /// Gets or sets the Blog.
         /// </summary>
         /// <value>
-        /// A <see cref="Blog"> object.
+        /// A <see cref="Blog"/> object.
         /// </value>
 		public virtual Blog Blog { get; set; }
         
@@ -161,7 +161,7 @@ namespace Rock.Models.Cms
         /// Gets or sets the Author.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person Author { get; set; }
         
@@ -169,7 +169,7 @@ namespace Rock.Models.Cms
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
         
@@ -177,7 +177,7 @@ namespace Rock.Models.Cms
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 

@@ -66,10 +66,30 @@ namespace Rock.Controls
     /// </summary>
     public enum NotificationBoxType
     {
+
+        /// <summary>
+        /// Display an information box
+        /// </summary>
         Information,
+
+        /// <summary>
+        /// Display a warning box
+        /// </summary>
         Warning,
+
+        /// <summary>
+        /// Display an error box
+        /// </summary>
         Error,
+
+        /// <summary>
+        /// Display a tip box
+        /// </summary>
         Tip,
+
+        /// <summary>
+        /// Display a success box
+        /// </summary>
         Success
     };
 

@@ -25,9 +25,6 @@ using Rock.Services.Core;
 using Rock.Cms;
 using Rock.Models.Core;
 
-/// <summary>
-/// Jobs to run unattended in background
-/// </summary
 namespace Rock.Jobs
 {
 	/// <summary>

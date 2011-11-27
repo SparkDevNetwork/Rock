@@ -29,7 +29,7 @@ namespace Rock.Services.Crm
 		/// Gets Person by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>Person object.<returns>
+		/// <returns>Person object.</returns>
 	    public Rock.Models.Crm.Person GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );

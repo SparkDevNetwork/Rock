@@ -9,9 +9,6 @@ using System.Web.UI.WebControls;
 
 using Rock.Cms;
 
-/// <summary>
-/// Classes for managing the attributes and attribute values of any object that implements the <see cref="IHasAttributes"/> interface
-/// </summary>
 namespace Rock.Attribute
 {
     /// <summary>

@@ -65,7 +65,7 @@ namespace Rock.Models.Cms
         /// Gets or sets the Blog.
         /// </summary>
         /// <value>
-        /// A <see cref="Blog"> object.
+        /// A <see cref="Blog"/> object.
         /// </value>
 		public virtual Blog Blog { get; set; }
 

@@ -75,6 +75,10 @@ namespace Rock.Controls
     /// </summary>
     public class ReorderFieldTemplate : ITemplate
     {
+        /// <summary>
+        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+        /// </summary>
+        /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
         {
             DataControlFieldCell cell = container as DataControlFieldCell;

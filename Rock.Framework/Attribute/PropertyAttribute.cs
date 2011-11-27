@@ -21,7 +21,7 @@ namespace Rock.Attribute
         /// Gets or sets the attribute key.
         /// </summary>
         /// <remarks>
-        /// The key should be unique for each <see cref="PropertyAttribute"/> defined in a <see cref="IHasAttribute"/> object
+        /// The key should be unique for each <see cref="PropertyAttribute"/> defined in a <see cref="Rock.Attribute.IHasAttributes"/> object
         /// </remarks>
         /// <value>
         /// The key.
@@ -61,7 +61,7 @@ namespace Rock.Attribute
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly name of the <see cref="Rock.FieldType.IFieldType"/> to be used for the attribute
+        /// Gets or sets the assembly name of the <see cref="Rock.FieldTypes.IFieldType"/> to be used for the attribute
         /// </summary>
         /// <value>
         /// The field type assembly.
@@ -69,7 +69,7 @@ namespace Rock.Attribute
         public string FieldTypeAssembly { get; set; }
 
         /// <summary>
-        /// Gets or sets the class name of the <see cref="Rock.FieldType.IFieldType"/> to be used for the attribute.
+        /// Gets or sets the class name of the <see cref="Rock.FieldTypes.IFieldType"/> to be used for the attribute.
         /// </summary>
         /// <value>
         /// The field type class.
@@ -170,7 +170,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Adds or Updates a <see cref="Rock.Model.Core.Attribute"/> item for the attribute.
+        /// Adds or Updates a <see cref="Rock.Models.Core.Attribute"/> item for the attribute.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>

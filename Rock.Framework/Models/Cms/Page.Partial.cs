@@ -18,10 +18,10 @@ namespace Rock.Models.Cms
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        /// A <see cref="string"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -34,8 +34,19 @@ namespace Rock.Models.Cms
     /// </summary>
     public enum DisplayInNavWhen
     {
+        /// <summary>
+        /// Display this page in navigation controls when allowed by security
+        /// </summary>
         WhenAllowed = 0,
+
+        /// <summary>
+        /// Always display this page in navigation controls, regardless of security
+        /// </summary>
         Always = 1,
+
+        /// <summary>
+        /// Never display this page in navigation controls
+        /// </summary>
         Never = 2
     }
 

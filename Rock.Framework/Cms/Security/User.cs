@@ -36,10 +36,24 @@ namespace Rock.Cms.Security
           PasswordAnswer = 2
         }
 
+        /// <summary>
+        /// How user is authenticated
+        /// </summary>
         public enum AuthenticationType
         {
+            /// <summary>
+            /// Athenticate login against Rock database
+            /// </summary>
             Database = 1,
-            Facebook = 2, 
+
+            /// <summary>
+            /// Authenticate using Facebook
+            /// </summary>
+            Facebook = 2,
+
+            /// <summary>
+            /// Authenticate using Active Directory
+            /// </summary>
             ActiveDirectory = 3
         }
 
@@ -915,24 +929,5 @@ namespace Rock.Cms.Security
 
         #endregion
 
-    }
-
-    /// <summary>
-    /// Extension Methods
-    /// </summary>
-    public static class MembershipExtension
-    {
-        /// <summary>
-        /// Returns the PersonId associated with the <see cref="System.Web.Security.MembershipUser"/> object
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public static int? PersonId( this System.Web.Security.MembershipUser user )
-        {
-            if ( user.ProviderUserKey != null )
-                return ( int )user.ProviderUserKey;
-            else
-                return null;
-        }
     }
 }

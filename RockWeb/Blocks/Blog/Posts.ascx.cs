@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Blog
             {
                 blogId = Convert.ToInt32( PageParameter( "BlogId" ) );
             }
-            catch ( Exception ex )
+            catch 
             {
                 lPosts.Text = "<p class=\"block-warning\">The ID of this blog could not be found in the address of this page</p>";
             }
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Blog
                    aOlder.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage + 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
                    aNewer.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage - 1 ).ToString() }, { "BlogId", blogId.ToString() } }, HttpContext.Current.Request.QueryString );
                 }
-                catch ( NullReferenceException nrx )
+                catch ( NullReferenceException )
                 {
                     lPosts.Text = "<p class=\"block-warning\">The blog ID " + blogId.ToString() + " does not exist.</p>";
                 }

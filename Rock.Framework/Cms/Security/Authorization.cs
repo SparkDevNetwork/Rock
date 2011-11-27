@@ -7,11 +7,11 @@ using System.Web;
 using Rock.Models.Cms;
 using Rock.Services.Cms;
 
-/// <summary>
-/// Classes used for managing user authentication and authorization
-/// </summary>
 namespace Rock.Cms.Security
 {
+    /// <summary>
+    /// Static class for managing authorizations
+    /// </summary>
     public static class Authorization
     {
         /// <summary>

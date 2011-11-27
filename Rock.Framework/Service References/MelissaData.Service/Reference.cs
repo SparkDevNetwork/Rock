@@ -8,7 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.Framework.MelissaData.Service {
+#pragma warning disable
+
+namespace Rock.Framework.MelissaData.Service
+{
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -1334,3 +1337,5 @@ namespace Rock.Framework.MelissaData.Service {
         }
     }
 }
+
+#pragma warning restore

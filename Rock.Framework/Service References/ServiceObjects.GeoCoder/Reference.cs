@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable
+
 namespace Rock.Framework.ServiceObjects.GeoCoder {
     
     
@@ -1188,3 +1190,5 @@ namespace Rock.Framework.ServiceObjects.GeoCoder {
         }
     }
 }
+
+#pragma warning restore

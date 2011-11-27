@@ -23,7 +23,7 @@ namespace Rock.Themes.Rock.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Header", Header );
+            Zones.Add( "Header", phHeader );
             Zones.Add( "Menu", Menu );
             Zones.Add( "Content", Content );
             Zones.Add( "Footer", Footer );

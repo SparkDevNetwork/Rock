@@ -8,7 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.Framework.StrikeIron.USAddressVerification {
+#pragma warning disable
+
+namespace Rock.Framework.StrikeIron.USAddressVerification
+{
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -1937,3 +1940,5 @@ namespace Rock.Framework.StrikeIron.USAddressVerification {
         }
     }
 }
+
+#pragma warning restore

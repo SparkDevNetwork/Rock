@@ -135,15 +135,26 @@ namespace Rock.Models.Cms
         /// </summary>
         /// <value>
         /// Determines when to display in a navigation 
-0 = When Security Allows
-1 = Always
-3 = Never   
-
-Enum[DisplayInNavWhen].
+		/// 0 = When Security Allows
+		/// 1 = Always
+		/// 3 = Never   
+		/// 
+		/// Enum[DisplayInNavWhen].
         /// </value>
 		[DataMember]
 		internal int DisplayInNavWhenInternal { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Display In Nav When.
+		/// </summary>
+		/// <value>
+		/// Determines when to display in a navigation 
+		/// 0 = When Security Allows
+		/// 1 = Always
+		/// 3 = Never   
+		/// 
+		/// Enum[DisplayInNavWhen].
+		/// </value>
 		[NotMapped]
 		public DisplayInNavWhen DisplayInNavWhen
 		{
@@ -275,7 +286,7 @@ Enum[DisplayInNavWhen].
         /// Gets or sets the Parent Page.
         /// </summary>
         /// <value>
-        /// A <see cref="Page"> object.
+        /// A <see cref="Page"/> object.
         /// </value>
 		public virtual Page ParentPage { get; set; }
         
@@ -283,7 +294,7 @@ Enum[DisplayInNavWhen].
         /// Gets or sets the Site.
         /// </summary>
         /// <value>
-        /// A <see cref="Site"> object.
+        /// A <see cref="Site"/> object.
         /// </value>
 		public virtual Site Site { get; set; }
         
@@ -291,7 +302,7 @@ Enum[DisplayInNavWhen].
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
         
@@ -299,7 +310,7 @@ Enum[DisplayInNavWhen].
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 

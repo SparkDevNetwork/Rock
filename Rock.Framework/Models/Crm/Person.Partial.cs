@@ -56,6 +56,8 @@ namespace Rock.Models.Crm
         }
     }
 
+#pragma warning disable
+    
     public class CommentPerson
     {
         [TrackChanges]
@@ -69,4 +71,6 @@ namespace Rock.Models.Crm
         [TrackChanges]
         public string LastName { get; set; }
     }
+
+#pragma warning restore
 }

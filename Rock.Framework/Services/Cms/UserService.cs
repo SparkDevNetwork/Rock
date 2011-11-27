@@ -30,7 +30,7 @@ namespace Rock.Services.Cms
 		/// </summary>
 		/// <param name="applicationName">Application Name.</param>
 		/// <param name="username">Username.</param>
-		/// <returns>User object.<returns>
+		/// <returns>User object.</returns>
 	    public Rock.Models.Cms.User GetByApplicationNameAndUsername( string applicationName, string username )
         {
             return Repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
@@ -41,7 +41,7 @@ namespace Rock.Services.Cms
 		/// </summary>
 		/// <param name="applicationName">Application Name.</param>
 		/// <param name="email">Email.</param>
-		/// <returns>An enumerable list of User objects.<returns>
+		/// <returns>An enumerable list of User objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.User> GetByApplicationNameAndEmail( string applicationName, string email )
         {
             return Repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
@@ -51,7 +51,7 @@ namespace Rock.Services.Cms
 		/// Gets User by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>User object.<returns>
+		/// <returns>User object.</returns>
 	    public Rock.Models.Cms.User GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
@@ -61,7 +61,7 @@ namespace Rock.Services.Cms
 		/// Gets Users by Person Id
 		/// </summary>
 		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of User objects.<returns>
+		/// <returns>An enumerable list of User objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.User> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );

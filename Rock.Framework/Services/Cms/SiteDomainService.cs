@@ -29,7 +29,7 @@ namespace Rock.Services.Cms
 		/// Gets Site Domain by Domain
 		/// </summary>
 		/// <param name="domain">Domain.</param>
-		/// <returns>SiteDomain object.<returns>
+		/// <returns>SiteDomain object.</returns>
 	    public Rock.Models.Cms.SiteDomain GetByDomain( string domain )
         {
             return Repository.FirstOrDefault( t => t.Domain == domain );
@@ -39,7 +39,7 @@ namespace Rock.Services.Cms
 		/// Gets Site Domains by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of SiteDomain objects.<returns>
+		/// <returns>An enumerable list of SiteDomain objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.SiteDomain> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
@@ -50,7 +50,7 @@ namespace Rock.Services.Cms
 		/// </summary>
 		/// <param name="siteId">Site Id.</param>
 		/// <param name="domain">Domain.</param>
-		/// <returns>An enumerable list of SiteDomain objects.<returns>
+		/// <returns>An enumerable list of SiteDomain objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
         {
             return Repository.Find( t => t.SiteId == siteId && t.Domain == domain );

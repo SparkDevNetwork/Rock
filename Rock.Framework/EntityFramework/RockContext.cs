@@ -22,40 +22,257 @@ namespace Rock.EntityFramework
 {
 	/// <summary>
 	/// Entity Framework Context
-	/// </summary
+	/// </summary>
     public partial class RockContext : DbContext
     {
+        /// <summary>
+        /// Gets or sets the Auths.
+        /// </summary>
+        /// <value>
+        /// the Auths.
+        /// </value>
         public DbSet<Rock.Models.Cms.Auth> Auths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blocks.
+        /// </summary>
+        /// <value>
+        /// the Blocks.
+        /// </value>
         public DbSet<Rock.Models.Cms.Block> Blocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Block Instances.
+        /// </summary>
+        /// <value>
+        /// the Block Instances.
+        /// </value>
         public DbSet<Rock.Models.Cms.BlockInstance> BlockInstances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blogs.
+        /// </summary>
+        /// <value>
+        /// the Blogs.
+        /// </value>
         public DbSet<Rock.Models.Cms.Blog> Blogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blog Categories.
+        /// </summary>
+        /// <value>
+        /// the Blog Categories.
+        /// </value>
         public DbSet<Rock.Models.Cms.BlogCategory> BlogCategories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blog Posts.
+        /// </summary>
+        /// <value>
+        /// the Blog Posts.
+        /// </value>
         public DbSet<Rock.Models.Cms.BlogPost> BlogPosts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blog Post Comments.
+        /// </summary>
+        /// <value>
+        /// the Blog Post Comments.
+        /// </value>
         public DbSet<Rock.Models.Cms.BlogPostComment> BlogPostComments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Blog Tags.
+        /// </summary>
+        /// <value>
+        /// the Blog Tags.
+        /// </value>
         public DbSet<Rock.Models.Cms.BlogTag> BlogTags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Files.
+        /// </summary>
+        /// <value>
+        /// the Files.
+        /// </value>
         public DbSet<Rock.Models.Cms.File> Files { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Html Contents.
+        /// </summary>
+        /// <value>
+        /// the Html Contents.
+        /// </value>
         public DbSet<Rock.Models.Cms.HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Pages.
+        /// </summary>
+        /// <value>
+        /// the Pages.
+        /// </value>
         public DbSet<Rock.Models.Cms.Page> Pages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Routes.
+        /// </summary>
+        /// <value>
+        /// the Page Routes.
+        /// </value>
         public DbSet<Rock.Models.Cms.PageRoute> PageRoutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Sites.
+        /// </summary>
+        /// <value>
+        /// the Sites.
+        /// </value>
         public DbSet<Rock.Models.Cms.Site> Sites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Domains.
+        /// </summary>
+        /// <value>
+        /// the Site Domains.
+        /// </value>
         public DbSet<Rock.Models.Cms.SiteDomain> SiteDomains { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Users.
+        /// </summary>
+        /// <value>
+        /// the Users.
+        /// </value>
         public DbSet<Rock.Models.Cms.User> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Attributes.
+        /// </summary>
+        /// <value>
+        /// the Attributes.
+        /// </value>
         public DbSet<Rock.Models.Core.Attribute> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Attribute Qualifiers.
+        /// </summary>
+        /// <value>
+        /// the Attribute Qualifiers.
+        /// </value>
         public DbSet<Rock.Models.Core.AttributeQualifier> AttributeQualifiers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Attribute Values.
+        /// </summary>
+        /// <value>
+        /// the Attribute Values.
+        /// </value>
         public DbSet<Rock.Models.Core.AttributeValue> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
         public DbSet<Rock.Models.Core.DefinedType> DefinedTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
         public DbSet<Rock.Models.Core.DefinedValue> DefinedValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Changes.
+        /// </summary>
+        /// <value>
+        /// the Entity Changes.
+        /// </value>
         public DbSet<Rock.Models.Core.EntityChange> EntityChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Field Types.
+        /// </summary>
+        /// <value>
+        /// the Field Types.
+        /// </value>
         public DbSet<Rock.Models.Core.FieldType> FieldTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Service Logs.
+        /// </summary>
+        /// <value>
+        /// the Service Logs.
+        /// </value>
         public DbSet<Rock.Models.Core.ServiceLog> ServiceLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Addresses.
+        /// </summary>
+        /// <value>
+        /// the Addresses.
+        /// </value>
         public DbSet<Rock.Models.Crm.Address> Addresses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the People.
+        /// </summary>
+        /// <value>
+        /// the People.
+        /// </value>
         public DbSet<Rock.Models.Crm.Person> People { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Phone Numbers.
+        /// </summary>
+        /// <value>
+        /// the Phone Numbers.
+        /// </value>
         public DbSet<Rock.Models.Crm.PhoneNumber> PhoneNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Groups.
+        /// </summary>
+        /// <value>
+        /// the Groups.
+        /// </value>
         public DbSet<Rock.Models.Groups.Group> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Roles.
+        /// </summary>
+        /// <value>
+        /// the Group Roles.
+        /// </value>
         public DbSet<Rock.Models.Groups.GroupRole> GroupRoles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Types.
+        /// </summary>
+        /// <value>
+        /// the Group Types.
+        /// </value>
         public DbSet<Rock.Models.Groups.GroupType> GroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Members.
+        /// </summary>
+        /// <value>
+        /// the Members.
+        /// </value>
         public DbSet<Rock.Models.Groups.Member> Members { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Jobs.
+        /// </summary>
+        /// <value>
+        /// the Jobs.
+        /// </value>
         public DbSet<Rock.Models.Util.Job> Jobs { get; set; }
+
 
         /// <summary>
         /// This method is called when the context has been initialized, but

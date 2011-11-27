@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Blog
             {
                 blogId = Convert.ToInt32( PageParameter( "BlogId" ) );
             }
-            catch ( Exception ex )
+            catch
             {
                 lCategories.Text = "<p class=\"block-warning\">The ID of this blog could not be found in the address of this page</p>";
             }

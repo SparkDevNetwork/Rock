@@ -9,7 +9,7 @@
                         <asp:Literal ID="lUserName" runat="server"></asp:Literal> <asp:LoginStatus ID="LoginStatus1" runat="server" LogoutAction="Redirect" LogoutPageUrl="~/page/1" />
                     </section>
 
-                    <asp:PlaceHolder ID="Header" runat="server"></asp:PlaceHolder>
+                    <asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
 
                     <nav>
                         <ul>

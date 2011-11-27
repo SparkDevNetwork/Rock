@@ -29,7 +29,7 @@ namespace Rock.Services.Util
 		/// Gets Jobs by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Job objects.<returns>
+		/// <returns>An enumerable list of Job objects.</returns>
 	    public IEnumerable<Rock.Models.Util.Job> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );

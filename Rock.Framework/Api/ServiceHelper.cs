@@ -23,9 +23,6 @@ using System.ServiceModel.Activation;
 using System.Web;
 using System.Web.Routing;
 
-/// <summary>
-/// REST Api
-/// </summary>
 namespace Rock.Api
 {
     /// <summary>
@@ -38,8 +35,10 @@ namespace Rock.Api
         private CompositionContainer container;
 
         // MEF Import definition
+#pragma warning disable 
         [ImportMany(typeof(IService))]
         IEnumerable<Lazy<IService, IServiceData>> services;
+#pragma warning restore
 
         /// <summary>
         /// Adds service routes for every <see cref="IService"/> class found through MEF.
@@ -47,18 +46,12 @@ namespace Rock.Api
         /// <param name="routes">The route collection.</param>
         public void AddRoutes( RouteCollection routes )
         {
-            try
-            {
-                container.ComposeParts( this );
+            container.ComposeParts( this );
 
-                var factory = new WebServiceHostFactory();
+            var factory = new WebServiceHostFactory();
 
-                foreach ( Lazy<IService, IServiceData> i in services )
-                    routes.Add( new ServiceRoute( i.Metadata.RouteName, factory, i.Value.GetType() ) );
-            }
-            catch ( CompositionException ex )
-            {
-            }
+            foreach ( Lazy<IService, IServiceData> i in services )
+                routes.Add( new ServiceRoute( i.Metadata.RouteName, factory, i.Value.GetType() ) );
 		}
 
         /// <summary>

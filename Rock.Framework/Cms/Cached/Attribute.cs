@@ -89,7 +89,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Adds Attribute model to cache, and returns cached object
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="attributeModel">The attributeModel to cache</param>
         /// <returns></returns>
         public static Attribute Read( Rock.Models.Core.Attribute attributeModel )
         {
@@ -106,7 +106,7 @@ namespace Rock.Cms.Cached
         /// Returns Attribute object from cache.  If attribute does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id">The id of the Attribute to read</param>
         /// <returns></returns>
         public static Attribute Read( int id )
         {
@@ -161,7 +161,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes attribute from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id">The id of the attribute to remove from cache</param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;

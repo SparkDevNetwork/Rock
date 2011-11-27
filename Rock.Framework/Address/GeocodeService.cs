@@ -98,6 +98,9 @@ namespace Rock.Address
     /// </summary>
     public interface IGeocodeServiceData
     {
+        /// <summary>
+        /// The name of the service
+        /// </summary>
         string ServiceName { get; }
     }
 }

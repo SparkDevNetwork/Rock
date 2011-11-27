@@ -57,7 +57,7 @@ namespace Rock.Cms.Security
         /// Returns Role object from cache.  If role does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="roleGuid"></param>
         /// <returns></returns>
         public static Role Read( string roleGuid )
         {

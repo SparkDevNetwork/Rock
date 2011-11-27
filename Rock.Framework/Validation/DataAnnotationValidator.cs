@@ -10,9 +10,6 @@ using System.Web.UI.WebControls;
 // enable client side validation using jQuery see
 // http://www.mourfield.com/Article/70/using-the-jquery-validation-plugin-to-build-a-data-annotations-aspnet-validator
 
-/// <summary>
-/// Rock Validators
-/// </summary>
 namespace Rock.Validation
 {
     //[ToolboxData("<{0}:DataAnnotationValidator runat="server"></{0}:DataAnnotationValidator>")]

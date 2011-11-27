@@ -111,7 +111,7 @@ namespace Rock.Models.Crm
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Person"> object.
+        /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person Person { get; set; }
         
@@ -119,7 +119,7 @@ namespace Rock.Models.Crm
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Person"> object.
+        /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person CreatedByPerson { get; set; }
         
@@ -127,7 +127,7 @@ namespace Rock.Models.Crm
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Person"> object.
+        /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person ModifiedByPerson { get; set; }
 

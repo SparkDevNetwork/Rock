@@ -169,7 +169,7 @@ namespace Rock.Models<#= projectNamespace #>
         /// Gets or sets the <#= TemplateHelper.SplitCase(column.Name) #>.
         /// </summary>
         /// <value>
-        /// <#= TemplateHelper.ColumnDescription(column) #>.
+        /// <#= TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") #>.
         /// </value>
 <#
 					// Add the [Key] attribute for all primary key columns
@@ -215,6 +215,12 @@ namespace Rock.Models<#= projectNamespace #>
 									
 									property = 
 									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
+									"\t\t/// <summary>\n" +
+									"\t\t/// Gets or sets the " + TemplateHelper.SplitCase(column.Name) +".\n" +
+									"\t\t/// </summary>\n" +
+									"\t\t/// <value>\n" +
+									"\t\t/// " + TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") + ".\n" +
+									"\t\t/// </value>\n" +
 									"\t\t[NotMapped]\n" +
 									"\t\tpublic " + enumName + " " + column.Name + "\n" +
 									"\t\t{\n" +
@@ -362,7 +368,7 @@ namespace Rock.Models<#= projectNamespace #>
         /// Gets or sets the <#= TemplateHelper.SplitCase(propertyName) #>.
         /// </summary>
         /// <value>
-        /// A <see cref="<#= relatedNamespace #><#= relatedEntity #>"> object.
+        /// A <see cref="<#= relatedNamespace #><#= relatedEntity #>"/> object.
         /// </value>
 		public virtual <#= relatedNamespace #><#= relatedEntity #> <#= propertyName #> { get; set; }
 <#
@@ -574,7 +580,7 @@ namespace Rock.Services<#= projectNamespace #>
 						paramClause.AppendFormat("\n\t\t/// <param name=\"{0}{1}\">{2}.</param>",
 							column.Name.Substring(0,1).ToLower(),
 							column.Name.Substring(1),
-							TemplateHelper.ColumnDescription(column));
+							TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") );
 							
 						parameters.AppendFormat("{0}{1} {2}{3}",
 							parameters.Length > 0 ? ", " : "",
@@ -590,7 +596,7 @@ namespace Rock.Services<#= projectNamespace #>
 		/// <summary>
 		/// Gets <#= TemplateHelper.SplitCase( returnName ) #> by <#= TemplateHelper.SplitCase(getClause.ToString()) #>
 		/// </summary><#= paramClause #>
-		/// <returns><#= returnTypeDesc #>.<returns>
+		/// <returns><#= returnTypeDesc #>.</returns>
 	    public <#= returnType #> GetBy<#= getClause #>( <#= parameters #> )
         {
             return Repository.<#= queryType #>( t => <#= linqClause #> )<#= orderByClause #>;
@@ -825,14 +831,21 @@ namespace Rock.EntityFramework
 {
 	/// <summary>
 	/// Entity Framework Context
-	/// </summary
+	/// </summary>
     public partial class RockContext : DbContext
     {
 <#
 		foreach ( KeyValuePair<string, string> entity in entities )
 		{
 #>
+        /// <summary>
+        /// Gets or sets the <#= TemplateHelper.SplitCase(pls.Pluralize(entity.Value)) #>.
+        /// </summary>
+        /// <value>
+        /// the <#= TemplateHelper.SplitCase(pls.Pluralize(entity.Value)) #>.
+        /// </value>
         public DbSet<<#= entity.Key #>> <#= pls.Pluralize(entity.Value) #> { get; set; }
+
 <#
 		}
 #>

@@ -69,6 +69,10 @@ namespace Rock.Helpers
         /// </summary>
         public PageReference(){}
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageReference"/> class.
+        /// </summary>
+        /// <param name="reference">The reference.</param>
         public PageReference( string reference )
         {
             string[] items = reference.Split( ',' );
