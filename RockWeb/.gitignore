@@ -1,3 +1,4 @@
 /obj/
 /Bin/Rock.Framework.dll
 /Bin/Rock.Framework.pdb
+/web.ConnectionStrings.config
