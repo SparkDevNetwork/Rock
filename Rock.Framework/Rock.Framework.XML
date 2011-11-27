@@ -1205,6 +1205,147 @@
             Initializes a new instance of the <see cref="T:Rock.Models.Cms.BlogPostConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.FieldTypes.IFieldType">
+            <summary>
+            Interface that a custom field type must implement
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Formats the value based on the type and qualifiers
+            </summary>
+            <param name="value">The value.</param>
+            <param name="condensed">if set to <c>true</c> [condensed].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Creates an HTML control.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="setValue">if set to <c>true</c> [set value].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads the value of the control.
+            </summary>
+            <param name="control">The control.</param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.IFieldType.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.IFieldType.QualifierValues">
+            <summary>
+            Gets or sets the qualifier values.
+            </summary>
+            <value>
+            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
+            key contains the qualifier name, and the KeyValuePair's value contains the qualifier 
+            value
+            </value>
+        </member>
+        <member name="T:Rock.FieldTypes.Boolean">
+            <summary>
+            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.Field">
+            <summary>
+            Abstract class that all custom field types should inherit from
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
+            </summary>
+            <param name="qualifierValues">The qualifier values.</param>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Returns the field's current value(s)
+            </summary>
+            <param name="value">Information about the value</param>
+            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Creates the control(s) neccessary for prompting user for a new value
+            </summary>
+            <param name="value">The current value</param>
+            <param name="setValue">Should the control's value be set</param>
+            <returns>The control</returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control">Parent control that controls were added to in the RenderEdit() method</param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.Field.QualifierValues">
+            <summary>
+            Gets or sets the qualifier values.
+            </summary>
+            <value>
+            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
+            key contains the qualifier name, and the KeyValuePair's value contains the qualifier
+            value
+            </value>
+        </member>
+        <member name="P:Rock.FieldTypes.Field.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Returns the field's current value(s)
+            </summary>
+            <param name="value"></param>
+            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
         <member name="T:Rock.Api.Cms.PageService">
             <summary>
             REST WCF service for Pages
@@ -3108,6 +3249,11 @@
             Initializes a new instance of the <see cref="T:Rock.Models.Crm.AddressConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.FieldTypes.Text">
+            <summary>
+            Field used to save and dispaly a text value
+            </summary>
+        </member>
         <member name="T:Rock.Api.Groups.GroupService">
             <summary>
             REST WCF service for Groups
@@ -3267,6 +3413,31 @@
             </summary>
             <param name="personId">Person Id.</param>
             <returns>An enumerable list of User objects.</returns>
+        </member>
+        <member name="T:Rock.Services.Cms.ThemeService">
+            <summary>
+            TODO:  The ThemeService is no longer used.  These methods need to be moved someplace
+            else.  The Site list module uses them
+            </summary>
+        </member>
+        <member name="M:Rock.Services.Cms.ThemeService.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Services.Cms.ThemeService"/> class.
+            </summary>
+            <param name="rootPath">The root path.</param>
+        </member>
+        <member name="M:Rock.Services.Cms.ThemeService.GetThemesNames">
+            <summary>
+            Returns the valid themes found in this installation.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Services.Cms.ThemeService.GetThemeLayoutNames(System.String)">
+            <summary>
+            Gets the theme layout names.
+            </summary>
+            <param name="themeName">Name of the theme.</param>
+            <returns></returns>
         </member>
         <member name="T:Rock.Services.Cms.PageRouteService">
             <summary>
@@ -3480,8 +3651,8 @@
         <member name="M:Rock.Jobs.RockJobListener.JobWasExecuted(Quartz.IJobExecutionContext,Quartz.JobExecutionException)">
             <summary>
             Called by the <see cref="T:Quartz.IScheduler"/> after a <see cref="T:Quartz.IJobDetail"/>
-            has been executed, and be for the associated <see cref="!:IOperableTrigger"/>'s
-            <see cref="!:IOperableTrigger.Triggered"/> method has been called.
+            has been executed, and before the associated <see cref="T:Quartz.Spi.IOperableTrigger"/>'s
+            <see cref="M:Quartz.Spi.IOperableTrigger.Triggered(Quartz.ICalendar)"/> method has been called.
             </summary>
             <param name="context"></param>
             <param name="jobException"></param>
@@ -4697,6 +4868,50 @@
         <member name="M:Rock.Models.Cms.BlogPostCommentConfiguration.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:Rock.Models.Cms.BlogPostCommentConfiguration"/> class.
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.SelectSingle">
+            <summary>
+            Field Type used to display a dropdown list of System.Drawing.Color options
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
+            </summary>
+            <param name="qualifierValues">The qualifier values.</param>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.SelectSingle.Qualifiers">
+            <summary>
+            Gets the qualifiers.
             </summary>
         </member>
         <member name="T:Rock.Controls.NotificationBox">
@@ -7670,6 +7885,16 @@
             A <see cref="T:Rock.Models.Crm.Person"/> object.
             </value>
         </member>
+        <member name="T:Rock.FieldTypes.SelectMulti">
+            <summary>
+            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.SelectMulti.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
         <member name="T:Rock.Cms.Security.User">
             <summary>
             Rock's Membership Provider
@@ -8843,6 +9068,39 @@
             Initializes a new instance of the <see cref="T:Rock.Models.Cms.PageConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.FieldTypes.Color">
+            <summary>
+            Field Type used to display a dropdown list of System.Drawing.Color options
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Color.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Color.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.FieldTypes.Integer">
+            <summary>
+            Field used to save and dispaly a numeric value
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Integer.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
         <member name="T:Rock.Controls.Grid">
             <summary>
             Rock Grid Control
@@ -9976,6 +10234,45 @@
             </summary>
             <param name="input">String to format</param>
             <returns></returns>
+        </member>
+        <member name="T:Rock.FieldTypes.FieldQualifier">
+            <summary>
+            Used to define a <see cref="P:Rock.FieldTypes.FieldQualifier.Field"/> qualifier
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.FieldQualifier.#ctor(System.String,System.String,System.String,Rock.FieldTypes.Field)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.FieldQualifier"/> class.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="name">The name.</param>
+            <param name="description">The description.</param>
+            <param name="field">The field.</param>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Key">
+            <summary>
+            Gets the key.
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Name">
+            <summary>
+            Gets the name of the qualifier
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Description">
+            <summary>
+            Gets the description of the qualifier
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Field">
+            <summary>
+            Instantiates the field type
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.PageReference">
+            <summary>
+            Field used to save and dispaly a page reference
+            </summary>
         </member>
         <member name="T:Rock.Api.Crm.PhoneNumberService">
             <summary>
@@ -11599,6 +11896,19 @@
             Initializes a new instance of the <see cref="T:Rock.Models.Core.AttributeConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.FieldTypes.FieldHelper">
+            <summary>
+            Helper class for use with <see cref="T:Rock.FieldTypes.IFieldType"/> classes
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.FieldHelper.InstantiateFieldType(System.String,System.String)">
+            <summary>
+            Instantiates an instance of a specific field type based on the assembly and class name of the field type
+            </summary>
+            <param name="assembly">Assembly Name (i.e. Rock.Framework)</param>
+            <param name="typeName">Class Name (i.e. Rock.FieldTypes.Text)</param>
+            <returns></returns>
+        </member>
         <member name="T:Rock.Cms.Cached.Attribute">
             <summary>
             Information about an attribute that is required by the rendering engine.
@@ -11717,316 +12027,6 @@
             <summary>
             Deletes a AttributeValue object
             </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.IFieldType">
-            <summary>
-            Interface that a custom field type must implement
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Formats the value based on the type and qualifiers
-            </summary>
-            <param name="value">The value.</param>
-            <param name="condensed">if set to <c>true</c> [condensed].</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Creates an HTML control.
-            </summary>
-            <param name="value">The value.</param>
-            <param name="setValue">if set to <c>true</c> [set value].</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads the value of the control.
-            </summary>
-            <param name="control">The control.</param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.IFieldType.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.IFieldType.QualifierValues">
-            <summary>
-            Gets or sets the qualifier values.
-            </summary>
-            <value>
-            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
-            key contains the qualifier name, and the KeyValuePair's value contains the qualifier 
-            value
-            </value>
-        </member>
-        <member name="T:Rock.FieldTypes.Boolean">
-            <summary>
-            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.Field">
-            <summary>
-            Abstract class that all custom field types should inherit from
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
-            </summary>
-            <param name="qualifierValues">The qualifier values.</param>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Returns the field's current value(s)
-            </summary>
-            <param name="value">Information about the value</param>
-            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Creates the control(s) neccessary for prompting user for a new value
-            </summary>
-            <param name="value">The current value</param>
-            <param name="setValue">Should the control's value be set</param>
-            <returns>The control</returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control">Parent control that controls were added to in the RenderEdit() method</param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.Field.QualifierValues">
-            <summary>
-            Gets or sets the qualifier values.
-            </summary>
-            <value>
-            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
-            key contains the qualifier name, and the KeyValuePair's value contains the qualifier
-            value
-            </value>
-        </member>
-        <member name="P:Rock.FieldTypes.Field.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Returns the field's current value(s)
-            </summary>
-            <param name="value"></param>
-            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.Text">
-            <summary>
-            Field used to save and dispaly a text value
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.SelectSingle">
-            <summary>
-            Field Type used to display a dropdown list of System.Drawing.Color options
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
-            </summary>
-            <param name="qualifierValues">The qualifier values.</param>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.SelectSingle.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.SelectMulti">
-            <summary>
-            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.SelectMulti.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.Color">
-            <summary>
-            Field Type used to display a dropdown list of System.Drawing.Color options
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Color.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Color.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.Integer">
-            <summary>
-            Field used to save and dispaly a numeric value
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Integer.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.FieldQualifier">
-            <summary>
-            Used to define a <see cref="P:Rock.FieldTypes.FieldQualifier.Field"/> qualifier
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.FieldQualifier.#ctor(System.String,System.String,System.String,Rock.FieldTypes.Field)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.FieldQualifier"/> class.
-            </summary>
-            <param name="key">The key.</param>
-            <param name="name">The name.</param>
-            <param name="description">The description.</param>
-            <param name="field">The field.</param>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Key">
-            <summary>
-            Gets the key.
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Name">
-            <summary>
-            Gets the name of the qualifier
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Description">
-            <summary>
-            Gets the description of the qualifier
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Field">
-            <summary>
-            Instantiates the field type
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.PageReference">
-            <summary>
-            Field used to save and dispaly a page reference
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.FieldHelper">
-            <summary>
-            Helper class for use with <see cref="T:Rock.FieldTypes.IFieldType"/> classes
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.FieldHelper.InstantiateFieldType(System.String,System.String)">
-            <summary>
-            Instantiates an instance of a specific field type based on the assembly and class name of the field type
-            </summary>
-            <param name="assembly">Assembly Name (i.e. Rock.Framework)</param>
-            <param name="typeName">Class Name (i.e. Rock.FieldTypes.Text)</param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.Services.Cms.ThemeService">
-            <summary>
-            TODO:  The ThemeService is no longer used.  These methods need to be moved someplace
-            else.  The Site list module uses them
-            </summary>
-        </member>
-        <member name="M:Rock.Services.Cms.ThemeService.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Services.Cms.ThemeService"/> class.
-            </summary>
-            <param name="rootPath">The root path.</param>
-        </member>
-        <member name="M:Rock.Services.Cms.ThemeService.GetThemesNames">
-            <summary>
-            Returns the valid themes found in this installation.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.Services.Cms.ThemeService.GetThemeLayoutNames(System.String)">
-            <summary>
-            Gets the theme layout names.
-            </summary>
-            <param name="themeName">Name of the theme.</param>
-            <returns></returns>
         </member>
     </members>
 </doc>

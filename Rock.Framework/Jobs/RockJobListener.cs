@@ -64,8 +64,8 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Called by the <see cref="IScheduler"/> after a <see cref="IJobDetail"/>
-        /// has been executed, and be for the associated <see cref="IOperableTrigger"/>'s
-        /// <see cref="IOperableTrigger.Triggered"/> method has been called.
+        /// has been executed, and before the associated <see cref="Quartz.Spi.IOperableTrigger"/>'s
+        /// <see cref="Quartz.Spi.IOperableTrigger.Triggered"/> method has been called.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="jobException"></param>

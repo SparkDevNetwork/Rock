@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Security
                                 return;
                             }
                         }
-                        catch ( Exception ex )
+                        catch //( Exception ex )
                         {
                             // TODO: probably should report something...
                         }
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Security
                         Response.Redirect( state );
                     }
                 }
-                catch ( FacebookOAuthException oae )
+                catch //( FacebookOAuthException oae )
                 {
                     // TODO: Add error handeling
                     // Error validating verification code. (usually from wrong return url very picky with formatting)
