@@ -39,8 +39,8 @@ namespace Rock.Models
         #region ISecured implementation
 
         /// <summary>
-        /// The auth entity. Classes that implement the <see cref="ISecured"/> interface should return
-        /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the
+        /// The auth entity. Classes that implement the <see cref="Rock.Cms.Security.ISecured"/> interface should return
+        /// a value that is unique across all <see cref="Rock.Cms.Security.ISecured"/> classes.  Typically this is the
         /// qualified name of the class.
         /// </summary>
         [NotMapped]
@@ -248,7 +248,14 @@ namespace Rock.Models
     /// </summary>
     public class ModelUpdatedEventArgs : EventArgs
     {
+        /// <summary>
+        /// The affected model
+        /// </summary>
         public readonly IModel Model;
+
+        /// <summary>
+        /// The id of the person making the update
+        /// </summary>
         public readonly int? PersonId;
 
         /// <summary>
@@ -285,6 +292,11 @@ namespace Rock.Models
             }
 
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="personId">The person id.</param>
         public ModelUpdatingEventArgs( IModel model, int? personId )
             : base( model, personId )
         {

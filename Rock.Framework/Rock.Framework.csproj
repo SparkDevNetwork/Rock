@@ -179,17 +179,17 @@
     <Compile Include="Controls\NotificationBox.cs" />
     <Compile Include="Controls\RowEventArgs.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FieldTypes\Boolean.cs" />
-    <Compile Include="FieldTypes\PageReference.cs" />
-    <Compile Include="FieldTypes\Integer.cs" />
-    <Compile Include="FieldTypes\SelectMulti.cs" />
-    <Compile Include="FieldTypes\Color.cs" />
-    <Compile Include="FieldTypes\SelectSingle.cs" />
-    <Compile Include="FieldTypes\Field.cs" />
-    <Compile Include="FieldTypes\FieldHelper.cs" />
-    <Compile Include="FieldTypes\FieldQualifier.cs" />
-    <Compile Include="FieldTypes\IFieldType.cs" />
-    <Compile Include="FieldTypes\Text.cs" />
+    <Compile Include="Cms\FieldTypes\Boolean.cs" />
+    <Compile Include="Cms\FieldTypes\PageReference.cs" />
+    <Compile Include="Cms\FieldTypes\Integer.cs" />
+    <Compile Include="Cms\FieldTypes\SelectMulti.cs" />
+    <Compile Include="Cms\FieldTypes\Color.cs" />
+    <Compile Include="Cms\FieldTypes\SelectSingle.cs" />
+    <Compile Include="Cms\FieldTypes\Field.cs" />
+    <Compile Include="Cms\FieldTypes\FieldHelper.cs" />
+    <Compile Include="Cms\FieldTypes\FieldQualifier.cs" />
+    <Compile Include="Cms\FieldTypes\IFieldType.cs" />
+    <Compile Include="Cms\FieldTypes\Text.cs" />
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Helpers\HtmlHelper.cs" />
     <Compile Include="Helpers\HttpModule.cs" />
@@ -375,8 +375,9 @@
     <Compile Include="Services\Cms\PageService.cs" />
     <Compile Include="Services\Cms\SiteDomainService.cs" />
     <Compile Include="Services\Cms\SiteService.cs" />
-    <Compile Include="Services\Cms\ThemeService.cs" />
-    <Compile Include="Services\Cms\ThemeService.partial.cs" />
+    <Compile Include="Services\Cms\ThemeService.partial.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\Cms\UserService.cs" />
     <Compile Include="Services\Core\AttributeService.Partial.cs" />
     <Compile Include="Services\Core\AttributeQualifierService.cs" />
@@ -407,6 +408,11 @@
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Services\Util\JobService.Partial.cs" />
     <Compile Include="Services\Util\JobService.cs" />
+    <Compile Include="T4\Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -17,6 +17,9 @@ namespace Rock.Api
     /// </summary>
     public interface IServiceData
     {
+        /// <summary>
+        /// The name of the route
+        /// </summary>
         string RouteName { get; }
     }
 

@@ -95,7 +95,7 @@ namespace Rock.Cms.Cached
         /// Returns Block object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public static Block Read( int id )
         {
@@ -150,7 +150,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes block from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;

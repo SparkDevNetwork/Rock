@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Blog
             {
                 postId = Convert.ToInt32( PageParameter( "PostId" ) );
             }
-            catch ( Exception ex )
+            catch 
             {
             }
 

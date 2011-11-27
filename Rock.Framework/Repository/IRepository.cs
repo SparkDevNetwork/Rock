@@ -4,9 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-/// <summary>
-/// Rock Repository
-/// </summary>
 namespace Rock.Repository
 {
     /// <summary>
@@ -16,19 +13,19 @@ namespace Rock.Repository
     public interface IRepository<T> where T : class
     {
         /// <summary>
-        /// Gets an <see cref="IQueryable<T>"/> list of all models
+        /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
         IQueryable<T> AsQueryable();
 
         /// <summary>
-        /// Gets an <see cref="IEnumerable<T>"/> list of all models.
+        /// Gets an <see cref="IEnumerable{T}"/> list of all models.
         /// </summary>
         /// <returns></returns>
         IEnumerable<T> GetAll();
 
         /// <summary>
-        /// Gets an <see cref="IEnumerable<T>"/> list of models matching the where expression
+        /// Gets an <see cref="IEnumerable{T}"/> list of models matching the where expression
         /// </summary>
         /// <param name="where">where expression</param>
         /// <returns></returns>

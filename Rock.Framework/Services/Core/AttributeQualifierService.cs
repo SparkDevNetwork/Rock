@@ -29,7 +29,7 @@ namespace Rock.Services.Core
 		/// Gets Attribute Qualifiers by Attribute Id
 		/// </summary>
 		/// <param name="attributeId">Attribute Id.</param>
-		/// <returns>An enumerable list of AttributeQualifier objects.<returns>
+		/// <returns>An enumerable list of AttributeQualifier objects.</returns>
 	    public IEnumerable<Rock.Models.Core.AttributeQualifier> GetByAttributeId( int attributeId )
         {
             return Repository.Find( t => t.AttributeId == attributeId );

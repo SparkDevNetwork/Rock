@@ -51,7 +51,7 @@ namespace Rock.Cms.Cached
         /// Returns FieldType object from cache.  If fieldType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public static FieldType Read( int id )
         {
@@ -86,7 +86,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes fieldType from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;

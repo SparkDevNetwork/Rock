@@ -29,7 +29,7 @@ namespace Rock.Services.Cms
 		/// Gets Blocks by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Block objects.<returns>
+		/// <returns>An enumerable list of Block objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Block> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
@@ -39,7 +39,7 @@ namespace Rock.Services.Cms
 		/// Gets Blocks by Name
 		/// </summary>
 		/// <param name="name">Name.</param>
-		/// <returns>An enumerable list of Block objects.<returns>
+		/// <returns>An enumerable list of Block objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Block> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
@@ -49,7 +49,7 @@ namespace Rock.Services.Cms
 		/// Gets Blocks by Path
 		/// </summary>
 		/// <param name="path">Path.</param>
-		/// <returns>An enumerable list of Block objects.<returns>
+		/// <returns>An enumerable list of Block objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Block> GetByPath( string path )
         {
             return Repository.Find( t => t.Path == path );

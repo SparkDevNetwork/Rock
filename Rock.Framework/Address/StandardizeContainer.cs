@@ -25,8 +25,10 @@ namespace Rock.Address
         private CompositionContainer container;
 
         // MEF Import Definition
+#pragma warning disable
         [ImportMany( typeof( StandardizeService ) )]
         IEnumerable<Lazy<StandardizeService, IStandardizeServiceData>> geocodingServices;
+#pragma warning restore
 
         private StandardizeContainer() 
         {
@@ -67,29 +69,23 @@ namespace Rock.Address
             // Create the container from the catalog
             container = new CompositionContainer( catalog );
 
-            try
-            {
-                // Compose the MEF container with any classes that export the same definition
-                container.ComposeParts( this );
+            // Compose the MEF container with any classes that export the same definition
+            container.ComposeParts( this );
 
-                // Create a temporary sorted dictionary of the classes so that they can be executed in a specific order
-                var services = new SortedDictionary<int, List<Lazy<StandardizeService, IStandardizeServiceData>>>();
-                foreach ( Lazy<StandardizeService, IStandardizeServiceData> i in geocodingServices )
-                {
-                    if ( !services.ContainsKey( i.Value.Order ) )
-                        services.Add( i.Value.Order, new List<Lazy<StandardizeService, IStandardizeServiceData>>() );
-                    services[i.Value.Order].Add( i );
-                }
-
-                // Add each class found through MEF into the Services property value in the correct order
-                int id = 0;
-                foreach ( KeyValuePair<int, List<Lazy<StandardizeService, IStandardizeServiceData>>> entry in services )
-                    foreach ( Lazy<StandardizeService, IStandardizeServiceData> service in entry.Value )
-                        Services.Add(id++, service );
-            }
-            catch ( CompositionException ex )
+            // Create a temporary sorted dictionary of the classes so that they can be executed in a specific order
+            var services = new SortedDictionary<int, List<Lazy<StandardizeService, IStandardizeServiceData>>>();
+            foreach ( Lazy<StandardizeService, IStandardizeServiceData> i in geocodingServices )
             {
+                if ( !services.ContainsKey( i.Value.Order ) )
+                    services.Add( i.Value.Order, new List<Lazy<StandardizeService, IStandardizeServiceData>>() );
+                services[i.Value.Order].Add( i );
             }
+
+            // Add each class found through MEF into the Services property value in the correct order
+            int id = 0;
+            foreach ( KeyValuePair<int, List<Lazy<StandardizeService, IStandardizeServiceData>>> entry in services )
+                foreach ( Lazy<StandardizeService, IStandardizeServiceData> service in entry.Value )
+                    Services.Add(id++, service );
         }
     }
 }

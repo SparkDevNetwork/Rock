@@ -57,46 +57,97 @@ namespace Rock.Repository
             _objectSet = Context.Set<T>();
         }
 
+        /// <summary>
+        /// An <see cref="IQueryable{T}"/> list of entitities
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<T> AsQueryable()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
         {
             return _objectSet;
         }
 
+        /// <summary>
+        /// An <see cref="IEnumerable{T}"/> list of all entities
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<T> GetAll()
         {
             return _objectSet.ToList();
         }
 
+        /// <summary>
+        /// An <see cref="IEnumerable{T}"/> list of all entities that match the where clause
+        /// </summary>
+        /// <param name="where">
+        /// <example>An example where clause: <c>t => t.Id == id</c></example>
+        /// </param>
+        /// <returns></returns>
         public IEnumerable<T> Find( Expression<Func<T, bool>> where )
         {
             return _objectSet.Where( where );
         }
 
+        /// <summary>
+        /// Gets the only entity that matches the where clause
+        /// </summary>
+        /// <remarks>If more than one entity matches the where clause, and exception occurs</remarks>
+        /// <param name="where">
+        /// <example>An example where clause: <c>t => t.Id == id</c></example>
+        /// </param>
+        /// <returns></returns>
         public T Single( Expression<Func<T, bool>> where )
         {
             return _objectSet.Single( where );
         }
 
+        /// <summary>
+        /// Get's the first entity that matches the where clause
+        /// </summary>
+        /// <remarks>If an entity that matches the where clause does not exist, an exception occurs</remarks>
+        /// <param name="where">
+        /// <example>An example where clause: <c>t => t.Id == id</c></example>
+        /// </param>
+        /// <returns></returns>
         public T First( Expression<Func<T, bool>> where )
         {
             return _objectSet.First( where );
         }
 
+        /// <summary>
+        /// Get's the first entity that matches the where clause
+        /// </summary>
+        /// <remarks>If an entity that matches the where clause does not exist, a null value is returned</remarks>
+        /// <param name="where">
+        /// <example>An example where clause: <c>t => t.Id == id</c></example>
+        /// </param>
+        /// <returns></returns>
         public T FirstOrDefault( Expression<Func<T, bool>> where )
         {
             return _objectSet.FirstOrDefault( where );
         }
 
+        /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
         public void Delete( T entity )
         {
             _objectSet.Remove( entity );
         }
 
+        /// <summary>
+        /// Adds the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
         public void Add( T entity )
         {
             _objectSet.Add( entity );
         }
 
+        /// <summary>
+        /// Attaches the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
         public void Attach( T entity )
         {
             _objectSet.Attach( entity );
@@ -106,7 +157,7 @@ namespace Rock.Repository
         /// Saves the entity and returns a list of any entity changes that 
         /// need to be logged
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="PersonId">The id of the person making the change</param>
         /// <returns></returns>
         public List<Rock.Models.Core.EntityChange> Save( int? PersonId )
         {

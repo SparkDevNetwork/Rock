@@ -110,7 +110,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person Person { get; set; }
         
@@ -118,7 +118,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
         
@@ -126,7 +126,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
         
@@ -134,7 +134,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
-        /// A <see cref="Group"> object.
+        /// A <see cref="Group"/> object.
         /// </value>
 		public virtual Group Group { get; set; }
         
@@ -142,7 +142,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Group Role.
         /// </summary>
         /// <value>
-        /// A <see cref="GroupRole"> object.
+        /// A <see cref="GroupRole"/> object.
         /// </value>
 		public virtual GroupRole GroupRole { get; set; }
 

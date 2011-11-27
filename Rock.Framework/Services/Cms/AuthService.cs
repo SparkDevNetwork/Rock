@@ -30,7 +30,7 @@ namespace Rock.Services.Cms
 		/// </summary>
 		/// <param name="entityType">Entity Type.</param>
 		/// <param name="entityId">Entity Id.</param>
-		/// <returns>An enumerable list of Auth objects.<returns>
+		/// <returns>An enumerable list of Auth objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
         {
             return Repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
@@ -40,7 +40,7 @@ namespace Rock.Services.Cms
 		/// Gets Auths by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Auth objects.<returns>
+		/// <returns>An enumerable list of Auth objects.</returns>
 	    public IEnumerable<Rock.Models.Cms.Auth> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );

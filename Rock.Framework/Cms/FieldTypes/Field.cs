@@ -51,7 +51,7 @@ namespace Rock.FieldTypes
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
-        /// <param name="fieldValue">Information about the value</param>
+        /// <param name="value">Information about the value</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public virtual string FormatValue( string value, bool condensed )
@@ -72,10 +72,11 @@ namespace Rock.FieldTypes
         }
 
         /// <summary>
-        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="parentControl">Control that the field type's controls will be added to</param>
-        /// <param name="fieldValues">Collection of existing values for the field</param>
+        /// <param name="value">The current value</param>
+        /// <param name="setValue">Should the control's value be set</param>
+        /// <returns>The control</returns>
         public virtual Control CreateControl(string value, bool setValue)
         {
             TextBox textBox = new TextBox();
@@ -87,7 +88,7 @@ namespace Rock.FieldTypes
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
-        /// <param name="parentControl">Parent control that controls were added to in the RenderEdit() method</param>
+        /// <param name="control">Parent control that controls were added to in the RenderEdit() method</param>
         /// <returns></returns>
         public virtual string ReadValue( Control control )
         {

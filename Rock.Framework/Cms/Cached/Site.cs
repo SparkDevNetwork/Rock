@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
-/// <summary>
-/// Cached objects used by the Rock Content Management System
-/// </summary>
 namespace Rock.Cms.Cached
 {
     /// <summary>
@@ -131,7 +128,7 @@ namespace Rock.Cms.Cached
         /// Returns Site object from cache.  If site does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public static Site Read( int id )
         {
@@ -179,7 +176,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes site from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;

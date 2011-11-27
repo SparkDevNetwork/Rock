@@ -29,7 +29,7 @@ namespace Rock.Services.Core
 		/// Gets Entity Changes by Change Set
 		/// </summary>
 		/// <param name="changeSet">Change Set.</param>
-		/// <returns>An enumerable list of EntityChange objects.<returns>
+		/// <returns>An enumerable list of EntityChange objects.</returns>
 	    public IEnumerable<Rock.Models.Core.EntityChange> GetByChangeSet( Guid changeSet )
         {
             return Repository.Find( t => t.ChangeSet == changeSet );

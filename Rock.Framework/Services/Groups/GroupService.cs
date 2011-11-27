@@ -29,7 +29,7 @@ namespace Rock.Services.Groups
 		/// Gets Group by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>Group object.<returns>
+		/// <returns>Group object.</returns>
 	    public Rock.Models.Groups.Group GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
@@ -39,7 +39,7 @@ namespace Rock.Services.Groups
 		/// Gets Groups by Is Security Role
 		/// </summary>
 		/// <param name="isSecurityRole">Is Security Role.</param>
-		/// <returns>An enumerable list of Group objects.<returns>
+		/// <returns>An enumerable list of Group objects.</returns>
 	    public IEnumerable<Rock.Models.Groups.Group> GetByIsSecurityRole( bool isSecurityRole )
         {
             return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
@@ -50,7 +50,7 @@ namespace Rock.Services.Groups
 		/// </summary>
 		/// <param name="parentGroupId">Parent Group Id.</param>
 		/// <param name="name">Name.</param>
-		/// <returns>An enumerable list of Group objects.<returns>
+		/// <returns>An enumerable list of Group objects.</returns>
 	    public IEnumerable<Rock.Models.Groups.Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );

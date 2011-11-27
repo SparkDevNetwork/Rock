@@ -19,9 +19,6 @@ using Rock.Services.Cms;
 using Rock.Helpers;
 using Rock.Cms.Security;
 
-/// <summary>
-/// Classes used for rendering the Rock Content Management System (CMS)
-/// </summary>
 namespace Rock.Cms
 {
     /// <summary>
@@ -179,7 +176,7 @@ namespace Rock.Cms
         /// the controls on the page to find a control who's id ends with the specified zone name.
         /// </summary>
         /// <remarks>
-        /// If an existing zone <see cref="System.Web.UI.Control"/> cannot be found, the <see cref="Form"/> control
+        /// If an existing zone <see cref="System.Web.UI.Control"/> cannot be found, the <see cref="HtmlForm"/> control
         /// is returned
         /// </remarks>
         /// <param name="zoneName">Name of the zone.</param>
@@ -518,7 +515,7 @@ namespace Rock.Cms
         /// is more than one value for the attribute, the values are returned delimited
         /// by a bar character (|).
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public string AttributeValue( string key )
         {
@@ -785,7 +782,7 @@ namespace Rock.Cms
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
         /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
-        /// <param name="href">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( System.Web.UI.Page page, string path )
         {
             string relativePath = page.ResolveUrl( path );

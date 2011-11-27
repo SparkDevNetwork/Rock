@@ -29,7 +29,7 @@ namespace Rock.Services.Core
 		/// Gets Defined Values by Defined Type Id
 		/// </summary>
 		/// <param name="definedTypeId">Defined Type Id.</param>
-		/// <returns>An enumerable list of DefinedValue objects.<returns>
+		/// <returns>An enumerable list of DefinedValue objects.</returns>
 	    public IEnumerable<Rock.Models.Core.DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
             return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );

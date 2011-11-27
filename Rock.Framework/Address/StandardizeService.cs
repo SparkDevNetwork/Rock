@@ -98,6 +98,12 @@ namespace Rock.Address
     /// </summary>
     public interface IStandardizeServiceData
     {
+        /// <summary>
+        /// Gets the name of the service.
+        /// </summary>
+        /// <value>
+        /// The name of the service.
+        /// </value>
         string ServiceName { get; }
     }
 }

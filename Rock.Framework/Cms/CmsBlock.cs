@@ -72,7 +72,7 @@ namespace Rock.Cms
         /// Relative path to the current theme and layout folder.  Useful for setting paths to
         /// theme resource files
         /// <example>
-        /// Client Side: <c><img src='<%= ThemePath %>/Images/avatar.gif' /></c>
+        /// Client Side: <c><![CDATA[<img src='<%= ThemePath %>/Images/avatar.gif' />]]> </c>
         /// Server Side: <c>myImg.ImageUrl = ThemePath + "/Images/avatar.gif";</c>
         /// </example>
         /// </summary>
@@ -260,7 +260,7 @@ namespace Rock.Cms
         /// Returns the current blockinstance value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
         public string AttributeValue( string key )
         {

@@ -29,7 +29,7 @@ namespace Rock.Services.Core
 		/// Gets Attributes by Entity
 		/// </summary>
 		/// <param name="entity">Entity.</param>
-		/// <returns>An enumerable list of Attribute objects.<returns>
+		/// <returns>An enumerable list of Attribute objects.</returns>
 	    public IEnumerable<Rock.Models.Core.Attribute> GetByEntity( string entity )
         {
             return Repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
@@ -39,7 +39,7 @@ namespace Rock.Services.Core
 		/// Gets Attribute by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>Attribute object.<returns>
+		/// <returns>Attribute object.</returns>
 	    public Rock.Models.Core.Attribute GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );

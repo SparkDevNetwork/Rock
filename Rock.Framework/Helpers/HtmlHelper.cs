@@ -5,9 +5,6 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Web;
 
-/// <summary>
-/// Helper classes
-/// </summary
 namespace Rock.Helpers
 {
     /// <summary>
@@ -32,7 +29,7 @@ namespace Rock.Helpers
         /// <summary>
         /// Hashes a string using MD5
         /// </summary>
-        /// <param name="value">String to format</param>
+        /// <param name="input">String to format</param>
         /// <returns></returns>
         public static string CalculateMD5Hash( string input )
         {

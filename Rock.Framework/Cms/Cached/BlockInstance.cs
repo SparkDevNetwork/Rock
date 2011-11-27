@@ -154,7 +154,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Adds BlockInstance model to cache, and returns cached object
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="blockInstanceModel"></param>
         /// <returns></returns>
         public static BlockInstance Read( Rock.Models.Cms.BlockInstance blockInstanceModel )
         {
@@ -171,7 +171,7 @@ namespace Rock.Cms.Cached
         /// Returns BlockInstance object from cache.  If blockInstance does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public static BlockInstance Read( int id )
         {
@@ -226,7 +226,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes blockInstance from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
@@ -239,7 +239,7 @@ namespace Rock.Cms.Cached
 
         /// <summary>
         /// The auth entity. The auth entity is a unique identifier for each type of class that implements
-        /// the <see cref="ISecured"/> interface.
+        /// the <see cref="Rock.Cms.Security.ISecured"/> interface.
         /// </summary>
         public string AuthEntity { get; set; }
 

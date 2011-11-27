@@ -11,6 +11,10 @@ using System.IO;
 
 namespace Rock.Services.Cms
 {
+    /// <summary>
+    /// TODO:  The ThemeService is no longer used.  These methods need to be moved someplace
+    /// else.  The Site list module uses them
+    /// </summary>
 	public partial class ThemeService
 	{
 		private string _themePath;

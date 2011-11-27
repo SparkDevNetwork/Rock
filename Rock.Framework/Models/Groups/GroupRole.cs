@@ -127,7 +127,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
         
@@ -135,7 +135,7 @@ namespace Rock.Models.Groups
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 

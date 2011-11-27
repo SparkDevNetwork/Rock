@@ -29,7 +29,7 @@ namespace Rock.Services.Groups
 		/// Gets Members by Group Id
 		/// </summary>
 		/// <param name="groupId">Group Id.</param>
-		/// <returns>An enumerable list of Member objects.<returns>
+		/// <returns>An enumerable list of Member objects.</returns>
 	    public IEnumerable<Rock.Models.Groups.Member> GetByGroupId( int groupId )
         {
             return Repository.Find( t => t.GroupId == groupId );
@@ -39,7 +39,7 @@ namespace Rock.Services.Groups
 		/// Gets Members by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Member objects.<returns>
+		/// <returns>An enumerable list of Member objects.</returns>
 	    public IEnumerable<Rock.Models.Groups.Member> GetByGuid( Guid guid )
         {
             return Repository.Find( t => t.Guid == guid );
@@ -49,7 +49,7 @@ namespace Rock.Services.Groups
 		/// Gets Members by Person Id
 		/// </summary>
 		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of Member objects.<returns>
+		/// <returns>An enumerable list of Member objects.</returns>
 	    public IEnumerable<Rock.Models.Groups.Member> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );

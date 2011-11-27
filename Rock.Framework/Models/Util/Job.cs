@@ -161,6 +161,12 @@ namespace Rock.Models.Util
 		[DataMember]
 		internal int NotificationStatusInternal { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Notification Status.
+		/// </summary>
+		/// <value>
+		/// Valid valids = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
+		/// </value>
 		[NotMapped]
 		public JobNotificationStatus NotificationStatus
 		{
@@ -214,7 +220,7 @@ namespace Rock.Models.Util
         /// Gets or sets the Create By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person CreateByPerson { get; set; }
         
@@ -222,7 +228,7 @@ namespace Rock.Models.Util
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 

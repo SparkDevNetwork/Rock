@@ -5,13 +5,6 @@ using System.Web;
 
 using Rock.Repository;
 
-//using Rock.Models;
-//using Rock.Models.Core;
-//using Rock.Services.Core;
-
-/// <summary>
-/// Rock POCO service layer
-/// </summary>
 namespace Rock.Services
 {
     /// <summary>
@@ -46,7 +39,7 @@ namespace Rock.Services
         }
 
         /// <summary>
-        /// Gets an <see cref="IQueryable<T>"/> list of all models
+        /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
         public IQueryable<T> Queryable()
@@ -54,10 +47,10 @@ namespace Rock.Services
             return _repository.AsQueryable();
         }
 
-        /// Gets the first model matching the where expression.  Returns null if no models 
-        /// match.
+        /// <summary>
+        /// Gets the model with the id value
         /// </summary>
-        /// <param name="where">where expression</param>
+        /// <param name="id">id</param>
         /// <returns></returns>
         public T Get( int id )
         {

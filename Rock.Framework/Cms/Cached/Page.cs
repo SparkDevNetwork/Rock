@@ -432,7 +432,7 @@ namespace Rock.Cms.Cached
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
         /// <param name="page">Current System.Web.UI.Page</param>
-        /// <param name="href">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddScriptLink( System.Web.UI.Page page, string path )
         {
             CmsPage.AddScriptLink( page, path );
@@ -503,7 +503,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Adds Page model to cache, and returns cached object
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="pageModel"></param>
         /// <returns></returns>
         public static Page Read( Rock.Models.Cms.Page pageModel )
         {
@@ -520,7 +520,7 @@ namespace Rock.Cms.Cached
         /// Returns Page object from cache.  If page does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public static Page Read( int id )
         {
@@ -587,7 +587,7 @@ namespace Rock.Cms.Cached
         /// <summary>
         /// Removes page from cache
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
