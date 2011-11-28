@@ -17,10 +17,10 @@ namespace Rock.Themes.Default.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Header", Heading );
-            Zones.Add( "FirstColumn", FirstColumn );
-            Zones.Add( "SecondColumn", SecondColumn );
-            Zones.Add( "Footer", Footer );
+            AddZone( "Header", Heading );
+            AddZone( "FirstColumn", FirstColumn );
+            AddZone( "SecondColumn", SecondColumn );
+            AddZone( "Footer", Footer );
         }
     }
 }

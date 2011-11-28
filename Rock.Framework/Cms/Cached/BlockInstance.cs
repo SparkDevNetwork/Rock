@@ -34,6 +34,11 @@ namespace Rock.Cms.Cached
         public string Zone { get; private set; }
 
         /// <summary>
+        /// Gets the location of the block instance (Layout or Page)
+        /// </summary>
+        public BlockInstanceLocation BlockInstanceLocation { get; private set; }
+
+        /// <summary>
         /// Gets the order.
         /// </summary>
         public int Order { get; private set; }
@@ -208,10 +213,10 @@ namespace Rock.Cms.Cached
             blockInstance.BlockId = blockInstanceModel.BlockId;
             blockInstance.Name = blockInstanceModel.Name;
             blockInstance.Zone = blockInstanceModel.Zone;
+            blockInstance.BlockInstanceLocation = blockInstanceModel.Page != null ? BlockInstanceLocation.Page : BlockInstanceLocation.Layout;
             blockInstance.Order = blockInstanceModel.Order;
             blockInstance.OutputCacheDuration = blockInstanceModel.OutputCacheDuration;
             blockInstance.AttributeValues = blockInstanceModel.AttributeValues;
-
             blockInstance.AttributeIds = new List<int>();
             if (blockInstanceModel.Attributes != null)
                 foreach ( Rock.Cms.Cached.Attribute attribute in blockInstanceModel.Attributes )
@@ -280,5 +285,21 @@ namespace Rock.Cms.Cached
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// The location of the block instance
+    /// </summary>
+    public enum BlockInstanceLocation
+    {
+        /// <summary>
+        /// Block instance is located in the layout (will be rendered for every page using the layout)
+        /// </summary>
+        Layout,
+
+        /// <summary>
+        /// Block instance is located on the page
+        /// </summary>
+        Page,
     }
 }

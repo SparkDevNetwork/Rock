@@ -361,6 +361,8 @@ namespace Rock.Cms
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
+                aMoveBlock.Attributes.Add( "zone", BlockInstance.Zone );
+                aMoveBlock.Attributes.Add( "zoneloc", BlockInstance.BlockInstanceLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move" );
                 configControls.Add( aMoveBlock );
 

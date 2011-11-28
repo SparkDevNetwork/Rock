@@ -29,17 +29,17 @@ namespace Rock.Themes.Rock.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Header", phHeader );
-            Zones.Add( "Menu", Menu );
-            Zones.Add( "ContentLeft", ContentLeft );
-            Zones.Add( "Content", Content );
-            Zones.Add( "ContentRight", ContentRight );
-            Zones.Add( "UpperBand", UpperBand );
-            Zones.Add( "LowerBand", LowerBand );
-            Zones.Add( "LowerContentLeft", LowerContentLeft );
-            Zones.Add( "LowerContent", LowerContent );
-            Zones.Add( "LowerContentRight", LowerContentRight );
-            Zones.Add( "Footer", Footer );
+            AddZone( "Header", phHeader );
+            AddZone( "Menu", Menu );
+            AddZone( "ContentLeft", ContentLeft );
+            AddZone( "Content", Content );
+            AddZone( "ContentRight", ContentRight );
+            AddZone( "UpperBand", UpperBand );
+            AddZone( "LowerBand", LowerBand );
+            AddZone( "LowerContentLeft", LowerContentLeft );
+            AddZone( "LowerContent", LowerContent );
+            AddZone( "LowerContentRight", LowerContentRight );
+            AddZone( "Footer", Footer );
         }
     }
 }
