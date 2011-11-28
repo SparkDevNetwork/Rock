@@ -22,9 +22,9 @@ namespace Rock.Themes.Default.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Header", Heading );
-            Zones.Add( "Content", Content );
-            Zones.Add( "Footer", Footer );
+            AddZone( "Header", Heading );
+            AddZone( "Content", Content );
+            AddZone( "Footer", Footer );
         }
 
     }

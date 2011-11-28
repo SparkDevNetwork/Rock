@@ -28,7 +28,7 @@ namespace Rock.Cms
     {
         #region Private Variables
 
-        private Dictionary<string, Control> _zones;
+        private Dictionary<string, KeyValuePair<string, Control>> _zones;
         private PlaceHolder phLoadTime;
 
         #endregion
@@ -53,13 +53,17 @@ namespace Rock.Cms
         /// <summary>
         /// The content areas on a layout page that blocks can be added to 
         /// </summary>
-        public Dictionary<string, Control> Zones
+        /// <remarks>
+        /// The Dictionary's key is the zonekey and the KeyValuePair is a combination 
+        /// of the friendly zone name and the zone control
+        /// </remarks>
+        public Dictionary<string, KeyValuePair<string, Control>> Zones
         {
             get
             {
                 if ( _zones == null )
                 {
-                    _zones = new Dictionary<string, Control>();
+                    _zones = new Dictionary<string, KeyValuePair<string, Control>>();
                     DefineZones();
                 }
                 return _zones;
@@ -161,7 +165,7 @@ namespace Rock.Cms
         /// <summary>
         /// Each layout page should define it's content zones in this method
         /// <code>
-        ///     Zones.Add( "FirstColumn", FirstColumn );
+        ///     AddZone( "FirstColumn", FirstColumn );
         /// </code>
         /// </summary>
         protected abstract void DefineZones();
@@ -169,6 +173,27 @@ namespace Rock.Cms
         #endregion
 
         #region Protected Methods
+
+        /// <summary>
+        /// Adds a zone control to the Zones collection
+        /// </summary>
+        /// <param name="key">A unique name for the zone.</param>
+        /// <param name="control">The zone control.</param>
+        public void AddZone( string key, Control control )
+        {
+            AddZone(key, key.SplitCase(), control);
+        }
+
+        /// <summary>
+        /// Adds a zone control to the Zones collection
+        /// </summary>
+        /// <param name="key">A unique key name for the zone.</param>
+        /// <param name="name">A user-friednly name for the zone.</param>
+        /// <param name="control">The zone control.</param>
+        public void AddZone( string key, string name, Control control )
+        {
+            Zones.Add( key, new KeyValuePair<string, Control>( name, control ) );
+        }
 
         /// <summary>
         /// Find the <see cref="System.Web.UI.Control"/> for the specified zone name.  First looks in the
@@ -185,7 +210,7 @@ namespace Rock.Cms
         {
             // First look in the Zones dictionary
             if ( Zones.ContainsKey( zoneName ) )
-                return Zones[zoneName];
+                return Zones[zoneName].Value;
 
             // Then try to find a control with the zonename as the id
             Control zone = RecurseControls( this, zoneName );
@@ -337,6 +362,7 @@ namespace Rock.Cms
                             // each block instance
                             Rock.Controls.HtmlGenericContainer blockWrapper = new Rock.Controls.HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format("bid_{0}", blockInstance.Id);
+                            blockWrapper.Attributes.Add( "zoneloc", blockInstance.BlockInstanceLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
@@ -542,6 +568,14 @@ namespace Rock.Cms
 
     $(document).ready(function () {
 
+        $('#divZoneSelect').dialog({ 
+            title: 'Move Block To',
+            autoOpen: false,
+            width: 290,
+            height: 300,
+            modal: true
+        })
+
         $('#modalDiv').dialog({ 
             autoOpen: false,
             width: 580,
@@ -585,8 +619,51 @@ namespace Rock.Cms
         }).disableSelection();
 
         $('a.blockinstance-move').click(function () {
-            var elementId = $(this).attr('href');
-            alert('block instance move logic goes here! (element: ' + elementId + ')');
+
+            var $moveLink = $(this);
+
+            $('#btnSaveZoneSelect').attr('blockInstance', $(this).attr('href'));
+            $('#ddlZones').val($(this).attr('zone'));
+            if ($(this).attr('zoneloc') == 'Page')
+            {
+                $('#rblLocation_1').removeAttr('checked');
+                $('#rblLocation_0').attr('checked', 'checked');
+            }
+            else
+            {
+                $('#rblLocation_0').removeAttr('checked');
+                $('#rblLocation_1').attr('checked', 'checked');
+            }
+
+            $('#divZoneSelect').dialog('open');
+
+            $('#btnSaveZoneSelect').click(function () {
+                
+                $('#divZoneSelect').dialog('close');
+
+                var $source = $('#bid_' + $(this).attr('blockinstance'));
+                var $target = $('#zone-' + $('#ddlZones').val());
+
+                $moveLink.attr('zone', $('#ddlZones').val());
+
+                if ($('#rblLocation_0').attr('checked') == true)
+                {
+                    $target.append($source);
+                    $moveLink.attr('zoneloc', 'Page');
+                    $source.attr('zoneLoc', 'Page');
+                }
+                else
+                {
+                    if ($('#' + $target.attr('id') + '>[zoneLoc=""Layout""]').length > 0)
+                        $source.insertAfter($('#' + $target.attr('id') + '>[zoneLoc=""Layout""]:last'));
+                    else
+                        $target.append($source);
+                    $moveLink.attr('zoneloc', 'Layout');
+                    $source.attr('zoneLoc', 'Layout');
+                }
+                $(this).unbind('click');
+            });
+
             return false;
         });
 
@@ -615,6 +692,70 @@ namespace Rock.Cms
 ";
             this.Page.ClientScript.RegisterStartupScript(this.GetType(), "config-script", script, true);
 
+            // Add Zone Selection Popup (for moving blocks to another zone)
+            HtmlGenericControl divZoneSelect = new HtmlGenericControl( "div" );
+            divZoneSelect.ClientIDMode = ClientIDMode.Static;
+            divZoneSelect.Attributes.Add( "id", "divZoneSelect" );
+            this.Form.Controls.Add( divZoneSelect );
+
+            HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
+            fsZoneSelect.ClientIDMode = ClientIDMode.Static;
+            fsZoneSelect.Attributes.Add( "id", "fsZoneSelect" );
+            divZoneSelect.Controls.Add( fsZoneSelect );
+
+            HtmlGenericControl olZoneSelect = new HtmlGenericControl( "ol" );
+            olZoneSelect.ClientIDMode = ClientIDMode.Static;
+            olZoneSelect.Attributes.Add( "id", "olZoneSelect" );
+            fsZoneSelect.Controls.Add( olZoneSelect );
+
+            HtmlGenericControl liZones = new HtmlGenericControl( "li" );
+            liZones.ClientIDMode = ClientIDMode.Static;
+            liZones.Attributes.Add( "id", "liZoneSelect" );
+            olZoneSelect.Controls.Add( liZones );
+
+            DropDownList ddlZones = new DropDownList();
+            ddlZones.ClientIDMode = ClientIDMode.Static;
+            ddlZones.ID = "ddlZones";
+            foreach ( var zone in Zones )
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+
+            Label lblZones = new Label();
+            lblZones.ClientIDMode = ClientIDMode.Static;
+            lblZones.ID = "lblZones";
+            lblZones.Text = "Zone";
+            lblZones.AssociatedControlID = ddlZones.ClientID;
+
+            liZones.Controls.Add( lblZones );
+            liZones.Controls.Add( ddlZones );
+
+            HtmlGenericControl liLocation = new HtmlGenericControl( "li" );
+            liLocation.ClientIDMode = ClientIDMode.Static;
+            liLocation.Attributes.Add( "id", "liLocation" );
+            olZoneSelect.Controls.Add( liLocation );
+
+            RadioButtonList rblLocation = new RadioButtonList();
+            rblLocation.ClientIDMode = ClientIDMode.Static;
+            rblLocation.RepeatLayout = RepeatLayout.Flow;
+            rblLocation.RepeatDirection = RepeatDirection.Horizontal;
+            rblLocation.ID = "rblLocation";
+            rblLocation.Items.Add( new ListItem( "Page" ) );
+            rblLocation.Items.Add( new ListItem( "Layout" ) );
+
+            Label lblLocation = new Label();
+            lblLocation.ClientIDMode = ClientIDMode.Static;
+            lblLocation.ID = "lblLocation";
+            lblLocation.Text = "Location";
+            lblLocation.AssociatedControlID = lblLocation.ClientID;
+
+            liLocation.Controls.Add( lblLocation );
+            liLocation.Controls.Add( rblLocation );
+
+            Button btnSaveZoneSelect = new Button();
+            btnSaveZoneSelect.ClientIDMode = ClientIDMode.Static;
+            btnSaveZoneSelect.ID = "btnSaveZoneSelect";
+            btnSaveZoneSelect.Text = "Save";
+            divZoneSelect.Controls.Add( btnSaveZoneSelect );
+
             // Add iFrame popup div
             HtmlGenericControl modalDiv = new HtmlGenericControl("div");
             modalDiv.ClientIDMode = ClientIDMode.AutoID;
@@ -632,13 +773,14 @@ namespace Rock.Cms
             modalDiv.Controls.Add(modalIFrame);
 
             // Add Zone Wrappers
-            foreach ( KeyValuePair<string, Control> zoneControl in this.Zones )
+            foreach ( KeyValuePair<string, KeyValuePair<string, Control>> zoneControl in this.Zones )
             {
-                Control parent = zoneControl.Value.Parent;
+                Control control = zoneControl.Value.Value;
+                Control parent = zoneControl.Value.Value.Parent;
 
                 HtmlGenericControl zoneWrapper = new HtmlGenericControl( "div" );
-                parent.Controls.AddAt( parent.Controls.IndexOf( zoneControl.Value ), zoneWrapper );
-                zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Value.ID );
+                parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
+                zoneWrapper.ID = string.Format( "zone-{0}", control.ID );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
@@ -647,18 +789,18 @@ namespace Rock.Cms
                 zoneConfig.Attributes.Add( "style", "display: none;" );
                 zoneConfig.Attributes.Add( "class", "zone-configuration" );
 
-                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.ID ) ) );
+                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", control.ID ) ) );
 
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfig.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-iframe-dialog" );
-                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format("~/ZoneBlocks/{0}/{1}", PageInstance.Id, zoneControl.Value.ID ) ) );
+                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format("~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 aBlockConfig.InnerText = "Blocks";
 
-                parent.Controls.Remove( zoneControl.Value );
-                zoneWrapper.Controls.Add( zoneControl.Value );
+                parent.Controls.Remove( control );
+                zoneWrapper.Controls.Add( control );
             }
 
         }

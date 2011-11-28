@@ -27,11 +27,11 @@ namespace Rock.Themes.Test.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Header", Heading );
-            Zones.Add( "FirstColumn", FirstColumn );
-            Zones.Add( "SecondColumn", SecondColumn );
-            Zones.Add( "ThirdColumn", ThirdColumn );
-            Zones.Add( "Footer", Footer );
+            AddZone( "Header", Heading );
+            AddZone( "FirstColumn", FirstColumn );
+            AddZone( "SecondColumn", SecondColumn );
+            AddZone( "ThirdColumn", ThirdColumn );
+            AddZone( "Footer", Footer );
 
         }
     }

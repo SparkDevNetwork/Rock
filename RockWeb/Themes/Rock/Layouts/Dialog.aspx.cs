@@ -23,7 +23,7 @@ namespace Rock.Themes.Rock.Layouts
 
         protected override void DefineZones()
         {
-            Zones.Add( "Content", Content );
+            AddZone( "Content", Content );
         }
     }
 }
