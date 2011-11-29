@@ -69,8 +69,6 @@ namespace Rock.Services.Crm
                 }
 
             address.StandardizeAttempt = DateTime.Now;
-
-            Save( address, personId );
         }
 
         /// <summary>
@@ -126,8 +124,6 @@ namespace Rock.Services.Crm
                 }
 
             address.GeocodeAttempt = DateTime.Now;
-
-            Save( address, personId );
         }
 
         /// <summary>
@@ -157,8 +153,6 @@ namespace Rock.Services.Crm
                 addressModel.City = address.City;
                 addressModel.State = address.State;
                 addressModel.Zip = address.Zip;
-
-                Add( addressModel, personId );
             }
 
             return addressModel;

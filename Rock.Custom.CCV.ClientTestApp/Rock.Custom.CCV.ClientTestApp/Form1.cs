@@ -44,7 +44,7 @@ namespace Rock.Custom.CCV.ClientTestApp
                     tbState.Text = state;
                     tbZip.Text = zip;
 
-                    lblStandardized.Text = string.Format( "{0}[{6}]: {1} {2} {3}, {4} {5}", standardizeService, street1, street2, city, state, zip, standardizeResult );
+                    tbStandardized.Text = string.Format( "{0}[{6}]: {1} {2} {3}, {4} {5}", standardizeService, street1, street2, city, state, zip, standardizeResult );
                 }
 
 
@@ -57,7 +57,7 @@ namespace Rock.Custom.CCV.ClientTestApp
                     string geocodeService = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeService", ns ) ).Value;
                     string geocodeResult = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeResult", ns ) ).Value;
 
-                    lblGeocoded.Text = string.Format( "{0}[{3}]: {1} {2}", geocodeService, latitude, longitude, geocodeResult );
+                    tbGeocoded.Text = string.Format( "{0}[{3}]: {1} {2}", geocodeService, latitude, longitude, geocodeResult );
                 }
             }
             catch ( System.Exception ex )

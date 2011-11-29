@@ -70,6 +70,14 @@ namespace Rock.Address
         public double Longitude { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="AddressStub"/> is standardized.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if standardized; otherwise, <c>false</c>.
+        /// </value>
+        public bool Standardized { get; set; }
+
+        /// <summary>
         /// Gets or sets the standardize service.
         /// </summary>
         /// <value>
@@ -84,6 +92,14 @@ namespace Rock.Address
         /// The standardize result.
         /// </value>
         public string StandardizeResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="AddressStub"/> is geocoded.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if geocoded; otherwise, <c>false</c>.
+        /// </value>
+        public bool Geocoded { get; set; }
 
         /// <summary>
         /// Gets or sets the geocode service.
@@ -133,8 +149,10 @@ namespace Rock.Address
             this.Zip = addressModel.Zip;
             this.Latitude = addressModel.Latitude;
             this.Longitude = addressModel.Longitude;
+            this.Standardized = addressModel.StandardizeDate.HasValue;
             this.StandardizeService = addressModel.StandardizeService;
             this.StandardizeResult = addressModel.StandardizeResult;
+            this.Geocoded = addressModel.GeocodeDate.HasValue;
             this.GeocodeService = addressModel.GeocodeService;
             this.GeocodeResult = addressModel.GeocodeResult;
         }

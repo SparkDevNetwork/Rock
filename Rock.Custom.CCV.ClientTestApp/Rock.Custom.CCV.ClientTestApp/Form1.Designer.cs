@@ -34,11 +34,11 @@
             this.tbState = new System.Windows.Forms.TextBox();
             this.tbZip = new System.Windows.Forms.TextBox();
             this.lblStandardizedL = new System.Windows.Forms.Label();
-            this.lblStandardized = new System.Windows.Forms.Label();
-            this.lblGeocoded = new System.Windows.Forms.Label();
             this.lblGeocodedL = new System.Windows.Forms.Label();
             this.tbStreet2 = new System.Windows.Forms.TextBox();
             this.btnGo = new System.Windows.Forms.Button();
+            this.tbGeocoded = new System.Windows.Forms.TextBox();
+            this.tbStandardized = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -90,22 +90,6 @@
             this.lblStandardizedL.TabIndex = 8;
             this.lblStandardizedL.Text = "Standardized";
             // 
-            // lblStandardized
-            // 
-            this.lblStandardized.AutoSize = true;
-            this.lblStandardized.Location = new System.Drawing.Point( 22, 170 );
-            this.lblStandardized.Name = "lblStandardized";
-            this.lblStandardized.Size = new System.Drawing.Size( 0, 13 );
-            this.lblStandardized.TabIndex = 9;
-            // 
-            // lblGeocoded
-            // 
-            this.lblGeocoded.AutoSize = true;
-            this.lblGeocoded.Location = new System.Drawing.Point( 22, 230 );
-            this.lblGeocoded.Name = "lblGeocoded";
-            this.lblGeocoded.Size = new System.Drawing.Size( 0, 13 );
-            this.lblGeocoded.TabIndex = 11;
-            // 
             // lblGeocodedL
             // 
             this.lblGeocodedL.AutoSize = true;
@@ -132,16 +116,30 @@
             this.btnGo.UseVisualStyleBackColor = true;
             this.btnGo.Click += new System.EventHandler( this.btnGo_Click );
             // 
+            // tbGeocoded
+            // 
+            this.tbGeocoded.Location = new System.Drawing.Point( 23, 224 );
+            this.tbGeocoded.Name = "tbGeocoded";
+            this.tbGeocoded.Size = new System.Drawing.Size( 267, 20 );
+            this.tbGeocoded.TabIndex = 14;
+            // 
+            // tbStandardized
+            // 
+            this.tbStandardized.Location = new System.Drawing.Point( 23, 164 );
+            this.tbStandardized.Name = "tbStandardized";
+            this.tbStandardized.Size = new System.Drawing.Size( 267, 20 );
+            this.tbStandardized.TabIndex = 15;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF( 6F, 13F );
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size( 309, 337 );
+            this.Controls.Add( this.tbStandardized );
+            this.Controls.Add( this.tbGeocoded );
             this.Controls.Add( this.btnGo );
             this.Controls.Add( this.tbStreet2 );
-            this.Controls.Add( this.lblGeocoded );
             this.Controls.Add( this.lblGeocodedL );
-            this.Controls.Add( this.lblStandardized );
             this.Controls.Add( this.lblStandardizedL );
             this.Controls.Add( this.tbZip );
             this.Controls.Add( this.tbState );
@@ -163,11 +161,11 @@
         private System.Windows.Forms.TextBox tbState;
         private System.Windows.Forms.TextBox tbZip;
         private System.Windows.Forms.Label lblStandardizedL;
-        private System.Windows.Forms.Label lblStandardized;
-        private System.Windows.Forms.Label lblGeocoded;
         private System.Windows.Forms.Label lblGeocodedL;
         private System.Windows.Forms.TextBox tbStreet2;
         private System.Windows.Forms.Button btnGo;
+        private System.Windows.Forms.TextBox tbGeocoded;
+        private System.Windows.Forms.TextBox tbStandardized;
     }
 }
 

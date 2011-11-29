@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Address\ServiceDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
@@ -223,7 +224,6 @@
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Models\Core\ServiceLog.cs" />
     <Compile Include="Models\Crm\Address.cs" />
-    <Compile Include="Models\Crm\Address.Partial.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">
@@ -356,6 +356,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Service References\TeleAtlas.Authentication\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\TeleAtlas.Geocoding\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Services\Cms\AuthService.cs" />
     <Compile Include="Services\Cms\BlockInstanceService.cs" />
     <Compile Include="Services\Cms\BlockService.cs" />
@@ -468,6 +478,20 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Service References\StrikeIron.USAddressVerification\USAddressVerification5.wsdl" />
+    <None Include="Service References\TeleAtlas.Authentication\Authentication.wsdl" />
+    <None Include="Service References\TeleAtlas.Geocoding\Geocoding.wsdl" />
+    <None Include="Service References\TeleAtlas.Geocoding\Rock.Framework.TeleAtlas.Geocoding.Geocode.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\TeleAtlas.Geocoding\Rock.Framework.TeleAtlas.Geocoding.MatchType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\TeleAtlas.Geocoding\Rock.Framework.TeleAtlas.Geocoding.NameValue.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\TeleAtlas.Geocoding\Rock.Framework.TeleAtlas.Geocoding.OutputField.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="T4\Model.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Model1.cs</LastGenOutput>
@@ -481,6 +505,18 @@
     <None Include="Service References\MelissaData.Service\configuration91.svcinfo" />
     <None Include="Service References\MelissaData.Service\configuration.svcinfo" />
     <None Include="Service References\MelissaData.Service\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\TeleAtlas.Geocoding\configuration91.svcinfo" />
+    <None Include="Service References\TeleAtlas.Geocoding\configuration.svcinfo" />
+    <None Include="Service References\TeleAtlas.Geocoding\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\TeleAtlas.Authentication\configuration91.svcinfo" />
+    <None Include="Service References\TeleAtlas.Authentication\configuration.svcinfo" />
+    <None Include="Service References\TeleAtlas.Authentication\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
@@ -509,6 +545,8 @@
     <WCFMetadataStorage Include="Service References\MelissaData.Service\" />
     <WCFMetadataStorage Include="Service References\ServiceObjects.GeoCoder\" />
     <WCFMetadataStorage Include="Service References\StrikeIron.USAddressVerification\" />
+    <WCFMetadataStorage Include="Service References\TeleAtlas.Authentication\" />
+    <WCFMetadataStorage Include="Service References\TeleAtlas.Geocoding\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
