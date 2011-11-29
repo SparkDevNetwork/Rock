@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a Attribute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.Attribute Get( string id )
+        public Rock.Models.Core.AttributeDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
                 Rock.Models.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
                 if ( Attribute.Authorized( "View", currentUser ) )
-                    return Attribute;
+                    return Attribute.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a Attribute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttribute( string id, Rock.Models.Core.Attribute Attribute )
+        public void UpdateAttribute( string id, Rock.Models.Core.AttributeDTO Attribute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new Attribute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttribute( Rock.Models.Core.Attribute Attribute )
+        public void CreateAttribute( Rock.Models.Core.AttributeDTO Attribute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeService AttributeService = new Rock.Services.Core.AttributeService();
-                AttributeService.Add( Attribute, currentUser.PersonId() );
-                AttributeService.Save( Attribute, currentUser.PersonId() );
+                Rock.Models.Core.Attribute existingAttribute = new Rock.Models.Core.Attribute();
+				AttributeService.Add( existingAttribute, currentUser.PersonId() );
+                uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(Attribute);
+                AttributeService.Save( existingAttribute, currentUser.PersonId() );
             }
         }
 

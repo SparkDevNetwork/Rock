@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogTag object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogTag Get( string id )
+        public Rock.Models.Cms.BlogTagDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
                 Rock.Models.Cms.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
                 if ( BlogTag.Authorized( "View", currentUser ) )
-                    return BlogTag;
+                    return BlogTag.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogTag( string id, Rock.Models.Cms.BlogTag BlogTag )
+        public void UpdateBlogTag( string id, Rock.Models.Cms.BlogTagDTO BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogTag( Rock.Models.Cms.BlogTag BlogTag )
+        public void CreateBlogTag( Rock.Models.Cms.BlogTagDTO BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogTagService BlogTagService = new Rock.Services.Cms.BlogTagService();
-                BlogTagService.Add( BlogTag, currentUser.PersonId() );
-                BlogTagService.Save( BlogTag, currentUser.PersonId() );
+                Rock.Models.Cms.BlogTag existingBlogTag = new Rock.Models.Cms.BlogTag();
+				BlogTagService.Add( existingBlogTag, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
+                BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
             }
         }
 

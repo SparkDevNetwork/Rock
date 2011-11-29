@@ -31,7 +31,7 @@ namespace Rock.Api.Util
 		/// Gets a Job object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Util.Job Get( string id )
+        public Rock.Models.Util.JobDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Util
 				Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
                 Rock.Models.Util.Job Job = JobService.Get( int.Parse( id ) );
                 if ( Job.Authorized( "View", currentUser ) )
-                    return Job;
+                    return Job.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Util
 		/// Updates a Job object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateJob( string id, Rock.Models.Util.Job Job )
+        public void UpdateJob( string id, Rock.Models.Util.JobDTO Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Util
 		/// Creates a new Job object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateJob( Rock.Models.Util.Job Job )
+        public void CreateJob( Rock.Models.Util.JobDTO Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Util
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Util.JobService JobService = new Rock.Services.Util.JobService();
-                JobService.Add( Job, currentUser.PersonId() );
-                JobService.Save( Job, currentUser.PersonId() );
+                Rock.Models.Util.Job existingJob = new Rock.Models.Util.Job();
+				JobService.Add( existingJob, currentUser.PersonId() );
+                uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
+                JobService.Save( existingJob, currentUser.PersonId() );
             }
         }
 

@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPostComment Get( string id )
+        public Rock.Models.Cms.BlogPostCommentDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
                 Rock.Models.Cms.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
                 if ( BlogPostComment.Authorized( "View", currentUser ) )
-                    return BlogPostComment;
+                    return BlogPostComment.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogPostComment( string id, Rock.Models.Cms.BlogPostComment BlogPostComment )
+        public void UpdateBlogPostComment( string id, Rock.Models.Cms.BlogPostCommentDTO BlogPostComment )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogPostComment( Rock.Models.Cms.BlogPostComment BlogPostComment )
+        public void CreateBlogPostComment( Rock.Models.Cms.BlogPostCommentDTO BlogPostComment )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostCommentService BlogPostCommentService = new Rock.Services.Cms.BlogPostCommentService();
-                BlogPostCommentService.Add( BlogPostComment, currentUser.PersonId() );
-                BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId() );
+                Rock.Models.Cms.BlogPostComment existingBlogPostComment = new Rock.Models.Cms.BlogPostComment();
+				BlogPostCommentService.Add( existingBlogPostComment, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
+                BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
             }
         }
 

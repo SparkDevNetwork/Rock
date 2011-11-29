@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Block object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Block Get( string id )
+        public Rock.Models.Cms.BlockDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
                 Rock.Models.Cms.Block Block = BlockService.Get( int.Parse( id ) );
                 if ( Block.Authorized( "View", currentUser ) )
-                    return Block;
+                    return Block.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Block object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlock( string id, Rock.Models.Cms.Block Block )
+        public void UpdateBlock( string id, Rock.Models.Cms.BlockDTO Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Block object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlock( Rock.Models.Cms.Block Block )
+        public void CreateBlock( Rock.Models.Cms.BlockDTO Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockService BlockService = new Rock.Services.Cms.BlockService();
-                BlockService.Add( Block, currentUser.PersonId() );
-                BlockService.Save( Block, currentUser.PersonId() );
+                Rock.Models.Cms.Block existingBlock = new Rock.Models.Cms.Block();
+				BlockService.Add( existingBlock, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
+                BlockService.Save( existingBlock, currentUser.PersonId() );
             }
         }
 

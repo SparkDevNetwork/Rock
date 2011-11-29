@@ -15,7 +15,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
-        readonly string ns = "http://schemas.datacontract.org/2004/07/Rock.Address";
+        readonly string ns = "http://schemas.datacontract.org/2004/07/Rock.Models.Crm";
 
         public Form1()
         {
@@ -69,7 +69,7 @@ namespace Rock.Custom.CCV.ClientTestApp
         private XDocument SendRequest( string action )
         {
             string Request = string.Format(
-                "<AddressStub xmlns=\"{0}\"><City>{1}</City><State>{2}</State><Street1>{3}</Street1><Street2>{4}</Street2><Zip>{5}</Zip></AddressStub>",
+                "<AddressDTO xmlns=\"{0}\"><City>{1}</City><State>{2}</State><Street1>{3}</Street1><Street2>{4}</Street2><Zip>{5}</Zip></AddressDTO>",
                 ns, tbCity.Text, tbState.Text, tbStreet1.Text, tbStreet2.Text, tbZip.Text );
 
             HttpWebRequest req = WebRequest.Create(string.Format("http://localhost:6229/RockWeb/api/Crm/Address/{0}", action)) as HttpWebRequest;

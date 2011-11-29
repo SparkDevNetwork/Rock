@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Page object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Page Get( string id )
+        public Rock.Models.Cms.PageDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
                 Rock.Models.Cms.Page Page = PageService.Get( int.Parse( id ) );
                 if ( Page.Authorized( "View", currentUser ) )
-                    return Page;
+                    return Page.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Page object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePage( string id, Rock.Models.Cms.Page Page )
+        public void UpdatePage( string id, Rock.Models.Cms.PageDTO Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Page object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePage( Rock.Models.Cms.Page Page )
+        public void CreatePage( Rock.Models.Cms.PageDTO Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageService PageService = new Rock.Services.Cms.PageService();
-                PageService.Add( Page, currentUser.PersonId() );
-                PageService.Save( Page, currentUser.PersonId() );
+                Rock.Models.Cms.Page existingPage = new Rock.Models.Cms.Page();
+				PageService.Add( existingPage, currentUser.PersonId() );
+                uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
+                PageService.Save( existingPage, currentUser.PersonId() );
             }
         }
 

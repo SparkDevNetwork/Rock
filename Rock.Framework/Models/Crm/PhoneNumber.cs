@@ -28,79 +28,90 @@ namespace Rock.Models.Crm
     [Table( "crmPhoneNumber" )]
     public partial class PhoneNumber : ModelWithAttributes<PhoneNumber>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Person Id.
-        /// </summary>
-        /// <value>
-        /// Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
 		[DataMember]
 		public int PersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Number.
-        /// </summary>
-        /// <value>
-        /// Number.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Number.
+		/// </summary>
+		/// <value>
+		/// Number.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Number { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Description.
-        /// </summary>
-        /// <value>
-        /// Description.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="PhoneNumberDTO"/> object.
+        /// </value>
+		public virtual PhoneNumberDTO DataTransferObject
+		{
+			get { return new PhoneNumberDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -132,6 +143,118 @@ namespace Rock.Models.Crm
 		public virtual Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Phone Number Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class PhoneNumberDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
+		public int PersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Number.
+		/// </summary>
+		/// <value>
+		/// Number.
+		/// </value>
+		public string Number { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
+		public string Description { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumberDTO"/> class.
+        /// </summary>
+		public PhoneNumberDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumberDTO"/> class.
+        /// </summary>
+        /// <param name="phoneNumber">The Phone Number.</param>
+		public PhoneNumberDTO( PhoneNumber phoneNumber )
+		{
+			Id = phoneNumber.Id;
+			Guid = phoneNumber.Guid;
+			System = phoneNumber.System;
+			PersonId = phoneNumber.PersonId;
+			Number = phoneNumber.Number;
+			Description = phoneNumber.Description;
+			CreatedDateTime = phoneNumber.CreatedDateTime;
+			ModifiedDateTime = phoneNumber.ModifiedDateTime;
+			CreatedByPersonId = phoneNumber.CreatedByPersonId;
+			ModifiedByPersonId = phoneNumber.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Phone Number Configuration class.

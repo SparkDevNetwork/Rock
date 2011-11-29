@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.FieldType Get( string id )
+        public Rock.Models.Core.FieldTypeDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
                 Rock.Models.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
                 if ( FieldType.Authorized( "View", currentUser ) )
-                    return FieldType;
+                    return FieldType.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a FieldType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateFieldType( string id, Rock.Models.Core.FieldType FieldType )
+        public void UpdateFieldType( string id, Rock.Models.Core.FieldTypeDTO FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new FieldType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateFieldType( Rock.Models.Core.FieldType FieldType )
+        public void CreateFieldType( Rock.Models.Core.FieldTypeDTO FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.FieldTypeService FieldTypeService = new Rock.Services.Core.FieldTypeService();
-                FieldTypeService.Add( FieldType, currentUser.PersonId() );
-                FieldTypeService.Save( FieldType, currentUser.PersonId() );
+                Rock.Models.Core.FieldType existingFieldType = new Rock.Models.Core.FieldType();
+				FieldTypeService.Add( existingFieldType, currentUser.PersonId() );
+                uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
+                FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
             }
         }
 

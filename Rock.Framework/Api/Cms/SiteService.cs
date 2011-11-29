@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Site object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Site Get( string id )
+        public Rock.Models.Cms.SiteDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
                 Rock.Models.Cms.Site Site = SiteService.Get( int.Parse( id ) );
                 if ( Site.Authorized( "View", currentUser ) )
-                    return Site;
+                    return Site.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Site object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateSite( string id, Rock.Models.Cms.Site Site )
+        public void UpdateSite( string id, Rock.Models.Cms.SiteDTO Site )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Site object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateSite( Rock.Models.Cms.Site Site )
+        public void CreateSite( Rock.Models.Cms.SiteDTO Site )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteService SiteService = new Rock.Services.Cms.SiteService();
-                SiteService.Add( Site, currentUser.PersonId() );
-                SiteService.Save( Site, currentUser.PersonId() );
+                Rock.Models.Cms.Site existingSite = new Rock.Models.Cms.Site();
+				SiteService.Add( existingSite, currentUser.PersonId() );
+                uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
+                SiteService.Save( existingSite, currentUser.PersonId() );
             }
         }
 

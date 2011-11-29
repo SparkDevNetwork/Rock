@@ -28,247 +28,258 @@ namespace Rock.Models.Cms
     [Table( "cmsUser" )]
     public partial class User : ModelWithAttributes<User>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the Username.
-        /// </summary>
-        /// <value>
-        /// Username.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Username.
+		/// </summary>
+		/// <value>
+		/// Username.
+		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
 		public string Username { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Application Name.
-        /// </summary>
-        /// <value>
-        /// Application Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Application Name.
+		/// </summary>
+		/// <value>
+		/// Application Name.
+		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
 		public string ApplicationName { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Email.
-        /// </summary>
-        /// <value>
-        /// Email.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Email.
+		/// </summary>
+		/// <value>
+		/// Email.
+		/// </value>
 		[MaxLength( 128 )]
 		[DataMember]
 		public string Email { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Comment.
-        /// </summary>
-        /// <value>
-        /// Comment.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Comment.
+		/// </summary>
+		/// <value>
+		/// Comment.
+		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
 		public string Comment { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Authentication Type.
-        /// </summary>
-        /// <value>
-        /// Authentication Type.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Authentication Type.
+		/// </summary>
+		/// <value>
+		/// Authentication Type.
+		/// </value>
 		[DataMember]
 		public int AuthenticationType { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Password.
-        /// </summary>
-        /// <value>
-        /// Password.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Password.
+		/// </summary>
+		/// <value>
+		/// Password.
+		/// </value>
 		[MaxLength( 128 )]
 		[DataMember]
 		public string Password { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Password Question.
-        /// </summary>
-        /// <value>
-        /// Password Question.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Password Question.
+		/// </summary>
+		/// <value>
+		/// Password Question.
+		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
 		public string PasswordQuestion { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Password Answer.
-        /// </summary>
-        /// <value>
-        /// Password Answer.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Password Answer.
+		/// </summary>
+		/// <value>
+		/// Password Answer.
+		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
 		public string PasswordAnswer { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Is Approved.
-        /// </summary>
-        /// <value>
-        /// Is Approved.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Is Approved.
+		/// </summary>
+		/// <value>
+		/// Is Approved.
+		/// </value>
 		[DataMember]
 		public bool? IsApproved { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Last Activity Date.
-        /// </summary>
-        /// <value>
-        /// Last Activity Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Last Activity Date.
+		/// </summary>
+		/// <value>
+		/// Last Activity Date.
+		/// </value>
 		[DataMember]
 		public DateTime? LastActivityDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Last Login Date.
-        /// </summary>
-        /// <value>
-        /// Last Login Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Last Login Date.
+		/// </summary>
+		/// <value>
+		/// Last Login Date.
+		/// </value>
 		[DataMember]
 		public DateTime? LastLoginDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Last Password Changed Date.
-        /// </summary>
-        /// <value>
-        /// Last Password Changed Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Last Password Changed Date.
+		/// </summary>
+		/// <value>
+		/// Last Password Changed Date.
+		/// </value>
 		[DataMember]
 		public DateTime? LastPasswordChangedDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Creation Date.
-        /// </summary>
-        /// <value>
-        /// Creation Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Creation Date.
+		/// </summary>
+		/// <value>
+		/// Creation Date.
+		/// </value>
 		[DataMember]
 		public DateTime? CreationDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Is On Line.
-        /// </summary>
-        /// <value>
-        /// Is On Line.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Is On Line.
+		/// </summary>
+		/// <value>
+		/// Is On Line.
+		/// </value>
 		[DataMember]
 		public bool? IsOnLine { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Is Locked Out.
-        /// </summary>
-        /// <value>
-        /// Is Locked Out.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Is Locked Out.
+		/// </summary>
+		/// <value>
+		/// Is Locked Out.
+		/// </value>
 		[DataMember]
 		public bool? IsLockedOut { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Last Locked Out Date.
-        /// </summary>
-        /// <value>
-        /// Last Locked Out Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Last Locked Out Date.
+		/// </summary>
+		/// <value>
+		/// Last Locked Out Date.
+		/// </value>
 		[DataMember]
 		public DateTime? LastLockedOutDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Failed Password Attempt Count.
-        /// </summary>
-        /// <value>
-        /// Failed Password Attempt Count.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Failed Password Attempt Count.
+		/// </summary>
+		/// <value>
+		/// Failed Password Attempt Count.
+		/// </value>
 		[DataMember]
 		public int? FailedPasswordAttemptCount { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Failed Password Attempt Window Start.
-        /// </summary>
-        /// <value>
-        /// Failed Password Attempt Window Start.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Failed Password Attempt Window Start.
+		/// </summary>
+		/// <value>
+		/// Failed Password Attempt Window Start.
+		/// </value>
 		[DataMember]
 		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Failed Password Answer Attempt Count.
-        /// </summary>
-        /// <value>
-        /// Failed Password Answer Attempt Count.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Failed Password Answer Attempt Count.
+		/// </summary>
+		/// <value>
+		/// Failed Password Answer Attempt Count.
+		/// </value>
 		[DataMember]
 		public int? FailedPasswordAnswerAttemptCount { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Failed Password Answer Attempt Window Start.
-        /// </summary>
-        /// <value>
-        /// Failed Password Answer Attempt Window Start.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Failed Password Answer Attempt Window Start.
+		/// </summary>
+		/// <value>
+		/// Failed Password Answer Attempt Window Start.
+		/// </value>
 		[DataMember]
 		public DateTime? FailedPasswordAnswerAttemptWindowStart { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Is Subscriber.
-        /// </summary>
-        /// <value>
-        /// Is Subscriber.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Is Subscriber.
+		/// </summary>
+		/// <value>
+		/// Is Subscriber.
+		/// </value>
 		[DataMember]
 		public bool? IsSubscriber { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Person Id.
-        /// </summary>
-        /// <value>
-        /// Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
 		[DataMember]
 		public int? PersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="UserDTO"/> object.
+        /// </value>
+		public virtual UserDTO DataTransferObject
+		{
+			get { return new UserDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -300,6 +311,280 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// User Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class UserDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Username.
+		/// </summary>
+		/// <value>
+		/// Username.
+		/// </value>
+		public string Username { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Application Name.
+		/// </summary>
+		/// <value>
+		/// Application Name.
+		/// </value>
+		public string ApplicationName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Email.
+		/// </summary>
+		/// <value>
+		/// Email.
+		/// </value>
+		public string Email { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Comment.
+		/// </summary>
+		/// <value>
+		/// Comment.
+		/// </value>
+		public string Comment { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Authentication Type.
+		/// </summary>
+		/// <value>
+		/// Authentication Type.
+		/// </value>
+		public int AuthenticationType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Password.
+		/// </summary>
+		/// <value>
+		/// Password.
+		/// </value>
+		public string Password { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Password Question.
+		/// </summary>
+		/// <value>
+		/// Password Question.
+		/// </value>
+		public string PasswordQuestion { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Password Answer.
+		/// </summary>
+		/// <value>
+		/// Password Answer.
+		/// </value>
+		public string PasswordAnswer { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Is Approved.
+		/// </summary>
+		/// <value>
+		/// Is Approved.
+		/// </value>
+		public bool? IsApproved { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Activity Date.
+		/// </summary>
+		/// <value>
+		/// Last Activity Date.
+		/// </value>
+		public DateTime? LastActivityDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Login Date.
+		/// </summary>
+		/// <value>
+		/// Last Login Date.
+		/// </value>
+		public DateTime? LastLoginDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Password Changed Date.
+		/// </summary>
+		/// <value>
+		/// Last Password Changed Date.
+		/// </value>
+		public DateTime? LastPasswordChangedDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Creation Date.
+		/// </summary>
+		/// <value>
+		/// Creation Date.
+		/// </value>
+		public DateTime? CreationDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Is On Line.
+		/// </summary>
+		/// <value>
+		/// Is On Line.
+		/// </value>
+		public bool? IsOnLine { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Is Locked Out.
+		/// </summary>
+		/// <value>
+		/// Is Locked Out.
+		/// </value>
+		public bool? IsLockedOut { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Locked Out Date.
+		/// </summary>
+		/// <value>
+		/// Last Locked Out Date.
+		/// </value>
+		public DateTime? LastLockedOutDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Failed Password Attempt Count.
+		/// </summary>
+		/// <value>
+		/// Failed Password Attempt Count.
+		/// </value>
+		public int? FailedPasswordAttemptCount { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Failed Password Attempt Window Start.
+		/// </summary>
+		/// <value>
+		/// Failed Password Attempt Window Start.
+		/// </value>
+		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Failed Password Answer Attempt Count.
+		/// </summary>
+		/// <value>
+		/// Failed Password Answer Attempt Count.
+		/// </value>
+		public int? FailedPasswordAnswerAttemptCount { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Failed Password Answer Attempt Window Start.
+		/// </summary>
+		/// <value>
+		/// Failed Password Answer Attempt Window Start.
+		/// </value>
+		public DateTime? FailedPasswordAnswerAttemptWindowStart { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Is Subscriber.
+		/// </summary>
+		/// <value>
+		/// Is Subscriber.
+		/// </value>
+		public bool? IsSubscriber { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
+		public int? PersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDTO"/> class.
+        /// </summary>
+		public UserDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDTO"/> class.
+        /// </summary>
+        /// <param name="user">The User.</param>
+		public UserDTO( User user )
+		{
+			Id = user.Id;
+			Guid = user.Guid;
+			Username = user.Username;
+			ApplicationName = user.ApplicationName;
+			Email = user.Email;
+			Comment = user.Comment;
+			AuthenticationType = user.AuthenticationType;
+			Password = user.Password;
+			PasswordQuestion = user.PasswordQuestion;
+			PasswordAnswer = user.PasswordAnswer;
+			IsApproved = user.IsApproved;
+			LastActivityDate = user.LastActivityDate;
+			LastLoginDate = user.LastLoginDate;
+			LastPasswordChangedDate = user.LastPasswordChangedDate;
+			CreationDate = user.CreationDate;
+			IsOnLine = user.IsOnLine;
+			IsLockedOut = user.IsLockedOut;
+			LastLockedOutDate = user.LastLockedOutDate;
+			FailedPasswordAttemptCount = user.FailedPasswordAttemptCount;
+			FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart;
+			FailedPasswordAnswerAttemptCount = user.FailedPasswordAnswerAttemptCount;
+			FailedPasswordAnswerAttemptWindowStart = user.FailedPasswordAnswerAttemptWindowStart;
+			IsSubscriber = user.IsSubscriber;
+			PersonId = user.PersonId;
+			CreatedDateTime = user.CreatedDateTime;
+			ModifiedDateTime = user.ModifiedDateTime;
+			CreatedByPersonId = user.CreatedByPersonId;
+			ModifiedByPersonId = user.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// User Configuration class.

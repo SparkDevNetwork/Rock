@@ -28,17 +28,17 @@
  
 <#
 	// Uncomment this line to debug the template generation
-	//System.Diagnostics.Debugger.Launch();
+	// System.Diagnostics.Debugger.Launch();
 	
 	// Database properties
     string databaseName = "RockChMS";
 	
 	// Get Connection String from Web.Config
 	string path = Host.ResolvePath("");
-	path = path.Replace("Rock.Framework\\T4", "RockWeb") + "\\web.config";
+	path = path.Replace("Rock.Framework\\T4", "RockWeb") + "\\web.ConnectionStrings.config";
 	XmlDocument configDoc = new XmlDocument();
 	configDoc.Load(path);
-	XmlNode node = configDoc.SelectSingleNode("/configuration/connectionStrings/add[@name=\"RockContext\"]");
+	XmlNode node = configDoc.SelectSingleNode("/connectionStrings/add[@name=\"RockContext\"]");
 	string connString = node.Attributes.GetNamedItem("connectionString").Value;
 
 	// Connect to database and create the Server and Database objects
@@ -63,6 +63,7 @@
 	{
 		string Namespace = TemplateHelper.Namespace(oneTable.Name);
 		string Entity = TemplateHelper.Entity(oneTable.Name);
+		string EntityVar = Entity.Substring(0,1).ToLower() + Entity.Substring(1);
 		string QualifiedEntity = "Rock.Models." + Namespace + "." + Entity;
 
 		if (!oneTable.IsSystemObject && !TemplateHelper.Many2Many(oneTable))
@@ -154,6 +155,10 @@ namespace Rock.Models<#= projectNamespace #>
 			// Configuration class
 			List<string> specialReferences  = new List<string>();
 			
+			/// Keep track of columns for the dto object
+			List<string> DTOProperties = new List<string>();
+			List<string> DTOConstructs = new List<string>();
+
 			// Write the properties for each column in the table
 			foreach(Column column in oneTable.Columns)
 			{
@@ -164,13 +169,15 @@ namespace Rock.Models<#= projectNamespace #>
 					ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
 					if (descProperty != null)
 						colDesc = descProperty.Value.ToString();
+
+					string xmlComments = "/// <summary>\n" +
+									"\t\t/// Gets or sets the " + TemplateHelper.SplitCase(column.Name) +".\n" +
+									"\t\t/// </summary>\n" +
+									"\t\t/// <value>\n" +
+									"\t\t/// " + TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") + ".\n" +
+									"\t\t/// </value>";
 #>
-        /// <summary>
-        /// Gets or sets the <#= TemplateHelper.SplitCase(column.Name) #>.
-        /// </summary>
-        /// <value>
-        /// <#= TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") #>.
-        /// </value>
+		<#= xmlComments #>
 <#
 					// Add the [Key] attribute for all primary key columns
 					if (column.InPrimaryKey)
@@ -197,6 +204,8 @@ namespace Rock.Models<#= projectNamespace #>
 					string dataMember = "[DataMember]";
 					string property = "";
 					
+					bool isEnum = false;
+
 					if (column.DataType.ToString() == "int")
 					{
 						// Check for enumeration in the description property in the format enum[NameOfEnum]
@@ -215,18 +224,16 @@ namespace Rock.Models<#= projectNamespace #>
 									
 									property = 
 									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
-									"\t\t/// <summary>\n" +
-									"\t\t/// Gets or sets the " + TemplateHelper.SplitCase(column.Name) +".\n" +
-									"\t\t/// </summary>\n" +
-									"\t\t/// <value>\n" +
-									"\t\t/// " + TemplateHelper.ColumnDescription(column).Replace("\n","\n\t\t/// ") + ".\n" +
-									"\t\t/// </value>\n" +
-									"\t\t[NotMapped]\n" +
+									"\t\t" + xmlComments +
+									"\n\t\t[NotMapped]\n" +
 									"\t\tpublic " + enumName + " " + column.Name + "\n" +
 									"\t\t{\n" +
 									"\t\t\tget { return (" + enumName + ")this." + column.Name + "Internal; }\n" +
 									"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
 									"\t\t}";
+
+									isEnum = true;
+									DTOProperties.Add(xmlComments + "\n\t\tpublic " + enumName + " " + column.Name + " { get; set; }\n");
 
 									specialReferences.Add(string.Format(
 										"this.Property( p => p.{0}Internal ).HasColumnName( \"{0}\" );", column.Name));
@@ -245,6 +252,10 @@ namespace Rock.Models<#= projectNamespace #>
 		<#= attribute #>
 <#
 					}
+
+					if (!isEnum)
+						DTOProperties.Add(xmlComments + "\n\t\tpublic " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }\n");
+					DTOConstructs.Add(string.Format("{0} = {1}.{0};", column.Name, EntityVar));
 #>
 		<#= dataMember #>
 		<#= property #>
@@ -253,6 +264,17 @@ namespace Rock.Models<#= projectNamespace #>
 				}
 			}
 #>
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="<#= Entity #>DTO"/> object.
+        /// </value>
+		public virtual <#= Entity #>DTO DataTransferObject
+		{
+			get { return new <#= Entity #>DTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -405,6 +427,62 @@ namespace Rock.Models<#= projectNamespace #>
 #>
 
     }
+
+    /// <summary>
+    /// <#= TemplateHelper.SplitCase( Entity ) #> Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class <#= Entity #>DTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+<#
+			foreach(string DTOProperty in DTOProperties)
+			{
+#>
+		<#= DTOProperty #>
+<#
+			}
+#>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= Entity #>DTO"/> class.
+        /// </summary>
+		public <#= Entity #>DTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="<#= Entity #>DTO"/> class.
+        /// </summary>
+        /// <param name="<#= EntityVar #>">The <#= TemplateHelper.SplitCase( Entity ) #>.</param>
+		public <#= Entity #>DTO( <#= Entity #> <#= EntityVar #> )
+		{
+			Id = <#= EntityVar #>.Id;
+			Guid = <#= EntityVar #>.Guid;
+<#
+			foreach(string DTOConstruct in DTOConstructs)
+			{
+#>
+			<#= DTOConstruct #>
+<#
+			}
+#>
+		}
+	}
 
     /// <summary>
     /// <#= TemplateHelper.SplitCase( Entity ) #> Configuration class.
@@ -643,19 +721,19 @@ namespace Rock.Api<#= projectNamespace #>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[OperationContract]
-        <#= QualifiedEntity #> Get( string id );
+        <#= QualifiedEntity #>DTO Get( string id );
 
 		/// <summary>
 		/// Updates a <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> );
+        void Update<#= Entity #>( string id, <#= QualifiedEntity #>DTO <#= Entity #> );
 
 		/// <summary>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> );
+        void Create<#= Entity #>( <#= QualifiedEntity #>DTO <#= Entity #> );
 
 		/// <summary>
 		/// Deletes a <#= Entity #> object
@@ -706,7 +784,7 @@ namespace Rock.Api<#= projectNamespace #>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public <#= QualifiedEntity #> Get( string id )
+        public <#= QualifiedEntity #>DTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -718,7 +796,7 @@ namespace Rock.Api<#= projectNamespace #>
 				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
                 <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
                 if ( <#= Entity #>.Authorized( "View", currentUser ) )
-                    return <#= Entity #>;
+                    return <#= Entity #>.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -728,7 +806,7 @@ namespace Rock.Api<#= projectNamespace #>
 		/// Updates a <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void Update<#= Entity #>( string id, <#= QualifiedEntity #> <#= Entity #> )
+        public void Update<#= Entity #>( string id, <#= QualifiedEntity #>DTO <#= Entity #> )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -754,7 +832,7 @@ namespace Rock.Api<#= projectNamespace #>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void Create<#= Entity #>( <#= QualifiedEntity #> <#= Entity #> )
+        public void Create<#= Entity #>( <#= QualifiedEntity #>DTO <#= Entity #> )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -765,8 +843,10 @@ namespace Rock.Api<#= projectNamespace #>
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= Entity #>Service.Add( <#= Entity #>, currentUser.PersonId() );
-                <#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
+                <#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
+				<#= Entity #>Service.Add( existing<#= Entity #>, currentUser.PersonId() );
+                uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+                <#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
             }
         }
 
@@ -937,7 +1017,6 @@ public class TemplateHelper
 	// Get the column description
 	public static string ColumnDescription(Column column)
 	{
-		string colDesc = "";
 		ExtendedProperty descProperty = column.ExtendedProperties["MS_Description"];
 		if (descProperty != null)
 			return descProperty.Value.ToString();

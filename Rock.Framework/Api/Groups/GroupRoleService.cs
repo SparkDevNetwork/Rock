@@ -31,7 +31,7 @@ namespace Rock.Api.Groups
 		/// Gets a GroupRole object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.GroupRole Get( string id )
+        public Rock.Models.Groups.GroupRoleDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Groups
 				Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
                 Rock.Models.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
                 if ( GroupRole.Authorized( "View", currentUser ) )
-                    return GroupRole;
+                    return GroupRole.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Groups
 		/// Updates a GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroupRole( string id, Rock.Models.Groups.GroupRole GroupRole )
+        public void UpdateGroupRole( string id, Rock.Models.Groups.GroupRoleDTO GroupRole )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Groups
 		/// Creates a new GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroupRole( Rock.Models.Groups.GroupRole GroupRole )
+        public void CreateGroupRole( Rock.Models.Groups.GroupRoleDTO GroupRole )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupRoleService GroupRoleService = new Rock.Services.Groups.GroupRoleService();
-                GroupRoleService.Add( GroupRole, currentUser.PersonId() );
-                GroupRoleService.Save( GroupRole, currentUser.PersonId() );
+                Rock.Models.Groups.GroupRole existingGroupRole = new Rock.Models.Groups.GroupRole();
+				GroupRoleService.Add( existingGroupRole, currentUser.PersonId() );
+                uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
+                GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
             }
         }
 

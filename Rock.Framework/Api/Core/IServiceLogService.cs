@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a ServiceLog object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.ServiceLog Get( string id );
+        Rock.Models.Core.ServiceLogDTO Get( string id );
 
 		/// <summary>
 		/// Updates a ServiceLog object
 		/// </summary>
         [OperationContract]
-        void UpdateServiceLog( string id, Rock.Models.Core.ServiceLog ServiceLog );
+        void UpdateServiceLog( string id, Rock.Models.Core.ServiceLogDTO ServiceLog );
 
 		/// <summary>
 		/// Creates a new ServiceLog object
 		/// </summary>
         [OperationContract]
-        void CreateServiceLog( Rock.Models.Core.ServiceLog ServiceLog );
+        void CreateServiceLog( Rock.Models.Core.ServiceLogDTO ServiceLog );
 
 		/// <summary>
 		/// Deletes a ServiceLog object

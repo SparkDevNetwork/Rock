@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.DefinedValue Get( string id );
+        Rock.Models.Core.DefinedValueDTO Get( string id );
 
 		/// <summary>
 		/// Updates a DefinedValue object
 		/// </summary>
         [OperationContract]
-        void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValue DefinedValue );
+        void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValueDTO DefinedValue );
 
 		/// <summary>
 		/// Creates a new DefinedValue object
 		/// </summary>
         [OperationContract]
-        void CreateDefinedValue( Rock.Models.Core.DefinedValue DefinedValue );
+        void CreateDefinedValue( Rock.Models.Core.DefinedValueDTO DefinedValue );
 
 		/// <summary>
 		/// Deletes a DefinedValue object

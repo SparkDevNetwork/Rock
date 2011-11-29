@@ -17,14 +17,14 @@ namespace Rock.Services.Crm
 	public partial class AddressService
 	{
         /// <summary>
-        /// Standardizes the specified <see cref="Rock.Address.AddressStub"/>
+        /// Standardizes the specified <see cref="AddressDTO"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.Models.Crm.Address Standardize( Rock.Address.AddressStub address, int? personId )
+        public Rock.Models.Crm.Address Standardize( AddressDTO address, int? personId )
         {
-            Rock.Models.Crm.Address addressModel = GetByAddressStub( address, personId );
+            Rock.Models.Crm.Address addressModel = GetByAddressDTO( address, personId );
 
             Standardize( addressModel, personId );
 
@@ -72,14 +72,14 @@ namespace Rock.Services.Crm
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="Rock.Address.AddressStub"/>
+        /// Geocodes the specified <see cref="AddressDTO"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.Models.Crm.Address Geocode( Rock.Address.AddressStub address, int? personId )
+        public Rock.Models.Crm.Address Geocode( AddressDTO address, int? personId )
         {
-            Rock.Models.Crm.Address addressModel = GetByAddressStub( address, personId );
+            Rock.Models.Crm.Address addressModel = GetByAddressDTO( address, personId );
 
             Geocode( addressModel, personId );
 
@@ -134,7 +134,7 @@ namespace Rock.Services.Crm
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Rock.Models.Crm.Address GetByAddressStub( Rock.Address.AddressStub address, int? personId )
+        private Rock.Models.Crm.Address GetByAddressDTO( AddressDTO address, int? personId )
         {
             string raw = address.Raw;
 

@@ -85,7 +85,7 @@ namespace Rock.Jobs
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
 
             // if noticiation staus is all set flag to send message
-            if ( job.NotificationStatus == Job.JobNotificationStatus.All )
+            if ( job.NotificationStatus == JobNotificationStatus.All )
                 sendMessage = true;
 
             // set last run date
@@ -104,7 +104,7 @@ namespace Rock.Jobs
                 message.Append( "Result: Success" );
 
                 // determine if message should be sent
-                if ( job.NotificationStatus == Job.JobNotificationStatus.Success )
+                if ( job.NotificationStatus == JobNotificationStatus.Success )
                     sendMessage = true;
             }
             else
@@ -120,7 +120,7 @@ namespace Rock.Jobs
                     message.Append( "<p>Inner Exception:<br>" + jobException.InnerException.Message );
                 }
 
-                if ( job.NotificationStatus == Job.JobNotificationStatus.Error )
+                if ( job.NotificationStatus == JobNotificationStatus.Error )
                     sendMessage = true;
             }
 

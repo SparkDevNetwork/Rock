@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogCategory object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogCategory Get( string id )
+        public Rock.Models.Cms.BlogCategoryDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
                 Rock.Models.Cms.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
                 if ( BlogCategory.Authorized( "View", currentUser ) )
-                    return BlogCategory;
+                    return BlogCategory.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategory BlogCategory )
+        public void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategoryDTO BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory )
+        public void CreateBlogCategory( Rock.Models.Cms.BlogCategoryDTO BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogCategoryService BlogCategoryService = new Rock.Services.Cms.BlogCategoryService();
-                BlogCategoryService.Add( BlogCategory, currentUser.PersonId() );
-                BlogCategoryService.Save( BlogCategory, currentUser.PersonId() );
+                Rock.Models.Cms.BlogCategory existingBlogCategory = new Rock.Models.Cms.BlogCategory();
+				BlogCategoryService.Add( existingBlogCategory, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
+                BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
             }
         }
 

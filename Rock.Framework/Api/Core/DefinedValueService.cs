@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedValue Get( string id )
+        public Rock.Models.Core.DefinedValueDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
                 Rock.Models.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
                 if ( DefinedValue.Authorized( "View", currentUser ) )
-                    return DefinedValue;
+                    return DefinedValue.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValue DefinedValue )
+        public void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValueDTO DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateDefinedValue( Rock.Models.Core.DefinedValue DefinedValue )
+        public void CreateDefinedValue( Rock.Models.Core.DefinedValueDTO DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedValueService DefinedValueService = new Rock.Services.Core.DefinedValueService();
-                DefinedValueService.Add( DefinedValue, currentUser.PersonId() );
-                DefinedValueService.Save( DefinedValue, currentUser.PersonId() );
+                Rock.Models.Core.DefinedValue existingDefinedValue = new Rock.Models.Core.DefinedValue();
+				DefinedValueService.Add( existingDefinedValue, currentUser.PersonId() );
+                uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
+                DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
             }
         }
 

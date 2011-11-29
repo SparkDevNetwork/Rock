@@ -28,97 +28,108 @@ namespace Rock.Models.Cms
     [Table( "cmsBlogPost" )]
     public partial class BlogPost : ModelWithAttributes<BlogPost>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the Blog Id.
-        /// </summary>
-        /// <value>
-        /// Blog Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Blog Id.
+		/// </summary>
+		/// <value>
+		/// Blog Id.
+		/// </value>
 		[DataMember]
 		public int BlogId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Title.
-        /// </summary>
-        /// <value>
-        /// Title.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Title.
+		/// </summary>
+		/// <value>
+		/// Title.
+		/// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string Title { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Content.
-        /// </summary>
-        /// <value>
-        /// Content.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Content.
+		/// </summary>
+		/// <value>
+		/// Content.
+		/// </value>
 		[DataMember]
 		public string Content { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Author Id.
-        /// </summary>
-        /// <value>
-        /// Author Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Author Id.
+		/// </summary>
+		/// <value>
+		/// Author Id.
+		/// </value>
 		[DataMember]
 		public int? AuthorId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the State.
-        /// </summary>
-        /// <value>
-        /// State.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the State.
+		/// </summary>
+		/// <value>
+		/// State.
+		/// </value>
 		[DataMember]
 		public int State { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Publish Date.
-        /// </summary>
-        /// <value>
-        /// Publish Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Publish Date.
+		/// </summary>
+		/// <value>
+		/// Publish Date.
+		/// </value>
 		[DataMember]
 		public DateTime? PublishDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="BlogPostDTO"/> object.
+        /// </value>
+		public virtual BlogPostDTO DataTransferObject
+		{
+			get { return new BlogPostDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -182,6 +193,136 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Blog Post Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class BlogPostDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Blog Id.
+		/// </summary>
+		/// <value>
+		/// Blog Id.
+		/// </value>
+		public int BlogId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Title.
+		/// </summary>
+		/// <value>
+		/// Title.
+		/// </value>
+		public string Title { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Content.
+		/// </summary>
+		/// <value>
+		/// Content.
+		/// </value>
+		public string Content { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Author Id.
+		/// </summary>
+		/// <value>
+		/// Author Id.
+		/// </value>
+		public int? AuthorId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the State.
+		/// </summary>
+		/// <value>
+		/// State.
+		/// </value>
+		public int State { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Publish Date.
+		/// </summary>
+		/// <value>
+		/// Publish Date.
+		/// </value>
+		public DateTime? PublishDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogPostDTO"/> class.
+        /// </summary>
+		public BlogPostDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogPostDTO"/> class.
+        /// </summary>
+        /// <param name="blogPost">The Blog Post.</param>
+		public BlogPostDTO( BlogPost blogPost )
+		{
+			Id = blogPost.Id;
+			Guid = blogPost.Guid;
+			BlogId = blogPost.BlogId;
+			Title = blogPost.Title;
+			Content = blogPost.Content;
+			AuthorId = blogPost.AuthorId;
+			State = blogPost.State;
+			PublishDate = blogPost.PublishDate;
+			CreatedDateTime = blogPost.CreatedDateTime;
+			ModifiedDateTime = blogPost.ModifiedDateTime;
+			CreatedByPersonId = blogPost.CreatedByPersonId;
+			ModifiedByPersonId = blogPost.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Blog Post Configuration class.

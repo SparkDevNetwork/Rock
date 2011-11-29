@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a SiteDomain object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.SiteDomain Get( string id )
+        public Rock.Models.Cms.SiteDomainDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
                 Rock.Models.Cms.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
                 if ( SiteDomain.Authorized( "View", currentUser ) )
-                    return SiteDomain;
+                    return SiteDomain.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomain SiteDomain )
+        public void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomainDTO SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateSiteDomain( Rock.Models.Cms.SiteDomain SiteDomain )
+        public void CreateSiteDomain( Rock.Models.Cms.SiteDomainDTO SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.SiteDomainService SiteDomainService = new Rock.Services.Cms.SiteDomainService();
-                SiteDomainService.Add( SiteDomain, currentUser.PersonId() );
-                SiteDomainService.Save( SiteDomain, currentUser.PersonId() );
+                Rock.Models.Cms.SiteDomain existingSiteDomain = new Rock.Models.Cms.SiteDomain();
+				SiteDomainService.Add( existingSiteDomain, currentUser.PersonId() );
+                uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
+                SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
             }
         }
 

@@ -28,72 +28,83 @@ namespace Rock.Models.Core
     [Table( "coreEntityChange" )]
     public partial class EntityChange : ModelWithAttributes<EntityChange>
     {
-        /// <summary>
-        /// Gets or sets the Change Set.
-        /// </summary>
-        /// <value>
-        /// Change Set.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Change Set.
+		/// </summary>
+		/// <value>
+		/// Change Set.
+		/// </value>
 		[DataMember]
 		public Guid ChangeSet { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Change Type.
-        /// </summary>
-        /// <value>
-        /// Change Type.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Change Type.
+		/// </summary>
+		/// <value>
+		/// Change Type.
+		/// </value>
 		[MaxLength( 10 )]
 		[DataMember]
 		public string ChangeType { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Type.
-        /// </summary>
-        /// <value>
-        /// Entity Type.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Type.
+		/// </summary>
+		/// <value>
+		/// Entity Type.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string EntityType { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Id.
-        /// </summary>
-        /// <value>
-        /// Entity Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Id.
+		/// </summary>
+		/// <value>
+		/// Entity Id.
+		/// </value>
 		[DataMember]
 		public int EntityId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Property.
-        /// </summary>
-        /// <value>
-        /// Property.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Property.
+		/// </summary>
+		/// <value>
+		/// Property.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Property { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Original Value.
-        /// </summary>
-        /// <value>
-        /// Original Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Original Value.
+		/// </summary>
+		/// <value>
+		/// Original Value.
+		/// </value>
 		[DataMember]
 		public string OriginalValue { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Current Value.
-        /// </summary>
-        /// <value>
-        /// Current Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Current Value.
+		/// </summary>
+		/// <value>
+		/// Current Value.
+		/// </value>
 		[DataMember]
 		public string CurrentValue { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="EntityChangeDTO"/> object.
+        /// </value>
+		public virtual EntityChangeDTO DataTransferObject
+		{
+			get { return new EntityChangeDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -101,6 +112,109 @@ namespace Rock.Models.Core
 		public override string AuthEntity { get { return "Core.EntityChange"; } }
 
     }
+
+    /// <summary>
+    /// Entity Change Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class EntityChangeDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Change Set.
+		/// </summary>
+		/// <value>
+		/// Change Set.
+		/// </value>
+		public Guid ChangeSet { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Change Type.
+		/// </summary>
+		/// <value>
+		/// Change Type.
+		/// </value>
+		public string ChangeType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Type.
+		/// </summary>
+		/// <value>
+		/// Entity Type.
+		/// </value>
+		public string EntityType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Id.
+		/// </summary>
+		/// <value>
+		/// Entity Id.
+		/// </value>
+		public int EntityId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Property.
+		/// </summary>
+		/// <value>
+		/// Property.
+		/// </value>
+		public string Property { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Original Value.
+		/// </summary>
+		/// <value>
+		/// Original Value.
+		/// </value>
+		public string OriginalValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Current Value.
+		/// </summary>
+		/// <value>
+		/// Current Value.
+		/// </value>
+		public string CurrentValue { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityChangeDTO"/> class.
+        /// </summary>
+		public EntityChangeDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityChangeDTO"/> class.
+        /// </summary>
+        /// <param name="entityChange">The Entity Change.</param>
+		public EntityChangeDTO( EntityChange entityChange )
+		{
+			Id = entityChange.Id;
+			Guid = entityChange.Guid;
+			ChangeSet = entityChange.ChangeSet;
+			ChangeType = entityChange.ChangeType;
+			EntityType = entityChange.EntityType;
+			EntityId = entityChange.EntityId;
+			Property = entityChange.Property;
+			OriginalValue = entityChange.OriginalValue;
+			CurrentValue = entityChange.CurrentValue;
+		}
+	}
 
     /// <summary>
     /// Entity Change Configuration class.

@@ -28,63 +28,74 @@ namespace Rock.Models.Core
     [Table( "coreServiceLog" )]
     public partial class ServiceLog : ModelWithAttributes<ServiceLog>
     {
-        /// <summary>
-        /// Gets or sets the Time.
-        /// </summary>
-        /// <value>
-        /// Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Time.
+		/// </summary>
+		/// <value>
+		/// Time.
+		/// </value>
 		[DataMember]
 		public DateTime? Time { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Input.
-        /// </summary>
-        /// <value>
-        /// Input.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Input.
+		/// </summary>
+		/// <value>
+		/// Input.
+		/// </value>
 		[DataMember]
 		public string Input { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Type.
-        /// </summary>
-        /// <value>
-        /// Type.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Type.
+		/// </summary>
+		/// <value>
+		/// Type.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Type { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
-        /// <value>
-        /// Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Name { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Result.
-        /// </summary>
-        /// <value>
-        /// Result.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Result.
+		/// </summary>
+		/// <value>
+		/// Result.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Result { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Success.
-        /// </summary>
-        /// <value>
-        /// Success.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Success.
+		/// </summary>
+		/// <value>
+		/// Success.
+		/// </value>
 		[DataMember]
 		public bool Success { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="ServiceLogDTO"/> object.
+        /// </value>
+		public virtual ServiceLogDTO DataTransferObject
+		{
+			get { return new ServiceLogDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -92,6 +103,100 @@ namespace Rock.Models.Core
 		public override string AuthEntity { get { return "Core.ServiceLog"; } }
 
     }
+
+    /// <summary>
+    /// Service Log Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class ServiceLogDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Time.
+		/// </summary>
+		/// <value>
+		/// Time.
+		/// </value>
+		public DateTime? Time { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Input.
+		/// </summary>
+		/// <value>
+		/// Input.
+		/// </value>
+		public string Input { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Type.
+		/// </summary>
+		/// <value>
+		/// Type.
+		/// </value>
+		public string Type { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Result.
+		/// </summary>
+		/// <value>
+		/// Result.
+		/// </value>
+		public string Result { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Success.
+		/// </summary>
+		/// <value>
+		/// Success.
+		/// </value>
+		public bool Success { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceLogDTO"/> class.
+        /// </summary>
+		public ServiceLogDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceLogDTO"/> class.
+        /// </summary>
+        /// <param name="serviceLog">The Service Log.</param>
+		public ServiceLogDTO( ServiceLog serviceLog )
+		{
+			Id = serviceLog.Id;
+			Guid = serviceLog.Guid;
+			Time = serviceLog.Time;
+			Input = serviceLog.Input;
+			Type = serviceLog.Type;
+			Name = serviceLog.Name;
+			Result = serviceLog.Result;
+			Success = serviceLog.Success;
+		}
+	}
 
     /// <summary>
     /// Service Log Configuration class.

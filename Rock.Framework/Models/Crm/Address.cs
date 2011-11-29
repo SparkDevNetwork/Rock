@@ -28,206 +28,217 @@ namespace Rock.Models.Crm
     [Table( "crmAddress" )]
     public partial class Address : ModelWithAttributes<Address>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the Raw.
-        /// </summary>
-        /// <value>
-        /// Raw.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Raw.
+		/// </summary>
+		/// <value>
+		/// Raw.
+		/// </value>
 		[MaxLength( 400 )]
 		[DataMember]
 		public string Raw { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Street 1.
-        /// </summary>
-        /// <value>
-        /// Street 1.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Street 1.
+		/// </summary>
+		/// <value>
+		/// Street 1.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Street1 { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Street 2.
-        /// </summary>
-        /// <value>
-        /// Street 2.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Street 2.
+		/// </summary>
+		/// <value>
+		/// Street 2.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Street2 { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the City.
-        /// </summary>
-        /// <value>
-        /// City.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the City.
+		/// </summary>
+		/// <value>
+		/// City.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string City { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the State.
-        /// </summary>
-        /// <value>
-        /// State.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the State.
+		/// </summary>
+		/// <value>
+		/// State.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string State { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Country.
-        /// </summary>
-        /// <value>
-        /// Country.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Country.
+		/// </summary>
+		/// <value>
+		/// Country.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Country { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Zip.
-        /// </summary>
-        /// <value>
-        /// Zip.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Zip.
+		/// </summary>
+		/// <value>
+		/// Zip.
+		/// </value>
 		[MaxLength( 10 )]
 		[DataMember]
 		public string Zip { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Latitude.
-        /// </summary>
-        /// <value>
-        /// Latitude.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Latitude.
+		/// </summary>
+		/// <value>
+		/// Latitude.
+		/// </value>
 		[DataMember]
 		public double Latitude { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Longitude.
-        /// </summary>
-        /// <value>
-        /// Longitude.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Longitude.
+		/// </summary>
+		/// <value>
+		/// Longitude.
+		/// </value>
 		[DataMember]
 		public double Longitude { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Standardize Attempt.
-        /// </summary>
-        /// <value>
-        /// Standardize Attempt.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Standardize Attempt.
+		/// </summary>
+		/// <value>
+		/// Standardize Attempt.
+		/// </value>
 		[DataMember]
 		public DateTime? StandardizeAttempt { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Standardize Service.
-        /// </summary>
-        /// <value>
-        /// Standardize Service.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Standardize Service.
+		/// </summary>
+		/// <value>
+		/// Standardize Service.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string StandardizeService { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Standardize Result.
-        /// </summary>
-        /// <value>
-        /// .
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Standardize Result.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string StandardizeResult { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Standardize Date.
-        /// </summary>
-        /// <value>
-        /// Standardize Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Standardize Date.
+		/// </summary>
+		/// <value>
+		/// Standardize Date.
+		/// </value>
 		[DataMember]
 		public DateTime? StandardizeDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Geocode Attempt.
-        /// </summary>
-        /// <value>
-        /// Geocode Attempt.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Geocode Attempt.
+		/// </summary>
+		/// <value>
+		/// Geocode Attempt.
+		/// </value>
 		[DataMember]
 		public DateTime? GeocodeAttempt { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Geocode Service.
-        /// </summary>
-        /// <value>
-        /// Geocode Service.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Geocode Service.
+		/// </summary>
+		/// <value>
+		/// Geocode Service.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string GeocodeService { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Geocode Result.
-        /// </summary>
-        /// <value>
-        /// .
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Geocode Result.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string GeocodeResult { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Geocode Date.
-        /// </summary>
-        /// <value>
-        /// Geocode Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Geocode Date.
+		/// </summary>
+		/// <value>
+		/// Geocode Date.
+		/// </value>
 		[DataMember]
 		public DateTime? GeocodeDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="AddressDTO"/> object.
+        /// </value>
+		public virtual AddressDTO DataTransferObject
+		{
+			get { return new AddressDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -251,6 +262,235 @@ namespace Rock.Models.Crm
 		public virtual Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Address Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class AddressDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Raw.
+		/// </summary>
+		/// <value>
+		/// Raw.
+		/// </value>
+		public string Raw { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Street 1.
+		/// </summary>
+		/// <value>
+		/// Street 1.
+		/// </value>
+		public string Street1 { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Street 2.
+		/// </summary>
+		/// <value>
+		/// Street 2.
+		/// </value>
+		public string Street2 { get; set; }
+
+		/// <summary>
+		/// Gets or sets the City.
+		/// </summary>
+		/// <value>
+		/// City.
+		/// </value>
+		public string City { get; set; }
+
+		/// <summary>
+		/// Gets or sets the State.
+		/// </summary>
+		/// <value>
+		/// State.
+		/// </value>
+		public string State { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Country.
+		/// </summary>
+		/// <value>
+		/// Country.
+		/// </value>
+		public string Country { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Zip.
+		/// </summary>
+		/// <value>
+		/// Zip.
+		/// </value>
+		public string Zip { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Latitude.
+		/// </summary>
+		/// <value>
+		/// Latitude.
+		/// </value>
+		public double Latitude { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Longitude.
+		/// </summary>
+		/// <value>
+		/// Longitude.
+		/// </value>
+		public double Longitude { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Standardize Attempt.
+		/// </summary>
+		/// <value>
+		/// Standardize Attempt.
+		/// </value>
+		public DateTime? StandardizeAttempt { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Standardize Service.
+		/// </summary>
+		/// <value>
+		/// Standardize Service.
+		/// </value>
+		public string StandardizeService { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Standardize Result.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public string StandardizeResult { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Standardize Date.
+		/// </summary>
+		/// <value>
+		/// Standardize Date.
+		/// </value>
+		public DateTime? StandardizeDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Geocode Attempt.
+		/// </summary>
+		/// <value>
+		/// Geocode Attempt.
+		/// </value>
+		public DateTime? GeocodeAttempt { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Geocode Service.
+		/// </summary>
+		/// <value>
+		/// Geocode Service.
+		/// </value>
+		public string GeocodeService { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Geocode Result.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public string GeocodeResult { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Geocode Date.
+		/// </summary>
+		/// <value>
+		/// Geocode Date.
+		/// </value>
+		public DateTime? GeocodeDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AddressDTO"/> class.
+        /// </summary>
+		public AddressDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AddressDTO"/> class.
+        /// </summary>
+        /// <param name="address">The Address.</param>
+		public AddressDTO( Address address )
+		{
+			Id = address.Id;
+			Guid = address.Guid;
+			Raw = address.Raw;
+			Street1 = address.Street1;
+			Street2 = address.Street2;
+			City = address.City;
+			State = address.State;
+			Country = address.Country;
+			Zip = address.Zip;
+			Latitude = address.Latitude;
+			Longitude = address.Longitude;
+			StandardizeAttempt = address.StandardizeAttempt;
+			StandardizeService = address.StandardizeService;
+			StandardizeResult = address.StandardizeResult;
+			StandardizeDate = address.StandardizeDate;
+			GeocodeAttempt = address.GeocodeAttempt;
+			GeocodeService = address.GeocodeService;
+			GeocodeResult = address.GeocodeResult;
+			GeocodeDate = address.GeocodeDate;
+			CreatedDateTime = address.CreatedDateTime;
+			ModifiedDateTime = address.ModifiedDateTime;
+			CreatedByPersonId = address.CreatedByPersonId;
+			ModifiedByPersonId = address.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Address Configuration class.

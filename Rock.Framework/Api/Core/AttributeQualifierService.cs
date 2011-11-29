@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeQualifier Get( string id )
+        public Rock.Models.Core.AttributeQualifierDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
                 Rock.Models.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
                 if ( AttributeQualifier.Authorized( "View", currentUser ) )
-                    return AttributeQualifier;
+                    return AttributeQualifier.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifier AttributeQualifier )
+        public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifierDTO AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifier AttributeQualifier )
+        public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifierDTO AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeQualifierService AttributeQualifierService = new Rock.Services.Core.AttributeQualifierService();
-                AttributeQualifierService.Add( AttributeQualifier, currentUser.PersonId() );
-                AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId() );
+                Rock.Models.Core.AttributeQualifier existingAttributeQualifier = new Rock.Models.Core.AttributeQualifier();
+				AttributeQualifierService.Add( existingAttributeQualifier, currentUser.PersonId() );
+                uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
+                AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
             }
         }
 

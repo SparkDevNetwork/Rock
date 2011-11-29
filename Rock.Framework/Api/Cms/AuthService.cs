@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Auth object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Auth Get( string id )
+        public Rock.Models.Cms.AuthDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
                 Rock.Models.Cms.Auth Auth = AuthService.Get( int.Parse( id ) );
                 if ( Auth.Authorized( "View", currentUser ) )
-                    return Auth;
+                    return Auth.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Auth object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAuth( string id, Rock.Models.Cms.Auth Auth )
+        public void UpdateAuth( string id, Rock.Models.Cms.AuthDTO Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Auth object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAuth( Rock.Models.Cms.Auth Auth )
+        public void CreateAuth( Rock.Models.Cms.AuthDTO Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.AuthService AuthService = new Rock.Services.Cms.AuthService();
-                AuthService.Add( Auth, currentUser.PersonId() );
-                AuthService.Save( Auth, currentUser.PersonId() );
+                Rock.Models.Cms.Auth existingAuth = new Rock.Models.Cms.Auth();
+				AuthService.Add( existingAuth, currentUser.PersonId() );
+                uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
+                AuthService.Save( existingAuth, currentUser.PersonId() );
             }
         }
 

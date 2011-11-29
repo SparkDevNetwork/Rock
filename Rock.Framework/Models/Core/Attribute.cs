@@ -28,145 +28,156 @@ namespace Rock.Models.Core
     [Table( "coreAttribute" )]
     public partial class Attribute : Model<Attribute>, IAuditable, IOrdered
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Field Type Id.
-        /// </summary>
-        /// <value>
-        /// Field Type Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Field Type Id.
+		/// </summary>
+		/// <value>
+		/// Field Type Id.
+		/// </value>
 		[DataMember]
 		public int FieldTypeId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity.
-        /// </summary>
-        /// <value>
-        /// Entity.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity.
+		/// </summary>
+		/// <value>
+		/// Entity.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Entity { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Qualifier Column.
-        /// </summary>
-        /// <value>
-        /// Entity Qualifier Column.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string EntityQualifierColumn { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Qualifier Value.
-        /// </summary>
-        /// <value>
-        /// Entity Qualifier Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
 		[DataMember]
 		public string EntityQualifierValue { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Key.
-        /// </summary>
-        /// <value>
-        /// Key.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Key.
+		/// </summary>
+		/// <value>
+		/// Key.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Key { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
-        /// <value>
-        /// Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Description.
-        /// </summary>
-        /// <value>
-        /// Description.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// Order.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
 		[DataMember]
 		public int Order { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Grid Column.
-        /// </summary>
-        /// <value>
-        /// Grid Column.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Grid Column.
+		/// </summary>
+		/// <value>
+		/// Grid Column.
+		/// </value>
 		[DataMember]
 		public bool GridColumn { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Default Value.
-        /// </summary>
-        /// <value>
-        /// Default Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Default Value.
+		/// </summary>
+		/// <value>
+		/// Default Value.
+		/// </value>
 		[DataMember]
 		public string DefaultValue { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="AttributeDTO"/> object.
+        /// </value>
+		public virtual AttributeDTO DataTransferObject
+		{
+			get { return new AttributeDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -214,6 +225,181 @@ namespace Rock.Models.Core
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Attribute Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class AttributeDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Field Type Id.
+		/// </summary>
+		/// <value>
+		/// Field Type Id.
+		/// </value>
+		public int FieldTypeId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity.
+		/// </summary>
+		/// <value>
+		/// Entity.
+		/// </value>
+		public string Entity { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
+		public string EntityQualifierColumn { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
+		public string EntityQualifierValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Key.
+		/// </summary>
+		/// <value>
+		/// Key.
+		/// </value>
+		public string Key { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
+		public string Description { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		public int Order { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Grid Column.
+		/// </summary>
+		/// <value>
+		/// Grid Column.
+		/// </value>
+		public bool GridColumn { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Default Value.
+		/// </summary>
+		/// <value>
+		/// Default Value.
+		/// </value>
+		public string DefaultValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeDTO"/> class.
+        /// </summary>
+		public AttributeDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeDTO"/> class.
+        /// </summary>
+        /// <param name="attribute">The Attribute.</param>
+		public AttributeDTO( Attribute attribute )
+		{
+			Id = attribute.Id;
+			Guid = attribute.Guid;
+			System = attribute.System;
+			FieldTypeId = attribute.FieldTypeId;
+			Entity = attribute.Entity;
+			EntityQualifierColumn = attribute.EntityQualifierColumn;
+			EntityQualifierValue = attribute.EntityQualifierValue;
+			Key = attribute.Key;
+			Name = attribute.Name;
+			Description = attribute.Description;
+			Order = attribute.Order;
+			GridColumn = attribute.GridColumn;
+			DefaultValue = attribute.DefaultValue;
+			CreatedDateTime = attribute.CreatedDateTime;
+			ModifiedDateTime = attribute.ModifiedDateTime;
+			CreatedByPersonId = attribute.CreatedByPersonId;
+			ModifiedByPersonId = attribute.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Attribute Configuration class.

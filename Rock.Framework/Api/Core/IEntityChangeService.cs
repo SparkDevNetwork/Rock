@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.EntityChange Get( string id );
+        Rock.Models.Core.EntityChangeDTO Get( string id );
 
 		/// <summary>
 		/// Updates a EntityChange object
 		/// </summary>
         [OperationContract]
-        void UpdateEntityChange( string id, Rock.Models.Core.EntityChange EntityChange );
+        void UpdateEntityChange( string id, Rock.Models.Core.EntityChangeDTO EntityChange );
 
 		/// <summary>
 		/// Creates a new EntityChange object
 		/// </summary>
         [OperationContract]
-        void CreateEntityChange( Rock.Models.Core.EntityChange EntityChange );
+        void CreateEntityChange( Rock.Models.Core.EntityChangeDTO EntityChange );
 
 		/// <summary>
 		/// Deletes a EntityChange object

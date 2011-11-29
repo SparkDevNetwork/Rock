@@ -24,19 +24,19 @@ namespace Rock.Api.Crm
 		/// Gets a Address object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Crm.Address Get( string id );
+        Rock.Models.Crm.AddressDTO Get( string id );
 
 		/// <summary>
 		/// Updates a Address object
 		/// </summary>
         [OperationContract]
-        void UpdateAddress( string id, Rock.Models.Crm.Address Address );
+        void UpdateAddress( string id, Rock.Models.Crm.AddressDTO Address );
 
 		/// <summary>
 		/// Creates a new Address object
 		/// </summary>
         [OperationContract]
-        void CreateAddress( Rock.Models.Crm.Address Address );
+        void CreateAddress( Rock.Models.Crm.AddressDTO Address );
 
 		/// <summary>
 		/// Deletes a Address object

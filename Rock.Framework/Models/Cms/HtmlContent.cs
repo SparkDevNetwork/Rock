@@ -28,124 +28,135 @@ namespace Rock.Models.Cms
     [Table( "cmsHtmlContent" )]
     public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the Block Id.
-        /// </summary>
-        /// <value>
-        /// Block Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Block Id.
+		/// </summary>
+		/// <value>
+		/// Block Id.
+		/// </value>
 		[DataMember]
 		public int BlockId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Content.
-        /// </summary>
-        /// <value>
-        /// Content.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Content.
+		/// </summary>
+		/// <value>
+		/// Content.
+		/// </value>
 		[DataMember]
 		public string Content { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Value.
-        /// </summary>
-        /// <value>
-        /// Entity Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Value.
+		/// </summary>
+		/// <value>
+		/// Entity Value.
+		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
 		public string EntityValue { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Version Label.
-        /// </summary>
-        /// <value>
-        /// Version Label.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Version Label.
+		/// </summary>
+		/// <value>
+		/// Version Label.
+		/// </value>
 		[DataMember]
 		public int VersionLabel { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Approved.
-        /// </summary>
-        /// <value>
-        /// Approved.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Approved.
+		/// </summary>
+		/// <value>
+		/// Approved.
+		/// </value>
 		[DataMember]
 		public bool Approved { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Approved By Person Id.
-        /// </summary>
-        /// <value>
-        /// Approved By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Approved By Person Id.
+		/// </summary>
+		/// <value>
+		/// Approved By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ApprovedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Approved Date Time.
-        /// </summary>
-        /// <value>
-        /// Approved Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Approved Date Time.
+		/// </summary>
+		/// <value>
+		/// Approved Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ApprovedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Start Date Time.
-        /// </summary>
-        /// <value>
-        /// Start Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Start Date Time.
+		/// </summary>
+		/// <value>
+		/// Start Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? StartDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Expire Date Time.
-        /// </summary>
-        /// <value>
-        /// Expire Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Expire Date Time.
+		/// </summary>
+		/// <value>
+		/// Expire Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ExpireDateTime { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="HtmlContentDTO"/> object.
+        /// </value>
+		public virtual HtmlContentDTO DataTransferObject
+		{
+			get { return new HtmlContentDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -185,6 +196,163 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Html Content Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class HtmlContentDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Block Id.
+		/// </summary>
+		/// <value>
+		/// Block Id.
+		/// </value>
+		public int BlockId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Content.
+		/// </summary>
+		/// <value>
+		/// Content.
+		/// </value>
+		public string Content { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Value.
+		/// </summary>
+		/// <value>
+		/// Entity Value.
+		/// </value>
+		public string EntityValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Version Label.
+		/// </summary>
+		/// <value>
+		/// Version Label.
+		/// </value>
+		public int VersionLabel { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Approved.
+		/// </summary>
+		/// <value>
+		/// Approved.
+		/// </value>
+		public bool Approved { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Approved By Person Id.
+		/// </summary>
+		/// <value>
+		/// Approved By Person Id.
+		/// </value>
+		public int? ApprovedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Approved Date Time.
+		/// </summary>
+		/// <value>
+		/// Approved Date Time.
+		/// </value>
+		public DateTime? ApprovedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Start Date Time.
+		/// </summary>
+		/// <value>
+		/// Start Date Time.
+		/// </value>
+		public DateTime? StartDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Expire Date Time.
+		/// </summary>
+		/// <value>
+		/// Expire Date Time.
+		/// </value>
+		public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlContentDTO"/> class.
+        /// </summary>
+		public HtmlContentDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlContentDTO"/> class.
+        /// </summary>
+        /// <param name="htmlContent">The Html Content.</param>
+		public HtmlContentDTO( HtmlContent htmlContent )
+		{
+			Id = htmlContent.Id;
+			Guid = htmlContent.Guid;
+			BlockId = htmlContent.BlockId;
+			Content = htmlContent.Content;
+			EntityValue = htmlContent.EntityValue;
+			VersionLabel = htmlContent.VersionLabel;
+			Approved = htmlContent.Approved;
+			ApprovedByPersonId = htmlContent.ApprovedByPersonId;
+			ApprovedDateTime = htmlContent.ApprovedDateTime;
+			CreatedDateTime = htmlContent.CreatedDateTime;
+			ModifiedDateTime = htmlContent.ModifiedDateTime;
+			CreatedByPersonId = htmlContent.CreatedByPersonId;
+			ModifiedByPersonId = htmlContent.ModifiedByPersonId;
+			StartDateTime = htmlContent.StartDateTime;
+			ExpireDateTime = htmlContent.ExpireDateTime;
+		}
+	}
 
     /// <summary>
     /// Html Content Configuration class.

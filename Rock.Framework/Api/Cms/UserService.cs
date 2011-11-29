@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a User object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.User Get( string id )
+        public Rock.Models.Cms.UserDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
                 Rock.Models.Cms.User User = UserService.Get( int.Parse( id ) );
                 if ( User.Authorized( "View", currentUser ) )
-                    return User;
+                    return User.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a User object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateUser( string id, Rock.Models.Cms.User User )
+        public void UpdateUser( string id, Rock.Models.Cms.UserDTO User )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new User object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateUser( Rock.Models.Cms.User User )
+        public void CreateUser( Rock.Models.Cms.UserDTO User )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.UserService UserService = new Rock.Services.Cms.UserService();
-                UserService.Add( User, currentUser.PersonId() );
-                UserService.Save( User, currentUser.PersonId() );
+                Rock.Models.Cms.User existingUser = new Rock.Models.Cms.User();
+				UserService.Add( existingUser, currentUser.PersonId() );
+                uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
+                UserService.Save( existingUser, currentUser.PersonId() );
             }
         }
 

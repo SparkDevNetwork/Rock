@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a File object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.File Get( string id );
+        Rock.Models.Cms.FileDTO Get( string id );
 
 		/// <summary>
 		/// Updates a File object
 		/// </summary>
         [OperationContract]
-        void UpdateFile( string id, Rock.Models.Cms.File File );
+        void UpdateFile( string id, Rock.Models.Cms.FileDTO File );
 
 		/// <summary>
 		/// Creates a new File object
 		/// </summary>
         [OperationContract]
-        void CreateFile( Rock.Models.Cms.File File );
+        void CreateFile( Rock.Models.Cms.FileDTO File );
 
 		/// <summary>
 		/// Deletes a File object

@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlockInstance object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlockInstance Get( string id )
+        public Rock.Models.Cms.BlockInstanceDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
                 Rock.Models.Cms.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
                 if ( BlockInstance.Authorized( "View", currentUser ) )
-                    return BlockInstance;
+                    return BlockInstance.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstance BlockInstance )
+        public void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstanceDTO BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlockInstance( Rock.Models.Cms.BlockInstance BlockInstance )
+        public void CreateBlockInstance( Rock.Models.Cms.BlockInstanceDTO BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlockInstanceService BlockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                BlockInstanceService.Add( BlockInstance, currentUser.PersonId() );
-                BlockInstanceService.Save( BlockInstance, currentUser.PersonId() );
+                Rock.Models.Cms.BlockInstance existingBlockInstance = new Rock.Models.Cms.BlockInstance();
+				BlockInstanceService.Add( existingBlockInstance, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
+                BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
             }
         }
 

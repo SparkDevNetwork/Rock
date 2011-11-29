@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Blog object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.Blog Get( string id )
+        public Rock.Models.Cms.BlogDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
                 Rock.Models.Cms.Blog Blog = BlogService.Get( int.Parse( id ) );
                 if ( Blog.Authorized( "View", currentUser ) )
-                    return Blog;
+                    return Blog.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Blog object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlog( string id, Rock.Models.Cms.Blog Blog )
+        public void UpdateBlog( string id, Rock.Models.Cms.BlogDTO Blog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Blog object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlog( Rock.Models.Cms.Blog Blog )
+        public void CreateBlog( Rock.Models.Cms.BlogDTO Blog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogService BlogService = new Rock.Services.Cms.BlogService();
-                BlogService.Add( Blog, currentUser.PersonId() );
-                BlogService.Save( Blog, currentUser.PersonId() );
+                Rock.Models.Cms.Blog existingBlog = new Rock.Models.Cms.Blog();
+				BlogService.Add( existingBlog, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
+                BlogService.Save( existingBlog, currentUser.PersonId() );
             }
         }
 

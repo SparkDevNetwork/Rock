@@ -28,78 +28,89 @@ namespace Rock.Models.Core
     [Table( "coreAttributeValue" )]
     public partial class AttributeValue : Model<AttributeValue>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Attribute Id.
-        /// </summary>
-        /// <value>
-        /// Attribute Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Attribute Id.
+		/// </summary>
+		/// <value>
+		/// Attribute Id.
+		/// </value>
 		[DataMember]
 		public int AttributeId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Entity Id.
-        /// </summary>
-        /// <value>
-        /// Entity Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Entity Id.
+		/// </summary>
+		/// <value>
+		/// Entity Id.
+		/// </value>
 		[DataMember]
 		public int? EntityId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Value.
-        /// </summary>
-        /// <value>
-        /// Value.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Value.
+		/// </summary>
+		/// <value>
+		/// Value.
+		/// </value>
 		[DataMember]
 		public string Value { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="AttributeValueDTO"/> object.
+        /// </value>
+		public virtual AttributeValueDTO DataTransferObject
+		{
+			get { return new AttributeValueDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -131,6 +142,118 @@ namespace Rock.Models.Core
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Attribute Value Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class AttributeValueDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Attribute Id.
+		/// </summary>
+		/// <value>
+		/// Attribute Id.
+		/// </value>
+		public int AttributeId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Id.
+		/// </summary>
+		/// <value>
+		/// Entity Id.
+		/// </value>
+		public int? EntityId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Value.
+		/// </summary>
+		/// <value>
+		/// Value.
+		/// </value>
+		public string Value { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueDTO"/> class.
+        /// </summary>
+		public AttributeValueDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueDTO"/> class.
+        /// </summary>
+        /// <param name="attributeValue">The Attribute Value.</param>
+		public AttributeValueDTO( AttributeValue attributeValue )
+		{
+			Id = attributeValue.Id;
+			Guid = attributeValue.Guid;
+			System = attributeValue.System;
+			AttributeId = attributeValue.AttributeId;
+			EntityId = attributeValue.EntityId;
+			Value = attributeValue.Value;
+			CreatedDateTime = attributeValue.CreatedDateTime;
+			ModifiedDateTime = attributeValue.ModifiedDateTime;
+			CreatedByPersonId = attributeValue.CreatedByPersonId;
+			ModifiedByPersonId = attributeValue.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Attribute Value Configuration class.

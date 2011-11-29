@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a User object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.User Get( string id );
+        Rock.Models.Cms.UserDTO Get( string id );
 
 		/// <summary>
 		/// Updates a User object
 		/// </summary>
         [OperationContract]
-        void UpdateUser( string id, Rock.Models.Cms.User User );
+        void UpdateUser( string id, Rock.Models.Cms.UserDTO User );
 
 		/// <summary>
 		/// Creates a new User object
 		/// </summary>
         [OperationContract]
-        void CreateUser( Rock.Models.Cms.User User );
+        void CreateUser( Rock.Models.Cms.UserDTO User );
 
 		/// <summary>
 		/// Deletes a User object
