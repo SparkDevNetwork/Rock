@@ -24,19 +24,19 @@ namespace Rock.Api.Crm
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Crm.PhoneNumber Get( string id );
+        Rock.Models.Crm.PhoneNumberDTO Get( string id );
 
 		/// <summary>
 		/// Updates a PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber );
+        void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumberDTO PhoneNumber );
 
 		/// <summary>
 		/// Creates a new PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber );
+        void CreatePhoneNumber( Rock.Models.Crm.PhoneNumberDTO PhoneNumber );
 
 		/// <summary>
 		/// Deletes a PhoneNumber object

@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.EntityChange Get( string id )
+        public Rock.Models.Core.EntityChangeDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
                 Rock.Models.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
                 if ( EntityChange.Authorized( "View", currentUser ) )
-                    return EntityChange;
+                    return EntityChange.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateEntityChange( string id, Rock.Models.Core.EntityChange EntityChange )
+        public void UpdateEntityChange( string id, Rock.Models.Core.EntityChangeDTO EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateEntityChange( Rock.Models.Core.EntityChange EntityChange )
+        public void CreateEntityChange( Rock.Models.Core.EntityChangeDTO EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.EntityChangeService EntityChangeService = new Rock.Services.Core.EntityChangeService();
-                EntityChangeService.Add( EntityChange, currentUser.PersonId() );
-                EntityChangeService.Save( EntityChange, currentUser.PersonId() );
+                Rock.Models.Core.EntityChange existingEntityChange = new Rock.Models.Core.EntityChange();
+				EntityChangeService.Add( existingEntityChange, currentUser.PersonId() );
+                uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
+                EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
             }
         }
 

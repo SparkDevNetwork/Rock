@@ -28,79 +28,90 @@ namespace Rock.Models.Groups
     [Table( "groupsGroupType" )]
     public partial class GroupType : ModelWithAttributes<GroupType>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
-        /// <value>
-        /// Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Description.
-        /// </summary>
-        /// <value>
-        /// Description.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
 		[DataMember]
 		public string Description { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Default Group Role Id.
-        /// </summary>
-        /// <value>
-        /// Default Group Role Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Default Group Role Id.
+		/// </summary>
+		/// <value>
+		/// Default Group Role Id.
+		/// </value>
 		[DataMember]
 		public int DefaultGroupRoleId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="GroupTypeDTO"/> object.
+        /// </value>
+		public virtual GroupTypeDTO DataTransferObject
+		{
+			get { return new GroupTypeDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -164,6 +175,118 @@ namespace Rock.Models.Groups
 		public virtual GroupRole DefaultGroupRole { get; set; }
 
     }
+
+    /// <summary>
+    /// Group Type Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class GroupTypeDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
+		public string Description { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Default Group Role Id.
+		/// </summary>
+		/// <value>
+		/// Default Group Role Id.
+		/// </value>
+		public int DefaultGroupRoleId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeDTO"/> class.
+        /// </summary>
+		public GroupTypeDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeDTO"/> class.
+        /// </summary>
+        /// <param name="groupType">The Group Type.</param>
+		public GroupTypeDTO( GroupType groupType )
+		{
+			Id = groupType.Id;
+			Guid = groupType.Guid;
+			System = groupType.System;
+			Name = groupType.Name;
+			Description = groupType.Description;
+			DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+			CreatedDateTime = groupType.CreatedDateTime;
+			ModifiedDateTime = groupType.ModifiedDateTime;
+			CreatedByPersonId = groupType.CreatedByPersonId;
+			ModifiedByPersonId = groupType.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Group Type Configuration class.

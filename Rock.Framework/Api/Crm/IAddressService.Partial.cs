@@ -1,6 +1,7 @@
 using System.ServiceModel;
 
 using Rock.Address;
+using Rock.Models.Crm;
 
 namespace Rock.Api.Crm
 {
@@ -12,7 +13,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [OperationContract]
-        AddressStub Geocode( AddressStub address );
+        AddressDTO Geocode( AddressDTO address );
 
         /// <summary>
         /// Standardizes the specified address.
@@ -20,6 +21,6 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [OperationContract]
-        AddressStub Standardize( AddressStub address );
+        AddressDTO Standardize( AddressDTO address );
     }
 }

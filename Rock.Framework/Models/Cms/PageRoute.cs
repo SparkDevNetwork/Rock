@@ -28,70 +28,81 @@ namespace Rock.Models.Cms
     [Table( "cmsPageRoute" )]
     public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Page Id.
-        /// </summary>
-        /// <value>
-        /// Page Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Page Id.
+		/// </summary>
+		/// <value>
+		/// Page Id.
+		/// </value>
 		[DataMember]
 		public int PageId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Route.
-        /// </summary>
-        /// <value>
-        /// Route.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Route.
+		/// </summary>
+		/// <value>
+		/// Route.
+		/// </value>
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Route { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="PageRouteDTO"/> object.
+        /// </value>
+		public virtual PageRouteDTO DataTransferObject
+		{
+			get { return new PageRouteDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -123,6 +134,109 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Page Route Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class PageRouteDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Page Id.
+		/// </summary>
+		/// <value>
+		/// Page Id.
+		/// </value>
+		public int PageId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Route.
+		/// </summary>
+		/// <value>
+		/// Route.
+		/// </value>
+		public string Route { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteDTO"/> class.
+        /// </summary>
+		public PageRouteDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteDTO"/> class.
+        /// </summary>
+        /// <param name="pageRoute">The Page Route.</param>
+		public PageRouteDTO( PageRoute pageRoute )
+		{
+			Id = pageRoute.Id;
+			Guid = pageRoute.Guid;
+			System = pageRoute.System;
+			PageId = pageRoute.PageId;
+			Route = pageRoute.Route;
+			CreatedDateTime = pageRoute.CreatedDateTime;
+			ModifiedDateTime = pageRoute.ModifiedDateTime;
+			CreatedByPersonId = pageRoute.CreatedByPersonId;
+			ModifiedByPersonId = pageRoute.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Page Route Configuration class.

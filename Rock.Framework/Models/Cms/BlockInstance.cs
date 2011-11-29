@@ -28,117 +28,128 @@ namespace Rock.Models.Cms
     [Table( "cmsBlockInstance" )]
     public partial class BlockInstance : ModelWithAttributes<BlockInstance>, IAuditable, IOrdered
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Page Id.
-        /// </summary>
-        /// <value>
-        /// Page Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Page Id.
+		/// </summary>
+		/// <value>
+		/// Page Id.
+		/// </value>
 		[DataMember]
 		public int? PageId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Layout.
-        /// </summary>
-        /// <value>
-        /// Layout.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Layout.
+		/// </summary>
+		/// <value>
+		/// Layout.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Layout { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Block Id.
-        /// </summary>
-        /// <value>
-        /// Block Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Block Id.
+		/// </summary>
+		/// <value>
+		/// Block Id.
+		/// </value>
 		[DataMember]
 		public int BlockId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Zone.
-        /// </summary>
-        /// <value>
-        /// Zone.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Zone.
+		/// </summary>
+		/// <value>
+		/// Zone.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Zone { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// Order.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
 		[DataMember]
 		public int Order { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
-        /// <value>
-        /// Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Output Cache Duration.
-        /// </summary>
-        /// <value>
-        /// Output Cache Duration.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Output Cache Duration.
+		/// </summary>
+		/// <value>
+		/// Output Cache Duration.
+		/// </value>
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="BlockInstanceDTO"/> object.
+        /// </value>
+		public virtual BlockInstanceDTO DataTransferObject
+		{
+			get { return new BlockInstanceDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -186,6 +197,154 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Block Instance Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class BlockInstanceDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Page Id.
+		/// </summary>
+		/// <value>
+		/// Page Id.
+		/// </value>
+		public int? PageId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Layout.
+		/// </summary>
+		/// <value>
+		/// Layout.
+		/// </value>
+		public string Layout { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Block Id.
+		/// </summary>
+		/// <value>
+		/// Block Id.
+		/// </value>
+		public int BlockId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Zone.
+		/// </summary>
+		/// <value>
+		/// Zone.
+		/// </value>
+		public string Zone { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		public int Order { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Output Cache Duration.
+		/// </summary>
+		/// <value>
+		/// Output Cache Duration.
+		/// </value>
+		public int OutputCacheDuration { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockInstanceDTO"/> class.
+        /// </summary>
+		public BlockInstanceDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockInstanceDTO"/> class.
+        /// </summary>
+        /// <param name="blockInstance">The Block Instance.</param>
+		public BlockInstanceDTO( BlockInstance blockInstance )
+		{
+			Id = blockInstance.Id;
+			Guid = blockInstance.Guid;
+			System = blockInstance.System;
+			PageId = blockInstance.PageId;
+			Layout = blockInstance.Layout;
+			BlockId = blockInstance.BlockId;
+			Zone = blockInstance.Zone;
+			Order = blockInstance.Order;
+			Name = blockInstance.Name;
+			OutputCacheDuration = blockInstance.OutputCacheDuration;
+			CreatedDateTime = blockInstance.CreatedDateTime;
+			ModifiedDateTime = blockInstance.ModifiedDateTime;
+			CreatedByPersonId = blockInstance.CreatedByPersonId;
+			ModifiedByPersonId = blockInstance.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Block Instance Configuration class.

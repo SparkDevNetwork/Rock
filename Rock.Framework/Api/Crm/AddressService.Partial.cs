@@ -8,6 +8,7 @@ using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
 using Rock.Address;
+using Rock.Models.Crm;
 
 using Rock.Cms.Security;
 
@@ -21,7 +22,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
-        public AddressStub Geocode( AddressStub address )
+        public AddressDTO Geocode( AddressDTO address )
         {
             if ( address != null )
             {
@@ -34,7 +35,7 @@ namespace Rock.Api.Crm
                 {
                     Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
                     Rock.Models.Crm.Address addressModel = addressService.Geocode( address, personId );
-                    return new AddressStub( addressModel );
+                    return addressModel.DataTransferObject;
                 }
             }
             else
@@ -47,7 +48,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
-        public AddressStub Standardize( AddressStub address )
+        public AddressDTO Standardize( AddressDTO address )
         {
             if ( address != null )
             {
@@ -60,7 +61,7 @@ namespace Rock.Api.Crm
                 {
                     Rock.Services.Crm.AddressService addressService = new Services.Crm.AddressService();
                     Rock.Models.Crm.Address addressModel = addressService.Standardize( address, personId );
-                    return new AddressStub( addressModel );
+                    return addressModel.DataTransferObject;
                 }
 
             }

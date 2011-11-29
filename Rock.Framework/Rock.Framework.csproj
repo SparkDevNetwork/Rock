@@ -102,9 +102,6 @@
     <Compile Include="Api\Core\ServiceLogService.cs" />
     <Compile Include="Api\Crm\AddressService.cs" />
     <Compile Include="Api\Crm\AddressService.Partial.cs" />
-    <Compile Include="Address\AddressStub.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>

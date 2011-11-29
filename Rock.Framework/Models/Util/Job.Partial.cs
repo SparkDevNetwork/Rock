@@ -26,34 +26,30 @@ using Rock.Models;
 
 namespace Rock.Models.Util
 {
-    public partial class Job : ModelWithAttributes<Job>
+    /// <summary>
+    /// Job notification status
+    /// </summary>
+    public enum JobNotificationStatus
     {
         /// <summary>
-        /// Job notification status
+        /// Notify on all status
         /// </summary>
-        public enum JobNotificationStatus
-        {
-            /// <summary>
-            /// Notify on all status
-            /// </summary>
-            All = 1,
+        All = 1,
 
-            /// <summary>
-            /// Notify when successful
-            /// </summary>
-            /// 
-            Success = 2,
+        /// <summary>
+        /// Notify when successful
+        /// </summary>
+        /// 
+        Success = 2,
 
-            /// <summary>
-            /// Notify when an error occurs
-            /// </summary>
-            Error = 3,
+        /// <summary>
+        /// Notify when an error occurs
+        /// </summary>
+        Error = 3,
 
-            /// <summary>
-            /// Notify when a warning occurs
-            /// </summary>
-            None = 4
-        };
+        /// <summary>
+        /// Notify when a warning occurs
+        /// </summary>
+        None = 4
     }
-
 }

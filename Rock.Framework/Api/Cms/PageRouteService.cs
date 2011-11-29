@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a PageRoute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.PageRoute Get( string id )
+        public Rock.Models.Cms.PageRouteDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
                 Rock.Models.Cms.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
                 if ( PageRoute.Authorized( "View", currentUser ) )
-                    return PageRoute;
+                    return PageRoute.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePageRoute( string id, Rock.Models.Cms.PageRoute PageRoute )
+        public void UpdatePageRoute( string id, Rock.Models.Cms.PageRouteDTO PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePageRoute( Rock.Models.Cms.PageRoute PageRoute )
+        public void CreatePageRoute( Rock.Models.Cms.PageRouteDTO PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.PageRouteService PageRouteService = new Rock.Services.Cms.PageRouteService();
-                PageRouteService.Add( PageRoute, currentUser.PersonId() );
-                PageRouteService.Save( PageRoute, currentUser.PersonId() );
+                Rock.Models.Cms.PageRoute existingPageRoute = new Rock.Models.Cms.PageRoute();
+				PageRouteService.Add( existingPageRoute, currentUser.PersonId() );
+                uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
+                PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
             }
         }
 

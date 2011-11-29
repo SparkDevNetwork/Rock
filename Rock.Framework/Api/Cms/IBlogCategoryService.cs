@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a BlogCategory object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.BlogCategory Get( string id );
+        Rock.Models.Cms.BlogCategoryDTO Get( string id );
 
 		/// <summary>
 		/// Updates a BlogCategory object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategory BlogCategory );
+        void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategoryDTO BlogCategory );
 
 		/// <summary>
 		/// Creates a new BlogCategory object
 		/// </summary>
         [OperationContract]
-        void CreateBlogCategory( Rock.Models.Cms.BlogCategory BlogCategory );
+        void CreateBlogCategory( Rock.Models.Cms.BlogCategoryDTO BlogCategory );
 
 		/// <summary>
 		/// Deletes a BlogCategory object

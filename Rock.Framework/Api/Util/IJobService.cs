@@ -24,19 +24,19 @@ namespace Rock.Api.Util
 		/// Gets a Job object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Util.Job Get( string id );
+        Rock.Models.Util.JobDTO Get( string id );
 
 		/// <summary>
 		/// Updates a Job object
 		/// </summary>
         [OperationContract]
-        void UpdateJob( string id, Rock.Models.Util.Job Job );
+        void UpdateJob( string id, Rock.Models.Util.JobDTO Job );
 
 		/// <summary>
 		/// Creates a new Job object
 		/// </summary>
         [OperationContract]
-        void CreateJob( Rock.Models.Util.Job Job );
+        void CreateJob( Rock.Models.Util.JobDTO Job );
 
 		/// <summary>
 		/// Deletes a Job object

@@ -28,98 +28,109 @@ namespace Rock.Models.Cms
     [Table( "cmsBlogPostComment" )]
     public partial class BlogPostComment : ModelWithAttributes<BlogPostComment>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the Post Id.
-        /// </summary>
-        /// <value>
-        /// Post Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Post Id.
+		/// </summary>
+		/// <value>
+		/// Post Id.
+		/// </value>
 		[DataMember]
 		public int PostId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Person Id.
-        /// </summary>
-        /// <value>
-        /// Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
 		[DataMember]
 		public int? PersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Person Name.
-        /// </summary>
-        /// <value>
-        /// Person Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Person Name.
+		/// </summary>
+		/// <value>
+		/// Person Name.
+		/// </value>
 		[MaxLength( 250 )]
 		[DataMember]
 		public string PersonName { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Comment Date.
-        /// </summary>
-        /// <value>
-        /// Comment Date.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Comment Date.
+		/// </summary>
+		/// <value>
+		/// Comment Date.
+		/// </value>
 		[DataMember]
 		public DateTime? CommentDate { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Email Address.
-        /// </summary>
-        /// <value>
-        /// Email Address.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Email Address.
+		/// </summary>
+		/// <value>
+		/// Email Address.
+		/// </value>
 		[MaxLength( 150 )]
 		[DataMember]
 		public string EmailAddress { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Comment.
-        /// </summary>
-        /// <value>
-        /// Comment.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Comment.
+		/// </summary>
+		/// <value>
+		/// Comment.
+		/// </value>
 		[DataMember]
 		public string Comment { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="BlogPostCommentDTO"/> object.
+        /// </value>
+		public virtual BlogPostCommentDTO DataTransferObject
+		{
+			get { return new BlogPostCommentDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -159,6 +170,136 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Blog Post Comment Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class BlogPostCommentDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Post Id.
+		/// </summary>
+		/// <value>
+		/// Post Id.
+		/// </value>
+		public int PostId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
+		public int? PersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Name.
+		/// </summary>
+		/// <value>
+		/// Person Name.
+		/// </value>
+		public string PersonName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Comment Date.
+		/// </summary>
+		/// <value>
+		/// Comment Date.
+		/// </value>
+		public DateTime? CommentDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Email Address.
+		/// </summary>
+		/// <value>
+		/// Email Address.
+		/// </value>
+		public string EmailAddress { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Comment.
+		/// </summary>
+		/// <value>
+		/// Comment.
+		/// </value>
+		public string Comment { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogPostCommentDTO"/> class.
+        /// </summary>
+		public BlogPostCommentDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlogPostCommentDTO"/> class.
+        /// </summary>
+        /// <param name="blogPostComment">The Blog Post Comment.</param>
+		public BlogPostCommentDTO( BlogPostComment blogPostComment )
+		{
+			Id = blogPostComment.Id;
+			Guid = blogPostComment.Guid;
+			PostId = blogPostComment.PostId;
+			PersonId = blogPostComment.PersonId;
+			PersonName = blogPostComment.PersonName;
+			CommentDate = blogPostComment.CommentDate;
+			EmailAddress = blogPostComment.EmailAddress;
+			Comment = blogPostComment.Comment;
+			CreatedDateTime = blogPostComment.CreatedDateTime;
+			ModifiedDateTime = blogPostComment.ModifiedDateTime;
+			CreatedByPersonId = blogPostComment.CreatedByPersonId;
+			ModifiedByPersonId = blogPostComment.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Blog Post Comment Configuration class.

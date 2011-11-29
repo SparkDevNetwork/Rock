@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a DefinedType object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.DefinedType Get( string id );
+        Rock.Models.Core.DefinedTypeDTO Get( string id );
 
 		/// <summary>
 		/// Updates a DefinedType object
 		/// </summary>
         [OperationContract]
-        void UpdateDefinedType( string id, Rock.Models.Core.DefinedType DefinedType );
+        void UpdateDefinedType( string id, Rock.Models.Core.DefinedTypeDTO DefinedType );
 
 		/// <summary>
 		/// Creates a new DefinedType object
 		/// </summary>
         [OperationContract]
-        void CreateDefinedType( Rock.Models.Core.DefinedType DefinedType );
+        void CreateDefinedType( Rock.Models.Core.DefinedTypeDTO DefinedType );
 
 		/// <summary>
 		/// Deletes a DefinedType object

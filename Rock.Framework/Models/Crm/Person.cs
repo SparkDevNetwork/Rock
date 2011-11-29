@@ -28,21 +28,21 @@ namespace Rock.Models.Crm
     [Table( "crmPerson" )]
     public partial class Person : ModelWithAttributes<Person>, IAuditable
     {
-        /// <summary>
-        /// Gets or sets the System.
-        /// </summary>
-        /// <value>
-        /// System.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
 		[DataMember]
 		public bool System { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the First Name.
-        /// </summary>
-        /// <value>
-        /// First Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the First Name.
+		/// </summary>
+		/// <value>
+		/// First Name.
+		/// </value>
 		[MaxLength( 50 )]
 		[TrackChanges]
 		[Required( ErrorMessage = "First Name must be between 1 and 12 characters" )]
@@ -50,101 +50,112 @@ namespace Rock.Models.Crm
 		[DataMember]
 		public string FirstName { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Nick Name.
-        /// </summary>
-        /// <value>
-        /// Nick Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Nick Name.
+		/// </summary>
+		/// <value>
+		/// Nick Name.
+		/// </value>
 		[MaxLength( 50 )]
 		[TrackChanges]
 		[DataMember]
 		public string NickName { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Last Name.
-        /// </summary>
-        /// <value>
-        /// Last Name.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Last Name.
+		/// </summary>
+		/// <value>
+		/// Last Name.
+		/// </value>
 		[MaxLength( 50 )]
 		[TrackChanges]
 		[DataMember]
 		public string LastName { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Email.
-        /// </summary>
-        /// <value>
-        /// Email.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Email.
+		/// </summary>
+		/// <value>
+		/// Email.
+		/// </value>
 		[MaxLength( 75 )]
 		[DataMember]
 		public string Email { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Birth Month.
-        /// </summary>
-        /// <value>
-        /// Birth Month.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Birth Month.
+		/// </summary>
+		/// <value>
+		/// Birth Month.
+		/// </value>
 		[DataMember]
 		public int? BirthMonth { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Birth Day.
-        /// </summary>
-        /// <value>
-        /// Birth Day.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Birth Day.
+		/// </summary>
+		/// <value>
+		/// Birth Day.
+		/// </value>
 		[DataMember]
 		public int? BirthDay { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Birth Year.
-        /// </summary>
-        /// <value>
-        /// Birth Year.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Birth Year.
+		/// </summary>
+		/// <value>
+		/// Birth Year.
+		/// </value>
 		[DataMember]
 		public int? BirthYear { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? CreatedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
 		[DataMember]
 		public DateTime? ModifiedDateTime { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
+		/// <summary>
+        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// </summary>
+        /// <value>
+        /// A <see cref="PersonDTO"/> object.
+        /// </value>
+		public virtual PersonDTO DataTransferObject
+		{
+			get { return new PersonDTO( this ); }
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -208,6 +219,154 @@ namespace Rock.Models.Crm
 		public virtual Person ModifiedByPerson { get; set; }
 
     }
+
+    /// <summary>
+    /// Person Data Transfer Object.
+    /// </summary>
+	/// <remarks>
+	/// Data Transfer Objects are a lightweight version of the Entity object that are used
+	/// in situations like serializing the object in the REST api
+	/// </remarks>
+    public partial class PersonDTO
+    {
+        /// <summary>
+        /// The Id
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public Guid Guid { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System.
+		/// </summary>
+		/// <value>
+		/// System.
+		/// </value>
+		public bool System { get; set; }
+
+		/// <summary>
+		/// Gets or sets the First Name.
+		/// </summary>
+		/// <value>
+		/// First Name.
+		/// </value>
+		public string FirstName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Nick Name.
+		/// </summary>
+		/// <value>
+		/// Nick Name.
+		/// </value>
+		public string NickName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Name.
+		/// </summary>
+		/// <value>
+		/// Last Name.
+		/// </value>
+		public string LastName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Email.
+		/// </summary>
+		/// <value>
+		/// Email.
+		/// </value>
+		public string Email { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Birth Month.
+		/// </summary>
+		/// <value>
+		/// Birth Month.
+		/// </value>
+		public int? BirthMonth { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Birth Day.
+		/// </summary>
+		/// <value>
+		/// Birth Day.
+		/// </value>
+		public int? BirthDay { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Birth Year.
+		/// </summary>
+		/// <value>
+		/// Birth Year.
+		/// </value>
+		public int? BirthYear { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified Date Time.
+		/// </summary>
+		/// <value>
+		/// Modified Date Time.
+		/// </value>
+		public DateTime? ModifiedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Modified By Person Id.
+		/// </summary>
+		/// <value>
+		/// Modified By Person Id.
+		/// </value>
+		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonDTO"/> class.
+        /// </summary>
+		public PersonDTO()
+		{
+		}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonDTO"/> class.
+        /// </summary>
+        /// <param name="person">The Person.</param>
+		public PersonDTO( Person person )
+		{
+			Id = person.Id;
+			Guid = person.Guid;
+			System = person.System;
+			FirstName = person.FirstName;
+			NickName = person.NickName;
+			LastName = person.LastName;
+			Email = person.Email;
+			BirthMonth = person.BirthMonth;
+			BirthDay = person.BirthDay;
+			BirthYear = person.BirthYear;
+			CreatedDateTime = person.CreatedDateTime;
+			ModifiedDateTime = person.ModifiedDateTime;
+			CreatedByPersonId = person.CreatedByPersonId;
+			ModifiedByPersonId = person.ModifiedByPersonId;
+		}
+	}
 
     /// <summary>
     /// Person Configuration class.

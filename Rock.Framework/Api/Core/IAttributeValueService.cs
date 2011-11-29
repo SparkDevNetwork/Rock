@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a AttributeValue object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.AttributeValue Get( string id );
+        Rock.Models.Core.AttributeValueDTO Get( string id );
 
 		/// <summary>
 		/// Updates a AttributeValue object
 		/// </summary>
         [OperationContract]
-        void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValue AttributeValue );
+        void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValueDTO AttributeValue );
 
 		/// <summary>
 		/// Creates a new AttributeValue object
 		/// </summary>
         [OperationContract]
-        void CreateAttributeValue( Rock.Models.Core.AttributeValue AttributeValue );
+        void CreateAttributeValue( Rock.Models.Core.AttributeValueDTO AttributeValue );
 
 		/// <summary>
 		/// Deletes a AttributeValue object

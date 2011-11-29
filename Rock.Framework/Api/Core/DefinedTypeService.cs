@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a DefinedType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedType Get( string id )
+        public Rock.Models.Core.DefinedTypeDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
                 Rock.Models.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
                 if ( DefinedType.Authorized( "View", currentUser ) )
-                    return DefinedType;
+                    return DefinedType.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateDefinedType( string id, Rock.Models.Core.DefinedType DefinedType )
+        public void UpdateDefinedType( string id, Rock.Models.Core.DefinedTypeDTO DefinedType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateDefinedType( Rock.Models.Core.DefinedType DefinedType )
+        public void CreateDefinedType( Rock.Models.Core.DefinedTypeDTO DefinedType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.DefinedTypeService DefinedTypeService = new Rock.Services.Core.DefinedTypeService();
-                DefinedTypeService.Add( DefinedType, currentUser.PersonId() );
-                DefinedTypeService.Save( DefinedType, currentUser.PersonId() );
+                Rock.Models.Core.DefinedType existingDefinedType = new Rock.Models.Core.DefinedType();
+				DefinedTypeService.Add( existingDefinedType, currentUser.PersonId() );
+                uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
+                DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
             }
         }
 

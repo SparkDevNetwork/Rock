@@ -31,7 +31,7 @@ namespace Rock.Api.Groups
 		/// Gets a Member object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Member Get( string id )
+        public Rock.Models.Groups.MemberDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Groups
 				Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
                 Rock.Models.Groups.Member Member = MemberService.Get( int.Parse( id ) );
                 if ( Member.Authorized( "View", currentUser ) )
-                    return Member;
+                    return Member.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Groups
 		/// Updates a Member object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateMember( string id, Rock.Models.Groups.Member Member )
+        public void UpdateMember( string id, Rock.Models.Groups.MemberDTO Member )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Groups
 		/// Creates a new Member object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateMember( Rock.Models.Groups.Member Member )
+        public void CreateMember( Rock.Models.Groups.MemberDTO Member )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.MemberService MemberService = new Rock.Services.Groups.MemberService();
-                MemberService.Add( Member, currentUser.PersonId() );
-                MemberService.Save( Member, currentUser.PersonId() );
+                Rock.Models.Groups.Member existingMember = new Rock.Models.Groups.Member();
+				MemberService.Add( existingMember, currentUser.PersonId() );
+                uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
+                MemberService.Save( existingMember, currentUser.PersonId() );
             }
         }
 

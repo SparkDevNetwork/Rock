@@ -31,7 +31,7 @@ namespace Rock.Api.Crm
 		/// Gets a Address object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.Address Get( string id )
+        public Rock.Models.Crm.AddressDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Crm
 				Rock.Services.Crm.AddressService AddressService = new Rock.Services.Crm.AddressService();
                 Rock.Models.Crm.Address Address = AddressService.Get( int.Parse( id ) );
                 if ( Address.Authorized( "View", currentUser ) )
-                    return Address;
+                    return Address.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Crm
 		/// Updates a Address object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAddress( string id, Rock.Models.Crm.Address Address )
+        public void UpdateAddress( string id, Rock.Models.Crm.AddressDTO Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Crm
 		/// Creates a new Address object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAddress( Rock.Models.Crm.Address Address )
+        public void CreateAddress( Rock.Models.Crm.AddressDTO Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.AddressService AddressService = new Rock.Services.Crm.AddressService();
-                AddressService.Add( Address, currentUser.PersonId() );
-                AddressService.Save( Address, currentUser.PersonId() );
+                Rock.Models.Crm.Address existingAddress = new Rock.Models.Crm.Address();
+				AddressService.Add( existingAddress, currentUser.PersonId() );
+                uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
+                AddressService.Save( existingAddress, currentUser.PersonId() );
             }
         }
 

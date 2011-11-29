@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a File object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.File Get( string id )
+        public Rock.Models.Cms.FileDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
                 Rock.Models.Cms.File File = FileService.Get( int.Parse( id ) );
                 if ( File.Authorized( "View", currentUser ) )
-                    return File;
+                    return File.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a File object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateFile( string id, Rock.Models.Cms.File File )
+        public void UpdateFile( string id, Rock.Models.Cms.FileDTO File )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new File object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateFile( Rock.Models.Cms.File File )
+        public void CreateFile( Rock.Models.Cms.FileDTO File )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.FileService FileService = new Rock.Services.Cms.FileService();
-                FileService.Add( File, currentUser.PersonId() );
-                FileService.Save( File, currentUser.PersonId() );
+                Rock.Models.Cms.File existingFile = new Rock.Models.Cms.File();
+				FileService.Add( existingFile, currentUser.PersonId() );
+                uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
+                FileService.Save( existingFile, currentUser.PersonId() );
             }
         }
 

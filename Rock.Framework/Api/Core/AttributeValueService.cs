@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a AttributeValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeValue Get( string id )
+        public Rock.Models.Core.AttributeValueDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
                 Rock.Models.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
                 if ( AttributeValue.Authorized( "View", currentUser ) )
-                    return AttributeValue;
+                    return AttributeValue.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a AttributeValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValue AttributeValue )
+        public void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValueDTO AttributeValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new AttributeValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttributeValue( Rock.Models.Core.AttributeValue AttributeValue )
+        public void CreateAttributeValue( Rock.Models.Core.AttributeValueDTO AttributeValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.AttributeValueService AttributeValueService = new Rock.Services.Core.AttributeValueService();
-                AttributeValueService.Add( AttributeValue, currentUser.PersonId() );
-                AttributeValueService.Save( AttributeValue, currentUser.PersonId() );
+                Rock.Models.Core.AttributeValue existingAttributeValue = new Rock.Models.Core.AttributeValue();
+				AttributeValueService.Add( existingAttributeValue, currentUser.PersonId() );
+                uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
+                AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
             }
         }
 

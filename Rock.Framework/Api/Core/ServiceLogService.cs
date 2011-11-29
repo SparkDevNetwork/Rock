@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a ServiceLog object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.ServiceLog Get( string id )
+        public Rock.Models.Core.ServiceLogDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Core
 				Rock.Services.Core.ServiceLogService ServiceLogService = new Rock.Services.Core.ServiceLogService();
                 Rock.Models.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
                 if ( ServiceLog.Authorized( "View", currentUser ) )
-                    return ServiceLog;
+                    return ServiceLog.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a ServiceLog object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateServiceLog( string id, Rock.Models.Core.ServiceLog ServiceLog )
+        public void UpdateServiceLog( string id, Rock.Models.Core.ServiceLogDTO ServiceLog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new ServiceLog object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateServiceLog( Rock.Models.Core.ServiceLog ServiceLog )
+        public void CreateServiceLog( Rock.Models.Core.ServiceLogDTO ServiceLog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Core
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Core.ServiceLogService ServiceLogService = new Rock.Services.Core.ServiceLogService();
-                ServiceLogService.Add( ServiceLog, currentUser.PersonId() );
-                ServiceLogService.Save( ServiceLog, currentUser.PersonId() );
+                Rock.Models.Core.ServiceLog existingServiceLog = new Rock.Models.Core.ServiceLog();
+				ServiceLogService.Add( existingServiceLog, currentUser.PersonId() );
+                uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
+                ServiceLogService.Save( existingServiceLog, currentUser.PersonId() );
             }
         }
 

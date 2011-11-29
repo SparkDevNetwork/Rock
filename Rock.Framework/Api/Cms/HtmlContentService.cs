@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a HtmlContent object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.HtmlContent Get( string id )
+        public Rock.Models.Cms.HtmlContentDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
                 Rock.Models.Cms.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
                 if ( HtmlContent.Authorized( "View", currentUser ) )
-                    return HtmlContent;
+                    return HtmlContent.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContent HtmlContent )
+        public void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContentDTO HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateHtmlContent( Rock.Models.Cms.HtmlContent HtmlContent )
+        public void CreateHtmlContent( Rock.Models.Cms.HtmlContentDTO HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.HtmlContentService HtmlContentService = new Rock.Services.Cms.HtmlContentService();
-                HtmlContentService.Add( HtmlContent, currentUser.PersonId() );
-                HtmlContentService.Save( HtmlContent, currentUser.PersonId() );
+                Rock.Models.Cms.HtmlContent existingHtmlContent = new Rock.Models.Cms.HtmlContent();
+				HtmlContentService.Add( existingHtmlContent, currentUser.PersonId() );
+                uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
+                HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
             }
         }
 

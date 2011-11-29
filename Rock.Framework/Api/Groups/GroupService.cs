@@ -31,7 +31,7 @@ namespace Rock.Api.Groups
 		/// Gets a Group object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.Group Get( string id )
+        public Rock.Models.Groups.GroupDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Groups
 				Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
                 Rock.Models.Groups.Group Group = GroupService.Get( int.Parse( id ) );
                 if ( Group.Authorized( "View", currentUser ) )
-                    return Group;
+                    return Group.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Groups
 		/// Updates a Group object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroup( string id, Rock.Models.Groups.Group Group )
+        public void UpdateGroup( string id, Rock.Models.Groups.GroupDTO Group )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Groups
 		/// Creates a new Group object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroup( Rock.Models.Groups.Group Group )
+        public void CreateGroup( Rock.Models.Groups.GroupDTO Group )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Groups
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Groups.GroupService GroupService = new Rock.Services.Groups.GroupService();
-                GroupService.Add( Group, currentUser.PersonId() );
-                GroupService.Save( Group, currentUser.PersonId() );
+                Rock.Models.Groups.Group existingGroup = new Rock.Models.Groups.Group();
+				GroupService.Add( existingGroup, currentUser.PersonId() );
+                uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
+                GroupService.Save( existingGroup, currentUser.PersonId() );
             }
         }
 

@@ -31,7 +31,7 @@ namespace Rock.Api.Crm
 		/// Gets a Person object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.Person Get( string id )
+        public Rock.Models.Crm.PersonDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Crm
 				Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
                 Rock.Models.Crm.Person Person = PersonService.Get( int.Parse( id ) );
                 if ( Person.Authorized( "View", currentUser ) )
-                    return Person;
+                    return Person.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Crm
 		/// Updates a Person object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePerson( string id, Rock.Models.Crm.Person Person )
+        public void UpdatePerson( string id, Rock.Models.Crm.PersonDTO Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Crm
 		/// Creates a new Person object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePerson( Rock.Models.Crm.Person Person )
+        public void CreatePerson( Rock.Models.Crm.PersonDTO Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PersonService PersonService = new Rock.Services.Crm.PersonService();
-                PersonService.Add( Person, currentUser.PersonId() );
-                PersonService.Save( Person, currentUser.PersonId() );
+                Rock.Models.Crm.Person existingPerson = new Rock.Models.Crm.Person();
+				PersonService.Add( existingPerson, currentUser.PersonId() );
+                uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
+                PersonService.Save( existingPerson, currentUser.PersonId() );
             }
         }
 

@@ -31,7 +31,7 @@ namespace Rock.Api.Crm
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.PhoneNumber Get( string id )
+        public Rock.Models.Crm.PhoneNumberDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Crm
 				Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
                 Rock.Models.Crm.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
                 if ( PhoneNumber.Authorized( "View", currentUser ) )
-                    return PhoneNumber;
+                    return PhoneNumber.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Crm
 		/// Updates a PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumber PhoneNumber )
+        public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumberDTO PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Crm
 		/// Creates a new PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumber PhoneNumber )
+        public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumberDTO PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Crm
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Crm.PhoneNumberService PhoneNumberService = new Rock.Services.Crm.PhoneNumberService();
-                PhoneNumberService.Add( PhoneNumber, currentUser.PersonId() );
-                PhoneNumberService.Save( PhoneNumber, currentUser.PersonId() );
+                Rock.Models.Crm.PhoneNumber existingPhoneNumber = new Rock.Models.Crm.PhoneNumber();
+				PhoneNumberService.Add( existingPhoneNumber, currentUser.PersonId() );
+                uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
+                PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
             }
         }
 

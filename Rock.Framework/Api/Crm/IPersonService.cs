@@ -24,19 +24,19 @@ namespace Rock.Api.Crm
 		/// Gets a Person object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Crm.Person Get( string id );
+        Rock.Models.Crm.PersonDTO Get( string id );
 
 		/// <summary>
 		/// Updates a Person object
 		/// </summary>
         [OperationContract]
-        void UpdatePerson( string id, Rock.Models.Crm.Person Person );
+        void UpdatePerson( string id, Rock.Models.Crm.PersonDTO Person );
 
 		/// <summary>
 		/// Creates a new Person object
 		/// </summary>
         [OperationContract]
-        void CreatePerson( Rock.Models.Crm.Person Person );
+        void CreatePerson( Rock.Models.Crm.PersonDTO Person );
 
 		/// <summary>
 		/// Deletes a Person object

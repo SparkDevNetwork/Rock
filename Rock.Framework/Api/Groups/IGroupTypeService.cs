@@ -24,19 +24,19 @@ namespace Rock.Api.Groups
 		/// Gets a GroupType object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Groups.GroupType Get( string id );
+        Rock.Models.Groups.GroupTypeDTO Get( string id );
 
 		/// <summary>
 		/// Updates a GroupType object
 		/// </summary>
         [OperationContract]
-        void UpdateGroupType( string id, Rock.Models.Groups.GroupType GroupType );
+        void UpdateGroupType( string id, Rock.Models.Groups.GroupTypeDTO GroupType );
 
 		/// <summary>
 		/// Creates a new GroupType object
 		/// </summary>
         [OperationContract]
-        void CreateGroupType( Rock.Models.Groups.GroupType GroupType );
+        void CreateGroupType( Rock.Models.Groups.GroupTypeDTO GroupType );
 
 		/// <summary>
 		/// Deletes a GroupType object

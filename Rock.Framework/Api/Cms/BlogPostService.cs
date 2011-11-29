@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogPost object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPost Get( string id )
+        public Rock.Models.Cms.BlogPostDTO Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -43,7 +43,7 @@ namespace Rock.Api.Cms
 				Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
                 Rock.Models.Cms.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
                 if ( BlogPost.Authorized( "View", currentUser ) )
-                    return BlogPost;
+                    return BlogPost.DataTransferObject;
                 else
                     throw new FaultException( "Unauthorized" );
             }
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogPost object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogPost( string id, Rock.Models.Cms.BlogPost BlogPost )
+        public void UpdateBlogPost( string id, Rock.Models.Cms.BlogPostDTO BlogPost )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogPost object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogPost( Rock.Models.Cms.BlogPost BlogPost )
+        public void CreateBlogPost( Rock.Models.Cms.BlogPostDTO BlogPost )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -90,8 +90,10 @@ namespace Rock.Api.Cms
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
 
                 Rock.Services.Cms.BlogPostService BlogPostService = new Rock.Services.Cms.BlogPostService();
-                BlogPostService.Add( BlogPost, currentUser.PersonId() );
-                BlogPostService.Save( BlogPost, currentUser.PersonId() );
+                Rock.Models.Cms.BlogPost existingBlogPost = new Rock.Models.Cms.BlogPost();
+				BlogPostService.Add( existingBlogPost, currentUser.PersonId() );
+                uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
+                BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
             }
         }
 
