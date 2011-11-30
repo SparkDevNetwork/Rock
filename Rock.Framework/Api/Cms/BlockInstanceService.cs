@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( BlockInstance.Authorized( "Edit", currentUser ) )
                 {
                     BlockInstanceService.Delete( BlockInstance, currentUser.PersonId() );
+                    BlockInstanceService.Save( BlockInstance, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

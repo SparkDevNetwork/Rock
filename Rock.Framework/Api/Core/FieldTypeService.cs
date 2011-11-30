@@ -116,6 +116,7 @@ namespace Rock.Api.Core
                 if ( FieldType.Authorized( "Edit", currentUser ) )
                 {
                     FieldTypeService.Delete( FieldType, currentUser.PersonId() );
+                    FieldTypeService.Save( FieldType, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

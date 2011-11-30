@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( Site.Authorized( "Edit", currentUser ) )
                 {
                     SiteService.Delete( Site, currentUser.PersonId() );
+                    SiteService.Save( Site, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

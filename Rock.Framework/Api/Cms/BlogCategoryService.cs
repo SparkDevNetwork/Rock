@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( BlogCategory.Authorized( "Edit", currentUser ) )
                 {
                     BlogCategoryService.Delete( BlogCategory, currentUser.PersonId() );
+                    BlogCategoryService.Save( BlogCategory, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

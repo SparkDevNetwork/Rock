@@ -116,6 +116,7 @@ namespace Rock.Api.Groups
                 if ( Group.Authorized( "Edit", currentUser ) )
                 {
                     GroupService.Delete( Group, currentUser.PersonId() );
+                    GroupService.Save( Group, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

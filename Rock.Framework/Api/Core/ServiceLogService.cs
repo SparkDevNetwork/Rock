@@ -116,6 +116,7 @@ namespace Rock.Api.Core
                 if ( ServiceLog.Authorized( "Edit", currentUser ) )
                 {
                     ServiceLogService.Delete( ServiceLog, currentUser.PersonId() );
+                    ServiceLogService.Save( ServiceLog, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
