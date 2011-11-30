@@ -72,7 +72,7 @@ namespace Rock.Custom.CCV.ClientTestApp
                 "<AddressDTO xmlns=\"{0}\"><City>{1}</City><State>{2}</State><Street1>{3}</Street1><Street2>{4}</Street2><Zip>{5}</Zip></AddressDTO>",
                 ns, tbCity.Text, tbState.Text, tbStreet1.Text, tbStreet2.Text, tbZip.Text );
 
-            HttpWebRequest req = WebRequest.Create(string.Format("http://localhost:6229/RockWeb/api/Crm/Address/{0}", action)) as HttpWebRequest;
+            HttpWebRequest req = WebRequest.Create( string.Format( "http://www.ccvonline.com/RockChMS/api/Crm/Address/{0}", action ) ) as HttpWebRequest;
             req.KeepAlive = false;
             req.Method = "PUT";
 
