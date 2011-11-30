@@ -116,6 +116,7 @@ namespace Rock.Api.Util
                 if ( Job.Authorized( "Edit", currentUser ) )
                 {
                     JobService.Delete( Job, currentUser.PersonId() );
+                    JobService.Save( Job, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

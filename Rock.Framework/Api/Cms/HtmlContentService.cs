@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( HtmlContent.Authorized( "Edit", currentUser ) )
                 {
                     HtmlContentService.Delete( HtmlContent, currentUser.PersonId() );
+                    HtmlContentService.Save( HtmlContent, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

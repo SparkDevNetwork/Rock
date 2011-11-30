@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( PageRoute.Authorized( "Edit", currentUser ) )
                 {
                     PageRouteService.Delete( PageRoute, currentUser.PersonId() );
+                    PageRouteService.Save( PageRoute, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

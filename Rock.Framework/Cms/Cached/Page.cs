@@ -495,9 +495,14 @@ namespace Rock.Cms.Cached
             return string.Format( "~/Themes/{0}/Layouts/{1}.aspx", theme, layout );
         }
 
-        private static string CacheKey( int id )
+        /// <summary>
+        /// Gets the cache key for the selected page id.
+        /// </summary>
+        /// <param name="pageId">The page id.</param>
+        /// <returns></returns>
+        public static string CacheKey( int pageId )
         {
-            return string.Format( "Rock:Page:{0}", id );
+            return string.Format( "Rock:Page:{0}", pageId );
         }
 
         /// <summary>

@@ -116,6 +116,7 @@ namespace Rock.Api.Core
                 if ( EntityChange.Authorized( "Edit", currentUser ) )
                 {
                     EntityChangeService.Delete( EntityChange, currentUser.PersonId() );
+                    EntityChangeService.Save( EntityChange, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

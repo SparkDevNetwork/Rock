@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( File.Authorized( "Edit", currentUser ) )
                 {
                     FileService.Delete( File, currentUser.PersonId() );
+                    FileService.Save( File, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -116,6 +116,7 @@ namespace Rock.Api.Core
                 if ( DefinedValue.Authorized( "Edit", currentUser ) )
                 {
                     DefinedValueService.Delete( DefinedValue, currentUser.PersonId() );
+                    DefinedValueService.Save( DefinedValue, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

@@ -116,6 +116,7 @@ namespace Rock.Api.Core
                 if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
                 {
                     AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId() );
+                    AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

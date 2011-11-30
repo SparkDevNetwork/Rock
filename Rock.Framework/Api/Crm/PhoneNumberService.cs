@@ -116,6 +116,7 @@ namespace Rock.Api.Crm
                 if ( PhoneNumber.Authorized( "Edit", currentUser ) )
                 {
                     PhoneNumberService.Delete( PhoneNumber, currentUser.PersonId() );
+                    PhoneNumberService.Save( PhoneNumber, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

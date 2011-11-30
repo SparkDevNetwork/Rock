@@ -869,6 +869,7 @@ namespace Rock.Api<#= projectNamespace #>
                 if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
                 {
                     <#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
+                    <#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

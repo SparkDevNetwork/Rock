@@ -338,6 +338,17 @@ namespace Rock.Cms
 
                     bool canConfigPage = PageInstance.Authorized( "Configure", user );
 
+                    // Create a javascript object to store information about the current page for client side scripts to use
+                    string script = string.Format( @"
+    var rock = {{ 
+        pageId:{0}, 
+        layout:'{1}',
+        baseUrl:'{2}' 
+    }};
+",
+                        PageInstance.Id, PageInstance.Layout, AppPath );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
+
                     // Add config elements
                     if (canConfigPage)
                         AddConfigElements();
@@ -503,8 +514,13 @@ namespace Rock.Cms
                 }
             }
 
-            Rock.Models.Cms.BlockInstance.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( BlockInstance_Updated );
-            Rock.Models.Cms.Page.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( Page_Updated );
+            if ( !Page.IsPostBack )
+            {
+                Rock.Models.Cms.BlockInstance.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( BlockInstance_Updated );
+                Rock.Models.Cms.BlockInstance.Deleted += new EventHandler<Models.ModelUpdatedEventArgs>( BlockInstance_Updated );
+                Rock.Models.Cms.Page.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( Page_Updated );
+                Rock.Models.Cms.Page.Deleted += new EventHandler<Models.ModelUpdatedEventArgs>( Page_Deleted );
+            }
         }
 
         /// <summary>
@@ -567,11 +583,6 @@ namespace Rock.Cms
         // Adds the neccessary script elements for managing the page/zone/blocks
         private void AddConfigElements()
         {
-            // Create a javascript object to store the current page and layout for page admin script to use
-            string script = string.Format(@"var rock = {{ pageId:{0}, layout:'{1}' }};",
-                PageInstance.Id, PageInstance.Layout);
-            this.Page.ClientScript.RegisterStartupScript(this.GetType(), "rock-js-object", script, true);
-
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
 
@@ -1008,26 +1019,84 @@ namespace Rock.Cms
         #region Event Handlers
 
         /// <summary>
-        /// Flushes a cached page whenever it's updated
+        /// Flushes a cached page and it's parent page's list of child pages whenever a page is updated
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
         void Page_Updated( object sender, Models.ModelUpdatedEventArgs e )
         {
-            Rock.Cms.Cached.Page.Flush( e.Model.Id );
+            // Get a reference to the updated page
+            Rock.Models.Cms.Page page = e.Model as Rock.Models.Cms.Page;
+            if ( page != null)
+            {
+                // Check to see if the page being updated is cached
+                ObjectCache cache = MemoryCache.Default;
+                if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.Id ) ) )
+                {
+                    // Get the cached page
+                    var cachedPage = Rock.Cms.Cached.Page.Read( page.Id );
+
+                    // if the parent page has changed, flush the old parent page's list of child pages
+                    if ( cachedPage.ParentPage != null && cachedPage.ParentPage.Id != page.ParentPageId )
+                        cachedPage.ParentPage.FlushChildPages();
+
+                    // Flush the updated page from cache
+                    Rock.Cms.Cached.Page.Flush( page.Id );
+                }
+
+                // Check to see if updated page has a parent
+                if ( page.ParentPageId.HasValue )
+                {
+                    // If the parent page is cached, flush it's list of child pages
+                    if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.ParentPageId.Value ) ) )
+                        Rock.Cms.Cached.Page.Read( page.ParentPageId.Value ).FlushChildPages();
+                }
+            }
         }
 
         /// <summary>
-        /// Flushes a block instance and it's parent page from cache whenever it is updated
+        /// Flushes a cached page and it's parent page's list of child pages whenever a page is deleted
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        void Page_Deleted( object sender, Models.ModelUpdatedEventArgs e )
+        {
+            // Get a reference to the deleted page
+            Rock.Models.Cms.Page page = e.Model as Rock.Models.Cms.Page;
+            if ( page != null )
+            {
+                // Check to see if the page being updated is cached
+                ObjectCache cache = MemoryCache.Default;
+                if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.Id ) ) )
+                {
+                    // Get the cached page
+                    var cachedPage = Rock.Cms.Cached.Page.Read( page.Id );
+
+                    // if the parent page is not null, flush parent page's list of child pages
+                    if ( cachedPage.ParentPage != null )
+                        cachedPage.ParentPage.FlushChildPages();
+
+                    // Flush the updated page from cache
+                    Rock.Cms.Cached.Page.Flush( page.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes a block instance and it's parent page from cache whenever it is updated or deleted
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
         void BlockInstance_Updated( object sender, Models.ModelUpdatedEventArgs e )
         {
+            // Get a reference to the update block instance
             Rock.Models.Cms.BlockInstance blockInstance = e.Model as Rock.Models.Cms.BlockInstance;
             if ( blockInstance != null )
             {
+                // Flush the block instance from cache
                 Rock.Cms.Cached.BlockInstance.Flush( blockInstance.Id );
+
+                // Flush the block instance's parent page 
                 if ( blockInstance.PageId.HasValue )
                     Rock.Cms.Cached.Page.Flush( blockInstance.PageId.Value );
             }

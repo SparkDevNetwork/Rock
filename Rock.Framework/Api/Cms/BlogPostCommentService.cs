@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( BlogPostComment.Authorized( "Edit", currentUser ) )
                 {
                     BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId() );
+                    BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );

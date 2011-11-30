@@ -116,6 +116,7 @@ namespace Rock.Api.Cms
                 if ( BlogTag.Authorized( "Edit", currentUser ) )
                 {
                     BlogTagService.Delete( BlogTag, currentUser.PersonId() );
+                    BlogTagService.Save( BlogTag, currentUser.PersonId() );
                 }
                 else
                     throw new FaultException( "Unauthorized" );
