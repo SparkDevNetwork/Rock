@@ -97,7 +97,7 @@ namespace Rock.Services
         public bool Delete( T item, int? personId  )
         {
             bool cancel = false;
-            item.RaiseAddingEvent( out cancel, personId );
+            item.RaiseDeletingEvent( out cancel, personId );
             if ( !cancel )
             {
                 _repository.Delete( item );

@@ -271,7 +271,11 @@ namespace Rock.Cms.Cached
                 if ( blockInstanceIds != null )
                 {
                     foreach ( int id in blockInstanceIds )
-                        blockInstances.Add( BlockInstance.Read( id ) );
+                    {
+                        BlockInstance blockInstance = BlockInstance.Read( id );
+                        if ( blockInstance != null )
+                            blockInstances.Add( blockInstance );
+                    }
                 }
                 else
                 {

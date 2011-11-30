@@ -1,30 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Data.Services;
 using System.Linq;
+using System.Net;
 using System.ServiceModel.Activation;
 using System.Web;
+using System.Web.Caching;
+using System.Web.Compilation;
 using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
 
-using System.Web.Caching;
-using System.Net;
-using System.Configuration;
-using System.Web.Compilation;
-using System.Collections.Specialized;
-
-using Rock.Cms;
-using Rock.Cms.Security;
-using Rock.Models.Cms;
-using Rock.Services.Cms;
-using Rock.Jobs;
-using Rock.Services.Util;
-using Rock.Models.Util;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
+using Rock.Cms;
+using Rock.Cms.Security;
+using Rock.Jobs;
+using Rock.Models.Cms;
+using Rock.Models.Util;
+using Rock.Services.Cms;
+using Rock.Services.Util;
 
 namespace RockWeb
 {
@@ -35,6 +34,8 @@ namespace RockWeb
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
+
+        #region Asp.Net Events
 
         protected void Application_Start( object sender, EventArgs e )
         {
@@ -82,15 +83,10 @@ namespace RockWeb
             }
             
             RegisterRoutes( RouteTable.Routes );
-            Rock.Cms.Security.Authorization.Load();
-        }
 
-        private void AddCallBack()
-        {
-            OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
-            HttpRuntime.Cache.Insert( "IISCallBack", 600, null,
-                DateTime.Now.AddSeconds( 600 ), Cache.NoSlidingExpiration,
-                CacheItemPriority.NotRemovable, OnCacheRemove );
+            Rock.Cms.Security.Authorization.Load();
+
+            AddEventHandlers();
         }
 
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
@@ -141,6 +137,18 @@ namespace RockWeb
             }
         }
 
+        #endregion
+
+        #region Private Methods
+
+        private void AddCallBack()
+        {
+            OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
+            HttpRuntime.Cache.Insert( "IISCallBack", 600, null,
+                DateTime.Now.AddSeconds( 600 ), Cache.NoSlidingExpiration,
+                CacheItemPriority.NotRemovable, OnCacheRemove );
+        }
+
         private void RegisterRoutes( RouteCollection routes )
         {
             PageRouteService pageRouteService = new PageRouteService();
@@ -167,5 +175,122 @@ namespace RockWeb
             routes.Add( new Route( "", new RockRouteHandler() ) );
         }
 
+        private void AddEventHandlers()
+        {
+            Rock.Models.Cms.BlockInstance.Updated += new EventHandler<Rock.Models.ModelUpdatedEventArgs>( BlockInstance_Updated );
+            Rock.Models.Cms.BlockInstance.Deleting += new EventHandler<Rock.Models.ModelUpdatingEventArgs>( BlockInstance_Deleting );
+            Rock.Models.Cms.Page.Updated += new EventHandler<Rock.Models.ModelUpdatedEventArgs>( Page_Updated );
+            Rock.Models.Cms.Page.Deleting += new EventHandler<Rock.Models.ModelUpdatingEventArgs>(Page_Deleting); 
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Flushes a cached page and it's parent page's list of child pages whenever a page is updated
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        void Page_Updated( object sender, Rock.Models.ModelUpdatedEventArgs e )
+        {
+            // Get a reference to the updated page
+            Rock.Models.Cms.Page page = e.Model as Rock.Models.Cms.Page;
+            if ( page != null )
+            {
+                // Check to see if the page being updated is cached
+                System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
+                if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.Id ) ) )
+                {
+                    // Get the cached page
+                    var cachedPage = Rock.Cms.Cached.Page.Read( page.Id );
+
+                    // if the parent page has changed, flush the old parent page's list of child pages
+                    if ( cachedPage.ParentPage != null && cachedPage.ParentPage.Id != page.ParentPageId )
+                        cachedPage.ParentPage.FlushChildPages();
+
+                    // Flush the updated page from cache
+                    Rock.Cms.Cached.Page.Flush( page.Id );
+                }
+
+                // Check to see if updated page has a parent
+                if ( page.ParentPageId.HasValue )
+                {
+                    // If the parent page is cached, flush it's list of child pages
+                    if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.ParentPageId.Value ) ) )
+                        Rock.Cms.Cached.Page.Read( page.ParentPageId.Value ).FlushChildPages();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes a cached page and it's parent page's list of child pages whenever a page is being deleted
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        void Page_Deleting( object sender, Rock.Models.ModelUpdatingEventArgs e )
+        {
+            // Get a reference to the deleted page
+            Rock.Models.Cms.Page page = e.Model as Rock.Models.Cms.Page;
+            if ( page != null )
+            {
+                // Check to see if the page being updated is cached
+                System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
+                if ( cache.Contains( Rock.Cms.Cached.Page.CacheKey( page.Id ) ) )
+                {
+                    // Get the cached page
+                    var cachedPage = Rock.Cms.Cached.Page.Read( page.Id );
+
+                    // if the parent page is not null, flush parent page's list of child pages
+                    if ( cachedPage.ParentPage != null )
+                        cachedPage.ParentPage.FlushChildPages();
+
+                    // Flush the updated page from cache
+                    Rock.Cms.Cached.Page.Flush( page.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes a block instance and it's parent page from cache whenever it is updated
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        void BlockInstance_Updated( object sender, Rock.Models.ModelUpdatedEventArgs e )
+        {
+            // Get a reference to the update block instance
+            Rock.Models.Cms.BlockInstance blockInstance = e.Model as Rock.Models.Cms.BlockInstance;
+            if ( blockInstance != null )
+            {
+                // Flush the block instance from cache
+                Rock.Cms.Cached.BlockInstance.Flush( blockInstance.Id );
+
+                // Flush the block instance's parent page 
+                if ( blockInstance.PageId.HasValue )
+                    Rock.Cms.Cached.Page.Flush( blockInstance.PageId.Value );
+            }
+        }
+
+        /// <summary>
+        /// Flushes a block instance and it's parent page from cache whenever it is being deleted
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        void BlockInstance_Deleting( object sender, Rock.Models.ModelUpdatingEventArgs e )
+        {
+            // Get a reference to the deleted block instance
+            Rock.Models.Cms.BlockInstance blockInstance = e.Model as Rock.Models.Cms.BlockInstance;
+            if ( blockInstance != null )
+            {
+                // Flush the block instance from cache
+                Rock.Cms.Cached.BlockInstance.Flush( blockInstance.Id );
+
+                // Flush the block instance's parent page 
+                if ( blockInstance.PageId.HasValue )
+                    Rock.Cms.Cached.Page.Flush( blockInstance.PageId.Value );
+            }
+        }
+
+        #endregion
     }
 }
