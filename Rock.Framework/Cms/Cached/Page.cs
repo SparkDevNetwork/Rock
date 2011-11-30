@@ -595,6 +595,21 @@ namespace Rock.Cms.Cached
         }
 
         /// <summary>
+        /// Flushes all the pages that use a specific layout.
+        /// </summary>
+        public static void FlushLayout( string layout )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            foreach ( var item in cache )
+                if ( item.Key.StartsWith( "Rock:Page:" ) )
+                {
+                    Page page = cache[item.Key] as Page;
+                    if ( page != null && page.Layout == layout )
+                        cache.Remove( item.Key );
+                }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
