@@ -211,7 +211,7 @@ namespace Rock.Repository
                             {
                                 entityChanges.Concat( GetEntityChanges( model ) );
 
-                                modifiedEntities.Add( modifiedEntities );
+                                modifiedEntities.Add( entry.Entity );
 
                                 if ( model is IAuditable )
                                 {

@@ -502,6 +502,9 @@ namespace Rock.Cms
                     }
                 }
             }
+
+            Rock.Models.Cms.BlockInstance.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( BlockInstance_Updated );
+            Rock.Models.Cms.Page.Updated += new EventHandler<Models.ModelUpdatedEventArgs>( Page_Updated );
         }
 
         /// <summary>
@@ -564,133 +567,13 @@ namespace Rock.Cms
         // Adds the neccessary script elements for managing the page/zone/blocks
         private void AddConfigElements()
         {
-            string script = @"
+            // Create a javascript object to store the current page and layout for page admin script to use
+            string script = string.Format(@"var rock = {{ pageId:{0}, layout:'{1}' }};",
+                PageInstance.Id, PageInstance.Layout);
+            this.Page.ClientScript.RegisterStartupScript(this.GetType(), "rock-js-object", script, true);
 
-    $(document).ready(function () {
-
-        $('#divZoneSelect').dialog({ 
-            title: 'Move Block To',
-            autoOpen: false,
-            width: 290,
-            height: 300,
-            modal: true
-        })
-
-        $('#modalDiv').dialog({ 
-            autoOpen: false,
-            width: 580,
-            height: 600,
-            modal: true
-        })
-
-        $('a.show-iframe-dialog').click(function () {
-
-            $('#modalIFrame').attr('src', $(this).attr('href'));
-
-            $('#modalDiv').bind('dialogclose', function (event, ui) {
-                if ($(this).attr('instance-id') != undefined)
-                    $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
-                $('#modalDiv').unbind('dialogclose');
-                $('#modalIFrame').attr('src', '');
-            });
-
-            if ($(this).attr('title') != undefined)
-                $('#modalDiv').dialog('option', 'title', $(this).attr('title'));
-
-            $('#modalDiv').dialog('open');
-
-            return false;
-
-        });
-
-        $('div.zone-instance').sortable({
-            appendTo: 'body',
-            connectWith: 'div.zone-instance',
-            handle: 'a.block-move',
-            opacity: 0.6,
-            start: function(event, ui) {
-                var start_pos = ui.item.index();
-                ui.item.data('start_pos', start_pos);
-                $('div.zone-instance').addClass('outline');
-            },
-            stop: function(event, ui) {
-                $('div.zone-instance').removeClass('outline');
-            }
-        }).disableSelection();
-
-        $('a.blockinstance-move').click(function () {
-
-            var $moveLink = $(this);
-
-            $('#btnSaveZoneSelect').attr('blockInstance', $(this).attr('href'));
-            $('#ddlZones').val($(this).attr('zone'));
-            if ($(this).attr('zoneloc') == 'Page')
-            {
-                $('#rblLocation_1').removeAttr('checked');
-                $('#rblLocation_0').attr('checked', 'checked');
-            }
-            else
-            {
-                $('#rblLocation_0').removeAttr('checked');
-                $('#rblLocation_1').attr('checked', 'checked');
-            }
-
-            $('#divZoneSelect').dialog('open');
-
-            $('#btnSaveZoneSelect').click(function () {
-                
-                $('#divZoneSelect').dialog('close');
-
-                var $source = $('#bid_' + $(this).attr('blockinstance'));
-                var $target = $('#zone-' + $('#ddlZones').val());
-
-                $moveLink.attr('zone', $('#ddlZones').val());
-
-                if ($('#rblLocation_0').attr('checked') == true)
-                {
-                    $target.append($source);
-                    $moveLink.attr('zoneloc', 'Page');
-                    $source.attr('zoneLoc', 'Page');
-                }
-                else
-                {
-                    if ($('#' + $target.attr('id') + '>[zoneLoc=""Layout""]').length > 0)
-                        $source.insertAfter($('#' + $target.attr('id') + '>[zoneLoc=""Layout""]:last'));
-                    else
-                        $target.append($source);
-                    $moveLink.attr('zoneloc', 'Layout');
-                    $source.attr('zoneLoc', 'Layout');
-                }
-                $(this).unbind('click');
-            });
-
-            return false;
-        });
-
-        $('a.blockinstance-delete').click(function () {
-            var elementId = $(this).attr('href');
-            if (confirm('Are you sure? (element: ' + elementId + ')'))
-            {
-                alert('block instance delete logic goes here!');
-            }
-            return false;
-        });
-
-        $('#cms-admin-footer .block-config').click(function () {
-            $('.block-configuration').toggle();
-            $('.block-instance').toggleClass('outline');
-            return false;
-        });
-
-        $('#cms-admin-footer .page-zones').click(function () {
-            $('.zone-configuration').toggle();
-            $('.zone-instance').toggleClass('outline');
-            return false;
-        });
-
-    });
-";
-            this.Page.ClientScript.RegisterStartupScript(this.GetType(), "config-script", script, true);
+            // Add the page admin script
+            AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
 
             // Add Zone Selection Popup (for moving blocks to another zone)
             HtmlGenericControl divZoneSelect = new HtmlGenericControl( "div" );
@@ -1123,6 +1006,32 @@ namespace Rock.Cms
         #endregion
 
         #region Event Handlers
+
+        /// <summary>
+        /// Flushes a cached page whenever it's updated
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        void Page_Updated( object sender, Models.ModelUpdatedEventArgs e )
+        {
+            Rock.Cms.Cached.Page.Flush( e.Model.Id );
+        }
+
+        /// <summary>
+        /// Flushes a block instance and it's parent page from cache whenever it is updated
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Models.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        void BlockInstance_Updated( object sender, Models.ModelUpdatedEventArgs e )
+        {
+            Rock.Models.Cms.BlockInstance blockInstance = e.Model as Rock.Models.Cms.BlockInstance;
+            if ( blockInstance != null )
+            {
+                Rock.Cms.Cached.BlockInstance.Flush( blockInstance.Id );
+                if ( blockInstance.PageId.HasValue )
+                    Rock.Cms.Cached.Page.Flush( blockInstance.PageId.Value );
+            }
+        }
 
         //void btnSaveAttributes_Click( object sender, EventArgs e )
         //{

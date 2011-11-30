@@ -69,6 +69,7 @@
     <Compile Include="Address\ServiceDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
+    <Compile Include="Api\Cms\BlockInstanceService.Partial.cs" />
     <Compile Include="Api\Cms\AuthService.cs" />
     <Compile Include="Api\Cms\BlockInstanceService.cs" />
     <Compile Include="Api\Cms\BlockService.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Api\Cms\BlogTagService.cs" />
     <Compile Include="Api\Cms\FileService.cs" />
     <Compile Include="Api\Cms\HtmlContentService.cs" />
+    <Compile Include="Api\Cms\IBlockInstanceService.Partial.cs" />
     <Compile Include="Api\Cms\IAuthService.cs" />
     <Compile Include="Api\Cms\IBlockInstanceService.cs" />
     <Compile Include="Api\Cms\IBlockService.cs" />
