@@ -168,14 +168,22 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Cms\SystemGuids.cs" />
-    <Compile Include="Controls\DataPropertyEdit.cs" />
-    <Compile Include="Controls\ReorderField.cs" />
-    <Compile Include="Controls\EditField.cs" />
-    <Compile Include="Controls\DeleteField.cs">
+    <Compile Include="Controls\Data Fields\DataDropDownList.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controls\Grid.cs" />
-    <Compile Include="Controls\BoolField.cs" />
+    <Compile Include="Controls\Data Fields\DataTextBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controls\LabeledDropDownList.cs" />
+    <Compile Include="Controls\LabeledTextBox.cs" />
+    <Compile Include="Controls\Grid\SecurityField.cs" />
+    <Compile Include="Controls\Grid\ReorderField.cs" />
+    <Compile Include="Controls\Grid\EditField.cs" />
+    <Compile Include="Controls\Grid\DeleteField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\Grid.cs" />
+    <Compile Include="Controls\Grid\BoolField.cs" />
     <Compile Include="Controls\HtmlGenericContainer.cs" />
     <Compile Include="Controls\NotificationBox.cs" />
     <Compile Include="Controls\RowEventArgs.cs" />
