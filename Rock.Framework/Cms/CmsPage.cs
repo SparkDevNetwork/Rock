@@ -350,6 +350,7 @@ namespace Rock.Cms
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
+                    AddPopupControls();
                     if (canConfigPage)
                         AddConfigElements();
 
@@ -572,6 +573,28 @@ namespace Rock.Cms
 
         #region CMS Admin Content
 
+        private void AddPopupControls()
+        {
+            // Add the page admin script
+            AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
+
+            // Add iFrame popup div.  
+            HtmlGenericControl modalDiv = new HtmlGenericControl( "div" );
+            modalDiv.ClientIDMode = ClientIDMode.AutoID;
+            modalDiv.Attributes.Add( "id", "modalDiv" );
+            this.Form.Controls.Add( modalDiv );
+
+            HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
+            modalIFrame.Attributes.Add( "id", "modalIFrame" );
+            modalIFrame.Attributes.Add( "width", "100%" );
+            modalIFrame.Attributes.Add( "height", "545px" );
+            modalIFrame.Attributes.Add( "marginWidth", "0" );
+            modalIFrame.Attributes.Add( "marginHeight", "0" );
+            modalIFrame.Attributes.Add( "frameBorder", "0" );
+            modalIFrame.Attributes.Add( "scrolling", "auto" );
+            modalDiv.Controls.Add( modalIFrame );
+        }
+
         // Adds the neccessary script elements for managing the page/zone/blocks
         private void AddConfigElements()
         {
@@ -642,22 +665,6 @@ namespace Rock.Cms
             btnSaveZoneSelect.ID = "btnSaveZoneSelect";
             btnSaveZoneSelect.Text = "Save";
             divZoneSelect.Controls.Add( btnSaveZoneSelect );
-
-            // Add iFrame popup div
-            HtmlGenericControl modalDiv = new HtmlGenericControl("div");
-            modalDiv.ClientIDMode = ClientIDMode.AutoID;
-            modalDiv.Attributes.Add("id", "modalDiv");
-            this.Form.Controls.Add(modalDiv);
-
-            HtmlGenericControl modalIFrame = new HtmlGenericControl("iframe");
-            modalIFrame.Attributes.Add("id", "modalIFrame");
-            modalIFrame.Attributes.Add("width", "100%");
-            modalIFrame.Attributes.Add("height", "545px");
-            modalIFrame.Attributes.Add("marginWidth", "0");
-            modalIFrame.Attributes.Add("marginHeight", "0");
-            modalIFrame.Attributes.Add("frameBorder", "0");
-            modalIFrame.Attributes.Add("scrolling", "auto");
-            modalDiv.Controls.Add(modalIFrame);
 
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Control>> zoneControl in this.Zones )

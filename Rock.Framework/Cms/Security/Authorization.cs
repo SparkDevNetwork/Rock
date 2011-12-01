@@ -185,11 +185,21 @@ namespace Rock.Cms.Security
         /// <summary>
         /// Encodes the entity type name for use in a URL
         /// </summary>
-        /// <param name="iSecuredType">Type of the i secured.</param>
+        /// <param name="iSecuredType">Type of the item to secure.</param>
         /// <returns></returns>
         public static string EncodeEntityTypeName( Type iSecuredType )
         {
-            byte[] b = Encoding.UTF8.GetBytes( iSecuredType.AssemblyQualifiedName );
+            return EncodeEntityTypeName( iSecuredType.AssemblyQualifiedName );
+        }
+
+        /// <summary>
+        /// Encodes the entity type name for use in a URL
+        /// </summary>
+        /// <param name="assemblyQualifiedName">Assembly name of the item to secure.</param>
+        /// <returns></returns>
+        public static string EncodeEntityTypeName( string assemblyQualifiedName )
+        {
+            byte[] b = Encoding.UTF8.GetBytes( assemblyQualifiedName );
             return Convert.ToBase64String( b );
         }
 
