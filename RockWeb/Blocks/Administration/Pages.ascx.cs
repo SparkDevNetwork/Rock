@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Administration
                     page.SiteId = PageInstance.Site.Id;
                 }
 
-                page.Title = tbPageName.Text;
+                page.Title = dpePageName.Text;
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Administration
                 page = pageService.Get( pageId );
 
             page.Layout = ddlLayout.Text;
-            page.Name = tbPageName.Text;
+            page.Name = dpePageName.Text;
 
             pageService.Save( page, CurrentPersonId );
 
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Administration
             {
                 hfPageId.Value = page.Id.ToString();
                 ddlLayout.Text = page.Layout;
-                tbPageName.Text = page.Name;
+                dpePageName.Text = page.Name;
             }
             else
             {
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Administration
                     ddlLayout.Text = _page.Layout;
                 else
                     ddlLayout.Text = PageInstance.Layout;
-                tbPageName.Text = string.Empty;
+                dpePageName.Text = string.Empty;
             }
 
             pnlDetails.Visible = true;

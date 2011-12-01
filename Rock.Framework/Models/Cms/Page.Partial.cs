@@ -29,6 +29,16 @@ namespace Rock.Models.Cms
         }
     }
 
+#pragma warning disable
+    
+    public class CommentPage
+    {
+        [Required( ErrorMessage = "Name is required" )]
+        public string Name { get; set; }
+    }
+
+#pragma warning restore
+
     /// <summary>
     /// How should page be displayed in a page navigation block
     /// </summary>

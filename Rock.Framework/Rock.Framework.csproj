@@ -168,6 +168,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Cms\SystemGuids.cs" />
+    <Compile Include="Controls\DataPropertyEdit.cs" />
     <Compile Include="Controls\ReorderField.cs" />
     <Compile Include="Controls\EditField.cs" />
     <Compile Include="Controls\DeleteField.cs">
@@ -223,6 +224,7 @@
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Models\Core\ServiceLog.cs" />
     <Compile Include="Models\Crm\Address.cs" />
+    <Compile Include="Models\Crm\Address.Partial.cs" />
     <Compile Include="Models\IOrdered.cs" />
     <Compile Include="Models\Core\Attribute.cs" />
     <Compile Include="Models\Core\Attribute.Partial.cs">

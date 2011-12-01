@@ -39,6 +39,7 @@ namespace Rock.Services.Crm
         public void Standardize( Rock.Models.Crm.Address address, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
+            string inputAddress = address.ToString();
 
             // Try each of the standardization services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeService, Rock.Address.IStandardizeServiceData>> service in Rock.Address.StandardizeContainer.Instance.Services )
@@ -52,7 +53,7 @@ namespace Rock.Services.Crm
                     log.Time = DateTime.Now;
                     log.Type = "Address Standardize";
                     log.Name = service.Value.Metadata.ServiceName;
-                    log.Input = address.Raw;
+                    log.Input = inputAddress;
                     log.Result = result;
                     log.Success = success;
                     logService.Add( log, personId );
@@ -94,6 +95,7 @@ namespace Rock.Services.Crm
         public void Geocode( Rock.Models.Crm.Address address, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
+            string inputAddress = address.ToString();
 
             // Try each of the geocoding services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeService, Rock.Address.IGeocodeServiceData>> service in Rock.Address.GeocodeContainer.Instance.Services )
@@ -107,7 +109,7 @@ namespace Rock.Services.Crm
                     log.Time = DateTime.Now;
                     log.Type = "Address Geocode";
                     log.Name = service.Value.Metadata.ServiceName;
-                    log.Input = address.Raw;
+                    log.Input = inputAddress;
                     log.Result = result;
                     log.Success = success;
                     logService.Add( log, personId );

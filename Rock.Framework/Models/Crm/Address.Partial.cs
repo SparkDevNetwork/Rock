@@ -11,13 +11,15 @@ namespace Rock.Models.Crm
     public partial class Address
     {
         /// <summary>
-        /// Updates the raw value by concatenating all the parts of the address
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
-        internal void UpdateRaw()
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            if ( this.Raw.Trim() == string.Empty )
-                this.Raw = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip );
+            return string.Format( "{0} {1} {2}, {3} {4}", 
+                this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
     }
 }
