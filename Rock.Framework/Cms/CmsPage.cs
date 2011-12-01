@@ -619,6 +619,7 @@ namespace Rock.Cms
             liLocation.Attributes.Add( "id", "liLocation" );
             olZoneSelect.Controls.Add( liLocation );
 
+            // TODO: The option to edit a layout block or move a block to the layout be controlled by site security and not just page security
             RadioButtonList rblLocation = new RadioButtonList();
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.RepeatLayout = RepeatLayout.Flow;

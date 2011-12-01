@@ -40,5 +40,20 @@ namespace Rock
         }
 
         #endregion
+
+        #region Enum Extensions
+
+        public static String ConvertToString( this Enum eff )
+        {
+            return Enum.GetName( eff.GetType(), eff );
+        }
+
+        public static T ConvertToEnum<T>( this String enumValue )
+        {
+            return ( T )Enum.Parse( typeof( T ), enumValue );
+        }
+
+        #endregion
+
     }
 }
