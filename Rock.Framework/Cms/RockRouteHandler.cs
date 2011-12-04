@@ -43,10 +43,30 @@ namespace Rock.Cms
 			// If page has not been specified get the site by the domain and use the site's default page
 			else
 			{
-				Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
-				Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
-				if ( siteDomain != null && siteDomain.Site != null && siteDomain.Site.DefaultPageId != null )
-					pageId = siteDomain.Site.DefaultPageId.Value.ToString();
+                string host = requestContext.HttpContext.Request.Url.Host;
+                string cacheKey = "Rock:DomainSites";
+
+                ObjectCache cache = MemoryCache.Default;
+                Dictionary<string, int> sites = cache[cacheKey] as Dictionary<string, int>;
+                if ( sites == null )
+                    sites = new Dictionary<string, int>();
+
+                Rock.Cms.Cached.Site site;
+                if ( sites.ContainsKey( host ) )
+                    site = Rock.Cms.Cached.Site.Read( sites[host] );
+                else
+                {
+                    Rock.Services.Cms.SiteDomainService siteDomainService = new Rock.Services.Cms.SiteDomainService();
+                    Rock.Models.Cms.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
+                    if ( siteDomain != null )
+                        sites.Add( host, siteDomain.SiteId );
+                    site = Rock.Cms.Cached.Site.Read( siteDomain.SiteId );
+                }
+
+                if ( site != null && site.DefaultPageId.HasValue )
+                    pageId = site.DefaultPageId.Value.ToString();
+
+                cache[cacheKey] = sites;
 			}
 
             Rock.Cms.Cached.Page page = null;

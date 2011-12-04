@@ -550,6 +550,9 @@ namespace Rock.Cms.Security
         /// </returns>
         public override MembershipUser GetUser( string username, bool userIsOnline )
         {
+            if ( username.Trim() == string.Empty )
+                return null;
+
             UserService UserService = new Services.Cms.UserService();
             return GetUser( UserService, username, userIsOnline );
         }
