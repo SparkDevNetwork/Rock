@@ -362,13 +362,8 @@ namespace Rock.Cms
                         bool canEdit = blockInstance.Authorized( "Edit", user );
                         bool canView = blockInstance.Authorized( "View", user );
 
-                        // If user can't view and they haven't logged in, redirect to the login page
-                        if ( !canConfig && !canEdit && !canView )
-                        {
-                            if ( user == null || !user.IsApproved )
-                                FormsAuthentication.RedirectToLoginPage();
-                        }
-                        else
+                        // Make sure user has access to view block instance
+                        if ( canConfig || canEdit || canView )
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
@@ -678,13 +673,15 @@ namespace Rock.Cms
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
 
+                // Zone content configuration widget
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
                 zoneConfig.Attributes.Add( "style", "display: none;" );
                 zoneConfig.Attributes.Add( "class", "zone-configuration" );
 
-                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", control.ID ) ) );
+                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.Key ) ) );
 
+                // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfig.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-iframe-dialog" );
@@ -967,7 +964,10 @@ namespace Rock.Cms
             foreach ( Route route in RouteTable.Routes )
             {
                 if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == routeId.ToString() )
+                {
                     routeUrl = route.Url;
+                    break;
+                }
             }
 
             // get dictionary of parms in the route
