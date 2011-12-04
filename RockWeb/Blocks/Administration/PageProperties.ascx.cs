@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                 
                 pageService.Save( page, CurrentPersonId );
 
-                Rock.Attribute.Helper.GetEditValues( olProperties, page );
+                Rock.Attribute.Helper.GetEditValues( olProperties, _page );
                 _page.SaveAttributeValues( CurrentPersonId );
 
                 Rock.Cms.Cached.Page.Flush( _page.Id );
