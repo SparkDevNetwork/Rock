@@ -339,6 +339,7 @@ namespace Rock.Cms
                 configControls.Add( upTrigger );
                 upTrigger.Attributes.Add( "style", "display:none" );
 
+                // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
                 aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockProperties/{0}", BlockInstance.Id)));
@@ -397,9 +398,11 @@ namespace Rock.Cms
         /// </summary>
         internal void CreateAttributes()
         {
-            if ( Rock.Attribute.Helper.CreateAttributes( this.GetType(),
+            if ( Rock.Attribute.Helper.CreateAttributes( this.GetType(), 
                 "Rock.Models.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
+            {
                 this.BlockInstance.ReloadAttributeValues();
+            }
 
             this.BlockInstance.Block.InstancePropertiesVerified = true;
         }
