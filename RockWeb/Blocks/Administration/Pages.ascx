@@ -22,14 +22,8 @@
             <legend>Child Page</legend>
             <ol>
                 <li>
-                    <Rock:DataPropertyEdit ID="dpePageName" runat="server" LabelText="Name"
-                        SourceTypeName="Rock.Models.Cms.Page, Rock.Framework" PropertyName="Name" />
-<%--                    <asp:Label ID="lblPageName" runat="server" AssociatedControlID="tbPageName">Name</asp:Label>
-                    <asp:TextBox ID="tbPageName" runat="server"></asp:TextBox>
-                    <asp:RequiredFieldValidator ID="rfvPageName" runat="server" ControlToValidate="tbPageName" 
-                            CssClass="failureNotification" ErrorMessage="Page Name is required." ToolTip="Page Name is required." 
-                            ValidationGroup="PagesValidationGroup">*</asp:RequiredFieldValidator>
---%>                </li>
+                    <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Models.Cms.Page, Rock.Framework" PropertyName="Name" />
+                </li>
                 <li>
                     <asp:Label ID="lblLayout" runat="server" AssociatedControlID="ddlLayout">Layout</asp:Label>
                     <asp:DropDownList ID="ddlLayout" runat="server"></asp:DropDownList>
