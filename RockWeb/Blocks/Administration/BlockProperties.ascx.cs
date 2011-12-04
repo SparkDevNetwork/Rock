@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
                 blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
 
-                Rock.Attribute.Helper.GetEditValues( olProperties, blockInstance );
+                Rock.Attribute.Helper.GetEditValues( olProperties, _blockInstance );
                 _blockInstance.SaveAttributeValues( CurrentPersonId );
 
                 Rock.Cms.Cached.BlockInstance.Flush( _blockInstance.Id );
