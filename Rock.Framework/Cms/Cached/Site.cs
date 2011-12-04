@@ -85,6 +85,15 @@ namespace Rock.Cms.Cached
         }
 
         /// <summary>
+        /// Gets the default page id.
+        /// </summary>
+        public int? DefaultPageId
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets the default page.
         /// </summary>
         public Page DefaultPage
@@ -97,7 +106,6 @@ namespace Rock.Cms.Cached
                     return null;
             }
         }
-        private int? DefaultPageId;
 
         /// <summary>
         /// Saves the attribute values.
