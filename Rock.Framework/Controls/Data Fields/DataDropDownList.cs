@@ -8,6 +8,9 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [ToolboxData( "<{0}:DataDropDownList runat=server></{0}:DataDropDownList>" )]
     public class DataDropDownList : LabeledDropDownList
     {
@@ -55,21 +58,22 @@ namespace Rock.Controls
             }
         }
 
-        protected override void OnInit( EventArgs e )
-        {
-            validator = new Validation.DataAnnotationValidator();
-            validator.ID = "dav";
-            validator.ControlToValidate = this.ID;
-            validator.ForeColor = System.Drawing.Color.Red;
-
-            base.OnInit( e );
-        }
-
         protected override void Render( HtmlTextWriter writer )
         {
             base.Render( writer );
             validator.RenderControl( writer );
         }
 
+        protected override void CreateChildControls()
+        {
+            validator = new Validation.DataAnnotationValidator();
+            validator.ID = "dav";
+            validator.ControlToValidate = this.ID;
+            validator.ForeColor = System.Drawing.Color.Red;
+
+            Controls.Add( validator );
+
+            base.CreateChildControls();
+        }
     }
 }
