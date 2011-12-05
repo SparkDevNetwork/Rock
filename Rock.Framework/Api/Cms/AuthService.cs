@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Auth object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.AuthDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.Auth Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Auth object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAuth( string id, Rock.Models.Cms.AuthDTO Auth )
+        public void UpdateAuth( string id, Rock.DataTransferObjects.Cms.Auth Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Auth object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAuth( Rock.Models.Cms.AuthDTO Auth )
+        public void CreateAuth( Rock.DataTransferObjects.Cms.Auth Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

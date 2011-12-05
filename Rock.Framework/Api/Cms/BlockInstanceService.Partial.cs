@@ -26,7 +26,7 @@ namespace Rock.Api.Cms
         /// <param name="BlockInstance">The block instance.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}" )]
-        public void Move( string id, BlockInstanceDTO BlockInstance )
+        public void Move( string id, Rock.DataTransferObjects.Cms.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

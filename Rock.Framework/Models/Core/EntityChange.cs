@@ -100,9 +100,22 @@ namespace Rock.Models.Core
         /// <value>
         /// A <see cref="EntityChangeDTO"/> object.
         /// </value>
-		public virtual EntityChangeDTO DataTransferObject
+		public Rock.DataTransferObjects.Core.EntityChange DataTransferObject
 		{
-			get { return new EntityChangeDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Core.EntityChange dto = new Rock.DataTransferObjects.Core.EntityChange();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.ChangeSet = this.ChangeSet;
+				dto.ChangeType = this.ChangeType;
+				dto.EntityType = this.EntityType;
+				dto.EntityId = this.EntityId;
+				dto.Property = this.Property;
+				dto.OriginalValue = this.OriginalValue;
+				dto.CurrentValue = this.CurrentValue;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -112,110 +125,6 @@ namespace Rock.Models.Core
 		public override string AuthEntity { get { return "Core.EntityChange"; } }
 
     }
-
-    /// <summary>
-    /// Entity Change Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class EntityChangeDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Change Set.
-		/// </summary>
-		/// <value>
-		/// Change Set.
-		/// </value>
-		public Guid ChangeSet { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Change Type.
-		/// </summary>
-		/// <value>
-		/// Change Type.
-		/// </value>
-		public string ChangeType { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Type.
-		/// </summary>
-		/// <value>
-		/// Entity Type.
-		/// </value>
-		public string EntityType { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		public int EntityId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Property.
-		/// </summary>
-		/// <value>
-		/// Property.
-		/// </value>
-		public string Property { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Original Value.
-		/// </summary>
-		/// <value>
-		/// Original Value.
-		/// </value>
-		public string OriginalValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Current Value.
-		/// </summary>
-		/// <value>
-		/// Current Value.
-		/// </value>
-		public string CurrentValue { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityChangeDTO"/> class.
-        /// </summary>
-		public EntityChangeDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityChangeDTO"/> class.
-        /// </summary>
-        /// <param name="entityChange">The Entity Change.</param>
-		public EntityChangeDTO( EntityChange entityChange )
-		{
-			Id = entityChange.Id;
-			Guid = entityChange.Guid;
-			ChangeSet = entityChange.ChangeSet;
-			ChangeType = entityChange.ChangeType;
-			EntityType = entityChange.EntityType;
-			EntityId = entityChange.EntityId;
-			Property = entityChange.Property;
-			OriginalValue = entityChange.OriginalValue;
-			CurrentValue = entityChange.CurrentValue;
-		}
-	}
-
     /// <summary>
     /// Entity Change Configuration class.
     /// </summary>

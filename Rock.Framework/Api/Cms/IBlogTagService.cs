@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a BlogTag object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.BlogTagDTO Get( string id );
+        Rock.DataTransferObjects.Cms.BlogTag Get( string id );
 
 		/// <summary>
 		/// Updates a BlogTag object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogTag( string id, Rock.Models.Cms.BlogTagDTO BlogTag );
+        void UpdateBlogTag( string id, Rock.DataTransferObjects.Cms.BlogTag BlogTag );
 
 		/// <summary>
 		/// Creates a new BlogTag object
 		/// </summary>
         [OperationContract]
-        void CreateBlogTag( Rock.Models.Cms.BlogTagDTO BlogTag );
+        void CreateBlogTag( Rock.DataTransferObjects.Cms.BlogTag BlogTag );
 
 		/// <summary>
 		/// Deletes a BlogTag object

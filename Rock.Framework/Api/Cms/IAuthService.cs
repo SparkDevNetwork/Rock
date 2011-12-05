@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a Auth object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.AuthDTO Get( string id );
+        Rock.DataTransferObjects.Cms.Auth Get( string id );
 
 		/// <summary>
 		/// Updates a Auth object
 		/// </summary>
         [OperationContract]
-        void UpdateAuth( string id, Rock.Models.Cms.AuthDTO Auth );
+        void UpdateAuth( string id, Rock.DataTransferObjects.Cms.Auth Auth );
 
 		/// <summary>
 		/// Creates a new Auth object
 		/// </summary>
         [OperationContract]
-        void CreateAuth( Rock.Models.Cms.AuthDTO Auth );
+        void CreateAuth( Rock.DataTransferObjects.Cms.Auth Auth );
 
 		/// <summary>
 		/// Deletes a Auth object

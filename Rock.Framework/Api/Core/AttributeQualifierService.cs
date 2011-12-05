@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeQualifierDTO Get( string id )
+        public Rock.DataTransferObjects.Core.AttributeQualifier Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifierDTO AttributeQualifier )
+        public void UpdateAttributeQualifier( string id, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifierDTO AttributeQualifier )
+        public void CreateAttributeQualifier( Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

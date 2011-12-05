@@ -31,7 +31,7 @@ namespace Rock.Api.Crm
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.PhoneNumberDTO Get( string id )
+        public Rock.DataTransferObjects.Crm.PhoneNumber Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Crm
 		/// Updates a PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePhoneNumber( string id, Rock.Models.Crm.PhoneNumberDTO PhoneNumber )
+        public void UpdatePhoneNumber( string id, Rock.DataTransferObjects.Crm.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Crm
 		/// Creates a new PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePhoneNumber( Rock.Models.Crm.PhoneNumberDTO PhoneNumber )
+        public void CreatePhoneNumber( Rock.DataTransferObjects.Crm.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

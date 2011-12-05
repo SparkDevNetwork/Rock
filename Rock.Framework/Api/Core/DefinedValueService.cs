@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.DefinedValueDTO Get( string id )
+        public Rock.DataTransferObjects.Core.DefinedValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateDefinedValue( string id, Rock.Models.Core.DefinedValueDTO DefinedValue )
+        public void UpdateDefinedValue( string id, Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateDefinedValue( Rock.Models.Core.DefinedValueDTO DefinedValue )
+        public void CreateDefinedValue( Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

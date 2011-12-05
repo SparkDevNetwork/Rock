@@ -89,9 +89,21 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="BlogCategoryDTO"/> object.
         /// </value>
-		public virtual BlogCategoryDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.BlogCategory DataTransferObject
 		{
-			get { return new BlogCategoryDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.BlogCategory dto = new Rock.DataTransferObjects.Cms.BlogCategory();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.BlogId = this.BlogId;
+				dto.Name = this.Name;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -133,101 +145,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Blog Category Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class BlogCategoryDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Blog Id.
-		/// </summary>
-		/// <value>
-		/// Blog Id.
-		/// </value>
-		public int BlogId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogCategoryDTO"/> class.
-        /// </summary>
-		public BlogCategoryDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogCategoryDTO"/> class.
-        /// </summary>
-        /// <param name="blogCategory">The Blog Category.</param>
-		public BlogCategoryDTO( BlogCategory blogCategory )
-		{
-			Id = blogCategory.Id;
-			Guid = blogCategory.Guid;
-			BlogId = blogCategory.BlogId;
-			Name = blogCategory.Name;
-			CreatedDateTime = blogCategory.CreatedDateTime;
-			ModifiedDateTime = blogCategory.ModifiedDateTime;
-			CreatedByPersonId = blogCategory.CreatedByPersonId;
-			ModifiedByPersonId = blogCategory.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Blog Category Configuration class.
     /// </summary>

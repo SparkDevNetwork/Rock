@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Page object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.PageDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.Page Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Page object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePage( string id, Rock.Models.Cms.PageDTO Page )
+        public void UpdatePage( string id, Rock.DataTransferObjects.Cms.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Page object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePage( Rock.Models.Cms.PageDTO Page )
+        public void CreatePage( Rock.DataTransferObjects.Cms.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogPost object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogPostDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.BlogPost Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogPost object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogPost( string id, Rock.Models.Cms.BlogPostDTO BlogPost )
+        public void UpdateBlogPost( string id, Rock.DataTransferObjects.Cms.BlogPost BlogPost )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogPost object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogPost( Rock.Models.Cms.BlogPostDTO BlogPost )
+        public void CreateBlogPost( Rock.DataTransferObjects.Cms.BlogPost BlogPost )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

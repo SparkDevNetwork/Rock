@@ -31,7 +31,7 @@ namespace Rock.Api.Crm
 		/// Gets a Address object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Crm.AddressDTO Get( string id )
+        public Rock.DataTransferObjects.Crm.Address Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Crm
 		/// Updates a Address object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAddress( string id, Rock.Models.Crm.AddressDTO Address )
+        public void UpdateAddress( string id, Rock.DataTransferObjects.Crm.Address Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Crm
 		/// Creates a new Address object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAddress( Rock.Models.Crm.AddressDTO Address )
+        public void CreateAddress( Rock.DataTransferObjects.Crm.Address Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

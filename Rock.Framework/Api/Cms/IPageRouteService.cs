@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a PageRoute object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.PageRouteDTO Get( string id );
+        Rock.DataTransferObjects.Cms.PageRoute Get( string id );
 
 		/// <summary>
 		/// Updates a PageRoute object
 		/// </summary>
         [OperationContract]
-        void UpdatePageRoute( string id, Rock.Models.Cms.PageRouteDTO PageRoute );
+        void UpdatePageRoute( string id, Rock.DataTransferObjects.Cms.PageRoute PageRoute );
 
 		/// <summary>
 		/// Creates a new PageRoute object
 		/// </summary>
         [OperationContract]
-        void CreatePageRoute( Rock.Models.Cms.PageRouteDTO PageRoute );
+        void CreatePageRoute( Rock.DataTransferObjects.Cms.PageRoute PageRoute );
 
 		/// <summary>
 		/// Deletes a PageRoute object

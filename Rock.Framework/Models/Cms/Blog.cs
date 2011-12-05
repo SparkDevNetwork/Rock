@@ -148,9 +148,27 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="BlogDTO"/> object.
         /// </value>
-		public virtual BlogDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.Blog DataTransferObject
 		{
-			get { return new BlogDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.Blog dto = new Rock.DataTransferObjects.Cms.Blog();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.Name = this.Name;
+				dto.Subtitle = this.Subtitle;
+				dto.Description = this.Description;
+				dto.ModerateComments = this.ModerateComments;
+				dto.PublicPublishingPoint = this.PublicPublishingPoint;
+				dto.PublicFeedAddress = this.PublicFeedAddress;
+				dto.CopyrightStatement = this.CopyrightStatement;
+				dto.AllowComments = this.AllowComments;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -200,155 +218,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Blog Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class BlogDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Subtitle.
-		/// </summary>
-		/// <value>
-		/// Subtitle.
-		/// </value>
-		public string Subtitle { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Moderate Comments.
-		/// </summary>
-		/// <value>
-		/// Moderate Comments.
-		/// </value>
-		public bool ModerateComments { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Public Publishing Point.
-		/// </summary>
-		/// <value>
-		/// Public Publishing Point.
-		/// </value>
-		public string PublicPublishingPoint { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Public Feed Address.
-		/// </summary>
-		/// <value>
-		/// Public Feed Address.
-		/// </value>
-		public string PublicFeedAddress { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Copyright Statement.
-		/// </summary>
-		/// <value>
-		/// Copyright Statement.
-		/// </value>
-		public string CopyrightStatement { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Allow Comments.
-		/// </summary>
-		/// <value>
-		/// Allow Comments.
-		/// </value>
-		public bool AllowComments { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogDTO"/> class.
-        /// </summary>
-		public BlogDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogDTO"/> class.
-        /// </summary>
-        /// <param name="blog">The Blog.</param>
-		public BlogDTO( Blog blog )
-		{
-			Id = blog.Id;
-			Guid = blog.Guid;
-			Name = blog.Name;
-			Subtitle = blog.Subtitle;
-			Description = blog.Description;
-			ModerateComments = blog.ModerateComments;
-			PublicPublishingPoint = blog.PublicPublishingPoint;
-			PublicFeedAddress = blog.PublicFeedAddress;
-			CopyrightStatement = blog.CopyrightStatement;
-			AllowComments = blog.AllowComments;
-			CreatedDateTime = blog.CreatedDateTime;
-			ModifiedDateTime = blog.ModifiedDateTime;
-			CreatedByPersonId = blog.CreatedByPersonId;
-			ModifiedByPersonId = blog.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Blog Configuration class.
     /// </summary>

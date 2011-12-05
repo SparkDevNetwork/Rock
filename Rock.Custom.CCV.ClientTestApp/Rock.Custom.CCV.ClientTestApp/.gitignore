@@ -1,0 +1,7 @@
+/bin/Debug/*.*
+/bin/Release/*.*
+/obj/x86/Debug/*.*
+/obj/x86/Release/*.*
+/obj/x86/Debug/TempPE/*.*
+/obj/x86/Release/TempPE/*.*
+

@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a HtmlContent object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.HtmlContentDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.HtmlContent Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContentDTO HtmlContent )
+        public void UpdateHtmlContent( string id, Rock.DataTransferObjects.Cms.HtmlContent HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateHtmlContent( Rock.Models.Cms.HtmlContentDTO HtmlContent )
+        public void CreateHtmlContent( Rock.DataTransferObjects.Cms.HtmlContent HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a AttributeValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.AttributeValueDTO Get( string id )
+        public Rock.DataTransferObjects.Core.AttributeValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a AttributeValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttributeValue( string id, Rock.Models.Core.AttributeValueDTO AttributeValue )
+        public void UpdateAttributeValue( string id, Rock.DataTransferObjects.Core.AttributeValue AttributeValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new AttributeValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttributeValue( Rock.Models.Core.AttributeValueDTO AttributeValue )
+        public void CreateAttributeValue( Rock.DataTransferObjects.Core.AttributeValue AttributeValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

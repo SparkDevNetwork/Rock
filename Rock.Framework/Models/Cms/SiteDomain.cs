@@ -98,9 +98,22 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="SiteDomainDTO"/> object.
         /// </value>
-		public virtual SiteDomainDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.SiteDomain DataTransferObject
 		{
-			get { return new SiteDomainDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.SiteDomain dto = new Rock.DataTransferObjects.Cms.SiteDomain();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.SiteId = this.SiteId;
+				dto.Domain = this.Domain;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -134,110 +147,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Site Domain Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class SiteDomainDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Site Id.
-		/// </summary>
-		/// <value>
-		/// Site Id.
-		/// </value>
-		public int SiteId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Domain.
-		/// </summary>
-		/// <value>
-		/// Domain.
-		/// </value>
-		public string Domain { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SiteDomainDTO"/> class.
-        /// </summary>
-		public SiteDomainDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SiteDomainDTO"/> class.
-        /// </summary>
-        /// <param name="siteDomain">The Site Domain.</param>
-		public SiteDomainDTO( SiteDomain siteDomain )
-		{
-			Id = siteDomain.Id;
-			Guid = siteDomain.Guid;
-			System = siteDomain.System;
-			SiteId = siteDomain.SiteId;
-			Domain = siteDomain.Domain;
-			CreatedDateTime = siteDomain.CreatedDateTime;
-			ModifiedDateTime = siteDomain.ModifiedDateTime;
-			CreatedByPersonId = siteDomain.CreatedByPersonId;
-			ModifiedByPersonId = siteDomain.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Site Domain Configuration class.
     /// </summary>

@@ -53,9 +53,17 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="BlogTagDTO"/> object.
         /// </value>
-		public virtual BlogTagDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.BlogTag DataTransferObject
 		{
-			get { return new BlogTagDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.BlogTag dto = new Rock.DataTransferObjects.Cms.BlogTag();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.BlogId = this.BlogId;
+				dto.Name = this.Name;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -81,65 +89,6 @@ namespace Rock.Models.Cms
 		public virtual Blog Blog { get; set; }
 
     }
-
-    /// <summary>
-    /// Blog Tag Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class BlogTagDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Blog Id.
-		/// </summary>
-		/// <value>
-		/// Blog Id.
-		/// </value>
-		public int BlogId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogTagDTO"/> class.
-        /// </summary>
-		public BlogTagDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogTagDTO"/> class.
-        /// </summary>
-        /// <param name="blogTag">The Blog Tag.</param>
-		public BlogTagDTO( BlogTag blogTag )
-		{
-			Id = blogTag.Id;
-			Guid = blogTag.Guid;
-			BlogId = blogTag.BlogId;
-			Name = blogTag.Name;
-		}
-	}
-
     /// <summary>
     /// Blog Tag Configuration class.
     /// </summary>

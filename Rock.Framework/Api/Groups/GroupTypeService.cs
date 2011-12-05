@@ -31,7 +31,7 @@ namespace Rock.Api.Groups
 		/// Gets a GroupType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Groups.GroupTypeDTO Get( string id )
+        public Rock.DataTransferObjects.Groups.GroupType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Groups
 		/// Updates a GroupType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroupType( string id, Rock.Models.Groups.GroupTypeDTO GroupType )
+        public void UpdateGroupType( string id, Rock.DataTransferObjects.Groups.GroupType GroupType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Groups
 		/// Creates a new GroupType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroupType( Rock.Models.Groups.GroupTypeDTO GroupType )
+        public void CreateGroupType( Rock.DataTransferObjects.Groups.GroupType GroupType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

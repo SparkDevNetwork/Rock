@@ -117,9 +117,24 @@ namespace Rock.Models.Core
         /// <value>
         /// A <see cref="AttributeQualifierDTO"/> object.
         /// </value>
-		public virtual AttributeQualifierDTO DataTransferObject
+		public Rock.DataTransferObjects.Core.AttributeQualifier DataTransferObject
 		{
-			get { return new AttributeQualifierDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Core.AttributeQualifier dto = new Rock.DataTransferObjects.Core.AttributeQualifier();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.AttributeId = this.AttributeId;
+				dto.Key = this.Key;
+				dto.Name = this.Name;
+				dto.Value = this.Value;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -153,128 +168,6 @@ namespace Rock.Models.Core
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Attribute Qualifier Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class AttributeQualifierDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Attribute Id.
-		/// </summary>
-		/// <value>
-		/// Attribute Id.
-		/// </value>
-		public int AttributeId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Key.
-		/// </summary>
-		/// <value>
-		/// Key.
-		/// </value>
-		public string Key { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Value.
-		/// </summary>
-		/// <value>
-		/// Value.
-		/// </value>
-		public string Value { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AttributeQualifierDTO"/> class.
-        /// </summary>
-		public AttributeQualifierDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AttributeQualifierDTO"/> class.
-        /// </summary>
-        /// <param name="attributeQualifier">The Attribute Qualifier.</param>
-		public AttributeQualifierDTO( AttributeQualifier attributeQualifier )
-		{
-			Id = attributeQualifier.Id;
-			Guid = attributeQualifier.Guid;
-			System = attributeQualifier.System;
-			AttributeId = attributeQualifier.AttributeId;
-			Key = attributeQualifier.Key;
-			Name = attributeQualifier.Name;
-			Value = attributeQualifier.Value;
-			CreatedDateTime = attributeQualifier.CreatedDateTime;
-			ModifiedDateTime = attributeQualifier.ModifiedDateTime;
-			CreatedByPersonId = attributeQualifier.CreatedByPersonId;
-			ModifiedByPersonId = attributeQualifier.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Attribute Qualifier Configuration class.
     /// </summary>

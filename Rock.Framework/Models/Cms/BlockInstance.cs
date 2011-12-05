@@ -145,9 +145,27 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="BlockInstanceDTO"/> object.
         /// </value>
-		public virtual BlockInstanceDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.BlockInstance DataTransferObject
 		{
-			get { return new BlockInstanceDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.BlockInstance dto = new Rock.DataTransferObjects.Cms.BlockInstance();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.PageId = this.PageId;
+				dto.Layout = this.Layout;
+				dto.BlockId = this.BlockId;
+				dto.Zone = this.Zone;
+				dto.Order = this.Order;
+				dto.Name = this.Name;
+				dto.OutputCacheDuration = this.OutputCacheDuration;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -197,155 +215,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Block Instance Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class BlockInstanceDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Page Id.
-		/// </summary>
-		/// <value>
-		/// Page Id.
-		/// </value>
-		public int? PageId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Layout.
-		/// </summary>
-		/// <value>
-		/// Layout.
-		/// </value>
-		public string Layout { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Block Id.
-		/// </summary>
-		/// <value>
-		/// Block Id.
-		/// </value>
-		public int BlockId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Zone.
-		/// </summary>
-		/// <value>
-		/// Zone.
-		/// </value>
-		public string Zone { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		public int Order { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Output Cache Duration.
-		/// </summary>
-		/// <value>
-		/// Output Cache Duration.
-		/// </value>
-		public int OutputCacheDuration { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockInstanceDTO"/> class.
-        /// </summary>
-		public BlockInstanceDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockInstanceDTO"/> class.
-        /// </summary>
-        /// <param name="blockInstance">The Block Instance.</param>
-		public BlockInstanceDTO( BlockInstance blockInstance )
-		{
-			Id = blockInstance.Id;
-			Guid = blockInstance.Guid;
-			System = blockInstance.System;
-			PageId = blockInstance.PageId;
-			Layout = blockInstance.Layout;
-			BlockId = blockInstance.BlockId;
-			Zone = blockInstance.Zone;
-			Order = blockInstance.Order;
-			Name = blockInstance.Name;
-			OutputCacheDuration = blockInstance.OutputCacheDuration;
-			CreatedDateTime = blockInstance.CreatedDateTime;
-			ModifiedDateTime = blockInstance.ModifiedDateTime;
-			CreatedByPersonId = blockInstance.CreatedByPersonId;
-			ModifiedByPersonId = blockInstance.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Block Instance Configuration class.
     /// </summary>
