@@ -22,7 +22,7 @@ namespace Rock.Services.Crm
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.Models.Crm.Address Standardize( AddressDTO address, int? personId )
+        public Rock.Models.Crm.Address Standardize( Rock.DataTransferObjects.Crm.Address address, int? personId )
         {
             Rock.Models.Crm.Address addressModel = GetByAddressDTO( address, personId );
 
@@ -78,7 +78,7 @@ namespace Rock.Services.Crm
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.Models.Crm.Address Geocode( AddressDTO address, int? personId )
+        public Rock.Models.Crm.Address Geocode( Rock.DataTransferObjects.Crm.Address address, int? personId )
         {
             Rock.Models.Crm.Address addressModel = GetByAddressDTO( address, personId );
 
@@ -136,7 +136,7 @@ namespace Rock.Services.Crm
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Rock.Models.Crm.Address GetByAddressDTO( AddressDTO address, int? personId )
+        private Rock.Models.Crm.Address GetByAddressDTO( Rock.DataTransferObjects.Crm.Address address, int? personId )
         {
             string raw = address.Raw;
 

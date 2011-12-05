@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a Page object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.PageDTO Get( string id );
+        Rock.DataTransferObjects.Cms.Page Get( string id );
 
 		/// <summary>
 		/// Updates a Page object
 		/// </summary>
         [OperationContract]
-        void UpdatePage( string id, Rock.Models.Cms.PageDTO Page );
+        void UpdatePage( string id, Rock.DataTransferObjects.Cms.Page Page );
 
 		/// <summary>
 		/// Creates a new Page object
 		/// </summary>
         [OperationContract]
-        void CreatePage( Rock.Models.Cms.PageDTO Page );
+        void CreatePage( Rock.DataTransferObjects.Cms.Page Page );
 
 		/// <summary>
 		/// Deletes a Page object

@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a File object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.FileDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.File Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a File object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateFile( string id, Rock.Models.Cms.FileDTO File )
+        public void UpdateFile( string id, Rock.DataTransferObjects.Cms.File File )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new File object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateFile( Rock.Models.Cms.FileDTO File )
+        public void CreateFile( Rock.DataTransferObjects.Cms.File File )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

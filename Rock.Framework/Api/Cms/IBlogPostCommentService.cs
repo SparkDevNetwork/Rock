@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.BlogPostCommentDTO Get( string id );
+        Rock.DataTransferObjects.Cms.BlogPostComment Get( string id );
 
 		/// <summary>
 		/// Updates a BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogPostComment( string id, Rock.Models.Cms.BlogPostCommentDTO BlogPostComment );
+        void UpdateBlogPostComment( string id, Rock.DataTransferObjects.Cms.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Creates a new BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void CreateBlogPostComment( Rock.Models.Cms.BlogPostCommentDTO BlogPostComment );
+        void CreateBlogPostComment( Rock.DataTransferObjects.Cms.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Deletes a BlogPostComment object

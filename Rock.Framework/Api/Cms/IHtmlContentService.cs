@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a HtmlContent object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.HtmlContentDTO Get( string id );
+        Rock.DataTransferObjects.Cms.HtmlContent Get( string id );
 
 		/// <summary>
 		/// Updates a HtmlContent object
 		/// </summary>
         [OperationContract]
-        void UpdateHtmlContent( string id, Rock.Models.Cms.HtmlContentDTO HtmlContent );
+        void UpdateHtmlContent( string id, Rock.DataTransferObjects.Cms.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Creates a new HtmlContent object
 		/// </summary>
         [OperationContract]
-        void CreateHtmlContent( Rock.Models.Cms.HtmlContentDTO HtmlContent );
+        void CreateHtmlContent( Rock.DataTransferObjects.Cms.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Deletes a HtmlContent object

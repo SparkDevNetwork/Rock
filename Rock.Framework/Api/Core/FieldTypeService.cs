@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.FieldTypeDTO Get( string id )
+        public Rock.DataTransferObjects.Core.FieldType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a FieldType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateFieldType( string id, Rock.Models.Core.FieldTypeDTO FieldType )
+        public void UpdateFieldType( string id, Rock.DataTransferObjects.Core.FieldType FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new FieldType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateFieldType( Rock.Models.Core.FieldTypeDTO FieldType )
+        public void CreateFieldType( Rock.DataTransferObjects.Core.FieldType FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

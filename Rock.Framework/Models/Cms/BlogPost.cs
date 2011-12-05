@@ -125,9 +125,25 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="BlogPostDTO"/> object.
         /// </value>
-		public virtual BlogPostDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.BlogPost DataTransferObject
 		{
-			get { return new BlogPostDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.BlogPost dto = new Rock.DataTransferObjects.Cms.BlogPost();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.BlogId = this.BlogId;
+				dto.Title = this.Title;
+				dto.Content = this.Content;
+				dto.AuthorId = this.AuthorId;
+				dto.State = this.State;
+				dto.PublishDate = this.PublishDate;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -193,137 +209,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Blog Post Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class BlogPostDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Blog Id.
-		/// </summary>
-		/// <value>
-		/// Blog Id.
-		/// </value>
-		public int BlogId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		/// <value>
-		/// Title.
-		/// </value>
-		public string Title { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Content.
-		/// </summary>
-		/// <value>
-		/// Content.
-		/// </value>
-		public string Content { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Author Id.
-		/// </summary>
-		/// <value>
-		/// Author Id.
-		/// </value>
-		public int? AuthorId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the State.
-		/// </summary>
-		/// <value>
-		/// State.
-		/// </value>
-		public int State { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Publish Date.
-		/// </summary>
-		/// <value>
-		/// Publish Date.
-		/// </value>
-		public DateTime? PublishDate { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogPostDTO"/> class.
-        /// </summary>
-		public BlogPostDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlogPostDTO"/> class.
-        /// </summary>
-        /// <param name="blogPost">The Blog Post.</param>
-		public BlogPostDTO( BlogPost blogPost )
-		{
-			Id = blogPost.Id;
-			Guid = blogPost.Guid;
-			BlogId = blogPost.BlogId;
-			Title = blogPost.Title;
-			Content = blogPost.Content;
-			AuthorId = blogPost.AuthorId;
-			State = blogPost.State;
-			PublishDate = blogPost.PublishDate;
-			CreatedDateTime = blogPost.CreatedDateTime;
-			ModifiedDateTime = blogPost.ModifiedDateTime;
-			CreatedByPersonId = blogPost.CreatedByPersonId;
-			ModifiedByPersonId = blogPost.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Blog Post Configuration class.
     /// </summary>

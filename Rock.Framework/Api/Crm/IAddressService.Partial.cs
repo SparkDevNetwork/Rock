@@ -13,7 +13,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [OperationContract]
-        AddressDTO Geocode( AddressDTO address );
+        Rock.DataTransferObjects.Crm.Address Geocode( Rock.DataTransferObjects.Crm.Address address );
 
         /// <summary>
         /// Standardizes the specified address.
@@ -21,6 +21,6 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [OperationContract]
-        AddressDTO Standardize( AddressDTO address );
+        Rock.DataTransferObjects.Crm.Address Standardize( Rock.DataTransferObjects.Crm.Address address );
     }
 }

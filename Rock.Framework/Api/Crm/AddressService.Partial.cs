@@ -22,7 +22,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
-        public AddressDTO Geocode( AddressDTO address )
+        public Rock.DataTransferObjects.Crm.Address Geocode( Rock.DataTransferObjects.Crm.Address address )
         {
             if ( address != null )
             {
@@ -48,7 +48,7 @@ namespace Rock.Api.Crm
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
-        public AddressDTO Standardize( AddressDTO address )
+        public Rock.DataTransferObjects.Crm.Address Standardize( Rock.DataTransferObjects.Crm.Address address )
         {
             if ( address != null )
             {

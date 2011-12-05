@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a PageRoute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.PageRouteDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.PageRoute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePageRoute( string id, Rock.Models.Cms.PageRouteDTO PageRoute )
+        public void UpdatePageRoute( string id, Rock.DataTransferObjects.Cms.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePageRoute( Rock.Models.Cms.PageRouteDTO PageRoute )
+        public void CreatePageRoute( Rock.DataTransferObjects.Cms.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

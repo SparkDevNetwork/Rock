@@ -116,9 +116,24 @@ namespace Rock.Models.Core
         /// <value>
         /// A <see cref="DefinedTypeDTO"/> object.
         /// </value>
-		public virtual DefinedTypeDTO DataTransferObject
+		public Rock.DataTransferObjects.Core.DefinedType DataTransferObject
 		{
-			get { return new DefinedTypeDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Core.DefinedType dto = new Rock.DataTransferObjects.Core.DefinedType();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.FieldTypeId = this.FieldTypeId;
+				dto.Order = this.Order;
+				dto.Name = this.Name;
+				dto.Description = this.Description;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -160,128 +175,6 @@ namespace Rock.Models.Core
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Defined Type Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class DefinedTypeDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Field Type Id.
-		/// </summary>
-		/// <value>
-		/// Field Type Id.
-		/// </value>
-		public int? FieldTypeId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		public int Order { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedTypeDTO"/> class.
-        /// </summary>
-		public DefinedTypeDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedTypeDTO"/> class.
-        /// </summary>
-        /// <param name="definedType">The Defined Type.</param>
-		public DefinedTypeDTO( DefinedType definedType )
-		{
-			Id = definedType.Id;
-			Guid = definedType.Guid;
-			System = definedType.System;
-			FieldTypeId = definedType.FieldTypeId;
-			Order = definedType.Order;
-			Name = definedType.Name;
-			Description = definedType.Description;
-			CreatedDateTime = definedType.CreatedDateTime;
-			ModifiedDateTime = definedType.ModifiedDateTime;
-			CreatedByPersonId = definedType.CreatedByPersonId;
-			ModifiedByPersonId = definedType.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Defined Type Configuration class.
     /// </summary>

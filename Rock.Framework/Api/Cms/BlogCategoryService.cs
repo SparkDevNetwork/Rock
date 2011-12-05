@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a BlogCategory object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlogCategoryDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.BlogCategory Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogCategory( string id, Rock.Models.Cms.BlogCategoryDTO BlogCategory )
+        public void UpdateBlogCategory( string id, Rock.DataTransferObjects.Cms.BlogCategory BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogCategory( Rock.Models.Cms.BlogCategoryDTO BlogCategory )
+        public void CreateBlogCategory( Rock.DataTransferObjects.Cms.BlogCategory BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

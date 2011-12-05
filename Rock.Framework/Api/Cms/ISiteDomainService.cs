@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a SiteDomain object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.SiteDomainDTO Get( string id );
+        Rock.DataTransferObjects.Cms.SiteDomain Get( string id );
 
 		/// <summary>
 		/// Updates a SiteDomain object
 		/// </summary>
         [OperationContract]
-        void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomainDTO SiteDomain );
+        void UpdateSiteDomain( string id, Rock.DataTransferObjects.Cms.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Creates a new SiteDomain object
 		/// </summary>
         [OperationContract]
-        void CreateSiteDomain( Rock.Models.Cms.SiteDomainDTO SiteDomain );
+        void CreateSiteDomain( Rock.DataTransferObjects.Cms.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Deletes a SiteDomain object

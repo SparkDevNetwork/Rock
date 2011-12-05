@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.FieldTypeDTO Get( string id );
+        Rock.DataTransferObjects.Core.FieldType Get( string id );
 
 		/// <summary>
 		/// Updates a FieldType object
 		/// </summary>
         [OperationContract]
-        void UpdateFieldType( string id, Rock.Models.Core.FieldTypeDTO FieldType );
+        void UpdateFieldType( string id, Rock.DataTransferObjects.Core.FieldType FieldType );
 
 		/// <summary>
 		/// Creates a new FieldType object
 		/// </summary>
         [OperationContract]
-        void CreateFieldType( Rock.Models.Core.FieldTypeDTO FieldType );
+        void CreateFieldType( Rock.DataTransferObjects.Core.FieldType FieldType );
 
 		/// <summary>
 		/// Deletes a FieldType object

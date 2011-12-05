@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a Block object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.BlockDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.Block Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a Block object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlock( string id, Rock.Models.Cms.BlockDTO Block )
+        public void UpdateBlock( string id, Rock.DataTransferObjects.Cms.Block Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new Block object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlock( Rock.Models.Cms.BlockDTO Block )
+        public void CreateBlock( Rock.DataTransferObjects.Cms.Block Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

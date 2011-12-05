@@ -251,9 +251,36 @@ namespace Rock.Models.Cms
         /// <value>
         /// A <see cref="PageDTO"/> object.
         /// </value>
-		public virtual PageDTO DataTransferObject
+		public Rock.DataTransferObjects.Cms.Page DataTransferObject
 		{
-			get { return new PageDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Cms.Page dto = new Rock.DataTransferObjects.Cms.Page();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.Name = this.Name;
+				dto.Title = this.Title;
+				dto.System = this.System;
+				dto.ParentPageId = this.ParentPageId;
+				dto.SiteId = this.SiteId;
+				dto.Layout = this.Layout;
+				dto.RequiresEncryption = this.RequiresEncryption;
+				dto.EnableViewState = this.EnableViewState;
+				dto.MenuDisplayDescription = this.MenuDisplayDescription;
+				dto.MenuDisplayIcon = this.MenuDisplayIcon;
+				dto.MenuDisplayChildPages = this.MenuDisplayChildPages;
+				dto.DisplayInNavWhen = this.DisplayInNavWhenInternal;
+				dto.Order = this.Order;
+				dto.OutputCacheDuration = this.OutputCacheDuration;
+				dto.Description = this.Description;
+				dto.IncludeAdminFooter = this.IncludeAdminFooter;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				dto.IconUrl = this.IconUrl;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -327,241 +354,6 @@ namespace Rock.Models.Cms
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Page Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class PageDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		/// <value>
-		/// Title.
-		/// </value>
-		public string Title { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Parent Page Id.
-		/// </summary>
-		/// <value>
-		/// Parent Page Id.
-		/// </value>
-		public int? ParentPageId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Site Id.
-		/// </summary>
-		/// <value>
-		/// Site Id.
-		/// </value>
-		public int? SiteId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Layout.
-		/// </summary>
-		/// <value>
-		/// Layout.
-		/// </value>
-		public string Layout { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Requires Encryption.
-		/// </summary>
-		/// <value>
-		/// Requires Encryption.
-		/// </value>
-		public bool RequiresEncryption { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Enable View State.
-		/// </summary>
-		/// <value>
-		/// Enable View State.
-		/// </value>
-		public bool EnableViewState { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Menu Display Description.
-		/// </summary>
-		/// <value>
-		/// Menu Display Description.
-		/// </value>
-		public bool MenuDisplayDescription { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Menu Display Icon.
-		/// </summary>
-		/// <value>
-		/// Menu Display Icon.
-		/// </value>
-		public bool MenuDisplayIcon { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Menu Display Child Pages.
-		/// </summary>
-		/// <value>
-		/// Menu Display Child Pages.
-		/// </value>
-		public bool MenuDisplayChildPages { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Display In Nav When.
-		/// </summary>
-		/// <value>
-		/// Determines when to display in a navigation 
-		/// 0 = When Security Allows
-		/// 1 = Always
-		/// 3 = Never   
-		/// 
-		/// Enum[DisplayInNavWhen].
-		/// </value>
-		public DisplayInNavWhen DisplayInNavWhen { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		public int Order { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Output Cache Duration.
-		/// </summary>
-		/// <value>
-		/// Output Cache Duration.
-		/// </value>
-		public int OutputCacheDuration { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Include Admin Footer.
-		/// </summary>
-		/// <value>
-		/// Include Admin Footer.
-		/// </value>
-		public bool IncludeAdminFooter { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Icon Url.
-		/// </summary>
-		/// <value>
-		/// Icon Url.
-		/// </value>
-		public string IconUrl { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageDTO"/> class.
-        /// </summary>
-		public PageDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageDTO"/> class.
-        /// </summary>
-        /// <param name="page">The Page.</param>
-		public PageDTO( Page page )
-		{
-			Id = page.Id;
-			Guid = page.Guid;
-			Name = page.Name;
-			Title = page.Title;
-			System = page.System;
-			ParentPageId = page.ParentPageId;
-			SiteId = page.SiteId;
-			Layout = page.Layout;
-			RequiresEncryption = page.RequiresEncryption;
-			EnableViewState = page.EnableViewState;
-			MenuDisplayDescription = page.MenuDisplayDescription;
-			MenuDisplayIcon = page.MenuDisplayIcon;
-			MenuDisplayChildPages = page.MenuDisplayChildPages;
-			DisplayInNavWhen = page.DisplayInNavWhen;
-			Order = page.Order;
-			OutputCacheDuration = page.OutputCacheDuration;
-			Description = page.Description;
-			IncludeAdminFooter = page.IncludeAdminFooter;
-			CreatedDateTime = page.CreatedDateTime;
-			ModifiedDateTime = page.ModifiedDateTime;
-			CreatedByPersonId = page.CreatedByPersonId;
-			ModifiedByPersonId = page.ModifiedByPersonId;
-			IconUrl = page.IconUrl;
-		}
-	}
-
     /// <summary>
     /// Page Configuration class.
     /// </summary>

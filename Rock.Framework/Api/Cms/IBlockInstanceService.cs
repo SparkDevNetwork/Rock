@@ -24,19 +24,19 @@ namespace Rock.Api.Cms
 		/// Gets a BlockInstance object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Cms.BlockInstanceDTO Get( string id );
+        Rock.DataTransferObjects.Cms.BlockInstance Get( string id );
 
 		/// <summary>
 		/// Updates a BlockInstance object
 		/// </summary>
         [OperationContract]
-        void UpdateBlockInstance( string id, Rock.Models.Cms.BlockInstanceDTO BlockInstance );
+        void UpdateBlockInstance( string id, Rock.DataTransferObjects.Cms.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Creates a new BlockInstance object
 		/// </summary>
         [OperationContract]
-        void CreateBlockInstance( Rock.Models.Cms.BlockInstanceDTO BlockInstance );
+        void CreateBlockInstance( Rock.DataTransferObjects.Cms.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Deletes a BlockInstance object

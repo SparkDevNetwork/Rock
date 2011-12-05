@@ -24,19 +24,19 @@ namespace Rock.Api.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[OperationContract]
-        Rock.Models.Core.AttributeQualifierDTO Get( string id );
+        Rock.DataTransferObjects.Core.AttributeQualifier Get( string id );
 
 		/// <summary>
 		/// Updates a AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void UpdateAttributeQualifier( string id, Rock.Models.Core.AttributeQualifierDTO AttributeQualifier );
+        void UpdateAttributeQualifier( string id, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Creates a new AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void CreateAttributeQualifier( Rock.Models.Core.AttributeQualifierDTO AttributeQualifier );
+        void CreateAttributeQualifier( Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Deletes a AttributeQualifier object

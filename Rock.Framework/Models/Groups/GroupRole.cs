@@ -107,9 +107,23 @@ namespace Rock.Models.Groups
         /// <value>
         /// A <see cref="GroupRoleDTO"/> object.
         /// </value>
-		public virtual GroupRoleDTO DataTransferObject
+		public Rock.DataTransferObjects.Groups.GroupRole DataTransferObject
 		{
-			get { return new GroupRoleDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Groups.GroupRole dto = new Rock.DataTransferObjects.Groups.GroupRole();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.Name = this.Name;
+				dto.Description = this.Description;
+				dto.Order = this.Order;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -151,119 +165,6 @@ namespace Rock.Models.Groups
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Group Role Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class GroupRoleDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		public int? Order { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		public int? CreatedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupRoleDTO"/> class.
-        /// </summary>
-		public GroupRoleDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupRoleDTO"/> class.
-        /// </summary>
-        /// <param name="groupRole">The Group Role.</param>
-		public GroupRoleDTO( GroupRole groupRole )
-		{
-			Id = groupRole.Id;
-			Guid = groupRole.Guid;
-			System = groupRole.System;
-			Name = groupRole.Name;
-			Description = groupRole.Description;
-			Order = groupRole.Order;
-			CreatedDateTime = groupRole.CreatedDateTime;
-			ModifiedDateTime = groupRole.ModifiedDateTime;
-			CreatedByPersonId = groupRole.CreatedByPersonId;
-			ModifiedByPersonId = groupRole.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Group Role Configuration class.
     /// </summary>

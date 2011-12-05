@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a ServiceLog object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.ServiceLogDTO Get( string id )
+        public Rock.DataTransferObjects.Core.ServiceLog Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a ServiceLog object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateServiceLog( string id, Rock.Models.Core.ServiceLogDTO ServiceLog )
+        public void UpdateServiceLog( string id, Rock.DataTransferObjects.Core.ServiceLog ServiceLog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new ServiceLog object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateServiceLog( Rock.Models.Core.ServiceLogDTO ServiceLog )
+        public void CreateServiceLog( Rock.DataTransferObjects.Core.ServiceLog ServiceLog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

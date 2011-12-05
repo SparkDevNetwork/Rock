@@ -91,9 +91,21 @@ namespace Rock.Models.Core
         /// <value>
         /// A <see cref="ServiceLogDTO"/> object.
         /// </value>
-		public virtual ServiceLogDTO DataTransferObject
+		public Rock.DataTransferObjects.Core.ServiceLog DataTransferObject
 		{
-			get { return new ServiceLogDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Core.ServiceLog dto = new Rock.DataTransferObjects.Core.ServiceLog();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.Time = this.Time;
+				dto.Input = this.Input;
+				dto.Type = this.Type;
+				dto.Name = this.Name;
+				dto.Result = this.Result;
+				dto.Success = this.Success;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -103,101 +115,6 @@ namespace Rock.Models.Core
 		public override string AuthEntity { get { return "Core.ServiceLog"; } }
 
     }
-
-    /// <summary>
-    /// Service Log Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class ServiceLogDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Time.
-		/// </summary>
-		/// <value>
-		/// Time.
-		/// </value>
-		public DateTime? Time { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Input.
-		/// </summary>
-		/// <value>
-		/// Input.
-		/// </value>
-		public string Input { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Type.
-		/// </summary>
-		/// <value>
-		/// Type.
-		/// </value>
-		public string Type { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Result.
-		/// </summary>
-		/// <value>
-		/// Result.
-		/// </value>
-		public string Result { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Success.
-		/// </summary>
-		/// <value>
-		/// Success.
-		/// </value>
-		public bool Success { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceLogDTO"/> class.
-        /// </summary>
-		public ServiceLogDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceLogDTO"/> class.
-        /// </summary>
-        /// <param name="serviceLog">The Service Log.</param>
-		public ServiceLogDTO( ServiceLog serviceLog )
-		{
-			Id = serviceLog.Id;
-			Guid = serviceLog.Guid;
-			Time = serviceLog.Time;
-			Input = serviceLog.Input;
-			Type = serviceLog.Type;
-			Name = serviceLog.Name;
-			Result = serviceLog.Result;
-			Success = serviceLog.Success;
-		}
-	}
-
     /// <summary>
     /// Service Log Configuration class.
     /// </summary>

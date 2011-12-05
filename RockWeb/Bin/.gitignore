@@ -7,3 +7,5 @@
 /Rock.Framework.XML
 /*.Framework.XML
 /*.Framework.xml
+/Rock.DataTransferObjects.dll
+/Rock.DataTransferObjects.pdb

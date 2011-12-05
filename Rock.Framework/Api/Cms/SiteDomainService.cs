@@ -31,7 +31,7 @@ namespace Rock.Api.Cms
 		/// Gets a SiteDomain object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Cms.SiteDomainDTO Get( string id )
+        public Rock.DataTransferObjects.Cms.SiteDomain Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Cms
 		/// Updates a SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateSiteDomain( string id, Rock.Models.Cms.SiteDomainDTO SiteDomain )
+        public void UpdateSiteDomain( string id, Rock.DataTransferObjects.Cms.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Cms
 		/// Creates a new SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateSiteDomain( Rock.Models.Cms.SiteDomainDTO SiteDomain )
+        public void CreateSiteDomain( Rock.DataTransferObjects.Cms.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

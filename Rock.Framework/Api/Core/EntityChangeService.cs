@@ -31,7 +31,7 @@ namespace Rock.Api.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Core.EntityChangeDTO Get( string id )
+        public Rock.DataTransferObjects.Core.EntityChange Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Core
 		/// Updates a EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateEntityChange( string id, Rock.Models.Core.EntityChangeDTO EntityChange )
+        public void UpdateEntityChange( string id, Rock.DataTransferObjects.Core.EntityChange EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Core
 		/// Creates a new EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateEntityChange( Rock.Models.Core.EntityChangeDTO EntityChange )
+        public void CreateEntityChange( Rock.DataTransferObjects.Core.EntityChange EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

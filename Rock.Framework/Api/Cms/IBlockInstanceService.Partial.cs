@@ -17,6 +17,6 @@ namespace Rock.Api.Cms
         /// <param name="blockInstance">The block instance.</param>
         /// <returns></returns>
         [OperationContract]
-        void Move( string id, BlockInstanceDTO blockInstance );
+        void Move( string id, Rock.DataTransferObjects.Cms.BlockInstance blockInstance );
     }
 }

@@ -31,7 +31,7 @@ namespace Rock.Api.Util
 		/// Gets a Job object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.Models.Util.JobDTO Get( string id )
+        public Rock.DataTransferObjects.Util.Job Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -53,7 +53,7 @@ namespace Rock.Api.Util
 		/// Updates a Job object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateJob( string id, Rock.Models.Util.JobDTO Job )
+        public void UpdateJob( string id, Rock.DataTransferObjects.Util.Job Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -79,7 +79,7 @@ namespace Rock.Api.Util
 		/// Creates a new Job object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateJob( Rock.Models.Util.JobDTO Job )
+        public void CreateJob( Rock.DataTransferObjects.Util.Job Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )

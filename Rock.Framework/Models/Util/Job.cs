@@ -216,9 +216,33 @@ namespace Rock.Models.Util
         /// <value>
         /// A <see cref="JobDTO"/> object.
         /// </value>
-		public virtual JobDTO DataTransferObject
+		public Rock.DataTransferObjects.Util.Job DataTransferObject
 		{
-			get { return new JobDTO( this ); }
+			get 
+			{ 
+				Rock.DataTransferObjects.Util.Job dto = new Rock.DataTransferObjects.Util.Job();
+				dto.Id = this.Id;
+				dto.Guid = this.Guid;
+				dto.System = this.System;
+				dto.Active = this.Active;
+				dto.Name = this.Name;
+				dto.Description = this.Description;
+				dto.Assemby = this.Assemby;
+				dto.Class = this.Class;
+				dto.CronExpression = this.CronExpression;
+				dto.LastSuccessfulRun = this.LastSuccessfulRun;
+				dto.LastRunDate = this.LastRunDate;
+				dto.LastRunDuration = this.LastRunDuration;
+				dto.LastStatus = this.LastStatus;
+				dto.LastStatusMessage = this.LastStatusMessage;
+				dto.NotificationEmails = this.NotificationEmails;
+				dto.NotificationStatus = this.NotificationStatusInternal;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.ModifiedDateTime = this.ModifiedDateTime;
+				dto.CreateByPersonId = this.CreateByPersonId;
+				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				return dto; 
+			}
 		}
 
         /// <summary>
@@ -244,209 +268,6 @@ namespace Rock.Models.Util
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
-
-    /// <summary>
-    /// Job Data Transfer Object.
-    /// </summary>
-	/// <remarks>
-	/// Data Transfer Objects are a lightweight version of the Entity object that are used
-	/// in situations like serializing the object in the REST api
-	/// </remarks>
-    public partial class JobDTO
-    {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		public bool? System { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Active.
-		/// </summary>
-		/// <value>
-		/// Active.
-		/// </value>
-		public bool? Active { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Assemby.
-		/// </summary>
-		/// <value>
-		/// Assemby.
-		/// </value>
-		public string Assemby { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Class.
-		/// </summary>
-		/// <value>
-		/// Class.
-		/// </value>
-		public string Class { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Cron Expression.
-		/// </summary>
-		/// <value>
-		/// Cron Expression.
-		/// </value>
-		public string CronExpression { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Last Successful Run.
-		/// </summary>
-		/// <value>
-		/// Last Successful Run.
-		/// </value>
-		public DateTime? LastSuccessfulRun { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Last Run Date.
-		/// </summary>
-		/// <value>
-		/// Last Run Date.
-		/// </value>
-		public DateTime? LastRunDate { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Last Run Duration.
-		/// </summary>
-		/// <value>
-		/// Number of seconds that the last job took to finish..
-		/// </value>
-		public int? LastRunDuration { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Last Status.
-		/// </summary>
-		/// <value>
-		/// Last Status.
-		/// </value>
-		public string LastStatus { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Last Status Message.
-		/// </summary>
-		/// <value>
-		/// Last Status Message.
-		/// </value>
-		public string LastStatusMessage { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Notification Emails.
-		/// </summary>
-		/// <value>
-		/// Notification Emails.
-		/// </value>
-		public string NotificationEmails { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Notification Status.
-		/// </summary>
-		/// <value>
-		/// Valid valids = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
-		/// </value>
-		public JobNotificationStatus NotificationStatus { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		public DateTime? CreatedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		public DateTime? ModifiedDateTime { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Create By Person Id.
-		/// </summary>
-		/// <value>
-		/// Create By Person Id.
-		/// </value>
-		public int? CreateByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobDTO"/> class.
-        /// </summary>
-		public JobDTO()
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobDTO"/> class.
-        /// </summary>
-        /// <param name="job">The Job.</param>
-		public JobDTO( Job job )
-		{
-			Id = job.Id;
-			Guid = job.Guid;
-			System = job.System;
-			Active = job.Active;
-			Name = job.Name;
-			Description = job.Description;
-			Assemby = job.Assemby;
-			Class = job.Class;
-			CronExpression = job.CronExpression;
-			LastSuccessfulRun = job.LastSuccessfulRun;
-			LastRunDate = job.LastRunDate;
-			LastRunDuration = job.LastRunDuration;
-			LastStatus = job.LastStatus;
-			LastStatusMessage = job.LastStatusMessage;
-			NotificationEmails = job.NotificationEmails;
-			NotificationStatus = job.NotificationStatus;
-			CreatedDateTime = job.CreatedDateTime;
-			ModifiedDateTime = job.ModifiedDateTime;
-			CreateByPersonId = job.CreateByPersonId;
-			ModifiedByPersonId = job.ModifiedByPersonId;
-		}
-	}
-
     /// <summary>
     /// Job Configuration class.
     /// </summary>
