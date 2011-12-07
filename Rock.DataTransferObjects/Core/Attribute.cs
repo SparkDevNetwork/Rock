@@ -21,7 +21,6 @@ namespace Rock.DataTransferObjects.Core
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    [Serializable]
     public partial class Attribute
     {
         /// <summary>
@@ -60,6 +59,22 @@ namespace Rock.DataTransferObjects.Core
 		/// Entity.
 		/// </value>
 		public string Entity { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
+		public string EntityQualifierColumn { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
+		public string EntityQualifierValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Key.
@@ -140,22 +155,6 @@ namespace Rock.DataTransferObjects.Core
 		/// Modified By Person Id.
 		/// </value>
 		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		public string EntityQualifierColumn { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		public string EntityQualifierValue { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeDTO"/> class.

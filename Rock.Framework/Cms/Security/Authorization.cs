@@ -117,45 +117,58 @@ namespace Rock.Cms.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, System.Web.Security.MembershipUser user )
         {
+            return Authorized( entity, action, user != null ? user.UserName : string.Empty );
+        }
+
+        /// <summary>
+        /// Evaluates whether a selected user is allowed to perform the selected action on the selected
+        /// entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <returns></returns>
+        public static bool Authorized( ISecured entity, string action, string userName )
+        {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
                 Load();
 
-            // If there's no entry in the Authorizations object for this entity type, return the default authorization
-            if ( !Authorizations.Keys.Contains( entity.AuthEntity ) )
-                return entity.DefaultAuthorization( action );
-
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
             // one to find the first one specific to the selected user or a role that the selected user belongs 
             // to.  If a match is found return whether the user is allowed (true) or denied (false) access
-            if ( Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
+            if ( Authorizations.Keys.Contains( entity.AuthEntity ) &&
+                Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
                 Authorizations[entity.AuthEntity][entity.Id].Keys.Contains( action ) )
+            {
                 foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
                 {
                     if ( authRule.UserOrRoleName == "*" )
                         return authRule.AllowOrDeny == "A";
 
-                    if ( user != null )
+                    if ( userName != string.Empty )
                     {
-                        if ( authRule.UserOrRole == "U" && user.UserName == authRule.UserOrRoleName )
+                        if ( authRule.UserOrRole == "U" && userName == authRule.UserOrRoleName )
                             return authRule.AllowOrDeny == "A";
 
-                        if ( authRule.UserOrRole == "R")
+                        if ( authRule.UserOrRole == "R" )
                         {
-                            Role role = Role.Read(authRule.UserOrRoleName);
-                            if (role != null && role.UserInRole(user.UserName))
+                            Role role = Role.Read( authRule.UserOrRoleName );
+                            if ( role != null && role.UserInRole( userName ) )
                                 return authRule.AllowOrDeny == "A";
                         }
                     }
                 }
+            }
 
             // If not match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
             if ( entity.ParentAuthority != null )
-                return Authorized( entity.ParentAuthority, action, user );
+                return Authorized( entity.ParentAuthority, action, userName );
             else
                 return entity.DefaultAuthorization( action );
+
         }
 
         /// <summary>

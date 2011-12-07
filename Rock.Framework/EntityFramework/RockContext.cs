@@ -10,13 +10,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Objects;
 using System.Data.Entity;
-using System.Linq;
-using System.Web;
 
 namespace Rock.EntityFramework
 {

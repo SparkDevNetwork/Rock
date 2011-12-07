@@ -135,11 +135,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-
-using Rock.Models;
 
 namespace Rock.Models<#= projectNamespace #>
 {
@@ -517,7 +513,6 @@ namespace Rock.DataTransferObjects<#= projectNamespace #>
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    [Serializable]
     public partial class <#= Entity #>
     {
         /// <summary>
@@ -570,10 +565,6 @@ namespace Rock.DataTransferObjects<#= projectNamespace #>
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-
-using Rock.Models<#= projectNamespace #>;
-
 namespace Rock.Repository<#= projectNamespace #>
 {
 	/// <summary>
@@ -604,13 +595,6 @@ namespace Rock.Repository<#= projectNamespace #>
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Rock.Models<#= projectNamespace #>;
-
 namespace Rock.Repository<#= projectNamespace #>
 {
 	/// <summary>
@@ -644,10 +628,6 @@ namespace Rock.Repository<#= projectNamespace #>
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Rock.Models<#= projectNamespace #>;
-using Rock.Repository<#= projectNamespace #>;
 
 namespace Rock.Services<#= projectNamespace #>
 {
@@ -736,7 +716,7 @@ namespace Rock.Services<#= projectNamespace #>
 //
 using System.ServiceModel;
 
-namespace Rock.Api<#= projectNamespace #>
+namespace Rock.REST<#= projectNamespace #>
 {
 	/// <summary>
 	/// Represents a REST WCF service for <#= pls.Pluralize( Entity ) #>
@@ -751,10 +731,22 @@ namespace Rock.Api<#= projectNamespace #>
         Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> Get( string id );
 
 		/// <summary>
+		/// Gets a <#= Entity #> object
+		/// </summary>
+		[OperationContract]
+        Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> ApiGet( string id, string apiKey );
+
+		/// <summary>
 		/// Updates a <#= Entity #> object
 		/// </summary>
         [OperationContract]
         void Update<#= Entity #>( string id, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+
+		/// <summary>
+		/// Updates a <#= Entity #> object
+		/// </summary>
+        [OperationContract]
+        void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
 		/// Creates a new <#= Entity #> object
@@ -763,15 +755,27 @@ namespace Rock.Api<#= projectNamespace #>
         void Create<#= Entity #>( Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
+		/// Creates a new <#= Entity #> object
+		/// </summary>
+        [OperationContract]
+        void ApiCreate<#= Entity #>( string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+
+		/// <summary>
 		/// Deletes a <#= Entity #> object
 		/// </summary>
         [OperationContract]
         void Delete<#= Entity #>( string id );
+
+		/// <summary>
+		/// Deletes a <#= Entity #> object
+		/// </summary>
+        [OperationContract]
+        void ApiDelete<#= Entity #>( string id, string apiKey );
     }
 }
 <#
-			// Write the REST Interface Class
-		    relativeOutputFilePath = @"..\..\Api\" + projectSubFolder + "I" + Entity + "Service.cs";
+			// Write the REST Interface Classes
+		    relativeOutputFilePath = @"..\..\REST\" + projectSubFolder + "I" + Entity + "Service.cs";
 		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 
 			GenerationEnvironment = new System.Text.StringBuilder();
@@ -791,19 +795,18 @@ namespace Rock.Api<#= projectNamespace #>
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Activation;
 using System.ServiceModel.Web;
 
-using Rock.Cms.Security;
-
-namespace Rock.Api<#= projectNamespace #>
+namespace Rock.REST<#= projectNamespace #>
 {
 	/// <summary>
 	/// REST WCF service for <#= pls.Pluralize( Entity ) #>
 	/// </summary>
     [Export(typeof(IService))]
-    [ExportMetadata("RouteName", "api/<#= QualifiedEntity.Replace("Rock.Models.", "").Replace(".","/") #>")]
+    [ExportMetadata("RouteName", "<#= QualifiedEntity.Replace("Rock.Models.", "").Replace(".","/") #>")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
     public partial class <#= Entity #>Service : I<#= Entity #>Service, IService
     {
@@ -815,17 +818,43 @@ namespace Rock.Api<#= projectNamespace #>
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
+                throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
             {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-                if ( <#= Entity #>.Authorized( "View", currentUser ) )
-                    return <#= Entity #>.DataTransferObject;
-                else
-                    throw new FaultException( "Unauthorized" );
+				<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+				if ( <#= Entity #>.Authorized( "View", currentUser ) )
+					return <#= Entity #>.DataTransferObject;
+				else
+					throw new WebFaultException<string>( "Not Authorized to View this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+            }
+        }
+		
+		/// <summary>
+		/// Gets a <#= Entity #> object
+		/// </summary>
+		[WebGet( UriTemplate = "{id}/{apiKey}" )]
+        public Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> ApiGet( string id, string apiKey )
+        {
+            using (Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope())
+            {
+				Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+
+				if (user != null)
+				{
+					uow.objectContext.Configuration.ProxyCreationEnabled = false;
+					Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+					if ( <#= Entity #>.Authorized( "View", user.Username ) )
+						return <#= Entity #>.DataTransferObject;
+					else
+						throw new WebFaultException<string>( "Not Authorized to View this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+				}
+				else
+					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
             }
         }
 		
@@ -837,21 +866,49 @@ namespace Rock.Api<#= projectNamespace #>
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
+                throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+				<#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+				if ( existing<#= Entity #>.Authorized( "Edit", currentUser ) )
+				{
+					uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+					<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+				}
+				else
+					throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+            }
+        }
 
-                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-                if ( existing<#= Entity #>.Authorized( "Edit", currentUser ) )
-                {
-                    uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-                    <#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
+		/// <summary>
+		/// Updates a <#= Entity #> object
+		/// </summary>
+		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
+        public void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        {
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+				Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+
+				if (user != null)
+				{
+					uow.objectContext.Configuration.ProxyCreationEnabled = false;
+					Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+					<#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+					if ( existing<#= Entity #>.Authorized( "Edit", user.Username ) )
+					{
+						uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+						<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+					}
+					else
+						throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+				}
+				else
+					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
             }
         }
 
@@ -863,17 +920,41 @@ namespace Rock.Api<#= projectNamespace #>
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
+                throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
-
-                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
+				uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+				<#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
 				<#= Entity #>Service.Add( existing<#= Entity #>, currentUser.PersonId() );
-                uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-                <#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+				uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+				<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+            }
+        }
+
+		/// <summary>
+		/// Creates a new <#= Entity #> object
+		/// </summary>
+		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
+        public void ApiCreate<#= Entity #>( string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        {
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+				Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+
+				if (user != null)
+				{
+					uow.objectContext.Configuration.ProxyCreationEnabled = false;
+					Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+					<#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
+					<#= Entity #>Service.Add( existing<#= Entity #>, user.PersonId );
+					uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
+					<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+				}
+				else
+					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
             }
         }
 
@@ -885,21 +966,49 @@ namespace Rock.Api<#= projectNamespace #>
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
-                throw new FaultException( "Must be logged in" );
+                throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
             {
-                uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				uow.objectContext.Configuration.ProxyCreationEnabled = false;
+				Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+				<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+				if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
+				{
+					<#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
+					<#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
+				}
+				else
+					throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+            }
+        }
 
-                Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
-                <#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-                if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
-                {
-                    <#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
-                    <#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
-                }
-                else
-                    throw new FaultException( "Unauthorized" );
+		/// <summary>
+		/// Deletes a <#= Entity #> object
+		/// </summary>
+		[WebInvoke( Method = "DELETE", UriTemplate = "{id}/{apiKey}" )]
+        public void ApiDelete<#= Entity #>( string id, string apiKey )
+        {
+            using ( Rock.Helpers.UnitOfWorkScope uow = new Rock.Helpers.UnitOfWorkScope() )
+            {
+				Rock.Services.Cms.UserService userService = new Rock.Services.Cms.UserService();
+                Rock.Models.Cms.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+
+				if (user != null)
+				{
+					uow.objectContext.Configuration.ProxyCreationEnabled = false;
+					Rock.Services<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock.Services<#= projectNamespace #>.<#= Entity #>Service();
+					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
+					if ( <#= Entity #>.Authorized( "Edit", user.Username ) )
+					{
+						<#= Entity #>Service.Delete( <#= Entity #>, user.PersonId );
+						<#= Entity #>Service.Save( <#= Entity #>, user.PersonId );
+					}
+					else
+						throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
+				}
+				else
+					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
             }
         }
 
@@ -907,7 +1016,7 @@ namespace Rock.Api<#= projectNamespace #>
 }
 <#
 			// Write the REST Class
-		    relativeOutputFilePath = @"..\..\Api\" + projectSubFolder + Entity + "Service.cs";
+		    relativeOutputFilePath = @"..\..\REST\" + projectSubFolder + Entity + "Service.cs";
 		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 
 			GenerationEnvironment = new System.Text.StringBuilder();
@@ -927,13 +1036,7 @@ namespace Rock.Api<#= projectNamespace #>
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Objects;
 using System.Data.Entity;
-using System.Linq;
-using System.Web;
 
 namespace Rock.EntityFramework
 {

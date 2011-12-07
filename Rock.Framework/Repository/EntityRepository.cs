@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Objects;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Objects;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-
-using Rock.Models;
 using Rock.Helpers;
+using Rock.Models;
 
 namespace Rock.Repository
 {

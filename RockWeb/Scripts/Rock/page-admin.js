@@ -68,7 +68,7 @@
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'api/Cms/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
                 success: function (getData, status, xhr) {
 
                     // Update the new zone
@@ -90,7 +90,7 @@
                         contentType: 'application/json',
                         dataType: 'json',
                         data: JSON.stringify(getData),
-                        url: rock.baseUrl + 'api/Cms/BlockInstance/Move/' + blockInstanceId,
+                        url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
                         success: function (data, status, xhr) {
 
                             // Get a reference to the block instance's container div
@@ -121,12 +121,12 @@
 
                         },
                         error: function (xhr, status, error) {
-                            alert(status + ' ' + error + ' ' + xhr.responseText);
+                            alert(status + ' [' + error + ']: ' + xhr.responseText);
                         }
                     });
                 },
                 error: function (xhr, status, error) {
-                    alert(status + ' ' + error + ' ' + xhr.responseText);
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
 
@@ -160,7 +160,7 @@
 
                 },
                 error: function (xhr, status, error) {
-                    alert(status + ' ' + error + ' ' + xhr.responseText);
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
 

@@ -13,10 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Rock.Models.Cms;
-using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
@@ -25,6 +21,16 @@ namespace Rock.Services.Cms
 	/// </summary>
     public partial class UserService : Rock.Services.Service<Rock.Models.Cms.User>
     {
+		/// <summary>
+		/// Gets Users by Api Key
+		/// </summary>
+		/// <param name="apiKey">Api Key.</param>
+		/// <returns>An enumerable list of User objects.</returns>
+	    public IEnumerable<Rock.Models.Cms.User> GetByApiKey( string apiKey )
+        {
+            return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
+        }
+		
 		/// <summary>
 		/// Gets User by Application Name And Username
 		/// </summary>

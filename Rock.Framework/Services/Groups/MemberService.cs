@@ -13,10 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Rock.Models.Groups;
-using Rock.Repository.Groups;
 
 namespace Rock.Services.Groups
 {

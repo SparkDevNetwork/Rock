@@ -14,11 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-
-using Rock.Models;
 
 namespace Rock.Models.Core
 {
@@ -55,6 +51,25 @@ namespace Rock.Models.Core
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Entity { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
+		[MaxLength( 50 )]
+		[DataMember]
+		public string EntityQualifierColumn { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
+		[DataMember]
+		public string EntityQualifierValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Key.
@@ -149,25 +164,6 @@ namespace Rock.Models.Core
 		public int? ModifiedByPersonId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityQualifierColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		[DataMember]
-		public string EntityQualifierValue { get; set; }
-		
-		/// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
@@ -183,6 +179,8 @@ namespace Rock.Models.Core
 				dto.System = this.System;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Entity = this.Entity;
+				dto.EntityQualifierColumn = this.EntityQualifierColumn;
+				dto.EntityQualifierValue = this.EntityQualifierValue;
 				dto.Key = this.Key;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
@@ -193,8 +191,6 @@ namespace Rock.Models.Core
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.EntityQualifierColumn = this.EntityQualifierColumn;
-				dto.EntityQualifierValue = this.EntityQualifierValue;
 				return dto; 
 			}
 		}

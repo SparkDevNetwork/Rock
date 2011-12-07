@@ -13,10 +13,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using Rock.Models.Cms;
-using Rock.Repository.Cms;
 
 namespace Rock.Services.Cms
 {
