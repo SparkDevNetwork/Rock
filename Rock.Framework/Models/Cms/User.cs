@@ -14,11 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-
-using Rock.Models;
 
 namespace Rock.Models.Cms
 {
@@ -270,6 +266,16 @@ namespace Rock.Models.Cms
 		public int? ModifiedByPersonId { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Api Key.
+		/// </summary>
+		/// <value>
+		/// Api Key.
+		/// </value>
+		[MaxLength( 50 )]
+		[DataMember]
+		public string ApiKey { get; set; }
+		
+		/// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
@@ -308,6 +314,7 @@ namespace Rock.Models.Cms
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				dto.ApiKey = this.ApiKey;
 				return dto; 
 			}
 		}

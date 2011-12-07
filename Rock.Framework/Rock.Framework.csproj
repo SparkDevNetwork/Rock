@@ -69,41 +69,6 @@
     <Compile Include="Address\ServiceDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
     <Compile Include="Address\Standardize\StrikeIron.cs" />
-    <Compile Include="Api\Cms\BlockInstanceService.Partial.cs" />
-    <Compile Include="Api\Cms\AuthService.cs" />
-    <Compile Include="Api\Cms\BlockInstanceService.cs" />
-    <Compile Include="Api\Cms\BlockService.cs" />
-    <Compile Include="Api\Cms\BlogCategoryService.cs" />
-    <Compile Include="Api\Cms\BlogPostCommentService.cs" />
-    <Compile Include="Api\Cms\BlogPostService.cs" />
-    <Compile Include="Api\Cms\BlogService.cs" />
-    <Compile Include="Api\Cms\BlogTagService.cs" />
-    <Compile Include="Api\Cms\FileService.cs" />
-    <Compile Include="Api\Cms\HtmlContentService.cs" />
-    <Compile Include="Api\Cms\IBlockInstanceService.Partial.cs" />
-    <Compile Include="Api\Cms\IAuthService.cs" />
-    <Compile Include="Api\Cms\IBlockInstanceService.cs" />
-    <Compile Include="Api\Cms\IBlockService.cs" />
-    <Compile Include="Api\Cms\IBlogCategoryService.cs" />
-    <Compile Include="Api\Cms\IBlogPostCommentService.cs" />
-    <Compile Include="Api\Cms\IBlogPostService.cs" />
-    <Compile Include="Api\Cms\IBlogService.cs" />
-    <Compile Include="Api\Cms\IBlogTagService.cs" />
-    <Compile Include="Api\Cms\IFileService.cs" />
-    <Compile Include="Api\Cms\IHtmlContentService.cs" />
-    <Compile Include="Api\Cms\IPageRouteService.cs" />
-    <Compile Include="Api\Cms\IPageService.cs" />
-    <Compile Include="Api\Cms\ISiteDomainService.cs" />
-    <Compile Include="Api\Cms\ISiteService.cs" />
-    <Compile Include="Api\Cms\IUserService.cs" />
-    <Compile Include="Api\Cms\PageRouteService.cs" />
-    <Compile Include="Api\Cms\SiteDomainService.cs" />
-    <Compile Include="Api\Cms\SiteService.cs" />
-    <Compile Include="Api\Cms\UserService.cs" />
-    <Compile Include="Api\Core\IServiceLogService.cs" />
-    <Compile Include="Api\Core\ServiceLogService.cs" />
-    <Compile Include="Api\Crm\AddressService.cs" />
-    <Compile Include="Api\Crm\AddressService.Partial.cs" />
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -114,39 +79,6 @@
     <Compile Include="Address\StandardizeService.cs" />
     <Compile Include="Address\GeocodeService.cs" />
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
-    <Compile Include="Api\Crm\IAddressService.cs" />
-    <Compile Include="Api\Crm\IAddressService.Partial.cs" />
-    <Compile Include="Api\IService.cs" />
-    <Compile Include="Api\Core\AttributeQualifierService.cs" />
-    <Compile Include="Api\Core\AttributeService.cs" />
-    <Compile Include="Api\Core\AttributeValueService.cs" />
-    <Compile Include="Api\Core\DefinedTypeService.cs" />
-    <Compile Include="Api\Core\DefinedValueService.cs" />
-    <Compile Include="Api\Core\EntityChangeService.cs" />
-    <Compile Include="Api\Core\FieldTypeService.cs" />
-    <Compile Include="Api\Core\IAttributeQualifierService.cs" />
-    <Compile Include="Api\Core\IAttributeService.cs" />
-    <Compile Include="Api\Core\IAttributeValueService.cs" />
-    <Compile Include="Api\Core\IDefinedTypeService.cs" />
-    <Compile Include="Api\Core\IDefinedValueService.cs" />
-    <Compile Include="Api\Core\IEntityChangeService.cs" />
-    <Compile Include="Api\Core\IFieldTypeService.cs" />
-    <Compile Include="Api\Crm\IPersonService.cs" />
-    <Compile Include="Api\Crm\IPhoneNumberService.cs" />
-    <Compile Include="Api\Crm\PersonService.cs" />
-    <Compile Include="Api\Crm\PhoneNumberService.cs" />
-    <Compile Include="Api\Groups\GroupRoleService.cs" />
-    <Compile Include="Api\Groups\GroupService.cs" />
-    <Compile Include="Api\Groups\GroupTypeService.cs" />
-    <Compile Include="Api\Groups\IGroupRoleService.cs" />
-    <Compile Include="Api\Groups\IGroupService.cs" />
-    <Compile Include="Api\Groups\IGroupTypeService.cs" />
-    <Compile Include="Api\Groups\IMemberService.cs" />
-    <Compile Include="Api\Groups\MemberService.cs" />
-    <Compile Include="Api\Cms\PageService.cs" />
-    <Compile Include="Api\ServiceHelper.cs" />
-    <Compile Include="Api\Util\IJobService.cs" />
-    <Compile Include="Api\Util\JobService.cs" />
     <Compile Include="Cms\Cached\Attribute.cs" />
     <Compile Include="Cms\Cached\Block.cs" />
     <Compile Include="Cms\Cached\BlockInstance.cs" />
@@ -350,6 +282,74 @@
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\Util\EntityJobRepository.cs" />
     <Compile Include="Repository\Util\IJobRepository.cs" />
+    <Compile Include="REST\Cms\AuthService.cs" />
+    <Compile Include="REST\Cms\BlockInstanceService.cs" />
+    <Compile Include="REST\Cms\BlockInstanceService.Partial.cs" />
+    <Compile Include="REST\Cms\BlockService.cs" />
+    <Compile Include="REST\Cms\BlogCategoryService.cs" />
+    <Compile Include="REST\Cms\BlogPostCommentService.cs" />
+    <Compile Include="REST\Cms\BlogPostService.cs" />
+    <Compile Include="REST\Cms\BlogService.cs" />
+    <Compile Include="REST\Cms\BlogTagService.cs" />
+    <Compile Include="REST\Cms\IBlockInstanceService.Partial.cs" />
+    <Compile Include="REST\Cms\FileService.cs" />
+    <Compile Include="REST\Cms\HtmlContentService.cs" />
+    <Compile Include="REST\Cms\IAuthService.cs" />
+    <Compile Include="REST\Cms\IBlockInstanceService.cs" />
+    <Compile Include="REST\Cms\IBlockService.cs" />
+    <Compile Include="REST\Cms\IBlogCategoryService.cs" />
+    <Compile Include="REST\Cms\IBlogPostCommentService.cs" />
+    <Compile Include="REST\Cms\IBlogPostService.cs" />
+    <Compile Include="REST\Cms\IBlogService.cs" />
+    <Compile Include="REST\Cms\IBlogTagService.cs" />
+    <Compile Include="REST\Cms\IFileService.cs" />
+    <Compile Include="REST\Cms\IHtmlContentService.cs" />
+    <Compile Include="REST\Cms\IPageRouteService.cs" />
+    <Compile Include="REST\Cms\IPageService.cs" />
+    <Compile Include="REST\Cms\ISiteDomainService.cs" />
+    <Compile Include="REST\Cms\ISiteService.cs" />
+    <Compile Include="REST\Cms\IUserService.cs" />
+    <Compile Include="REST\Cms\PageRouteService.cs" />
+    <Compile Include="REST\Cms\PageService.cs" />
+    <Compile Include="REST\Cms\SiteDomainService.cs" />
+    <Compile Include="REST\Cms\SiteService.cs" />
+    <Compile Include="REST\Cms\UserService.cs" />
+    <Compile Include="REST\Core\AttributeQualifierService.cs" />
+    <Compile Include="REST\Core\AttributeService.cs" />
+    <Compile Include="REST\Core\AttributeValueService.cs" />
+    <Compile Include="REST\Core\DefinedTypeService.cs" />
+    <Compile Include="REST\Core\DefinedValueService.cs" />
+    <Compile Include="REST\Core\EntityChangeService.cs" />
+    <Compile Include="REST\Core\FieldTypeService.cs" />
+    <Compile Include="REST\Core\IAttributeQualifierService.cs" />
+    <Compile Include="REST\Core\IAttributeService.cs" />
+    <Compile Include="REST\Core\IAttributeValueService.cs" />
+    <Compile Include="REST\Core\IDefinedTypeService.cs" />
+    <Compile Include="REST\Core\IDefinedValueService.cs" />
+    <Compile Include="REST\Core\IEntityChangeService.cs" />
+    <Compile Include="REST\Core\IFieldTypeService.cs" />
+    <Compile Include="REST\Core\IServiceLogService.cs" />
+    <Compile Include="REST\Core\ServiceLogService.cs" />
+    <Compile Include="REST\Crm\AddressService.cs" />
+    <Compile Include="REST\Crm\AddressService.Partial.cs" />
+    <Compile Include="REST\Crm\IAddressService.cs" />
+    <Compile Include="REST\Crm\IAddressService.Partial.cs" />
+    <Compile Include="REST\Crm\IPersonService.cs" />
+    <Compile Include="REST\Crm\IPhoneNumberService.cs" />
+    <Compile Include="REST\Crm\PersonService.cs" />
+    <Compile Include="REST\Crm\PhoneNumberService.cs" />
+    <Compile Include="REST\Groups\GroupRoleService.cs" />
+    <Compile Include="REST\Groups\GroupService.cs" />
+    <Compile Include="REST\Groups\GroupTypeService.cs" />
+    <Compile Include="REST\Groups\IGroupRoleService.cs" />
+    <Compile Include="REST\Groups\IGroupService.cs" />
+    <Compile Include="REST\Groups\IGroupTypeService.cs" />
+    <Compile Include="REST\Groups\IMemberService.cs" />
+    <Compile Include="REST\Groups\MemberService.cs" />
+    <Compile Include="REST\IService.cs" />
+    <Compile Include="REST\ServiceHelper.cs" />
+    <Compile Include="REST\Util\IJobService.cs" />
+    <Compile Include="REST\Util\JobService.cs" />
     <Compile Include="Service References\MelissaData.Service\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -386,6 +386,7 @@
     <Compile Include="Services\Cms\BlogTagService.cs" />
     <Compile Include="Services\Cms\BlogService.Partial.cs" />
     <Compile Include="Services\Cms\AuthService.partial.cs" />
+    <Compile Include="Services\Cms\BlockInstanceService.partial.cs" />
     <Compile Include="Services\Cms\FileService.cs" />
     <Compile Include="Services\Cms\FileService.partial.cs" />
     <Compile Include="Services\Cms\HtmlContentService.cs" />
@@ -569,7 +570,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>62532</DevelopmentServerPort>
+          <DevelopmentServerPort>51120</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

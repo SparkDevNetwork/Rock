@@ -73,6 +73,17 @@ namespace Rock.Models
         }
 
         /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="username">The user name.</param>
+        /// <returns></returns>
+        public virtual bool Authorized( string action, string username )
+        {
+            return Rock.Cms.Security.Authorization.Authorized( this, action, username );
+        }
+
+        /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
         /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
         /// </summary>

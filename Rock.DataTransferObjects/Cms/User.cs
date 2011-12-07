@@ -21,7 +21,6 @@ namespace Rock.DataTransferObjects.Cms
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    [Serializable]
     public partial class User
     {
         /// <summary>
@@ -244,6 +243,14 @@ namespace Rock.DataTransferObjects.Cms
 		/// Modified By Person Id.
 		/// </value>
 		public int? ModifiedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Api Key.
+		/// </summary>
+		/// <value>
+		/// Api Key.
+		/// </value>
+		public string ApiKey { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDTO"/> class.

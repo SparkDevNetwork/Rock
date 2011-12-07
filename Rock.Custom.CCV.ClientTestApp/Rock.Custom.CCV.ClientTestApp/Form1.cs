@@ -16,6 +16,8 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
+        const string APIKEY = "dtKey";
+
         public Form1()
         {
             InitializeComponent();
@@ -47,7 +49,7 @@ namespace Rock.Custom.CCV.ClientTestApp
             }
         }
 
-        private Rock.DataTransferObjects.Crm.Address SendRequest( string action )
+        private Rock.DataTransferObjects.Crm.Address SendRequest( string service )
         {
             Rock.DataTransferObjects.Crm.Address address = new Rock.DataTransferObjects.Crm.Address();
             address.Street1 = tbStreet1.Text;
@@ -62,12 +64,26 @@ namespace Rock.Custom.CCV.ClientTestApp
             DataContractJsonSerializer serializer = new DataContractJsonSerializer( typeof( Rock.DataTransferObjects.Crm.Address ) );
             serializer.WriteObject(ms, address);
 
-            byte[] data = proxy.UploadData( string.Format( "http://localhost:6229/RockWeb/api/Crm/Address/{0}", action ),
-                "PUT", ms.ToArray());
+            try
+            {
+                byte[] data = proxy.UploadData( string.Format( "http://localhost:56627/Crm/Address/{0}/{1}", service, APIKEY ),
+                    "PUT", ms.ToArray() );
+                Stream stream = new MemoryStream( data );
+                return serializer.ReadObject( stream ) as Rock.DataTransferObjects.Crm.Address;
+            }
+            catch ( WebException ex )
+            {
+                //string response = (ex.Response
+                using ( Stream data = ex.Response.GetResponseStream() )
+                {
+                    string text = new StreamReader( data ).ReadToEnd();
 
-            Stream stream = new MemoryStream(data);
+                    MessageBox.Show( string.Format( "Response: {0}\n{1}",
+                        ( ( System.Net.HttpWebResponse )ex.Response ).StatusDescription, text ), service + " Error" );
+                }
 
-            return serializer.ReadObject( stream ) as Rock.DataTransferObjects.Crm.Address;
+                return null;
+            }
         }
     }
 
