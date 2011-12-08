@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Sites : Rock.Cms.CmsBlock
+    public partial class Sites : Rock.Web.UI.Block
     {
         private string _action = string.Empty;
         private int _siteId = 0;
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
             phList.Visible = true;
             phDetails.Visible = false;
 
-            Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
+            Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
             gvList.DataSource = siteService.Queryable().ToList();
             gvList.DataBind();
         }
@@ -53,11 +53,11 @@ namespace RockWeb.Blocks.Administration
             phList.Visible = false;
             phDetails.Visible = true;
 
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
-                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-                Rock.Services.Cms.ThemeService themeService = new Rock.Services.Cms.ThemeService( Request.RequestContext.HttpContext.Server.MapPath( "~" ) );
+                Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
+                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                Rock.CMS.ThemeService themeService = new Rock.CMS.ThemeService( Request.RequestContext.HttpContext.Server.MapPath( "~" ) );
 
                 ddlDefaultPage.DataSource = pageService.Queryable().Where( p => p.ParentPage == null ).ToList();
                 ddlDefaultPage.DataBind();
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( siteId > 0 )
                 {
-                    Rock.Models.Cms.Site site = siteService.Get( Convert.ToInt32( PageParameter( "SiteId" ) ) );
+                    Rock.CMS.Site site = siteService.Get( Convert.ToInt32( PageParameter( "SiteId" ) ) );
                     tbName.Text = site.Name;
                     tbDescription.Text = site.Description;
 					//tbTheme.Text = site.Theme;
@@ -85,20 +85,20 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.SiteService siteService = new Rock.Services.Cms.SiteService();
-                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+                Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
+                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
-                Rock.Models.Cms.Site site = _action == "add" ?
-                    new Rock.Models.Cms.Site() :
+                Rock.CMS.Site site = _action == "add" ?
+                    new Rock.CMS.Site() :
                     siteService.Get( _siteId );
 
                 site.Name = tbName.Text;
                 site.Description = tbDescription.Text;
 				site.Theme = ddlTheme.SelectedValue;
 
-                Rock.Models.Cms.Page page = pageService.Get( Convert.ToInt32( ddlDefaultPage.SelectedValue ) );
+                Rock.CMS.Page page = pageService.Get( Convert.ToInt32( ddlDefaultPage.SelectedValue ) );
                 site.DefaultPage = page;
 
                 if ( _action == "add" )

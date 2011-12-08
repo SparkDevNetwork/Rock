@@ -5,12 +5,12 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Models.Crm;
-using Rock.Services.Crm;
+using Rock.CRM;
+using Rock.CRM;
 
 namespace RockWeb.Blocks
 {
-    public partial class PersonEdit : Rock.Cms.CmsBlock
+    public partial class PersonEdit : Rock.Web.UI.Block
     {
         protected void Page_Load( object sender, EventArgs e )
         {

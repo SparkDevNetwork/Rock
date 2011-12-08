@@ -71,7 +71,7 @@
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.Framework\Rock.Framework.csproj">
+    <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
       <Name>Rock.Framework</Name>
     </ProjectReference>

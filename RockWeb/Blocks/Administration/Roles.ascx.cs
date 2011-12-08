@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Roles : Rock.Cms.CmsBlock
+    public partial class Roles : Rock.Web.UI.Block
     {
         private string _action = string.Empty;
         private string _roleName = string.Empty;

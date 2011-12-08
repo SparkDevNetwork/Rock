@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-	public partial class Blocks : Rock.Cms.CmsBlock
+	public partial class Blocks : Rock.Web.UI.Block
 	{
 		private string _action = string.Empty;
 		private int _blockId = 0;
@@ -56,23 +56,23 @@ namespace RockWeb.Blocks.Administration
             phList.Visible = true;
             phDetails.Visible = false;
 
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
 
                 // Add any unregistered blocks
-                foreach ( Rock.Models.Cms.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+                foreach ( Rock.CMS.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
                 {
                     try
                     {
                         Control control = LoadControl( block.Path );
-                        if ( control is Rock.Cms.CmsBlock )
+                        if ( control is Rock.Web.UI.Block )
                         {
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
                             block.Description = block.Path;
 
                             blockService.Add( block, CurrentPersonId );
-                            Rock.Models.Cms.Block testBlock = block;
+                            Rock.CMS.Block testBlock = block;
                             blockService.Save( block, CurrentPersonId );
                         }
                     }
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+            Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
             rGrid.DataSource = blockService.Queryable().ToList();
             rGrid.DataBind();
         }
@@ -112,13 +112,13 @@ namespace RockWeb.Blocks.Administration
 			phList.Visible = false;
 			phDetails.Visible = true;
 
-			using ( new Rock.Helpers.UnitOfWorkScope() )
+			using ( new Rock.Data.UnitOfWorkScope() )
 			{
-                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
 
 				if ( blockId > 0 )
 				{
-					Rock.Models.Cms.Block block = blockService.Get( Convert.ToInt32( PageParameter( "BlockId" ) ) );
+					Rock.CMS.Block block = blockService.Get( Convert.ToInt32( PageParameter( "BlockId" ) ) );
                     if (block == null)
                         throw new System.Exception( "Invalid Block Id" );
 
@@ -142,8 +142,8 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
-            Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
-            Rock.Models.Cms.Block block = blockService.Get( ( int )e.Keys["id"] );
+            Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
+            Rock.CMS.Block block = blockService.Get( ( int )e.Keys["id"] );
             if ( block != null )
             {
                 blockService.Delete( block, CurrentPersonId );
@@ -160,12 +160,12 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbSave_Click( object sender, EventArgs e )
 		{
-			using ( new Rock.Helpers.UnitOfWorkScope() )
+			using ( new Rock.Data.UnitOfWorkScope() )
 			{
-                Rock.Services.Cms.BlockService blockService = new Rock.Services.Cms.BlockService();
+                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
 
-				Rock.Models.Cms.Block block = _action == "add" ?
-					new Rock.Models.Cms.Block() :
+				Rock.CMS.Block block = _action == "add" ?
+					new Rock.CMS.Block() :
 					blockService.Get( _blockId );
 
 				block.Path = tbPath.Text;

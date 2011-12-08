@@ -11,9 +11,9 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks
 {
-    public partial class TestGrid : Rock.Cms.CmsBlock
+    public partial class TestGrid : Rock.Web.UI.Block
     {
-        Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
         protected override void OnInit( EventArgs e )
         {
@@ -52,10 +52,10 @@ namespace RockWeb.Blocks
 
         void rGrid_GridAdd( object sender, EventArgs e )
         {
-            Rock.Models.Cms.Page page = new Rock.Models.Cms.Page();
+            Rock.CMS.Page page = new Rock.CMS.Page();
             page.Name = "New Page";
 
-            Rock.Models.Cms.Page lastPage = pageService.Queryable().
+            Rock.CMS.Page lastPage = pageService.Queryable().
                 Where( p => !p.ParentPageId.HasValue).
                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks
 
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.Get((int)e.Keys["id"]);
+            Rock.CMS.Page page = pageService.Get((int)e.Keys["id"]);
             if ( page != null )
             {
                 pageService.Delete( page, CurrentPersonId );
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks
 
         void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
         {
-            pageService.Reorder( (List<Rock.Models.Cms.Page>)rGrid.DataSource, 
+            pageService.Reorder( (List<Rock.CMS.Page>)rGrid.DataSource, 
                 e.OldIndex, e.NewIndex, CurrentPersonId );
         }
 
