@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 
 public partial class Blocks_Cms_TestPageFlusher : System.Web.UI.UserControl
 {
@@ -12,7 +13,7 @@ public partial class Blocks_Cms_TestPageFlusher : System.Web.UI.UserControl
 		int id = -1;
 		if ( ! string.IsNullOrEmpty(TextBox1.Text) && int.TryParse( TextBox1.Text, out id ) )
 		{
-			Rock.Cms.Cached.Page.Flush( id );
+			Rock.Web.Cache.Page.Flush( id );
 		}
     }
 }

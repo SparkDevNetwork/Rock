@@ -52,6 +52,11 @@
     background: url("../Assets/Images/Grid/edit.png") ;
 }
 
+.grid-icon-cell.security a
+{
+    background: url("../Assets/Images/Grid/security.png") ;
+}
+
 .grid-icon-cell.reorder a
 {
     background: url("../Assets/Images/Grid/drag-handle.png") ;

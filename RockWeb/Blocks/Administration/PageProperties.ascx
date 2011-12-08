@@ -8,6 +8,10 @@
         
         <ol id="olProperties" runat="server">
             <li>
+                <asp:Label ID="lblParentPage" runat="server" AssociatedControlID="ddlParentPage">Parent Page</asp:Label>
+                <asp:DropDownList ID="ddlParentPage" runat="server"></asp:DropDownList>
+            </li>
+            <li>
                 <asp:Label ID="lblPageName" runat="server" AssociatedControlID="tbPageName">Name</asp:Label>
                 <asp:TextBox ID="tbPageName" runat="server"></asp:TextBox>
                 <asp:RequiredFieldValidator ID="rfvPageName" runat="server" ControlToValidate="tbPageName" 

@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
-using System.IO;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 
-using Rock.Models.Cms;
-using Rock.Services.Cms;
+using System;
+using System.Collections.Generic;
+using System.Web.UI;
+
+using Rock.CMS;
 
 namespace RockWeb.Blocks.Cms
 {
-    public partial class HtmlContent : Rock.Cms.CmsBlock
+    public partial class HtmlContent : Rock.Web.UI.Block
     {
         public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit)
         {
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Cms
                 // if content not cached load it from DB
                 if ( cachedContent == null )
                 {
-                    Rock.Models.Cms.HtmlContent content = new HtmlContentService().GetActiveContentByBlockKey( BlockInstance.Id, entityValue );
+                    Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContentByBlockKey( BlockInstance.Id, entityValue );
 
                     if ( content != null )
                     {
@@ -107,12 +107,12 @@ namespace RockWeb.Blocks.Cms
 
                 // get current  content
                 HtmlContentService service = new HtmlContentService();
-                Rock.Models.Cms.HtmlContent content = service.GetActiveContentByBlockKey( BlockInstance.Id, entityValue );
+                Rock.CMS.HtmlContent content = service.GetActiveContentByBlockKey( BlockInstance.Id, entityValue );
 
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.Models.Cms.HtmlContent();
+                    content = new Rock.CMS.HtmlContent();
                     content.BlockId = BlockInstance.Id;
                     content.EntityValue = entityValue;
                     content.Approved = true;

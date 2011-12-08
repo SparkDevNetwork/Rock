@@ -1,17 +1,23 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.Security;
 
 using Facebook;
-using System.Web;
-using System.Linq;
-using Rock.Cms;
-using Rock.Services.Cms;
-using Rock.Services.Crm;
+
+using Rock.CMS;
+using Rock.CRM;
 
 namespace RockWeb.Blocks.Security
 {
-    public partial class Login : CmsBlock
+    public partial class Login : Rock.Web.UI.Block
     {
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -104,7 +110,7 @@ namespace RockWeb.Blocks.Security
                             if ( person != null )
                             {
                                 // found exact match create a Facebook login for the user
-                                user = new Rock.Models.Cms.User();
+                                user = new Rock.CMS.User();
                                 user.PersonId = person.Id;
                                 user.Email = email;
                                 user.AuthenticationType = 2; // TODO: Make this a enum;
@@ -139,7 +145,7 @@ namespace RockWeb.Blocks.Security
                                 return;
                             }
                         }
-                        catch ( Exception ex )
+                        catch //( Exception ex )
                         {
                             // TODO: probably should report something...
                         }
@@ -161,7 +167,7 @@ namespace RockWeb.Blocks.Security
                         Response.Redirect( state );
                     }
                 }
-                catch ( FacebookOAuthException oae )
+                catch //( FacebookOAuthException oae )
                 {
                     // TODO: Add error handeling
                     // Error validating verification code. (usually from wrong return url very picky with formatting)

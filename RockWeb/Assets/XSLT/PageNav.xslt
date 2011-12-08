@@ -12,7 +12,7 @@
 					<li>
 						<a href="#">
 							<xsl:attribute name="href">
-								<xsl:value-of select="@id"/>
+								<xsl:value-of select="@url"/>
 							</xsl:attribute>
 							<xsl:value-of select="@title"/>
 						</a>
@@ -61,7 +61,7 @@
 						<li>
 							<a>
 								<xsl:attribute name="href">
-									<xsl:value-of select="@id"/>
+									<xsl:value-of select="@url"/>
 								</xsl:attribute>
 								<xsl:value-of select="@title"/>
 							</a>

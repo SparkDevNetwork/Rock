@@ -1,24 +1,27 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using System.Text;
-using Rock.Models.Cms;
-using Rock.Helpers;
+using System.Web;
+
+using Rock.CMS;
 
 namespace RockWeb.Blocks.Blog
 {
-    public partial class Posts : Rock.Cms.CmsBlock
+    public partial class Posts : Rock.Web.UI.Block
     {
         protected int skipCount = 0;
         protected int takeCount = 1;
         protected int currentPage = 1;
         protected int categoryId = 0;
         protected int tagId = 0;
-        protected PageReference postDetailsPage = null;
+        protected Rock.Web.UI.PageReference postDetailsPage = null;
         
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -29,7 +32,7 @@ namespace RockWeb.Blocks.Blog
             }
 
             // get post details page
-            postDetailsPage = new PageReference( AttributeValue( "PostDetailPage" ) );
+            postDetailsPage = new Rock.Web.UI.PageReference( AttributeValue( "PostDetailPage" ) );
 
             // get number of posts to display per page
             takeCount = Convert.ToInt32( AttributeValue( "PostsPerPage" ) );
@@ -63,17 +66,17 @@ namespace RockWeb.Blocks.Blog
             {
                 blogId = Convert.ToInt32( PageParameter( "BlogId" ) );
             }
-            catch ( Exception ex )
+            catch 
             {
                 lPosts.Text = "<p class=\"block-warning\">The ID of this blog could not be found in the address of this page</p>";
             }
 
             if ( blogId != -1 )
             {
-                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                Rock.CMS.BlogService blogService = new Rock.CMS.BlogService();
                 
                 // try loading the blog object from the page cache
-                Rock.Models.Cms.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.Models.Cms.Blog;
+                Rock.CMS.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.CMS.Blog;
 
                 if ( blog == null )
                 {
@@ -102,7 +105,7 @@ namespace RockWeb.Blocks.Blog
 
                 // add category and tag filters if requested
                 if ( categoryId != 0 )
-                    qPosts = qPosts.Where( p => p.BlogCategorys.Any(c => c.Id == categoryId ));
+                    qPosts = qPosts.Where( p => p.BlogCategories.Any(c => c.Id == categoryId ));
 
                 if ( tagId != 0 )
                     qPosts = qPosts.Where( p => p.BlogTags.Any( t => t.Id == tagId ) );
@@ -134,11 +137,11 @@ namespace RockWeb.Blocks.Blog
                         sb.Append( "         Posted " );
 
                         // determine categories
-                        if ( post.BlogCategorys.Count > 0 )
+                        if ( post.BlogCategories.Count > 0 )
                         {
                             sb.Append( "in <ul>" );
 
-                            foreach ( BlogCategory category in post.BlogCategorys )
+                            foreach ( BlogCategory category in post.BlogCategories )
                             {
                                 sb.Append( "<li><a href=\"" + PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Category", category.Id.ToString() }, { "BlogId", blogId.ToString() } } ) + "\">" + category.Name + "</a></li?" );
                             }
@@ -181,7 +184,7 @@ namespace RockWeb.Blocks.Blog
                    aOlder.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage + 1 ).ToString() }, {"BlogId", blogId.ToString()} }, HttpContext.Current.Request.QueryString );
                    aNewer.HRef = PageInstance.BuildUrl( PageInstance.PageReference, new Dictionary<string, string>() { { "Page", ( currentPage - 1 ).ToString() }, { "BlogId", blogId.ToString() } }, HttpContext.Current.Request.QueryString );
                 }
-                catch ( NullReferenceException nrx )
+                catch ( NullReferenceException )
                 {
                     lPosts.Text = "<p class=\"block-warning\">The blog ID " + blogId.ToString() + " does not exist.</p>";
                 }
