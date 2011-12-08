@@ -11557,6 +11557,22 @@
             Current Value.
             </value>
         </member>
+        <member name="P:Rock.Core.EntityChange.CreatedDateTime">
+            <summary>
+            Gets or sets the Created Date Time.
+            </summary>
+            <value>
+            Created Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.Core.EntityChange.CreatedByPersonId">
+            <summary>
+            Gets or sets the Created By Person Id.
+            </summary>
+            <value>
+            Created By Person Id.
+            </value>
+        </member>
         <member name="P:Rock.Core.EntityChange.DataTransferObject">
             <summary>
             Gets a Data Transfer Object (lightweight) version of this object.
@@ -11569,6 +11585,14 @@
             <summary>
             Gets the auth entity.
             </summary>
+        </member>
+        <member name="P:Rock.Core.EntityChange.CreatedByPerson">
+            <summary>
+            Gets or sets the Created By Person.
+            </summary>
+            <value>
+            A <see cref="T:Rock.CRM.Person"/> object.
+            </value>
         </member>
         <member name="T:Rock.Core.EntityChangeConfiguration">
             <summary>

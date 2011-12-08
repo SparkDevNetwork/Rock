@@ -92,6 +92,22 @@ namespace Rock.Core.DTO
 		/// </value>
 		public string CurrentValue { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		public DateTime? CreatedDateTime { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		public int? CreatedByPersonId { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityChangeDTO"/> class.
         /// </summary>

@@ -84,7 +84,10 @@ namespace RockWeb.Blocks.Administration
 
                 page.Name = tbPageName.Text;
                 page.Title = tbPageTitle.Text;
-                page.ParentPageId = parentPage;
+                if (parentPage != 0)
+                    page.ParentPageId = parentPage;
+                else
+                    page.ParentPageId = null;
                 page.Layout = ddlLayout.Text;
                 page.DisplayInNavWhen = ( Rock.CMS.DisplayInNavWhen )Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                 page.MenuDisplayDescription = cbMenuDescription.Checked;

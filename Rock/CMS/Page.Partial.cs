@@ -7,6 +7,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
+using Rock.Data;
+
 namespace Rock.CMS
 {
     public partial class Page
@@ -35,6 +37,7 @@ namespace Rock.CMS
     
     public class CommentPage
     {
+        [TrackChanges]
         [Required( ErrorMessage = "Name is required" )]
         public string Name { get; set; }
     }
