@@ -174,6 +174,8 @@
     // Bind the page's block config anchor to toggle the display
     // of each block's container and config options
     $('#cms-admin-footer .block-config').click(function () {
+        $('.zone-configuration').hide();
+        $('.zone-instance').removeClass('outline');
         $('.block-configuration').toggle();
         $('.block-instance').toggleClass('outline');
         return false;
@@ -182,6 +184,8 @@
     // Bind the page's zone config anchor to toggle the display
     // of each zone's container and config options
     $('#cms-admin-footer .page-zones').click(function () {
+        $('.block-configuration').hide();
+        $('.block-instance').removeClass('outline');
         $('.zone-configuration').toggle();
         $('.zone-instance').toggleClass('outline');
         return false;
