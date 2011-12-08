@@ -8,12 +8,12 @@ using System.Web.UI.WebControls;
 using System.Text;
 using System.Configuration;
 
-using Rock.Models.Cms;
+using Rock.CMS;
 using Rock.Helpers;
 
 namespace RockWeb.Blocks.Blog
 {
-    public partial class PostDisplay : Rock.Cms.CmsBlock
+    public partial class PostDisplay : Rock.Web.UI.Block
     {
         protected int postId = -1;
         protected BlogPost post = null;
@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Blog
             {
             }
 
-            Rock.Services.Cms.BlogPostService postService = new Rock.Services.Cms.BlogPostService();
+            Rock.CMS.BlogPostService postService = new Rock.CMS.BlogPostService();
             post = postService.Get( postId );
 
             lTitle.Text = post.Title;
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Blog
             if ( Page.IsValid )
             {
                 // save comment
-                Rock.Services.Cms.BlogPostCommentService commentService = new Rock.Services.Cms.BlogPostCommentService();
+                Rock.CMS.BlogPostCommentService commentService = new Rock.CMS.BlogPostCommentService();
                 BlogPostComment comment = new BlogPostComment();
                 comment.Comment = txtComment.Text;
                 comment.CommentDate = DateTime.Now;

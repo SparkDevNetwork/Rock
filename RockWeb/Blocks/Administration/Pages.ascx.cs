@@ -11,13 +11,13 @@ using Rock.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Pages : Rock.Cms.CmsBlock
+    public partial class Pages : Rock.Web.UI.Block
 	{
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Cms.Cached.Page _page = null;
-        private Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        private Rock.Web.Cache.Page _page = null;
+        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-            _page = Rock.Cms.Cached.Page.Read( pageId );
+            _page = Rock.Web.Cache.Page.Read( pageId );
             if ( _page != null )
                 canConfigure = _page.Authorized( "Configure", CurrentUser );
             else
@@ -99,10 +99,10 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
-                Rock.Cms.Cached.Page.Flush( page.Id );
+                Rock.Web.Cache.Page.Flush( page.Id );
 
                 pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Models.Cms.Page page;
+            Rock.CMS.Page page;
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.Models.Cms.Page();
+                page = new Rock.CMS.Page();
 
                 if ( _page != null )
                 {
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Administration
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.Models.Cms.Page lastPage =
+                Rock.CMS.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Administration
                 pageService.Add( page, CurrentPersonId );
 
                 if (_page != null)
-                    Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
+                    Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
                 page = pageService.Get( pageId );
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.Models.Cms.Page page = pageService.Get( pageId );
+            Rock.CMS.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

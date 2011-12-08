@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration.Address
     /// Used to manage the <see cref="Rock.Address.GeocodeService"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
-    public partial class Geocoding : Rock.Cms.CmsBlock
+    public partial class Geocoding : Rock.Web.UI.Block
 	{
         #region Control Methods
 
@@ -77,12 +77,12 @@ namespace RockWeb.Blocks.Administration.Address
             else
                 services.Insert( e.NewIndex, movedItem );
 
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
                 int order = 0;
                 foreach ( KeyValuePair<int, Lazy<GeocodeService, IGeocodeServiceData>> service in services )
                 {
-                    foreach ( Rock.Cms.Cached.Attribute attribute in service.Value.Value.Attributes )
+                    foreach ( Rock.Web.Cache.Attribute attribute in service.Value.Value.Attributes )
                         if ( attribute.Key == "Order" )
                             Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
                     order++;
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Administration.Address
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
-            foreach ( Rock.Cms.Cached.Attribute attribute in service.Attributes )
+            foreach ( Rock.Web.Cache.Attribute attribute in service.Attributes )
                 Rock.Attribute.Helper.SaveAttributeValue( service, attribute, service.AttributeValues[attribute.Key].Value, CurrentPersonId );
 
             hfServiceId.Value = string.Empty;

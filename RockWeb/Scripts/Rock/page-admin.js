@@ -68,7 +68,7 @@
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
                 success: function (getData, status, xhr) {
 
                     // Update the new zone

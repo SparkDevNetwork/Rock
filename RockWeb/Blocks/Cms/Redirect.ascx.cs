@@ -3,7 +3,7 @@
 namespace RockWeb.Blocks.Cms
 {
     [Rock.Attribute.Property( 0, "Url", "The path to redirect to" )]
-    public partial class Redirect : Rock.Cms.CmsBlock
+    public partial class Redirect : Rock.Web.UI.Block
     {
         protected override void OnInit( EventArgs e )
         {

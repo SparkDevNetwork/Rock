@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Cms
+namespace Rock.DataTransferObjects.CMS
 {
     /// <summary>
     /// Site Domain Data Transfer Object.

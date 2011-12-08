@@ -6,12 +6,12 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using System.Text;
-using Rock.Models.Cms;
+using Rock.CMS;
 using Rock.Helpers;
 
 namespace RockWeb.Blocks.Blog
 {
-    public partial class Categories : Rock.Cms.CmsBlock
+    public partial class Categories : Rock.Web.UI.Block
     {
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -34,10 +34,10 @@ namespace RockWeb.Blocks.Blog
 
             if ( blogId != -1 )
             {
-                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                Rock.CMS.BlogService blogService = new Rock.CMS.BlogService();
 
                 // try loading the blog object from the page cache
-                Rock.Models.Cms.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.Models.Cms.Blog;
+                Rock.CMS.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.CMS.Blog;
 
                 if ( blog == null )
                 {
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Blog
                 // print categories as an un-ordered list
                 output.Append( "<ul>" );
 
-                foreach ( Rock.Models.Cms.BlogCategory category in blog.BlogCategories.OrderBy( c => c.Name ) )
+                foreach ( Rock.CMS.BlogCategory category in blog.BlogCategories.OrderBy( c => c.Name ) )
                 {
                     output.Append( "<li><a href=\"" + HttpContext.Current.Request.Url.LocalPath + "?Category=" + category.Id.ToString() + "\">" + category.Name + "</a></li>" );
                 }

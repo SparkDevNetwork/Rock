@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Rock.Models.Cms;
-using Rock.Repository.Cms;
+using Rock.CMS;
+using Rock.CMS;
 
 namespace RockWeb.Blocks.Security
 {
-    public partial class CreateAccount : Rock.Cms.CmsBlock
+    public partial class CreateAccount : Rock.Web.UI.Block
     {
         private string _returnUrl;
 

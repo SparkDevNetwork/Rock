@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Cms
+namespace Rock.DataTransferObjects.CMS
 {
     /// <summary>
     /// Blog Tag Data Transfer Object.

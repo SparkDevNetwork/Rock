@@ -11,9 +11,9 @@ using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class BlockProperties : Rock.Cms.CmsBlock
+    public partial class BlockProperties : Rock.Web.UI.Block
     {
-        private Rock.Cms.Cached.BlockInstance _blockInstance = null;
+        private Rock.Web.Cache.BlockInstance _blockInstance = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
-                _blockInstance = Rock.Cms.Cached.BlockInstance.Read( blockInstanceId );
+                _blockInstance = Rock.Web.Cache.BlockInstance.Read( blockInstanceId );
 
                 if ( _blockInstance.Authorized( "Configure", CurrentUser ) )
                 {
@@ -46,10 +46,10 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.BlockInstanceService blockInstanceService = new Rock.Services.Cms.BlockInstanceService();
-                Rock.Models.Cms.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+                Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
+                Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
 
                 Rock.Attribute.Helper.LoadAttributes( blockInstance );
 
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.Attribute.Helper.GetEditValues( olProperties, _blockInstance );
                 _blockInstance.SaveAttributeValues( CurrentPersonId );
 
-                Rock.Cms.Cached.BlockInstance.Flush( _blockInstance.Id );
+                Rock.Web.Cache.BlockInstance.Flush( _blockInstance.Id );
             }
 
             phClose.Controls.AddAt(0, new LiteralControl( @"

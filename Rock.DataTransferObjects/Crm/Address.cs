@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Crm
+namespace Rock.DataTransferObjects.CRM
 {
     /// <summary>
     /// Address Data Transfer Object.

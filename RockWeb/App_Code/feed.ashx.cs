@@ -6,8 +6,8 @@ using System.Web;
 using System.Xml;
 using System.Text;
 
-using Rock.Services.Cms;
-using Rock.Models.Cms;
+using Rock.CMS;
+using Rock.CMS;
 
 namespace RockWeb
 {
