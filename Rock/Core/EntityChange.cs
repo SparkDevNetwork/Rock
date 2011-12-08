@@ -93,6 +93,24 @@ namespace Rock.Core
 		public string CurrentValue { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Created Date Time.
+		/// </summary>
+		/// <value>
+		/// Created Date Time.
+		/// </value>
+		[DataMember]
+		public DateTime? CreatedDateTime { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		[DataMember]
+		public int? CreatedByPersonId { get; set; }
+		
+		/// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
@@ -112,6 +130,8 @@ namespace Rock.Core
 				dto.Property = this.Property;
 				dto.OriginalValue = this.OriginalValue;
 				dto.CurrentValue = this.CurrentValue;
+				dto.CreatedDateTime = this.CreatedDateTime;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
 				return dto; 
 			}
 		}
@@ -121,6 +141,14 @@ namespace Rock.Core
         /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.EntityChange"; } }
+        
+		/// <summary>
+        /// Gets or sets the Created By Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="CRM.Person"/> object.
+        /// </value>
+		public virtual CRM.Person CreatedByPerson { get; set; }
 
     }
     /// <summary>
@@ -133,6 +161,7 @@ namespace Rock.Core
         /// </summary>
         public EntityChangeConfiguration()
         {
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 		}
     }
 }
