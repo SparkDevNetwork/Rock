@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a BlockInstance object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlockInstance Get( string id );
+        Rock.CMS.DTO.BlockInstance Get( string id );
 
 		/// <summary>
 		/// Gets a BlockInstance object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlockInstance ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.BlockInstance ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a BlockInstance object
 		/// </summary>
         [OperationContract]
-        void UpdateBlockInstance( string id, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance );
+        void UpdateBlockInstance( string id, Rock.CMS.DTO.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Updates a BlockInstance object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateBlockInstance( string id, string apiKey, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance );
+        void ApiUpdateBlockInstance( string id, string apiKey, Rock.CMS.DTO.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Creates a new BlockInstance object
 		/// </summary>
         [OperationContract]
-        void CreateBlockInstance( Rock.DataTransferObjects.CMS.BlockInstance BlockInstance );
+        void CreateBlockInstance( Rock.CMS.DTO.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Creates a new BlockInstance object
 		/// </summary>
         [OperationContract]
-        void ApiCreateBlockInstance( string apiKey, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance );
+        void ApiCreateBlockInstance( string apiKey, Rock.CMS.DTO.BlockInstance BlockInstance );
 
 		/// <summary>
 		/// Deletes a BlockInstance object

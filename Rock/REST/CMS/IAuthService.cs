@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a Auth object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Auth Get( string id );
+        Rock.CMS.DTO.Auth Get( string id );
 
 		/// <summary>
 		/// Gets a Auth object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Auth ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.Auth ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Auth object
 		/// </summary>
         [OperationContract]
-        void UpdateAuth( string id, Rock.DataTransferObjects.CMS.Auth Auth );
+        void UpdateAuth( string id, Rock.CMS.DTO.Auth Auth );
 
 		/// <summary>
 		/// Updates a Auth object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateAuth( string id, string apiKey, Rock.DataTransferObjects.CMS.Auth Auth );
+        void ApiUpdateAuth( string id, string apiKey, Rock.CMS.DTO.Auth Auth );
 
 		/// <summary>
 		/// Creates a new Auth object
 		/// </summary>
         [OperationContract]
-        void CreateAuth( Rock.DataTransferObjects.CMS.Auth Auth );
+        void CreateAuth( Rock.CMS.DTO.Auth Auth );
 
 		/// <summary>
 		/// Creates a new Auth object
 		/// </summary>
         [OperationContract]
-        void ApiCreateAuth( string apiKey, Rock.DataTransferObjects.CMS.Auth Auth );
+        void ApiCreateAuth( string apiKey, Rock.CMS.DTO.Auth Auth );
 
 		/// <summary>
 		/// Deletes a Auth object

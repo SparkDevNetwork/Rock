@@ -55,6 +55,25 @@ namespace Rock.Core
 		public string Entity { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
+		[MaxLength( 50 )]
+		[DataMember]
+		public string EntityQualifierColumn { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
+		[DataMember]
+		public string EntityQualifierValue { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Key.
 		/// </summary>
 		/// <value>
@@ -147,40 +166,23 @@ namespace Rock.Core
 		public int? ModifiedByPersonId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityQualifierColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		[DataMember]
-		public string EntityQualifierValue { get; set; }
-		
-		/// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="AttributeDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.Attribute"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.Attribute DataTransferObject
+		public Rock.Core.DTO.Attribute DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.Attribute dto = new Rock.DataTransferObjects.Core.Attribute();
+				Rock.Core.DTO.Attribute dto = new Rock.Core.DTO.Attribute();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Entity = this.Entity;
+				dto.EntityQualifierColumn = this.EntityQualifierColumn;
+				dto.EntityQualifierValue = this.EntityQualifierValue;
 				dto.Key = this.Key;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
@@ -191,8 +193,6 @@ namespace Rock.Core
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.EntityQualifierColumn = this.EntityQualifierColumn;
-				dto.EntityQualifierValue = this.EntityQualifierValue;
 				return dto; 
 			}
 		}

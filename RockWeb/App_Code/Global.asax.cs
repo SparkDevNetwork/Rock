@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Configuration;
-using System.Data.Services;
 using System.Linq;
 using System.Net;
-using System.ServiceModel.Activation;
 using System.Web;
 using System.Web.Caching;
-using System.Web.Compilation;
 using System.Web.Routing;
-using System.Web.Security;
-using System.Web.SessionState;
 
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
-using Rock.Jobs;
 using Rock.CMS;
+using Rock.Jobs;
 using Rock.Util;
 
 namespace RockWeb

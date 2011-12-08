@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a ServiceLog object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.ServiceLog Get( string id );
+        Rock.Core.DTO.ServiceLog Get( string id );
 
 		/// <summary>
 		/// Gets a ServiceLog object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.ServiceLog ApiGet( string id, string apiKey );
+        Rock.Core.DTO.ServiceLog ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a ServiceLog object
 		/// </summary>
         [OperationContract]
-        void UpdateServiceLog( string id, Rock.DataTransferObjects.Core.ServiceLog ServiceLog );
+        void UpdateServiceLog( string id, Rock.Core.DTO.ServiceLog ServiceLog );
 
 		/// <summary>
 		/// Updates a ServiceLog object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateServiceLog( string id, string apiKey, Rock.DataTransferObjects.Core.ServiceLog ServiceLog );
+        void ApiUpdateServiceLog( string id, string apiKey, Rock.Core.DTO.ServiceLog ServiceLog );
 
 		/// <summary>
 		/// Creates a new ServiceLog object
 		/// </summary>
         [OperationContract]
-        void CreateServiceLog( Rock.DataTransferObjects.Core.ServiceLog ServiceLog );
+        void CreateServiceLog( Rock.Core.DTO.ServiceLog ServiceLog );
 
 		/// <summary>
 		/// Creates a new ServiceLog object
 		/// </summary>
         [OperationContract]
-        void ApiCreateServiceLog( string apiKey, Rock.DataTransferObjects.Core.ServiceLog ServiceLog );
+        void ApiCreateServiceLog( string apiKey, Rock.Core.DTO.ServiceLog ServiceLog );
 
 		/// <summary>
 		/// Deletes a ServiceLog object

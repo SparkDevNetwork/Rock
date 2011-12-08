@@ -1,3 +1,9 @@
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Web;
@@ -12,7 +18,7 @@ namespace Rock.REST.CRM
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
-        public Rock.DataTransferObjects.CRM.Address Geocode( Rock.DataTransferObjects.CRM.Address address )
+        public Rock.CRM.DTO.Address Geocode( Rock.CRM.DTO.Address address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -38,7 +44,7 @@ namespace Rock.REST.CRM
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode/{apiKey}" )]
-        public Rock.DataTransferObjects.CRM.Address ApiGeocode( string apiKey, Rock.DataTransferObjects.CRM.Address address )
+        public Rock.CRM.DTO.Address ApiGeocode( string apiKey, Rock.CRM.DTO.Address address )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -67,7 +73,7 @@ namespace Rock.REST.CRM
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
-        public Rock.DataTransferObjects.CRM.Address Standardize( Rock.DataTransferObjects.CRM.Address address )
+        public Rock.CRM.DTO.Address Standardize( Rock.CRM.DTO.Address address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -93,7 +99,7 @@ namespace Rock.REST.CRM
         /// <param name="address">The address.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize/{apiKey}" )]
-        public Rock.DataTransferObjects.CRM.Address ApiStandardize( string apiKey, Rock.DataTransferObjects.CRM.Address address )
+        public Rock.CRM.DTO.Address ApiStandardize( string apiKey, Rock.CRM.DTO.Address address )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {

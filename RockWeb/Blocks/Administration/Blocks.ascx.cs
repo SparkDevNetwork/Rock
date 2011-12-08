@@ -1,10 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -85,9 +91,9 @@ namespace RockWeb.Blocks.Administration
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.EnableAdd = true;
-            rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
+            rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-            rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+            rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
     Sys.Application.add_load(function () {{

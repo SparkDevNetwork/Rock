@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a AttributeValue object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.AttributeValue Get( string id );
+        Rock.Core.DTO.AttributeValue Get( string id );
 
 		/// <summary>
 		/// Gets a AttributeValue object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.AttributeValue ApiGet( string id, string apiKey );
+        Rock.Core.DTO.AttributeValue ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a AttributeValue object
 		/// </summary>
         [OperationContract]
-        void UpdateAttributeValue( string id, Rock.DataTransferObjects.Core.AttributeValue AttributeValue );
+        void UpdateAttributeValue( string id, Rock.Core.DTO.AttributeValue AttributeValue );
 
 		/// <summary>
 		/// Updates a AttributeValue object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateAttributeValue( string id, string apiKey, Rock.DataTransferObjects.Core.AttributeValue AttributeValue );
+        void ApiUpdateAttributeValue( string id, string apiKey, Rock.Core.DTO.AttributeValue AttributeValue );
 
 		/// <summary>
 		/// Creates a new AttributeValue object
 		/// </summary>
         [OperationContract]
-        void CreateAttributeValue( Rock.DataTransferObjects.Core.AttributeValue AttributeValue );
+        void CreateAttributeValue( Rock.Core.DTO.AttributeValue AttributeValue );
 
 		/// <summary>
 		/// Creates a new AttributeValue object
 		/// </summary>
         [OperationContract]
-        void ApiCreateAttributeValue( string apiKey, Rock.DataTransferObjects.Core.AttributeValue AttributeValue );
+        void ApiCreateAttributeValue( string apiKey, Rock.Core.DTO.AttributeValue AttributeValue );
 
 		/// <summary>
 		/// Deletes a AttributeValue object

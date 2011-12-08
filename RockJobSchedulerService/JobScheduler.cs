@@ -14,8 +14,6 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Jobs;
 using Rock.Util;
-using Rock.Util;
-
 
 namespace RockJobSchedulerService
 {

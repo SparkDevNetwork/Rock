@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlockInstance object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.BlockInstance Get( string id )
+        public Rock.CMS.DTO.BlockInstance Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlockInstance object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.BlockInstance ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.BlockInstance ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlockInstance( string id, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void UpdateBlockInstance( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlockInstance( string id, string apiKey, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void ApiUpdateBlockInstance( string id, string apiKey, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlockInstance( Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void CreateBlockInstance( Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlockInstance object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlockInstance( string apiKey, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void ApiCreateBlockInstance( string apiKey, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

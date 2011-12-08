@@ -30,7 +30,7 @@ namespace Rock.REST.Groups
 		/// Gets a Group object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Groups.Group Get( string id )
+        public Rock.Groups.DTO.Group Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Groups
 		/// Gets a Group object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Groups.Group ApiGet( string id, string apiKey )
+        public Rock.Groups.DTO.Group ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Groups
 		/// Updates a Group object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroup( string id, Rock.DataTransferObjects.Groups.Group Group )
+        public void UpdateGroup( string id, Rock.Groups.DTO.Group Group )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Groups
 		/// Updates a Group object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateGroup( string id, string apiKey, Rock.DataTransferObjects.Groups.Group Group )
+        public void ApiUpdateGroup( string id, string apiKey, Rock.Groups.DTO.Group Group )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Groups
 		/// Creates a new Group object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroup( Rock.DataTransferObjects.Groups.Group Group )
+        public void CreateGroup( Rock.Groups.DTO.Group Group )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Groups
 		/// Creates a new Group object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateGroup( string apiKey, Rock.DataTransferObjects.Groups.Group Group )
+        public void ApiCreateGroup( string apiKey, Rock.Groups.DTO.Group Group )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

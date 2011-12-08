@@ -24,37 +24,37 @@ namespace Rock.REST.Groups
 		/// Gets a Member object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Groups.Member Get( string id );
+        Rock.Groups.DTO.Member Get( string id );
 
 		/// <summary>
 		/// Gets a Member object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Groups.Member ApiGet( string id, string apiKey );
+        Rock.Groups.DTO.Member ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Member object
 		/// </summary>
         [OperationContract]
-        void UpdateMember( string id, Rock.DataTransferObjects.Groups.Member Member );
+        void UpdateMember( string id, Rock.Groups.DTO.Member Member );
 
 		/// <summary>
 		/// Updates a Member object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateMember( string id, string apiKey, Rock.DataTransferObjects.Groups.Member Member );
+        void ApiUpdateMember( string id, string apiKey, Rock.Groups.DTO.Member Member );
 
 		/// <summary>
 		/// Creates a new Member object
 		/// </summary>
         [OperationContract]
-        void CreateMember( Rock.DataTransferObjects.Groups.Member Member );
+        void CreateMember( Rock.Groups.DTO.Member Member );
 
 		/// <summary>
 		/// Creates a new Member object
 		/// </summary>
         [OperationContract]
-        void ApiCreateMember( string apiKey, Rock.DataTransferObjects.Groups.Member Member );
+        void ApiCreateMember( string apiKey, Rock.Groups.DTO.Member Member );
 
 		/// <summary>
 		/// Deletes a Member object

@@ -30,7 +30,7 @@ namespace Rock.REST.Groups
 		/// Gets a GroupRole object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Groups.GroupRole Get( string id )
+        public Rock.Groups.DTO.GroupRole Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Groups
 		/// Gets a GroupRole object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Groups.GroupRole ApiGet( string id, string apiKey )
+        public Rock.Groups.DTO.GroupRole ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Groups
 		/// Updates a GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroupRole( string id, Rock.DataTransferObjects.Groups.GroupRole GroupRole )
+        public void UpdateGroupRole( string id, Rock.Groups.DTO.GroupRole GroupRole )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Groups
 		/// Updates a GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateGroupRole( string id, string apiKey, Rock.DataTransferObjects.Groups.GroupRole GroupRole )
+        public void ApiUpdateGroupRole( string id, string apiKey, Rock.Groups.DTO.GroupRole GroupRole )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Groups
 		/// Creates a new GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroupRole( Rock.DataTransferObjects.Groups.GroupRole GroupRole )
+        public void CreateGroupRole( Rock.Groups.DTO.GroupRole GroupRole )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Groups
 		/// Creates a new GroupRole object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateGroupRole( string apiKey, Rock.DataTransferObjects.Groups.GroupRole GroupRole )
+        public void ApiCreateGroupRole( string apiKey, Rock.Groups.DTO.GroupRole GroupRole )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

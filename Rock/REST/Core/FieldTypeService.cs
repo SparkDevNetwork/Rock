@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.FieldType Get( string id )
+        public Rock.Core.DTO.FieldType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.FieldType ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.FieldType ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a FieldType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateFieldType( string id, Rock.DataTransferObjects.Core.FieldType FieldType )
+        public void UpdateFieldType( string id, Rock.Core.DTO.FieldType FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a FieldType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateFieldType( string id, string apiKey, Rock.DataTransferObjects.Core.FieldType FieldType )
+        public void ApiUpdateFieldType( string id, string apiKey, Rock.Core.DTO.FieldType FieldType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new FieldType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateFieldType( Rock.DataTransferObjects.Core.FieldType FieldType )
+        public void CreateFieldType( Rock.Core.DTO.FieldType FieldType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new FieldType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateFieldType( string apiKey, Rock.DataTransferObjects.Core.FieldType FieldType )
+        public void ApiCreateFieldType( string apiKey, Rock.Core.DTO.FieldType FieldType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.AttributeQualifier Get( string id )
+        public Rock.Core.DTO.AttributeQualifier Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.AttributeQualifier ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.AttributeQualifier ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttributeQualifier( string id, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
+        public void UpdateAttributeQualifier( string id, Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateAttributeQualifier( string id, string apiKey, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
+        public void ApiUpdateAttributeQualifier( string id, string apiKey, Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttributeQualifier( Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
+        public void CreateAttributeQualifier( Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new AttributeQualifier object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateAttributeQualifier( string apiKey, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier )
+        public void ApiCreateAttributeQualifier( string apiKey, Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

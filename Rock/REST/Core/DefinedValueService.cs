@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.DefinedValue Get( string id )
+        public Rock.Core.DTO.DefinedValue Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.DefinedValue ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.DefinedValue ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateDefinedValue( string id, Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
+        public void UpdateDefinedValue( string id, Rock.Core.DTO.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateDefinedValue( string id, string apiKey, Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
+        public void ApiUpdateDefinedValue( string id, string apiKey, Rock.Core.DTO.DefinedValue DefinedValue )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateDefinedValue( Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
+        public void CreateDefinedValue( Rock.Core.DTO.DefinedValue DefinedValue )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new DefinedValue object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateDefinedValue( string apiKey, Rock.DataTransferObjects.Core.DefinedValue DefinedValue )
+        public void ApiCreateDefinedValue( string apiKey, Rock.Core.DTO.DefinedValue DefinedValue )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

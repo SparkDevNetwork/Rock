@@ -85,13 +85,13 @@ namespace Rock.CMS
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="BlogCategoryDTO"/> object.
+        /// A <see cref="Rock.CMS.DTO.BlogCategory"/> object.
         /// </value>
-		public Rock.DataTransferObjects.CMS.BlogCategory DataTransferObject
+		public Rock.CMS.DTO.BlogCategory DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.CMS.BlogCategory dto = new Rock.DataTransferObjects.CMS.BlogCategory();
+				Rock.CMS.DTO.BlogCategory dto = new Rock.CMS.DTO.BlogCategory();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.BlogId = this.BlogId;

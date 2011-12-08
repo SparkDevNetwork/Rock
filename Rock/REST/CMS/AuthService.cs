@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a Auth object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.Auth Get( string id )
+        public Rock.CMS.DTO.Auth Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a Auth object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.Auth ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.Auth ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a Auth object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAuth( string id, Rock.DataTransferObjects.CMS.Auth Auth )
+        public void UpdateAuth( string id, Rock.CMS.DTO.Auth Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a Auth object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateAuth( string id, string apiKey, Rock.DataTransferObjects.CMS.Auth Auth )
+        public void ApiUpdateAuth( string id, string apiKey, Rock.CMS.DTO.Auth Auth )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Auth object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAuth( Rock.DataTransferObjects.CMS.Auth Auth )
+        public void CreateAuth( Rock.CMS.DTO.Auth Auth )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Auth object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateAuth( string apiKey, Rock.DataTransferObjects.CMS.Auth Auth )
+        public void ApiCreateAuth( string apiKey, Rock.CMS.DTO.Auth Auth )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

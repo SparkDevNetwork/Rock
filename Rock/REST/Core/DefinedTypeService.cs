@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a DefinedType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.DefinedType Get( string id )
+        public Rock.Core.DTO.DefinedType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a DefinedType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.DefinedType ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.DefinedType ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateDefinedType( string id, Rock.DataTransferObjects.Core.DefinedType DefinedType )
+        public void UpdateDefinedType( string id, Rock.Core.DTO.DefinedType DefinedType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateDefinedType( string id, string apiKey, Rock.DataTransferObjects.Core.DefinedType DefinedType )
+        public void ApiUpdateDefinedType( string id, string apiKey, Rock.Core.DTO.DefinedType DefinedType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateDefinedType( Rock.DataTransferObjects.Core.DefinedType DefinedType )
+        public void CreateDefinedType( Rock.Core.DTO.DefinedType DefinedType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new DefinedType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateDefinedType( string apiKey, Rock.DataTransferObjects.Core.DefinedType DefinedType )
+        public void ApiCreateDefinedType( string apiKey, Rock.Core.DTO.DefinedType DefinedType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

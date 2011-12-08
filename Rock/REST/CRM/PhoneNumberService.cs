@@ -30,7 +30,7 @@ namespace Rock.REST.CRM
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CRM.PhoneNumber Get( string id )
+        public Rock.CRM.DTO.PhoneNumber Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CRM
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CRM.PhoneNumber ApiGet( string id, string apiKey )
+        public Rock.CRM.DTO.PhoneNumber ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CRM
 		/// Updates a PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePhoneNumber( string id, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber )
+        public void UpdatePhoneNumber( string id, Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CRM
 		/// Updates a PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdatePhoneNumber( string id, string apiKey, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber )
+        public void ApiUpdatePhoneNumber( string id, string apiKey, Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CRM
 		/// Creates a new PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePhoneNumber( Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber )
+        public void CreatePhoneNumber( Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CRM
 		/// Creates a new PhoneNumber object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreatePhoneNumber( string apiKey, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber )
+        public void ApiCreatePhoneNumber( string apiKey, Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

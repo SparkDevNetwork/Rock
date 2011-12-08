@@ -141,13 +141,13 @@ namespace Rock.CMS
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="BlockInstanceDTO"/> object.
+        /// A <see cref="Rock.CMS.DTO.BlockInstance"/> object.
         /// </value>
-		public Rock.DataTransferObjects.CMS.BlockInstance DataTransferObject
+		public Rock.CMS.DTO.BlockInstance DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.CMS.BlockInstance dto = new Rock.DataTransferObjects.CMS.BlockInstance();
+				Rock.CMS.DTO.BlockInstance dto = new Rock.CMS.DTO.BlockInstance();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

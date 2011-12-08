@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogPostComment Get( string id );
+        Rock.CMS.DTO.BlogPostComment Get( string id );
 
 		/// <summary>
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogPostComment ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.BlogPostComment ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogPostComment( string id, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment );
+        void UpdateBlogPostComment( string id, Rock.CMS.DTO.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Updates a BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateBlogPostComment( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment );
+        void ApiUpdateBlogPostComment( string id, string apiKey, Rock.CMS.DTO.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Creates a new BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void CreateBlogPostComment( Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment );
+        void CreateBlogPostComment( Rock.CMS.DTO.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Creates a new BlogPostComment object
 		/// </summary>
         [OperationContract]
-        void ApiCreateBlogPostComment( string apiKey, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment );
+        void ApiCreateBlogPostComment( string apiKey, Rock.CMS.DTO.BlogPostComment BlogPostComment );
 
 		/// <summary>
 		/// Deletes a BlogPostComment object

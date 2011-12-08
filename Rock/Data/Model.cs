@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Services;
@@ -104,7 +110,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Adding"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
         protected virtual void OnAdding( ModelUpdatingEventArgs e )
         {
             if ( Adding != null )
@@ -131,7 +137,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Added"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
         protected virtual void OnAdded( ModelUpdatedEventArgs e )
         {
             if ( Added != null )
@@ -155,7 +161,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Deleting"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
         protected virtual void OnDeleting( ModelUpdatingEventArgs e )
         {
             if ( Deleting != null )
@@ -182,7 +188,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Deleted"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
         protected virtual void OnDeleted( ModelUpdatedEventArgs e )
         {
             if ( Deleted != null )
@@ -206,7 +212,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Updating"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
         protected virtual void OnUpdating( ModelUpdatingEventArgs e )
         {
             if ( Updating != null )
@@ -233,7 +239,7 @@ namespace Rock.Data
         /// <summary>
         /// Raises the <see cref="E:Updated"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
         protected virtual void OnUpdated( ModelUpdatedEventArgs e )
         {
             if ( Updated != null )

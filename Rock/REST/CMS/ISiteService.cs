@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a Site object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Site Get( string id );
+        Rock.CMS.DTO.Site Get( string id );
 
 		/// <summary>
 		/// Gets a Site object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Site ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.Site ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Site object
 		/// </summary>
         [OperationContract]
-        void UpdateSite( string id, Rock.DataTransferObjects.CMS.Site Site );
+        void UpdateSite( string id, Rock.CMS.DTO.Site Site );
 
 		/// <summary>
 		/// Updates a Site object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateSite( string id, string apiKey, Rock.DataTransferObjects.CMS.Site Site );
+        void ApiUpdateSite( string id, string apiKey, Rock.CMS.DTO.Site Site );
 
 		/// <summary>
 		/// Creates a new Site object
 		/// </summary>
         [OperationContract]
-        void CreateSite( Rock.DataTransferObjects.CMS.Site Site );
+        void CreateSite( Rock.CMS.DTO.Site Site );
 
 		/// <summary>
 		/// Creates a new Site object
 		/// </summary>
         [OperationContract]
-        void ApiCreateSite( string apiKey, Rock.DataTransferObjects.CMS.Site Site );
+        void ApiCreateSite( string apiKey, Rock.CMS.DTO.Site Site );
 
 		/// <summary>
 		/// Deletes a Site object

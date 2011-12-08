@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Web.UI;
@@ -114,7 +120,7 @@ namespace Rock.Attribute
 
         /// <summary>
         /// Helper method to generate a list of <![CDATA[<li>]]> tags that contain the appropriate html edit
-        /// control returned by each attribute's <see cref="Rock.FieldType.IFieldType"/>
+        /// control returned by each attribute's <see cref="Rock.FieldTypes.IFieldType"/>
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="setValue">if set to <c>true</c> set the edit control's value based on the attribute value.</param>

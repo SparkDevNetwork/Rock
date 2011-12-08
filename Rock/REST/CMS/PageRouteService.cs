@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a PageRoute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.PageRoute Get( string id )
+        public Rock.CMS.DTO.PageRoute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a PageRoute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.PageRoute ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.PageRoute ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePageRoute( string id, Rock.DataTransferObjects.CMS.PageRoute PageRoute )
+        public void UpdatePageRoute( string id, Rock.CMS.DTO.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdatePageRoute( string id, string apiKey, Rock.DataTransferObjects.CMS.PageRoute PageRoute )
+        public void ApiUpdatePageRoute( string id, string apiKey, Rock.CMS.DTO.PageRoute PageRoute )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePageRoute( Rock.DataTransferObjects.CMS.PageRoute PageRoute )
+        public void CreatePageRoute( Rock.CMS.DTO.PageRoute PageRoute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new PageRoute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreatePageRoute( string apiKey, Rock.DataTransferObjects.CMS.PageRoute PageRoute )
+        public void ApiCreatePageRoute( string apiKey, Rock.CMS.DTO.PageRoute PageRoute )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

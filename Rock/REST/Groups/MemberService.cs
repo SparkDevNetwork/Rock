@@ -30,7 +30,7 @@ namespace Rock.REST.Groups
 		/// Gets a Member object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Groups.Member Get( string id )
+        public Rock.Groups.DTO.Member Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Groups
 		/// Gets a Member object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Groups.Member ApiGet( string id, string apiKey )
+        public Rock.Groups.DTO.Member ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Groups
 		/// Updates a Member object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateMember( string id, Rock.DataTransferObjects.Groups.Member Member )
+        public void UpdateMember( string id, Rock.Groups.DTO.Member Member )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Groups
 		/// Updates a Member object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateMember( string id, string apiKey, Rock.DataTransferObjects.Groups.Member Member )
+        public void ApiUpdateMember( string id, string apiKey, Rock.Groups.DTO.Member Member )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Groups
 		/// Creates a new Member object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateMember( Rock.DataTransferObjects.Groups.Member Member )
+        public void CreateMember( Rock.Groups.DTO.Member Member )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Groups
 		/// Creates a new Member object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateMember( string apiKey, Rock.DataTransferObjects.Groups.Member Member )
+        public void ApiCreateMember( string apiKey, Rock.Groups.DTO.Member Member )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

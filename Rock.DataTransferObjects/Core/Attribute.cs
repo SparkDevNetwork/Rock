@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Core
+namespace Rock.Core.DTO
 {
     /// <summary>
     /// Attribute Data Transfer Object.
@@ -59,6 +59,22 @@ namespace Rock.DataTransferObjects.Core
 		/// Entity.
 		/// </value>
 		public string Entity { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Column.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Column.
+		/// </value>
+		public string EntityQualifierColumn { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Entity Qualifier Value.
+		/// </summary>
+		/// <value>
+		/// Entity Qualifier Value.
+		/// </value>
+		public string EntityQualifierValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Key.
@@ -139,22 +155,6 @@ namespace Rock.DataTransferObjects.Core
 		/// Modified By Person Id.
 		/// </value>
 		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		public string EntityQualifierColumn { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		public string EntityQualifierValue { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeDTO"/> class.

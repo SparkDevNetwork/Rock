@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using System.Text;
-using System.Configuration;
-
 using Rock.CMS;
-using Rock.Helpers;
 
 namespace RockWeb.Blocks.Blog
 {
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Blog
             foreach ( BlogPostComment comment in comments )
             {
                 sbComments.Append( "<article class=\"group\">\n" );
-                sbComments.Append( "<header><img src=\"http://www.gravatar.com/avatar/" + HtmlHelper.CalculateMD5Hash( comment.EmailAddress ) + "?r=pg&d=identicon&s=50\" /><strong>" + comment.PersonName + " says:</strong> </h1>" + comment.CommentDate.Value.ToLongDateString() + " " + comment.CommentDate.Value.ToShortTimeString() + "</header>" );
+                sbComments.Append( "<header><img src=\"http://www.gravatar.com/avatar/" + Rock.Web.UI.Controls.HtmlHelper.CalculateMD5Hash( comment.EmailAddress ) + "?r=pg&d=identicon&s=50\" /><strong>" + comment.PersonName + " says:</strong> </h1>" + comment.CommentDate.Value.ToLongDateString() + " " + comment.CommentDate.Value.ToShortTimeString() + "</header>" );
                 sbComments.Append( comment.Comment );
 
                 sbComments.Append( "</article>\n" );

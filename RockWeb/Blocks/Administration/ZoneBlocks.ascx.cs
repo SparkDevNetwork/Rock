@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -37,8 +39,8 @@ namespace RockWeb.Blocks.Administration
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.EnableAdd = true;
                 gLayoutBlocks.GridAdd += new GridAddEventHandler( gLayoutBlocks_GridAdd );
-                gLayoutBlocks.GridReorder += new Rock.Controls.GridReorderEventHandler( gLayoutBlocks_GridReorder );
-                gLayoutBlocks.GridRebind += new Rock.Controls.GridRebindEventHandler( gLayoutBlocks_GridRebind );
+                gLayoutBlocks.GridReorder += new GridReorderEventHandler( gLayoutBlocks_GridReorder );
+                gLayoutBlocks.GridRebind += new GridRebindEventHandler( gLayoutBlocks_GridRebind );
             }
 
             if ( _page.Authorized( "Configure", CurrentUser ) )
@@ -46,8 +48,8 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.DataKeyNames = new string[] { "id" };
                 gPageBlocks.EnableAdd = true;
                 gPageBlocks.GridAdd += new GridAddEventHandler( gPageBlocks_GridAdd );
-                gPageBlocks.GridReorder += new Rock.Controls.GridReorderEventHandler( gPageBlocks_GridReorder );
-                gPageBlocks.GridRebind += new Rock.Controls.GridRebindEventHandler( gPageBlocks_GridRebind );
+                gPageBlocks.GridReorder += new GridReorderEventHandler( gPageBlocks_GridReorder );
+                gPageBlocks.GridRebind += new GridRebindEventHandler( gPageBlocks_GridRebind );
             }
 
             string script = string.Format( @"
@@ -89,7 +91,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void gLayoutBlocks_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
             blockInstanceService.Reorder(
                 blockInstanceService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList(),
@@ -127,7 +129,7 @@ namespace RockWeb.Blocks.Administration
             BindGrids();
         }
 
-        void gPageBlocks_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
             blockInstanceService.Reorder(
                 blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),

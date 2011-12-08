@@ -1,5 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
@@ -38,7 +42,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the field 
         /// </summary>
-        public Rock.FieldType.IFieldType Field { get; private set; }
+        public Rock.FieldTypes.IFieldType Field { get; private set; }
 
         #region Static Methods
 
@@ -72,7 +76,7 @@ namespace Rock.Web.Cache
                     fieldType.Id = fieldTypeModel.Id;
                     fieldType.Name = fieldTypeModel.Name;
                     fieldType.Description = fieldTypeModel.Description;
-                    fieldType.Field = Rock.FieldType.FieldHelper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
+                    fieldType.Field = Rock.FieldTypes.FieldHelper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
 
                     cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 

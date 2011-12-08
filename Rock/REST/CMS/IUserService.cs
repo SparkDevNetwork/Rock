@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a User object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.User Get( string id );
+        Rock.CMS.DTO.User Get( string id );
 
 		/// <summary>
 		/// Gets a User object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.User ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.User ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a User object
 		/// </summary>
         [OperationContract]
-        void UpdateUser( string id, Rock.DataTransferObjects.CMS.User User );
+        void UpdateUser( string id, Rock.CMS.DTO.User User );
 
 		/// <summary>
 		/// Updates a User object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateUser( string id, string apiKey, Rock.DataTransferObjects.CMS.User User );
+        void ApiUpdateUser( string id, string apiKey, Rock.CMS.DTO.User User );
 
 		/// <summary>
 		/// Creates a new User object
 		/// </summary>
         [OperationContract]
-        void CreateUser( Rock.DataTransferObjects.CMS.User User );
+        void CreateUser( Rock.CMS.DTO.User User );
 
 		/// <summary>
 		/// Creates a new User object
 		/// </summary>
         [OperationContract]
-        void ApiCreateUser( string apiKey, Rock.DataTransferObjects.CMS.User User );
+        void ApiCreateUser( string apiKey, Rock.CMS.DTO.User User );
 
 		/// <summary>
 		/// Deletes a User object

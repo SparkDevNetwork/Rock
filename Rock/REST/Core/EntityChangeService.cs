@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.EntityChange Get( string id )
+        public Rock.Core.DTO.EntityChange Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.EntityChange ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.EntityChange ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateEntityChange( string id, Rock.DataTransferObjects.Core.EntityChange EntityChange )
+        public void UpdateEntityChange( string id, Rock.Core.DTO.EntityChange EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateEntityChange( string id, string apiKey, Rock.DataTransferObjects.Core.EntityChange EntityChange )
+        public void ApiUpdateEntityChange( string id, string apiKey, Rock.Core.DTO.EntityChange EntityChange )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateEntityChange( Rock.DataTransferObjects.Core.EntityChange EntityChange )
+        public void CreateEntityChange( Rock.Core.DTO.EntityChange EntityChange )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new EntityChange object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateEntityChange( string apiKey, Rock.DataTransferObjects.Core.EntityChange EntityChange )
+        public void ApiCreateEntityChange( string apiKey, Rock.Core.DTO.EntityChange EntityChange )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

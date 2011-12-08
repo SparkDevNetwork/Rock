@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Text;
@@ -10,8 +16,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Helpers;
 using Rock.CRM;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -361,7 +367,7 @@ namespace Rock.Web.UI
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
-                            Rock.Controls.HtmlGenericContainer blockWrapper = new Rock.Controls.HtmlGenericContainer( "div" );
+                            HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format("bid_{0}", blockInstance.Id);
                             blockWrapper.Attributes.Add( "zoneloc", blockInstance.BlockInstanceLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
@@ -691,7 +697,7 @@ namespace Rock.Web.UI
         }
 
         // Adds the configuration html elements for editing a block
-        private void AddBlockConfig( Rock.Controls.HtmlGenericContainer blockWrapper, Block block, 
+        private void AddBlockConfig( HtmlGenericContainer blockWrapper, Block block, 
             Rock.Web.Cache.BlockInstance blockInstance, bool canConfig, bool canEdit )
         {
             if ( canConfig || canEdit )
@@ -875,7 +881,7 @@ namespace Rock.Web.UI
         /// <param name="parms">Dictionary of parameters</param>
         public static string BuildUrl( int pageId, Dictionary<string, string> parms )
         {
-            return BuildUrl(new Rock.Helpers.PageReference(pageId, -1), parms, null);
+            return BuildUrl(new PageReference(pageId, -1), parms, null);
         }
 
         /// <summary>
@@ -886,7 +892,7 @@ namespace Rock.Web.UI
         /// <param name="queryString">Querystring to include paramters from</param>
         public static string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
-            return BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, queryString );
+            return BuildUrl( new PageReference( pageId, -1 ), parms, queryString );
         }
 
         /// <summary>
@@ -894,7 +900,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
-        public static string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms )
+        public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms )
         {
             return BuildUrl( pageRef, parms, null );
         }
@@ -905,7 +911,7 @@ namespace Rock.Web.UI
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
-        public static string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
             string url = string.Empty;
 

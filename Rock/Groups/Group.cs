@@ -121,13 +121,13 @@ namespace Rock.Groups
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="GroupDTO"/> object.
+        /// A <see cref="Rock.Groups.DTO.Group"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Groups.Group DataTransferObject
+		public Rock.Groups.DTO.Group DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Groups.Group dto = new Rock.DataTransferObjects.Groups.Group();
+				Rock.Groups.DTO.Group dto = new Rock.Groups.DTO.Group();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

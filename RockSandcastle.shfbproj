@@ -28,56 +28,15 @@
     <VendorName>Spark Development Network</VendorName>
     <ProductTitle>Rock ChMS</ProductTitle>
     <DocumentationSources>
-      <DocumentationSource sourceFile="Rock.Framework\Rock.Framework.csproj" />
-    </DocumentationSources>
-    <ProjectSummary>Rock Framework</ProjectSummary>
+      <DocumentationSource sourceFile="Rock\Rock.csproj" />
+<DocumentationSource sourceFile="Rock.DataTransferObjects\Rock.DataTransferObjects.csproj" /></DocumentationSources>
+    <ProjectSummary>Rock</ProjectSummary>
     <RootNamespaceContainer>True</RootNamespaceContainer>
-    <RootNamespaceTitle>Rock Framework</RootNamespaceTitle>
+    <RootNamespaceTitle>Rock</RootNamespaceTitle>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <SyntaxFilters>CSharp</SyntaxFilters>
     <BinaryTOC>True</BinaryTOC>
-    <NamespaceSummaries>
-      <NamespaceSummaryItem name="Rock.Address" isDocumented="True">Address Standardization and Geocoding</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Address.Geocode" isDocumented="True">Address Geocoding</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Address.Standardize" isDocumented="True">Address Standardization</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api" isDocumented="True">REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Framework.MelissaData.Service" isDocumented="False" />
-<NamespaceSummaryItem name="Rock.Framework.ServiceObjects.GeoCoder" isDocumented="False" />
-<NamespaceSummaryItem name="Rock.Framework.StrikeIron.USAddressVerification" isDocumented="False" />
-<NamespaceSummaryItem name="Rock" isDocumented="True">Framework API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api.Cms" isDocumented="True">Content Management REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api.Core" isDocumented="True">Core REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api.Crm" isDocumented="True">CRM REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api.Groups" isDocumented="True">Group REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Api.Util" isDocumented="True">Utility REST API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Attribute" isDocumented="True">Attributes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Cms" isDocumented="True">Page and User Controls</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Cms.Cached" isDocumented="True">Simplified CMS objects used for caching</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Cms.Security" isDocumented="True">Users, Roles, Authentication</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Controls" isDocumented="True">Custom Server Controls</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.EntityFramework" isDocumented="True">Entity Framework Context</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.FieldTypes" isDocumented="True">Custom Field Types</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Helpers" isDocumented="True">Helper classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Jobs" isDocumented="True">Unattended Job management</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models" isDocumented="True">POCO Entitites</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models.Cms" isDocumented="True">Content Management System POCO Entities</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models.Core" isDocumented="True">Core POCO Entitites</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models.Crm" isDocumented="True">CRM POCO Entities</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models.Groups" isDocumented="True">Group POCO Entitities</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Models.Util" isDocumented="True">Utility POCO Entities</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository" isDocumented="True">Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository.Cms" isDocumented="True">Content Management System Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository.Core" isDocumented="True">Core Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository.Crm" isDocumented="True">CRM Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository.Groups" isDocumented="True">Group Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Repository.Util" isDocumented="True">Utility Repository Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services" isDocumented="True">Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services.Cms" isDocumented="True">Content Management System Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services.Core" isDocumented="True">Core Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services.Crm" isDocumented="True">CRM Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services.Groups" isDocumented="True">Group Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Services.Util" isDocumented="True">Utility Service Layer Classes</NamespaceSummaryItem>
-<NamespaceSummaryItem name="Rock.Validation" isDocumented="True">Validation Controls</NamespaceSummaryItem></NamespaceSummaries>
+    <NamespaceSummaries></NamespaceSummaries>
     <NamingMethod>MemberName</NamingMethod>
     <PresentationStyle>hana</PresentationStyle>
     <Preliminary>True</Preliminary>

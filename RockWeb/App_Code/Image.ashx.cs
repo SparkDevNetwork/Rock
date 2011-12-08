@@ -12,8 +12,9 @@ using System.Drawing;
 using System.IO;
 using System.Web;
 
-using Rock.CMS;
 using ImageResizer;
+
+using Rock.CMS;
 
 namespace RockWeb
 {

@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Groups
+namespace Rock.Groups.DTO
 {
     /// <summary>
     /// Group Type Data Transfer Object.

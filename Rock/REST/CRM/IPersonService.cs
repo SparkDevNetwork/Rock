@@ -24,37 +24,37 @@ namespace Rock.REST.CRM
 		/// Gets a Person object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.Person Get( string id );
+        Rock.CRM.DTO.Person Get( string id );
 
 		/// <summary>
 		/// Gets a Person object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.Person ApiGet( string id, string apiKey );
+        Rock.CRM.DTO.Person ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Person object
 		/// </summary>
         [OperationContract]
-        void UpdatePerson( string id, Rock.DataTransferObjects.CRM.Person Person );
+        void UpdatePerson( string id, Rock.CRM.DTO.Person Person );
 
 		/// <summary>
 		/// Updates a Person object
 		/// </summary>
         [OperationContract]
-        void ApiUpdatePerson( string id, string apiKey, Rock.DataTransferObjects.CRM.Person Person );
+        void ApiUpdatePerson( string id, string apiKey, Rock.CRM.DTO.Person Person );
 
 		/// <summary>
 		/// Creates a new Person object
 		/// </summary>
         [OperationContract]
-        void CreatePerson( Rock.DataTransferObjects.CRM.Person Person );
+        void CreatePerson( Rock.CRM.DTO.Person Person );
 
 		/// <summary>
 		/// Creates a new Person object
 		/// </summary>
         [OperationContract]
-        void ApiCreatePerson( string apiKey, Rock.DataTransferObjects.CRM.Person Person );
+        void ApiCreatePerson( string apiKey, Rock.CRM.DTO.Person Person );
 
 		/// <summary>
 		/// Deletes a Person object

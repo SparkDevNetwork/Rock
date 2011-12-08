@@ -1,6 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Text.RegularExpressions;
 
 namespace Rock
@@ -43,14 +47,25 @@ namespace Rock
 
         #region Enum Extensions
 
+        /// <summary>
+        /// Converts to the enum value to it's string value
+        /// </summary>
+        /// <param name="eff">The eff.</param>
+        /// <returns></returns>
         public static String ConvertToString( this Enum eff )
         {
-            return Enum.GetName( eff.GetType(), eff );
+            return Enum.GetName( eff.GetType(), eff ).SplitCase();
         }
 
+        /// <summary>
+        /// Converts a string value to an enum value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumValue">The enum value.</param>
+        /// <returns></returns>
         public static T ConvertToEnum<T>( this String enumValue )
         {
-            return ( T )Enum.Parse( typeof( T ), enumValue );
+            return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
         }
 
         #endregion

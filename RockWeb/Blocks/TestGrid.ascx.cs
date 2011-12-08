@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-using System.IO;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks
 {
@@ -20,10 +22,10 @@ namespace RockWeb.Blocks
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.EnableAdd = true;
             //rGrid.ClientAddScript = "return addItem();";
-            rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
+            rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-            rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-            rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+            rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+            rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
     Sys.Application.add_load(function () {{
@@ -82,7 +84,7 @@ namespace RockWeb.Blocks
             BindGrid();
         }
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             pageService.Reorder( (List<Rock.CMS.Page>)rGrid.DataSource, 
                 e.OldIndex, e.NewIndex, CurrentPersonId );

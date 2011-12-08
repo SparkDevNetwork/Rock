@@ -24,37 +24,37 @@ namespace Rock.REST.CRM
 		/// Gets a Address object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.Address Get( string id );
+        Rock.CRM.DTO.Address Get( string id );
 
 		/// <summary>
 		/// Gets a Address object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.Address ApiGet( string id, string apiKey );
+        Rock.CRM.DTO.Address ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Address object
 		/// </summary>
         [OperationContract]
-        void UpdateAddress( string id, Rock.DataTransferObjects.CRM.Address Address );
+        void UpdateAddress( string id, Rock.CRM.DTO.Address Address );
 
 		/// <summary>
 		/// Updates a Address object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateAddress( string id, string apiKey, Rock.DataTransferObjects.CRM.Address Address );
+        void ApiUpdateAddress( string id, string apiKey, Rock.CRM.DTO.Address Address );
 
 		/// <summary>
 		/// Creates a new Address object
 		/// </summary>
         [OperationContract]
-        void CreateAddress( Rock.DataTransferObjects.CRM.Address Address );
+        void CreateAddress( Rock.CRM.DTO.Address Address );
 
 		/// <summary>
 		/// Creates a new Address object
 		/// </summary>
         [OperationContract]
-        void ApiCreateAddress( string apiKey, Rock.DataTransferObjects.CRM.Address Address );
+        void ApiCreateAddress( string apiKey, Rock.CRM.DTO.Address Address );
 
 		/// <summary>
 		/// Deletes a Address object

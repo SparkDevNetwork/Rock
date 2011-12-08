@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a BlogCategory object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogCategory Get( string id );
+        Rock.CMS.DTO.BlogCategory Get( string id );
 
 		/// <summary>
 		/// Gets a BlogCategory object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogCategory ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.BlogCategory ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a BlogCategory object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogCategory( string id, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory );
+        void UpdateBlogCategory( string id, Rock.CMS.DTO.BlogCategory BlogCategory );
 
 		/// <summary>
 		/// Updates a BlogCategory object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateBlogCategory( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory );
+        void ApiUpdateBlogCategory( string id, string apiKey, Rock.CMS.DTO.BlogCategory BlogCategory );
 
 		/// <summary>
 		/// Creates a new BlogCategory object
 		/// </summary>
         [OperationContract]
-        void CreateBlogCategory( Rock.DataTransferObjects.CMS.BlogCategory BlogCategory );
+        void CreateBlogCategory( Rock.CMS.DTO.BlogCategory BlogCategory );
 
 		/// <summary>
 		/// Creates a new BlogCategory object
 		/// </summary>
         [OperationContract]
-        void ApiCreateBlogCategory( string apiKey, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory );
+        void ApiCreateBlogCategory( string apiKey, Rock.CMS.DTO.BlogCategory BlogCategory );
 
 		/// <summary>
 		/// Deletes a BlogCategory object

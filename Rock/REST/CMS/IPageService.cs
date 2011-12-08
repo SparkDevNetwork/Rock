@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a Page object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Page Get( string id );
+        Rock.CMS.DTO.Page Get( string id );
 
 		/// <summary>
 		/// Gets a Page object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Page ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.Page ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Page object
 		/// </summary>
         [OperationContract]
-        void UpdatePage( string id, Rock.DataTransferObjects.CMS.Page Page );
+        void UpdatePage( string id, Rock.CMS.DTO.Page Page );
 
 		/// <summary>
 		/// Updates a Page object
 		/// </summary>
         [OperationContract]
-        void ApiUpdatePage( string id, string apiKey, Rock.DataTransferObjects.CMS.Page Page );
+        void ApiUpdatePage( string id, string apiKey, Rock.CMS.DTO.Page Page );
 
 		/// <summary>
 		/// Creates a new Page object
 		/// </summary>
         [OperationContract]
-        void CreatePage( Rock.DataTransferObjects.CMS.Page Page );
+        void CreatePage( Rock.CMS.DTO.Page Page );
 
 		/// <summary>
 		/// Creates a new Page object
 		/// </summary>
         [OperationContract]
-        void ApiCreatePage( string apiKey, Rock.DataTransferObjects.CMS.Page Page );
+        void ApiCreatePage( string apiKey, Rock.CMS.DTO.Page Page );
 
 		/// <summary>
 		/// Deletes a Page object

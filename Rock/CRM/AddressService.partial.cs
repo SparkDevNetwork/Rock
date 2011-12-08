@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
 
@@ -11,12 +12,12 @@ namespace Rock.CRM
 	public partial class AddressService
 	{
         /// <summary>
-        /// Standardizes the specified <see cref="AddressDTO"/>
+        /// Standardizes the specified <see cref="Rock.CRM.DTO.Address"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.CRM.Address Standardize( Rock.DataTransferObjects.CRM.Address address, int? personId )
+        public Rock.CRM.Address Standardize( Rock.CRM.DTO.Address address, int? personId )
         {
             Rock.CRM.Address addressModel = GetByAddressDTO( address, personId );
 
@@ -67,12 +68,12 @@ namespace Rock.CRM
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="AddressDTO"/>
+        /// Geocodes the specified <see cref="Rock.CRM.DTO.Address"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Rock.CRM.Address Geocode( Rock.DataTransferObjects.CRM.Address address, int? personId )
+        public Rock.CRM.Address Geocode( Rock.CRM.DTO.Address address, int? personId )
         {
             Rock.CRM.Address addressModel = GetByAddressDTO( address, personId );
 
@@ -130,7 +131,7 @@ namespace Rock.CRM
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Rock.CRM.Address GetByAddressDTO( Rock.DataTransferObjects.CRM.Address address, int? personId )
+        private Rock.CRM.Address GetByAddressDTO( Rock.CRM.DTO.Address address, int? personId )
         {
             string raw = address.Raw;
 

@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a DefinedValue object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.DefinedValue Get( string id );
+        Rock.Core.DTO.DefinedValue Get( string id );
 
 		/// <summary>
 		/// Gets a DefinedValue object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.DefinedValue ApiGet( string id, string apiKey );
+        Rock.Core.DTO.DefinedValue ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a DefinedValue object
 		/// </summary>
         [OperationContract]
-        void UpdateDefinedValue( string id, Rock.DataTransferObjects.Core.DefinedValue DefinedValue );
+        void UpdateDefinedValue( string id, Rock.Core.DTO.DefinedValue DefinedValue );
 
 		/// <summary>
 		/// Updates a DefinedValue object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateDefinedValue( string id, string apiKey, Rock.DataTransferObjects.Core.DefinedValue DefinedValue );
+        void ApiUpdateDefinedValue( string id, string apiKey, Rock.Core.DTO.DefinedValue DefinedValue );
 
 		/// <summary>
 		/// Creates a new DefinedValue object
 		/// </summary>
         [OperationContract]
-        void CreateDefinedValue( Rock.DataTransferObjects.Core.DefinedValue DefinedValue );
+        void CreateDefinedValue( Rock.Core.DTO.DefinedValue DefinedValue );
 
 		/// <summary>
 		/// Creates a new DefinedValue object
 		/// </summary>
         [OperationContract]
-        void ApiCreateDefinedValue( string apiKey, Rock.DataTransferObjects.Core.DefinedValue DefinedValue );
+        void ApiCreateDefinedValue( string apiKey, Rock.Core.DTO.DefinedValue DefinedValue );
 
 		/// <summary>
 		/// Deletes a DefinedValue object
