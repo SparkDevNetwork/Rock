@@ -366,6 +366,13 @@
             <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
             <param name="mediaType">Type of the media to use for the css link.</param>
         </member>
+        <member name="M:Rock.Web.UI.Page.AddMetaTag(System.Web.UI.Page,System.Web.UI.HtmlControls.HtmlMeta)">
+            <summary>
+            Adds a meta tag.
+            </summary>
+            <param name="page">The page.</param>
+            <param name="htmlMeta">The HTML meta tag.</param>
+        </member>
         <member name="M:Rock.Web.UI.Page.AddHtmlLink(System.Web.UI.Page,System.Web.UI.HtmlControls.HtmlLink)">
             <summary>
             Adds a new Html link that will be added to the page header prior to the page being rendered
@@ -12268,6 +12275,13 @@
             <param name="page">The page.</param>
             <param name="href">The href.</param>
             <param name="mediaType">MediaType to use in the css link.</param>
+        </member>
+        <member name="M:Rock.Web.Cache.Page.AddMetaTag(System.Web.UI.Page,System.Web.UI.HtmlControls.HtmlMeta)">
+            <summary>
+            Adds a meta tag to the page header priore to the page being rendered
+            </summary>
+            <param name="page">The page.</param>
+            <param name="htmlMeta">The HTML meta tag.</param>
         </member>
         <member name="M:Rock.Web.Cache.Page.AddHtmlLink(System.Web.UI.Page,System.Web.UI.HtmlControls.HtmlLink)">
             <summary>
