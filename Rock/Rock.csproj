@@ -199,6 +199,7 @@
     <Compile Include="Groups\IMemberRepository.cs" />
     <Compile Include="Groups\Member.cs" />
     <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />

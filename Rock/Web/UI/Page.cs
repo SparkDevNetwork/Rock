@@ -410,7 +410,11 @@ namespace Rock.Web.UI
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
+                                    {
                                         block.CreateAttributes();
+                                        block.ReadAdditionalActions();
+                                        blockInstance.Block.InstancePropertiesVerified = true;
+                                    }
 
                                     // Add the block configuration scripts and icons if user is authorized
                                     AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
