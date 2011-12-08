@@ -12,6 +12,7 @@ using Rock.CMS;
 
 namespace RockWeb.Blocks.Cms
 {
+    [Rock.Security.AdditionalActions( new string[] { "Approve" })]
     public partial class HtmlContent : Rock.Web.UI.Block
     {
         public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit)

@@ -99,6 +99,170 @@
             Deletes a Member object
             </summary>
         </member>
+        <member name="T:Rock.FieldTypes.FieldHelper">
+            <summary>
+            Helper class for use with <see cref="T:Rock.FieldTypes.IFieldType"/> classes
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.FieldHelper.InstantiateFieldType(System.String,System.String)">
+            <summary>
+            Instantiates an instance of a specific field type based on the assembly and class name of the field type
+            </summary>
+            <param name="assembly">Assembly Name (i.e. Rock.Framework)</param>
+            <param name="typeName">Class Name (i.e. Rock.FieldTypes.Text)</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.FieldTypes.Color">
+            <summary>
+            Field Type used to display a dropdown list of System.Drawing.Color options
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.Field">
+            <summary>
+            Abstract class that all custom field types should inherit from
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.IFieldType">
+            <summary>
+            Interface that a custom field type must implement
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Formats the value based on the type and qualifiers
+            </summary>
+            <param name="value">The value.</param>
+            <param name="condensed">if set to <c>true</c> [condensed].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Creates an HTML control.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="setValue">if set to <c>true</c> [set value].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.IFieldType.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads the value of the control.
+            </summary>
+            <param name="control">The control.</param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.IFieldType.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.IFieldType.QualifierValues">
+            <summary>
+            Gets or sets the qualifier values.
+            </summary>
+            <value>
+            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
+            key contains the qualifier name, and the KeyValuePair's value contains the qualifier 
+            value
+            </value>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
+            </summary>
+            <param name="qualifierValues">The qualifier values.</param>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Returns the field's current value(s)
+            </summary>
+            <param name="value">Information about the value</param>
+            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Creates the control(s) neccessary for prompting user for a new value
+            </summary>
+            <param name="value">The current value</param>
+            <param name="setValue">Should the control's value be set</param>
+            <returns>The control</returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Field.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control">Parent control that controls were added to in the RenderEdit() method</param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.Field.QualifierValues">
+            <summary>
+            Gets or sets the qualifier values.
+            </summary>
+            <value>
+            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
+            key contains the qualifier name, and the KeyValuePair's value contains the qualifier
+            value
+            </value>
+        </member>
+        <member name="P:Rock.FieldTypes.Field.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Color.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Color.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.ReorderField">
+            <summary>
+            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for reordering rows in a grid
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ReorderField.Initialize(System.Boolean,System.Web.UI.Control)">
+            <summary>
+            Performs basic instance initialization for a data control field.
+            </summary>
+            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+            <returns>
+            Always returns false.
+            </returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.ReorderFieldTemplate">
+            <summary>
+            Template used by the <see cref="T:Rock.Web.UI.Controls.ReorderField"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ReorderFieldTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
         <member name="T:Rock.Web.UI.Page">
             <summary>
             Page is the base abstract class that all page templates should inherit from
@@ -1353,6 +1517,25 @@
             <summary>
             Deletes a PageRoute object
             </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.HtmlHelper">
+            <summary>
+            Provides helper methods for use in rendering HTML
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.HtmlHelper.CssClassFormat(System.String)">
+            <summary>
+            Formats a string for use as a CCS class or id value
+            </summary>
+            <param name="value">String to format</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.HtmlHelper.CalculateMD5Hash(System.String)">
+            <summary>
+            Hashes a string using MD5
+            </summary>
+            <param name="input">String to format</param>
+            <returns></returns>
         </member>
         <member name="T:Rock.Util.Job">
             <summary>
@@ -2816,6 +2999,57 @@
             <see cref="T:Quartz.ITrigger"/> fires that is associated with
             the <see cref="T:Quartz.IJob"/>.
             </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.DataDropDownList">
+            <summary>
+            A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledDropDownList">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledDropDownList.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DataDropDownList.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DataDropDownList.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataDropDownList.SourceTypeName">
+            <summary>
+            Gets or sets the name of the assembly qualified name of the entity that is being validated
+            </summary>
+            <value>
+            The name of the assembly qualified type name.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataDropDownList.PropertyName">
+            <summary>
+            Gets or sets the name of the entity property.
+            </summary>
+            <value>
+            The name of the entity property.
+            </value>
         </member>
         <member name="T:Rock.CRM.PersonService">
             <summary>
@@ -4443,6 +4677,25 @@
             Deletes a FieldType object
             </summary>
         </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledTextBox">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledTextBox.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledTextBox.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
         <member name="T:Rock.Attribute.PropertyAttribute">
             <summary>
             A class Attribute that can be used by any oject that inherits from <see cref="T:Rock.Attribute.IHasAttributes"/> to specify what attributes it needs.  The 
@@ -5476,6 +5729,111 @@
               <c>true</c> if event should be canceled; otherwise, <c>false</c>.
             </value>
         </member>
+        <member name="T:Rock.Web.UI.Controls.NotificationBox">
+            <summary>
+            Displays a standard warning or error message box
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.NotificationBox.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter"/> object, which writes the content to be rendered on the client.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> object that receives the server control content.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.Title">
+            <summary>
+            Gets or sets the title.
+            </summary>
+            <value>
+            The title.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.NotificationBoxType">
+            <summary>
+            Gets or sets the type of the notification box.
+            </summary>
+            <value>
+            The type of the notification box.
+            </value>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.NotificationBoxType">
+            <summary>
+            The type of notification box to display
+            </summary>
+        </member>
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Information">
+            <summary>
+            Display an information box
+            </summary>
+        </member>
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Warning">
+            <summary>
+            Display a warning box
+            </summary>
+        </member>
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Error">
+            <summary>
+            Display an error box
+            </summary>
+        </member>
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Tip">
+            <summary>
+            Display a tip box
+            </summary>
+        </member>
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Success">
+            <summary>
+            Display a success box
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.HtmlGenericContainer">
+            <summary>
+            An HtmlGenericContainer that implements the INamingContainer interface
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.HtmlGenericContainer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.HtmlGenericContainer"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.HtmlGenericContainer.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.HtmlGenericContainer"/> class.
+            </summary>
+            <param name="tag">The name of the element for which this instance of the class is created.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.DataTextBox">
+            <summary>
+            A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DataTextBox.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DataTextBox.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataTextBox.SourceTypeName">
+            <summary>
+            Gets or sets the name of the assembly qualified name of the entity that is being validated
+            </summary>
+            <value>
+            The name of the assembly qualified type name.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataTextBox.PropertyName">
+            <summary>
+            Gets or sets the name of the entity property.
+            </summary>
+            <value>
+            The name of the entity property.
+            </value>
+        </member>
         <member name="T:Rock.Web.RockRouteHandler">
             <summary>
             Rock custom route handler
@@ -6068,6 +6426,29 @@
             Initializes a new instance of the <see cref="T:Rock.CMS.BlogPostConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.Web.UI.Validation.DataAnnotationValidator">
+            <summary>
+            Data Annotation Validator for validating based on data attributes
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Validation.DataAnnotationValidator.EvaluateIsValid">
+            <summary>
+            When overridden in a derived class, this method contains the code to determine whether the value in the input control is valid.
+            </summary>
+            <returns>
+            true if the value in the input control is valid; otherwise, false.
+            </returns>
+        </member>
+        <member name="P:Rock.Web.UI.Validation.DataAnnotationValidator.SourceTypeName">
+            <summary>
+            The type of the source to check
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Validation.DataAnnotationValidator.PropertyName">
+            <summary>
+            The property that is annotated
+            </summary>
+        </member>
         <member name="T:Rock.ServiceObjects.GeoCoder.Location">
             <remarks/>
         </member>
@@ -6629,6 +7010,43 @@
             </summary>
             <value>
             A <see cref="T:Rock.CRM.Person"/> object.
+            </value>
+        </member>
+        <member name="T:Rock.FieldTypes.Text">
+            <summary>
+            Field used to save and dispaly a text value
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.Integer">
+            <summary>
+            Field used to save and dispaly a numeric value
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Integer.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.RowEventArgs">
+            <summary>
+            Event argument used by the <see cref="T:Rock.Web.UI.Controls.Grid"/> events
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.RowEventArgs.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> class.
+            </summary>
+            <param name="rowIndex">Index of the row.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.RowEventArgs.RowIndex">
+            <summary>
+            Gets the index of the row that fired the event
+            </summary>
+            <value>
+            The index of the row.
             </value>
         </member>
         <member name="T:Rock.Web.Cache.Block">
@@ -8150,6 +8568,94 @@
             Deletes a Block object
             </summary>
         </member>
+        <member name="T:Rock.Web.UI.PageReference">
+            <summary>
+            Helper class to work with the PageReference field type
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.PageReference.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.PageReference.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
+            </summary>
+            <param name="reference">The reference.</param>
+        </member>
+        <member name="M:Rock.Web.UI.PageReference.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
+            </summary>
+            <param name="pageId">The page id.</param>
+            <param name="routeId">The route id.</param>
+        </member>
+        <member name="P:Rock.Web.UI.PageReference.PageId">
+            <summary>
+            Gets the page id.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.PageReference.RouteId">
+            <summary>
+            Gets the route id.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.PageReference.IsValid">
+            <summary>
+            Gets a value indicating whether this instance is valid.
+            </summary>
+            <value>
+              <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Rock.Web.HttpModule">
+            <summary>
+            Provides application start, and module initialization and disposal events to the implementing class.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.HttpModule.Dispose">
+            <summary>
+            Disposes of the resources (other than memory) used by the module that implements <see cref="T:System.Web.IHttpModule"/>.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.HttpModule.Init(System.Web.HttpApplication)">
+            <summary>
+            Initializes a module and prepares it to handle requests.
+            </summary>
+            <param name="context">An <see cref="T:System.Web.HttpApplication"/> that provides access to the methods, properties, and events common to all application objects within an ASP.NET application</param>
+        </member>
+        <member name="M:Rock.Web.HttpModule.Application_Start(System.Web.HttpApplication)">
+            <summary>
+            Method that will be called once on application start.
+            </summary>
+            <param name="context">The context.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.BoolField">
+            <summary>
+            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column to display a boolean value.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.BoolField.Initialize(System.Boolean,System.Web.UI.Control)">
+            <summary>
+            Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+            </summary>
+            <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
+            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField"/>.</param>
+            <returns>
+            false in all cases.
+            </returns>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.BoolField.FormatDataValue(System.Object,System.Boolean)">
+            <summary>
+            Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
+            </summary>
+            <param name="dataValue">The field value to format.</param>
+            <param name="encode">true to encode the value; otherwise, false.</param>
+            <returns>
+            The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString"/>.
+            </returns>
+        </member>
         <member name="T:Rock.Security.Role">
             <summary>
             Information about a Role that is required by the rendering engine.
@@ -8585,6 +9091,106 @@
             Called by the <see cref="T:Quartz.IScheduler"/> when a
             <see cref="T:Quartz.ITrigger"/> fires that is associated with
             the <see cref="T:Quartz.IJob"/>.
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.SelectSingle">
+            <summary>
+            Field Type used to display a dropdown list of System.Drawing.Color options
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
+            </summary>
+            <param name="qualifierValues">The qualifier values.</param>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.SelectSingle.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.FieldTypes.SelectSingle.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.EditField">
+            <summary>
+            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for editing a row in a grid
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EditField.Initialize(System.Boolean,System.Web.UI.Control)">
+            <summary>
+            Performs basic instance initialization for a data control field.
+            </summary>
+            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+            <returns>
+            Always returns false.
+            </returns>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EditField.editFieldTemplate_LinkButtonClick(System.Object,Rock.Web.UI.Controls.RowEventArgs)">
+            <summary>
+            Handles the LinkButtonClick event of the editFieldTemplate control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EditField.OnClick(Rock.Web.UI.Controls.RowEventArgs)">
+            <summary>
+            Raises the <see cref="E:Click"/> event.
+            </summary>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.EditField.Click">
+            <summary>
+            Occurs when [click].
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.EditFieldTemplate">
+            <summary>
+            Template used by the <see cref="T:Rock.Web.UI.Controls.EditField"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EditFieldTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EditFieldTemplate.lbEdit_Click(System.Object,System.EventArgs)">
+            <summary>
+            Handles the Click event of the lbEdit control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.EditFieldTemplate.LinkButtonClick">
+            <summary>
+            Occurs when [link button click].
             </summary>
         </member>
         <member name="T:Rock.Web.UI.Block">
@@ -9221,6 +9827,40 @@
             <value>
             the Jobs.
             </value>
+        </member>
+        <member name="T:Rock.FieldTypes.FieldQualifier">
+            <summary>
+            Used to define a <see cref="P:Rock.FieldTypes.FieldQualifier.Field"/> qualifier
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.FieldQualifier.#ctor(System.String,System.String,System.String,Rock.FieldTypes.Field)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.FieldTypes.FieldQualifier"/> class.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="name">The name.</param>
+            <param name="description">The description.</param>
+            <param name="field">The field.</param>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Key">
+            <summary>
+            Gets the key.
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Name">
+            <summary>
+            Gets the name of the qualifier
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Description">
+            <summary>
+            Gets the description of the qualifier
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.FieldQualifier.Field">
+            <summary>
+            Instantiates the field type
+            </summary>
         </member>
         <member name="T:Rock.Groups.EntityMemberRepository">
             <summary>
@@ -9959,6 +10599,72 @@
             <param name="parentControl">The parent control.</param>
             <param name="item">The item.</param>
         </member>
+        <member name="T:Rock.FieldTypes.SelectMulti">
+            <summary>
+            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+            </summary>
+        </member>
+        <member name="P:Rock.FieldTypes.SelectMulti.Qualifiers">
+            <summary>
+            Gets the qualifiers.
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.DeleteField">
+            <summary>
+            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for deleting a row in a grid
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DeleteField.Initialize(System.Boolean,System.Web.UI.Control)">
+            <summary>
+            Performs basic instance initialization for a data control field.
+            </summary>
+            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+            <returns>
+            Always returns false.
+            </returns>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DeleteField.deleteFieldTemplate_LinkButtonClick(System.Object,Rock.Web.UI.Controls.RowEventArgs)">
+            <summary>
+            Handles the LinkButtonClick event of the deleteFieldTemplate control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DeleteField.OnClick(Rock.Web.UI.Controls.RowEventArgs)">
+            <summary>
+            Raises the <see cref="E:Click"/> event.
+            </summary>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.DeleteField.Click">
+            <summary>
+            Occurs when [click].
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.DeleteFieldTemplate">
+            <summary>
+            Template used by the <see cref="T:Rock.Web.UI.Controls.DeleteField"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DeleteFieldTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.DeleteFieldTemplate.lbDelete_Click(System.Object,System.EventArgs)">
+            <summary>
+            Handles the Click event of the lbDelete control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.DeleteFieldTemplate.LinkButtonClick">
+            <summary>
+            Occurs when [link button click].
+            </summary>
+        </member>
         <member name="T:Rock.SystemGuids">
             <summary>
             Static Guids used by the Rock ChMS application
@@ -10332,6 +11038,256 @@
         <member name="M:Rock.REST.CMS.HtmlContentService.ApiDeleteHtmlContent(System.String,System.String)">
             <summary>
             Deletes a HtmlContent object
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.Boolean">
+            <summary>
+            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+            </summary>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.FormatValue(System.String,System.Boolean)">
+            <summary>
+            Returns the field's current value(s)
+            </summary>
+            <param name="value"></param>
+            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.IsValid(System.String,System.String@)">
+            <summary>
+            Tests the value to ensure that it is a valid value.  If not, message will indicate why
+            </summary>
+            <param name="value"></param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.CreateControl(System.String,System.Boolean)">
+            <summary>
+            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+            </summary>
+            <param name="value"></param>
+            <param name="setValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.FieldTypes.Boolean.ReadValue(System.Web.UI.Control)">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.Grid">
+            <summary>
+            Rock Grid Control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnInit(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
+            </summary>
+            <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnPreRender(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
+            </summary>
+            <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnDataBound(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
+            </summary>
+            <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnRowDataBound(System.Web.UI.WebControls.GridViewRowEventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
+            </summary>
+            <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.gridPagerTemplate_PageClick(System.Object,System.EventArgs)">
+            <summary>
+            Handles the PageClick event of the gridPagerTemplate control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.gridPagerTemplate_AddClick(System.Object,System.EventArgs)">
+            <summary>
+            Handles the AddClick event of the gridPagerTemplate control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.System#Web#UI#IPostBackEventHandler#RaisePostBackEvent(System.String)">
+            <summary>
+            Raises the appropriate events for the <see cref="T:System.Web.UI.WebControls.GridView"/> control when it posts back to the server.
+            </summary>
+            <param name="eventArgument">The event argument from which to create a <see cref="T:System.Web.UI.WebControls.CommandEventArgs"/> for the event or events that are raised.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnGridReorder(Rock.Web.UI.Controls.GridReorderEventArgs)">
+            <summary>
+            Raises the <see cref="E:GridReorder"/> event.
+            </summary>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnGridAdd(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:GridAdd"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.Grid.OnGridRebind(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:GridRebind"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.Grid.EnableClientSorting">
+            <summary>
+            Gets or sets a value indicating whether client-side sorting should be enabled.
+            </summary>
+            <value>
+              <c>true</c> if client-sid sorting should be enabled; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.Grid.EnableAdd">
+            <summary>
+            Gets or sets a value indicating whether adding should be enabled.
+            </summary>
+            <value>
+              <c>true</c> if adding is enabled; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.Grid.ClientAddScript">
+            <summary>
+            Gets or sets the client script to be called when user clicks tha add icon
+            </summary>
+            <value>
+            The client add script.
+            </value>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.Grid.GridReorder">
+            <summary>
+            Occurs when [grid reorder].
+            </summary>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.Grid.GridAdd">
+            <summary>
+            Occurs when [grid add].
+            </summary>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.Grid.GridRebind">
+            <summary>
+            Occurs when [grid rebind].
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.GridReorderEventHandler">
+            <summary>
+            Delegate used for raising the grid reorder event
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="e">The <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.GridAddEventHandler">
+            <summary>
+            Delegate used for raising the grid add event
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.GridRebindEventHandler">
+            <summary>
+            Delegate used for raising the grid rebind event
+            </summary>
+            <param name="sender">The sender.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.GridReorderEventArgs">
+            <summary>
+            Grid Reorder Event Argument
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.GridReorderEventArgs.#ctor(System.String,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> class.
+            </summary>
+            <param name="dataKey">The data key.</param>
+            <param name="oldIndex">The old index.</param>
+            <param name="newIndex">The new index.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.DataKey">
+            <summary>
+            Gets the data key.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.OldIndex">
+            <summary>
+            Gets the old index.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.NewIndex">
+            <summary>
+            Gets the new index.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.Cancel">
+            <summary>
+            Gets or sets a value indicating whether the reorder event should be cancelled
+            </summary>
+            <value>
+              <c>true</c> if cancelled; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.JsonResult">
+            <summary>
+            JSON Result  
+            </summary>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.EmptyDataTemplate">
+            <summary>
+            Template used for an empty data row in the <see cref="T:Rock.Web.UI.Controls.Grid"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.EmptyDataTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.PagerTemplate">
+            <summary>
+            Template used for the pager row in the <see cref="T:Rock.Web.UI.Controls.Grid"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.PagerTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.PagerTemplate.ddl_SelectedIndexChanged(System.Object,System.EventArgs)">
+            <summary>
+            Handles the SelectedIndexChanged event of the ddl control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.PagerTemplate.lbAdd_Click(System.Object,System.EventArgs)">
+            <summary>
+            Handles the Click event of the lbAdd control.
+            </summary>
+            <param name="sender">The source of the event.</param>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.PagerTemplate.PageClick">
+            <summary>
+            Occurs when [page click].
+            </summary>
+        </member>
+        <member name="E:Rock.Web.UI.Controls.PagerTemplate.AddClick">
+            <summary>
+            Occurs when [add click].
             </summary>
         </member>
         <member name="T:Rock.Web.Cache.FieldType">
@@ -11023,6 +11979,11 @@
         <member name="M:Rock.REST.CMS.BlogPostService.ApiDeleteBlogPost(System.String,System.String)">
             <summary>
             Deletes a BlogPost object
+            </summary>
+        </member>
+        <member name="T:Rock.FieldTypes.PageReference">
+            <summary>
+            Field used to save and dispaly a page reference
             </summary>
         </member>
         <member name="T:Rock.Core.DefinedValueService">
@@ -11944,6 +12905,100 @@
             Deletes a DefinedType object
             </summary>
         </member>
+        <member name="T:Rock.Reflection">
+            <summary>
+            Static helper methods for using Reflection
+            </summary>
+        </member>
+        <member name="M:Rock.Reflection.FindTypes(System.Type)">
+            <summary>
+            Finds the all the types that implement or inherit from the baseType.  The baseType
+            will not be included in the result
+            </summary>
+            <param name="baseType">base type.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Reflection.FindTypes(System.Type,System.Boolean)">
+            <summary>
+            Finds the all the types that implement or inherit from the baseType.  
+            </summary>
+            <param name="baseType">base type.</param>
+            <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Reflection.ClassName(System.Type)">
+            <summary>
+            Returns the name of the type.  If a <see cref="T:System.ComponentModel.DescriptionAttribute"/> is 
+            present for the type, it's value will be returned, otherwise the type name will be returned
+            </summary>
+            <param name="type">The type.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.SecurityField">
+            <summary>
+            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for editing the security of an item in a row in a grid
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.SecurityField.Initialize(System.Boolean,System.Web.UI.Control)">
+            <summary>
+            Performs basic instance initialization for a data control field.
+            </summary>
+            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
+            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
+            <returns>
+            Always returns false.
+            </returns>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.SecurityField.EntityType">
+            <summary>
+            Gets or sets the type of the entity being secured
+            </summary>
+            <value>
+            The type of the entity.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.SecurityField.Title">
+            <summary>
+            Gets or sets the title.
+            </summary>
+            <value>
+            The title.
+            </value>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.SecurityFieldTemplate">
+            <summary>
+            Template used by the <see cref="T:Rock.Web.UI.Controls.SecurityField"/> control
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.SecurityFieldTemplate.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.SecurityFieldTemplate"/> class.
+            </summary>
+            <param name="entityType">Type of the entity.</param>
+            <param name="title">The title.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.SecurityFieldTemplate.InstantiateIn(System.Web.UI.Control)">
+            <summary>
+            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
+            </summary>
+            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.SecurityFieldTemplate.Title">
+            <summary>
+            Gets or sets the title.
+            </summary>
+            <value>
+            The title.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.SecurityFieldTemplate.EntityType">
+            <summary>
+            Gets or sets the type of the entity.
+            </summary>
+            <value>
+            The type of the entity.
+            </value>
+        </member>
         <member name="T:Rock.Core.EntityAttributeRepository">
             <summary>
             Attribute POCO Repository class
@@ -12763,1059 +13818,23 @@
             True/False value of whether the address was standardized was succesfully
             </returns>
         </member>
-        <member name="T:Rock.FieldTypes.FieldHelper">
+        <member name="T:Rock.Security.AdditionalActionsAttribute">
             <summary>
-            Helper class for use with <see cref="T:Rock.FieldTypes.IFieldType"/> classes
+            A class Attribute that can be used by objects that implement ISecured to add additional supported actions
             </summary>
         </member>
-        <member name="M:Rock.FieldTypes.FieldHelper.InstantiateFieldType(System.String,System.String)">
+        <member name="M:Rock.Security.AdditionalActionsAttribute.#ctor(System.String[])">
             <summary>
-            Instantiates an instance of a specific field type based on the assembly and class name of the field type
+            Initializes a new instance of the <see cref="T:Rock.Security.AdditionalActionsAttribute"/> class.
             </summary>
-            <param name="assembly">Assembly Name (i.e. Rock.Framework)</param>
-            <param name="typeName">Class Name (i.e. Rock.FieldTypes.Text)</param>
-            <returns></returns>
+            <param name="actions">The actions.</param>
         </member>
-        <member name="T:Rock.FieldTypes.Color">
+        <member name="P:Rock.Security.AdditionalActionsAttribute.AdditionalActions">
             <summary>
-            Field Type used to display a dropdown list of System.Drawing.Color options
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.Field">
-            <summary>
-            Abstract class that all custom field types should inherit from
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.IFieldType">
-            <summary>
-            Interface that a custom field type must implement
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Formats the value based on the type and qualifiers
-            </summary>
-            <param name="value">The value.</param>
-            <param name="condensed">if set to <c>true</c> [condensed].</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Creates an HTML control.
-            </summary>
-            <param name="value">The value.</param>
-            <param name="setValue">if set to <c>true</c> [set value].</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.IFieldType.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads the value of the control.
-            </summary>
-            <param name="control">The control.</param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.IFieldType.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.IFieldType.QualifierValues">
-            <summary>
-            Gets or sets the qualifier values.
+            Gets or sets the additional actions to support
             </summary>
             <value>
-            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
-            key contains the qualifier name, and the KeyValuePair's value contains the qualifier 
-            value
-            </value>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.Field"/> class.
-            </summary>
-            <param name="qualifierValues">The qualifier values.</param>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Returns the field's current value(s)
-            </summary>
-            <param name="value">Information about the value</param>
-            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Creates the control(s) neccessary for prompting user for a new value
-            </summary>
-            <param name="value">The current value</param>
-            <param name="setValue">Should the control's value be set</param>
-            <returns>The control</returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Field.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control">Parent control that controls were added to in the RenderEdit() method</param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.Field.QualifierValues">
-            <summary>
-            Gets or sets the qualifier values.
-            </summary>
-            <value>
-            The qualifier values. The Dictionary's key contains the qualifier key, the KeyValuePair's
-            key contains the qualifier name, and the KeyValuePair's value contains the qualifier
-            value
-            </value>
-        </member>
-        <member name="P:Rock.FieldTypes.Field.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Color.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Color.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.Text">
-            <summary>
-            Field used to save and dispaly a text value
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.Integer">
-            <summary>
-            Field used to save and dispaly a numeric value
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Integer.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.SelectSingle">
-            <summary>
-            Field Type used to display a dropdown list of System.Drawing.Color options
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.#ctor(System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.KeyValuePair{System.String,System.String}})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.SelectSingle"/> class.
-            </summary>
-            <param name="qualifierValues">The qualifier values.</param>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.SelectSingle.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Rock.FieldTypes.SelectSingle.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.FieldQualifier">
-            <summary>
-            Used to define a <see cref="P:Rock.FieldTypes.FieldQualifier.Field"/> qualifier
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.FieldQualifier.#ctor(System.String,System.String,System.String,Rock.FieldTypes.Field)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.FieldTypes.FieldQualifier"/> class.
-            </summary>
-            <param name="key">The key.</param>
-            <param name="name">The name.</param>
-            <param name="description">The description.</param>
-            <param name="field">The field.</param>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Key">
-            <summary>
-            Gets the key.
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Name">
-            <summary>
-            Gets the name of the qualifier
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Description">
-            <summary>
-            Gets the description of the qualifier
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.FieldQualifier.Field">
-            <summary>
-            Instantiates the field type
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.SelectMulti">
-            <summary>
-            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
-            </summary>
-        </member>
-        <member name="P:Rock.FieldTypes.SelectMulti.Qualifiers">
-            <summary>
-            Gets the qualifiers.
-            </summary>
-        </member>
-        <member name="T:Rock.FieldTypes.Boolean">
-            <summary>
-            Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
-            </summary>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.FormatValue(System.String,System.Boolean)">
-            <summary>
-            Returns the field's current value(s)
-            </summary>
-            <param name="value"></param>
-            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.IsValid(System.String,System.String@)">
-            <summary>
-            Tests the value to ensure that it is a valid value.  If not, message will indicate why
-            </summary>
-            <param name="value"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.CreateControl(System.String,System.Boolean)">
-            <summary>
-            Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
-            </summary>
-            <param name="value"></param>
-            <param name="setValue"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.FieldTypes.Boolean.ReadValue(System.Web.UI.Control)">
-            <summary>
-            Reads new values entered by the user for the field
-            </summary>
-            <param name="control"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.FieldTypes.PageReference">
-            <summary>
-            Field used to save and dispaly a page reference
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.ReorderField">
-            <summary>
-            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for reordering rows in a grid
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.ReorderField.Initialize(System.Boolean,System.Web.UI.Control)">
-            <summary>
-            Performs basic instance initialization for a data control field.
-            </summary>
-            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
-            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
-            <returns>
-            Always returns false.
-            </returns>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.ReorderFieldTemplate">
-            <summary>
-            Template used by the <see cref="T:Rock.Web.UI.Controls.ReorderField"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.ReorderFieldTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.DataDropDownList">
-            <summary>
-            A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.LabeledDropDownList">
-            <summary>
-            A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.LabeledDropDownList.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.LabelText">
-            <summary>
-            Gets or sets the label text.
-            </summary>
-            <value>
-            The label text.
-            </value>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DataDropDownList.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DataDropDownList.CreateChildControls">
-            <summary>
-            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.DataDropDownList.SourceTypeName">
-            <summary>
-            Gets or sets the name of the assembly qualified name of the entity that is being validated
-            </summary>
-            <value>
-            The name of the assembly qualified type name.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.DataDropDownList.PropertyName">
-            <summary>
-            Gets or sets the name of the entity property.
-            </summary>
-            <value>
-            The name of the entity property.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.LabeledTextBox">
-            <summary>
-            A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.LabeledTextBox.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.LabeledTextBox.LabelText">
-            <summary>
-            Gets or sets the label text.
-            </summary>
-            <value>
-            The label text.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.NotificationBox">
-            <summary>
-            Displays a standard warning or error message box
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.NotificationBox.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter"/> object, which writes the content to be rendered on the client.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> object that receives the server control content.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.NotificationBox.Title">
-            <summary>
-            Gets or sets the title.
-            </summary>
-            <value>
-            The title.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.NotificationBox.NotificationBoxType">
-            <summary>
-            Gets or sets the type of the notification box.
-            </summary>
-            <value>
-            The type of the notification box.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.NotificationBoxType">
-            <summary>
-            The type of notification box to display
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Information">
-            <summary>
-            Display an information box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Warning">
-            <summary>
-            Display a warning box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Error">
-            <summary>
-            Display an error box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Tip">
-            <summary>
-            Display a tip box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Success">
-            <summary>
-            Display a success box
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.HtmlGenericContainer">
-            <summary>
-            An HtmlGenericContainer that implements the INamingContainer interface
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.HtmlGenericContainer.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.HtmlGenericContainer"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.HtmlGenericContainer.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.HtmlGenericContainer"/> class.
-            </summary>
-            <param name="tag">The name of the element for which this instance of the class is created.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.DataTextBox">
-            <summary>
-            A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DataTextBox.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DataTextBox.CreateChildControls">
-            <summary>
-            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.DataTextBox.SourceTypeName">
-            <summary>
-            Gets or sets the name of the assembly qualified name of the entity that is being validated
-            </summary>
-            <value>
-            The name of the assembly qualified type name.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.DataTextBox.PropertyName">
-            <summary>
-            Gets or sets the name of the entity property.
-            </summary>
-            <value>
-            The name of the entity property.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.RowEventArgs">
-            <summary>
-            Event argument used by the <see cref="T:Rock.Web.UI.Controls.Grid"/> events
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.RowEventArgs.#ctor(System.Int32)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> class.
-            </summary>
-            <param name="rowIndex">Index of the row.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.RowEventArgs.RowIndex">
-            <summary>
-            Gets the index of the row that fired the event
-            </summary>
-            <value>
-            The index of the row.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.BoolField">
-            <summary>
-            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column to display a boolean value.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.BoolField.Initialize(System.Boolean,System.Web.UI.Control)">
-            <summary>
-            Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
-            </summary>
-            <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
-            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField"/>.</param>
-            <returns>
-            false in all cases.
-            </returns>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.BoolField.FormatDataValue(System.Object,System.Boolean)">
-            <summary>
-            Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
-            </summary>
-            <param name="dataValue">The field value to format.</param>
-            <param name="encode">true to encode the value; otherwise, false.</param>
-            <returns>
-            The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString"/>.
-            </returns>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.EditField">
-            <summary>
-            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for editing a row in a grid
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EditField.Initialize(System.Boolean,System.Web.UI.Control)">
-            <summary>
-            Performs basic instance initialization for a data control field.
-            </summary>
-            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
-            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
-            <returns>
-            Always returns false.
-            </returns>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EditField.editFieldTemplate_LinkButtonClick(System.Object,Rock.Web.UI.Controls.RowEventArgs)">
-            <summary>
-            Handles the LinkButtonClick event of the editFieldTemplate control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EditField.OnClick(Rock.Web.UI.Controls.RowEventArgs)">
-            <summary>
-            Raises the <see cref="E:Click"/> event.
-            </summary>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.EditField.Click">
-            <summary>
-            Occurs when [click].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.EditFieldTemplate">
-            <summary>
-            Template used by the <see cref="T:Rock.Web.UI.Controls.EditField"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EditFieldTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EditFieldTemplate.lbEdit_Click(System.Object,System.EventArgs)">
-            <summary>
-            Handles the Click event of the lbEdit control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.EditFieldTemplate.LinkButtonClick">
-            <summary>
-            Occurs when [link button click].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.DeleteField">
-            <summary>
-            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for deleting a row in a grid
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DeleteField.Initialize(System.Boolean,System.Web.UI.Control)">
-            <summary>
-            Performs basic instance initialization for a data control field.
-            </summary>
-            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
-            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
-            <returns>
-            Always returns false.
-            </returns>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DeleteField.deleteFieldTemplate_LinkButtonClick(System.Object,Rock.Web.UI.Controls.RowEventArgs)">
-            <summary>
-            Handles the LinkButtonClick event of the deleteFieldTemplate control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DeleteField.OnClick(Rock.Web.UI.Controls.RowEventArgs)">
-            <summary>
-            Raises the <see cref="E:Click"/> event.
-            </summary>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.DeleteField.Click">
-            <summary>
-            Occurs when [click].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.DeleteFieldTemplate">
-            <summary>
-            Template used by the <see cref="T:Rock.Web.UI.Controls.DeleteField"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DeleteFieldTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.DeleteFieldTemplate.lbDelete_Click(System.Object,System.EventArgs)">
-            <summary>
-            Handles the Click event of the lbDelete control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.DeleteFieldTemplate.LinkButtonClick">
-            <summary>
-            Occurs when [link button click].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.Grid">
-            <summary>
-            Rock Grid Control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnInit(System.EventArgs)">
-            <summary>
-            Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
-            </summary>
-            <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnPreRender(System.EventArgs)">
-            <summary>
-            Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
-            </summary>
-            <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnDataBound(System.EventArgs)">
-            <summary>
-            Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
-            </summary>
-            <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnRowDataBound(System.Web.UI.WebControls.GridViewRowEventArgs)">
-            <summary>
-            Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowDataBound"/> event.
-            </summary>
-            <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.gridPagerTemplate_PageClick(System.Object,System.EventArgs)">
-            <summary>
-            Handles the PageClick event of the gridPagerTemplate control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.gridPagerTemplate_AddClick(System.Object,System.EventArgs)">
-            <summary>
-            Handles the AddClick event of the gridPagerTemplate control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.System#Web#UI#IPostBackEventHandler#RaisePostBackEvent(System.String)">
-            <summary>
-            Raises the appropriate events for the <see cref="T:System.Web.UI.WebControls.GridView"/> control when it posts back to the server.
-            </summary>
-            <param name="eventArgument">The event argument from which to create a <see cref="T:System.Web.UI.WebControls.CommandEventArgs"/> for the event or events that are raised.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnGridReorder(Rock.Web.UI.Controls.GridReorderEventArgs)">
-            <summary>
-            Raises the <see cref="E:GridReorder"/> event.
-            </summary>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnGridAdd(System.EventArgs)">
-            <summary>
-            Raises the <see cref="E:GridAdd"/> event.
-            </summary>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.Grid.OnGridRebind(System.EventArgs)">
-            <summary>
-            Raises the <see cref="E:GridRebind"/> event.
-            </summary>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.Grid.EnableClientSorting">
-            <summary>
-            Gets or sets a value indicating whether client-side sorting should be enabled.
-            </summary>
-            <value>
-              <c>true</c> if client-sid sorting should be enabled; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.Grid.EnableAdd">
-            <summary>
-            Gets or sets a value indicating whether adding should be enabled.
-            </summary>
-            <value>
-              <c>true</c> if adding is enabled; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.Grid.ClientAddScript">
-            <summary>
-            Gets or sets the client script to be called when user clicks tha add icon
-            </summary>
-            <value>
-            The client add script.
-            </value>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.Grid.GridReorder">
-            <summary>
-            Occurs when [grid reorder].
-            </summary>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.Grid.GridAdd">
-            <summary>
-            Occurs when [grid add].
-            </summary>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.Grid.GridRebind">
-            <summary>
-            Occurs when [grid rebind].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.GridReorderEventHandler">
-            <summary>
-            Delegate used for raising the grid reorder event
-            </summary>
-            <param name="sender">The sender.</param>
-            <param name="e">The <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.GridAddEventHandler">
-            <summary>
-            Delegate used for raising the grid add event
-            </summary>
-            <param name="sender">The sender.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.GridRebindEventHandler">
-            <summary>
-            Delegate used for raising the grid rebind event
-            </summary>
-            <param name="sender">The sender.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.GridReorderEventArgs">
-            <summary>
-            Grid Reorder Event Argument
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.GridReorderEventArgs.#ctor(System.String,System.Int32,System.Int32)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.GridReorderEventArgs"/> class.
-            </summary>
-            <param name="dataKey">The data key.</param>
-            <param name="oldIndex">The old index.</param>
-            <param name="newIndex">The new index.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.DataKey">
-            <summary>
-            Gets the data key.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.OldIndex">
-            <summary>
-            Gets the old index.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.NewIndex">
-            <summary>
-            Gets the new index.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.GridReorderEventArgs.Cancel">
-            <summary>
-            Gets or sets a value indicating whether the reorder event should be cancelled
-            </summary>
-            <value>
-              <c>true</c> if cancelled; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.JsonResult">
-            <summary>
-            JSON Result  
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.EmptyDataTemplate">
-            <summary>
-            Template used for an empty data row in the <see cref="T:Rock.Web.UI.Controls.Grid"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.EmptyDataTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.PagerTemplate">
-            <summary>
-            Template used for the pager row in the <see cref="T:Rock.Web.UI.Controls.Grid"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.PagerTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.PagerTemplate.ddl_SelectedIndexChanged(System.Object,System.EventArgs)">
-            <summary>
-            Handles the SelectedIndexChanged event of the ddl control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.PagerTemplate.lbAdd_Click(System.Object,System.EventArgs)">
-            <summary>
-            Handles the Click event of the lbAdd control.
-            </summary>
-            <param name="sender">The source of the event.</param>
-            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.PagerTemplate.PageClick">
-            <summary>
-            Occurs when [page click].
-            </summary>
-        </member>
-        <member name="E:Rock.Web.UI.Controls.PagerTemplate.AddClick">
-            <summary>
-            Occurs when [add click].
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.SecurityField">
-            <summary>
-            <see cref="T:Rock.Web.UI.Controls.Grid"/> Column for editing the security of an item in a row in a grid
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.SecurityField.Initialize(System.Boolean,System.Web.UI.Control)">
-            <summary>
-            Performs basic instance initialization for a data control field.
-            </summary>
-            <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
-            <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.DataControlField"/>.</param>
-            <returns>
-            Always returns false.
-            </returns>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.SecurityField.EntityType">
-            <summary>
-            Gets or sets the type of the entity being secured
-            </summary>
-            <value>
-            The type of the entity.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.SecurityField.Title">
-            <summary>
-            Gets or sets the title.
-            </summary>
-            <value>
-            The title.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.SecurityFieldTemplate">
-            <summary>
-            Template used by the <see cref="T:Rock.Web.UI.Controls.SecurityField"/> control
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.SecurityFieldTemplate.#ctor(System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.SecurityFieldTemplate"/> class.
-            </summary>
-            <param name="entityType">Type of the entity.</param>
-            <param name="title">The title.</param>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.SecurityFieldTemplate.InstantiateIn(System.Web.UI.Control)">
-            <summary>
-            When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-            </summary>
-            <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.SecurityFieldTemplate.Title">
-            <summary>
-            Gets or sets the title.
-            </summary>
-            <value>
-            The title.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.SecurityFieldTemplate.EntityType">
-            <summary>
-            Gets or sets the type of the entity.
-            </summary>
-            <value>
-            The type of the entity.
-            </value>
-        </member>
-        <member name="T:Rock.Web.UI.Validation.DataAnnotationValidator">
-            <summary>
-            Data Annotation Validator for validating based on data attributes
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Validation.DataAnnotationValidator.EvaluateIsValid">
-            <summary>
-            When overridden in a derived class, this method contains the code to determine whether the value in the input control is valid.
-            </summary>
-            <returns>
-            true if the value in the input control is valid; otherwise, false.
-            </returns>
-        </member>
-        <member name="P:Rock.Web.UI.Validation.DataAnnotationValidator.SourceTypeName">
-            <summary>
-            The type of the source to check
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.Validation.DataAnnotationValidator.PropertyName">
-            <summary>
-            The property that is annotated
-            </summary>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.HtmlHelper">
-            <summary>
-            Provides helper methods for use in rendering HTML
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.HtmlHelper.CssClassFormat(System.String)">
-            <summary>
-            Formats a string for use as a CCS class or id value
-            </summary>
-            <param name="value">String to format</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.HtmlHelper.CalculateMD5Hash(System.String)">
-            <summary>
-            Hashes a string using MD5
-            </summary>
-            <param name="input">String to format</param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.Web.HttpModule">
-            <summary>
-            Provides application start, and module initialization and disposal events to the implementing class.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.HttpModule.Dispose">
-            <summary>
-            Disposes of the resources (other than memory) used by the module that implements <see cref="T:System.Web.IHttpModule"/>.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.HttpModule.Init(System.Web.HttpApplication)">
-            <summary>
-            Initializes a module and prepares it to handle requests.
-            </summary>
-            <param name="context">An <see cref="T:System.Web.HttpApplication"/> that provides access to the methods, properties, and events common to all application objects within an ASP.NET application</param>
-        </member>
-        <member name="M:Rock.Web.HttpModule.Application_Start(System.Web.HttpApplication)">
-            <summary>
-            Method that will be called once on application start.
-            </summary>
-            <param name="context">The context.</param>
-        </member>
-        <member name="T:Rock.Reflection">
-            <summary>
-            Static helper methods for using Reflection
-            </summary>
-        </member>
-        <member name="M:Rock.Reflection.FindTypes(System.Type)">
-            <summary>
-            Finds the all the types that implement or inherit from the baseType.  The baseType
-            will not be included in the result
-            </summary>
-            <param name="baseType">base type.</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.Reflection.FindTypes(System.Type,System.Boolean)">
-            <summary>
-            Finds the all the types that implement or inherit from the baseType.  
-            </summary>
-            <param name="baseType">base type.</param>
-            <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.Reflection.ClassName(System.Type)">
-            <summary>
-            Returns the name of the type.  If a <see cref="T:System.ComponentModel.DescriptionAttribute"/> is 
-            present for the type, it's value will be returned, otherwise the type name will be returned
-            </summary>
-            <param name="type">The type.</param>
-            <returns></returns>
-        </member>
-        <member name="T:Rock.Web.UI.PageReference">
-            <summary>
-            Helper class to work with the PageReference field type
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.PageReference.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.PageReference.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
-            </summary>
-            <param name="reference">The reference.</param>
-        </member>
-        <member name="M:Rock.Web.UI.PageReference.#ctor(System.Int32,System.Int32)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.PageReference"/> class.
-            </summary>
-            <param name="pageId">The page id.</param>
-            <param name="routeId">The route id.</param>
-        </member>
-        <member name="P:Rock.Web.UI.PageReference.PageId">
-            <summary>
-            Gets the page id.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.PageReference.RouteId">
-            <summary>
-            Gets the route id.
-            </summary>
-        </member>
-        <member name="P:Rock.Web.UI.PageReference.IsValid">
-            <summary>
-            Gets a value indicating whether this instance is valid.
-            </summary>
-            <value>
-              <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+            The Actions.
             </value>
         </member>
     </members>

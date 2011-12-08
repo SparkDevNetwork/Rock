@@ -407,8 +407,15 @@ namespace Rock.Web.UI
             {
                 this.BlockInstance.ReloadAttributeValues();
             }
+        }
 
-            this.BlockInstance.Block.InstancePropertiesVerified = true;
+        internal void ReadAdditionalActions()
+        {
+            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( Rock.Security.AdditionalActionsAttribute ), true );
+            if ( customAttributes.Length > 0 )
+                this.BlockInstance.BlockActions = ( ( Rock.Security.AdditionalActionsAttribute )customAttributes[0] ).AdditionalActions;
+            else
+                this.BlockInstance.BlockActions = new List<string>();
         }
 
         #endregion
