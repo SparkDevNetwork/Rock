@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class PageProperties : Rock.Cms.CmsBlock
+    public partial class PageProperties : Rock.Web.UI.Block
     {
-        private Rock.Cms.Cached.Page _page = null;
+        private Rock.Web.Cache.Page _page = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
@@ -21,38 +22,12 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Cms.Cached.Page.Read( pageId );
+                _page = Rock.Web.Cache.Page.Read( pageId );
 
                 if ( _page.Authorized( "Configure", CurrentUser ) )
                 {
-                    foreach ( Rock.Cms.Cached.Attribute attribute in _page.Attributes )
-                    {
-                        HtmlGenericControl li = new HtmlGenericControl( "li" );
-                        li.ID = string.Format( "attribute-{0}", attribute.Id );
-                        li.ClientIDMode = ClientIDMode.AutoID;
+                    foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack ) )
                         olProperties.Controls.Add( li );
-
-                        Label lbl = new Label();
-                        lbl.ClientIDMode = ClientIDMode.AutoID;
-                        lbl.Text = attribute.Name;
-                        lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                        li.Controls.Add( lbl );
-
-                        Control attributeControl = attribute.CreateControl( _page.AttributeValues[attribute.Key].Value, !Page.IsPostBack );
-                        attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
-                        attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                        li.Controls.Add( attributeControl );
-
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
-                        {
-                            HtmlAnchor a = new HtmlAnchor();
-                            a.ClientIDMode = ClientIDMode.AutoID;
-                            a.Attributes.Add( "class", "attribute-description tooltip" );
-                            a.InnerHtml = "<span>" + attribute.Description + "</span>";
-
-                            li.Controls.Add( a );
-                        }
-                    }
                 }
                 else
                 {
@@ -75,6 +50,7 @@ namespace RockWeb.Blocks.Administration
 
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
+                ddlParentPage.SelectedValue = _page.ParentPage != null ? _page.ParentPage.Id.ToString() : "0";
                 ddlLayout.Text = _page.Layout;
                 ddlMenuWhen.SelectedValue = ( ( Int32 )_page.DisplayInNavWhen ).ToString();
                 cbMenuDescription.Checked = _page.MenuDisplayDescription;
@@ -91,15 +67,26 @@ namespace RockWeb.Blocks.Administration
         }
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page page = pageService.Get( _page.Id );
+                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                Rock.CMS.Page page = pageService.Get( _page.Id );
+
+                int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
+                if ( page.ParentPageId != parentPage )
+                {
+                    if (page.ParentPageId.HasValue)
+                        Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+
+                    if (parentPage != 0)
+                        Rock.Web.Cache.Page.Flush( parentPage );
+                }
 
                 page.Name = tbPageName.Text;
                 page.Title = tbPageTitle.Text;
+                page.ParentPageId = parentPage;
                 page.Layout = ddlLayout.Text;
-                page.DisplayInNavWhen = ( Rock.Models.Cms.DisplayInNavWhen )Enum.Parse( typeof( Rock.Models.Cms.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                page.DisplayInNavWhen = ( Rock.CMS.DisplayInNavWhen )Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                 page.MenuDisplayDescription = cbMenuDescription.Checked;
                 page.MenuDisplayIcon = cbMenuIcon.Checked;
                 page.MenuDisplayChildPages = cbMenuChildPages.Checked;
@@ -111,16 +98,10 @@ namespace RockWeb.Blocks.Administration
                 
                 pageService.Save( page, CurrentPersonId );
 
-                foreach ( Rock.Cms.Cached.Attribute attribute in _page.Attributes )
-                {
-                    Control control = olProperties.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
-                    if ( control != null )
-                        _page.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
-                }
-
+                Rock.Attribute.Helper.GetEditValues( olProperties, _page );
                 _page.SaveAttributeValues( CurrentPersonId );
 
-                Rock.Cms.Cached.Page.Flush( _page.Id );
+                Rock.Web.Cache.Page.Flush( _page.Id );
             }
 
             phClose.Controls.AddAt(0, new LiteralControl( @"
@@ -132,12 +113,25 @@ namespace RockWeb.Blocks.Administration
 
         private void LoadDropdowns()
         {
+            ddlParentPage.Items.Clear();
+            ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
+            foreach(var page in new Rock.CMS.PageService().GetByParentPageId(null))
+                AddPage(page, 1);
+
             ddlLayout.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx.cs" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx.cs" ) ) ) );
 
-            ddlMenuWhen.BindToEnum( typeof( Rock.Models.Cms.DisplayInNavWhen ) );
+            ddlMenuWhen.BindToEnum( typeof( Rock.CMS.DisplayInNavWhen ) );
+        }
+
+        private void AddPage( Rock.CMS.Page page, int level )
+        {
+            string pageName = new string('-', level) + page.Name;
+            ddlParentPage.Items.Add(new ListItem(pageName, page.Id.ToString()));
+            foreach(var childPage in page.Pages)
+                AddPage(childPage, level + 1);
         }
     }
 }

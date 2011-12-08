@@ -3,7 +3,8 @@
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
 
-    <Rock:Grid ID="rGrid" runat="server">
+    <h3>Layout Blocks</h3>
+    <Rock:Grid ID="gLayoutBlocks" runat="server">
         <Columns>
             <Rock:ReorderField />
             <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -12,13 +13,29 @@
                     <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
                 </ItemTemplate>
             </asp:TemplateField>
-            <Rock:EditField OnClick="rGrid_Edit" />
-            <Rock:DeleteField OnClick="rGrid_Delete" />
+            <Rock:EditField OnClick="gLayoutBlocks_Edit" />
+            <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
+        </Columns>
+    </Rock:Grid>
+
+    <h3>Page Blocks</h3>
+    <Rock:Grid ID="gPageBlocks" runat="server">
+        <Columns>
+            <Rock:ReorderField />
+            <asp:BoundField DataField="Name" HeaderText="Name" />
+            <asp:TemplateField HeaderText="Type" >
+                <ItemTemplate>
+                    <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                </ItemTemplate>
+            </asp:TemplateField>
+            <Rock:EditField OnClick="gPageBlocks_Edit" />
+            <Rock:DeleteField OnClick="gPageBlocks_Delete" />
         </Columns>
     </Rock:Grid>
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 
+        <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockInstanceId" runat="server" />
         <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>

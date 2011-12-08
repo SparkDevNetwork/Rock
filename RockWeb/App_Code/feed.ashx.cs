@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Web;
 
-using System.Xml;
-using System.Text;
-
-using Rock.Services.Cms;
-using Rock.Models.Cms;
+using Rock.CMS;
 
 namespace RockWeb
 {

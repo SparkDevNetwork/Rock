@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
-using System.IO;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks
 {
-    public partial class MyBlock : Rock.Cms.CmsBlock
+    public partial class MyBlock : Rock.Web.UI.Block
     {
         protected override void OnInit( EventArgs e )
         {
@@ -43,12 +42,12 @@ namespace RockWeb.Blocks
 
             lItemTest.Text = itemTest;
 
-            Rock.Services.Groups.GroupTypeService _service = new Rock.Services.Groups.GroupTypeService();
-            Rock.Models.Groups.GroupType groupType = _service.Get( 2 );
+            Rock.Groups.GroupTypeService _service = new Rock.Groups.GroupTypeService();
+            Rock.Groups.GroupType groupType = _service.Get( 2 );
 
-            foreach ( Rock.Models.Groups.GroupType parentType in groupType.ParentGroupTypes )
+            foreach ( Rock.Groups.GroupType parentType in groupType.ParentGroupTypes )
                 lParentGroups.Text += parentType.Name + ":";
-            foreach ( Rock.Models.Groups.GroupType childType in groupType.ChildGroupTypes )
+            foreach ( Rock.Groups.GroupType childType in groupType.ChildGroupTypes )
                 lChildGroups.Text += childType.Name + ":";
 
             this.AttributesUpdated += MyBlock_AttributesUpdated;

@@ -1,0 +1,30 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="Themes_Rock_Layouts_Dialog" %>
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <title></title>
+
+    <!--[if lt IE 9]>
+        <script src="<%# ResolveUrl("~/Themes/RockCMS/Scripts/html5.js") %>" ></script>
+    <![endif]-->
+
+    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/reset-core.css") %>" />
+    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>" />
+	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>" />
+	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/smoothness/jquery-ui-1.8.12.custom.css") %>" />
+    
+    <asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body class="dialog">
+    <form id="form1" runat="server">
+
+        <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+            
+            <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+        </asp:ContentPlaceHolder>
+
+    </form>
+</body>
+</html>
