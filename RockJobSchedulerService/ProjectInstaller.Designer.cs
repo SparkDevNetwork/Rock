@@ -1,5 +1,8 @@
 ﻿namespace RockJobSchedulerService
 {
+    /// <summary>
+    /// Project Installer 
+    /// </summary>
     partial class ProjectInstaller
     {
         /// <summary>

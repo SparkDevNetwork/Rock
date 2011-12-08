@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Configuration.Provider;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-using System.Web.Configuration;
 using System.Web.Security;
-using System.Security.Cryptography;
-
 using Rock.CMS;
 
 namespace Rock.Security

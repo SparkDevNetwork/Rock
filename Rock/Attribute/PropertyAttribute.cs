@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Linq;
 
 namespace Rock.Attribute
@@ -8,7 +14,7 @@ namespace Rock.Attribute
     /// Framework provides methods in the <see cref="Rock.Attribute.Helper"/> class to create, read, and update the attributes
     /// </summary>
     /// <remarks>
-    /// If using a custom <see cref="Rock.FieldType.IFieldType"/> make sure that the fieldtype has been added to Rock.
+    /// If using a custom <see cref="Rock.FieldTypes.IFieldType"/> make sure that the fieldtype has been added to Rock.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class PropertyAttribute : System.Attribute
@@ -59,7 +65,7 @@ namespace Rock.Attribute
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly name of the <see cref="Rock.FieldType.IFieldType"/> to be used for the attribute
+        /// Gets or sets the assembly name of the <see cref="Rock.FieldTypes.IFieldType"/> to be used for the attribute
         /// </summary>
         /// <value>
         /// The field type assembly.
@@ -67,7 +73,7 @@ namespace Rock.Attribute
         public string FieldTypeAssembly { get; set; }
 
         /// <summary>
-        /// Gets or sets the class name of the <see cref="Rock.FieldType.IFieldType"/> to be used for the attribute.
+        /// Gets or sets the class name of the <see cref="Rock.FieldTypes.IFieldType"/> to be used for the attribute.
         /// </summary>
         /// <value>
         /// The field type class.
@@ -83,12 +89,12 @@ namespace Rock.Attribute
         /// <see cref="Description"/> is initialized as an empty string.
         /// <see cref="DefaultValue"/> is initialized as an empty string.
         /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldType.Text</c>
+        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         public PropertyAttribute(int order, string name )
-            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldType.Text" )
+            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -100,13 +106,13 @@ namespace Rock.Attribute
         /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
         /// <see cref="DefaultValue"/> is initialized as an empty string.
         /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldType.Text</c>
+        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         public PropertyAttribute(int order, string name, string description )
-            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldType.Text" )
+            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -117,14 +123,14 @@ namespace Rock.Attribute
         /// <remarks>
         /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
         /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldType.Text</c>
+        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
         public PropertyAttribute(int order, string name, string description, string defaultValue )
-            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldType.Text" )
+            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -133,7 +139,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <remarks>
         /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldType.Text</c>
+        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
@@ -141,7 +147,7 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
         public PropertyAttribute(int order, string name, string key, string description, string defaultValue )
-            : this(order, name, key, description, defaultValue, "Rock.Framework", "Rock.FieldType.Text" )
+            : this(order, name, key, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
         {
         }
 

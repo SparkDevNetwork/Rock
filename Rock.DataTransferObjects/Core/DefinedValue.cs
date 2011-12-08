@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Core
+namespace Rock.Core.DTO
 {
     /// <summary>
     /// Defined Value Data Transfer Object.

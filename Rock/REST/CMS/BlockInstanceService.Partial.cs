@@ -1,3 +1,9 @@
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Linq;
 using System.ServiceModel.Web;
 
@@ -16,7 +22,7 @@ namespace Rock.REST.CMS
         /// <param name="BlockInstance">The block instance.</param>
         /// <returns></returns>
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}" )]
-        public void Move( string id, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void Move( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -60,7 +66,7 @@ namespace Rock.REST.CMS
         /// other zones with the same parent (layout or page).
         /// </remarks>
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}/{apiKey}" )]
-        public void ApiMove( string id, string apiKey, Rock.DataTransferObjects.CMS.BlockInstance BlockInstance )
+        public void ApiMove( string id, string apiKey, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

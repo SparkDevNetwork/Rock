@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a SiteDomain object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.SiteDomain Get( string id )
+        public Rock.CMS.DTO.SiteDomain Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a SiteDomain object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.SiteDomain ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.SiteDomain ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateSiteDomain( string id, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain )
+        public void UpdateSiteDomain( string id, Rock.CMS.DTO.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateSiteDomain( string id, string apiKey, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain )
+        public void ApiUpdateSiteDomain( string id, string apiKey, Rock.CMS.DTO.SiteDomain SiteDomain )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateSiteDomain( Rock.DataTransferObjects.CMS.SiteDomain SiteDomain )
+        public void CreateSiteDomain( Rock.CMS.DTO.SiteDomain SiteDomain )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new SiteDomain object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateSiteDomain( string apiKey, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain )
+        public void ApiCreateSiteDomain( string apiKey, Rock.CMS.DTO.SiteDomain SiteDomain )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

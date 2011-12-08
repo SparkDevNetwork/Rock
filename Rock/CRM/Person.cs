@@ -147,13 +147,13 @@ namespace Rock.CRM
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="PersonDTO"/> object.
+        /// A <see cref="Rock.CRM.DTO.Person"/> object.
         /// </value>
-		public Rock.DataTransferObjects.CRM.Person DataTransferObject
+		public Rock.CRM.DTO.Person DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.CRM.Person dto = new Rock.DataTransferObjects.CRM.Person();
+				Rock.CRM.DTO.Person dto = new Rock.CRM.DTO.Person();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

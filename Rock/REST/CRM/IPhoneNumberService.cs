@@ -24,37 +24,37 @@ namespace Rock.REST.CRM
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.PhoneNumber Get( string id );
+        Rock.CRM.DTO.PhoneNumber Get( string id );
 
 		/// <summary>
 		/// Gets a PhoneNumber object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CRM.PhoneNumber ApiGet( string id, string apiKey );
+        Rock.CRM.DTO.PhoneNumber ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void UpdatePhoneNumber( string id, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber );
+        void UpdatePhoneNumber( string id, Rock.CRM.DTO.PhoneNumber PhoneNumber );
 
 		/// <summary>
 		/// Updates a PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void ApiUpdatePhoneNumber( string id, string apiKey, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber );
+        void ApiUpdatePhoneNumber( string id, string apiKey, Rock.CRM.DTO.PhoneNumber PhoneNumber );
 
 		/// <summary>
 		/// Creates a new PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void CreatePhoneNumber( Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber );
+        void CreatePhoneNumber( Rock.CRM.DTO.PhoneNumber PhoneNumber );
 
 		/// <summary>
 		/// Creates a new PhoneNumber object
 		/// </summary>
         [OperationContract]
-        void ApiCreatePhoneNumber( string apiKey, Rock.DataTransferObjects.CRM.PhoneNumber PhoneNumber );
+        void ApiCreatePhoneNumber( string apiKey, Rock.CRM.DTO.PhoneNumber PhoneNumber );
 
 		/// <summary>
 		/// Deletes a PhoneNumber object

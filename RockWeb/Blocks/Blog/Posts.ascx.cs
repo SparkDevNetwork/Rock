@@ -1,13 +1,16 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using System.Text;
+using System.Web;
+
 using Rock.CMS;
-using Rock.Helpers;
 
 namespace RockWeb.Blocks.Blog
 {
@@ -18,7 +21,7 @@ namespace RockWeb.Blocks.Blog
         protected int currentPage = 1;
         protected int categoryId = 0;
         protected int tagId = 0;
-        protected PageReference postDetailsPage = null;
+        protected Rock.Web.UI.PageReference postDetailsPage = null;
         
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -29,7 +32,7 @@ namespace RockWeb.Blocks.Blog
             }
 
             // get post details page
-            postDetailsPage = new PageReference( AttributeValue( "PostDetailPage" ) );
+            postDetailsPage = new Rock.Web.UI.PageReference( AttributeValue( "PostDetailPage" ) );
 
             // get number of posts to display per page
             takeCount = Convert.ToInt32( AttributeValue( "PostsPerPage" ) );

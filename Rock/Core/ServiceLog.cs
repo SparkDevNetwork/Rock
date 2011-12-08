@@ -87,13 +87,13 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="ServiceLogDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.ServiceLog"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.ServiceLog DataTransferObject
+		public Rock.Core.DTO.ServiceLog DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.ServiceLog dto = new Rock.DataTransferObjects.Core.ServiceLog();
+				Rock.Core.DTO.ServiceLog dto = new Rock.Core.DTO.ServiceLog();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.Time = this.Time;

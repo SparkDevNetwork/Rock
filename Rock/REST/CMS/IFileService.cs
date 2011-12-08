@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a File object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.File Get( string id );
+        Rock.CMS.DTO.File Get( string id );
 
 		/// <summary>
 		/// Gets a File object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.File ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.File ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a File object
 		/// </summary>
         [OperationContract]
-        void UpdateFile( string id, Rock.DataTransferObjects.CMS.File File );
+        void UpdateFile( string id, Rock.CMS.DTO.File File );
 
 		/// <summary>
 		/// Updates a File object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateFile( string id, string apiKey, Rock.DataTransferObjects.CMS.File File );
+        void ApiUpdateFile( string id, string apiKey, Rock.CMS.DTO.File File );
 
 		/// <summary>
 		/// Creates a new File object
 		/// </summary>
         [OperationContract]
-        void CreateFile( Rock.DataTransferObjects.CMS.File File );
+        void CreateFile( Rock.CMS.DTO.File File );
 
 		/// <summary>
 		/// Creates a new File object
 		/// </summary>
         [OperationContract]
-        void ApiCreateFile( string apiKey, Rock.DataTransferObjects.CMS.File File );
+        void ApiCreateFile( string apiKey, Rock.CMS.DTO.File File );
 
 		/// <summary>
 		/// Deletes a File object

@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -37,8 +40,8 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
                 rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
-                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
                 string script = string.Format( @"
         Sys.Application.add_load(function () {{
@@ -80,7 +83,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             int? parentPageId = null;
             if (_page != null)

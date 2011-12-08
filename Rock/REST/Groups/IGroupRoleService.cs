@@ -24,37 +24,37 @@ namespace Rock.REST.Groups
 		/// Gets a GroupRole object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Groups.GroupRole Get( string id );
+        Rock.Groups.DTO.GroupRole Get( string id );
 
 		/// <summary>
 		/// Gets a GroupRole object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Groups.GroupRole ApiGet( string id, string apiKey );
+        Rock.Groups.DTO.GroupRole ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a GroupRole object
 		/// </summary>
         [OperationContract]
-        void UpdateGroupRole( string id, Rock.DataTransferObjects.Groups.GroupRole GroupRole );
+        void UpdateGroupRole( string id, Rock.Groups.DTO.GroupRole GroupRole );
 
 		/// <summary>
 		/// Updates a GroupRole object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateGroupRole( string id, string apiKey, Rock.DataTransferObjects.Groups.GroupRole GroupRole );
+        void ApiUpdateGroupRole( string id, string apiKey, Rock.Groups.DTO.GroupRole GroupRole );
 
 		/// <summary>
 		/// Creates a new GroupRole object
 		/// </summary>
         [OperationContract]
-        void CreateGroupRole( Rock.DataTransferObjects.Groups.GroupRole GroupRole );
+        void CreateGroupRole( Rock.Groups.DTO.GroupRole GroupRole );
 
 		/// <summary>
 		/// Creates a new GroupRole object
 		/// </summary>
         [OperationContract]
-        void ApiCreateGroupRole( string apiKey, Rock.DataTransferObjects.Groups.GroupRole GroupRole );
+        void ApiCreateGroupRole( string apiKey, Rock.Groups.DTO.GroupRole GroupRole );
 
 		/// <summary>
 		/// Deletes a GroupRole object

@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Address
@@ -27,7 +33,7 @@ namespace Rock.Address
     /// </code>
     /// </summary>
     [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
-    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock.Framework", "Rock.FieldType.Boolean" )]
+    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
     public abstract class GeocodeService : Rock.Attribute.IHasAttributes
     {
         /// <summary>

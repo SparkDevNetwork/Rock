@@ -26,6 +26,11 @@
             The main entry point for the application.
             </summary>
         </member>
+        <member name="T:RockJobSchedulerService.ProjectInstaller">
+            <summary>
+            Project Installer 
+            </summary>
+        </member>
         <member name="F:RockJobSchedulerService.ProjectInstaller.components">
             <summary>
             Required designer variable.
@@ -41,6 +46,11 @@
             <summary>
             Required method for Designer support - do not modify
             the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="M:RockJobSchedulerService.ProjectInstaller.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:RockJobSchedulerService.ProjectInstaller"/> class.
             </summary>
         </member>
     </members>

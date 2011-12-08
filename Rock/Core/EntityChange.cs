@@ -96,13 +96,13 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="EntityChangeDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.EntityChange"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.EntityChange DataTransferObject
+		public Rock.Core.DTO.EntityChange DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.EntityChange dto = new Rock.DataTransferObjects.Core.EntityChange();
+				Rock.Core.DTO.EntityChange dto = new Rock.Core.DTO.EntityChange();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.ChangeSet = this.ChangeSet;

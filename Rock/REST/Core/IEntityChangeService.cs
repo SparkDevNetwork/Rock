@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a EntityChange object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.EntityChange Get( string id );
+        Rock.Core.DTO.EntityChange Get( string id );
 
 		/// <summary>
 		/// Gets a EntityChange object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.EntityChange ApiGet( string id, string apiKey );
+        Rock.Core.DTO.EntityChange ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a EntityChange object
 		/// </summary>
         [OperationContract]
-        void UpdateEntityChange( string id, Rock.DataTransferObjects.Core.EntityChange EntityChange );
+        void UpdateEntityChange( string id, Rock.Core.DTO.EntityChange EntityChange );
 
 		/// <summary>
 		/// Updates a EntityChange object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateEntityChange( string id, string apiKey, Rock.DataTransferObjects.Core.EntityChange EntityChange );
+        void ApiUpdateEntityChange( string id, string apiKey, Rock.Core.DTO.EntityChange EntityChange );
 
 		/// <summary>
 		/// Creates a new EntityChange object
 		/// </summary>
         [OperationContract]
-        void CreateEntityChange( Rock.DataTransferObjects.Core.EntityChange EntityChange );
+        void CreateEntityChange( Rock.Core.DTO.EntityChange EntityChange );
 
 		/// <summary>
 		/// Creates a new EntityChange object
 		/// </summary>
         [OperationContract]
-        void ApiCreateEntityChange( string apiKey, Rock.DataTransferObjects.Core.EntityChange EntityChange );
+        void ApiCreateEntityChange( string apiKey, Rock.Core.DTO.EntityChange EntityChange );
 
 		/// <summary>
 		/// Deletes a EntityChange object

@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogCategory object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.BlogCategory Get( string id )
+        public Rock.CMS.DTO.BlogCategory Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogCategory object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.BlogCategory ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.BlogCategory ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogCategory( string id, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory )
+        public void UpdateBlogCategory( string id, Rock.CMS.DTO.BlogCategory BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlogCategory( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory )
+        public void ApiUpdateBlogCategory( string id, string apiKey, Rock.CMS.DTO.BlogCategory BlogCategory )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogCategory( Rock.DataTransferObjects.CMS.BlogCategory BlogCategory )
+        public void CreateBlogCategory( Rock.CMS.DTO.BlogCategory BlogCategory )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogCategory object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlogCategory( string apiKey, Rock.DataTransferObjects.CMS.BlogCategory BlogCategory )
+        public void ApiCreateBlogCategory( string apiKey, Rock.CMS.DTO.BlogCategory BlogCategory )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a Blog object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.Blog Get( string id )
+        public Rock.CMS.DTO.Blog Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a Blog object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.Blog ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.Blog ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a Blog object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlog( string id, Rock.DataTransferObjects.CMS.Blog Blog )
+        public void UpdateBlog( string id, Rock.CMS.DTO.Blog Blog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a Blog object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlog( string id, string apiKey, Rock.DataTransferObjects.CMS.Blog Blog )
+        public void ApiUpdateBlog( string id, string apiKey, Rock.CMS.DTO.Blog Blog )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Blog object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlog( Rock.DataTransferObjects.CMS.Blog Blog )
+        public void CreateBlog( Rock.CMS.DTO.Blog Blog )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Blog object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlog( string apiKey, Rock.DataTransferObjects.CMS.Blog Blog )
+        public void ApiCreateBlog( string apiKey, Rock.CMS.DTO.Blog Blog )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

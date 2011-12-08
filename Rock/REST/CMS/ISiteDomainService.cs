@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a SiteDomain object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.SiteDomain Get( string id );
+        Rock.CMS.DTO.SiteDomain Get( string id );
 
 		/// <summary>
 		/// Gets a SiteDomain object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.SiteDomain ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.SiteDomain ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a SiteDomain object
 		/// </summary>
         [OperationContract]
-        void UpdateSiteDomain( string id, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain );
+        void UpdateSiteDomain( string id, Rock.CMS.DTO.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Updates a SiteDomain object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateSiteDomain( string id, string apiKey, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain );
+        void ApiUpdateSiteDomain( string id, string apiKey, Rock.CMS.DTO.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Creates a new SiteDomain object
 		/// </summary>
         [OperationContract]
-        void CreateSiteDomain( Rock.DataTransferObjects.CMS.SiteDomain SiteDomain );
+        void CreateSiteDomain( Rock.CMS.DTO.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Creates a new SiteDomain object
 		/// </summary>
         [OperationContract]
-        void ApiCreateSiteDomain( string apiKey, Rock.DataTransferObjects.CMS.SiteDomain SiteDomain );
+        void ApiCreateSiteDomain( string apiKey, Rock.CMS.DTO.SiteDomain SiteDomain );
 
 		/// <summary>
 		/// Deletes a SiteDomain object

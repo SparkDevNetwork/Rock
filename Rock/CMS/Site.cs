@@ -173,13 +173,13 @@ namespace Rock.CMS
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="SiteDTO"/> object.
+        /// A <see cref="Rock.CMS.DTO.Site"/> object.
         /// </value>
-		public Rock.DataTransferObjects.CMS.Site DataTransferObject
+		public Rock.CMS.DTO.Site DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.CMS.Site dto = new Rock.DataTransferObjects.CMS.Site();
+				Rock.CMS.DTO.Site dto = new Rock.CMS.DTO.Site();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

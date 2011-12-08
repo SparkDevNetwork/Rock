@@ -24,37 +24,37 @@ namespace Rock.REST.Util
 		/// Gets a Job object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Util.Job Get( string id );
+        Rock.Util.DTO.Job Get( string id );
 
 		/// <summary>
 		/// Gets a Job object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Util.Job ApiGet( string id, string apiKey );
+        Rock.Util.DTO.Job ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Job object
 		/// </summary>
         [OperationContract]
-        void UpdateJob( string id, Rock.DataTransferObjects.Util.Job Job );
+        void UpdateJob( string id, Rock.Util.DTO.Job Job );
 
 		/// <summary>
 		/// Updates a Job object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateJob( string id, string apiKey, Rock.DataTransferObjects.Util.Job Job );
+        void ApiUpdateJob( string id, string apiKey, Rock.Util.DTO.Job Job );
 
 		/// <summary>
 		/// Creates a new Job object
 		/// </summary>
         [OperationContract]
-        void CreateJob( Rock.DataTransferObjects.Util.Job Job );
+        void CreateJob( Rock.Util.DTO.Job Job );
 
 		/// <summary>
 		/// Creates a new Job object
 		/// </summary>
         [OperationContract]
-        void ApiCreateJob( string apiKey, Rock.DataTransferObjects.Util.Job Job );
+        void ApiCreateJob( string apiKey, Rock.Util.DTO.Job Job );
 
 		/// <summary>
 		/// Deletes a Job object

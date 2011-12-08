@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Caching;
@@ -10,6 +16,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.CMS;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -209,7 +216,7 @@ namespace Rock.Web.UI
         /// <param name="e"></param>
         protected override void OnError( EventArgs e )
         {
-            DisplayNotification( "Exception", Rock.Controls.NotificationBoxType.Error,
+            DisplayNotification( "Exception", NotificationBoxType.Error,
                 HttpContext.Current.Server.GetLastError().Message );
 
             base.OnError( e );
@@ -224,11 +231,11 @@ namespace Rock.Web.UI
         /// <param name="title"></param>
         /// <param name="type"></param>
         /// <param name="message"></param>
-        public void DisplayNotification( string title, Rock.Controls.NotificationBoxType type, string message )
+        public void DisplayNotification( string title, NotificationBoxType type, string message )
         {
             this.Controls.Clear();
 
-            Rock.Controls.NotificationBox notification = new Controls.NotificationBox();
+            NotificationBox notification = new NotificationBox();
             notification.Title = title;
             notification.NotificationBoxType = type;
             notification.Text = message;
@@ -241,7 +248,7 @@ namespace Rock.Web.UI
         /// <param name="message">The message.</param>
         public void DisplayError( string message )
         {
-            DisplayNotification( "Error", Rock.Controls.NotificationBoxType.Error, message );
+            DisplayNotification( "Error", NotificationBoxType.Error, message );
         }
 
         /// <summary>
@@ -250,7 +257,7 @@ namespace Rock.Web.UI
         /// <param name="message">The message.</param>
         public void DisplayWarning( string message )
         {
-            DisplayNotification( "Warning", Rock.Controls.NotificationBoxType.Warning, message );
+            DisplayNotification( "Warning", NotificationBoxType.Warning, message );
         }
 
         /// <summary>

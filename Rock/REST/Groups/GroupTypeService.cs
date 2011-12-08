@@ -30,7 +30,7 @@ namespace Rock.REST.Groups
 		/// Gets a GroupType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Groups.GroupType Get( string id )
+        public Rock.Groups.DTO.GroupType Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Groups
 		/// Gets a GroupType object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Groups.GroupType ApiGet( string id, string apiKey )
+        public Rock.Groups.DTO.GroupType ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Groups
 		/// Updates a GroupType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateGroupType( string id, Rock.DataTransferObjects.Groups.GroupType GroupType )
+        public void UpdateGroupType( string id, Rock.Groups.DTO.GroupType GroupType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Groups
 		/// Updates a GroupType object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateGroupType( string id, string apiKey, Rock.DataTransferObjects.Groups.GroupType GroupType )
+        public void ApiUpdateGroupType( string id, string apiKey, Rock.Groups.DTO.GroupType GroupType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Groups
 		/// Creates a new GroupType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateGroupType( Rock.DataTransferObjects.Groups.GroupType GroupType )
+        public void CreateGroupType( Rock.Groups.DTO.GroupType GroupType )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Groups
 		/// Creates a new GroupType object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateGroupType( string apiKey, Rock.DataTransferObjects.Groups.GroupType GroupType )
+        public void ApiCreateGroupType( string apiKey, Rock.Groups.DTO.GroupType GroupType )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

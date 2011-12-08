@@ -30,7 +30,7 @@ namespace Rock.REST.Util
 		/// Gets a Job object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Util.Job Get( string id )
+        public Rock.Util.DTO.Job Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Util
 		/// Gets a Job object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Util.Job ApiGet( string id, string apiKey )
+        public Rock.Util.DTO.Job ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Util
 		/// Updates a Job object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateJob( string id, Rock.DataTransferObjects.Util.Job Job )
+        public void UpdateJob( string id, Rock.Util.DTO.Job Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Util
 		/// Updates a Job object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateJob( string id, string apiKey, Rock.DataTransferObjects.Util.Job Job )
+        public void ApiUpdateJob( string id, string apiKey, Rock.Util.DTO.Job Job )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Util
 		/// Creates a new Job object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateJob( Rock.DataTransferObjects.Util.Job Job )
+        public void CreateJob( Rock.Util.DTO.Job Job )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Util
 		/// Creates a new Job object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateJob( string apiKey, Rock.DataTransferObjects.Util.Job Job )
+        public void ApiCreateJob( string apiKey, Rock.Util.DTO.Job Job )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a Attribute object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.Attribute Get( string id );
+        Rock.Core.DTO.Attribute Get( string id );
 
 		/// <summary>
 		/// Gets a Attribute object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.Attribute ApiGet( string id, string apiKey );
+        Rock.Core.DTO.Attribute ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Attribute object
 		/// </summary>
         [OperationContract]
-        void UpdateAttribute( string id, Rock.DataTransferObjects.Core.Attribute Attribute );
+        void UpdateAttribute( string id, Rock.Core.DTO.Attribute Attribute );
 
 		/// <summary>
 		/// Updates a Attribute object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateAttribute( string id, string apiKey, Rock.DataTransferObjects.Core.Attribute Attribute );
+        void ApiUpdateAttribute( string id, string apiKey, Rock.Core.DTO.Attribute Attribute );
 
 		/// <summary>
 		/// Creates a new Attribute object
 		/// </summary>
         [OperationContract]
-        void CreateAttribute( Rock.DataTransferObjects.Core.Attribute Attribute );
+        void CreateAttribute( Rock.Core.DTO.Attribute Attribute );
 
 		/// <summary>
 		/// Creates a new Attribute object
 		/// </summary>
         [OperationContract]
-        void ApiCreateAttribute( string apiKey, Rock.DataTransferObjects.Core.Attribute Attribute );
+        void ApiCreateAttribute( string apiKey, Rock.Core.DTO.Attribute Attribute );
 
 		/// <summary>
 		/// Deletes a Attribute object

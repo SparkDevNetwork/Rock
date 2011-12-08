@@ -1,15 +1,16 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-using System.IO;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -45,8 +46,8 @@ namespace RockWeb.Blocks.Administration
                 ShowActionNote();
 
                 rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
                 ddlRoles.DataSource = Rock.Security.Role.AllRoles();
                 ddlRoles.DataValueField = "Guid";
@@ -93,7 +94,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, ddlAction.Text ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );

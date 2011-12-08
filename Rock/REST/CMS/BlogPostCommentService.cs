@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.BlogPostComment Get( string id )
+        public Rock.CMS.DTO.BlogPostComment Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogPostComment object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.BlogPostComment ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.BlogPostComment ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogPostComment( string id, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment )
+        public void UpdateBlogPostComment( string id, Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlogPostComment( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment )
+        public void ApiUpdateBlogPostComment( string id, string apiKey, Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogPostComment( Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment )
+        public void CreateBlogPostComment( Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogPostComment object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlogPostComment( string apiKey, Rock.DataTransferObjects.CMS.BlogPostComment BlogPostComment )
+        public void ApiCreateBlogPostComment( string apiKey, Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

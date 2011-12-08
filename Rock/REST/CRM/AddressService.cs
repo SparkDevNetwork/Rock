@@ -30,7 +30,7 @@ namespace Rock.REST.CRM
 		/// Gets a Address object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CRM.Address Get( string id )
+        public Rock.CRM.DTO.Address Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CRM
 		/// Gets a Address object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CRM.Address ApiGet( string id, string apiKey )
+        public Rock.CRM.DTO.Address ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CRM
 		/// Updates a Address object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAddress( string id, Rock.DataTransferObjects.CRM.Address Address )
+        public void UpdateAddress( string id, Rock.CRM.DTO.Address Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CRM
 		/// Updates a Address object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateAddress( string id, string apiKey, Rock.DataTransferObjects.CRM.Address Address )
+        public void ApiUpdateAddress( string id, string apiKey, Rock.CRM.DTO.Address Address )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CRM
 		/// Creates a new Address object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAddress( Rock.DataTransferObjects.CRM.Address Address )
+        public void CreateAddress( Rock.CRM.DTO.Address Address )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CRM
 		/// Creates a new Address object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateAddress( string apiKey, Rock.DataTransferObjects.CRM.Address Address )
+        public void ApiCreateAddress( string apiKey, Rock.CRM.DTO.Address Address )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

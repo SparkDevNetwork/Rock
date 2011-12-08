@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogTag object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.BlogTag Get( string id )
+        public Rock.CMS.DTO.BlogTag Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a BlogTag object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.BlogTag ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.BlogTag ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlogTag( string id, Rock.DataTransferObjects.CMS.BlogTag BlogTag )
+        public void UpdateBlogTag( string id, Rock.CMS.DTO.BlogTag BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlogTag( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogTag BlogTag )
+        public void ApiUpdateBlogTag( string id, string apiKey, Rock.CMS.DTO.BlogTag BlogTag )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlogTag( Rock.DataTransferObjects.CMS.BlogTag BlogTag )
+        public void CreateBlogTag( Rock.CMS.DTO.BlogTag BlogTag )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new BlogTag object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlogTag( string apiKey, Rock.DataTransferObjects.CMS.BlogTag BlogTag )
+        public void ApiCreateBlogTag( string apiKey, Rock.CMS.DTO.BlogTag BlogTag )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

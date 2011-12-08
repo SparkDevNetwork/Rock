@@ -1,12 +1,14 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web;
-using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
-
-using Rock.Helpers;
 
 namespace Rock.Web.Cache
 {
@@ -139,13 +141,13 @@ namespace Rock.Web.Cache
         private int _routeId = -1;
 
         /// <summary>
-        /// Gets a <see cref="Rock.Helpers.PageReference"/> for the current page
+        /// Gets a <see cref="Rock.Web.UI.PageReference"/> for the current page
         /// </summary>
-        public PageReference PageReference 
+        public Rock.Web.UI.PageReference PageReference 
         {
             get
             {
-                return new PageReference( Id, RouteId );
+                return new Rock.Web.UI.PageReference( Id, RouteId );
             }
         }
 
@@ -156,7 +158,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return Rock.Web.UI.Page.BuildUrl( new Rock.Helpers.PageReference( this.Id, -1 ), null, null );
+                return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( this.Id, -1 ), null, null );
             }
         }
 
@@ -449,7 +451,7 @@ namespace Rock.Web.Cache
         /// <param name="parms">Dictionary of parameters</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms )
         {
-            return Rock.Web.UI.Page.BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, null );
+            return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, null );
         }
 
         /// <summary>
@@ -460,7 +462,7 @@ namespace Rock.Web.Cache
         /// <param name="queryString">Querystring to include paramters from</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
-            return Rock.Web.UI.Page.BuildUrl( new Rock.Helpers.PageReference( pageId, -1 ), parms, queryString );
+            return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, queryString );
         }
 
         /// <summary>
@@ -468,7 +470,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
-        public string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms )
+        public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms )
         {
             return Rock.Web.UI.Page.BuildUrl( pageRef, parms, null );
         }
@@ -479,7 +481,7 @@ namespace Rock.Web.Cache
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
-        public string BuildUrl( Rock.Helpers.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
             return Rock.Web.UI.Page.BuildUrl( pageRef, parms, queryString );
         }

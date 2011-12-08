@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a HtmlContent object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.HtmlContent Get( string id );
+        Rock.CMS.DTO.HtmlContent Get( string id );
 
 		/// <summary>
 		/// Gets a HtmlContent object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.HtmlContent ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.HtmlContent ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a HtmlContent object
 		/// </summary>
         [OperationContract]
-        void UpdateHtmlContent( string id, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent );
+        void UpdateHtmlContent( string id, Rock.CMS.DTO.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Updates a HtmlContent object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateHtmlContent( string id, string apiKey, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent );
+        void ApiUpdateHtmlContent( string id, string apiKey, Rock.CMS.DTO.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Creates a new HtmlContent object
 		/// </summary>
         [OperationContract]
-        void CreateHtmlContent( Rock.DataTransferObjects.CMS.HtmlContent HtmlContent );
+        void CreateHtmlContent( Rock.CMS.DTO.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Creates a new HtmlContent object
 		/// </summary>
         [OperationContract]
-        void ApiCreateHtmlContent( string apiKey, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent );
+        void ApiCreateHtmlContent( string apiKey, Rock.CMS.DTO.HtmlContent HtmlContent );
 
 		/// <summary>
 		/// Deletes a HtmlContent object

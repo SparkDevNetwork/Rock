@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a Block object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Block Get( string id );
+        Rock.CMS.DTO.Block Get( string id );
 
 		/// <summary>
 		/// Gets a Block object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.Block ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.Block ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a Block object
 		/// </summary>
         [OperationContract]
-        void UpdateBlock( string id, Rock.DataTransferObjects.CMS.Block Block );
+        void UpdateBlock( string id, Rock.CMS.DTO.Block Block );
 
 		/// <summary>
 		/// Updates a Block object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateBlock( string id, string apiKey, Rock.DataTransferObjects.CMS.Block Block );
+        void ApiUpdateBlock( string id, string apiKey, Rock.CMS.DTO.Block Block );
 
 		/// <summary>
 		/// Creates a new Block object
 		/// </summary>
         [OperationContract]
-        void CreateBlock( Rock.DataTransferObjects.CMS.Block Block );
+        void CreateBlock( Rock.CMS.DTO.Block Block );
 
 		/// <summary>
 		/// Creates a new Block object
 		/// </summary>
         [OperationContract]
-        void ApiCreateBlock( string apiKey, Rock.DataTransferObjects.CMS.Block Block );
+        void ApiCreateBlock( string apiKey, Rock.CMS.DTO.Block Block );
 
 		/// <summary>
 		/// Deletes a Block object

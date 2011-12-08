@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.CRM
+namespace Rock.CRM.DTO
 {
     /// <summary>
     /// Person Data Transfer Object.

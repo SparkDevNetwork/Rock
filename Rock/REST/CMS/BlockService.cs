@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a Block object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.Block Get( string id )
+        public Rock.CMS.DTO.Block Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a Block object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.Block ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.Block ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a Block object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateBlock( string id, Rock.DataTransferObjects.CMS.Block Block )
+        public void UpdateBlock( string id, Rock.CMS.DTO.Block Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a Block object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateBlock( string id, string apiKey, Rock.DataTransferObjects.CMS.Block Block )
+        public void ApiUpdateBlock( string id, string apiKey, Rock.CMS.DTO.Block Block )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Block object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateBlock( Rock.DataTransferObjects.CMS.Block Block )
+        public void CreateBlock( Rock.CMS.DTO.Block Block )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Block object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateBlock( string apiKey, Rock.DataTransferObjects.CMS.Block Block )
+        public void ApiCreateBlock( string apiKey, Rock.CMS.DTO.Block Block )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

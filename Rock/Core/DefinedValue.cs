@@ -112,13 +112,13 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="DefinedValueDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.DefinedValue"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.DefinedValue DataTransferObject
+		public Rock.Core.DTO.DefinedValue DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.DefinedValue dto = new Rock.DataTransferObjects.Core.DefinedValue();
+				Rock.Core.DTO.DefinedValue dto = new Rock.Core.DTO.DefinedValue();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

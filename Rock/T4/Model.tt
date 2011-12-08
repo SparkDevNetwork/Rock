@@ -272,13 +272,13 @@ namespace Rock<#= projectNamespace #>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="<#= Entity #>DTO"/> object.
+        /// A <see cref="Rock<#= projectNamespace #>.DTO.<#= Entity #>"/> object.
         /// </value>
-		public Rock.DataTransferObjects<#= projectNamespace #>.<#= Entity #> DataTransferObject
+		public Rock<#= projectNamespace #>.DTO.<#= Entity #> DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects<#= projectNamespace #>.<#= Entity #> dto = new Rock.DataTransferObjects<#= projectNamespace #>.<#= Entity #>();
+				Rock<#= projectNamespace #>.DTO.<#= Entity #> dto = new Rock<#= projectNamespace #>.DTO.<#= Entity #>();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 <#
@@ -506,7 +506,7 @@ namespace Rock<#= projectNamespace #>
 //
 using System;
 
-namespace Rock.DataTransferObjects<#= projectNamespace #>
+namespace Rock<#= projectNamespace #>.DTO
 {
     /// <summary>
     /// <#= TemplateHelper.SplitCase( Entity ) #> Data Transfer Object.
@@ -736,37 +736,37 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> Get( string id );
+        Rock.<#= Namespace #>.DTO.<#= Entity #> Get( string id );
 
 		/// <summary>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> ApiGet( string id, string apiKey );
+        Rock.<#= Namespace #>.DTO.<#= Entity #> ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void Update<#= Entity #>( string id, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+        void Update<#= Entity #>( string id, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
 		/// Updates a <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+        void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void Create<#= Entity #>( Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+        void Create<#= Entity #>( Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
         [OperationContract]
-        void ApiCreate<#= Entity #>( string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> );
+        void ApiCreate<#= Entity #>( string apiKey, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> );
 
 		/// <summary>
 		/// Deletes a <#= Entity #> object
@@ -822,7 +822,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> Get( string id )
+        public Rock.<#= Namespace #>.DTO.<#= Entity #> Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -844,7 +844,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Gets a <#= Entity #> object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> ApiGet( string id, string apiKey )
+        public Rock.<#= Namespace #>.DTO.<#= Entity #> ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -870,7 +870,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Updates a <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void Update<#= Entity #>( string id, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        public void Update<#= Entity #>( string id, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -895,7 +895,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Updates a <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        public void ApiUpdate<#= Entity #>( string id, string apiKey, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -924,7 +924,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void Create<#= Entity #>( Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        public void Create<#= Entity #>( Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -945,7 +945,7 @@ namespace Rock.REST<#= projectNamespace #>
 		/// Creates a new <#= Entity #> object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreate<#= Entity #>( string apiKey, Rock.DataTransferObjects.<#= Namespace #>.<#= Entity #> <#= Entity #> )
+        public void ApiCreate<#= Entity #>( string apiKey, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

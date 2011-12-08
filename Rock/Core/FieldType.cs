@@ -114,13 +114,13 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="FieldTypeDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.FieldType"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.FieldType DataTransferObject
+		public Rock.Core.DTO.FieldType DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.FieldType dto = new Rock.DataTransferObjects.Core.FieldType();
+				Rock.Core.DTO.FieldType dto = new Rock.Core.DTO.FieldType();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

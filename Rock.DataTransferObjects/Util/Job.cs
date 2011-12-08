@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.Util
+namespace Rock.Util.DTO
 {
     /// <summary>
     /// Job Data Transfer Object.

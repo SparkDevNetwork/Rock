@@ -113,13 +113,13 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="AttributeQualifierDTO"/> object.
+        /// A <see cref="Rock.Core.DTO.AttributeQualifier"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Core.AttributeQualifier DataTransferObject
+		public Rock.Core.DTO.AttributeQualifier DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Core.AttributeQualifier dto = new Rock.DataTransferObjects.Core.AttributeQualifier();
+				Rock.Core.DTO.AttributeQualifier dto = new Rock.Core.DTO.AttributeQualifier();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

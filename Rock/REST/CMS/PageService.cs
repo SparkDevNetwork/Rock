@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a Page object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.Page Get( string id )
+        public Rock.CMS.DTO.Page Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a Page object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.Page ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.Page ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a Page object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePage( string id, Rock.DataTransferObjects.CMS.Page Page )
+        public void UpdatePage( string id, Rock.CMS.DTO.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a Page object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdatePage( string id, string apiKey, Rock.DataTransferObjects.CMS.Page Page )
+        public void ApiUpdatePage( string id, string apiKey, Rock.CMS.DTO.Page Page )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Page object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePage( Rock.DataTransferObjects.CMS.Page Page )
+        public void CreatePage( Rock.CMS.DTO.Page Page )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new Page object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreatePage( string apiKey, Rock.DataTransferObjects.CMS.Page Page )
+        public void ApiCreatePage( string apiKey, Rock.CMS.DTO.Page Page )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

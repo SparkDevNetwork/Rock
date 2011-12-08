@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.AttributeQualifier Get( string id );
+        Rock.Core.DTO.AttributeQualifier Get( string id );
 
 		/// <summary>
 		/// Gets a AttributeQualifier object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.AttributeQualifier ApiGet( string id, string apiKey );
+        Rock.Core.DTO.AttributeQualifier ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void UpdateAttributeQualifier( string id, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
+        void UpdateAttributeQualifier( string id, Rock.Core.DTO.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Updates a AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateAttributeQualifier( string id, string apiKey, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
+        void ApiUpdateAttributeQualifier( string id, string apiKey, Rock.Core.DTO.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Creates a new AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void CreateAttributeQualifier( Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
+        void CreateAttributeQualifier( Rock.Core.DTO.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Creates a new AttributeQualifier object
 		/// </summary>
         [OperationContract]
-        void ApiCreateAttributeQualifier( string apiKey, Rock.DataTransferObjects.Core.AttributeQualifier AttributeQualifier );
+        void ApiCreateAttributeQualifier( string apiKey, Rock.Core.DTO.AttributeQualifier AttributeQualifier );
 
 		/// <summary>
 		/// Deletes a AttributeQualifier object

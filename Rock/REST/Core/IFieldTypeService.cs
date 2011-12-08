@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a FieldType object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.FieldType Get( string id );
+        Rock.Core.DTO.FieldType Get( string id );
 
 		/// <summary>
 		/// Gets a FieldType object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.FieldType ApiGet( string id, string apiKey );
+        Rock.Core.DTO.FieldType ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a FieldType object
 		/// </summary>
         [OperationContract]
-        void UpdateFieldType( string id, Rock.DataTransferObjects.Core.FieldType FieldType );
+        void UpdateFieldType( string id, Rock.Core.DTO.FieldType FieldType );
 
 		/// <summary>
 		/// Updates a FieldType object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateFieldType( string id, string apiKey, Rock.DataTransferObjects.Core.FieldType FieldType );
+        void ApiUpdateFieldType( string id, string apiKey, Rock.Core.DTO.FieldType FieldType );
 
 		/// <summary>
 		/// Creates a new FieldType object
 		/// </summary>
         [OperationContract]
-        void CreateFieldType( Rock.DataTransferObjects.Core.FieldType FieldType );
+        void CreateFieldType( Rock.Core.DTO.FieldType FieldType );
 
 		/// <summary>
 		/// Creates a new FieldType object
 		/// </summary>
         [OperationContract]
-        void ApiCreateFieldType( string apiKey, Rock.DataTransferObjects.Core.FieldType FieldType );
+        void ApiCreateFieldType( string apiKey, Rock.Core.DTO.FieldType FieldType );
 
 		/// <summary>
 		/// Deletes a FieldType object

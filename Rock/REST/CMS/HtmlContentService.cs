@@ -30,7 +30,7 @@ namespace Rock.REST.CMS
 		/// Gets a HtmlContent object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CMS.HtmlContent Get( string id )
+        public Rock.CMS.DTO.HtmlContent Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CMS
 		/// Gets a HtmlContent object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CMS.HtmlContent ApiGet( string id, string apiKey )
+        public Rock.CMS.DTO.HtmlContent ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CMS
 		/// Updates a HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateHtmlContent( string id, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent )
+        public void UpdateHtmlContent( string id, Rock.CMS.DTO.HtmlContent HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CMS
 		/// Updates a HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateHtmlContent( string id, string apiKey, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent )
+        public void ApiUpdateHtmlContent( string id, string apiKey, Rock.CMS.DTO.HtmlContent HtmlContent )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CMS
 		/// Creates a new HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateHtmlContent( Rock.DataTransferObjects.CMS.HtmlContent HtmlContent )
+        public void CreateHtmlContent( Rock.CMS.DTO.HtmlContent HtmlContent )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CMS
 		/// Creates a new HtmlContent object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateHtmlContent( string apiKey, Rock.DataTransferObjects.CMS.HtmlContent HtmlContent )
+        public void ApiCreateHtmlContent( string apiKey, Rock.CMS.DTO.HtmlContent HtmlContent )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

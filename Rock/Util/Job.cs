@@ -212,13 +212,13 @@ namespace Rock.Util
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="JobDTO"/> object.
+        /// A <see cref="Rock.Util.DTO.Job"/> object.
         /// </value>
-		public Rock.DataTransferObjects.Util.Job DataTransferObject
+		public Rock.Util.DTO.Job DataTransferObject
 		{
 			get 
 			{ 
-				Rock.DataTransferObjects.Util.Job dto = new Rock.DataTransferObjects.Util.Job();
+				Rock.Util.DTO.Job dto = new Rock.Util.DTO.Job();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;

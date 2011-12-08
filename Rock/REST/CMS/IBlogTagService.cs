@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a BlogTag object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogTag Get( string id );
+        Rock.CMS.DTO.BlogTag Get( string id );
 
 		/// <summary>
 		/// Gets a BlogTag object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.BlogTag ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.BlogTag ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a BlogTag object
 		/// </summary>
         [OperationContract]
-        void UpdateBlogTag( string id, Rock.DataTransferObjects.CMS.BlogTag BlogTag );
+        void UpdateBlogTag( string id, Rock.CMS.DTO.BlogTag BlogTag );
 
 		/// <summary>
 		/// Updates a BlogTag object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateBlogTag( string id, string apiKey, Rock.DataTransferObjects.CMS.BlogTag BlogTag );
+        void ApiUpdateBlogTag( string id, string apiKey, Rock.CMS.DTO.BlogTag BlogTag );
 
 		/// <summary>
 		/// Creates a new BlogTag object
 		/// </summary>
         [OperationContract]
-        void CreateBlogTag( Rock.DataTransferObjects.CMS.BlogTag BlogTag );
+        void CreateBlogTag( Rock.CMS.DTO.BlogTag BlogTag );
 
 		/// <summary>
 		/// Creates a new BlogTag object
 		/// </summary>
         [OperationContract]
-        void ApiCreateBlogTag( string apiKey, Rock.DataTransferObjects.CMS.BlogTag BlogTag );
+        void ApiCreateBlogTag( string apiKey, Rock.CMS.DTO.BlogTag BlogTag );
 
 		/// <summary>
 		/// Deletes a BlogTag object

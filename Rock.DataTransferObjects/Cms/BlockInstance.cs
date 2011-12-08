@@ -12,7 +12,7 @@
 //
 using System;
 
-namespace Rock.DataTransferObjects.CMS
+namespace Rock.CMS.DTO
 {
     /// <summary>
     /// Block Instance Data Transfer Object.

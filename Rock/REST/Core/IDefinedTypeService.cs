@@ -24,37 +24,37 @@ namespace Rock.REST.Core
 		/// Gets a DefinedType object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.DefinedType Get( string id );
+        Rock.Core.DTO.DefinedType Get( string id );
 
 		/// <summary>
 		/// Gets a DefinedType object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.Core.DefinedType ApiGet( string id, string apiKey );
+        Rock.Core.DTO.DefinedType ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a DefinedType object
 		/// </summary>
         [OperationContract]
-        void UpdateDefinedType( string id, Rock.DataTransferObjects.Core.DefinedType DefinedType );
+        void UpdateDefinedType( string id, Rock.Core.DTO.DefinedType DefinedType );
 
 		/// <summary>
 		/// Updates a DefinedType object
 		/// </summary>
         [OperationContract]
-        void ApiUpdateDefinedType( string id, string apiKey, Rock.DataTransferObjects.Core.DefinedType DefinedType );
+        void ApiUpdateDefinedType( string id, string apiKey, Rock.Core.DTO.DefinedType DefinedType );
 
 		/// <summary>
 		/// Creates a new DefinedType object
 		/// </summary>
         [OperationContract]
-        void CreateDefinedType( Rock.DataTransferObjects.Core.DefinedType DefinedType );
+        void CreateDefinedType( Rock.Core.DTO.DefinedType DefinedType );
 
 		/// <summary>
 		/// Creates a new DefinedType object
 		/// </summary>
         [OperationContract]
-        void ApiCreateDefinedType( string apiKey, Rock.DataTransferObjects.Core.DefinedType DefinedType );
+        void ApiCreateDefinedType( string apiKey, Rock.Core.DTO.DefinedType DefinedType );
 
 		/// <summary>
 		/// Deletes a DefinedType object

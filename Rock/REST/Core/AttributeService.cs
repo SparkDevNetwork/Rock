@@ -30,7 +30,7 @@ namespace Rock.REST.Core
 		/// Gets a Attribute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.Core.Attribute Get( string id )
+        public Rock.Core.DTO.Attribute Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.Core
 		/// Gets a Attribute object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.Core.Attribute ApiGet( string id, string apiKey )
+        public Rock.Core.DTO.Attribute ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.Core
 		/// Updates a Attribute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdateAttribute( string id, Rock.DataTransferObjects.Core.Attribute Attribute )
+        public void UpdateAttribute( string id, Rock.Core.DTO.Attribute Attribute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.Core
 		/// Updates a Attribute object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdateAttribute( string id, string apiKey, Rock.DataTransferObjects.Core.Attribute Attribute )
+        public void ApiUpdateAttribute( string id, string apiKey, Rock.Core.DTO.Attribute Attribute )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.Core
 		/// Creates a new Attribute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreateAttribute( Rock.DataTransferObjects.Core.Attribute Attribute )
+        public void CreateAttribute( Rock.Core.DTO.Attribute Attribute )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.Core
 		/// Creates a new Attribute object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreateAttribute( string apiKey, Rock.DataTransferObjects.Core.Attribute Attribute )
+        public void ApiCreateAttribute( string apiKey, Rock.Core.DTO.Attribute Attribute )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

@@ -24,37 +24,37 @@ namespace Rock.REST.CMS
 		/// Gets a PageRoute object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.PageRoute Get( string id );
+        Rock.CMS.DTO.PageRoute Get( string id );
 
 		/// <summary>
 		/// Gets a PageRoute object
 		/// </summary>
 		[OperationContract]
-        Rock.DataTransferObjects.CMS.PageRoute ApiGet( string id, string apiKey );
+        Rock.CMS.DTO.PageRoute ApiGet( string id, string apiKey );
 
 		/// <summary>
 		/// Updates a PageRoute object
 		/// </summary>
         [OperationContract]
-        void UpdatePageRoute( string id, Rock.DataTransferObjects.CMS.PageRoute PageRoute );
+        void UpdatePageRoute( string id, Rock.CMS.DTO.PageRoute PageRoute );
 
 		/// <summary>
 		/// Updates a PageRoute object
 		/// </summary>
         [OperationContract]
-        void ApiUpdatePageRoute( string id, string apiKey, Rock.DataTransferObjects.CMS.PageRoute PageRoute );
+        void ApiUpdatePageRoute( string id, string apiKey, Rock.CMS.DTO.PageRoute PageRoute );
 
 		/// <summary>
 		/// Creates a new PageRoute object
 		/// </summary>
         [OperationContract]
-        void CreatePageRoute( Rock.DataTransferObjects.CMS.PageRoute PageRoute );
+        void CreatePageRoute( Rock.CMS.DTO.PageRoute PageRoute );
 
 		/// <summary>
 		/// Creates a new PageRoute object
 		/// </summary>
         [OperationContract]
-        void ApiCreatePageRoute( string apiKey, Rock.DataTransferObjects.CMS.PageRoute PageRoute );
+        void ApiCreatePageRoute( string apiKey, Rock.CMS.DTO.PageRoute PageRoute );
 
 		/// <summary>
 		/// Deletes a PageRoute object

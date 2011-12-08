@@ -1,16 +1,17 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock.Address;
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration.Address
 {
@@ -27,8 +28,8 @@ namespace RockWeb.Blocks.Administration.Address
             if ( PageInstance.Authorized( "Configure", CurrentUser ) )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
             }
 
             base.OnInit( e );
@@ -67,7 +68,7 @@ namespace RockWeb.Blocks.Administration.Address
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             var services = GeocodeContainer.Instance.Services.ToList();
             var movedItem = services[e.OldIndex];

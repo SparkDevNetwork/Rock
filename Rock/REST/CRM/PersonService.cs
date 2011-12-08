@@ -30,7 +30,7 @@ namespace Rock.REST.CRM
 		/// Gets a Person object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.DataTransferObjects.CRM.Person Get( string id )
+        public Rock.CRM.DTO.Person Get( string id )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -52,7 +52,7 @@ namespace Rock.REST.CRM
 		/// Gets a Person object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.DataTransferObjects.CRM.Person ApiGet( string id, string apiKey )
+        public Rock.CRM.DTO.Person ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -78,7 +78,7 @@ namespace Rock.REST.CRM
 		/// Updates a Person object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePerson( string id, Rock.DataTransferObjects.CRM.Person Person )
+        public void UpdatePerson( string id, Rock.CRM.DTO.Person Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -103,7 +103,7 @@ namespace Rock.REST.CRM
 		/// Updates a Person object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdatePerson( string id, string apiKey, Rock.DataTransferObjects.CRM.Person Person )
+        public void ApiUpdatePerson( string id, string apiKey, Rock.CRM.DTO.Person Person )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -132,7 +132,7 @@ namespace Rock.REST.CRM
 		/// Creates a new Person object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePerson( Rock.DataTransferObjects.CRM.Person Person )
+        public void CreatePerson( Rock.CRM.DTO.Person Person )
         {
             var currentUser = System.Web.Security.Membership.GetUser();
             if ( currentUser == null )
@@ -153,7 +153,7 @@ namespace Rock.REST.CRM
 		/// Creates a new Person object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreatePerson( string apiKey, Rock.DataTransferObjects.CRM.Person Person )
+        public void ApiCreatePerson( string apiKey, Rock.CRM.DTO.Person Person )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
