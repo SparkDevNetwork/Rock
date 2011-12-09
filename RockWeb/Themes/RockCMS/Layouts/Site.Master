@@ -3,28 +3,35 @@
 
 <html>
 <head runat="server">
-
+    <meta charset="utf-8">
     <title></title>
     
     <!--[if lt IE 9]>
         <script src="<%# ResolveUrl("~/Themes/RockCMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
-    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/reset-core.css") %>" />
-    <link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>" />
-	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>" />
-	<link type="text/css" rel="stylesheet" href="<%# ResolveUrl("~/CSS/smoothness/jquery-ui-1.8.12.custom.css") %>" />
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width" />
+
+	<!-- Included CSS Files -->
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/base.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
+
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 <body>
 
-        <form id="form1" runat="server">
+    <form id="form1" runat="server">
             
-                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
             
-        </form>
+    </form>
 
+    
 </body>
 </html>

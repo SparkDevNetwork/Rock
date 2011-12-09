@@ -2,68 +2,104 @@
     AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="RockWeb.Themes.RockCMS.Layouts.Default" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-            <div id="page-wrapper">
-                <header class="group">
-                    <h1>Rock ChMS</h1>
-                    <section class="user">
-                        <asp:Literal ID="lUserName" runat="server"></asp:Literal> <asp:LoginStatus ID="LoginStatus1" runat="server" LogoutAction="Redirect" LogoutPageUrl="~/page/1" />
-                    </section>
+    <header class="topbar topbar-inner">
+		<section class="container">
+			<div class="row">
+				<div class="three columns">
+					<a href="/rock" class="logo">Home</a>
 
-                    <asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
-                    <asp:PlaceHolder ID="Menu" runat="server"></asp:PlaceHolder>
+				</div>
+				<div class="five columns offset-by-four content">
+					<asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
+                    <div class="account-name">Hello <asp:Literal ID="lUserName" runat="server" /></div> 
+					<div class="account-actions">
+						<a href="">My Account</a> | 
+						<a href="">Logout</a>
+					</div>
+					
+					<div class="filter-search">
 
-                </header>
-                
-                <div id="main-content" class="group">
-                    <div class="content-left column">
-                        <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
-                    </div>
+						<input id="search-words">
+						<div class="filter">People</div>
+					</div>
+				</div>
+				
+				
+			</div>
+			<div class="row">
+				<nav class="twelve columns">
+					<asp:PlaceHolder ID="Menu" runat="server"></asp:PlaceHolder>
 
-                    <div class="content-right column">
-                        <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
-                    </div>
+					<a href="" id="header-lock">Lock</a>
+				</nav>
+			</div>
+		</section>
+	</header>            
+    
+    <div id="content">        
+        <section id="page-title">
+		    <div class="row">	
+			    <h1>Jon Edmiston</h1>
 
-                    <div class="content-center column">
-                        <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
-                    </div>
-                </div>
-                
-                <div id="upper-band">
-                    <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
-                </div>
+		    </div>
+	    </section>
 
-                <div id="lower-band">
-                    <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
-                </div>
-                
+	    <section class="row container">     
+  
+            <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
+            <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
+            <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
+            <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>           
+            <p>test this</p>
+             <p>test this</p>
+              <p>test this</p>
+               <p>test this</p>
+                <p>test this</p>
+                 <p>test this</p>
+                  <p>test this</p>
+                   <p>test this</p>
+                    <p>test this</p>
+                     <p>test this</p>
+        </section>
+	</div>
 
-                <div id="lower-content" class="group">
-                    <div class="content-left column">
-                        <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
-                    </div>
+	<footer>
+		<div class="row">
+		    <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
+		</div>
+	</footer>        
 
-                    <div class="content-right column">
-                        <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
-                    </div>
+    <script>
+        /* script to manage header lock */
+        $(document).ready(function () {
+            var headerIsLocked = localStorage.getItem("rock-header-lock");
 
-                    <div class="content-center column">
-                        <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>
-                    </div>
-                    <!-- May need to use http://www.cssnewbie.com/equalheights-jquery-plugin/ to get columns of equal height -->
-                </div>
-                
-                <footer class="group">
-                    <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
-                    <div id="footer-base" class="group">
-                        <p id="footer-confidential">The information and data contained in this system is the property
-                            of <insert organization name>/  Thos granted access are reminded to deny requests for giving
-                            out addresses, emails, phone numbers, etc. or to use the information for anything other than
-                            this organization's activities.</p>
-                        <p id="footer-license">Rock ChMS is an open-source project by the <a href="">Spark Development 
-                            Network</a> <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img id="imgCC" runat="server" height="15" width="80" /></a> </p>
-                    </div>
-                </footer>
-                 
-            </div>
+            if (headerIsLocked == "false") {
+                $('#header-lock').toggleClass('unlock');
+                $('header.topbar').toggleClass('unlock');
+                $('#content').toggleClass('unlock');
+            }
+        });
+
+        $('#header-lock').click(function () {
+            $('#header-lock').toggleClass('unlock');
+            $('header.topbar').toggleClass('unlock');
+            $('body > section.content').toggleClass('unlock');
+
+            if ($('#header-lock').hasClass('unlock')) {
+                localStorage.setItem('rock-header-lock', 'false');
+            }
+            else {
+                localStorage.setItem('rock-header-lock', 'true');
+            }
+
+            e.preventDefault();
+        });
+	</script>
+            
 </asp:Content>
 
