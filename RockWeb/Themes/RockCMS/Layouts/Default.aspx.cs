@@ -17,7 +17,7 @@ namespace RockWeb.Themes.RockCMS.Layouts
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
-            imgCC.Src = this.ThemePath + "/Assets/Images/cc-license.png";
+            
         }
 
         protected override void DefineZones()
