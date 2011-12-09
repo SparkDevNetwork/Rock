@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.Caching;
+using System.Linq;
 
 namespace Rock.Web.Cache
 {
@@ -228,7 +229,7 @@ namespace Rock.Web.Cache
                     blockInstance.AttributeIds.Add( attribute.Id );
 
             blockInstance.AuthEntity = blockInstanceModel.AuthEntity;
-            blockInstance.SupportedActions = blockInstanceModel.SupportedActions;
+            blockInstance.InstanceActions = blockInstanceModel.SupportedActions;
 
             return blockInstance;
         }
@@ -265,7 +266,19 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The list of actions that this class supports.
         /// </summary>
-        public List<string> SupportedActions { get; set; }
+        public List<string> SupportedActions 
+        {
+            get 
+            {
+                List<string> combinedActions = new List<string>();
+                combinedActions.AddRange(InstanceActions);
+                combinedActions.AddRange(BlockActions);
+                return combinedActions;
+            }
+        }
+
+        internal List<string> InstanceActions { get; set; }
+        internal List<string> BlockActions { get; set; }
 
         /// <summary>
         /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
