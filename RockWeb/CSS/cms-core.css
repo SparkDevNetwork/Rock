@@ -251,7 +251,7 @@ article.blog-post header ul li:last-child:after {
 
 .login .facebook-login {
     float: right;  
-    margin: 80px 25px 0 0; 
+    margin: -2850px 15px 0 0; 
 }
 
 .login .forgot {
@@ -263,6 +263,4 @@ article.blog-post header ul li:last-child:after {
     padding-left: .5em;
     
 }
-
-/* default popup styling */
 

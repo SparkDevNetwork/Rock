@@ -60,6 +60,6 @@
 
 <asp:PlaceHolder ID="phFacebookLogin" runat="server">
     <div class="facebook-login">
-        <asp:ImageButton ID="ibFacebookLogin" runat="server" ImageUrl="~/Assets/Images/fb-login.png" BorderStyle="None" OnClick="ibFacebookLogin_Click" class="image" />
+        <asp:ImageButton ID="ibFacebookLogin" runat="server" ImageUrl="~/Assets/Images/facebook-login.png" BorderStyle="None" OnClick="ibFacebookLogin_Click" class="image" />
     </div>
 </asp:PlaceHolder>
