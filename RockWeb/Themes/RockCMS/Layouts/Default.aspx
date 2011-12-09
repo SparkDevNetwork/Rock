@@ -10,18 +10,14 @@
 
 				</div>
 				<div class="five columns offset-by-four content">
-					<asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
-                    <div class="account-name">Hello <asp:Literal ID="lUserName" runat="server" /></div> 
-					<div class="account-actions">
-						<a href="">My Account</a> | 
-						<a href="">Logout</a>
-					</div>
-					
-					<div class="filter-search">
 
+					<asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
+
+					<div class="filter-search">
 						<input id="search-words">
 						<div class="filter">People</div>
 					</div>
+
 				</div>
 				
 				
