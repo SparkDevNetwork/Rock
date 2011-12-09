@@ -299,13 +299,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( string name )
         {
-            if ( Page.RouteData.Values.ContainsKey( name ) )
-                return ( string )Page.RouteData.Values[name];
-
-            if ( String.IsNullOrEmpty( Request.QueryString[name] ) )
-                return string.Empty;
-            else
-                return Request.QueryString[name];
+            return ( ( Rock.Web.UI.Page )this.Page ).PageParameter( name );
         }
 
         /// <summary>
