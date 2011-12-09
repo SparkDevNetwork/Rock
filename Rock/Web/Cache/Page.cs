@@ -427,6 +427,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Adds a meta tag to the page header priore to the page being rendered
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="htmlMeta">The HTML meta tag.</param>
+        public void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
+        {
+            Rock.Web.UI.Page.AddMetaTag( page, htmlMeta );
+        }
+
+        /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered
         /// </summary>
         public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )

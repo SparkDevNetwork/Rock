@@ -273,6 +273,13 @@ namespace Rock.Web.UI
                 Page.Form.Controls.AddAt( 0, sm );
             }
 
+            // Add a Rock version meta tag
+            string version = typeof(Rock.Web.UI.Page).Assembly.GetName().Version.ToString();
+            HtmlMeta rockVersion = new HtmlMeta();
+            rockVersion.Attributes.Add( "name", "generator" );
+            rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
+            AddMetaTag( this.Page, rockVersion );
+
             // Get current user/person info
             MembershipUser user = CurrentUser;
 
@@ -410,7 +417,11 @@ namespace Rock.Web.UI
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
+                                    {
                                         block.CreateAttributes();
+                                        block.ReadAdditionalActions();
+                                        blockInstance.Block.InstancePropertiesVerified = true;
+                                    }
 
                                     // Add the block configuration scripts and icons if user is authorized
                                     AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
@@ -748,6 +759,67 @@ namespace Rock.Web.UI
                 htmlLink.Attributes.Add( "media", mediaType );
 
             AddHtmlLink( page, htmlLink );
+        }
+
+        /// <summary>
+        /// Adds a meta tag.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="htmlMeta">The HTML meta tag.</param>
+        public static void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
+        {
+            if (page != null && page.Header != null)
+                if ( !HtmlMetaExists( page, htmlMeta ) )
+                {
+                    // Find last meta element
+                    int index = 0;
+                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                        if ( page.Header.Controls[i] is HtmlMeta )
+                        {
+                            index = i;
+                            break;
+                        }
+
+                    if ( index == page.Header.Controls.Count )
+                    {
+                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
+                        page.Header.Controls.Add( htmlMeta );
+                    }
+                    else
+                    {
+                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                        page.Header.Controls.AddAt( ++index, htmlMeta );
+                    }
+                }
+        }
+
+        private static bool HtmlMetaExists( System.Web.UI.Page page, HtmlMeta newMeta )
+        {
+            bool existsAlready = false;
+
+            if ( page != null && page.Header != null )
+                foreach ( Control control in page.Header.Controls )
+                    if ( control is HtmlMeta )
+                    {
+                        HtmlMeta existingMeta = ( HtmlMeta )control;
+
+                        bool sameAttributes = true;
+
+                        foreach ( string attributeKey in newMeta.Attributes.Keys )
+                            if ( existingMeta.Attributes[attributeKey] != null &&
+                                existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
+                            {
+                                sameAttributes = false;
+                                break;
+                            }
+
+                        if ( sameAttributes )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+            return existsAlready;
         }
 
         /// <summary>

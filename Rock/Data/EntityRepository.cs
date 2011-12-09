@@ -165,7 +165,7 @@ namespace Rock.Data
         {
             var entityChanges = new List<Core.EntityChange>();
 
-            _context.ChangeTracker.DetectChanges();
+            Context.ChangeTracker.DetectChanges();
 
             List<object> addedEntities = new List<object>();
             List<object> deletedEntities = new List<object>();
@@ -180,7 +180,7 @@ namespace Rock.Data
                 {
                     case System.Data.EntityState.Added:
 
-                        entityChanges.Concat( GetEntityChanges( entry.Entity ) );
+                        entityChanges.Concat( GetEntityChanges( entry.Entity, PersonId ) );
 
                         addedEntities.Add( entry.Entity );
 
@@ -211,7 +211,7 @@ namespace Rock.Data
                             }
                             else
                             {
-                                entityChanges.Concat( GetEntityChanges( model ) );
+                                entityChanges.AddRange( GetEntityChanges( model, PersonId ) );
 
                                 modifiedEntities.Add( entry.Entity );
 
@@ -254,7 +254,7 @@ namespace Rock.Data
             return entityChanges;
         }
 
-        private List<Rock.Core.EntityChange> GetEntityChanges( object entity )
+        private List<Rock.Core.EntityChange> GetEntityChanges( object entity, int? personId )
         {
             List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
 
@@ -262,13 +262,16 @@ namespace Rock.Data
             if ( !( entity is Rock.Core.EntityChange ) )
             {
                 Type entityType = entity.GetType();
+                if ( entity is Rock.Data.IModel )
+                    entityType = entityType.BaseType;
 
                 Guid changeSet = Guid.NewGuid();
 
                 // Look for properties that have the "TrackChanges" attribute
                 foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
                 {
-                    if ( TrackChanges( propInfo.GetCustomAttributes( true ) ) )
+                    object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
+                    if ( customAttributes.Length > 0 )
                     {
                         var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
                         var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
@@ -286,6 +289,8 @@ namespace Rock.Data
                             change.Property = propInfo.Name;
                             change.OriginalValue = originalValue.ToString();
                             change.CurrentValue = currentValue.ToString();
+                            change.CreatedByPersonId = personId;
+                            change.CreatedDateTime = DateTime.Now;
 
                             entityChanges.Add( change );
                         }
@@ -294,14 +299,6 @@ namespace Rock.Data
             }
 
             return entityChanges;
-        }
-
-        private static bool TrackChanges( Object[] customAttributes )
-        {
-            foreach ( object attribute in customAttributes )
-                if ( attribute is TrackChangesAttribute )
-                    return true;
-            return false;
         }
     }
 }
