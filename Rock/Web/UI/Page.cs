@@ -103,6 +103,13 @@ namespace Rock.Web.UI
                     return user;
                 }
             }
+            private set
+            {
+                if (value != null)
+                    Context.Items.Add("CurrentUser", value);
+                else
+                    Context.Items.Remove("CurrentUser");
+            }
         }
 
         /// <summary>
@@ -132,7 +139,10 @@ namespace Rock.Web.UI
 
             private set
             {
-                Context.Items.Add( "CurrentPerson", value );
+                if (value != null)
+                    Context.Items.Add( "CurrentPerson", value );
+                else
+                    Context.Items.Remove("CurrentPerson");
             }
         }
         
@@ -279,6 +289,15 @@ namespace Rock.Web.UI
             rockVersion.Attributes.Add( "name", "generator" );
             rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
             AddMetaTag( this.Page, rockVersion );
+
+            // If the logout parameter was entered, delete the user's forms authentication cookie
+            if ( PageParameter( "logout" ) != string.Empty )
+            {
+                FormsAuthentication.SignOut();
+                CurrentPerson = null;
+                CurrentUser = null;
+                Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
+            }
 
             // Get current user/person info
             MembershipUser user = CurrentUser;
@@ -731,6 +750,24 @@ namespace Rock.Web.UI
         #endregion
 
         #region Static Helper Methods
+
+        /// <summary>
+        /// Checks the page's RouteData values and then the query string for a
+        /// parameter matching the specified name, and if found returns the string
+        /// value
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public string PageParameter( string name )
+        {
+            if ( Page.RouteData.Values.ContainsKey( name ) )
+                return ( string )Page.RouteData.Values[name];
+
+            if ( String.IsNullOrEmpty( Request.QueryString[name] ) )
+                return string.Empty;
+            else
+                return Request.QueryString[name];
+        }
 
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
