@@ -75,16 +75,12 @@
             var headerIsLocked = localStorage.getItem("rock-header-lock");
 
             if (headerIsLocked == "false") {
-                $('#header-lock').toggleClass('unlock');
-                $('header.topbar').toggleClass('unlock');
-                $('#content').toggleClass('unlock');
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');                
             }
         });
 
         $('#header-lock').click(function () {
-            $('#header-lock').toggleClass('unlock');
-            $('header.topbar').toggleClass('unlock');
-            $('body > section.content').toggleClass('unlock');
+            $('#content, #header-lock, header.topbar').toggleClass('unlock');
 
             if ($('#header-lock').hasClass('unlock')) {
                 localStorage.setItem('rock-header-lock', 'false');
