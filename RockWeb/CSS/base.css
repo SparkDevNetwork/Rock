@@ -982,6 +982,10 @@ fieldset.stacked dd .inputs-list li label {
 	font-weight: normal;
 }
 
+dd {
+    margin-bottom: 12px;
+}
+
 dd label {
 	width: auto;
 	float: none;
