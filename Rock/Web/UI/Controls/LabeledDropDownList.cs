@@ -47,10 +47,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( string.Format( @"<label for=""{0}"">{1}</label> ",
-                this.ClientID, LabelText ) );
-
+            writer.Write( string.Format( @"<dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
             base.Render( writer );
+            writer.Write( @"</dd>" );
         }
 
     }

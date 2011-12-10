@@ -389,3 +389,20 @@ header.topbar nav ul > li:hover .nav-menu {
 	text-align: left;
 	color: #595959;
 }
+
+.modal-body
+{
+    background: url("../assets/images/ajax-loader.gif") center center no-repeat;
+}
+
+#modal-popup-iframe
+{
+    height: 100%;
+    width: 100%;
+}
+
+#dialog #content
+{
+    margin: 0;
+    padding: 0;
+}

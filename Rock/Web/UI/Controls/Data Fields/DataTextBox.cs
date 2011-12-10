@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -13,9 +14,34 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataTextBox runat=server></{0}:DataTextBox>" )]
-    public class DataTextBox : LabeledTextBox
+    public class DataTextBox : TextBox
     {
         private Validation.DataAnnotationValidator validator;
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string LabelText
+        {
+            get
+            {
+                string s = ViewState["LabelText"] as string;
+                return s == null ? string.Empty : s;
+            }
+            set
+            {
+                ViewState["LabelText"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the name of the assembly qualified name of the entity that is being validated
@@ -77,8 +103,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            writer.Write( string.Format( @"<dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
             base.Render( writer );
             validator.RenderControl( writer );
+            writer.Write( @"</dd>" );
         }
 
         /// <summary>
@@ -90,8 +118,6 @@ namespace Rock.Web.UI.Controls
             validator.ID = "dav";
             validator.ControlToValidate = this.ID;
             validator.ForeColor = System.Drawing.Color.Red;
-
-            Controls.Add( validator );
 
             base.CreateChildControls();
         }

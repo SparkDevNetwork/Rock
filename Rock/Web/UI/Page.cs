@@ -1,4 +1,4 @@
-﻿//
+﻿
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -290,7 +290,8 @@ namespace Rock.Web.UI
             rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
             AddMetaTag( this.Page, rockVersion );
 
-            // If the logout parameter was entered, delete the user's forms authentication cookie
+            // If the logout parameter was entered, delete the user's forms authentication cookie and redirect them
+            // back to the same page.
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
@@ -376,9 +377,12 @@ namespace Rock.Web.UI
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
-                    AddPopupControls();
-                    if (canConfigPage)
-                        AddConfigElements();
+                    if ( PageInstance.IncludeAdminFooter )
+                    {
+                        AddPopupControls();
+                        if ( canConfigPage )
+                            AddConfigElements();
+                    }
 
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Web.Cache.BlockInstance blockInstance in PageInstance.BlockInstances )
@@ -443,7 +447,8 @@ namespace Rock.Web.UI
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized
-                                    AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
+                                    if (PageInstance.IncludeAdminFooter)
+                                        AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
 
                                     // Add the block
                                     blockWrapper.Controls.Add( control );
@@ -501,14 +506,15 @@ namespace Rock.Web.UI
                         // Page Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
-                        aAttributes.Attributes.Add( "class", "properties icon-button show-iframe-dialog" );
+                        aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
+                        aAttributes.Attributes.Add( "height", "400px" );
                         aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
                         aAttributes.Attributes.Add( "title", "Page Properties" );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
-                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-iframe-dialog" );
+                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-modal-iframe" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
 
@@ -522,7 +528,7 @@ namespace Rock.Web.UI
                         // Page Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-iframe-dialog" );
+                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-modal-iframe" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
@@ -604,20 +610,49 @@ namespace Rock.Web.UI
             AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
             // Add iFrame popup div.  
-            HtmlGenericControl modalDiv = new HtmlGenericControl( "div" );
-            modalDiv.ClientIDMode = ClientIDMode.AutoID;
-            modalDiv.Attributes.Add( "id", "modalDiv" );
-            this.Form.Controls.Add( modalDiv );
+            HtmlGenericControl modalPopup = new HtmlGenericControl( "div" );
+            modalPopup.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            modalPopup.ID = "modal-popup";
+            modalPopup.Attributes.Add( "class", "modal hide fade" );
+            this.Form.Controls.Add( modalPopup );
+
+            HtmlGenericControl modalHeader = new HtmlGenericControl( "div" );
+            modalHeader.Attributes.Add( "class", "modal-header" );
+            modalPopup.Controls.Add( modalHeader );
+
+            HtmlGenericControl modalClose = new HtmlGenericControl( "a" );
+            modalClose.Attributes.Add( "href", "#" );
+            modalClose.Attributes.Add( "class", "close" );
+            modalClose.InnerHtml = "&times;";
+            modalHeader.Controls.Add( modalClose );
+
+            HtmlGenericControl modalHeading = new HtmlGenericControl( "h3" );
+            modalHeader.Controls.Add( modalHeading );
+
+            HtmlGenericControl modalBody = new HtmlGenericControl( "div" );
+            modalBody.Attributes.Add( "class", "modal-body" );
+            modalPopup.Controls.Add( modalBody );
+
+            HtmlGenericControl modalFooter = new HtmlGenericControl( "div" );
+            modalFooter.Attributes.Add( "class", "modal-footer" );
+            modalPopup.Controls.Add( modalFooter );
+
+            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
+            modalPrimary.Attributes.Add( "href", "#" );
+            modalPrimary.Attributes.Add( "class", "btn primary" );
+            modalPrimary.InnerText = "Save";
+            modalFooter.Controls.Add( modalPrimary );
+
+            HtmlGenericControl modalSecondary = new HtmlGenericControl( "a" );
+            modalSecondary.ID = "modal-cancel";
+            modalSecondary.Attributes.Add( "href", "#" );
+            modalSecondary.Attributes.Add( "class", "btn secondary" );
+            modalSecondary.InnerText = "Cancel";
+            modalFooter.Controls.Add( modalSecondary );
 
             HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
-            modalIFrame.Attributes.Add( "id", "modalIFrame" );
-            modalIFrame.Attributes.Add( "width", "100%" );
-            modalIFrame.Attributes.Add( "height", "545px" );
-            modalIFrame.Attributes.Add( "marginWidth", "0" );
-            modalIFrame.Attributes.Add( "marginHeight", "0" );
-            modalIFrame.Attributes.Add( "frameBorder", "0" );
-            modalIFrame.Attributes.Add( "scrolling", "auto" );
-            modalDiv.Controls.Add( modalIFrame );
+            modalIFrame.ID = "modal-popup-iframe";
+            modalBody.Controls.Add( modalIFrame );
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
@@ -714,7 +749,7 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfig.Controls.Add( aBlockConfig );
-                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-iframe-dialog" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format("~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
@@ -961,25 +996,8 @@ namespace Rock.Web.UI
                 genericControl.Attributes.Add( "src", relativePath );
                 genericControl.Attributes.Add( "type", "text/javascript" );
 
-                int index = 0;
-                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                    if ( page.Header.Controls[i] is HtmlGenericControl ||
-                         page.Header.Controls[i] is LiteralControl )
-                    {
-                        index = i;
-                        break;
-                    }
-
-                if ( index == page.Header.Controls.Count )
-                {
-                    page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                    page.Header.Controls.Add( genericControl );
-                }
-                else
-                {
-                    page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                    page.Header.Controls.AddAt( ++index, genericControl );
-                }
+                page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
+                page.Header.Controls.Add( genericControl );
             }
         }
 

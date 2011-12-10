@@ -3021,25 +3021,6 @@
             A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
             </summary>
         </member>
-        <member name="T:Rock.Web.UI.Controls.LabeledDropDownList">
-            <summary>
-            A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.LabeledDropDownList.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.LabelText">
-            <summary>
-            Gets or sets the label text.
-            </summary>
-            <value>
-            The label text.
-            </value>
-        </member>
         <member name="M:Rock.Web.UI.Controls.DataDropDownList.Render(System.Web.UI.HtmlTextWriter)">
             <summary>
             Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
@@ -3050,6 +3031,14 @@
             <summary>
             Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
             </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataDropDownList.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
         </member>
         <member name="P:Rock.Web.UI.Controls.DataDropDownList.SourceTypeName">
             <summary>
@@ -5834,6 +5823,14 @@
             Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
             </summary>
         </member>
+        <member name="P:Rock.Web.UI.Controls.DataTextBox.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
         <member name="P:Rock.Web.UI.Controls.DataTextBox.SourceTypeName">
             <summary>
             Gets or sets the name of the assembly qualified name of the entity that is being validated
@@ -5862,6 +5859,25 @@
             </summary>
             <param name="requestContext"></param>
             <returns></returns>
+        </member>
+        <member name="T:Rock.Security.AdditionalActionsAttribute">
+            <summary>
+            A class Attribute that can be used by objects that implement ISecured to add additional supported actions
+            </summary>
+        </member>
+        <member name="M:Rock.Security.AdditionalActionsAttribute.#ctor(System.String[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Security.AdditionalActionsAttribute"/> class.
+            </summary>
+            <param name="actions">The actions.</param>
+        </member>
+        <member name="P:Rock.Security.AdditionalActionsAttribute.AdditionalActions">
+            <summary>
+            Gets or sets the additional actions to support
+            </summary>
+            <value>
+            The Actions.
+            </value>
         </member>
         <member name="T:Rock.CRM.Address">
             <summary>
@@ -7678,6 +7694,25 @@
             </summary>
             <value>
             A <see cref="T:Rock.CRM.Person"/> object.
+            </value>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledDropDownList">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledDropDownList.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
             </value>
         </member>
         <member name="T:Rock.Web.Cache.BlockInstance">
@@ -13865,23 +13900,44 @@
             True/False value of whether the address was standardized was succesfully
             </returns>
         </member>
-        <member name="T:Rock.Security.AdditionalActionsAttribute">
+        <member name="T:Rock.Web.UI.Controls.DataCheckBox">
             <summary>
-            A class Attribute that can be used by objects that implement ISecured to add additional supported actions
+            A composite control that renders a label, checkbox, and datavalidation control for a specific field of a data model
             </summary>
         </member>
-        <member name="M:Rock.Security.AdditionalActionsAttribute.#ctor(System.String[])">
+        <member name="M:Rock.Web.UI.Controls.DataCheckBox.Render(System.Web.UI.HtmlTextWriter)">
             <summary>
-            Initializes a new instance of the <see cref="T:Rock.Security.AdditionalActionsAttribute"/> class.
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
             </summary>
-            <param name="actions">The actions.</param>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         </member>
-        <member name="P:Rock.Security.AdditionalActionsAttribute.AdditionalActions">
+        <member name="M:Rock.Web.UI.Controls.DataCheckBox.CreateChildControls">
             <summary>
-            Gets or sets the additional actions to support
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataCheckBox.LabelText">
+            <summary>
+            Gets or sets the label text.
             </summary>
             <value>
-            The Actions.
+            The label text.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataCheckBox.SourceTypeName">
+            <summary>
+            Gets or sets the name of the assembly qualified name of the entity that is being validated
+            </summary>
+            <value>
+            The name of the assembly qualified type name.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataCheckBox.PropertyName">
+            <summary>
+            Gets or sets the name of the entity property.
+            </summary>
+            <value>
+            The name of the entity property.
             </value>
         </member>
     </members>
