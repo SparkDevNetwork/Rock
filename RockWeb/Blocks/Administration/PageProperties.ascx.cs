@@ -26,8 +26,10 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _page.Authorized( "Configure", CurrentUser ) )
                 {
-                    foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack ) )
-                        olProperties.Controls.Add( li );
+                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
+                    fsAttributes.Visible = attributeControls.Count > 0;
+                    foreach ( HtmlGenericControl dl in attributeControls )
+                        fsAttributes.Controls.Add( dl );
                 }
                 else
                 {
@@ -101,17 +103,14 @@ namespace RockWeb.Blocks.Administration
                 
                 pageService.Save( page, CurrentPersonId );
 
-                Rock.Attribute.Helper.GetEditValues( olProperties, _page );
+                Rock.Attribute.Helper.GetEditValues( fsAttributes, _page );
                 _page.SaveAttributeValues( CurrentPersonId );
 
                 Rock.Web.Cache.Page.Flush( _page.Id );
             }
 
-            phClose.Controls.AddAt(0, new LiteralControl( @"
-    <script type='text/javascript'>
-        window.parent.$('#modalDiv').dialog('close');
-    </script>
-" ));
+            string script = "window.parent.closeModal()";
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
         }
 
         private void LoadDropdowns()

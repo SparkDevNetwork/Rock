@@ -11,10 +11,10 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
+    /// A composite control that renders a label, checkbox, and datavalidation control for a specific field of a data model
     /// </summary>
-    [ToolboxData( "<{0}:DataDropDownList runat=server></{0}:DataDropDownList>" )]
-    public class DataDropDownList : DropDownList
+    [ToolboxData( "<{0}:DataCheckBox runat=server></{0}:DataCheckBox>" )]
+    public class DataCheckBox : CheckBox
     {
         private Validation.DataAnnotationValidator validator;
 
@@ -98,7 +98,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )

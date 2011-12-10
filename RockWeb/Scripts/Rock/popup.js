@@ -1,34 +1,47 @@
-﻿$(document).ready(function () {
+﻿function closeModal() {
+    $('#modal-popup').modal('hide');
+}
+
+$(document).ready(function () {
 
     // Wire up the iframe div as a popup dialog
-    $('#modalDiv').dialog({
-        autoOpen: false,
-        width: 580,
-        height: 600,
-        modal: true
+    $('#modal-popup').modal({
+        backdrop: true,
+        keyboard: true
+    });
+
+    // Bind the click event for the close modal button
+    $('#modal-cancel').click(function () {
+        $('#modal-popup').modal('hide');
     });
 
     // Bind the click event for all of the links that use the iframe to show the 
     // modal div/iframe
-    $('a.show-iframe-dialog').click(function () {
+    $('a.show-modal-iframe').click(function () {
 
         // Use the anchor tag's href attribute as the source for the iframe
-        $('#modalIFrame').attr('src', $(this).attr('href'));
+        $('#modal-popup-iframe').attr('src', $(this).attr('href'));
 
-        // 
-        $('#modalDiv').bind('dialogclose', function (event, ui) {
-            if ($(this).attr('instance-id') != undefined)
-                $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
-            $('#modalDiv').unbind('dialogclose');
-            $('#modalIFrame').attr('src', '');
+        $('#modal-popup').bind('hidden', function (event, ui) {
+            //            if ($(this).attr('instance-id') != undefined)
+            //                $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
+            $('#modal-popup-iframe').attr('src', '');
+            $('#modal-popup-iframe').empty();
+            $('#modal-popup').unbind('hidden');
         });
+
+        // If the anchor tag specifies a modal height, set the dialog's height
+        if ($(this).attr('height') != undefined)
+            $('#modal-popup div.modal-body').css('height', $(this).attr('height'));
+        else
+            $('#modal-popup div.modal-body').css('height', '');
 
         // Use the anchor tag's title attribute as the title of the dialog box
         if ($(this).attr('title') != undefined)
-            $('#modalDiv').dialog('option', 'title', $(this).attr('title'));
+            $('#modal-popup h3').html($(this).attr('title'));
 
         // popup the dialog box
-        $('#modalDiv').dialog('open');
+        $('#modal-popup').modal('show');
 
         // Cancel the default behavior of the anchor tag
         return false;

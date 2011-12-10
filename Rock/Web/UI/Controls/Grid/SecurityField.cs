@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
-                aSecure.Attributes.Add( "class", "show-iframe-dialog" );
+                aSecure.Attributes.Add( "class", "show-modal-iframe" );
                 aSecure.Attributes.Add( "href", container.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Security.Authorization.EncodeEntityTypeName( EntityType ), "1" ) ) );
                 aSecure.Attributes.Add( "title", Title );

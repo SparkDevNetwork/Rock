@@ -132,22 +132,28 @@ namespace Rock.Attribute
             if ( item.Attributes != null )
                 foreach ( Rock.Web.Cache.Attribute attribute in item.Attributes )
                 {
-                    HtmlGenericControl li = new HtmlGenericControl( "li" );
-                    li.ID = string.Format( "attribute-{0}", attribute.Id );
-                    li.Attributes.Add( "attribute-key", attribute.Key );
-                    li.ClientIDMode = ClientIDMode.AutoID;
-                    controls.Add( li );
+                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                    dl.ID = string.Format( "attribute-{0}", attribute.Id );
+                    dl.Attributes.Add( "attribute-key", attribute.Key );
+                    dl.ClientIDMode = ClientIDMode.AutoID;
+                    controls.Add( dl );
+
+                    HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                    dl.Controls.Add( dt );
 
                     Label lbl = new Label();
                     lbl.ClientIDMode = ClientIDMode.AutoID;
                     lbl.Text = attribute.Name;
                     lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                    li.Controls.Add( lbl );
+                    dt.Controls.Add( dl );
+
+                    HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                    dl.Controls.Add( dd );
 
                     Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value, setValue );
                     attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
                     attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                    li.Controls.Add( attributeControl );
+                    dd.Controls.Add( attributeControl );
 
                     if ( !string.IsNullOrEmpty( attribute.Description ) )
                     {
@@ -156,7 +162,7 @@ namespace Rock.Attribute
                         a.Attributes.Add( "class", "attribute-description tooltip" );
                         a.InnerHtml = "<span>" + attribute.Description + "</span>";
 
-                        li.Controls.Add( a );
+                        dd.Controls.Add( a );
                     }
                 }
 

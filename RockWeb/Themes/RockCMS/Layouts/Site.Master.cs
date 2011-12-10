@@ -6,7 +6,6 @@ namespace RockWeb.Themes.RockCMS.Layouts
     {
         protected void Page_Load( object sender, EventArgs e )
         {
-
         }
     }
 }
