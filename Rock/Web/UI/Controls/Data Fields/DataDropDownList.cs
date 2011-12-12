@@ -14,8 +14,10 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataDropDownList runat=server></{0}:DataDropDownList>" )]
-    public class DataDropDownList : DropDownList
+    public class DataDropDownList : CompositeControl
     {
+        private Label label;
+        private DropDownList dropDownList;
         private Validation.DataAnnotationValidator validator;
 
         /// <summary>
@@ -34,12 +36,98 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["LabelText"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return label.Text;
             }
             set
             {
-                ViewState["LabelText"] = value;
+                EnsureChildControls();
+                label.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the drop down list text.
+        /// </summary>
+        /// <value>
+        /// The drop down list text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the drop down list." )
+        ]
+        public string Text
+        {
+            get
+            {
+                EnsureChildControls();
+                return dropDownList.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                dropDownList.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected value of the drop down list.
+        /// </summary>
+        /// <value>
+        /// The selected value of the drop down list.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The selected value of the drop down list." )
+        ]
+        public string SelectedValue
+        {
+            get
+            {
+                EnsureChildControls();
+                return dropDownList.SelectedValue;
+            }
+            set
+            {
+                EnsureChildControls();
+                dropDownList.SelectedValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the items of the drop down list.
+        /// </summary>
+        /// <value>
+        /// The items of the drop down list.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Misc" ),
+        DefaultValue( "" ),
+        Description( "The items of the drop down list." )
+        ]
+        public ListItemCollection Items
+        {
+            get
+            {
+                EnsureChildControls();
+                return dropDownList.Items;
+            }
+        }
+
+        /// <summary>
+        /// Gets the drop down list.
+        /// </summary>
+        public DropDownList DropDownList
+        {
+            get
+            {
+                EnsureChildControls();
+                return dropDownList;
             }
         }
 
@@ -98,15 +186,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
+        /// </summary>
+        protected override void RecreateChildControls()
+        {
+            EnsureChildControls();
+        }
+
+        /// <summary>
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( string.Format( @"<dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
-            base.Render( writer );
+            AddAttributesToRender( writer );
+
+            bool isValid = validator.IsValid;
+
+            writer.AddAttribute( "class", isValid ? "" : "error" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+
+            label.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", isValid ? "" : "error" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Dd );
+            dropDownList.RenderControl( writer );
             validator.RenderControl( writer );
-            writer.Write( @"</dd>" );
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -114,12 +221,23 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            Controls.Clear();
+
+            dropDownList = new DropDownList();
+            dropDownList.ID = "ddl";
+
+            label = new Label();
+            label.AssociatedControlID = dropDownList.ID;
+
             validator = new Validation.DataAnnotationValidator();
             validator.ID = "dav";
-            validator.ControlToValidate = this.ID;
+            validator.ControlToValidate = dropDownList.ID;
+            validator.Display = ValidatorDisplay.None;
             validator.ForeColor = System.Drawing.Color.Red;
 
-            base.CreateChildControls();
+            this.Controls.Add( label );
+            this.Controls.Add( dropDownList );
+            this.Controls.Add( validator );
         }
     }
 }

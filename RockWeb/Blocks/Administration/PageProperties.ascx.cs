@@ -69,48 +69,51 @@ namespace RockWeb.Blocks.Administration
         }
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                Rock.CMS.Page page = pageService.Get( _page.Id );
-
-                int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
-                if ( page.ParentPageId != parentPage )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    if (page.ParentPageId.HasValue)
-                        Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                    Rock.CMS.Page page = pageService.Get( _page.Id );
 
-                    if (parentPage != 0)
-                        Rock.Web.Cache.Page.Flush( parentPage );
+                    int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
+                    if ( page.ParentPageId != parentPage )
+                    {
+                        if ( page.ParentPageId.HasValue )
+                            Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+
+                        if ( parentPage != 0 )
+                            Rock.Web.Cache.Page.Flush( parentPage );
+                    }
+
+                    page.Name = tbPageName.Text;
+                    page.Title = tbPageTitle.Text;
+                    if ( parentPage != 0 )
+                        page.ParentPageId = parentPage;
+                    else
+                        page.ParentPageId = null;
+                    page.Layout = ddlLayout.Text;
+                    page.DisplayInNavWhen = ( Rock.CMS.DisplayInNavWhen )Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                    page.MenuDisplayDescription = cbMenuDescription.Checked;
+                    page.MenuDisplayIcon = cbMenuIcon.Checked;
+                    page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+                    page.RequiresEncryption = cbRequiresEncryption.Checked;
+                    page.EnableViewState = cbRequiresEncryption.Checked;
+                    page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
+                    page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                    page.Description = tbDescription.Text;
+
+                    pageService.Save( page, CurrentPersonId );
+
+                    Rock.Attribute.Helper.GetEditValues( fsAttributes, _page );
+                    _page.SaveAttributeValues( CurrentPersonId );
+
+                    Rock.Web.Cache.Page.Flush( _page.Id );
                 }
 
-                page.Name = tbPageName.Text;
-                page.Title = tbPageTitle.Text;
-                if (parentPage != 0)
-                    page.ParentPageId = parentPage;
-                else
-                    page.ParentPageId = null;
-                page.Layout = ddlLayout.Text;
-                page.DisplayInNavWhen = ( Rock.CMS.DisplayInNavWhen )Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
-                page.MenuDisplayDescription = cbMenuDescription.Checked;
-                page.MenuDisplayIcon = cbMenuIcon.Checked;
-                page.MenuDisplayChildPages = cbMenuChildPages.Checked;
-                page.RequiresEncryption = cbRequiresEncryption.Checked;
-                page.EnableViewState = cbRequiresEncryption.Checked;
-                page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                page.Description = tbDescription.Text;
-                
-                pageService.Save( page, CurrentPersonId );
-
-                Rock.Attribute.Helper.GetEditValues( fsAttributes, _page );
-                _page.SaveAttributeValues( CurrentPersonId );
-
-                Rock.Web.Cache.Page.Flush( _page.Id );
+                string script = "window.parent.closeModal()";
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
             }
-
-            string script = "window.parent.closeModal()";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
         }
 
         private void LoadDropdowns()

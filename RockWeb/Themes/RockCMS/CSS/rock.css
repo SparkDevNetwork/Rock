@@ -404,5 +404,5 @@ header.topbar nav ul > li:hover .nav-menu {
 #dialog #content
 {
     margin: 0;
-    padding: 0;
+    padding: 0 15px 0 0;
 }

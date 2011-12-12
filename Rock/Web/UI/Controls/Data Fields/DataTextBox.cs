@@ -14,8 +14,10 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataTextBox runat=server></{0}:DataTextBox>" )]
-    public class DataTextBox : TextBox
+    public class DataTextBox : CompositeControl
     {
+        private Label label;
+        private TextBox textBox;
         private Validation.DataAnnotationValidator validator;
 
         /// <summary>
@@ -34,12 +36,51 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["LabelText"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return label.Text;
             }
             set
             {
-                ViewState["LabelText"] = value;
+                EnsureChildControls();
+                label.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the textbox text.
+        /// </summary>
+        /// <value>
+        /// The textbox text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the textbox." )
+        ]
+        public string Text
+        {
+            get
+            {
+                EnsureChildControls();
+                return textBox.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                textBox.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the text box.
+        /// </summary>
+        public TextBox TextBox
+        {
+            get
+            {
+                EnsureChildControls();
+                return textBox;
             }
         }
 
@@ -98,15 +139,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
+        /// </summary>
+        protected override void RecreateChildControls()
+        {
+            EnsureChildControls();
+        }
+
+        /// <summary>
         /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( string.Format( @"<dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
-            base.Render( writer );
+            AddAttributesToRender( writer );
+
+            bool isValid = validator.IsValid;
+
+            writer.AddAttribute( "class", isValid ? "" : "error" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+            
+            label.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", isValid ? "" : "error" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Dd );
+            textBox.RenderControl( writer );
             validator.RenderControl( writer );
-            writer.Write( @"</dd>" );
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -114,12 +174,23 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            Controls.Clear();
+
+            textBox = new TextBox();
+            textBox.ID = "tb";
+
+            label = new Label();
+            label.AssociatedControlID = textBox.ID;
+
             validator = new Validation.DataAnnotationValidator();
             validator.ID = "dav";
-            validator.ControlToValidate = this.ID;
+            validator.ControlToValidate = textBox.ID;
+            validator.Display = ValidatorDisplay.None;
             validator.ForeColor = System.Drawing.Color.Red;
 
-            base.CreateChildControls();
+            this.Controls.Add( label );
+            this.Controls.Add( textBox );
+            this.Controls.Add( validator );
         }
     }
 }

@@ -14,23 +14,25 @@
 </script>
 <div class="admin-dialog">
 
+    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+
     <fieldset>
         <legend>Basic Settings</legend>
 
         <dl><Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="ParentPageId"></Rock:DataDropDownList></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="ParentPageId"></Rock:DataDropDownList></dl>
 
         <dl><Rock:DataTextBox ID="tbPageName" runat="server"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="Name"></Rock:DataTextBox></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name"></Rock:DataTextBox></dl>
 
         <dl><Rock:DataTextBox ID="tbPageTitle" runat="server"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="Title"></Rock:DataTextBox></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Title"></Rock:DataTextBox></dl>
 
         <dl><Rock:DataDropDownList ID="ddlLayout" runat="server" 
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="Layout"></Rock:DataDropDownList></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Layout"></Rock:DataDropDownList></dl>
     
         <dl><Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="Description"></Rock:DataTextBox></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Description"></Rock:DataTextBox></dl>
 
     </fieldset>
 
@@ -38,16 +40,13 @@
         <legend>Menu Display Options</legend>
 
         <dl><Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="DisplayInNavWhen"></Rock:DataDropDownList></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="DisplayInNavWhen"></Rock:DataDropDownList></dl>
 
-        <dl><Rock:DataCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="MenuDisplayDescription"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"></Rock:LabeledCheckBox></dl>
 
-        <dl><Rock:DataCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Idon"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="MenuDisplayIcon"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Idon"></Rock:LabeledCheckBox></dl>
 
-        <dl><Rock:DataCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="MenuDisplayChildPages"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"></Rock:LabeledCheckBox></dl>
 
     </fieldset>
 
@@ -58,17 +57,14 @@
     <fieldset>
         <legend>Advanced Settings</legend>
 
-        <dl><Rock:DataCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="RequiresEncryption"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"></Rock:LabeledCheckBox></dl>
 
-        <dl><Rock:DataCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="EnableViewState"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"></Rock:LabeledCheckBox></dl>
 
-        <dl><Rock:DataCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration" 
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="IncludeAdminFooter"></Rock:DataCheckBox></dl>
+        <dl><Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"></Rock:LabeledCheckBox></dl>
 
         <dl><Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration"
-            SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="OutputCacheDuration"></Rock:DataTextBox></dl>
+            SourceTypeName="Rock.CMS.Page, Rock" PropertyName="OutputCacheDuration"></Rock:DataTextBox></dl>
 
     </fieldset>
 
