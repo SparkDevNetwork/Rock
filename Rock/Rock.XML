@@ -3037,6 +3037,22 @@
             Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
             </summary>
         </member>
+        <member name="P:Rock.Web.UI.Controls.DataDropDownList.Tip">
+            <summary>
+            Gets or sets the help tip.
+            </summary>
+            <value>
+            The help tip.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataDropDownList.Help">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
+        </member>
         <member name="P:Rock.Web.UI.Controls.DataDropDownList.LabelText">
             <summary>
             Gets or sets the label text.
@@ -4727,6 +4743,22 @@
             </summary>
             <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledTextBox.Tip">
+            <summary>
+            Gets or sets the help tip.
+            </summary>
+            <value>
+            The help tip.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledTextBox.Help">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
+        </member>
         <member name="P:Rock.Web.UI.Controls.LabeledTextBox.LabelText">
             <summary>
             Gets or sets the label text.
@@ -5862,6 +5894,22 @@
             Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
             </summary>
         </member>
+        <member name="P:Rock.Web.UI.Controls.DataTextBox.Tip">
+            <summary>
+            Gets or sets the help tip.
+            </summary>
+            <value>
+            The help tip.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.DataTextBox.Help">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
+        </member>
         <member name="P:Rock.Web.UI.Controls.DataTextBox.LabelText">
             <summary>
             Gets or sets the label text.
@@ -6532,6 +6580,14 @@
             <summary>
             The property that is annotated
             </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Validation.DataAnnotationValidator.Required">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Rock.Web.UI.Validation.DataAnnotationValidator"/> is required.
+            </summary>
+            <value>
+              <c>true</c> if required; otherwise, <c>false</c>.
+            </value>
         </member>
         <member name="T:Rock.ServiceObjects.GeoCoder.Location">
             <remarks/>
@@ -7758,6 +7814,22 @@
             Renders a label and <see cref="T:System.Web.UI.WebControls.DropDownList"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
             </summary>
             <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.Tip">
+            <summary>
+            Gets or sets the help tip.
+            </summary>
+            <value>
+            The help tip.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.Help">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
         </member>
         <member name="P:Rock.Web.UI.Controls.LabeledDropDownList.LabelText">
             <summary>
@@ -12305,6 +12377,41 @@
             <param name="enumValue">The enum value.</param>
             <returns></returns>
         </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledCheckBox">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledCheckBox.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledCheckBox.Tip">
+            <summary>
+            Gets or sets the help tip.
+            </summary>
+            <value>
+            The help tip.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledCheckBox.Help">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledCheckBox.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
         <member name="T:Rock.Web.Cache.Page">
             <summary>
             Information about a page that is required by the rendering engine.
@@ -13951,25 +14058,6 @@
             <returns>
             True/False value of whether the address was standardized was succesfully
             </returns>
-        </member>
-        <member name="T:Rock.Web.UI.Controls.LabeledCheckBox">
-            <summary>
-            A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.LabeledCheckBox.Render(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.LabeledCheckBox.LabelText">
-            <summary>
-            Gets or sets the label text.
-            </summary>
-            <value>
-            The label text.
-            </value>
         </member>
     </members>
 </doc>
