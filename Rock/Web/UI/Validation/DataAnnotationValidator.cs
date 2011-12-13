@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Validation
                 // get the property to validate
                 PropertyInfo property = GetValidatedProperty( source );
 
-                var attributes = property.GetCustomAttributes( typeof( ValidationAttribute ), true ).OfType<ValidationAttribute>();
+                var attributes = property.GetCustomAttributes( typeof( RequiredAttribute ), true ).OfType<RequiredAttribute>();
 
                 return attributes.Count() > 0;
             }

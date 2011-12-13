@@ -1,32 +1,49 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BlockProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.BlockProperties" %>
 
-<asp:PlaceHolder id="phClose" runat="server"></asp:PlaceHolder>
+<script type="text/javascript">
+
+    // If this control is in a modal window, hide this form's save button and bind the modal popup
+    // Save button to this form's save click event
+
+    Sys.Application.add_load(function () {
+
+        if ($('#modal-popup', window.parent.document)) {
+            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+                $('#<%= btnSave.ClientID %>').click();
+            });
+            $('div.admin-dialog .actions').hide();
+        }
+
+    });
+
+</script>
 
 <div class="admin-dialog">
 
-    <fieldset id="fsProperties" runat="server">
-        
-        <ol id="olProperties" runat="server">
-            <li>
-                <asp:Label ID="lblBlockName" runat="server" AssociatedControlID="tbBlockName">Name</asp:Label>
-                <asp:TextBox ID="tbBlockName" runat="server"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvBlockName" runat="server" ControlToValidate="tbBlockName" 
-                        CssClass="failureNotification" ErrorMessage="Name is required." ToolTip="Name is required." 
-                        ValidationGroup="BlockPropertiesValidationGroup">*</asp:RequiredFieldValidator>
-            </li>
-            <li>
-                <asp:Label ID="lblCacheDuration" runat="server" AssociatedControlID="tbCacheDuration">Cache Duration</asp:Label>
-                <asp:TextBox ID="tbCacheDuration" runat="server" Text="0"></asp:TextBox>
-                <asp:RangeValidator ID="rvCacheDuration" runat="server" ControlToValidate="tbCacheDuration" 
-                    MinimumValue="0" MaximumValue="999999999" Type="Integer" CssClass="failureNotification" 
-                    ErrorMessage="Cache Duration must be valid number of seconds" ToolTip="Seconds"
-                    ValidationGroup="BlockPropertiesValidationGroup">*</asp:RangeValidator>
-            </li>
-        </ol>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
 
-    </fieldset>
+    <asp:PlaceHolder ID="phContent" runat="server">
 
-    <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click " />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+
+        <fieldset>
+            <legend>Settings</legend>
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
+        </fieldset>
+
+        <fieldset id="fsAttributes" runat="server" visible="false">
+            <legend>Attributes</legend>
+            <placeholder id="phAttributes" runat="server"></placeholder>
+        </fieldset>
+
+        <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+
+        <div class="actions">
+            <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
+        </div>
+
+    </asp:PlaceHolder>
 
 </div>
 

@@ -89,6 +89,8 @@ namespace Rock.CMS
 		/// Name.
 		/// </value>
 		[MaxLength( 100 )]
+		[TrackChanges]
+		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
 		

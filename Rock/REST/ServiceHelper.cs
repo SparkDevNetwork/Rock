@@ -46,7 +46,7 @@ namespace Rock.REST
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceHelper"/> class.  Creates the MEF catalog
-        /// and container.  Will load all <see cref="IService"/> classes in the Rock.Framework or any dll in 
+        /// and container.  Will load all <see cref="IService"/> classes in the Rock.dll or any dll in 
         /// the Extensions folder
         /// </summary>
         /// <param name="extensionFolder">The extension folder.</param>

@@ -1093,7 +1093,7 @@ fieldset.stacked legend {
 }
 
 a.help-tip {
-	background: url("/assets/icons/question.png") no-repeat center center transparent;
+	background: url("../assets/icons/question.png") no-repeat center center transparent;
     display: inline-block;
     width: 20px;
     height: 20px;

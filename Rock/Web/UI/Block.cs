@@ -210,55 +210,53 @@ namespace Rock.Web.UI
             base.Render( writer );
         }
 
-        /// <summary>
-        /// When an unhandled error occurs in a module, a notification box will be displayed.
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnError( EventArgs e )
-        {
-            DisplayNotification( "Exception", NotificationBoxType.Error,
-                HttpContext.Current.Server.GetLastError().Message );
+        ///// <summary>
+        ///// When an unhandled error occurs in a module, a notification box will be displayed.
+        ///// </summary>
+        ///// <param name="e"></param>
+        //protected override void OnError( EventArgs e )
+        //{
+        //    DisplayNotification( "Exception", NotificationBoxType.Error,
+        //        HttpContext.Current.Server.GetLastError().Message );
 
-            base.OnError( e );
-        }
+        //    base.OnError( e );
+        //}
         #endregion
 
         #region Public Methods
 
-        /// <summary>
-        /// Clear all child controls and add a notification box with error or warning message
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="type"></param>
-        /// <param name="message"></param>
-        public void DisplayNotification( string title, NotificationBoxType type, string message )
-        {
-            this.Controls.Clear();
+        ///// <summary>
+        ///// Clear all child controls and add a notification box with error or warning message
+        ///// </summary>
+        ///// <param name="title"></param>
+        ///// <param name="type"></param>
+        ///// <param name="message"></param>
+        //public void DisplayNotification( string title, NotificationBoxType type, string message )
+        //{
+        //    NotificationBox notification = new NotificationBox();
+        //    notification.Title = title;
+        //    notification.NotificationBoxType = type;
+        //    notification.Text = message;
+        //    this.Controls.Add( notification );
+        //}
 
-            NotificationBox notification = new NotificationBox();
-            notification.Title = title;
-            notification.NotificationBoxType = type;
-            notification.Text = message;
-            this.Controls.Add( notification );
-        }
+        ///// <summary>
+        ///// Clear all child controls and add a notification box with an error message
+        ///// </summary>
+        ///// <param name="message">The message.</param>
+        //public void DisplayError( string message )
+        //{
+        //    DisplayNotification( "Error", NotificationBoxType.Error, message );
+        //}
 
-        /// <summary>
-        /// Clear all child controls and add a notification box with an error message
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void DisplayError( string message )
-        {
-            DisplayNotification( "Error", NotificationBoxType.Error, message );
-        }
-
-        /// <summary>
-        /// Clear all child controls and add a notification box with a warning message
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void DisplayWarning( string message )
-        {
-            DisplayNotification( "Warning", NotificationBoxType.Warning, message );
-        }
+        ///// <summary>
+        ///// Clear all child controls and add a notification box with a warning message
+        ///// </summary>
+        ///// <param name="message">The message.</param>
+        //public void DisplayWarning( string message )
+        //{
+        //    DisplayNotification( "Warning", NotificationBoxType.Warning, message );
+        //}
 
         /// <summary>
         /// Returns the current blockinstance value for the selected attribute
@@ -340,9 +338,10 @@ namespace Rock.Web.UI
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
-                aAttributes.Attributes.Add("href", ResolveUrl(string.Format("~/BlockProperties/{0}", BlockInstance.Id)));
+                aAttributes.Attributes.Add( "height", "400px" );
+                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}", BlockInstance.Id ) ) );
                 aAttributes.Attributes.Add("title", "Block Properties");
-                aAttributes.Attributes.Add("instance-id", BlockInstance.Id.ToString());
+                //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
             }
 

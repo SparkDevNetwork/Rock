@@ -22,7 +22,7 @@
             <legend>Child Page</legend>
             <ol>
                 <li>
-                    <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock.Framework" PropertyName="Name" />
+                    <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name" />
                 </li>
                 <li>
                     <asp:Label ID="lblLayout" runat="server" AssociatedControlID="ddlLayout">Layout</asp:Label>

@@ -16,7 +16,7 @@ namespace Rock.FieldTypes
         /// <summary>
         /// Instantiates an instance of a specific field type based on the assembly and class name of the field type
         /// </summary>
-        /// <param name="assembly">Assembly Name (i.e. Rock.Framework)</param>
+        /// <param name="assembly">Assembly Name (i.e. Rock)</param>
         /// <param name="typeName">Class Name (i.e. Rock.FieldTypes.Text)</param>
         /// <returns></returns>
         public static IFieldType InstantiateFieldType( string assembly, string typeName )
