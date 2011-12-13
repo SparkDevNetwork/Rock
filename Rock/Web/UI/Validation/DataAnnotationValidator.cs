@@ -33,6 +33,28 @@ namespace Rock.Web.UI.Validation
         /// </summary>
         public string PropertyName { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="DataAnnotationValidator"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public bool Required
+        {
+            get
+            {
+                // get the type that we are going to validate
+                Type source = GetValidatedType();
+
+                // get the property to validate
+                PropertyInfo property = GetValidatedProperty( source );
+
+                var attributes = property.GetCustomAttributes( typeof( ValidationAttribute ), true ).OfType<ValidationAttribute>();
+
+                return attributes.Count() > 0;
+            }
+        }
+
         #endregion
 
         #region Methods

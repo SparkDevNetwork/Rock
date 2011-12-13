@@ -21,6 +21,56 @@ namespace Rock.Web.UI.Controls
         private Validation.DataAnnotationValidator validator;
 
         /// <summary>
+        /// Gets or sets the help tip.
+        /// </summary>
+        /// <value>
+        /// The help tip.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help tip." )
+        ]
+        public string Tip
+        {
+            get
+            {
+                string s = ViewState["Tip"] as string;
+                return s == null ? string.Empty : s;
+            }
+            set
+            {
+                ViewState["Tip"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                string s = ViewState["Help"] as string;
+                return s == null ? string.Empty : s;
+            }
+            set
+            {
+                ViewState["Help"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the label text.
         /// </summary>
         /// <value>
@@ -204,15 +254,40 @@ namespace Rock.Web.UI.Controls
             bool isValid = validator.IsValid;
 
             writer.AddAttribute( "class", isValid ? "" : "error" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+            writer.RenderBeginTag( HtmlTextWriterTag.Dl );
 
+            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+            if ( validator.Required )
+                writer.AddAttribute( "class", "required" );
             label.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", isValid ? "" : "error" );
             writer.RenderBeginTag( HtmlTextWriterTag.Dd );
             dropDownList.RenderControl( writer );
             validator.RenderControl( writer );
+
+            if ( Tip.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "help-tip" );
+                writer.AddAttribute( "href", "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( "help" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( Tip.Trim() );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
+
+            if ( Help.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "help-block" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( Tip.Trim() );
+                writer.RenderEndTag();
+            }
+
+            writer.RenderEndTag();
+
             writer.RenderEndTag();
         }
 

@@ -957,6 +957,51 @@ dl.dt {
 	float: left;
 }
 
+dl.error label {
+	color: #B94A48;
+}
+
+dl.error input, dl.error textarea {
+	border-color: #EE5F5B;
+    color: #B94A48;
+}
+
+dl.error input:focus, dl.error textarea:focus {
+	-webkit-box-shadow: 0 0 6px #f8b9b7;
+  	-moz-box-shadow: 0 0 6px #f8b9b7;
+  	box-shadow: 0 0 6px #f8b9b7;
+}
+
+dl.success label {
+	color: #468847;
+}
+
+dl.success input, dl.success textarea {
+	border-color: #468847;
+    color: #468847;
+}
+
+dl.success input:focus, dl.success textarea:focus {
+  -webkit-box-shadow: 0 0 6px #9acc9a;
+  -moz-box-shadow: 0 0 6px #9acc9a;
+  box-shadow: 0 0 6px #9acc9a;
+}
+
+dl.warning label {
+	color: #c09853;
+}
+
+dl.warning input, dl.warning textarea {
+	border-color: #c09853;
+    color: #c09853;
+}
+
+dl.warning input:focus, dl.warning textarea:focus {
+  -webkit-box-shadow: 0 0 6px #e5d6b1;
+  -moz-box-shadow: 0 0 6px #e5d6b1;
+  box-shadow: 0 0 6px #e5d6b1;
+}
+
 label.required:after {
 	content:" *";
 	color: red;
