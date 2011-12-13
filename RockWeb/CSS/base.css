@@ -1933,8 +1933,10 @@ footer {
   -o-transition: 0.1s linear all;
   transition: 0.1s linear all;
 }
-.btn:hover {
-  background-position: 0 -15px;
+.btn:hover 
+{
+  /* TODO add background hover that is a white gradient with an light alpha */
+  --background-position: 0 -15px;
   color: #333;
   text-decoration: none;
 }
