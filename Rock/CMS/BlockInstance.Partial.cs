@@ -5,6 +5,9 @@
 //
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+using Rock.Data;
 
 namespace Rock.CMS
 {
@@ -29,4 +32,17 @@ namespace Rock.CMS
             return this.Name;
         }
     }
+
+#pragma warning disable
+
+    public class CommentBlockInstance
+    {
+        [TrackChanges]
+        [Required( ErrorMessage = "Name is required" )]
+        public string Name { get; set; }
+    }
+
+#pragma warning restore
+
+
 }

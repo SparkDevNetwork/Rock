@@ -33,7 +33,7 @@ namespace Rock.Address
     /// </code>
     /// </summary>
     [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
-    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock.Framework", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock", "Rock.FieldTypes.Boolean" )]
     public abstract class StandardizeService : Rock.Attribute.IHasAttributes
     {
         /// <summary>

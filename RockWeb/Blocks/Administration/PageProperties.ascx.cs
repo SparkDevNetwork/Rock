@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Administration
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
                     fsAttributes.Visible = attributeControls.Count > 0;
                     foreach ( HtmlGenericControl dl in attributeControls )
-                        fsAttributes.Controls.Add( dl );
+                        phAttributes.Controls.Add( dl );
                 }
                 else
                 {
@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Administration
 
             base.OnLoad( e );
         }
+
         protected void btnSave_Click(object sender, EventArgs e)
         {
             if ( Page.IsValid )
@@ -105,7 +106,7 @@ namespace RockWeb.Blocks.Administration
 
                     pageService.Save( page, CurrentPersonId );
 
-                    Rock.Attribute.Helper.GetEditValues( fsAttributes, _page );
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                     _page.SaveAttributeValues( CurrentPersonId );
 
                     Rock.Web.Cache.Page.Flush( _page.Id );
@@ -137,6 +138,15 @@ namespace RockWeb.Blocks.Administration
             ddlParentPage.Items.Add(new ListItem(pageName, page.Id.ToString()));
             foreach(var childPage in page.Pages)
                 AddPage(childPage, level + 1);
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+
+            phContent.Visible = false;
         }
     }
 }

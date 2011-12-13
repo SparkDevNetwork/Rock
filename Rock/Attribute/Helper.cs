@@ -145,7 +145,7 @@ namespace Rock.Attribute
                     lbl.ClientIDMode = ClientIDMode.AutoID;
                     lbl.Text = attribute.Name;
                     lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                    dt.Controls.Add( dl );
+                    dt.Controls.Add( lbl );
 
                     HtmlGenericControl dd = new HtmlGenericControl( "dd" );
                     dl.Controls.Add( dd );
@@ -159,8 +159,9 @@ namespace Rock.Attribute
                     {
                         HtmlAnchor a = new HtmlAnchor();
                         a.ClientIDMode = ClientIDMode.AutoID;
-                        a.Attributes.Add( "class", "attribute-description tooltip" );
-                        a.InnerHtml = "<span>" + attribute.Description + "</span>";
+                        a.Attributes.Add( "class", "help-tip" );
+                        a.HRef = "#";
+                        a.InnerHtml = "help<span>" + attribute.Description + "</span>";
 
                         dd.Controls.Add( a );
                     }

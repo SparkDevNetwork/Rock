@@ -88,13 +88,13 @@ namespace Rock.Attribute
         /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
         /// <see cref="Description"/> is initialized as an empty string.
         /// <see cref="DefaultValue"/> is initialized as an empty string.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
+        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         public PropertyAttribute(int order, string name )
-            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
+            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -105,14 +105,14 @@ namespace Rock.Attribute
         /// <remarks>
         /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
         /// <see cref="DefaultValue"/> is initialized as an empty string.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
+        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         public PropertyAttribute(int order, string name, string description )
-            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock.Framework", "Rock.FieldTypes.Text" )
+            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -122,7 +122,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <remarks>
         /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
+        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
@@ -130,7 +130,7 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
         public PropertyAttribute(int order, string name, string description, string defaultValue )
-            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
+            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 
@@ -138,7 +138,7 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field.
         /// </summary>
         /// <remarks>
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock.Framework</c>
+        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
         /// </remarks>
         /// <param name="order">The order.</param>
@@ -147,7 +147,7 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
         public PropertyAttribute(int order, string name, string key, string description, string defaultValue )
-            : this(order, name, key, description, defaultValue, "Rock.Framework", "Rock.FieldTypes.Text" )
+            : this(order, name, key, description, defaultValue, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 

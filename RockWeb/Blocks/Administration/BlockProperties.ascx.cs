@@ -17,8 +17,6 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
-
             try
             {
                 int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
@@ -26,11 +24,10 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _blockInstance.Authorized( "Configure", CurrentUser ) )
                 {
-                    tbBlockName.Text = _blockInstance.Name;
-                    tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
-
-                    foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack ) )
-                        olProperties.Controls.Add( li );
+                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
+                    fsAttributes.Visible = attributeControls.Count > 0;
+                    foreach ( HtmlGenericControl dl in attributeControls )
+                        phAttributes.Controls.Add( dl );
                 }
                 else
                 {
@@ -41,32 +38,54 @@ namespace RockWeb.Blocks.Administration
             {
                 DisplayError( ex.Message );
             }
+
+            base.OnInit( e );
         }
 
-        protected void btnSave_Click(object sender, EventArgs e)
+        protected override void OnLoad( EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            if ( !Page.IsPostBack && _blockInstance.Authorized( "Configure", CurrentUser ) )
             {
-                Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
-
-                Rock.Attribute.Helper.LoadAttributes( blockInstance );
-
-                blockInstance.Name = tbBlockName.Text;
-                blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                blockInstanceService.Save( blockInstance, CurrentPersonId );
-
-                Rock.Attribute.Helper.GetEditValues( olProperties, _blockInstance );
-                _blockInstance.SaveAttributeValues( CurrentPersonId );
-
-                Rock.Web.Cache.BlockInstance.Flush( _blockInstance.Id );
+                tbBlockName.Text = _blockInstance.Name;
+                tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
             }
 
-            phClose.Controls.AddAt(0, new LiteralControl( @"
-    <script type='text/javascript'>
-        window.parent.$('#modalDiv').dialog('close');
-    </script>
-" ));
+            base.OnLoad( e );
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            if ( Page.IsValid )
+            {
+                using ( new Rock.Data.UnitOfWorkScope() )
+                {
+                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
+                    Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+
+                    Rock.Attribute.Helper.LoadAttributes( blockInstance );
+
+                    blockInstance.Name = tbBlockName.Text;
+                    blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                    blockInstanceService.Save( blockInstance, CurrentPersonId );
+
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, _blockInstance );
+                    _blockInstance.SaveAttributeValues( CurrentPersonId );
+
+                    Rock.Web.Cache.BlockInstance.Flush( _blockInstance.Id );
+                }
+
+                string script = "window.parent.closeModal()";
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
+            }
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+
+            phContent.Visible = false;
         }
     }
 }
