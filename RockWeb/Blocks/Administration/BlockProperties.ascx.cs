@@ -25,9 +25,8 @@ namespace RockWeb.Blocks.Administration
                 if ( _blockInstance.Authorized( "Configure", CurrentUser ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
-                    fsAttributes.Visible = attributeControls.Count > 0;
-                    foreach ( HtmlGenericControl dl in attributeControls )
-                        phAttributes.Controls.Add( dl );
+                    foreach ( HtmlGenericControl fs in attributeControls )
+                        phAttributes.Controls.Add( fs );
                 }
                 else
                 {
@@ -51,6 +50,14 @@ namespace RockWeb.Blocks.Administration
             }
 
             base.OnLoad( e );
+        }
+
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( Page.IsPostBack && !Page.IsValid )
+                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _blockInstance );
         }
 
         protected void btnSave_Click( object sender, EventArgs e )

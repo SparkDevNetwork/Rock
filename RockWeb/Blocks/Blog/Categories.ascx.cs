@@ -11,6 +11,7 @@ using System.Web;
 
 namespace RockWeb.Blocks.Blog
 {
+    [Rock.Attribute.Property( 0, "Heading", "", "The heading to show above the list of categories.", true, "Categories" )]
     public partial class Categories : Rock.Web.UI.Block
     {
         protected void Page_Init( object sender, EventArgs e )

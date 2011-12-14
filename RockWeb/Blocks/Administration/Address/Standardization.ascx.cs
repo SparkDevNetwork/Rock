@@ -83,9 +83,10 @@ namespace RockWeb.Blocks.Administration.Address
                 int order = 0;
                 foreach ( KeyValuePair<int, Lazy<StandardizeService, IStandardizeServiceData>> service in services )
                 {
-                    foreach ( Rock.Web.Cache.Attribute attribute in service.Value.Value.Attributes )
-                        if ( attribute.Key == "Order" )
-                            Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
+                    foreach ( var category in service.Value.Value.Attributes )
+                        foreach ( var attribute in category.Value )
+                            if ( attribute.Key == "Order" )
+                                Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
                     order++;
                 }
             }
@@ -141,8 +142,9 @@ namespace RockWeb.Blocks.Administration.Address
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
-            foreach ( Rock.Web.Cache.Attribute attribute in service.Attributes )
-                Rock.Attribute.Helper.SaveAttributeValue( service, attribute, service.AttributeValues[attribute.Key].Value, CurrentPersonId );
+            foreach ( var category in service.Attributes )
+                foreach ( var attribute in category.Value )
+                    Rock.Attribute.Helper.SaveAttributeValue( service, attribute, service.AttributeValues[attribute.Key].Value, CurrentPersonId );
 
             hfServiceId.Value = string.Empty;
 

@@ -93,6 +93,14 @@ namespace Rock.Core.DTO
 		public string Name { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Category.
+		/// </summary>
+		/// <value>
+		/// Category.
+		/// </value>
+		public string Category { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Description.
 		/// </summary>
 		/// <value>
@@ -123,6 +131,14 @@ namespace Rock.Core.DTO
 		/// Default Value.
 		/// </value>
 		public string DefaultValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Required.
+		/// </summary>
+		/// <value>
+		/// Required.
+		/// </value>
+		public bool Required { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.

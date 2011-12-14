@@ -32,8 +32,8 @@ namespace Rock.Address
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [Rock.Attribute.Property( 0, "Order", "The order that this service should be used (priority)" )]
-    [Rock.Attribute.Property( 0, "Active", "Active", "Should Service be used?", "False", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
+    [Rock.Attribute.Property( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
     public abstract class StandardizeService : Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -42,7 +42,8 @@ namespace Rock.Address
         public int Id { get { return 0; } }
 
         /// <summary>
-        /// Gets or sets the attributes.
+        /// List of attributes associated with the object grouped by category.  This property will not include
+        /// the attribute values. The <see cref="AttributeValues"/> property should be used to get attribute values
         /// </summary>
         /// <remarks>
         /// The attributes returned by this property will not contain attribute values.
@@ -51,7 +52,7 @@ namespace Rock.Address
         /// <value>
         /// The attributes.
         /// </value>
-        public List<Rock.Web.Cache.Attribute> Attributes { get; set; }
+        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute values.

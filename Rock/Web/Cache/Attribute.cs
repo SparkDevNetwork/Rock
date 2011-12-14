@@ -36,6 +36,26 @@ namespace Rock.Web.Cache
         public string Name { get; private set; }
 
         /// <summary>
+        /// Gets the category.
+        /// </summary>
+        public string Category 
+        { 
+            get
+            {
+                return string.IsNullOrEmpty( category ) ? "Attributes" : category;
+            }
+
+            private set
+            {
+                if ( value == "Attributes" )
+                    category = null;
+                else
+                    category = value;
+            }
+        }
+        private string category;
+
+        /// <summary>
         /// Gets the description.
         /// </summary>
         public string Description { get; private set; }
@@ -71,6 +91,14 @@ namespace Rock.Web.Cache
         {
             get { return FieldType.Read( FieldTypeId ); }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Attribute"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public bool Required { get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -151,10 +179,12 @@ namespace Rock.Web.Cache
             attribute.Id = attributeModel.Id;
             attribute.Key = attributeModel.Key;
             attribute.Name = attributeModel.Name;
+            attribute.Category = attributeModel.Category;
             attribute.Description = attributeModel.Description;
             attribute.GridColumn = attributeModel.GridColumn;
             attribute.FieldTypeId = attributeModel.FieldTypeId;
             attribute.DefaultValue = attributeModel.DefaultValue;
+            attribute.Required = attributeModel.Required;
 
             attribute.QualifierValues = new Dictionary<string,KeyValuePair<string, string>>();
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
