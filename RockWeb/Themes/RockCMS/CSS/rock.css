@@ -99,7 +99,7 @@ input, textarea, select, .uneditable-input
   background-image: -o-linear-gradient(top, #4b5f71, #202931);
   background-image: linear-gradient(top, #4b5f71, #202931);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4b5f71', endColorstr='#202931', GradientType=0);
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  text-shadowac: 0 -1px 0 rgba(0, 0, 0, 0.25);
   border-color: #0064cd #0064cd #003f81;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
@@ -138,9 +138,15 @@ header.topbar .content {
 }
 
 header.topbar .content .account-name {
-	margin: 0 36px 4px;
-	width: 120px;
-	display: inline;
+	margin-bottom: 4px;
+	width: 320px;
+	display: block;
+	float: right;
+}
+
+header.topbar .content .account-name span 
+{
+    padding-right: 48px;
 }
 
 header.topbar .content .account-actions {
