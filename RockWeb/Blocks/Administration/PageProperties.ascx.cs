@@ -27,9 +27,8 @@ namespace RockWeb.Blocks.Administration
                 if ( _page.Authorized( "Configure", CurrentUser ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
-                    fsAttributes.Visible = attributeControls.Count > 0;
-                    foreach ( HtmlGenericControl dl in attributeControls )
-                        phAttributes.Controls.Add( dl );
+                    foreach ( HtmlGenericControl fs in attributeControls )
+                        phAttributes.Controls.Add( fs );
                 }
                 else
                 {
@@ -66,6 +65,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             base.OnLoad( e );
+
+            if ( Page.IsPostBack )
+                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _page );
         }
 
         protected void btnSave_Click(object sender, EventArgs e)

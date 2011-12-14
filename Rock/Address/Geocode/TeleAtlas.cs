@@ -16,9 +16,9 @@ namespace Rock.Address.Geocode
     [Description( "Address Geocoding service from Tele Atlas (EZ-Locate)" )]
     [Export( typeof( GeocodeService ) )]
     [ExportMetadata( "ServiceName", "TelaAtlas" )]
-    [Rock.Attribute.Property( 1, "User Name","UserName", "The Tele Atlas User Name", "" )]
-    [Rock.Attribute.Property( 2, "Password", "The Tele Atlas Password", "" )]
-    [Rock.Attribute.Property( 2, "EZ-Locate Service", "EZLocateService", "The EZ-Locate Service to use (default: USA_Geo_002", "USA_Geo_002" )]
+    [Rock.Attribute.Property( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
+    [Rock.Attribute.Property( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
+    [Rock.Attribute.Property( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
     public class TelaAtlas : GeocodeService
     {
         /// <summary>

@@ -171,14 +171,20 @@ namespace Rock.Web.Cache
         /// List of attributes associated with the page.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public List<Rock.Web.Cache.Attribute> Attributes
+        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
         {
             get
             {
-                List<Rock.Web.Cache.Attribute> attributes = new List<Rock.Web.Cache.Attribute>();
+                SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.Attribute>>();
 
                 foreach ( int id in AttributeIds )
-                    attributes.Add( Attribute.Read( id ) );
+                {
+                    Rock.Web.Cache.Attribute attribute = Attribute.Read( id );
+                    if ( !attributes.ContainsKey( attribute.Category ) )
+                        attributes.Add( attribute.Category, new List<Attribute>() );
+
+                    attributes[attribute.Category].Add( attribute );
+                }
 
                 return attributes;
             }
@@ -186,8 +192,9 @@ namespace Rock.Web.Cache
             set
             {
                 this.AttributeIds = new List<int>();
-                foreach ( Rock.Web.Cache.Attribute attribute in value )
-                    this.AttributeIds.Add( attribute.Id );
+                foreach ( var category in value )
+                    foreach ( var attribute in category.Value )
+                        this.AttributeIds.Add( attribute.Id );
             }
         }
         private List<int> AttributeIds = new List<int>();
@@ -321,9 +328,9 @@ namespace Rock.Web.Cache
             if ( pageModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
-
-                foreach ( Rock.Web.Cache.Attribute attribute in pageModel.Attributes )
-                    Rock.Attribute.Helper.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                foreach ( var category in pageModel.Attributes )
+                    foreach ( var attribute in category.Value )
+                        Rock.Attribute.Helper.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -596,8 +603,9 @@ namespace Rock.Web.Cache
             page.RequiresEncryption = pageModel.RequiresEncryption;
 
             if (pageModel.Attributes != null)
-                foreach ( Rock.Web.Cache.Attribute attribute in pageModel.Attributes )
-                    page.AttributeIds.Add( attribute.Id );
+                foreach ( var category in pageModel.Attributes )
+                    foreach ( var attribute in category.Value )
+                        page.AttributeIds.Add( attribute.Id );
 
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;

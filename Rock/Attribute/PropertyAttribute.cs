@@ -39,7 +39,15 @@ namespace Rock.Attribute
         /// The name.
         /// </value>
         public string Name { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        public string Category { get; set; }
+
         /// <summary>
         /// Gets or sets the description of the attribute
         /// </summary>
@@ -81,73 +89,92 @@ namespace Rock.Attribute
         public string FieldTypeClass { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.  
+        /// Gets or sets a value indicating whether this <see cref="PropertyAttribute"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public bool Required { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.
         /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
         /// </summary>
-        /// <remarks>
-        /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
-        /// <see cref="Description"/> is initialized as an empty string.
-        /// <see cref="DefaultValue"/> is initialized as an empty string.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
-        /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
-        public PropertyAttribute(int order, string name )
-            : this(order, name, name.Replace(" ", ""), string.Empty, string.Empty, "Rock", "Rock.FieldTypes.Text" )
+        /// <param name="description">The description of the attribute.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <remarks>
+        ///   <see cref="Key"/> is initialized to the Name value with spaces removed
+        ///   <see cref="Category"/> is blank
+        ///   <see cref="DefaultValue"/> is blank
+        ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
+        ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
+        /// </remarks>
+        public PropertyAttribute( int order, string name, string description, bool required )
+            : this( order, name, name.Replace( " ", "" ), string.Empty, description, required, string.Empty, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value.  
+        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.
         /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
         /// </summary>
-        /// <remarks>
-        /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
-        /// <see cref="DefaultValue"/> is initialized as an empty string.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
-        /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
+        /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
-        public PropertyAttribute(int order, string name, string description )
-            : this(order, name, name.Replace( " ", "" ), description, string.Empty, "Rock", "Rock.FieldTypes.Text" )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field.
-        /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="Key"/> is initialized to the <see cref="Name"/> with spaces removed.
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
-        /// </remarks>
-        /// <param name="order">The order.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>
-        public PropertyAttribute(int order, string name, string description, string defaultValue )
-            : this(order, name, name.Replace( " ", "" ), description, defaultValue, "Rock", "Rock.FieldTypes.Text" )
+        /// <remarks>
+        ///   <see cref="Key"/> is initialized to the Name value with spaces removed
+        ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
+        ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
+        /// </remarks>
+        public PropertyAttribute( int order, string name, string category, string description, bool required, string defaultValue )
+            : this(order, name, name.Replace(" ", ""), category, description, required, defaultValue, "Rock", "Rock.FieldTypes.Text" )
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field.
         /// </summary>
-        /// <remarks>
-        /// <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
-        /// <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
-        /// </remarks>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="key">The key.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <remarks>
+        ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
+        ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.FieldTypes.Text</c>
+        /// </remarks>
+        public PropertyAttribute(int order, string name, string key, string category, string description
+            , bool required, string defaultValue )
+            : this(order, name, key, category, description, required, defaultValue, "Rock", "Rock.FieldTypes.Text" )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class.
+        /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
-        public PropertyAttribute(int order, string name, string key, string description, string defaultValue )
-            : this(order, name, key, description, defaultValue, "Rock", "Rock.FieldTypes.Text" )
+        /// <param name="fieldTypeAssembly">The field type assembly.</param>
+        /// <param name="fieldTypeClass">The field type class.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <remarks>
+        ///   <see cref="Key"/> is initialized to the Name value with spaces removed
+        /// </remarks>
+        public PropertyAttribute( int order, string name, string category, string description,
+            bool required, string defaultValue, string fieldTypeAssembly, string fieldTypeClass )
+            : this( order, name, name.Replace( " ", "" ), category, description, required, defaultValue, fieldTypeAssembly, fieldTypeClass )
         {
         }
 
@@ -157,16 +184,20 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="key">The key.</param>
+        /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
-        public PropertyAttribute(int order, string name, string key, string description, string defaultValue, 
-            string fieldTypeAssembly, string fieldTypeClass)
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        public PropertyAttribute(int order, string name, string key, string category, string description, 
+            bool required, string defaultValue, string fieldTypeAssembly, string fieldTypeClass)
         {
             Key = key;
             Name = name;
+            Category = category;
             Description = description;
+            Required = required;
             DefaultValue = defaultValue;
             Order = order;
             FieldTypeAssembly = fieldTypeAssembly;
@@ -207,11 +238,13 @@ namespace Rock.Attribute
             {
                 // Check to see if the existing attribute record needs to be updated
                 if ( attribute.Name != this.Name ||
+                    attribute.Category != this.Category ||
                     attribute.DefaultValue != this.DefaultValue ||
                     attribute.Description != this.Description ||
                     attribute.Order != this.Order ||
                     attribute.FieldType.Assembly != this.FieldTypeAssembly ||
-                    attribute.FieldType.Class != this.FieldTypeClass )
+                    attribute.FieldType.Class != this.FieldTypeClass ||
+                    attribute.Required != this.Required)
                     updated = true;
             }
 
@@ -219,9 +252,11 @@ namespace Rock.Attribute
             {
                 // Update the attribute
                 attribute.Name = this.Name;
+                attribute.Category = this.Category;
                 attribute.Description = this.Description;
                 attribute.DefaultValue = this.DefaultValue;
                 attribute.Order = this.Order;
+                attribute.Required = this.Required;
 
                 // Try to set the field type by searching for an existing field type with the same assembly and class name
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != this.FieldTypeAssembly ||

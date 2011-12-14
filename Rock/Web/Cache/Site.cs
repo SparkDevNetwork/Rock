@@ -125,8 +125,9 @@ namespace Rock.Web.Cache
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
-                    foreach ( Rock.Web.Cache.Attribute attribute in siteModel.Attributes )
-                        Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                    foreach ( var category in siteModel.Attributes )
+                        foreach ( var attribute in category.Value )
+                            Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -171,8 +172,9 @@ namespace Rock.Web.Cache
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 
-                    foreach ( Rock.Web.Cache.Attribute attribute in siteModel.Attributes )
-                        site.AttributeIds.Add( attribute.Id );
+                    foreach ( var category in siteModel.Attributes )
+                        foreach ( var attribute in category.Value )
+                            site.AttributeIds.Add( attribute.Id );
 
                     site.AttributeValues = siteModel.AttributeValues;
 

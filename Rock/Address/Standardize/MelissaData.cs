@@ -17,7 +17,7 @@ namespace Rock.Address.Standardize
     [Description( "Address Standardization service from Melissa Data" )]
     [Export( typeof( StandardizeService ) )]
     [ExportMetadata( "ServiceName", "MelissaData" )]
-    [Rock.Attribute.Property( 1, "Customer Id", "The Melissa Data Customer ID", "" )]
+    [Rock.Attribute.Property( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
     public class MelissaData : StandardizeService
     {
         /// <summary>

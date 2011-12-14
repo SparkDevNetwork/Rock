@@ -13,9 +13,9 @@ using System.Xml.Xsl;
 
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Attribute.Property( 0, "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
-    [Rock.Attribute.Property( 1, "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
-    [Rock.Attribute.Property( 2, "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3" )]
+    [Rock.Attribute.Property( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
+    [Rock.Attribute.Property( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
+    [Rock.Attribute.Property( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
     public partial class PageXslt : Rock.Web.UI.Block
     {
 		private static readonly string ROOT_PAGE = "RootPage";

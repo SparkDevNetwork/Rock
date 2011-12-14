@@ -67,14 +67,20 @@ namespace Rock.Web.Cache
         /// List of attributes associated with the BlockInstance.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public List<Rock.Web.Cache.Attribute> Attributes
+        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
         {
             get
             {
-                List<Rock.Web.Cache.Attribute> attributes = new List<Rock.Web.Cache.Attribute>();
+                SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.Attribute>>();
 
                 foreach ( int id in AttributeIds )
-                    attributes.Add( Attribute.Read( id ) );
+                {
+                    Rock.Web.Cache.Attribute attribute = Attribute.Read( id );
+                    if ( !attributes.ContainsKey( attribute.Category ) )
+                        attributes.Add( attribute.Category, new List<Attribute>() );
+
+                    attributes[attribute.Category].Add( attribute );
+                }
 
                 return attributes;
             }
@@ -82,8 +88,9 @@ namespace Rock.Web.Cache
             set
             {
                 this.AttributeIds = new List<int>();
-                foreach ( Rock.Web.Cache.Attribute attribute in value )
-                    this.AttributeIds.Add( attribute.Id );
+                foreach ( var category in value )
+                    foreach ( var attribute in category.Value )
+                        this.AttributeIds.Add( attribute.Id );
             }
         }
 
@@ -115,8 +122,9 @@ namespace Rock.Web.Cache
             if ( blockInstanceModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
-                foreach ( Rock.Web.Cache.Attribute attribute in blockInstanceModel.Attributes )
-                    Rock.Attribute.Helper.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                foreach ( var category in blockInstanceModel.Attributes )
+                    foreach ( var attribute in category.Value )
+                        Rock.Attribute.Helper.SaveAttributeValue( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -138,8 +146,9 @@ namespace Rock.Web.Cache
 
                     this.AttributeIds = new List<int>();
                     if ( blockInstanceModel.Attributes != null )
-                        foreach ( Rock.Web.Cache.Attribute attribute in blockInstanceModel.Attributes )
-                            this.AttributeIds.Add( attribute.Id );
+                        foreach ( var category in blockInstanceModel.Attributes )
+                            foreach ( var attribute in category.Value )
+                                this.AttributeIds.Add( attribute.Id );
                 }
             }
         }
@@ -225,8 +234,9 @@ namespace Rock.Web.Cache
             blockInstance.AttributeValues = blockInstanceModel.AttributeValues;
             blockInstance.AttributeIds = new List<int>();
             if (blockInstanceModel.Attributes != null)
-                foreach ( Rock.Web.Cache.Attribute attribute in blockInstanceModel.Attributes )
-                    blockInstance.AttributeIds.Add( attribute.Id );
+                foreach ( var category in blockInstanceModel.Attributes )
+                    foreach ( var attribute in category.Value )
+                        blockInstance.AttributeIds.Add( attribute.Id );
 
             blockInstance.AuthEntity = blockInstanceModel.AuthEntity;
             blockInstance.InstanceActions = blockInstanceModel.SupportedActions;
