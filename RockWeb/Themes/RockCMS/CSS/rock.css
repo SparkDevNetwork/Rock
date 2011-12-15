@@ -104,6 +104,13 @@ input, textarea, select, .uneditable-input
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
 
+/* CMS Overrides */
+.grid-table caption 
+{
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif;
+    letter-spacing: -0.03em;
+}
+
 /* Rock Style */
 body {
 	background-color: #e3e3e3;
@@ -274,6 +281,8 @@ header.topbar nav > ul > li:hover {
     border-bottom: 0;
     margin-right: -1px;
 	margin-left: -1px;
+	
+	
 }
 
 header.topbar nav ul li a {
@@ -294,8 +303,6 @@ header.topbar nav ul li .nav-menu {
 	-webkit-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     -moz-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
-
-	text-align: left;
 }
 
 header.topbar nav ul li .nav-menu .width-1column {
