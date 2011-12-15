@@ -40,7 +40,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the System.
 		/// </summary>
 		/// <value>
-		/// System.
+		/// Determines whether the job is a system job..
 		/// </value>
 		public bool? System { get; set; }
 
@@ -48,7 +48,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Active.
 		/// </summary>
 		/// <value>
-		/// Active.
+		/// Determines is the job is currently active..
 		/// </value>
 		public bool? Active { get; set; }
 
@@ -56,7 +56,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Name.
 		/// </summary>
 		/// <value>
-		/// Name.
+		/// Friendly name for the job..
 		/// </value>
 		public string Name { get; set; }
 
@@ -64,7 +64,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Description.
 		/// </summary>
 		/// <value>
-		/// Description.
+		/// Notes about the job..
 		/// </value>
 		public string Description { get; set; }
 
@@ -72,7 +72,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Assemby.
 		/// </summary>
 		/// <value>
-		/// Assemby.
+		/// Assembly (.dll) that contains the job class..
 		/// </value>
 		public string Assemby { get; set; }
 
@@ -80,7 +80,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Class.
 		/// </summary>
 		/// <value>
-		/// Class.
+		/// The class name of the job to run..
 		/// </value>
 		public string Class { get; set; }
 
@@ -88,7 +88,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Cron Expression.
 		/// </summary>
 		/// <value>
-		/// Cron Expression.
+		/// The cron expression that is used to determine the schedule of the job (see http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger for syntax.).
 		/// </value>
 		public string CronExpression { get; set; }
 
@@ -96,7 +96,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Successful Run.
 		/// </summary>
 		/// <value>
-		/// Last Successful Run.
+		/// Date and time the job last completed successfully..
 		/// </value>
 		public DateTime? LastSuccessfulRun { get; set; }
 
@@ -104,7 +104,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Run Date.
 		/// </summary>
 		/// <value>
-		/// Last Run Date.
+		/// Last date and time the job attempted to run..
 		/// </value>
 		public DateTime? LastRunDate { get; set; }
 
@@ -120,7 +120,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Status.
 		/// </summary>
 		/// <value>
-		/// Last Status.
+		/// The completion status from the last time the job was run (valid values 'Success', 'Exception', 'Error Loading Job')..
 		/// </value>
 		public string LastStatus { get; set; }
 
@@ -128,15 +128,23 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Status Message.
 		/// </summary>
 		/// <value>
-		/// Last Status Message.
+		/// Message from the last run.  Usually used to store the exception message..
 		/// </value>
 		public string LastStatusMessage { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Last Run Scheduler Name.
+		/// </summary>
+		/// <value>
+		/// Name of the scheduler that the job ran under.  This is used to determine if a job ran in IIS or the Windows service..
+		/// </value>
+		public string LastRunSchedulerName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Notification Emails.
 		/// </summary>
 		/// <value>
-		/// Notification Emails.
+		/// Email addresses (separated with commas) to be used for notification..
 		/// </value>
 		public string NotificationEmails { get; set; }
 
@@ -144,7 +152,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Notification Status.
 		/// </summary>
 		/// <value>
-		/// Valid valids = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
+		/// States that should be used to determine when to notify (valid values = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
 		/// </value>
 		public int NotificationStatus { get; set; }
 
