@@ -17,7 +17,7 @@ namespace Rock.Address.Geocode
     [Description("Service Objects Geocoding Service")]
     [Export( typeof( GeocodeService ) )]
     [ExportMetadata( "ServiceName", "ServiceObjects" )]
-    [Rock.Attribute.Property( 2, "License Key", "The Service Objects License Key" )]
+    [Rock.Attribute.Property( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
     public class ServiceObjects : GeocodeService
     {
         /// <summary>

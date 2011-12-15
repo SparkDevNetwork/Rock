@@ -43,19 +43,15 @@
             <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
         </fieldset>
 
-        <fieldset id="fsAttributes" runat="server" visible="false">
-            <legend>Attributes</legend>
-            <placeholder id="phAttributes" runat="server"></placeholder>
-        </fieldset>
-
         <fieldset>
             <legend>Advanced Settings</legend>
             <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
             <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
             <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
             <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="OutputCacheDuration"/>
-
         </fieldset>
+
+        <placeholder id="phAttributes" runat="server"></placeholder>
 
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 

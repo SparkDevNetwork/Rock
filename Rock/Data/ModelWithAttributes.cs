@@ -27,7 +27,7 @@ namespace Rock.Data
         /// The attributes.
         /// </value>
         [NotMapped]
-        public List<Rock.Web.Cache.Attribute> Attributes { get; set; }
+        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.

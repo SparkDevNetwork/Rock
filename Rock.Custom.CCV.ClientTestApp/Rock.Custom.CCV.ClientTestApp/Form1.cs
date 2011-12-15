@@ -16,7 +16,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
-        const string APIKEY = "dtKey";
+        const string APIKEY = "CcvApiKey";
 
         public Form1()
         {
@@ -27,7 +27,7 @@ namespace Rock.Custom.CCV.ClientTestApp
         {
             try
             {
-                Rock.DataTransferObjects.Crm.Address address = SendRequest( "Standardize" );
+                Rock.CRM.DTO.Address address = SendRequest( "Standardize" );
                 if ( address != null )
                 {
                     tbStreet1.Text = address.Street1;
@@ -49,9 +49,9 @@ namespace Rock.Custom.CCV.ClientTestApp
             }
         }
 
-        private Rock.DataTransferObjects.Crm.Address SendRequest( string service )
+        private Rock.CRM.DTO.Address SendRequest( string service )
         {
-            Rock.DataTransferObjects.Crm.Address address = new Rock.DataTransferObjects.Crm.Address();
+            Rock.CRM.DTO.Address address = new Rock.CRM.DTO.Address();
             address.Street1 = tbStreet1.Text;
             address.Street2 = tbStreet2.Text;
             address.City = tbCity.Text;
@@ -61,15 +61,15 @@ namespace Rock.Custom.CCV.ClientTestApp
             WebClient proxy = new System.Net.WebClient();
             proxy.Headers["Content-type"] = "application/json";
             MemoryStream ms = new MemoryStream();
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer( typeof( Rock.DataTransferObjects.Crm.Address ) );
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer( typeof( Rock.CRM.DTO.Address ) );
             serializer.WriteObject(ms, address);
 
             try
             {
-                byte[] data = proxy.UploadData( string.Format( "http://localhost:56627/Crm/Address/{0}/{1}", service, APIKEY ),
+                byte[] data = proxy.UploadData( string.Format( "http://www.ccvonline.com/RockChMS/REST/CRM/Address/{0}/{1}", service, APIKEY ),
                     "PUT", ms.ToArray() );
                 Stream stream = new MemoryStream( data );
-                return serializer.ReadObject( stream ) as Rock.DataTransferObjects.Crm.Address;
+                return serializer.ReadObject( stream ) as Rock.CRM.DTO.Address;
             }
             catch ( WebException ex )
             {

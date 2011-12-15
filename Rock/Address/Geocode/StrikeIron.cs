@@ -17,8 +17,8 @@ namespace Rock.Address.Geocode
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( GeocodeService ) )]
     [ExportMetadata( "ServiceName", "StrikeIron" )]
-    [Rock.Attribute.Property( 1, "User ID", "The Strike Iron User ID", "" )]
-    [Rock.Attribute.Property( 2, "Password", "The Strike Iron Password", "" )]
+    [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
+    [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
     public class StrikeIron : GeocodeService
     {
         /// <summary>

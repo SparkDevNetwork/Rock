@@ -277,7 +277,10 @@ namespace Rock.Data
                         var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
                             Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
 
-                        if ( currentValue.ToString() != originalValue.ToString() )
+                        string currentValueStr = currentValue == null ? string.Empty : currentValue.ToString();
+                        string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
+
+                        if ( currentValueStr != originalValueStr )
                         {
                             if ( entityChanges == null )
                                 entityChanges = new List<Core.EntityChange>();
@@ -287,8 +290,8 @@ namespace Rock.Data
                             change.ChangeType = Context.Entry( entity ).State.ToString();
                             change.EntityType = entityType.Name;
                             change.Property = propInfo.Name;
-                            change.OriginalValue = originalValue.ToString();
-                            change.CurrentValue = currentValue.ToString();
+                            change.OriginalValue = originalValueStr;
+                            change.CurrentValue = currentValueStr;
                             change.CreatedByPersonId = personId;
                             change.CreatedDateTime = DateTime.Now;
 

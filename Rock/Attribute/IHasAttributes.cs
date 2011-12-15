@@ -19,13 +19,13 @@ namespace Rock.Attribute
         int Id { get; }
 
         /// <summary>
-        /// List of attributes associated with the object.  This property will not include the attribute values.
-        /// The <see cref="AttributeValues"/> property should be used to get attribute values
+        /// List of attributes associated with the object grouped by category.  This property will not include 
+        /// the attribute values. The <see cref="AttributeValues"/> property should be used to get attribute values
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
-        List<Rock.Web.Cache.Attribute> Attributes { get; set; }
+        SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.
