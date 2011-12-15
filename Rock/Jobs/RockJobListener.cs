@@ -82,7 +82,7 @@ namespace Rock.Jobs
             // load job
             JobService jobService = new JobService();
             Job job = jobService.Get(jobId);
-
+            
             // format the message
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
 
@@ -96,13 +96,16 @@ namespace Rock.Jobs
             // set run time
             job.LastRunDuration = Convert.ToInt32(context.JobRunTime.TotalSeconds);
 
+            // set the scheduler name
+            job.LastRunSchedulerName = context.Scheduler.SchedulerName;
+
             // determine if an error occured
             if ( jobException == null )
             {
                 job.LastSuccessfulRun = job.LastRunDate;
                 job.LastStatus = "Success";
                 job.LastStatusMessage = "";
-
+                
                 message.Append( "Result: Success" );
 
                 // determine if message should be sent
