@@ -1,11 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using Rock.Models.Cms;
-using Rock.Repository.Cms;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
+
+using Rock.CMS;
 
 namespace RockWeb.Blocks.Security
 {
-    public partial class CreateAccount : Rock.Cms.CmsBlock
+    public partial class CreateAccount : Rock.Web.UI.Block
     {
         private string _returnUrl;
 

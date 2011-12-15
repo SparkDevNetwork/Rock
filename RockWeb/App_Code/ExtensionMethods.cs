@@ -1,7 +1,11 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace RockWeb
 {
@@ -20,6 +24,11 @@ namespace RockWeb
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
             listControl.DataBind();
+        }
+
+        public static void BindToEnum( this Rock.Web.UI.Controls.DataDropDownList listControl, Type enumType )
+        {
+            listControl.DropDownList.BindToEnum( enumType );
         }
     }
 }

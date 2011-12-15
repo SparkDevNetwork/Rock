@@ -1,29 +1,31 @@
-﻿using System;
-using System.Collections;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-using System.IO;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks
 {
-    public partial class TestGrid : Rock.Cms.CmsBlock
+    public partial class TestGrid : Rock.Web.UI.Block
     {
-        Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
         protected override void OnInit( EventArgs e )
         {
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.EnableAdd = true;
             //rGrid.ClientAddScript = "return addItem();";
-            rGrid.GridAdd += new Rock.Controls.GridAddEventHandler( rGrid_GridAdd );
+            rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-            rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-            rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+            rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+            rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
             string script = string.Format( @"
     Sys.Application.add_load(function () {{
@@ -52,10 +54,10 @@ namespace RockWeb.Blocks
 
         void rGrid_GridAdd( object sender, EventArgs e )
         {
-            Rock.Models.Cms.Page page = new Rock.Models.Cms.Page();
+            Rock.CMS.Page page = new Rock.CMS.Page();
             page.Name = "New Page";
 
-            Rock.Models.Cms.Page lastPage = pageService.Queryable().
+            Rock.CMS.Page lastPage = pageService.Queryable().
                 Where( p => !p.ParentPageId.HasValue).
                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -72,7 +74,7 @@ namespace RockWeb.Blocks
 
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.Get((int)e.Keys["id"]);
+            Rock.CMS.Page page = pageService.Get((int)e.Keys["id"]);
             if ( page != null )
             {
                 pageService.Delete( page, CurrentPersonId );
@@ -82,9 +84,9 @@ namespace RockWeb.Blocks
             BindGrid();
         }
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            pageService.Reorder( (List<Rock.Models.Cms.Page>)rGrid.DataSource, 
+            pageService.Reorder( (List<Rock.CMS.Page>)rGrid.DataSource, 
                 e.OldIndex, e.NewIndex, CurrentPersonId );
         }
 

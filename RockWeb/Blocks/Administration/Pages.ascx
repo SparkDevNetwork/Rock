@@ -22,11 +22,7 @@
             <legend>Child Page</legend>
             <ol>
                 <li>
-                    <asp:Label ID="lblPageName" runat="server" AssociatedControlID="tbPageName">Name</asp:Label>
-                    <asp:TextBox ID="tbPageName" runat="server"></asp:TextBox>
-                    <asp:RequiredFieldValidator ID="rfvPageName" runat="server" ControlToValidate="tbPageName" 
-                            CssClass="failureNotification" ErrorMessage="Page Name is required." ToolTip="Page Name is required." 
-                            ValidationGroup="PagesValidationGroup">*</asp:RequiredFieldValidator>
+                    <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name" />
                 </li>
                 <li>
                     <asp:Label ID="lblLayout" runat="server" AssociatedControlID="ddlLayout">Layout</asp:Label>

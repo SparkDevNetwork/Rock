@@ -13,9 +13,7 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Jobs;
-using Rock.Services.Util;
-using Rock.Models.Util;
-
+using Rock.Util;
 
 namespace RockJobSchedulerService
 {
@@ -42,7 +40,7 @@ namespace RockJobSchedulerService
 
             // get list of active jobs
             JobService jobService = new JobService();
-            foreach ( Job job in jobService.GetActiveJobs() )
+            foreach ( Job job in jobService.GetActiveJobs().ToList() )
             {
                 try
                 {
@@ -66,9 +64,7 @@ namespace RockJobSchedulerService
                     job.LastStatusMessage = message;
                     job.LastStatus = "Error Loading Job";
 
-                    //TODO: line below generates an exception
-                    // inner exception "New transaction is not allowed because there are other threads running in the session." on EntityRepository line 164     Context.SaveChanges();
-                    //jobService.Save( job, null );
+                    jobService.Save( job, null );
                 }
             }
 

@@ -1,24 +1,29 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using System.Text;
-using Rock.Models.Cms;
-using Rock.Helpers;
+using System.Web;
+
+using Rock.CMS;
 
 namespace RockWeb.Blocks.Blog
 {
-    public partial class Posts : Rock.Cms.CmsBlock
+    [Rock.Attribute.Property( 0, "Posts Per Page", "", "The number of posts to display on a single page.", true, "5", "Rock", "Rock.FieldTypes.Integer" )]
+    [Rock.Attribute.Property( 1, "Post Detail Page", "", "Page reference to the post details page", true, "-1,-1", "Rock", "Rock.FieldTypes.PageReference" )]
+    public partial class Posts : Rock.Web.UI.Block
     {
         protected int skipCount = 0;
         protected int takeCount = 1;
         protected int currentPage = 1;
         protected int categoryId = 0;
         protected int tagId = 0;
-        protected PageReference postDetailsPage = null;
+        protected Rock.Web.UI.PageReference postDetailsPage = null;
         
         protected void Page_Init( object sender, EventArgs e )
         {
@@ -29,7 +34,7 @@ namespace RockWeb.Blocks.Blog
             }
 
             // get post details page
-            postDetailsPage = new PageReference( AttributeValue( "PostDetailPage" ) );
+            postDetailsPage = new Rock.Web.UI.PageReference( AttributeValue( "PostDetailPage" ) );
 
             // get number of posts to display per page
             takeCount = Convert.ToInt32( AttributeValue( "PostsPerPage" ) );
@@ -70,10 +75,10 @@ namespace RockWeb.Blocks.Blog
 
             if ( blogId != -1 )
             {
-                Rock.Services.Cms.BlogService blogService = new Rock.Services.Cms.BlogService();
+                Rock.CMS.BlogService blogService = new Rock.CMS.BlogService();
                 
                 // try loading the blog object from the page cache
-                Rock.Models.Cms.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.Models.Cms.Blog;
+                Rock.CMS.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.CMS.Blog;
 
                 if ( blog == null )
                 {

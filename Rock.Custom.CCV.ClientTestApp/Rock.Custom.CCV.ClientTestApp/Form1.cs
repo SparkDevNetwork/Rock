@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Net;
+using System.Runtime.Serialization.Json;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -15,7 +16,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
-        readonly string ns = "http://schemas.datacontract.org/2004/07/Rock.Models.Crm";
+        const string APIKEY = "CcvApiKey";
 
         public Form1()
         {
@@ -26,39 +27,21 @@ namespace Rock.Custom.CCV.ClientTestApp
         {
             try
             {
-                XDocument xdoc = SendRequest( "Standardize" );
-                if ( xdoc != null )
+                Rock.CRM.DTO.Address address = SendRequest( "Standardize" );
+                if ( address != null )
                 {
-                    string street1 = xdoc.Root.Element( string.Format( "{{{0}}}Street1", ns ) ).Value;
-                    string street2 = xdoc.Root.Element( string.Format( "{{{0}}}Street2", ns ) ).Value;
-                    string city = xdoc.Root.Element( string.Format( "{{{0}}}City", ns ) ).Value;
-                    string state = xdoc.Root.Element( string.Format( "{{{0}}}State", ns ) ).Value;
-                    string zip = xdoc.Root.Element( string.Format( "{{{0}}}Zip", ns ) ).Value;
+                    tbStreet1.Text = address.Street1;
+                    tbStreet2.Text = address.Street2;
+                    tbCity.Text = address.City;
+                    tbState.Text = address.State;
+                    tbZip.Text = address.Zip;
 
-                    string standardizeService = xdoc.Root.Element( string.Format( "{{{0}}}StandardizeService", ns ) ).Value;
-                    string standardizeResult = xdoc.Root.Element( string.Format( "{{{0}}}StandardizeResult", ns ) ).Value;
-
-                    tbStreet1.Text = street1;
-                    tbStreet2.Text = street2;
-                    tbCity.Text = city;
-                    tbState.Text = state;
-                    tbZip.Text = zip;
-
-                    tbStandardized.Text = string.Format( "{0}[{6}]: {1} {2} {3}, {4} {5}", standardizeService, street1, street2, city, state, zip, standardizeResult );
+                    tbStandardized.Text = string.Format( "{0}: {1}", address.StandardizeService, address.StandardizeResult );
                 }
 
-
-                xdoc = SendRequest( "Geocode" );
-                if ( xdoc != null )
-                {
-                    string latitude = xdoc.Root.Element( string.Format( "{{{0}}}Latitude", ns ) ).Value;
-                    string longitude = xdoc.Root.Element( string.Format( "{{{0}}}Longitude", ns ) ).Value;
-
-                    string geocodeService = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeService", ns ) ).Value;
-                    string geocodeResult = xdoc.Root.Element( string.Format( "{{{0}}}GeocodeResult", ns ) ).Value;
-
-                    tbGeocoded.Text = string.Format( "{0}[{3}]: {1} {2}", geocodeService, latitude, longitude, geocodeResult );
-                }
+                address = SendRequest( "Geocode" );
+                if ( address != null )
+                    tbGeocoded.Text = string.Format( "{0}[{3}]: {1} {2}", address.GeocodeService, address.Latitude, address.Longitude, address.GeocodeResult );
             }
             catch ( System.Exception ex )
             {
@@ -66,35 +49,42 @@ namespace Rock.Custom.CCV.ClientTestApp
             }
         }
 
-        private XDocument SendRequest( string action )
+        private Rock.CRM.DTO.Address SendRequest( string service )
         {
-            string Request = string.Format(
-                "<AddressDTO xmlns=\"{0}\"><City>{1}</City><State>{2}</State><Street1>{3}</Street1><Street2>{4}</Street2><Zip>{5}</Zip></AddressDTO>",
-                ns, tbCity.Text, tbState.Text, tbStreet1.Text, tbStreet2.Text, tbZip.Text );
+            Rock.CRM.DTO.Address address = new Rock.CRM.DTO.Address();
+            address.Street1 = tbStreet1.Text;
+            address.Street2 = tbStreet2.Text;
+            address.City = tbCity.Text;
+            address.State = tbState.Text;
+            address.Zip = tbZip.Text;
 
-            HttpWebRequest req = WebRequest.Create( string.Format( "http://www.ccvonline.com/RockChMS/api/Crm/Address/{0}", action ) ) as HttpWebRequest;
-            req.KeepAlive = false;
-            req.Method = "PUT";
+            WebClient proxy = new System.Net.WebClient();
+            proxy.Headers["Content-type"] = "application/json";
+            MemoryStream ms = new MemoryStream();
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer( typeof( Rock.CRM.DTO.Address ) );
+            serializer.WriteObject(ms, address);
 
-            UTF8Encoding encoding = new UTF8Encoding();
-            byte[] buffer = encoding.GetBytes(Request);
-            req.ContentLength = buffer.Length;
-            req.ContentType = "text/xml";
-            Stream PostData = req.GetRequestStream();
-            PostData.Write(buffer, 0, buffer.Length);
-            PostData.Close();
+            try
+            {
+                byte[] data = proxy.UploadData( string.Format( "http://www.ccvonline.com/RockChMS/REST/CRM/Address/{0}/{1}", service, APIKEY ),
+                    "PUT", ms.ToArray() );
+                Stream stream = new MemoryStream( data );
+                return serializer.ReadObject( stream ) as Rock.CRM.DTO.Address;
+            }
+            catch ( WebException ex )
+            {
+                //string response = (ex.Response
+                using ( Stream data = ex.Response.GetResponseStream() )
+                {
+                    string text = new StreamReader( data ).ReadToEnd();
 
-            HttpWebResponse resp = req.GetResponse() as HttpWebResponse;
+                    MessageBox.Show( string.Format( "Response: {0}\n{1}",
+                        ( ( System.Net.HttpWebResponse )ex.Response ).StatusDescription, text ), service + " Error" );
+                }
 
-            Encoding enc = Encoding.GetEncoding(1252);
-            StreamReader loResponseStream = new StreamReader(resp.GetResponseStream(), enc);
-            string Response = loResponseStream.ReadToEnd();
-            loResponseStream.Close();
-
-            if ( Response.Trim().Length > 0 )
-                return XDocument.Parse( Response );
-
-            return null;
+                return null;
+            }
         }
     }
+
 }

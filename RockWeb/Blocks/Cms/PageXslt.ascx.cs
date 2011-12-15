@@ -1,24 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
 using System.Text;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 using System.Xml.Linq;
 using System.Xml.Xsl;
 
-using Rock.Cms;
-
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Attribute.Property( 0, "XSLT File", "The path to the XSLT File ", "~/Assets/XSLT/PageList.xslt" )]
-    [Rock.Attribute.Property( 1, "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set." )]
-    [Rock.Attribute.Property( 2, "Number of Levels", "Number of parent-child page levels to display. Default 3.", "3" )]
-    public partial class PageXslt : Rock.Cms.CmsBlock
+    [Rock.Attribute.Property( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
+    [Rock.Attribute.Property( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
+    [Rock.Attribute.Property( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
+    public partial class PageXslt : Rock.Web.UI.Block
     {
 		private static readonly string ROOT_PAGE = "RootPage";
 		private static readonly string NUM_LEVELS = "NumberofLevels";
@@ -44,14 +42,14 @@ namespace RockWeb.Blocks.Cms
             XslCompiledTransform xslTransformer = new XslCompiledTransform();
             xslTransformer.Load( Server.MapPath( AttributeValue("XSLTFile") ) );
 
-            Rock.Cms.Cached.Page rootPage;
+            Rock.Web.Cache.Page rootPage;
 			if ( AttributeValue( ROOT_PAGE ) != string.Empty )
             {
 				int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
                 if ( pageId == -1 )
                     rootPage = PageInstance;
                 else
-                    rootPage = Rock.Cms.Cached.Page.Read( pageId );
+                    rootPage = Rock.Web.Cache.Page.Read( pageId );
             }
             else
                 rootPage = PageInstance;

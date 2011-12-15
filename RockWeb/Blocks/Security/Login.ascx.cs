@@ -1,17 +1,24 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.Security;
 
 using Facebook;
-using System.Web;
-using System.Linq;
-using Rock.Cms;
-using Rock.Services.Cms;
-using Rock.Services.Crm;
+
+using Rock.CMS;
+using Rock.CRM;
 
 namespace RockWeb.Blocks.Security
 {
-    public partial class Login : CmsBlock
+    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
+    public partial class Login : Rock.Web.UI.Block
     {
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -104,7 +111,7 @@ namespace RockWeb.Blocks.Security
                             if ( person != null )
                             {
                                 // found exact match create a Facebook login for the user
-                                user = new Rock.Models.Cms.User();
+                                user = new Rock.CMS.User();
                                 user.PersonId = person.Id;
                                 user.Email = email;
                                 user.AuthenticationType = 2; // TODO: Make this a enum;

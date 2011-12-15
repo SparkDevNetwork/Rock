@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Security;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Roles : Rock.Cms.CmsBlock
+    public partial class Roles : Rock.Web.UI.Block
     {
         private string _action = string.Empty;
         private string _roleName = string.Empty;

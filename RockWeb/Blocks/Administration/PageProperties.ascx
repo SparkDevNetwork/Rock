@@ -1,79 +1,65 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.PageProperties" %>
 
-<asp:PlaceHolder id="phClose" runat="server"></asp:PlaceHolder>
+<script type="text/javascript">
+    
+    // If this control is in a modal window, hide this form's save button and bind the modal popup
+    // Save button to this form's save click event
+
+    Sys.Application.add_load(function () {
+
+        if ($('#modal-popup', window.parent.document)) {
+            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+                $('#<%= btnSave.ClientID %>').click();
+            });
+            $('div.admin-dialog .actions').hide();
+        }
+
+    });
+
+</script>
 
 <div class="admin-dialog">
 
-    <fieldset id="fsProperties" runat="server">
-        
-        <ol id="olProperties" runat="server">
-            <li>
-                <asp:Label ID="lblParentPage" runat="server" AssociatedControlID="ddlParentPage">Parent Page</asp:Label>
-                <asp:DropDownList ID="ddlParentPage" runat="server"></asp:DropDownList>
-            </li>
-            <li>
-                <asp:Label ID="lblPageName" runat="server" AssociatedControlID="tbPageName">Name</asp:Label>
-                <asp:TextBox ID="tbPageName" runat="server"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvPageName" runat="server" ControlToValidate="tbPageName" 
-                        CssClass="failureNotification" ErrorMessage="Name is required." ToolTip="Name is required." 
-                        ValidationGroup="PagesValidationGroup">*</asp:RequiredFieldValidator>
-            </li>
-            <li>
-                <asp:Label ID="lblPageTitle" runat="server" AssociatedControlID="tbPageTitle">Title</asp:Label>
-                <asp:TextBox ID="tbPageTitle" runat="server"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvPageTitle" runat="server" ControlToValidate="tbPageTitle" 
-                        CssClass="failureNotification" ErrorMessage="Title is required." ToolTip="Title is required." 
-                        ValidationGroup="PagesValidationGroup">*</asp:RequiredFieldValidator>
-            </li>
-            <li>
-                <asp:Label ID="lblLayout" runat="server" AssociatedControlID="ddlLayout">Layout</asp:Label>
-                <asp:DropDownList ID="ddlLayout" runat="server"></asp:DropDownList>
-            </li>
-            <li>
-                <asp:Label ID="lblMenuWhen" runat="server" AssociatedControlID="ddlMenuWhen">Display in Menu When</asp:Label>
-                <asp:DropDownList ID="ddlMenuWhen" runat="server"></asp:DropDownList>
-            </li>
-            <li>
-                <asp:Label ID="lblMenuDescription" runat="server" AssociatedControlID="cbMenuDescription">Display Description in Menu</asp:Label>
-                <asp:CheckBox ID="cbMenuDescription" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblMenuIcon" runat="server" AssociatedControlID="cbMenuIcon">Display Icon in Menu</asp:Label>
-                <asp:CheckBox ID="cbMenuIcon" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblMenuChildPages" runat="server" AssociatedControlID="cbMenuChildPages">Display Child Pages in Menu</asp:Label>
-                <asp:CheckBox ID="cbMenuChildPages" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblRequiresEncryption" runat="server" AssociatedControlID="cbRequiresEncryption">Requires Encryption</asp:Label>
-                <asp:CheckBox ID="cbRequiresEncryption" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblEnableViewState" runat="server" AssociatedControlID="cbEnableViewState">Enable ViewState</asp:Label>
-                <asp:CheckBox ID="cbEnableViewState" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblIncludeAdminFooter" runat="server" AssociatedControlID="cbIncludeAdminFooter">Include Admin Footer</asp:Label>
-                <asp:CheckBox ID="cbIncludeAdminFooter" runat="server" />
-            </li>
-            <li>
-                <asp:Label ID="lblCacheDuration" runat="server" AssociatedControlID="tbCacheDuration">Cache Duration</asp:Label>
-                <asp:TextBox ID="tbCacheDuration" runat="server" Text="0"></asp:TextBox>
-                <asp:RangeValidator ID="rvCacheDuration" runat="server" ControlToValidate="tbCacheDuration" 
-                    MinimumValue="0" MaximumValue="999999999" Type="Integer" CssClass="failureNotification" 
-                    ErrorMessage="Cache Duration must be valid number of seconds" ToolTip="Seconds"
-                    ValidationGroup="PagesValidationGroup">*</asp:RangeValidator>
-            </li>
-            <li>
-                <asp:Label ID="lblDescription" runat="server" AssociatedControlID="tbDescription">Description</asp:Label>
-                <asp:TextBox ID="tbDescription" runat="server"></asp:TextBox>
-            </li>
-        </ol>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
 
-    </fieldset>
+    <asp:PlaceHolder ID="phContent" runat="server">
 
-    <asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click " />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+
+        <fieldset>
+            <legend>Basic Settings</legend>
+            <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="ParentPageId"/>
+            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name"/>
+            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Title"/>
+            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Layout"/>
+            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Description" />
+        </fieldset>
+
+        <fieldset>
+            <legend>Menu Display Options</legend>
+            <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="DisplayInNavWhen"/>
+            <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
+            <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Idon"/>
+            <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
+        </fieldset>
+
+        <fieldset>
+            <legend>Advanced Settings</legend>
+            <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
+            <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
+            <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
+            <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="OutputCacheDuration"/>
+        </fieldset>
+
+        <placeholder id="phAttributes" runat="server"></placeholder>
+
+        <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+
+        <div class="actions">
+            <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
+        </div>
+
+    </asp:PlaceHolder>
 
 </div>
 

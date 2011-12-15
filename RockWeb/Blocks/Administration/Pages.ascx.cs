@@ -1,23 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Pages : Rock.Cms.CmsBlock
+    public partial class Pages : Rock.Web.UI.Block
 	{
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Cms.Cached.Page _page = null;
-        private Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
+        private Rock.Web.Cache.Page _page = null;
+        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
         #endregion
 
@@ -26,7 +29,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-            _page = Rock.Cms.Cached.Page.Read( pageId );
+            _page = Rock.Web.Cache.Page.Read( pageId );
             if ( _page != null )
                 canConfigure = _page.Authorized( "Configure", CurrentUser );
             else
@@ -37,8 +40,8 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.EnableAdd = true;
                 rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
-                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 
                 string script = string.Format( @"
         Sys.Application.add_load(function () {{
@@ -80,7 +83,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             int? parentPageId = null;
             if (_page != null)
@@ -99,10 +102,10 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Models.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
-                Rock.Cms.Cached.Page.Flush( page.Id );
+                Rock.Web.Cache.Page.Flush( page.Id );
 
                 pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
@@ -135,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Models.Cms.Page page;
+            Rock.CMS.Page page;
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -143,7 +146,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.Models.Cms.Page();
+                page = new Rock.CMS.Page();
 
                 if ( _page != null )
                 {
@@ -160,7 +163,7 @@ namespace RockWeb.Blocks.Administration
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.Models.Cms.Page lastPage =
+                Rock.CMS.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -172,7 +175,7 @@ namespace RockWeb.Blocks.Administration
                 pageService.Add( page, CurrentPersonId );
 
                 if (_page != null)
-                    Rock.Cms.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
+                    Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
                 page = pageService.Get( pageId );
@@ -214,7 +217,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.Models.Cms.Page page = pageService.Get( pageId );
+            Rock.CMS.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
