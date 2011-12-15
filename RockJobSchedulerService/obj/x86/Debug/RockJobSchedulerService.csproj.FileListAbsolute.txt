@@ -21,13 +21,10 @@ C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerServ
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\RockJobSchedulerService.pdb
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\RockJobSchedulerService.XML
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Quartz.dll
-C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.Framework.dll
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\C5.dll
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\EntityFramework.dll
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Quartz.pdb
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Quartz.xml
-C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.Framework.pdb
-C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.Framework.xml
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\EntityFramework.xml
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\obj\x86\Debug\RockJobSchedulerService.csprojResolveAssemblyReference.cache
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\obj\x86\Debug\RockJobSchedulerService.JobScheduler.resources
@@ -35,3 +32,8 @@ C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerServ
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\obj\x86\Debug\RockJobSchedulerService.csproj.GenerateResource.Cache
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\obj\x86\Debug\RockJobSchedulerService.exe
 C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\obj\x86\Debug\RockJobSchedulerService.pdb
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.dll
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.DataTransferObjects.dll
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.pdb
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.xml
+C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockJobSchedulerService\bin\Debug\Rock.DataTransferObjects.pdb

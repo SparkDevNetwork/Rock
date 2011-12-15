@@ -18,8 +18,6 @@ http://www.dotlesscss.org/
 
 CK Editor:
 
-SlickGrid jQuery Plugin:
-
 jQuery.event.drag
 A jquery special event plugin that makes the task of adding complex drag interactions, 
 to any element, simple and powerful (used by SlickGrid). available under the open source

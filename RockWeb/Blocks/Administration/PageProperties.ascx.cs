@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.IO;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class PageProperties : Rock.Cms.CmsBlock
+    public partial class PageProperties : Rock.Web.UI.Block
     {
-        private Rock.Cms.Cached.Page _page = null;
+        private Rock.Web.Cache.Page _page = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
@@ -21,12 +22,13 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Cms.Cached.Page.Read( pageId );
+                _page = Rock.Web.Cache.Page.Read( pageId );
 
                 if ( _page.Authorized( "Configure", CurrentUser ) )
                 {
-                    foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack ) )
-                        olProperties.Controls.Add( li );
+                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
+                    foreach ( HtmlGenericControl fs in attributeControls )
+                        phAttributes.Controls.Add( fs );
                 }
                 else
                 {
@@ -63,58 +65,65 @@ namespace RockWeb.Blocks.Administration
             }
 
             base.OnLoad( e );
+
+            if ( Page.IsPostBack )
+                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _page );
         }
+
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                Rock.Services.Cms.PageService pageService = new Rock.Services.Cms.PageService();
-                Rock.Models.Cms.Page page = pageService.Get( _page.Id );
-
-                int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
-                if ( page.ParentPageId != parentPage )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    if (page.ParentPageId.HasValue)
-                        Rock.Cms.Cached.Page.Flush( page.ParentPageId.Value );
+                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                    Rock.CMS.Page page = pageService.Get( _page.Id );
 
-                    if (parentPage != 0)
-                        Rock.Cms.Cached.Page.Flush( parentPage );
+                    int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
+                    if ( page.ParentPageId != parentPage )
+                    {
+                        if ( page.ParentPageId.HasValue )
+                            Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+
+                        if ( parentPage != 0 )
+                            Rock.Web.Cache.Page.Flush( parentPage );
+                    }
+
+                    page.Name = tbPageName.Text;
+                    page.Title = tbPageTitle.Text;
+                    if ( parentPage != 0 )
+                        page.ParentPageId = parentPage;
+                    else
+                        page.ParentPageId = null;
+                    page.Layout = ddlLayout.Text;
+                    page.DisplayInNavWhen = ( Rock.CMS.DisplayInNavWhen )Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                    page.MenuDisplayDescription = cbMenuDescription.Checked;
+                    page.MenuDisplayIcon = cbMenuIcon.Checked;
+                    page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+                    page.RequiresEncryption = cbRequiresEncryption.Checked;
+                    page.EnableViewState = cbRequiresEncryption.Checked;
+                    page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
+                    page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                    page.Description = tbDescription.Text;
+
+                    pageService.Save( page, CurrentPersonId );
+
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
+                    _page.SaveAttributeValues( CurrentPersonId );
+
+                    Rock.Web.Cache.Page.Flush( _page.Id );
                 }
 
-                page.Name = tbPageName.Text;
-                page.Title = tbPageTitle.Text;
-                page.ParentPageId = parentPage;
-                page.Layout = ddlLayout.Text;
-                page.DisplayInNavWhen = ( Rock.Models.Cms.DisplayInNavWhen )Enum.Parse( typeof( Rock.Models.Cms.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
-                page.MenuDisplayDescription = cbMenuDescription.Checked;
-                page.MenuDisplayIcon = cbMenuIcon.Checked;
-                page.MenuDisplayChildPages = cbMenuChildPages.Checked;
-                page.RequiresEncryption = cbRequiresEncryption.Checked;
-                page.EnableViewState = cbRequiresEncryption.Checked;
-                page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                page.Description = tbDescription.Text;
-                
-                pageService.Save( page, CurrentPersonId );
-
-                Rock.Attribute.Helper.GetEditValues( olProperties, page );
-                _page.SaveAttributeValues( CurrentPersonId );
-
-                Rock.Cms.Cached.Page.Flush( _page.Id );
+                string script = "window.parent.closeModal()";
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
             }
-
-            phClose.Controls.AddAt(0, new LiteralControl( @"
-    <script type='text/javascript'>
-        window.parent.$('#modalDiv').dialog('close');
-    </script>
-" ));
         }
 
         private void LoadDropdowns()
         {
             ddlParentPage.Items.Clear();
             ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach(var page in new Rock.Services.Cms.PageService().GetByParentPageId(null))
+            foreach(var page in new Rock.CMS.PageService().GetByParentPageId(null))
                 AddPage(page, 1);
 
             ddlLayout.Items.Clear();
@@ -122,15 +131,24 @@ namespace RockWeb.Blocks.Administration
             foreach ( FileInfo fi in di.GetFiles( "*.aspx.cs" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx.cs" ) ) ) );
 
-            ddlMenuWhen.BindToEnum( typeof( Rock.Models.Cms.DisplayInNavWhen ) );
+            ddlMenuWhen.BindToEnum( typeof( Rock.CMS.DisplayInNavWhen ) );
         }
 
-        private void AddPage( Rock.Models.Cms.Page page, int level )
+        private void AddPage( Rock.CMS.Page page, int level )
         {
             string pageName = new string('-', level) + page.Name;
             ddlParentPage.Items.Add(new ListItem(pageName, page.Id.ToString()));
             foreach(var childPage in page.Pages)
                 AddPage(childPage, level + 1);
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+
+            phContent.Visible = false;
         }
     }
 }

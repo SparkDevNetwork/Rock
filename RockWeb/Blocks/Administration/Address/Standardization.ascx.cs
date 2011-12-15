@@ -1,16 +1,17 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock.Address;
-using Rock.Controls;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration.Address
 {
@@ -18,7 +19,7 @@ namespace RockWeb.Blocks.Administration.Address
     /// Used to manage the <see cref="Rock.Address.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
-    public partial class Standardization : Rock.Cms.CmsBlock
+    public partial class Standardization : Rock.Web.UI.Block
 	{
         #region Control Methods
 
@@ -27,8 +28,8 @@ namespace RockWeb.Blocks.Administration.Address
             if ( PageInstance.Authorized( "Configure", CurrentUser ) )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.GridReorder += new Rock.Controls.GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new Rock.Controls.GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
             }
 
             base.OnInit( e );
@@ -67,7 +68,7 @@ namespace RockWeb.Blocks.Administration.Address
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
-        void rGrid_GridReorder( object sender, Rock.Controls.GridReorderEventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
             var services = StandardizeContainer.Instance.Services.ToList();
             var movedItem = services[e.OldIndex];
@@ -77,14 +78,15 @@ namespace RockWeb.Blocks.Administration.Address
             else
                 services.Insert( e.NewIndex, movedItem );
 
-            using ( new Rock.Helpers.UnitOfWorkScope() )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
                 int order = 0;
                 foreach ( KeyValuePair<int, Lazy<StandardizeService, IStandardizeServiceData>> service in services )
                 {
-                    foreach ( Rock.Cms.Cached.Attribute attribute in service.Value.Value.Attributes )
-                        if ( attribute.Key == "Order" )
-                            Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
+                    foreach ( var category in service.Value.Value.Attributes )
+                        foreach ( var attribute in category.Value )
+                            if ( attribute.Key == "Order" )
+                                Rock.Attribute.Helper.SaveAttributeValue( service.Value.Value, attribute, order.ToString(), CurrentPersonId );
                     order++;
                 }
             }
@@ -140,8 +142,9 @@ namespace RockWeb.Blocks.Administration.Address
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
-            foreach ( Rock.Cms.Cached.Attribute attribute in service.Attributes )
-                Rock.Attribute.Helper.SaveAttributeValue( service, attribute, service.AttributeValues[attribute.Key].Value, CurrentPersonId );
+            foreach ( var category in service.Attributes )
+                foreach ( var attribute in category.Value )
+                    Rock.Attribute.Helper.SaveAttributeValue( service, attribute, service.AttributeValues[attribute.Key].Value, CurrentPersonId );
 
             hfServiceId.Value = string.Empty;
 

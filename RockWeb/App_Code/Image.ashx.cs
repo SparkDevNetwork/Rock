@@ -12,8 +12,9 @@ using System.Drawing;
 using System.IO;
 using System.Web;
 
-using Rock.Services.Cms;
 using ImageResizer;
+
+using Rock.CMS;
 
 namespace RockWeb
 {
@@ -38,7 +39,7 @@ namespace RockWeb
 			try
 			{
 				// Fetch the file...
-				Rock.Models.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
+				Rock.CMS.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
 
 				// is it cached?
 				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
@@ -63,7 +64,7 @@ namespace RockWeb
 			}
         }
 
-		private static void ResizeAndCache( HttpContext context, Rock.Models.Cms.File file, string physFilePath )
+		private static void ResizeAndCache( HttpContext context, Rock.CMS.File file, string physFilePath )
 		{
 			ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
 			MemoryStream resizedStream = new MemoryStream();
@@ -81,7 +82,7 @@ namespace RockWeb
 			catch { /* do nothing, not critical if this fails, although TODO: log */ }
 		}
 
-		private static bool FetchFromCache( Rock.Models.Cms.File file, string physFilePath )
+		private static bool FetchFromCache( Rock.CMS.File file, string physFilePath )
 		{
 			bool cached = false;
 			if ( System.IO.File.Exists( physFilePath ) && file.CreatedDateTime < System.IO.File.GetCreationTime( physFilePath ) )
@@ -112,7 +113,7 @@ namespace RockWeb
 				nvc["height"] != null || nvc["rotate"] != null || nvc["scale"] != null );
 		}
 
-		private static void SendFile( HttpContext context, Rock.Models.Cms.File file )
+		private static void SendFile( HttpContext context, Rock.CMS.File file )
 		{
 			context.Response.ContentType = file.MimeType;
 			context.Response.AddHeader( "content-disposition", "inline;filename=" + file.FileName );

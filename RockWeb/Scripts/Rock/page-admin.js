@@ -9,41 +9,6 @@
         modal: true
     })
 
-    // Wire up the iframe div as a popup dialog
-    $('#modalDiv').dialog({
-        autoOpen: false,
-        width: 580,
-        height: 600,
-        modal: true
-    })
-
-    // Bind the click event for all of the links that use the iframe to show the 
-    // modal div/iframe
-    $('a.show-iframe-dialog').click(function () {
-
-        // Use the anchor tag's href attribute as the source for the iframe
-        $('#modalIFrame').attr('src', $(this).attr('href'));
-
-        // 
-        $('#modalDiv').bind('dialogclose', function (event, ui) {
-            if ($(this).attr('instance-id') != undefined)
-                $('#blck-cnfg-trggr-' + $(this).attr('instance-id')).click();
-            $('#modalDiv').unbind('dialogclose');
-            $('#modalIFrame').attr('src', '');
-        });
-
-        // Use the anchor tag's title attribute as the title of the dialog box
-        if ($(this).attr('title') != undefined)
-            $('#modalDiv').dialog('option', 'title', $(this).attr('title'));
-
-        // popup the dialog box
-        $('#modalDiv').dialog('open');
-
-        // Cancel the default behavior of the anchor tag
-        return false;
-
-    });
-
     /*
     $('div.zone-instance').sortable({
     appendTo: 'body',
@@ -103,7 +68,7 @@
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'api/Cms/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
                 success: function (getData, status, xhr) {
 
                     // Update the new zone
@@ -125,7 +90,7 @@
                         contentType: 'application/json',
                         dataType: 'json',
                         data: JSON.stringify(getData),
-                        url: rock.baseUrl + 'api/Cms/BlockInstance/Move/' + blockInstanceId,
+                        url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
                         success: function (data, status, xhr) {
 
                             // Get a reference to the block instance's container div
@@ -156,12 +121,12 @@
 
                         },
                         error: function (xhr, status, error) {
-                            alert(status + ' ' + error + ' ' + xhr.responseText);
+                            alert(status + ' [' + error + ']: ' + xhr.responseText);
                         }
                     });
                 },
                 error: function (xhr, status, error) {
-                    alert(status + ' ' + error + ' ' + xhr.responseText);
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
 
@@ -195,7 +160,7 @@
 
                 },
                 error: function (xhr, status, error) {
-                    alert(status + ' ' + error + ' ' + xhr.responseText);
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
 
@@ -209,6 +174,8 @@
     // Bind the page's block config anchor to toggle the display
     // of each block's container and config options
     $('#cms-admin-footer .block-config').click(function () {
+        $('.zone-configuration').hide();
+        $('.zone-instance').removeClass('outline');
         $('.block-configuration').toggle();
         $('.block-instance').toggleClass('outline');
         return false;
@@ -217,6 +184,8 @@
     // Bind the page's zone config anchor to toggle the display
     // of each zone's container and config options
     $('#cms-admin-footer .page-zones').click(function () {
+        $('.block-configuration').hide();
+        $('.block-instance').removeClass('outline');
         $('.zone-configuration').toggle();
         $('.zone-instance').toggleClass('outline');
         return false;
