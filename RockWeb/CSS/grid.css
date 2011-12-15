@@ -1,8 +1,34 @@
-﻿/*.grid-table 
+﻿.grid-table
 {
-    width: inherit;
+    border-collapse: separate;
+    border-radius: 0 0 4px 4px;
+    margin-top: 24px;
 }
 
+.grid-table caption 
+{
+    text-align: left;
+    font-size: 18px;
+    padding: 0 0 12px 0;   
+}
+
+.grid-table thead th 
+{
+    --padding: 5px 9px; 
+    background-color: #ddd;
+}
+
+.grid-table thead th:first-child 
+{
+    border-top-left-radius: 6px;   
+}
+
+.grid-table thead th:last-child 
+{
+    border-top-right-radius: 6px;   
+}
+
+/* 
 .grid-table thead {
     -moz-border-bottom-colors: none;
     -moz-border-image: none;
@@ -26,9 +52,10 @@
     outline: 0 none;
 }*/
 
+
 .grid-table tbody tr:hover 
 {
-    --background-color: #d6d4d4;
+    background-color: #d6d4d4;
     background-color: rgba(255, 255, 255, 0.04);
     -webkit-transition: all 200ms ease-in-out;
 	-moz-transition: all 200ms ease-in-out;
@@ -39,8 +66,9 @@
 
 .grid-icon-cell
 {
-	width: 30px;
+	width: 25px;
 	vertical-align: middle;
+	padding: 10px 0 9px 10px;
 }
 
 .grid-icon-cell a, .grid-icon-cell span
@@ -80,12 +108,25 @@
     background: url("../Assets/Images/Grid/tick.png") ;
 }
 
-.grid-footer .actions 
+/* Grid Footer */
+.grid-table tfoot  
+{
+    height: 24px;  
+}
+
+.grid-table tfoot td 
+{
+    padding: 5px 9px;
+    border-radius: 0 0 6px 6px;   
+    background-color: #ddd;
+}
+
+.grid-table tfoot .actions 
 {
     padding: 0;
 }
 
-.grid-footer .grid-actions a
+.grid-table tfoot .grid-actions a
 {
 	float: right;
 	text-indent: -9999px;
@@ -95,22 +136,40 @@
     width: 16px;
     background-repeat: no-repeat;
 }
-.grid-footer .grid-actions a.add
+
+.grid-table tfoot .grid-actions a.add
 {
     background: url("../Assets/Images/Grid/add.png") ;
 }
 
-.grid-footer .paging
+.grid-table tfoot .paging
 {
 	width: 50%;
 	float:left;
 }
 
-.grid-footer .grid-actions
+.grid-table tfoot .paging select 
+{
+    width: 60px;
+    float: left;
+    margin-right: 12px;
+    font-size: 11px;
+    height: 24px;
+}
+
+.grid-table tfoot .paging label 
+{
+    float: left;
+    width: auto;
+    font-size: 11px;
+    margin-right: 5px;
+}
+
+.grid-table tfoot .grid-actions
 {
 	width: 50%;
 	float:right;
-	text-align: right;
+	padding-top: 4px;
 }
 
 
