@@ -60,7 +60,7 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
-            List<Rock.Web.Cache.Attribute> attributes = new List<Rock.Web.Cache.Attribute>();
+            SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
             Dictionary<string, KeyValuePair<string, string>> attributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
@@ -82,7 +82,12 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
                     properties[attribute.EntityQualifierColumn.ToLower()].GetValue( item, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
-                    attributes.Add( Rock.Web.Cache.Attribute.Read( attribute ));
+                    Rock.Web.Cache.Attribute cachedAttribute = Rock.Web.Cache.Attribute.Read(attribute);
+
+                    if ( !attributes.ContainsKey( cachedAttribute.Category ) )
+                        attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
+
+                    attributes[cachedAttribute.Category].Add( cachedAttribute );
                     attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( item.Id ) ) );
                 }
             }
@@ -130,44 +135,90 @@ namespace Rock.Attribute
             List<HtmlGenericControl> controls = new List<HtmlGenericControl>();
 
             if ( item.Attributes != null )
-                foreach ( Rock.Web.Cache.Attribute attribute in item.Attributes )
+                foreach(var category in item.Attributes)
                 {
-                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                    dl.ID = string.Format( "attribute-{0}", attribute.Id );
-                    dl.Attributes.Add( "attribute-key", attribute.Key );
-                    dl.ClientIDMode = ClientIDMode.AutoID;
-                    controls.Add( dl );
+                    HtmlGenericControl fieldSet = new HtmlGenericControl("fieldset");
+                    controls.Add(fieldSet);
 
-                    HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                    dl.Controls.Add( dt );
+                    HtmlGenericControl legend = new HtmlGenericControl("legend");
+                    fieldSet.Controls.Add(legend);
+                    legend.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : "Attributes";
 
-                    Label lbl = new Label();
-                    lbl.ClientIDMode = ClientIDMode.AutoID;
-                    lbl.Text = attribute.Name;
-                    lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
-                    dt.Controls.Add( lbl );
-
-                    HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-                    dl.Controls.Add( dd );
-
-                    Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value, setValue );
-                    attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
-                    attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                    dd.Controls.Add( attributeControl );
-
-                    if ( !string.IsNullOrEmpty( attribute.Description ) )
+                    foreach ( Rock.Web.Cache.Attribute attribute in category.Value )
                     {
-                        HtmlAnchor a = new HtmlAnchor();
-                        a.ClientIDMode = ClientIDMode.AutoID;
-                        a.Attributes.Add( "class", "help-tip" );
-                        a.HRef = "#";
-                        a.InnerHtml = "help<span>" + attribute.Description + "</span>";
+                        HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                        dl.ID = string.Format( "attribute-{0}", attribute.Id );
+                        dl.Attributes.Add( "attribute-key", attribute.Key );
+                        dl.ClientIDMode = ClientIDMode.AutoID;
+                        fieldSet.Controls.Add( dl );
 
-                        dd.Controls.Add( a );
+                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                        dl.Controls.Add( dt );
+
+                        Label lbl = new Label();
+                        lbl.ClientIDMode = ClientIDMode.AutoID;
+                        lbl.Text = attribute.Name;
+                        lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                        if ( attribute.Required )
+                            lbl.Attributes.Add( "class", "required" );
+                        dt.Controls.Add( lbl );
+
+                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                        dl.Controls.Add( dd );
+
+                        Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value, setValue );
+                        attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                        attributeControl.ClientIDMode = ClientIDMode.AutoID;
+                        dd.Controls.Add( attributeControl );
+
+                        if ( attribute.Required )
+                        {
+                            RequiredFieldValidator rfv = new RequiredFieldValidator();
+                            dd.Controls.Add( rfv );
+                            rfv.ControlToValidate = attributeControl.ID;
+                            rfv.ID = string.Format( "attribute-rfv-{0}", attribute.Id );
+                            rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
+                            rfv.Display = ValidatorDisplay.None;
+
+                            if (!setValue && !rfv.IsValid)
+                                dl.Attributes.Add( "class", "error" );
+                        }
+
+                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        {
+                            HtmlAnchor a = new HtmlAnchor();
+                            a.ClientIDMode = ClientIDMode.AutoID;
+                            a.Attributes.Add( "class", "help-tip" );
+                            a.HRef = "#";
+                            a.InnerHtml = "help<span>" + attribute.Description + "</span>";
+
+                            dd.Controls.Add( a );
+                        }
                     }
                 }
 
             return controls;
+        }
+
+        /// <summary>
+        /// Sets any missing required field error indicators.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="item">The item.</param>
+        public static void SetErrorIndicators( Control parentControl, IHasAttributes item )
+        {
+            if ( item.Attributes != null )
+                foreach ( var category in item.Attributes )
+                    foreach ( var attribute in category.Value )
+                    {
+                        if ( attribute.Required )
+                        {
+                            HtmlGenericControl dl = parentControl.FindControl( string.Format( "attribute-{0}", attribute.Id ) ) as HtmlGenericControl;
+                            RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute-rfv-{0}", attribute.Id ) ) as RequiredFieldValidator;
+                            if ( dl != null && rfv != null )
+                                dl.Attributes["class"] = rfv.IsValid ? "" : "error";
+                        }
+                    }
         }
 
         /// <summary>
@@ -179,12 +230,13 @@ namespace Rock.Attribute
         public static void GetEditValues( Control parentControl, IHasAttributes item )
         {
             if ( item.Attributes != null )
-                foreach ( Rock.Web.Cache.Attribute attribute in item.Attributes )
-                {
-                    Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
-                    if ( control != null )
-                        item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
-                }
+                foreach ( var category in item.Attributes )
+                    foreach ( var attribute in category.Value )
+                    {
+                        Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
+                        if ( control != null )
+                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
+                    }
         }
     }
 }

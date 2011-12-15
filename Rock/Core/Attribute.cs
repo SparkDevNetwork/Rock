@@ -94,6 +94,16 @@ namespace Rock.Core
 		public string Name { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Category.
+		/// </summary>
+		/// <value>
+		/// Category.
+		/// </value>
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Category { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Description.
 		/// </summary>
 		/// <value>
@@ -128,6 +138,15 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public string DefaultValue { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Required.
+		/// </summary>
+		/// <value>
+		/// Required.
+		/// </value>
+		[DataMember]
+		public bool Required { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -185,10 +204,12 @@ namespace Rock.Core
 				dto.EntityQualifierValue = this.EntityQualifierValue;
 				dto.Key = this.Key;
 				dto.Name = this.Name;
+				dto.Category = this.Category;
 				dto.Description = this.Description;
 				dto.Order = this.Order;
 				dto.GridColumn = this.GridColumn;
 				dto.DefaultValue = this.DefaultValue;
+				dto.Required = this.Required;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;

@@ -32,10 +32,7 @@
             <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
         </fieldset>
 
-        <fieldset id="fsAttributes" runat="server" visible="false">
-            <legend>Attributes</legend>
-            <placeholder id="phAttributes" runat="server"></placeholder>
-        </fieldset>
+        <placeholder id="phAttributes" runat="server"></placeholder>
 
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 

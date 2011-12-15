@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Facebook;
 
@@ -17,26 +19,83 @@ using Rock.CRM;
 
 namespace RockWeb.Blocks.Security
 {
+    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
     public partial class Login : Rock.Web.UI.Block
     {
+        /// <summary>
+        /// Handles the Load event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void Page_Load(object sender, EventArgs e)
         {
-            // determine if Facebook login enabled
+            pnlMessage.Visible = false;
+
+            // Add the jquery that will handle client-side validation and display the invalid controls correctly
+            PageInstance.AddScriptLink( Page, "~/Scripts/Rock/validation.js" );
+
+            tbPassword.TextBox.TextMode = TextBoxMode.Password;
+
+            // Determine if Facebook login enabled
             string facebookAppId = PageInstance.Site.FacebookAppId;
             string facebookAppSecret = PageInstance.Site.FacebookAppSecret;
             bool facebookEnabled = Convert.ToBoolean( AttributeValue( "FacebookEnabled" ) );
 
             // disable the facebook login button if it's not able to be used
             if ( !facebookEnabled ||  facebookAppId == "" || facebookAppSecret == "")
-            {
                 phFacebookLogin.Visible = false;
-            }
             
             // Check for Facebook query string params. If exists, assume it's a redirect back from Facebook.
             if ( Request.QueryString["code"] != null )
-            {
                 ProcessOAuth( Request.QueryString["code"], Request.QueryString["state"] );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnLogin_Click( object sender, EventArgs e )
+        {
+            if ( Page.IsValid )
+            {
+                if ( Membership.ValidateUser( tbUserName.Text, tbPassword.Text ) )
+                {
+                    // Save the current user's authentication cookie
+                    FormsAuthenticationTicket tkt;
+                    string cookiestr;
+                    HttpCookie ck;
+                    tkt = new FormsAuthenticationTicket( 1, tbUserName.Text, DateTime.Now, DateTime.Now.AddMinutes( 30 ), cbRememberMe.Checked, "your custom data" );
+                    cookiestr = FormsAuthentication.Encrypt( tkt );
+                    ck = new HttpCookie( FormsAuthentication.FormsCookieName, cookiestr );
+                    if ( cbRememberMe.Checked )
+                        ck.Expires = tkt.Expiration;
+                    ck.Path = FormsAuthentication.FormsCookiePath;
+                    Response.Cookies.Add( ck );
+
+                    // Redirect to any specified url, or the default url if non was specified
+                    string strRedirect;
+                    strRedirect = Request["ReturnUrl"];
+                    if ( strRedirect == null )
+                        strRedirect = FormsAuthentication.DefaultUrl;
+                    Response.Redirect( strRedirect, true );
+                }
+                else
+                {
+                    DisplayError( "Invalid Login Information" );
+                }
             }
+        }
+
+        /// <summary>
+        /// Displays the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
         }
 
         /// <summary>
@@ -44,7 +103,7 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         /// <param name="sender">Trigger object of event</param>
         /// <param name="e">Arguments passed in</param>
-        protected void ibFacebookLogin_Click( object sender, EventArgs e )
+        protected void lbFacebookLogin_Click( object sender, EventArgs e )
         {
             var returnUrl = Request.QueryString["returnurl"];
             var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
@@ -56,7 +115,7 @@ namespace RockWeb.Blocks.Security
             {
                         { "display", "popup" },
                         { "scope", "user_birthday,email,read_stream,read_friendlists"},
-                        { "state", returnUrl}
+                        { "state", returnUrl ?? FormsAuthentication.DefaultUrl}
             };
 
             // Grab publically available information. No special permissions needed for authentication.
@@ -182,6 +241,8 @@ namespace RockWeb.Blocks.Security
             Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
+
+
     }
 
     // helpful links
