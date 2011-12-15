@@ -26,7 +26,7 @@ namespace Rock.Util
 		/// <summary>
 		/// Gets Jobs by Guid
 		/// </summary>
-		/// <param name="guid">Guid.</param>
+		/// <param name="guid">Guid of the job..</param>
 		/// <returns>An enumerable list of Job objects.</returns>
 	    public IEnumerable<Rock.Util.Job> GetByGuid( Guid guid )
         {
