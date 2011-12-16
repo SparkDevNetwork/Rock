@@ -2568,3 +2568,72 @@ div.filter-search .filter {
 	font-size: 12px;
 	padding: 4px 12px 0 0;
 }
+
+/* jQuery Scrolling Capability */
+.scroll-container 
+{ 
+    width: 520px; 
+    clear: both; 
+    margin: 20px 0 10px; 
+}
+
+.scroll-container .viewport 
+{ 
+    width: 500px; 
+    height: 200px; 
+    overflow: hidden; 
+    position: relative; 
+}
+
+.scroll-container .overview 
+{ 
+    list-style: none; 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+}
+
+.scroll-container .thumb .end,
+.scroll-container .thumb 
+{ 
+    background-color: #003D5D; 
+}
+
+.scroll-container .scrollbar 
+{ 
+    position: relative; 
+    float: right; 
+    width: 15px; 
+}
+
+.scroll-container .track 
+{ 
+    background-color: #D8EEFD; 
+    height: 100%; 
+    width:2px; 
+    position: relative; 
+    padding: 0 1px; 
+}
+
+.scroll-container .thumb 
+{ 
+    height: 20px; 
+    width: 13px; 
+    cursor: pointer; 
+    overflow: hidden; 
+    position: absolute; 
+    top: 0;
+    border-radius: 120px;
+}
+
+.scroll-container .thumb .end 
+{ 
+    overflow: hidden; 
+    height: 5px; 
+    width: 13px; 
+}
+
+.scroll-container .disable
+{ 
+    display: none; 
+}
