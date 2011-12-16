@@ -264,3 +264,46 @@ article.blog-post header ul li:last-child:after {
     
 }
 
+/* Dialog Styling */
+#dialog 
+{
+    overflow: hidden;    
+}
+
+#dialog #modal-scroll-container 
+{
+    width: 530px;
+}
+
+#dialog #modal-scroll-container .viewport 
+{
+    height: 380px;
+    width: 515px; 
+}
+
+#dialog #modal-scroll-container .overview 
+{
+    width: 460px; 
+}
+
+#dialog #modal-scroll-container .thumb 
+{
+    margin-left: -6px;
+    background-color: #ccc;
+}
+
+#dialog #modal-scroll-container .track
+{
+    width: 0;
+    background-color: #ddd;
+    border-radius: 4px;   
+}
+
+#dialog #modal-scroll-container .end
+{
+    background-color: #ccc; 
+}
+
+
+
+

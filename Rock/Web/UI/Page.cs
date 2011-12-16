@@ -652,6 +652,7 @@ namespace Rock.Web.UI
 
             HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
             modalIFrame.ID = "modal-popup-iframe";
+            modalIFrame.Attributes.Add( "scrolling", "no" );
             modalBody.Controls.Add( modalIFrame );
         }
 
