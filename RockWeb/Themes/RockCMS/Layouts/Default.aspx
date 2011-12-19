@@ -50,16 +50,6 @@
             <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
             <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
             <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>           
-            <p>test this</p>
-             <p>test this</p>
-              <p>test this</p>
-               <p>test this</p>
-                <p>test this</p>
-                 <p>test this</p>
-                  <p>test this</p>
-                   <p>test this</p>
-                    <p>test this</p>
-                     <p>test this</p>
         </section>
 	</div>
 
