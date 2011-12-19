@@ -110,8 +110,10 @@ namespace Rock.Web.UI.Controls
             this.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             this.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
-            this.EmptyDataRowStyle.CssClass = "grid-footer";
-            this.PagerStyle.CssClass = "grid-footer";
+
+            // hack to turn off style="border-collapse: collapse"
+            this.GridLines =  GridLines.None;
+            this.CellSpacing = -1;
 
             EmptyDataTemplate emptyDataTemplate = new EmptyDataTemplate();
             emptyDataTemplate.AddClick += gridPagerTemplate_AddClick;
@@ -561,7 +563,7 @@ namespace Rock.Web.UI.Controls
             div.Controls.Add( ddl );
 
             HtmlGenericControl divActions = new HtmlGenericControl( "div" );
-            divActions.Attributes.Add( "class", "actions" );
+            divActions.Attributes.Add( "class", "grid-actions" );
             container.Controls.Add( divActions );
 
             LinkButton lbAdd = new LinkButton();
