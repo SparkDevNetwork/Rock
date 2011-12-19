@@ -85,6 +85,16 @@ namespace Rock.Custom.CCV.ClientTestApp
                 return null;
             }
         }
+
+        private void btnEncrypt_Click( object sender, EventArgs e )
+        {
+            tbEncryptionResult.Text = System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( tbEncryption.Text, "MyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhrase" ) );
+        }
+
+        private void btnDecrypt_Click( object sender, EventArgs e )
+        {
+            tbEncryptionResult.Text = Rock.Security.Encryption.DecryptString( System.Web.HttpUtility.UrlDecode( tbEncryption.Text ), "MyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhrase" );
+        }
     }
 
 }
