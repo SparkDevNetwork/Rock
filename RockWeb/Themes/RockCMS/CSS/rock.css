@@ -403,9 +403,16 @@ header.topbar nav ul > li:hover .nav-menu {
 	color: #595959;
 }
 
-.modal-body
+/* Modal Styles */
+
+.modal 
 {
-    background: url("../assets/images/ajax-loader.gif") center center no-repeat;
+    background-color: #ddd;
+}
+
+body#dialog 
+{
+    background-color: #ddd;   
 }
 
 #modal-popup-iframe
@@ -418,4 +425,8 @@ header.topbar nav ul > li:hover .nav-menu {
 {
     margin: 0;
     padding: 0 15px 0 0;
+}
+
+.modal-header {
+    border-bottom: 1px solid #CCCCCC;
 }
