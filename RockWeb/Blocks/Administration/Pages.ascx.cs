@@ -174,8 +174,6 @@ namespace RockWeb.Blocks.Administration
 
                 pageService.Add( page, CurrentPersonId );
 
-                if (_page != null)
-                    Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
                 page = pageService.Get( pageId );
@@ -185,8 +183,11 @@ namespace RockWeb.Blocks.Administration
 
             pageService.Save( page, CurrentPersonId );
 
-            if ( _page != null ) 
+            if ( _page != null )
+            {
+                Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
                 _page.FlushChildPages();
+            }
 
             BindGrid();
 

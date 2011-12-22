@@ -39,6 +39,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -90,6 +91,10 @@
     <ProjectReference Include="..\..\Rock.DataTransferObjects\Rock.DataTransferObjects.csproj">
       <Project>{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}</Project>
       <Name>Rock.DataTransferObjects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Rock\Rock.csproj">
+      <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
+      <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
