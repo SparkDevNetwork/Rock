@@ -10,7 +10,7 @@
     });
 
 </script>
-<asp:UpdatePanel id="upPanel" runat="server" class="admin-dialog">
+<asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
     
     <div class='dialog-title'><asp:Literal ID="lTitle" runat="server"/></div>
