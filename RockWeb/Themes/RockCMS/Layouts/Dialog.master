@@ -53,10 +53,8 @@
     </form>
 
     <script type="text/javascript">
-        $(document).ready(function () {
-
+        Sys.Application.add_load(function () {
             $('#modal-scroll-container').tinyscrollbar({ size: 150 });
-
         });
     </script>
 </body>

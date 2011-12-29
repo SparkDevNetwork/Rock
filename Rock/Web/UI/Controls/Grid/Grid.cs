@@ -501,6 +501,7 @@ namespace Rock.Web.UI.Controls
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
             lbAdd.Click += lbAdd_Click;
+            lbAdd.CausesValidation = false;
             divActions.Controls.Add( lbAdd );
         }
 
@@ -531,6 +532,7 @@ namespace Rock.Web.UI.Controls
             DropDownList ddl = new DropDownList();
             ddl.ID = "ddlPageList";
             ddl.AutoPostBack = true;
+            ddl.CausesValidation = false;
             ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
 
             Label lbl = new Label();
@@ -549,6 +551,7 @@ namespace Rock.Web.UI.Controls
             ddl = new DropDownList();
             ddl.ID = "ddlPageSize";
             ddl.AutoPostBack = true;
+            ddl.CausesValidation = false;
             ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
             ddl.Items.Add( new ListItem( "5", "5" ) );
             ddl.Items.Add( new ListItem( "20", "20" ) );
@@ -571,6 +574,7 @@ namespace Rock.Web.UI.Controls
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
             lbAdd.Click += lbAdd_Click;
+            lbAdd.CausesValidation = false;
             divActions.Controls.Add( lbAdd );
         }
 
