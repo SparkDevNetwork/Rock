@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingAttributeValue.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
-					AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+					
+					if (existingAttributeValue.IsValid)
+						AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingAttributeValue.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
-						AttributeValueService.Save( existingAttributeValue, user.PersonId );
+					
+						if (existingAttributeValue.IsValid)
+							AttributeValueService.Save( existingAttributeValue, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.AttributeValue existingAttributeValue = new Rock.Core.AttributeValue();
 				AttributeValueService.Add( existingAttributeValue, currentUser.PersonId() );
 				uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
-				AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+
+				if (existingAttributeValue.IsValid)
+					AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.AttributeValue existingAttributeValue = new Rock.Core.AttributeValue();
 					AttributeValueService.Add( existingAttributeValue, user.PersonId );
 					uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
-					AttributeValueService.Save( existingAttributeValue, user.PersonId );
+
+					if (existingAttributeValue.IsValid)
+						AttributeValueService.Save( existingAttributeValue, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

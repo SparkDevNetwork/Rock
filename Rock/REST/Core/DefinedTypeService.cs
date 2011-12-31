@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingDefinedType.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-					DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+					
+					if (existingDefinedType.IsValid)
+						DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingDefinedType.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-						DefinedTypeService.Save( existingDefinedType, user.PersonId );
+					
+						if (existingDefinedType.IsValid)
+							DefinedTypeService.Save( existingDefinedType, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.DefinedType existingDefinedType = new Rock.Core.DefinedType();
 				DefinedTypeService.Add( existingDefinedType, currentUser.PersonId() );
 				uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-				DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+
+				if (existingDefinedType.IsValid)
+					DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.DefinedType existingDefinedType = new Rock.Core.DefinedType();
 					DefinedTypeService.Add( existingDefinedType, user.PersonId );
 					uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
-					DefinedTypeService.Save( existingDefinedType, user.PersonId );
+
+					if (existingDefinedType.IsValid)
+						DefinedTypeService.Save( existingDefinedType, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

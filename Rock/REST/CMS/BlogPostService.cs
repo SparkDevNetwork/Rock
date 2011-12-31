@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlogPost.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
-					BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
+					
+					if (existingBlogPost.IsValid)
+						BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlogPost.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogPost", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlogPost.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
-						BlogPostService.Save( existingBlogPost, user.PersonId );
+					
+						if (existingBlogPost.IsValid)
+							BlogPostService.Save( existingBlogPost, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlogPost.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlogPost", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogPost existingBlogPost = new Rock.CMS.BlogPost();
 				BlogPostService.Add( existingBlogPost, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
-				BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
+
+				if (existingBlogPost.IsValid)
+					BlogPostService.Save( existingBlogPost, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlogPost.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.BlogPost existingBlogPost = new Rock.CMS.BlogPost();
 					BlogPostService.Add( existingBlogPost, user.PersonId );
 					uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
-					BlogPostService.Save( existingBlogPost, user.PersonId );
+
+					if (existingBlogPost.IsValid)
+						BlogPostService.Save( existingBlogPost, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlogPost.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

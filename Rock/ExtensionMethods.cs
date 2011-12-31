@@ -5,6 +5,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rock
@@ -66,6 +68,25 @@ namespace Rock
         public static T ConvertToEnum<T>( this String enumValue )
         {
             return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
+        }
+
+        #endregion
+
+        #region GenericCollection Extensions
+
+        /// <summary>
+        /// Concatonate the items
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">The items.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <returns></returns>
+        public static String AsDelimited<T>( this List<T> items, string delimiter)
+        {
+            List<string> strings = new List<string>();
+            foreach ( T item in items )
+                strings.Add( item.ToString() );
+            return String.Join( delimiter, strings.ToArray() );
         }
 
         #endregion

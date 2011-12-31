@@ -92,7 +92,11 @@ namespace Rock.REST.CRM
 				if ( existingPerson.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
-					PersonService.Save( existingPerson, currentUser.PersonId() );
+					
+					if (existingPerson.IsValid)
+						PersonService.Save( existingPerson, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Person", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CRM
 					if ( existingPerson.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
-						PersonService.Save( existingPerson, user.PersonId );
+					
+						if (existingPerson.IsValid)
+							PersonService.Save( existingPerson, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Person", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CRM
 				Rock.CRM.Person existingPerson = new Rock.CRM.Person();
 				PersonService.Add( existingPerson, currentUser.PersonId() );
 				uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
-				PersonService.Save( existingPerson, currentUser.PersonId() );
+
+				if (existingPerson.IsValid)
+					PersonService.Save( existingPerson, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CRM
 					Rock.CRM.Person existingPerson = new Rock.CRM.Person();
 					PersonService.Add( existingPerson, user.PersonId );
 					uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
-					PersonService.Save( existingPerson, user.PersonId );
+
+					if (existingPerson.IsValid)
+						PersonService.Save( existingPerson, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

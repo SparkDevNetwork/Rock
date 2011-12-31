@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingSite.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
-					SiteService.Save( existingSite, currentUser.PersonId() );
+					
+					if (existingSite.IsValid)
+						SiteService.Save( existingSite, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Site", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingSite.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
-						SiteService.Save( existingSite, user.PersonId );
+					
+						if (existingSite.IsValid)
+							SiteService.Save( existingSite, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Site", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.Site existingSite = new Rock.CMS.Site();
 				SiteService.Add( existingSite, currentUser.PersonId() );
 				uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
-				SiteService.Save( existingSite, currentUser.PersonId() );
+
+				if (existingSite.IsValid)
+					SiteService.Save( existingSite, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.Site existingSite = new Rock.CMS.Site();
 					SiteService.Add( existingSite, user.PersonId );
 					uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
-					SiteService.Save( existingSite, user.PersonId );
+
+					if (existingSite.IsValid)
+						SiteService.Save( existingSite, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

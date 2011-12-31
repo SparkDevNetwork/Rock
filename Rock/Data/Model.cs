@@ -40,6 +40,33 @@ namespace Rock.Data
         [DataMember]
         public Guid Guid { get; set; }
 
+        /// <summary>
+        /// Gets the validation results.
+        /// </summary>
+        [NotMapped]
+        public List<ValidationResult> ValidationResults
+        {
+            get { return _validationResults; }
+        }
+        private List<ValidationResult> _validationResults;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool IsValid
+        {
+            get
+            {
+                var valContext = new ValidationContext( this, serviceProvider: null, items: null );
+                _validationResults = new List<ValidationResult>();
+                return Validator.TryValidateObject( this, valContext, _validationResults );
+            }
+        }
+
         #region ISecured implementation
 
         /// <summary>
@@ -60,6 +87,7 @@ namespace Rock.Data
         /// <summary>
         /// A list of actions that this class supports.
         /// </summary>
+        [NotMapped]
         public virtual List<string> SupportedActions
         {
             get { return new List<string>() { "View", "Edit"  }; }

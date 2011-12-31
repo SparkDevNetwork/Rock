@@ -884,7 +884,11 @@ namespace Rock.REST<#= projectNamespace #>
 				if ( existing<#= Entity #>.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-					<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+					
+					if (existing<#= Entity #>.IsValid)
+						<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
@@ -910,7 +914,11 @@ namespace Rock.REST<#= projectNamespace #>
 					if ( existing<#= Entity #>.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-						<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+					
+						if (existing<#= Entity #>.IsValid)
+							<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+						else
+							throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
@@ -937,7 +945,11 @@ namespace Rock.REST<#= projectNamespace #>
 				<#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
 				<#= Entity #>Service.Add( existing<#= Entity #>, currentUser.PersonId() );
 				uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-				<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+
+				if (existing<#= Entity #>.IsValid)
+					<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -959,7 +971,11 @@ namespace Rock.REST<#= projectNamespace #>
 					<#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
 					<#= Entity #>Service.Add( existing<#= Entity #>, user.PersonId );
 					uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
-					<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+
+					if (existing<#= Entity #>.IsValid)
+						<#= Entity #>Service.Save( existing<#= Entity #>, user.PersonId );
+					else
+						throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
