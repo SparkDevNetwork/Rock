@@ -5,6 +5,9 @@
 //
 
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
+
+using Rock.Data;
 
 namespace Rock.Core
 {
@@ -23,4 +26,18 @@ namespace Rock.Core
             return DefaultValue;
         }
     }
+
+#pragma warning disable
+
+    public class CommentPage
+    {
+        [Required( ErrorMessage = "Key is required" )]
+        public string Key { get; set; }
+
+        [Required( ErrorMessage = "Name is required" )]
+        public string Name { get; set; }
+    }
+
+#pragma warning restore
+
 }

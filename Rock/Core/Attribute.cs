@@ -80,6 +80,7 @@ namespace Rock.Core
 		/// Key.
 		/// </value>
 		[MaxLength( 50 )]
+		[Required( ErrorMessage = "Key is required" )]
 		[DataMember]
 		public string Key { get; set; }
 		
@@ -90,6 +91,7 @@ namespace Rock.Core
 		/// Name.
 		/// </value>
 		[MaxLength( 100 )]
+		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
 		

@@ -92,7 +92,11 @@ namespace Rock.REST.Util
 				if ( existingJob.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-					JobService.Save( existingJob, currentUser.PersonId() );
+					
+					if (existingJob.IsValid)
+						JobService.Save( existingJob, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Job", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Util
 					if ( existingJob.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-						JobService.Save( existingJob, user.PersonId );
+					
+						if (existingJob.IsValid)
+							JobService.Save( existingJob, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Job", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Util
 				Rock.Util.Job existingJob = new Rock.Util.Job();
 				JobService.Add( existingJob, currentUser.PersonId() );
 				uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-				JobService.Save( existingJob, currentUser.PersonId() );
+
+				if (existingJob.IsValid)
+					JobService.Save( existingJob, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Util
 					Rock.Util.Job existingJob = new Rock.Util.Job();
 					JobService.Add( existingJob, user.PersonId );
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
-					JobService.Save( existingJob, user.PersonId );
+
+					if (existingJob.IsValid)
+						JobService.Save( existingJob, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

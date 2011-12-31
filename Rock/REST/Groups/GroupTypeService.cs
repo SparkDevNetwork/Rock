@@ -92,7 +92,11 @@ namespace Rock.REST.Groups
 				if ( existingGroupType.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
-					GroupTypeService.Save( existingGroupType, currentUser.PersonId() );
+					
+					if (existingGroupType.IsValid)
+						GroupTypeService.Save( existingGroupType, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingGroupType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this GroupType", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Groups
 					if ( existingGroupType.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
-						GroupTypeService.Save( existingGroupType, user.PersonId );
+					
+						if (existingGroupType.IsValid)
+							GroupTypeService.Save( existingGroupType, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingGroupType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this GroupType", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Groups
 				Rock.Groups.GroupType existingGroupType = new Rock.Groups.GroupType();
 				GroupTypeService.Add( existingGroupType, currentUser.PersonId() );
 				uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
-				GroupTypeService.Save( existingGroupType, currentUser.PersonId() );
+
+				if (existingGroupType.IsValid)
+					GroupTypeService.Save( existingGroupType, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingGroupType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Groups
 					Rock.Groups.GroupType existingGroupType = new Rock.Groups.GroupType();
 					GroupTypeService.Add( existingGroupType, user.PersonId );
 					uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
-					GroupTypeService.Save( existingGroupType, user.PersonId );
+
+					if (existingGroupType.IsValid)
+						GroupTypeService.Save( existingGroupType, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingGroupType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-					AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+					
+					if (existingAttributeQualifier.IsValid)
+						AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingAttributeQualifier.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-						AttributeQualifierService.Save( existingAttributeQualifier, user.PersonId );
+					
+						if (existingAttributeQualifier.IsValid)
+							AttributeQualifierService.Save( existingAttributeQualifier, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.AttributeQualifier existingAttributeQualifier = new Rock.Core.AttributeQualifier();
 				AttributeQualifierService.Add( existingAttributeQualifier, currentUser.PersonId() );
 				uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-				AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+
+				if (existingAttributeQualifier.IsValid)
+					AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.AttributeQualifier existingAttributeQualifier = new Rock.Core.AttributeQualifier();
 					AttributeQualifierService.Add( existingAttributeQualifier, user.PersonId );
 					uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
-					AttributeQualifierService.Save( existingAttributeQualifier, user.PersonId );
+
+					if (existingAttributeQualifier.IsValid)
+						AttributeQualifierService.Save( existingAttributeQualifier, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

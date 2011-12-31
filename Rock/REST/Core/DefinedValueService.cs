@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingDefinedValue.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-					DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+					
+					if (existingDefinedValue.IsValid)
+						DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this DefinedValue", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingDefinedValue.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-						DefinedValueService.Save( existingDefinedValue, user.PersonId );
+					
+						if (existingDefinedValue.IsValid)
+							DefinedValueService.Save( existingDefinedValue, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this DefinedValue", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.DefinedValue existingDefinedValue = new Rock.Core.DefinedValue();
 				DefinedValueService.Add( existingDefinedValue, currentUser.PersonId() );
 				uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-				DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+
+				if (existingDefinedValue.IsValid)
+					DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.DefinedValue existingDefinedValue = new Rock.Core.DefinedValue();
 					DefinedValueService.Add( existingDefinedValue, user.PersonId );
 					uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
-					DefinedValueService.Save( existingDefinedValue, user.PersonId );
+
+					if (existingDefinedValue.IsValid)
+						DefinedValueService.Save( existingDefinedValue, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

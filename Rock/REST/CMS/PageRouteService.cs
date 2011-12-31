@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingPageRoute.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-					PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
+					
+					if (existingPageRoute.IsValid)
+						PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PageRoute", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingPageRoute.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-						PageRouteService.Save( existingPageRoute, user.PersonId );
+					
+						if (existingPageRoute.IsValid)
+							PageRouteService.Save( existingPageRoute, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this PageRoute", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.PageRoute existingPageRoute = new Rock.CMS.PageRoute();
 				PageRouteService.Add( existingPageRoute, currentUser.PersonId() );
 				uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-				PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
+
+				if (existingPageRoute.IsValid)
+					PageRouteService.Save( existingPageRoute, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.PageRoute existingPageRoute = new Rock.CMS.PageRoute();
 					PageRouteService.Add( existingPageRoute, user.PersonId );
 					uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
-					PageRouteService.Save( existingPageRoute, user.PersonId );
+
+					if (existingPageRoute.IsValid)
+						PageRouteService.Save( existingPageRoute, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
