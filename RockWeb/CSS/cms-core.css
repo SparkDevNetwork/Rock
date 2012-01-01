@@ -312,7 +312,9 @@ article.blog-post header ul li:last-child:after {
     background-color: #bbb;
 }
 
-.modal-body
+/* DRT: Added the .iframe qualifier so that the ajax loading icon does not appear when we're using the 
+dialog box to show inline div elements (without an iframe) */
+.modal-body.iframe
 {
     background: url("../assets/images/ajax-loading.png") center center no-repeat;
     /* http://preloaders.net/en/popular */
