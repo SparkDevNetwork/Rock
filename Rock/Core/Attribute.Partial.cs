@@ -25,6 +25,14 @@ namespace Rock.Core
                 return attributeValue.Value;
             return DefaultValue;
         }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Organization" ); }
+        }
     }
 
 #pragma warning disable

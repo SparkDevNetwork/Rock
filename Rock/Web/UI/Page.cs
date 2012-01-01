@@ -650,7 +650,7 @@ namespace Rock.Web.UI
             modalHeader.Controls.Add( modalHeading );
 
             HtmlGenericControl modalBody = new HtmlGenericControl( "div" );
-            modalBody.Attributes.Add( "class", "modal-body" );
+            modalBody.Attributes.Add( "class", "modal-body iframe" );
             modalPopup.Controls.Add( modalBody );
 
             HtmlGenericControl modalFooter = new HtmlGenericControl( "div" );

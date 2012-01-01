@@ -207,13 +207,16 @@ namespace Rock.Web.UI.Controls
                     ddl.SelectedValue = this.PageSize.ToString();
                 
                 // Set Action Controls
+                HtmlGenericControl aAdd = pagerRow.Cells[0].FindControl( "aAdd" ) as HtmlGenericControl;
+                if ( aAdd != null )
+                {
+                    aAdd.Visible = EnableAdd && ClientAddScript != string.Empty;
+                    aAdd.Attributes["onclick"] = ClientAddScript;
+                }
+
                 LinkButton lbAdd = pagerRow.Cells[0].FindControl( "lbAdd" ) as LinkButton;
                 if ( lbAdd != null )
-                {
-                    lbAdd.Visible = EnableAdd;
-                    if ( ClientAddScript != string.Empty )
-                        lbAdd.OnClientClick = ClientAddScript;
-                }
+                    lbAdd.Visible = EnableAdd && ClientAddScript == string.Empty;
             }
         }
 
@@ -496,6 +499,13 @@ namespace Rock.Web.UI.Controls
             divActions.Attributes.Add( "class", "actions" );
             container.Controls.Add( divActions );
 
+            HtmlGenericControl aAdd = new HtmlGenericControl( "a" );
+            aAdd.ID = "aAdd";
+            aAdd.Attributes.Add( "href", "#" );
+            aAdd.Attributes.Add( "class", "add" );
+            aAdd.InnerText = "Add";
+            divActions.Controls.Add( aAdd );
+
             LinkButton lbAdd = new LinkButton();
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add";
@@ -568,6 +578,13 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl divActions = new HtmlGenericControl( "div" );
             divActions.Attributes.Add( "class", "grid-actions" );
             container.Controls.Add( divActions );
+
+            HtmlGenericControl aAdd = new HtmlGenericControl( "a" );
+            aAdd.ID = "aAdd";
+            aAdd.Attributes.Add( "href", "#" );
+            aAdd.Attributes.Add( "class", "add" );
+            aAdd.InnerText = "Add";
+            divActions.Controls.Add( aAdd );
 
             LinkButton lbAdd = new LinkButton();
             lbAdd.ID = "lbAdd";

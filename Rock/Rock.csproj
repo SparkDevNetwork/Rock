@@ -145,6 +145,7 @@
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValue.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\AttributeValue.Partial.cs" />
     <Compile Include="Core\DefinedType.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValue.cs" />
@@ -201,6 +202,7 @@
     <Compile Include="Groups\MemberService.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
+    <Compile Include="Security\GenericEntity.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />
@@ -212,6 +214,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
     <Compile Include="Web\UI\Page.cs">
       <SubType>ASPXCodeBehind</SubType>
