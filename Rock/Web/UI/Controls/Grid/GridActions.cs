@@ -128,6 +128,9 @@ namespace Rock.Web.UI.Controls
                 AddClick( sender, e );
         }
 
-        internal event EventHandler AddClick;
+        /// <summary>
+        /// Occurs when add action is clicked.
+        /// </summary>
+        public event EventHandler AddClick;
     }
 }

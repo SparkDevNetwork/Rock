@@ -37,19 +37,19 @@ namespace RockWeb.Blocks.Administration
             if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
-                gLayoutBlocks.EnableAdd = true;
-                gLayoutBlocks.GridAdd += new GridAddEventHandler( gLayoutBlocks_GridAdd );
-                gLayoutBlocks.GridReorder += new GridReorderEventHandler( gLayoutBlocks_GridReorder );
-                gLayoutBlocks.GridRebind += new GridRebindEventHandler( gLayoutBlocks_GridRebind );
+                gLayoutBlocks.Actions.EnableAdd = true;
+                gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
+                gLayoutBlocks.GridReorder += gLayoutBlocks_GridReorder;
+                gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
             }
 
             if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
-                gPageBlocks.EnableAdd = true;
-                gPageBlocks.GridAdd += new GridAddEventHandler( gPageBlocks_GridAdd );
-                gPageBlocks.GridReorder += new GridReorderEventHandler( gPageBlocks_GridReorder );
-                gPageBlocks.GridRebind += new GridRebindEventHandler( gPageBlocks_GridRebind );
+                gPageBlocks.Actions.EnableAdd = true;
+                gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
+                gPageBlocks.GridReorder += gPageBlocks_GridReorder;
+                gPageBlocks.GridRebind += gPageBlocks_GridRebind;
             }
 
             string script = string.Format( @"
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
             BindGrids();
         }
 
-        void gLayoutBlocks_GridAdd( object sender, EventArgs e )
+        void LayoutBlocks_Add( object sender, EventArgs e )
         {
             ShowEdit( Rock.Web.Cache.BlockInstanceLocation.Layout, 0 );
         }
