@@ -16,7 +16,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
-        const string APIKEY = "CcvApiKey";
+        const string APIKEY = "CcvRockApiKey";
 
         public Form1()
         {
@@ -66,7 +66,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 
             try
             {
-                byte[] data = proxy.UploadData( string.Format( "http://www.ccvonline.com/RockChMS/REST/CRM/Address/{0}/{1}", service, APIKEY ),
+                byte[] data = proxy.UploadData( string.Format( "http://localhost:6229/RockWeb/REST/CRM/Address/{0}/{1}", service, APIKEY ),
                     "PUT", ms.ToArray() );
                 Stream stream = new MemoryStream( data );
                 return serializer.ReadObject( stream ) as Rock.CRM.DTO.Address;
