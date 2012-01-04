@@ -49,18 +49,18 @@
             this.tbEncryption = new System.Windows.Forms.TextBox();
             this.lblEncryptionSource = new System.Windows.Forms.Label();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label2 = new System.Windows.Forms.Label();
-            this.tbAttrKey = new System.Windows.Forms.TextBox();
-            this.tbAttrName = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.tbAttrCategory = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.tbAttrDescription = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.cbAttrRequired = new System.Windows.Forms.CheckBox();
-            this.btnAttrGo = new System.Windows.Forms.Button();
             this.tbAttrValue = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
+            this.btnAttrGo = new System.Windows.Forms.Button();
+            this.cbAttrRequired = new System.Windows.Forms.CheckBox();
+            this.tbAttrDescription = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.tbAttrCategory = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.tbAttrName = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.tbAttrKey = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -121,6 +121,7 @@
             this.btnGo.TabIndex = 24;
             this.btnGo.Text = "Go";
             this.btnGo.UseVisualStyleBackColor = true;
+            this.btnGo.Click += new System.EventHandler( this.btnGo_Click );
             // 
             // tbStreet2
             // 
@@ -278,53 +279,41 @@
             this.tabPage3.Text = "Add Attribute";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // tbAttrValue
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point( 21, 21 );
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size( 25, 13 );
-            this.label2.TabIndex = 0;
-            this.label2.Text = "Key";
+            this.tbAttrValue.Location = new System.Drawing.Point( 87, 120 );
+            this.tbAttrValue.Name = "tbAttrValue";
+            this.tbAttrValue.Size = new System.Drawing.Size( 179, 20 );
+            this.tbAttrValue.TabIndex = 27;
             // 
-            // tbAttrKey
+            // label7
             // 
-            this.tbAttrKey.Location = new System.Drawing.Point( 87, 18 );
-            this.tbAttrKey.Name = "tbAttrKey";
-            this.tbAttrKey.Size = new System.Drawing.Size( 179, 20 );
-            this.tbAttrKey.TabIndex = 1;
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point( 21, 123 );
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size( 34, 13 );
+            this.label7.TabIndex = 26;
+            this.label7.Text = "Value";
             // 
-            // tbAttrName
+            // btnAttrGo
             // 
-            this.tbAttrName.Location = new System.Drawing.Point( 87, 44 );
-            this.tbAttrName.Name = "tbAttrName";
-            this.tbAttrName.Size = new System.Drawing.Size( 179, 20 );
-            this.tbAttrName.TabIndex = 3;
+            this.btnAttrGo.Location = new System.Drawing.Point( 87, 177 );
+            this.btnAttrGo.Name = "btnAttrGo";
+            this.btnAttrGo.Size = new System.Drawing.Size( 95, 23 );
+            this.btnAttrGo.TabIndex = 25;
+            this.btnAttrGo.Text = "Go";
+            this.btnAttrGo.UseVisualStyleBackColor = true;
+            this.btnAttrGo.Click += new System.EventHandler( this.btnAttrGo_Click );
             // 
-            // label4
+            // cbAttrRequired
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point( 21, 47 );
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size( 35, 13 );
-            this.label4.TabIndex = 2;
-            this.label4.Text = "Name";
-            // 
-            // tbAttrCategory
-            // 
-            this.tbAttrCategory.Location = new System.Drawing.Point( 87, 70 );
-            this.tbAttrCategory.Name = "tbAttrCategory";
-            this.tbAttrCategory.Size = new System.Drawing.Size( 179, 20 );
-            this.tbAttrCategory.TabIndex = 5;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point( 21, 73 );
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size( 49, 13 );
-            this.label5.TabIndex = 4;
-            this.label5.Text = "Category";
+            this.cbAttrRequired.AutoSize = true;
+            this.cbAttrRequired.Location = new System.Drawing.Point( 87, 154 );
+            this.cbAttrRequired.Name = "cbAttrRequired";
+            this.cbAttrRequired.Size = new System.Drawing.Size( 69, 17 );
+            this.cbAttrRequired.TabIndex = 9;
+            this.cbAttrRequired.Text = "Required";
+            this.cbAttrRequired.UseVisualStyleBackColor = true;
             // 
             // tbAttrDescription
             // 
@@ -342,41 +331,53 @@
             this.label6.TabIndex = 6;
             this.label6.Text = "Description";
             // 
-            // cbAttrRequired
+            // tbAttrCategory
             // 
-            this.cbAttrRequired.AutoSize = true;
-            this.cbAttrRequired.Location = new System.Drawing.Point( 87, 154 );
-            this.cbAttrRequired.Name = "cbAttrRequired";
-            this.cbAttrRequired.Size = new System.Drawing.Size( 69, 17 );
-            this.cbAttrRequired.TabIndex = 9;
-            this.cbAttrRequired.Text = "Required";
-            this.cbAttrRequired.UseVisualStyleBackColor = true;
+            this.tbAttrCategory.Location = new System.Drawing.Point( 87, 70 );
+            this.tbAttrCategory.Name = "tbAttrCategory";
+            this.tbAttrCategory.Size = new System.Drawing.Size( 179, 20 );
+            this.tbAttrCategory.TabIndex = 5;
             // 
-            // btnAttrGo
+            // label5
             // 
-            this.btnAttrGo.Location = new System.Drawing.Point( 87, 177 );
-            this.btnAttrGo.Name = "btnAttrGo";
-            this.btnAttrGo.Size = new System.Drawing.Size( 95, 23 );
-            this.btnAttrGo.TabIndex = 25;
-            this.btnAttrGo.Text = "Go";
-            this.btnAttrGo.UseVisualStyleBackColor = true;
-            this.btnAttrGo.Click += new System.EventHandler( this.btnAttrGo_Click );
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point( 21, 73 );
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size( 49, 13 );
+            this.label5.TabIndex = 4;
+            this.label5.Text = "Category";
             // 
-            // tbAttrValue
+            // tbAttrName
             // 
-            this.tbAttrValue.Location = new System.Drawing.Point( 87, 120 );
-            this.tbAttrValue.Name = "tbAttrValue";
-            this.tbAttrValue.Size = new System.Drawing.Size( 179, 20 );
-            this.tbAttrValue.TabIndex = 27;
+            this.tbAttrName.Location = new System.Drawing.Point( 87, 44 );
+            this.tbAttrName.Name = "tbAttrName";
+            this.tbAttrName.Size = new System.Drawing.Size( 179, 20 );
+            this.tbAttrName.TabIndex = 3;
             // 
-            // label7
+            // label4
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point( 21, 123 );
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size( 34, 13 );
-            this.label7.TabIndex = 26;
-            this.label7.Text = "Value";
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point( 21, 47 );
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size( 35, 13 );
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Name";
+            // 
+            // tbAttrKey
+            // 
+            this.tbAttrKey.Location = new System.Drawing.Point( 87, 18 );
+            this.tbAttrKey.Name = "tbAttrKey";
+            this.tbAttrKey.Size = new System.Drawing.Size( 179, 20 );
+            this.tbAttrKey.TabIndex = 1;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point( 21, 21 );
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size( 25, 13 );
+            this.label2.TabIndex = 0;
+            this.label2.Text = "Key";
             // 
             // Form1
             // 

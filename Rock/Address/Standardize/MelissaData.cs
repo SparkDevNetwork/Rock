@@ -62,8 +62,8 @@ namespace Rock.Address.Standardize
                         address.City = responseAddress.City.Name;
                         address.State = responseAddress.State.Abbreviation;
                         address.Zip = responseAddress.Zip + '-' + responseAddress.Plus4;
-                        if ( address.Street2 == string.Empty &&
-                            responseAddress.Suite != string.Empty )
+                        if ( address.Street2.Trim() == string.Empty &&
+                            responseAddress.Suite.Trim() != string.Empty )
                             address.Street2 = responseAddress.Suite;
 
                         return true;
