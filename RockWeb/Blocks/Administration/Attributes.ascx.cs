@@ -59,9 +59,9 @@ namespace RockWeb.Blocks.Administration
                         entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.EnableAdd = true;
-                    rGrid.ClientAddScript = "editAttribute(0)";
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.ClientAddScript = "editAttribute(0)";
 
                     tbDescription.TextBox.TextMode = TextBoxMode.MultiLine;
                     tbDescription.TextBox.Rows = 3;

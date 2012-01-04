@@ -41,8 +41,8 @@ namespace RockWeb.Blocks.Administration
                 if ( canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.EnableAdd = true;
-                    rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
+                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
 

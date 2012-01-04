@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Administration
                         entityId = "null";
 
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.EnableAdd = false;
+                    rGrid.Actions.EnableAdd = false;
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                     rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
                 }
