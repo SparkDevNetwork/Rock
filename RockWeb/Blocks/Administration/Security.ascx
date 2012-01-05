@@ -56,7 +56,7 @@
                     <HeaderStyle HorizontalAlign="Left" />
                     <ItemStyle Wrap="false" HorizontalAlign="Left" />
                     <ItemTemplate>
-                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="Flow" RepeatDirection="Horizontal" 
+                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" 
                             OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
                             <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
                             <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
@@ -82,7 +82,7 @@
                     <dt></dt>
                     <dd>
                         <a class="show-action-list" href="#">...</a>
-                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="OrderedList"></asp:CheckBoxList>
+                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="UnorderedList"></asp:CheckBoxList>
                     </dd>
                 </dl>
             </fieldset>
