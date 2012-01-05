@@ -60,6 +60,10 @@
 
 
 /* Bootstrap Overrides */
+a {
+    color: #354A73;
+}
+
 .topbar {
 	height: 100px;
 }
@@ -404,10 +408,9 @@ header.topbar nav ul > li:hover .nav-menu {
 }
 
 /* Modal Styles */
-
 .modal 
 {
-    background-color: #ddd;
+    background-color: #ddd;   
 }
 
 body#dialog 
@@ -429,4 +432,14 @@ body#dialog
 
 .modal-header {
     border-bottom: 1px solid #CCCCCC;
+}
+
+body#dialog .grid-table tbody td
+{
+    background-color: #fff;   
+}
+
+body#dialog .grid-table thead th 
+{
+    background-color: #cbcaca;
 }
