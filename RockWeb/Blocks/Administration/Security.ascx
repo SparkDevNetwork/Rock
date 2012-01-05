@@ -35,7 +35,7 @@
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
  
-    <ul class="tabs">
+    <ul class="pills">
         <asp:Repeater ID="rptActions" runat="server">
             <ItemTemplate>
                 <li class='<%# GetTabClass(Container.DataItem) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Container.DataItem %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
@@ -56,7 +56,7 @@
                     <HeaderStyle HorizontalAlign="Left" />
                     <ItemStyle Wrap="false" HorizontalAlign="Left" />
                     <ItemTemplate>
-                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" 
+                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
                             OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
                             <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
                             <asp:ListItem Value="D" Text="Deny"></asp:ListItem>

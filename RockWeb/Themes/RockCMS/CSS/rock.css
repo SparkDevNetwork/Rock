@@ -108,6 +108,16 @@ input, textarea, select, .uneditable-input
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
 
+.tabs 
+{
+    border-bottom: 1px solid #bbb;
+}
+
+.tabs li a {
+    border: 1px solid #bbb;
+    border-radius: 4px 4px 0 0;
+}
+
 /* CMS Overrides */
 .grid-table caption 
 {
@@ -439,7 +449,38 @@ body#dialog .grid-table tbody td
     background-color: #fff;   
 }
 
-body#dialog .grid-table thead th 
+c .grid-table thead th 
 {
     background-color: #cbcaca;
 }
+
+body#dialog .actions 
+{
+    background: none;   
+}
+
+body#dialog .pills 
+{
+    background-color: #d5d6d5;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    padding: 6px 12px;
+}
+
+body#dialog .pills li a:hover 
+{
+    background-color: #c9cac9;
+    color: 	#5d5d5d;
+}
+
+body#dialog .pills li.active a, body#dialog .pills li.active a:hover 
+{
+    background-color: #afaeae;
+    color: #fff;
+}
+
+body#dialog .pills li a
+{
+    color: 	#404040;
+}
+
