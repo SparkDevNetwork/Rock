@@ -1,7 +1,10 @@
 ﻿.grid-table
 {
     border-collapse: separate;
-    border-radius: 0 0 4px 4px;
+    border-color: #CCCCCC;
+    border-radius: 4px 4px 4px 4px;
+    border-style: solid;
+    border-width: 1px;
     margin-top: 24px;
 }
 
@@ -82,12 +85,6 @@
     background: url("../Assets/Images/Grid/tick.png") ;
 }
 
-/* Grid Footer */
-
-/* DRT: Changed so that paging and actions are each their own row.  Also, there was an inconsistency in that the 
-empty data template used a class of ".grid-actions" and the pager template used ".actions".  I fixed the templates 
-to use .grid-actions and removed the references in this file to ".actions". */
-
 .grid-table tfoot  
 {
     height: 48px;  
@@ -102,8 +99,6 @@ to use .grid-actions and removed the references in this file to ".actions". */
 
 .grid-table tfoot .grid-actions
 {
-	/*width: 50%;
-	float:right;*/
 	height: 20px;
     padding: 0;
 	padding-top: 4px;
@@ -125,30 +120,46 @@ to use .grid-actions and removed the references in this file to ".actions". */
     background: url("../Assets/Images/Grid/add.png") ;
 }
 
-
-.grid-table tfoot .pagination .page-status
-{
-    width: 100px;
-    float: left;
+.grid-table tfoot .pagination {
+    height: 20px;
+    margin: 2px 0;
 }
-
 
 .grid-table tfoot .pagination .page-size
 {
     float: right;
     margin: 0;
-    width: 300px;
+    width: 200px;
     text-align: right;
 }
 
 .grid-table tfoot .pagination .page-size span
 {
     float: left;
+    font-size: 10px;
 }
 
 .grid-table tfoot .pagination .page-size .page-size-options
 {
     float: right;
+}
+
+.grid-table .pagination a 
+{
+    line-height: 20px;  
+    font-size: 11px; 
+    padding: 0 6px;
+}
+
+.grid-table .pagination a:hover, .grid-table .pagination .active a {
+    background-color: #aab2c2;
+    color: #fff;
+}
+
+/* TODO detelete next class when david takes out */
+.page-status 
+{
+    display: none;
 }
 
 
