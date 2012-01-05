@@ -527,6 +527,8 @@ namespace Rock.Web.UI
                         aChildPages.Attributes.Add( "height", "400px" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
+                        aChildPages.Attributes.Add( "primary-button", "" );
+                        aChildPages.Attributes.Add( "secondary-button", "Done" );
 
                         // Page Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -543,6 +545,8 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                        aPageSecurity.Attributes.Add( "primary-button", "" );
+                        aPageSecurity.Attributes.Add( "secondary-button", "Done" );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -657,18 +661,18 @@ namespace Rock.Web.UI
             modalFooter.Attributes.Add( "class", "modal-footer" );
             modalPopup.Controls.Add( modalFooter );
 
-            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
-            modalPrimary.Attributes.Add( "href", "#" );
-            modalPrimary.Attributes.Add( "class", "btn primary" );
-            modalPrimary.InnerText = "Save";
-            modalFooter.Controls.Add( modalPrimary );
-
             HtmlGenericControl modalSecondary = new HtmlGenericControl( "a" );
             modalSecondary.ID = "modal-cancel";
             modalSecondary.Attributes.Add( "href", "#" );
             modalSecondary.Attributes.Add( "class", "btn secondary" );
             modalSecondary.InnerText = "Cancel";
             modalFooter.Controls.Add( modalSecondary );
+
+            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
+            modalPrimary.Attributes.Add( "href", "#" );
+            modalPrimary.Attributes.Add( "class", "btn primary" );
+            modalPrimary.InnerText = "Save";
+            modalFooter.Controls.Add( modalPrimary );
 
             HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
             modalIFrame.ID = "modal-popup-iframe";

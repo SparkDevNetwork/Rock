@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Pages.ascx.cs" Inherits="RockWeb.Blocks.Administration.Pages" %>
-
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
 
@@ -9,7 +8,7 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <Rock:Grid ID="rGrid" runat="server" PageSize="10" AllowPaging="false" >
+        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" EmptyDataText="No Child Pages Exist" >
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />
@@ -25,14 +24,14 @@
             <asp:HiddenField ID="hfPageId" runat="server" />
 
             <fieldset>
-                <legend>Child Page</legend>
+                <legend>Add Child Page</legend>
                 <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name" />
                 <Rock:LabeledDropDownList ID="ddlLayout" runat="server" LabelText="Layout"></Rock:LabeledDropDownList>
             </fieldset>
 
             <div class="actions">
-                <asp:Button ID="btnSave" runat="server" Text="Save" ValidationGroup="PagesValidationGroup" CssClass="button" onclick="btnSave_Click" />
-                <asp:Button id="btnCancel" runat="server" Text="Cancel" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Add" CssClass="btn primary" onclick="btnSave_Click" />
+                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn Secondary" OnClick="btnCancel_Click" CausesValidation="false" />
             </div>
 
         </asp:Panel>
