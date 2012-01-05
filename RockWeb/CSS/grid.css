@@ -20,16 +20,6 @@
     background-color: #ddd;
 }
 
-.grid-table thead th:first-child 
-{
-    border-top-left-radius: 6px;   
-}
-
-.grid-table thead th:last-child 
-{
-    border-top-right-radius: 6px;   
-}
-
 .grid-table tbody tr:hover 
 {
     background-color: #d6d4d4;
@@ -154,12 +144,6 @@
 .grid-table .pagination a:hover, .grid-table .pagination .active a {
     background-color: #aab2c2;
     color: #fff;
-}
-
-/* TODO detelete next class when david takes out */
-.page-status 
-{
-    display: none;
 }
 
 

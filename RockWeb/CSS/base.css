@@ -874,7 +874,7 @@ textarea[readonly] {
   float: none;
   width: auto;
   padding: 0;
-  margin-left: 20px;
+  margin-left: 10px;
   line-height: 18px;
   text-align: left;
   white-space: normal;
