@@ -211,6 +211,9 @@ namespace Rock.Web.UI.Controls
 
             if ( _table != null )
             {
+                if ( this.AllowPaging && this.BottomPagerRow != null )
+                    this.BottomPagerRow.Visible = true;
+
                 _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
                 _table.Rows.Add( _actionRow );
 
@@ -468,7 +471,7 @@ namespace Rock.Web.UI.Controls
     {
         const int ALL_ITEMS_SIZE = 1000000;
 
-        Literal lStatus;
+        //Literal lStatus;
 
         HtmlGenericControl NavigationPanel;
 
@@ -489,12 +492,12 @@ namespace Rock.Web.UI.Controls
             container.Controls.Add( divPagination );
 
             // Page Status
-            HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
-            divStatus.Attributes.Add( "class", "page-status" );
-            divPagination.Controls.Add( divStatus );
+            //HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
+            //divStatus.Attributes.Add( "class", "page-status" );
+            //divPagination.Controls.Add( divStatus );
 
-            lStatus = new Literal(); 
-            divStatus.Controls.Add( lStatus );
+            //lStatus = new Literal(); 
+            //divStatus.Controls.Add( lStatus );
 
             // Pagination
             NavigationPanel = new HtmlGenericControl( "div" );
@@ -551,9 +554,9 @@ namespace Rock.Web.UI.Controls
 
         public void SetNavigation( int pageCount, int pageIndex, int pageSize )
         {
-            // Set status
-            if (lStatus != null)
-                lStatus.Text = string.Format( "Page {0:N0} of {1:N0}", pageIndex+1, pageCount );
+            //// Set status
+            //if (lStatus != null)
+            //    lStatus.Text = string.Format( "Page {0:N0} of {1:N0}", pageIndex+1, pageCount );
 
             // Set navigation controls
             if ( NavigationPanel != null )
