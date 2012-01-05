@@ -30,7 +30,7 @@ namespace Rock.CMS
 		/// <returns>SiteDomain object.</returns>
 	    public Rock.CMS.SiteDomain GetByDomain( string domain )
         {
-            return Repository.FirstOrDefault( t => t.Domain == domain );
+            return Repository.FirstOrDefault( t => domain.ToLower().Contains( t.Domain.ToLower() ) );
         }
 		
 		/// <summary>

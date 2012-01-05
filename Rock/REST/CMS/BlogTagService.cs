@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlogTag.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-					BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+					
+					if (existingBlogTag.IsValid)
+						BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogTag", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlogTag.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-						BlogTagService.Save( existingBlogTag, user.PersonId );
+					
+						if (existingBlogTag.IsValid)
+							BlogTagService.Save( existingBlogTag, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlogTag", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogTag existingBlogTag = new Rock.CMS.BlogTag();
 				BlogTagService.Add( existingBlogTag, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-				BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+
+				if (existingBlogTag.IsValid)
+					BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.BlogTag existingBlogTag = new Rock.CMS.BlogTag();
 					BlogTagService.Add( existingBlogTag, user.PersonId );
 					uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
-					BlogTagService.Save( existingBlogTag, user.PersonId );
+
+					if (existingBlogTag.IsValid)
+						BlogTagService.Save( existingBlogTag, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

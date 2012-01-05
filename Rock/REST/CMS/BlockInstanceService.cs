@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlockInstance.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
-					BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+					
+					if (existingBlockInstance.IsValid)
+						BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlockInstance.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
-						BlockInstanceService.Save( existingBlockInstance, user.PersonId );
+					
+						if (existingBlockInstance.IsValid)
+							BlockInstanceService.Save( existingBlockInstance, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlockInstance existingBlockInstance = new Rock.CMS.BlockInstance();
 				BlockInstanceService.Add( existingBlockInstance, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
-				BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+
+				if (existingBlockInstance.IsValid)
+					BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.BlockInstance existingBlockInstance = new Rock.CMS.BlockInstance();
 					BlockInstanceService.Add( existingBlockInstance, user.PersonId );
 					uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
-					BlockInstanceService.Save( existingBlockInstance, user.PersonId );
+
+					if (existingBlockInstance.IsValid)
+						BlockInstanceService.Save( existingBlockInstance, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

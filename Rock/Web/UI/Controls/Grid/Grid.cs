@@ -19,78 +19,90 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
+        const int ALL_ITEMS_SIZE = 1000000;
+
+        private Table _table;
+        private GridViewRow _actionRow;
+        private GridActions _gridActions = new GridActions();
+
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether client-side sorting should be enabled.
+        /// Gets the action row.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if client-sid sorting should be enabled; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Behavior" ),
-        DefaultValue( false ),
-        Description( "Enable Client-side Sorting" )
-        ]
-        public virtual bool EnableClientSorting
+        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
+        public virtual GridViewRow ActionRow
         {
             get
             {
-                bool? b = ViewState["EnableClientSorting"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["EnableClientSorting"] = value;
+                if ( this._actionRow == null )
+                {
+                    this.EnsureChildControls();
+                }
+                return this._actionRow;
             }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether adding should be enabled.
+        /// Gets the actions control
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if adding is enabled; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Behavior" ),
-        DefaultValue( false ),
-        Description( "Enable Add" )
-        ]
-        public virtual bool EnableAdd
+        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
+        public virtual GridActions Actions
         {
-            get
-            {
-                bool? b = ViewState["EnableAdd"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["EnableAdd"] = value;
-            }
+            get { return this._gridActions; }
         }
 
         /// <summary>
-        /// Gets or sets the client script to be called when user clicks tha add icon
+        /// Gets or sets a value indicating whether the action row should be displayed.
         /// </summary>
         /// <value>
-        /// The client add script.
+        ///   <c>true</c> if action row should be displayed; otherwise, <c>false</c>.
         /// </value>
         [
-        Category( "Behavior" ),
-        Description( "Client Add Script" )
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show Action Row" )
         ]
-        public virtual string ClientAddScript
+        public virtual bool ShowActionRow
         {
             get
             {
-                if ( ViewState["ClientAddScript"] == null )
-                    ViewState["ClientAddScript"] = string.Empty;
-                return ViewState["ClientAddScript"].ToString();
+                object showActionRow = this.ViewState["ShowActionRow"];
+                return ( ( showActionRow == null ) || ( ( bool )showActionRow ) );
             }
             set
             {
-                ViewState["ClientAddScript"] = value;
+                bool showActionRow = this.ShowActionRow;
+                if ( value != showActionRow )
+                    this.ViewState["ShowActionRow"] = value;
             }
+        }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Grid"/> class.
+        /// </summary>
+        public Grid()
+        {
+            base.CssClass = "grid-table";
+            base.AutoGenerateColumns = false;
+            base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+            base.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
+
+            this.ShowHeaderWhenEmpty = true;
+            this.EmptyDataText = "No Results Found";
+
+            // hack to turn off style="border-collapse: collapse"
+            base.GridLines = GridLines.None;
+            base.CellSpacing = -1;
+
+            base.AllowPaging = true;
+            base.PageSize = 25;
+            base.PageIndex = 0;
         }
 
         #endregion
@@ -105,31 +117,10 @@ namespace Rock.Web.UI.Controls
         {
             Rock.Web.UI.Page.AddCSSLink( Page, "~/CSS/grid.css" );
 
-            this.CssClass = "grid-table";
-            this.AutoGenerateColumns = false;
-            this.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
-            this.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
-            this.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
-
-            // hack to turn off style="border-collapse: collapse"
-            this.GridLines =  GridLines.None;
-            this.CellSpacing = -1;
-
-            EmptyDataTemplate emptyDataTemplate = new EmptyDataTemplate();
-            emptyDataTemplate.AddClick += gridPagerTemplate_AddClick;
-            this.EmptyDataTemplate = emptyDataTemplate;
-
-            // Paging Support
-            this.AllowPaging = true;
-            this.PageIndex = 1;
-            this.PageSize = 20;
-
             PagerTemplate pagerTemplate = new PagerTemplate();
-            pagerTemplate.AddClick += gridPagerTemplate_AddClick;
-            pagerTemplate.PageClick += gridPagerTemplate_PageClick;
+            pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
+            pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
             this.PagerTemplate = pagerTemplate;
-
-            this.ShowHeaderWhenEmpty = true;
 
             base.OnInit( e );
         }
@@ -154,27 +145,10 @@ namespace Rock.Web.UI.Controls
                 TopPagerRow.TableSection = TableRowSection.TableHeader;
 
             if ( BottomPagerRow != null )
-            {
                 BottomPagerRow.TableSection = TableRowSection.TableFooter;
-                if ( !BottomPagerRow.Visible )
-                    BottomPagerRow.Visible = true;
-            }
 
-            if ( this.EnableClientSorting )
-            {
-                if ( this.AllowSorting )
-                    throw new ArgumentException( "Cannot use EnableClientSorting with AllowSorting" );
-
-                Rock.Web.UI.Page.AddScriptLink( Page, "~/Scripts/jquery.tablesorter.min.js" );
-
-                string script = string.Format( @"
-    Sys.Application.add_load(function () {{
-        $('#{0}').tablesorter();
-    }});
-", this.ClientID );
-
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-sort-{0}-script", this.ClientID ), script, true );
-            }
+            if ( ActionRow != null )
+                ActionRow.TableSection = TableRowSection.TableFooter;
         }
 
         /// <summary>
@@ -185,36 +159,9 @@ namespace Rock.Web.UI.Controls
         {
             base.OnDataBound( e );
 
-            GridViewRow pagerRow = this.BottomPagerRow;
-            if ( pagerRow != null )
-            {
-                // Set Paging Controls
-                DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
-                if ( ddl != null )
-                {
-                    for ( int i = 0; i < this.PageCount; i++ )
-                    {
-                        int pageNumber = i + 1;
-                        ListItem li = new ListItem( pageNumber.ToString(), i.ToString() );
-                        if ( i == this.PageIndex )
-                            li.Selected = true;
-                        ddl.Items.Add( li );
-                    }
-                }
-
-                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
-                if ( ddl != null )
-                    ddl.SelectedValue = this.PageSize.ToString();
-                
-                // Set Action Controls
-                LinkButton lbAdd = pagerRow.Cells[0].FindControl( "lbAdd" ) as LinkButton;
-                if ( lbAdd != null )
-                {
-                    lbAdd.Visible = EnableAdd;
-                    if ( ClientAddScript != string.Empty )
-                        lbAdd.OnClientClick = ClientAddScript;
-                }
-            }
+            PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
+            if ( PagerTemplate != null )
+                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize );
         }
 
         /// <summary>
@@ -236,42 +183,74 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Creates a new child table.
+        /// </summary>
+        /// <returns>
+        /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table"/> that represents the child table.
+        /// </returns>
+        protected override Table CreateChildTable()
+        {
+            _table = base.CreateChildTable();
+            return _table;
+        }
+
+        /// <summary>
+        /// Creates the control hierarchy used to render the <see cref="T:System.Web.UI.WebControls.GridView"/> control using the specified data source.
+        /// </summary>
+        /// <param name="dataSource">An <see cref="T:System.Collections.IEnumerable"/> that contains the data source for the <see cref="T:System.Web.UI.WebControls.GridView"/> control.</param>
+        /// <param name="dataBinding">true to indicate that the child controls are bound to data; otherwise, false.</param>
+        /// <returns>
+        /// The number of rows created.
+        /// </returns>
+        /// <exception cref="T:System.Web.HttpException">
+        ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
+        protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
+        {
+            int result = base.CreateChildControls(dataSource, dataBinding);
+
+            if ( _table != null )
+            {
+                _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
+                _table.Rows.Add( _actionRow );
+
+                TableCell cell = new TableCell();
+                cell.ColumnSpan = this.Columns.Count;
+                _actionRow.Cells.Add( cell );
+
+                cell.Controls.Add( _gridActions );
+
+                if ( !this.ShowActionRow )
+                    _actionRow.Visible = false;
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Internal Methods
 
         /// <summary>
-        /// Handles the PageClick event of the gridPagerTemplate control.
+        /// Handles the ItemsPerPageClick event of the pagerTemplate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void gridPagerTemplate_PageClick( object sender, EventArgs e )
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
+        void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
         {
-            GridViewRow pagerRow = this.BottomPagerRow;
-            if ( pagerRow != null )
-            {
-                // Set Paging Controls
-                DropDownList ddl = pagerRow.Cells[0].FindControl( "ddlPageList" ) as DropDownList;
-                if ( ddl != null )
-                    this.PageIndex = ddl.SelectedIndex >= 0 ? ddl.SelectedIndex : 0;
-
-                ddl = pagerRow.Cells[0].FindControl( "ddlPageSize" ) as DropDownList;
-                if ( ddl != null )
-                    this.PageSize = Int32.Parse(ddl.SelectedValue);
-
-                EventArgs eventArgs = new EventArgs();
-                OnGridRebind( eventArgs );
-            }
+            this.PageSize = e.Number;
+            OnGridRebind( e );
         }
 
         /// <summary>
-        /// Handles the AddClick event of the gridPagerTemplate control.
+        /// Handles the NavigateClick event of the pagerTemplate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void gridPagerTemplate_AddClick( object sender, EventArgs e )
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
+        void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
-            OnGridAdd( e );
+            this.PageIndex = e.Number;
+            OnGridRebind( e );
         }
 
         #endregion
@@ -327,21 +306,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Occurs when [grid add].
-        /// </summary>
-        public event GridAddEventHandler GridAdd;
-
-        /// <summary>
-        /// Raises the <see cref="E:GridAdd"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected virtual void OnGridAdd( EventArgs e )
-        {
-            if ( GridAdd != null )
-                GridAdd( this, e );
-        }
-
-        /// <summary>
         /// Occurs when [grid rebind].
         /// </summary>
         public event GridRebindEventHandler GridRebind;
@@ -369,22 +333,42 @@ namespace Rock.Web.UI.Controls
     public delegate void GridReorderEventHandler( object sender, GridReorderEventArgs e );
 
     /// <summary>
-    /// Delegate used for raising the grid add event
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-    public delegate void GridAddEventHandler( object sender, EventArgs e);
-
-    /// <summary>
     /// Delegate used for raising the grid rebind event
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
     public delegate void GridRebindEventHandler( object sender, EventArgs e );
 
+    /// <summary>
+    /// Delegate used for raising the grid items per page changed event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
+    internal delegate void PageNavigationEventHandler( object sender, NumericalEventArgs e );
+
     #endregion
 
     #region Event Handlers
+
+    /// <summary>
+    /// Items Per Page Event Argument
+    /// </summary>
+    internal class NumericalEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the items per page.
+        /// </summary>
+        public int Number { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NumericalEventArgs"/> class.
+        /// </summary>
+        /// <param name="number">The number.</param>
+        public NumericalEventArgs( int number )
+        {
+            Number = number;
+        }
+    }
 
     /// <summary>
     /// Grid Reorder Event Argument
@@ -478,133 +462,230 @@ namespace Rock.Web.UI.Controls
     #region Templates
 
     /// <summary>
-    /// Template used for an empty data row in the <see cref="Grid"/> control
-    /// </summary>
-    internal class EmptyDataTemplate : ITemplate
-    {
-        /// <summary>
-        /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
-        /// </summary>
-        /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        public void InstantiateIn( Control container )
-        {
-            HtmlGenericControl div = new HtmlGenericControl( "div" );
-            div.Attributes.Add( "class", "paging" );
-            container.Controls.Add( div );
-
-            HtmlGenericControl divActions = new HtmlGenericControl( "div" );
-            divActions.Attributes.Add( "class", "actions" );
-            container.Controls.Add( divActions );
-
-            LinkButton lbAdd = new LinkButton();
-            lbAdd.ID = "lbAdd";
-            lbAdd.CssClass = "add";
-            lbAdd.Text = "Add";
-            lbAdd.Click += lbAdd_Click;
-            divActions.Controls.Add( lbAdd );
-        }
-
-        void lbAdd_Click( object sender, EventArgs e )
-        {
-            if ( AddClick != null )
-                AddClick( sender, e );
-        }
-
-        internal event EventHandler AddClick;
-    }
-
-    /// <summary>
     /// Template used for the pager row in the <see cref="Grid"/> control
     /// </summary>
     internal class PagerTemplate : ITemplate
     {
+        const int ALL_ITEMS_SIZE = 1000000;
+
+        Literal lStatus;
+
+        HtmlGenericControl NavigationPanel;
+
+        HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
+        LinkButton[] PageLink = new LinkButton[12];
+
+        HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
+        LinkButton[] ItemLink = new LinkButton[4];
+        
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        public void  InstantiateIn(Control container)
+        public void InstantiateIn(Control container)
         {
-            HtmlGenericControl div = new HtmlGenericControl( "div" );
-            div.Attributes.Add( "class", "paging" );
-            container.Controls.Add( div );
+            HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
+            divPagination.Attributes.Add( "class", "pagination" );
+            container.Controls.Add( divPagination );
 
-            DropDownList ddl = new DropDownList();
-            ddl.ID = "ddlPageList";
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
+            // Page Status
+            HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
+            divStatus.Attributes.Add( "class", "page-status" );
+            divPagination.Controls.Add( divStatus );
 
-            Label lbl = new Label();
-            lbl.Text = "Select Page:";
-            lbl.AssociatedControlID = "ddlPageList";
+            lStatus = new Literal(); 
+            divStatus.Controls.Add( lStatus );
 
-            div.Controls.Add( lbl );
-            div.Controls.Add( ddl );
+            // Pagination
+            NavigationPanel = new HtmlGenericControl( "div" );
+            NavigationPanel.Attributes.Add( "class", "page-navigation" );
+            divPagination.Controls.Add( NavigationPanel );
 
-            Label lblPages = new Label();
-            lbl.ID = "lblPages";
-            div.Controls.Add( lblPages );
+            HtmlGenericControl ulNavigation = new HtmlGenericControl( "ul" );
+            NavigationPanel.Controls.Add( ulNavigation );
 
-            div.Controls.Add( new LiteralControl( "&nbsp;&nbsp;&nbsp;&nbsp;" ) );
+            for ( var i = 0; i < PageLinkListItem.Length; i++ )
+            {
+                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
+                ulNavigation.Controls.Add( PageLinkListItem[i] );
 
-            ddl = new DropDownList();
-            ddl.ID = "ddlPageSize";
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += ddl_SelectedIndexChanged;
-            ddl.Items.Add( new ListItem( "5", "5" ) );
-            ddl.Items.Add( new ListItem( "20", "20" ) );
-            ddl.Items.Add( new ListItem( "100", "100" ) );
-            ddl.Items.Add( new ListItem( "1000", "1000" ) );
+                PageLink[i] = new LinkButton();
+                PageLinkListItem[i].Controls.Add( PageLink[i] );
+                PageLink[i].Click += new EventHandler( lbPage_Click );
+            }
 
-            lbl = new Label();
-            lbl.Text = "Page Size:";
-            lbl.AssociatedControlID = "ddlPageSize";
+            PageLink[0].Text = "&larr; Previous";
+            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
 
-            div.Controls.Add( lbl );
-            div.Controls.Add( ddl );
+            // Items Per Page
+            HtmlGenericControl divSize = new HtmlGenericControl( "div" );
+            divSize.Attributes.Add( "class", "page-size" );
+            divPagination.Controls.Add( divSize );
 
-            HtmlGenericControl divActions = new HtmlGenericControl( "div" );
-            divActions.Attributes.Add( "class", "grid-actions" );
-            container.Controls.Add( divActions );
+            Label lblPageSize = new Label();
+            lblPageSize.Text = "Items per page:";
+            divSize.Controls.Add( lblPageSize );
 
-            LinkButton lbAdd = new LinkButton();
-            lbAdd.ID = "lbAdd";
-            lbAdd.CssClass = "add";
-            lbAdd.Text = "Add";
-            lbAdd.Click += lbAdd_Click;
-            divActions.Controls.Add( lbAdd );
+            HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
+            divSizeOptions.Attributes.Add( "class", "page-size-options" );
+            divSize.Controls.Add( divSizeOptions );
+
+            HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
+            divSizeOptions.Controls.Add( ulSizeOptions );
+
+            for ( int i = 0; i < ItemLinkListItem.Length; i++ )
+            {
+                ItemLinkListItem[i] = new HtmlGenericContainer( "li" );
+                ulSizeOptions.Controls.Add( ItemLinkListItem[i] );
+
+                ItemLink[i] = new LinkButton();
+                ItemLinkListItem[i].Controls.Add( ItemLink[i] );
+                ItemLink[i].Click += new EventHandler( lbItems_Click );
+            }
+
+            ItemLink[0].Text = "25";
+            ItemLink[1].Text = "100";
+            ItemLink[2].Text = "1,000";
+            ItemLink[3].Text = "All";
+       }
+
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize )
+        {
+            // Set status
+            if (lStatus != null)
+                lStatus.Text = string.Format( "Page {0:N0} of {1:N0}", pageIndex+1, pageCount );
+
+            // Set navigation controls
+            if ( NavigationPanel != null )
+            {
+                if ( pageCount > 1 )
+                {
+                    int pageNumber = ( int )( pageIndex / 10 );
+
+                    if ( pageNumber <= 0 )
+                    {
+                        PageLinkListItem[0].Attributes["class"] = "prev disabled";
+                        PageLink[0].Attributes["page-index"] = "0";
+                        PageLink[0].Enabled = false;
+                    }
+                    else
+                    {
+                        PageLinkListItem[0].Attributes["class"] = "prev";
+                        PageLink[0].Attributes["page-index"] = ( pageNumber - 1 ).ToString();
+                        PageLink[0].Enabled = true;
+                    }
+
+                    if ( pageNumber + 9 >= pageCount )
+                    {
+                        PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
+                        PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = pageIndex.ToString();
+                        PageLink[PageLinkListItem.Length - 1].Enabled = false;
+                    }
+                    else
+                    {
+                        PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
+                        PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = ( pageNumber + 10 ).ToString();
+                        PageLink[PageLinkListItem.Length - 1].Enabled = true;
+                    }
+
+
+                    NavigationPanel.Visible = true;
+                    for ( int i = 1; i < PageLink.Length - 1; i++ )
+                    {
+                        int currentPage = pageNumber + ( i - 1 );
+
+                        HtmlGenericControl li = PageLinkListItem[i];
+                        LinkButton lb = PageLink[i];
+
+                        if ( currentPage < pageCount )
+                        {
+                            li.Attributes["class"] = currentPage == pageIndex ? "active" : "";
+                            li.Visible = true;
+
+                            lb.Text = ( currentPage + 1 ).ToString( "N0" );
+                            lb.Attributes["page-index"] = currentPage.ToString();
+                            lb.Visible = true;
+                        }
+                        else
+                        {
+                            li.Visible = false;
+                            lb.Visible = false;
+                        }
+                    }
+                }
+                else
+                {
+                    NavigationPanel.Visible = false;
+                }
+            }
+
+            // Set page size controls
+            if ( ItemLinkListItem[0] != null )
+            {
+                string pageSizeValue = pageSize == ALL_ITEMS_SIZE ? "All" : pageSize.ToString( "N0" );
+                for ( int i = 0; i < ItemLinkListItem.Length; i++ )
+                    ItemLinkListItem[i].Attributes["class"] = ItemLink[i].Text == pageSizeValue ? "active" : "";
+            }
+        }
+
+        void lbPage_Click( object sender, EventArgs e )
+        {
+            if ( NavigateClick != null )
+            {
+                LinkButton lbPage = sender as LinkButton;
+                if ( lbPage != null )
+                {
+                    int pageIndex = 0;
+                    if ( Int32.TryParse( lbPage.Attributes["page-index"], out pageIndex ) )
+                    {
+                        NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex );
+                        NavigateClick( sender, eventArgs );
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddl control.
+        /// Handles the Click event of the lbPageSize control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void ddl_SelectedIndexChanged( object sender, EventArgs e )
+        void lbItems_Click( object sender, EventArgs e )
         {
-            if (PageClick != null)
-                PageClick( sender, e );
+            LinkButton lbItems = sender as LinkButton;
+            if ( lbItems != null && ItemsPerPageClick != null)
+            {
+                int itemsPerPage = ALL_ITEMS_SIZE;
+
+                switch ( lbItems.Text )
+                {
+                    case "25":
+                        itemsPerPage = 25;
+                        break;
+                    case "100":
+                        itemsPerPage = 100;
+                        break;
+                    case "1,000":
+                        itemsPerPage = 1000;
+                        break;
+                }
+
+                NumericalEventArgs eventArgs = new NumericalEventArgs( itemsPerPage );
+
+                ItemsPerPageClick( sender, eventArgs );
+            }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAdd control.
+        /// Occurs when [navigate click].
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void lbAdd_Click( object sender, EventArgs e )
-        {
-            if (AddClick != null)
-                AddClick( sender, e );
-        }
+        internal event PageNavigationEventHandler NavigateClick;
 
         /// <summary>
         /// Occurs when [page click].
         /// </summary>
-        internal event EventHandler PageClick;
+        internal event PageNavigationEventHandler ItemsPerPageClick;
 
-        /// <summary>
-        /// Occurs when [add click].
-        /// </summary>
-        internal event EventHandler AddClick;
     }
 
     #endregion

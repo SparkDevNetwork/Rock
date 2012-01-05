@@ -16,7 +16,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 {
     public partial class Form1 : Form
     {
-        const string APIKEY = "CcvApiKey";
+        const string APIKEY = "CcvRockApiKey";
 
         public Form1()
         {
@@ -66,7 +66,7 @@ namespace Rock.Custom.CCV.ClientTestApp
 
             try
             {
-                byte[] data = proxy.UploadData( string.Format( "http://www.ccvonline.com/RockChMS/REST/CRM/Address/{0}/{1}", service, APIKEY ),
+                byte[] data = proxy.UploadData( string.Format( "http://localhost:6229/RockWeb/REST/CRM/Address/{0}/{1}", service, APIKEY ),
                     "PUT", ms.ToArray() );
                 Stream stream = new MemoryStream( data );
                 return serializer.ReadObject( stream ) as Rock.CRM.DTO.Address;
@@ -94,6 +94,44 @@ namespace Rock.Custom.CCV.ClientTestApp
         private void btnDecrypt_Click( object sender, EventArgs e )
         {
             tbEncryptionResult.Text = Rock.Security.Encryption.DecryptString( System.Web.HttpUtility.UrlDecode( tbEncryption.Text ), "MyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhraseMyreallylongPassPhrase" );
+        }
+
+        private void btnAttrGo_Click( object sender, EventArgs e )
+        {
+            Rock.Core.DTO.Attribute attribute = new Core.DTO.Attribute();
+            attribute.Key = tbAttrKey.Text;
+            attribute.Name = tbAttrName.Text;
+            attribute.Category = tbAttrCategory.Text;
+            attribute.Description = tbAttrDescription.Text;
+            attribute.DefaultValue = tbAttrValue.Text;
+            attribute.Required = cbAttrRequired.Checked;
+
+            WebClient proxy = new System.Net.WebClient();
+            proxy.Headers["Content-type"] = "application/json";
+            MemoryStream ms = new MemoryStream();
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer( typeof( Rock.Core.DTO.Attribute ) );
+            serializer.WriteObject( ms, attribute );
+
+            try
+            {
+                byte[] data = proxy.UploadData( string.Format( "http://localhost:6229/RockWeb/REST/Core/Attribute/{0}", APIKEY ),
+                    "POST", ms.ToArray() );
+                Stream stream = new MemoryStream( data );
+                Rock.Core.DTO.Attribute updatedAttribute = serializer.ReadObject( stream ) as Rock.Core.DTO.Attribute;
+
+                MessageBox.Show( string.Format( "Attribute Created.  ID: {0}", updatedAttribute.Id ), "Created" );
+            }
+            catch ( WebException ex )
+            {
+                //string response = (ex.Response
+                using ( Stream data = ex.Response.GetResponseStream() )
+                {
+                    string text = new StreamReader( data ).ReadToEnd();
+
+                    MessageBox.Show( string.Format( "Response: {0}\n{1}",
+                        ( ( System.Net.HttpWebResponse )ex.Response ).StatusDescription, text ), "Error" );
+                }
+            }
         }
     }
 

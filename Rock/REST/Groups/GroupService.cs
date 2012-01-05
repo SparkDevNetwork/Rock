@@ -92,7 +92,11 @@ namespace Rock.REST.Groups
 				if ( existingGroup.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
-					GroupService.Save( existingGroup, currentUser.PersonId() );
+					
+					if (existingGroup.IsValid)
+						GroupService.Save( existingGroup, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingGroup.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Group", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Groups
 					if ( existingGroup.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
-						GroupService.Save( existingGroup, user.PersonId );
+					
+						if (existingGroup.IsValid)
+							GroupService.Save( existingGroup, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingGroup.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Group", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Groups
 				Rock.Groups.Group existingGroup = new Rock.Groups.Group();
 				GroupService.Add( existingGroup, currentUser.PersonId() );
 				uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
-				GroupService.Save( existingGroup, currentUser.PersonId() );
+
+				if (existingGroup.IsValid)
+					GroupService.Save( existingGroup, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingGroup.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Groups
 					Rock.Groups.Group existingGroup = new Rock.Groups.Group();
 					GroupService.Add( existingGroup, user.PersonId );
 					uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
-					GroupService.Save( existingGroup, user.PersonId );
+
+					if (existingGroup.IsValid)
+						GroupService.Save( existingGroup, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingGroup.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

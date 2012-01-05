@@ -92,7 +92,11 @@ namespace Rock.REST.Groups
 				if ( existingGroupRole.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
-					GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+					
+					if (existingGroupRole.IsValid)
+						GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this GroupRole", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Groups
 					if ( existingGroupRole.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
-						GroupRoleService.Save( existingGroupRole, user.PersonId );
+					
+						if (existingGroupRole.IsValid)
+							GroupRoleService.Save( existingGroupRole, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this GroupRole", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Groups
 				Rock.Groups.GroupRole existingGroupRole = new Rock.Groups.GroupRole();
 				GroupRoleService.Add( existingGroupRole, currentUser.PersonId() );
 				uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
-				GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+
+				if (existingGroupRole.IsValid)
+					GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Groups
 					Rock.Groups.GroupRole existingGroupRole = new Rock.Groups.GroupRole();
 					GroupRoleService.Add( existingGroupRole, user.PersonId );
 					uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
-					GroupRoleService.Save( existingGroupRole, user.PersonId );
+
+					if (existingGroupRole.IsValid)
+						GroupRoleService.Save( existingGroupRole, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

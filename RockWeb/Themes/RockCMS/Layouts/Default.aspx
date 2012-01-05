@@ -35,7 +35,7 @@
     <div id="content">        
         <section id="page-title">
 		    <div class="row">	
-			    <h1>Jon Edmiston</h1>
+			    <h1><asp:Literal ID="lPageTitle" runat="server"></asp:Literal></h1>
 
 		    </div>
 	    </section>

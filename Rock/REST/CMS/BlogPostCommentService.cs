@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlogPostComment.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-					BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+					
+					if (existingBlogPostComment.IsValid)
+						BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlogPostComment.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-						BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
+					
+						if (existingBlogPostComment.IsValid)
+							BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogPostComment existingBlogPostComment = new Rock.CMS.BlogPostComment();
 				BlogPostCommentService.Add( existingBlogPostComment, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-				BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+
+				if (existingBlogPostComment.IsValid)
+					BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.BlogPostComment existingBlogPostComment = new Rock.CMS.BlogPostComment();
 					BlogPostCommentService.Add( existingBlogPostComment, user.PersonId );
 					uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
-					BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
+
+					if (existingBlogPostComment.IsValid)
+						BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
