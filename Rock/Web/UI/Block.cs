@@ -350,6 +350,7 @@ namespace Rock.Web.UI
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security icon-button show-modal-iframe" );
+                aSecureBlock.Attributes.Add( "height", "400px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );

@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-					HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+					
+					if (existingHtmlContent.IsValid)
+						HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this HtmlContent", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingHtmlContent.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-						HtmlContentService.Save( existingHtmlContent, user.PersonId );
+					
+						if (existingHtmlContent.IsValid)
+							HtmlContentService.Save( existingHtmlContent, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this HtmlContent", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.HtmlContent existingHtmlContent = new Rock.CMS.HtmlContent();
 				HtmlContentService.Add( existingHtmlContent, currentUser.PersonId() );
 				uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-				HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+
+				if (existingHtmlContent.IsValid)
+					HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.HtmlContent existingHtmlContent = new Rock.CMS.HtmlContent();
 					HtmlContentService.Add( existingHtmlContent, user.PersonId );
 					uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
-					HtmlContentService.Save( existingHtmlContent, user.PersonId );
+
+					if (existingHtmlContent.IsValid)
+						HtmlContentService.Save( existingHtmlContent, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

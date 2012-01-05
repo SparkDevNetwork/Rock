@@ -30,8 +30,8 @@ namespace Rock.Web.UI.Controls
             Grid grid = control as Grid;
             if ( grid != null )
             {
-                if (grid.AllowSorting || grid.EnableClientSorting)
-                    throw new ArgumentException( "Cannot use ReorderField with grid AllowSorting or EnableClientSorting" );
+                if (grid.AllowSorting)
+                    throw new ArgumentException( "Cannot use ReorderField with grid AllowSorting" );
 
                 string script = @"
     var fixHelper = function(e, ui) {

@@ -83,9 +83,14 @@
 }
 
 /* Grid Footer */
+
+/* DRT: Changed so that paging and actions are each their own row.  Also, there was an inconsistency in that the 
+empty data template used a class of ".grid-actions" and the pager template used ".actions".  I fixed the templates 
+to use .grid-actions and removed the references in this file to ".actions". */
+
 .grid-table tfoot  
 {
-    height: 24px;  
+    height: 48px;  
 }
 
 .grid-table tfoot td 
@@ -95,9 +100,13 @@
     background-color: #ddd;
 }
 
-.grid-table tfoot .actions 
+.grid-table tfoot .grid-actions
 {
+	/*width: 50%;
+	float:right;*/
+	height: 20px;
     padding: 0;
+	padding-top: 4px;
 }
 
 .grid-table tfoot .grid-actions a
@@ -116,34 +125,30 @@
     background: url("../Assets/Images/Grid/add.png") ;
 }
 
-.grid-table tfoot .paging
-{
-	width: 50%;
-	float:left;
-}
 
-.grid-table tfoot .paging select 
+.grid-table tfoot .pagination .page-status
 {
-    width: 60px;
+    width: 100px;
     float: left;
-    margin-right: 12px;
-    font-size: 11px;
-    height: 24px;
 }
 
-.grid-table tfoot .paging label 
+
+.grid-table tfoot .pagination .page-size
+{
+    float: right;
+    margin: 0;
+    width: 300px;
+    text-align: right;
+}
+
+.grid-table tfoot .pagination .page-size span
 {
     float: left;
-    width: auto;
-    font-size: 11px;
-    margin-right: 5px;
 }
 
-.grid-table tfoot .grid-actions
+.grid-table tfoot .pagination .page-size .page-size-options
 {
-	width: 50%;
-	float:right;
-	padding-top: 4px;
+    float: right;
 }
 
 

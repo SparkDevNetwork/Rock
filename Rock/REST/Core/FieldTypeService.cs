@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingFieldType.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
-					FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+					
+					if (existingFieldType.IsValid)
+						FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingFieldType.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
-						FieldTypeService.Save( existingFieldType, user.PersonId );
+					
+						if (existingFieldType.IsValid)
+							FieldTypeService.Save( existingFieldType, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.FieldType existingFieldType = new Rock.Core.FieldType();
 				FieldTypeService.Add( existingFieldType, currentUser.PersonId() );
 				uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
-				FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+
+				if (existingFieldType.IsValid)
+					FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.FieldType existingFieldType = new Rock.Core.FieldType();
 					FieldTypeService.Add( existingFieldType, user.PersonId );
 					uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
-					FieldTypeService.Save( existingFieldType, user.PersonId );
+
+					if (existingFieldType.IsValid)
+						FieldTypeService.Save( existingFieldType, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

@@ -281,8 +281,13 @@ namespace Rock.Web.Cache
             get 
             {
                 List<string> combinedActions = new List<string>();
-                combinedActions.AddRange(InstanceActions);
-                combinedActions.AddRange(BlockActions);
+                
+                if (InstanceActions != null)
+                    combinedActions.AddRange(InstanceActions);
+                
+                if (BlockActions != null)
+                    combinedActions.AddRange(BlockActions);
+
                 return combinedActions;
             }
         }

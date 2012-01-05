@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingSiteDomain.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
-					SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
+					
+					if (existingSiteDomain.IsValid)
+						SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingSiteDomain.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this SiteDomain", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingSiteDomain.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
-						SiteDomainService.Save( existingSiteDomain, user.PersonId );
+					
+						if (existingSiteDomain.IsValid)
+							SiteDomainService.Save( existingSiteDomain, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingSiteDomain.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this SiteDomain", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.SiteDomain existingSiteDomain = new Rock.CMS.SiteDomain();
 				SiteDomainService.Add( existingSiteDomain, currentUser.PersonId() );
 				uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
-				SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
+
+				if (existingSiteDomain.IsValid)
+					SiteDomainService.Save( existingSiteDomain, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingSiteDomain.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.SiteDomain existingSiteDomain = new Rock.CMS.SiteDomain();
 					SiteDomainService.Add( existingSiteDomain, user.PersonId );
 					uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
-					SiteDomainService.Save( existingSiteDomain, user.PersonId );
+
+					if (existingSiteDomain.IsValid)
+						SiteDomainService.Save( existingSiteDomain, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingSiteDomain.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
