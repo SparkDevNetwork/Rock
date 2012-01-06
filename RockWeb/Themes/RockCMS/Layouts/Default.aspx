@@ -16,7 +16,14 @@
 
 					    <div class="filter-search">
 						    <input id="search-words">
-						    <div class="filter">People</div>
+						    <div class="filter">
+                                <select id="search-filter">
+                                    <option selected>People</option>
+                                    <option>Group</option>
+                                    <option>Space</option>
+                                    <option>Somthing Else</option>
+                                </select>
+                            </div>
 					    </div>
 
 				    </div>
