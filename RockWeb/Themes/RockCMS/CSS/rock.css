@@ -64,6 +64,14 @@ a {
     color: #354A73;
 }
 
+input,
+textarea,
+select,
+.uneditable-input 
+{
+    color: #373737;
+}
+
 .topbar {
 	height: 100px;
 }

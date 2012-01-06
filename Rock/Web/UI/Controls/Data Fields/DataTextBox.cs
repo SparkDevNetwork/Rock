@@ -46,6 +46,84 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the text mode for the textbox.
+        /// </summary>
+        /// <value>
+        /// TextBoxMode (single line, multi-line, password)
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Sets the TextMode for the textbox control." )
+        ]
+        public TextBoxMode TextBoxTextMode
+        {
+            get
+            {
+                EnsureChildControls();
+                return textBox.TextMode;
+            }
+            set
+            {
+                EnsureChildControls();
+                textBox.TextMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of rows for the textbox.
+        /// </summary>
+        /// <value>
+        /// Number of rows for the textbox.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Sets the number of rows for the textbox control." )
+        ]
+        public int TextBoxRows
+        {
+            get
+            {
+                EnsureChildControls();
+                return textBox.Rows;
+            }
+            set
+            {
+                EnsureChildControls();
+                textBox.Rows = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS class of the textbox control.
+        /// </summary>
+        /// <value>
+        /// The CSS class(s) for the textbox control.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Sets the number of rows for the textbox control." )
+        ]
+        public string TextBoxCssClass
+        {
+            get
+            {
+                EnsureChildControls();
+                return textBox.CssClass;
+            }
+            set
+            {
+                EnsureChildControls();
+                textBox.CssClass = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the help block.
         /// </summary>
         /// <value>

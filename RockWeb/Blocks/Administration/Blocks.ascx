@@ -16,11 +16,11 @@
 
 		<asp:PlaceHolder ID="phDetails" runat="server" Visible="false">
             <fieldset>
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Name" />
 
-			    <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Path" />
+			    <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Path" />
 
-                <Rock:DataTextBox ID="tbDescription" runat="server"  SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Description" />
+                <Rock:DataTextBox ID="tbDescription" runat="server" TextBoxTextMode="MultiLine" TextBoxRows="6" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xxlarge" PropertyName="Description" />
 
                 <Rock:LabeledCheckBox ID="cbSystem" runat="server" LabelText="Is this a system block?"></Rock:LabeledCheckBox>
 
