@@ -1,5 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="HtmlContent.ascx.cs" Inherits="RockWeb.Blocks.Cms.HtmlContent" %>
-<script> 
+<script type="text/javascript"> 
+
     $(document).ready(function () {
 
         var ckoptionsBasic = {
@@ -38,37 +39,32 @@
             ]
         };
 
-        $('#html-content-editor-<%=BlockInstance.Id %>').dialog({
-            autoOpen: false,
-            width: 880,
-            height: 500,
-            title: 'HTML Content Editor',
-            closeOnEscape: true,
-            modal: true,
-            close: function (event, ui) {
-                $('#html-content-editor-<%=BlockInstance.Id %>').find('textarea.html-content-editor').ckeditorGet().destroy();
-            },
-            open: function (event, ui) {
-                $(this).parent().appendTo("form");
-                $('#html-content-editor-<%=BlockInstance.Id %> textarea.html-content-editor').ckeditor(ckoptionsAdv).end();
-            }
+        $('#html-content-editor-<%=BlockInstance.Id %>').modal({
+            backdrop: true,
+            keyboard: true
+        });
+        
+        $('#html-content-editor-<%=BlockInstance.Id %>').bind('shown', function() {
+            $(this).appendTo($('form'));
+            $('#html-content-editor-<%=BlockInstance.Id %> textarea.html-content-editor').ckeditor(ckoptionsAdv).end();
+        });
+
+        $('#html-content-editor-<%=BlockInstance.Id %>').bind('hide', function () {
+            $('#html-content-editor-<%=BlockInstance.Id %>').find('textarea.html-content-editor').ckeditorGet().destroy();
         });
 
         $('#bid_<%=BlockInstance.Id %> .block-configuration a.edit').click(function (ev) {
-            $('#html-content-editor-<%=BlockInstance.Id %>').dialog('open');
+            $('#html-content-editor-<%=BlockInstance.Id %>').modal('show');
             return false;
         });
     });
 
     Sys.Application.add_load(function () {
 
-        $('#html-content-editor-<%=BlockInstance.Id %> .save').click(function () {
-            $('#html-content-editor-<%=BlockInstance.Id %>').dialog('close');
+        $('#html-content-editor-<%=BlockInstance.Id %> .btn').click(function () {
+            $('#html-content-editor-<%=BlockInstance.Id %>').modal('hide');
         });
 
-        $('#html-content-editor-<%=BlockInstance.Id %> .cancel').click(function () {
-            $('#html-content-editor-<%=BlockInstance.Id %>').dialog('close');
-        });
     });
 
 </script>
@@ -84,17 +80,25 @@
         </ContentTemplate>
     </asp:UpdatePanel>
 
-    <div id="html-content-editor-<%=BlockInstance.Id %>" class="html-content-editor-panel">
-        <asp:UpdatePanel ID="upContentDialog" UpdateMode="Conditional" ChildrenAsTriggers="true" runat="server">
-            <ContentTemplate>
+    <asp:UpdatePanel ID="upContentDialog" UpdateMode="Conditional" ChildrenAsTriggers="true" runat="server">
+    <ContentTemplate>
+
+        <div id="html-content-editor-<%=BlockInstance.Id %>"" class="modal hide fade">
+            <div class="modal-header">
+                <a href="#" class="close">&times;</a>
+                <h3>HTML Content</h3>
+            </div>
+            <div class="modal-body">
                 <asp:TextBox ID="txtHtmlContentEditor" CssClass="html-content-editor" TextMode="MultiLine" runat="server"></asp:TextBox>
-                <div class="editor-buttons">
-                    <asp:Button ID="btnSaveContent" runat="server" Text="Save" CssClass="save" OnClick="btnSaveContent_Click" />
-                    <input id="btnCancel" runat="server" type="button" class="cancel" value="Cancel" />
-                </div>
-            </ContentTemplate>
-        </asp:UpdatePanel>
-    </div>
+            </div>
+            <div class="modal-footer">
+                <input id="btnCancel" runat="server" type="button" class="btn secondary" value="Cancel" />
+                <asp:Button ID="btnSaveContent" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveContent_Click" />
+            </div>
+        </div>
+
+    </ContentTemplate>
+    </asp:UpdatePanel>
 
 </div>
 

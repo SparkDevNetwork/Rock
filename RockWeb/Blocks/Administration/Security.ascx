@@ -82,7 +82,7 @@
                     <dt></dt>
                     <dd>
                         <a class="show-action-list" href="#">...</a>
-                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="UnorderedList"></asp:CheckBoxList>
+                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list" ></asp:CheckBoxList>
                     </dd>
                 </dl>
             </fieldset>
@@ -103,7 +103,7 @@
                     <dt></dt>
                     <dd>
                         <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click"></asp:LinkButton>
-                        <asp:CheckBoxList ID="cbUsers" runat="server"></asp:CheckBoxList>
+                        <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list"></asp:CheckBoxList>
                     </dd>
                 </dl>
             </fieldset>

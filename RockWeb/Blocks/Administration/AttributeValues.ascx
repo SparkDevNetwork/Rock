@@ -88,7 +88,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" PageSize="10" >
+        <Rock:Grid ID="rGrid" runat="server">
             <Columns>
                 <asp:BoundField DataField="Category" HeaderText="Category" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />

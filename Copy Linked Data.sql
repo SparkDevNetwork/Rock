@@ -2,6 +2,10 @@ BEGIN TRANSACTION
 
 SET NOCOUNT ON
 
+DECLARE @LinkedServerDB varchar(128)
+SET @LinkedServerDB = '[VSERVER01.CYTANIUM.COM].[sparkdevcms]'
+--SET @LinkedServerDB = '[24.249.179.215].[RockChMS]'
+
 DECLARE @ConstraintName varchar(128)
 DECLARE @IsDisabled bit
 DECLARE @UpdateAction varchar(128)
@@ -130,7 +134,7 @@ BEGIN
 			SET @SqlStatement = @SqlStatement + 'SET IDENTITY_INSERT dbo.' + @TableName + ' ON; '
 			
 		SET @SqlStatement = @SqlStatement + 'INSERT INTO ' + @TableName + '(' + SUBSTRING(@ColNames,2,4000) + ') ' +
-		'SELECT ' + SUBSTRING(@ColNames,2,4000) + ' FROM [24.249.179.215].RockChMS.dbo.' + @TableName + '; '
+		'SELECT ' + SUBSTRING(@ColNames,2,4000) + ' FROM ' + @LinkedServerDB + '.dbo.' + @TableName + '; '
 		
 		IF (@HasIdentity = 1)
 			SET @SqlStatement = @SqlStatement + 'SET IDENTITY_INSERT dbo.' + @TableName + ' OFF; '
