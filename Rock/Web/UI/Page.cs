@@ -686,71 +686,7 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
 
-            // Add Zone Selection Popup (for moving blocks to another zone)
-            HtmlGenericControl divZoneSelect = new HtmlGenericControl( "div" );
-            divZoneSelect.ClientIDMode = ClientIDMode.Static;
-            divZoneSelect.Attributes.Add( "id", "divZoneSelect" );
-            this.Form.Controls.Add( divZoneSelect );
-
-            HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
-            fsZoneSelect.ClientIDMode = ClientIDMode.Static;
-            fsZoneSelect.Attributes.Add( "id", "fsZoneSelect" );
-            divZoneSelect.Controls.Add( fsZoneSelect );
-
-            HtmlGenericControl olZoneSelect = new HtmlGenericControl( "ol" );
-            olZoneSelect.ClientIDMode = ClientIDMode.Static;
-            olZoneSelect.Attributes.Add( "id", "olZoneSelect" );
-            fsZoneSelect.Controls.Add( olZoneSelect );
-
-            HtmlGenericControl liZones = new HtmlGenericControl( "li" );
-            liZones.ClientIDMode = ClientIDMode.Static;
-            liZones.Attributes.Add( "id", "liZoneSelect" );
-            olZoneSelect.Controls.Add( liZones );
-
-            DropDownList ddlZones = new DropDownList();
-            ddlZones.ClientIDMode = ClientIDMode.Static;
-            ddlZones.ID = "ddlZones";
-            foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
-
-            Label lblZones = new Label();
-            lblZones.ClientIDMode = ClientIDMode.Static;
-            lblZones.ID = "lblZones";
-            lblZones.Text = "Zone";
-            lblZones.AssociatedControlID = ddlZones.ClientID;
-
-            liZones.Controls.Add( lblZones );
-            liZones.Controls.Add( ddlZones );
-
-            HtmlGenericControl liLocation = new HtmlGenericControl( "li" );
-            liLocation.ClientIDMode = ClientIDMode.Static;
-            liLocation.Attributes.Add( "id", "liLocation" );
-            olZoneSelect.Controls.Add( liLocation );
-
-            // TODO: The option to edit a layout block or move a block to the layout be controlled by site security and not just page security
-            RadioButtonList rblLocation = new RadioButtonList();
-            rblLocation.ClientIDMode = ClientIDMode.Static;
-            rblLocation.RepeatLayout = RepeatLayout.Flow;
-            rblLocation.RepeatDirection = RepeatDirection.Horizontal;
-            rblLocation.ID = "rblLocation";
-            rblLocation.Items.Add( new ListItem( "Page" ) );
-            rblLocation.Items.Add( new ListItem( "Layout" ) );
-
-            Label lblLocation = new Label();
-            lblLocation.ClientIDMode = ClientIDMode.Static;
-            lblLocation.ID = "lblLocation";
-            lblLocation.Text = "Location";
-            lblLocation.AssociatedControlID = lblLocation.ClientID;
-
-            liLocation.Controls.Add( lblLocation );
-            liLocation.Controls.Add( rblLocation );
-
-            Button btnSaveZoneSelect = new Button();
-            btnSaveZoneSelect.ClientIDMode = ClientIDMode.Static;
-            btnSaveZoneSelect.ID = "btnSaveZoneSelect";
-            btnSaveZoneSelect.Text = "Save";
-            divZoneSelect.Controls.Add( btnSaveZoneSelect );
-
+            AddBlockMove();
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Control>> zoneControl in this.Zones )
             {
@@ -806,6 +742,79 @@ namespace Rock.Web.UI
                     blockConfig.Controls.Add( configControl );
                 }
             }
+        }
+
+        private void AddBlockMove()
+        {
+            // Add Zone Selection Popup (for moving blocks to another zone)
+            HtmlGenericControl divBlockMove = new HtmlGenericControl( "div" );
+            divBlockMove.ClientIDMode = ClientIDMode.Static;
+            divBlockMove.Attributes.Add( "id", "modal-block-move" );
+            divBlockMove.Attributes.Add( "class", "modal hide fade" );
+            this.Form.Controls.Add( divBlockMove );
+
+            HtmlGenericControl divBlockMoveHeader = new HtmlGenericControl( "div" );
+            divBlockMoveHeader.Attributes.Add( "class", "modal-header" );
+            divBlockMove.Controls.Add( divBlockMoveHeader );
+
+            HtmlGenericControl aClose = new HtmlGenericControl( "a" );
+            aClose.Attributes.Add( "href", "#" );
+            aClose.Attributes.Add( "class", "close" );
+            aClose.InnerHtml = "&times;";
+            divBlockMoveHeader.Controls.Add( aClose );
+
+            HtmlGenericControl hTitle = new HtmlGenericControl( "h3" );
+            hTitle.InnerText = "Move Block";
+            divBlockMoveHeader.Controls.Add( hTitle );
+
+            HtmlGenericControl divBlockMoveBody = new HtmlGenericControl( "div" );
+            divBlockMoveBody.Attributes.Add( "class", "modal-body" );
+            divBlockMove.Controls.Add( divBlockMoveBody );
+
+            HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
+            fsZoneSelect.ClientIDMode = ClientIDMode.Static;
+            fsZoneSelect.Attributes.Add( "id", "fsZoneSelect" );
+            divBlockMoveBody.Controls.Add( fsZoneSelect );
+
+            HtmlGenericControl legend = new HtmlGenericControl( "legend" );
+            legend.InnerText = "New Location";
+            fsZoneSelect.Controls.Add( legend );
+
+            LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
+            rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
+            rblLocation.ClientIDMode = ClientIDMode.Static;
+            rblLocation.ID = "block-move-Location";
+            rblLocation.CssClass = "inputs-list";
+            rblLocation.Items.Add( new ListItem( "Current Page" ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", PageInstance.Layout ) ) );
+            rblLocation.LabelText = "";
+            fsZoneSelect.Controls.Add( rblLocation );
+
+            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            ddlZones.ClientIDMode = ClientIDMode.Static;
+            ddlZones.ID = "block-move-zone";
+            ddlZones.LabelText = "New Zone";
+            foreach ( var zone in Zones )
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+            fsZoneSelect.Controls.Add( ddlZones );
+
+            HtmlGenericControl divBlockMoveFooter = new HtmlGenericControl( "div" );
+            divBlockMoveFooter.Attributes.Add( "class", "modal-footer" );
+            divBlockMove.Controls.Add( divBlockMoveFooter );
+
+            HtmlGenericControl modalSecondary = new HtmlGenericControl( "a" );
+            modalSecondary.ID = "block-move-cancel";
+            modalSecondary.Attributes.Add( "href", "#" );
+            modalSecondary.Attributes.Add( "class", "btn secondary" );
+            modalSecondary.InnerText = "Cancel";
+            divBlockMoveFooter.Controls.Add( modalSecondary );
+
+            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
+            modalPrimary.ID = "block-move-save";
+            modalPrimary.Attributes.Add( "href", "#" );
+            modalPrimary.Attributes.Add( "class", "btn primary" );
+            modalPrimary.InnerText = "Save";
+            divBlockMoveFooter.Controls.Add( modalPrimary );
         }
 
         #endregion
