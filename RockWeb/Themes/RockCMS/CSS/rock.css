@@ -238,7 +238,7 @@ header.topbar nav > ul > li:first-child {
 
 #page-title h1 
 {
-    margin: 0;
+    margin: 6px 0 0 0;
     height: 36px;
 }
 
@@ -254,10 +254,10 @@ header.topbar nav > ul > li:first-child {
 
 
 /* footer */
-body > footer {
+#page-frame > footer {
 	margin-top: 24px;
 	padding-top: 24px;
-	height: 120px;
+	min-height: 120px;
 	background-color: #222937;
 	color: #fff;
 }
