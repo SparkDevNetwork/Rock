@@ -2,63 +2,68 @@
     AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="RockWeb.Themes.RockCMS.Layouts.Default" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-    <header class="topbar topbar-inner">
-		<section class="container">
-			<div class="row">
-				<div class="three columns">
-					<a href="/rock" class="logo">Home</a>
+    <div id="page-frame">
+        <header class="topbar topbar-inner">
+		    <section class="container">
+			    <div class="row">
+				    <div class="three columns">
+					    <a href="/rock" class="logo">Home</a>
 
-				</div>
-				<div class="five columns offset-by-four content">
+				    </div>
+				    <div class="five columns offset-by-four content">
 
-					<asp:PlaceHolder ID="phHeader" runat="server"></asp:PlaceHolder>
+					    <asp:PlaceHolder ID="Header" runat="server"></asp:PlaceHolder>
 
-					<div class="filter-search">
-						<input id="search-words">
-						<div class="filter">People</div>
-					</div>
+					    <div class="filter-search">
+						    <input id="search-words">
+						    <div class="filter">People</div>
+					    </div>
 
-				</div>
+				    </div>
 				
 				
-			</div>
-			<div class="row">
-				<nav class="twelve columns">
-					<asp:PlaceHolder ID="Menu" runat="server"></asp:PlaceHolder>
+			    </div>
+			    <div class="row">
+				    <nav class="twelve columns">
+					    <asp:PlaceHolder ID="Menu" runat="server"></asp:PlaceHolder>
 
-					<a href="" id="header-lock">Lock</a>
-				</nav>
-			</div>
-		</section>
-	</header>            
+					    <a href="" id="header-lock">Lock</a>
+				    </nav>
+			    </div>
+		    </section>
+	    </header>            
     
-    <div id="content">        
-        <section id="page-title">
-		    <div class="row">	
-			    <h1><asp:Literal ID="lPageTitle" runat="server"></asp:Literal></h1>
+        <div id="content">        
+            <section id="page-title">
+		        <div class="row">	
+                    <div class="four columns">
+			            <h1><asp:Literal ID="lPageTitle" runat="server"></asp:Literal></h1>
+                    </div>
+                    <div class="six columns">
+                        <asp:PlaceHolder ID="PageTitleBar" runat="server"></asp:PlaceHolder>
+                    </div>
+		        </div>
+	        </section>
 
-		    </div>
-	    </section>
-
-	    <section class="row container">     
+	        <section class="row container">     
   
-            <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
-            <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
-            <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
-            <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
-            <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
-            <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
-            <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
-            <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>           
-        </section>
-	</div>
+                <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
+                <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
+                <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
+                <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>           
+            </section>
+	    </div>
 
-	<footer>
-		<div class="row">
-		    <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
-		</div>
-	</footer>        
-
+	    <footer>
+		    <div class="row">
+		        <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
+		    </div>
+	    </footer>        
+    </div>
     <script>
         /* script to manage header lock */
         $(document).ready(function () {

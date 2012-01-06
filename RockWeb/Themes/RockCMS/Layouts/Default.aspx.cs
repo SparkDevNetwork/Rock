@@ -20,9 +20,10 @@ namespace RockWeb.Themes.RockCMS.Layouts
         /// </summary>
         protected override void DefineZones()
         {
-            AddZone( "Header", phHeader );
+            AddZone( "Header", Header );
             AddZone( "Menu", Menu );
             AddZone( "ContentLeft", ContentLeft );
+            AddZone( "PageTitleBar", PageTitleBar );
             AddZone( "Content", Content );
             AddZone( "ContentRight", ContentRight );
             AddZone( "UpperBand", UpperBand );
