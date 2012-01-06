@@ -147,7 +147,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" PageSize="10" >
+        <Rock:Grid ID="rGrid" runat="server" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:BoundField DataField="Category" HeaderText="Category"  />
