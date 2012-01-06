@@ -2569,6 +2569,16 @@ div.filter-search .filter {
 	padding: 4px 12px 0 0;
 }
 
+div.filter-search select 
+{
+   background: transparent;
+   width: 120px;
+   font-size: 11px;
+   border: none;
+   height: 24px;
+   color: #666a73;
+}
+
 /* jQuery Scrolling Capability */
 .scroll-container 
 { 
