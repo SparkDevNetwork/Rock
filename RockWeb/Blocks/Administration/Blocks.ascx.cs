@@ -132,6 +132,7 @@ namespace RockWeb.Blocks.Administration
 					tbPath.Text = block.Path;
 					tbName.Text = block.Name;
 					tbDescription.Text = block.Description;
+                    cbSystem.Checked = block.System;
 				}
 				else
 				{
@@ -178,6 +179,7 @@ namespace RockWeb.Blocks.Administration
 				block.Path = tbPath.Text;
 				block.Name = tbName.Text;
 				block.Description = tbDescription.Text;
+                block.System = cbSystem.Checked;
 
 				if ( _action == "add" )
                     blockService.Add( block, CurrentPersonId );

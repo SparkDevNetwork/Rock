@@ -15,22 +15,20 @@
 	<ContentTemplate>
 
 		<asp:PlaceHolder ID="phDetails" runat="server" Visible="false">
+            <fieldset>
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Name" />
 
-			<asp:Label ID="lblPath" runat="server" Text="Path" AssociatedControlID="tbPath"/>
-			<asp:TextBox ID="tbPath" runat="server"></asp:TextBox><br />
+			    <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Path" />
 
-			<asp:Label ID="lblName" runat="server" Text="Name" AssociatedControlID="tbName" />
-			<asp:TextBox ID="tbName" runat="server"></asp:TextBox><br />
+                <Rock:DataTextBox ID="tbDescription" runat="server" TextBoxTextMode="MultiLine" TextBoxRows="6" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xxlarge" PropertyName="Description" />
 
-			<asp:Label ID="lblDescription" runat="server" Text="Description" AssociatedControlID="tbDescription" />
-			<asp:TextBox ID="tbDescription" runat="server"></asp:TextBox><br />
+                <Rock:LabeledCheckBox ID="cbSystem" runat="server" LabelText="Is this a system block?"></Rock:LabeledCheckBox>
 
-			<asp:Label ID="lblSystem" runat="server" Text="Is this a system block?" AssociatedControlID="cbSystem"/>
-			<asp:CheckBox ID="cbSystem" runat="server" /><br />
-
-			<asp:LinkButton ID="lbSave" runat="server" Text="Save" OnClick="lbSave_Click"/>&nbsp;
-			<asp:HyperLink ID="hlCancel" runat="server" Text="Cancel" NavigateUrl="~/Bloc/List" />
-
+                <div class="actions">
+			        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn primary" OnClick="lbSave_Click"/>&nbsp;
+			        <asp:HyperLink ID="hlCancel" runat="server" Text="Cancel" CssClass="btn" NavigateUrl="~/Bloc/List" />
+                </div>
+            </fieldset>
 		</asp:PlaceHolder>
 
     </ContentTemplate>
