@@ -97,8 +97,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( string.Format( @"<dl><dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
+            writer.Write( @"<dd><ul class=""inputs-list""><li>" );
+
+            // render the checkbox control
             base.Render( writer );
+
+            writer.Write( string.Format( @"<label for=""{0}"">{1}</label>", this.ClientID, LabelText ) );
 
             if ( Tip.Trim() != string.Empty )
                 writer.Write( string.Format( @"<a class=""help-tip"" href=""#"">help<span>{0}</span></a>", Tip.Trim() ) );
@@ -106,7 +110,7 @@ namespace Rock.Web.UI.Controls
             if ( Help.Trim() != string.Empty )
                 writer.Write( string.Format( @"<span class=""help-block"">{0}</span>", Help.Trim() ) );
 
-            writer.Write( @"</dd></dl>" );
+            writer.Write( @"</li></ul></dd>" );
         }
 
     }
