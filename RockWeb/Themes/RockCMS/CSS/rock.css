@@ -160,7 +160,7 @@ header.topbar a.logo {
     text-indent: -9999px;
 }
 
-header.topbar .content {
+header.topbar .content .account-name {
 	text-align: right;
 	margin-top: 8px;
 	font-size: 13px;
