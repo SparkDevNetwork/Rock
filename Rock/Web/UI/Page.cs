@@ -715,6 +715,8 @@ namespace Rock.Web.UI
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
+                aBlockConfig.Attributes.Add( "primary-button", "" );
+                aBlockConfig.Attributes.Add( "secondary-button", "Done" );
                 aBlockConfig.InnerText = "Blocks";
 
                 parent.Controls.Remove( control );
