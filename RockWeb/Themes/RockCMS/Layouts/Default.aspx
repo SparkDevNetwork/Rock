@@ -7,7 +7,7 @@
 		    <section class="container">
 			    <div class="row">
 				    <div class="three columns">
-					    <a href="/rock" class="logo">Home</a>
+                        <asp:Literal ID="lLogo" runat="server"></asp:Literal>
 
 				    </div>
 				    <div class="five columns offset-by-four content">

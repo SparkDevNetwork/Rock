@@ -33,5 +33,12 @@ namespace RockWeb.Themes.RockCMS.Layouts
             AddZone( "LowerContentRight", LowerContentRight );
             AddZone( "Footer", Footer );
         }
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            lLogo.Text = string.Format( "<a href='{0}' class='logo'>Home</a>", this.AppPath );
+        }
     }
 }
