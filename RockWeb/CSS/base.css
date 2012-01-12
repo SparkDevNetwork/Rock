@@ -2524,7 +2524,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
 div.filter-search {
 	border-radius: 4px;
 	border: 1px solid #374052;
-	width: 280px;
+	width: 300px;
 	float: right;
 	background-color: #2c3443;
 }
@@ -2563,10 +2563,63 @@ div.filter-search input::-moz-selection {
 
 div.filter-search .filter {
 	color: #666a73;
-	width: 90px;
+	width: 110px;
 	float: right;
 	font-size: 12px;
-	padding: 4px 12px 0 0;
+	padding: 4px 8px 0 0;
+}
+    
+div.filter-search .dropdown dd, div.filter-search .dropdown dt, div.filter-search .dropdown ul, div.filter-search dl.dropdown 
+{ 
+    margin: 0px; 
+    padding: 0px; 
+}
+
+div.filter-search dl.dropdown 
+{
+    background: url("../assets/images/arrow.png") no-repeat scroll right center;
+}
+
+div.filter-search .dropdown dd  
+{
+    position: relative; 
+}
+
+div.filter-search .dropdown dt  
+{
+    display: block; 
+    padding-right: 20px;  
+    width: 94px;
+    text-align: right;
+    cursor: pointer;
+    font-weight: normal;
+    margin-top: -1px;
+}
+
+div.filter-search .dropdown dd ul 
+{ 
+    background: #283642;
+    border-color: #374052;
+    border-width: 0 1px 1px 1px; 
+    border-style: solid;
+    display: none;
+    list-style: none; 
+    position: absolute; 
+    left: 0px; 
+    top: 1px; 
+    width: 120px;
+    z-index: 90;
+    border-radius: 0 0 4px 4px;
+    margin-left: -3px;
+    padding: 6px 0 12px 0;
+}
+
+div.filter-search .dropdown dd ul li
+{
+    display: block;
+    cursor: pointer; 
+    color: #666a73;
+    padding: 5px 12px;
 }
 
 /* jQuery Scrolling Capability */
