@@ -17,16 +17,36 @@
 					    <div class="filter-search">
 						    <input id="search-words">
 						    <div class="filter">
-                                <select id="search-filter">
-                                    <option selected>People</option>
-                                    <option>Group</option>
-                                    <option>Space</option>
-                                    <option>Somthing Else</option>
-                                </select>
+                                <dl class="dropdown">
+                                    <dt>Name</dt>
+                                    <dd>
+                                        <ul>
+                                            <li>Name</li>
+                                            <li>Email Address</li>
+                                            <li>Address</li>
+                                            <li>Phone</li>
+                                            <li>Group</li>
+                                        </ul>
+                                    </dd>
+                                </dl>
+                                <input type="hidden" name="hSearchFilter" value="Name" id="hSearchFilter" />
                             </div>
 					    </div>
-
 				    </div>
+                    <script>
+                        // show options when clicked
+                        $(".dropdown dt").click(function () {
+                            $(".dropdown dd ul").fadeToggle( 'fast' );
+                        });
+
+                        // change selection when picked
+                        $(".dropdown dd ul li").click(function () {
+                            var text = $(this).html();
+                            $(".dropdown dt").html(text);
+                            $(".dropdown dd ul").hide();
+                            $("#hSearchFilter").val( text );
+                        }); 
+                    </script>
 				
 				
 			    </div>
