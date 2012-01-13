@@ -2598,7 +2598,7 @@ div.filter-search .dropdown dt
 
 div.filter-search .dropdown dd ul 
 { 
-    background: #283642;
+    background: #2C3443;
     border-color: #374052;
     border-width: 0 1px 1px 1px; 
     border-style: solid;
@@ -2606,7 +2606,7 @@ div.filter-search .dropdown dd ul
     list-style: none; 
     position: absolute; 
     left: 0px; 
-    top: 1px; 
+    top: 2px; 
     width: 120px;
     z-index: 90;
     border-radius: 0 0 4px 4px;
@@ -2619,7 +2619,8 @@ div.filter-search .dropdown dd ul li
     display: block;
     cursor: pointer; 
     color: #666a73;
-    padding: 5px 12px;
+    font-size: 11px;
+    padding: 5px 10px;
 }
 
 /* jQuery Scrolling Capability */
