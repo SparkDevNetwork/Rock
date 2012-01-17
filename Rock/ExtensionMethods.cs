@@ -28,6 +28,30 @@ namespace Rock
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
+        public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
+        {
+            int count, position0, position1;
+            count = position0 = position1 = 0;
+            string upperString = str.ToUpper();
+            string upperPattern = oldValue.ToUpper();
+            int inc = ( str.Length / oldValue.Length ) *
+                      ( newValue.Length - oldValue.Length );
+            char[] chars = new char[str.Length + Math.Max( 0, inc )];
+            while ( ( position1 = upperString.IndexOf( upperPattern,
+                                              position0 ) ) != -1 )
+            {
+                for ( int i = position0; i < position1; ++i )
+                    chars[count++] = str[i];
+                for ( int i = 0; i < newValue.Length; ++i )
+                    chars[count++] = newValue[i];
+                position0 = position1 + oldValue.Length;
+            }
+            if ( position0 == 0 ) return str;
+            for ( int i = position0; i < str.Length; ++i )
+                chars[count++] = str[i];
+            return new string( chars, 0, count );
+        }
+
         #endregion
 
         #region MembershipUser Extensions

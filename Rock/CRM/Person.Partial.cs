@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Configuration;
 using System.ComponentModel.DataAnnotations;
 
 using Rock.Data;
@@ -32,7 +33,7 @@ namespace Rock.CRM
         /// The birth date.
         /// </value>
         [NotMapped]
-        public DateTime BirthDate
+        public DateTime? BirthDate
         {
             // notes
             // if no birthday is available then DateTime.MinValue is returned
@@ -41,7 +42,7 @@ namespace Rock.CRM
             {
                 if ( BirthDay == null || BirthMonth == null )
                 {
-                    return DateTime.MinValue;
+                    return null;
                 }
                 else
                 {
@@ -52,9 +53,31 @@ namespace Rock.CRM
 
             set
             {
-                BirthMonth = value.Month;
-                BirthDay = value.Day;
-                BirthYear = value.Year;
+                if ( value.HasValue )
+                {
+                    BirthMonth = value.Value.Month;
+                    BirthDay = value.Value.Day;
+                    BirthYear = value.Value.Year;
+                }
+                else
+                {
+                    BirthMonth = null;
+                    BirthDay = null;
+                    BirthYear = null;
+                }
+            }
+        }
+
+        public string EncryptedID
+        {
+            get
+            {
+                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+                if (String.IsNullOrWhiteSpace(encryptionPhrase))
+                    encryptionPhrase = "Rock Rocks!";
+
+                string identifier = this.Guid.ToString() + "|" + this.Id.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
             }
         }
     }
@@ -76,4 +99,27 @@ namespace Rock.CRM
     }
 
 #pragma warning restore
+
+    /// <summary>
+    /// The gender of a person
+    /// </summary>
+    public enum Gender
+    {
+        /// <summary>
+        /// Unknown
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Male
+        /// </summary>
+        Male = 1,
+
+        /// <summary>
+        /// Female
+        /// </summary>
+        Female = 2
+    }
+
+
 }

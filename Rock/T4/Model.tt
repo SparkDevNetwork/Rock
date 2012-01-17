@@ -1062,7 +1062,7 @@ namespace Rock.REST<#= projectNamespace #>
 //
 using System.Data.Entity;
 
-namespace Rock.EntityFramework
+namespace Rock.Data
 {
 	/// <summary>
 	/// Entity Framework Context
@@ -1106,7 +1106,7 @@ namespace Rock.EntityFramework
 
 <#
 	// Write the Entity Framework Context Class
-    relativeOutputFilePath = @"..\..\EntityFramework\RockContext.cs";
+    relativeOutputFilePath = @"..\..\Data\RockContext.cs";
     TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 	
 	GenerationEnvironment = new System.Text.StringBuilder();

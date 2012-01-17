@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -22,9 +23,9 @@ namespace Rock.Attribute
         /// <param name="entity">The entity.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public static bool CreateAttributes( Type type, string entity, int? currentPersonId )
+        public static bool UpdateAttributes( Type type, string entity, int? currentPersonId )
         {
-            return CreateAttributes( type, entity, String.Empty, String.Empty, currentPersonId );
+            return UpdateAttributes( type, entity, String.Empty, String.Empty, currentPersonId );
         }
 
         /// <summary>
@@ -37,21 +38,110 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public static bool CreateAttributes( Type type, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        public static bool UpdateAttributes( Type type, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool attributesUpdated = false;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
+                List<string> existingKeys = new List<string>();
+
                 foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
                 {
                     var blockInstanceProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
-                    attributesUpdated = blockInstanceProperty.UpdateAttribute( 
-                        entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( blockInstanceProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+
+                    existingKeys.Add( blockInstanceProperty.Key );
                 }
+
+                // Delete any removed attributes
+                Core.AttributeService attributeService = new Core.AttributeService();
+                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue))
+                    if ( !existingKeys.Contains( a.Key ) )
+                    {
+                        attributeService.Delete( a, currentPersonId );
+                        attributeService.Save( a, currentPersonId );
+                    }
             }
 
             return attributesUpdated;
+        }
+
+        /// <summary>
+        /// Adds or Updates a <see cref="Rock.Core.Attribute"/> item for the attribute.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="currentPersonId">The current person id.</param>
+        /// <returns></returns>
+        private static bool UpdateAttribute( Rock.Attribute.PropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        {
+            bool updated = false;
+
+            Core.AttributeService attributeService = new Core.AttributeService();
+            Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
+
+            // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
+            Core.Attribute attribute = attributeService.GetAttributeByEntityQualifierAndKey(
+                entity, entityQualifierColumn, entityQualifierValue, property.Key );
+
+            if ( attribute == null )
+            {
+                // If an existing attribute record doesn't exist, create a new one
+                updated = true;
+                attribute = new Core.Attribute();
+                attribute.Entity = entity;
+                attribute.EntityQualifierColumn = entityQualifierColumn;
+                attribute.EntityQualifierValue = entityQualifierValue;
+                attribute.Key = property.Key;
+                attribute.GridColumn = false;
+            }
+            else
+            {
+                // Check to see if the existing attribute record needs to be updated
+                if ( attribute.Name != property.Name ||
+                    attribute.Category != property.Category ||
+                    attribute.DefaultValue != property.DefaultValue ||
+                    attribute.Description != property.Description ||
+                    attribute.Order != property.Order ||
+                    attribute.FieldType.Assembly != property.FieldTypeAssembly ||
+                    attribute.FieldType.Class != property.FieldTypeClass ||
+                    attribute.Required != property.Required )
+                    updated = true;
+            }
+
+            if ( updated )
+            {
+                // Update the attribute
+                attribute.Name = property.Name;
+                attribute.Category = property.Category;
+                attribute.Description = property.Description;
+                attribute.DefaultValue = property.DefaultValue;
+                attribute.Order = property.Order;
+                attribute.Required = property.Required;
+
+                // Try to set the field type by searching for an existing field type with the same assembly and class name
+                if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
+                    attribute.FieldType.Class != property.FieldTypeClass )
+                {
+                    attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
+                        f.Assembly == property.FieldTypeAssembly &&
+                        f.Class == property.FieldTypeClass );
+                }
+
+                // If this is a new attribute, add it, otherwise remove the exiting one from the cache
+                if ( attribute.Id == 0 )
+                    attributeService.Add( attribute, currentPersonId );
+                else
+                    Rock.Web.Cache.Attribute.Flush( attribute.Id );
+
+                attributeService.Save( attribute, currentPersonId );
+
+                return true;
+            }
+            else
+                return false;
         }
 
         /// <summary>

@@ -266,13 +266,9 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string AttributeValue( string key )
         {
-            if ( BlockInstance == null )
-                return string.Empty;
-
-            if ( BlockInstance.AttributeValues == null )
-                return string.Empty;
-
-            if ( BlockInstance.AttributeValues.ContainsKey( key ) )
+            if ( BlockInstance != null  && 
+                BlockInstance.AttributeValues != null &&
+                BlockInstance.AttributeValues.ContainsKey( key ) )
                 return BlockInstance.AttributeValues[key].Value;
 
             return null;
@@ -396,7 +392,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            if ( Rock.Attribute.Helper.CreateAttributes( this.GetType(), 
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
                 "Rock.CMS.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
             {
                 this.BlockInstance.ReloadAttributeValues();

@@ -88,6 +88,15 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
+        /// Handles the Click event of the btnLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnNewAccount_Click( object sender, EventArgs e )
+        {
+        }
+
+        /// <summary>
         /// Displays the error.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -113,9 +122,9 @@ namespace RockWeb.Blocks.Security
             // setup some facebook connection settings
             var settings = new Dictionary<string, object>
             {
-                        { "display", "popup" },
-                        { "scope", "user_birthday,email,read_stream,read_friendlists"},
-                        { "state", returnUrl ?? FormsAuthentication.DefaultUrl}
+                { "display", "popup" },
+                { "scope", "user_birthday,email,read_stream,read_friendlists"},
+                { "state", returnUrl ?? FormsAuthentication.DefaultUrl}
             };
 
             // Grab publically available information. No special permissions needed for authentication.

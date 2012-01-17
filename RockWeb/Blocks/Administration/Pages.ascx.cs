@@ -223,16 +223,23 @@ namespace RockWeb.Blocks.Administration
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
-                ddlLayout.Text = page.Layout;
+                try { ddlLayout.Text = page.Layout; }
+                catch { }
                 tbPageName.Text = page.Name;
             }
             else
             {
                 hfPageId.Value = "0";
-                if ( _page != null )
-                    ddlLayout.Text = _page.Layout;
-                else
-                    ddlLayout.Text = PageInstance.Layout;
+
+                try
+                {
+                    if ( _page != null )
+                        ddlLayout.Text = _page.Layout;
+                    else
+                        ddlLayout.Text = PageInstance.Layout;
+                }
+                catch { }
+
                 tbPageName.Text = string.Empty;
             }
 
