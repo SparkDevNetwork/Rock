@@ -21,10 +21,10 @@ using Rock.Data;
 namespace Rock.CRM
 {
     /// <summary>
-    /// Person POCO Entity.
+    /// Email Template POCO Entity.
     /// </summary>
-    [Table( "crmPerson" )]
-    public partial class Person : ModelWithAttributes<Person>, IAuditable
+    [Table( "crmEmailTemplate" )]
+    public partial class EmailTemplate : ModelWithAttributes<EmailTemplate>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -36,98 +36,89 @@ namespace Rock.CRM
 		public bool System { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the First Name.
+		/// Gets or sets the Person Id.
 		/// </summary>
 		/// <value>
-		/// First Name.
+		/// Person Id.
 		/// </value>
-		[MaxLength( 50 )]
-		[TrackChanges]
-		[Required( ErrorMessage = "First Name must be between 1 and 12 characters" )]
-		[StringLength( 12, ErrorMessage = "First Name is required" )]
 		[DataMember]
-		public string FirstName { get; set; }
+		public int? PersonId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Nick Name.
+		/// Gets or sets the Category.
 		/// </summary>
 		/// <value>
-		/// Nick Name.
+		/// Category.
 		/// </value>
-		[MaxLength( 50 )]
-		[TrackChanges]
+		[MaxLength( 100 )]
 		[DataMember]
-		public string NickName { get; set; }
+		public string Category { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Last Name.
+		/// Gets or sets the Title.
 		/// </summary>
 		/// <value>
-		/// Last Name.
+		/// Title.
 		/// </value>
-		[MaxLength( 50 )]
-		[TrackChanges]
+		[MaxLength( 100 )]
 		[DataMember]
-		public string LastName { get; set; }
+		public string Title { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Gender.
+		/// Gets or sets the From.
 		/// </summary>
 		/// <value>
-		/// Enum[Gender].
+		/// From.
 		/// </value>
+		[MaxLength( 200 )]
 		[DataMember]
-		internal int? GenderInternal { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Gender.
-		/// </summary>
-		/// <value>
-		/// Enum[Gender].
-		/// </value>
-		[NotMapped]
-		public Gender Gender
-		{
-			get { return (Gender)this.GenderInternal; }
-			set { this.GenderInternal = (int)value; }
-		}
+		public string From { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Email.
+		/// Gets or sets the To.
 		/// </summary>
 		/// <value>
-		/// Email.
+		/// To.
 		/// </value>
-		[MaxLength( 75 )]
 		[DataMember]
-		public string Email { get; set; }
+		public string To { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Birth Month.
+		/// Gets or sets the Cc.
 		/// </summary>
 		/// <value>
-		/// Birth Month.
+		/// Cc.
 		/// </value>
 		[DataMember]
-		public int? BirthMonth { get; set; }
+		public string Cc { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Birth Day.
+		/// Gets or sets the Bcc.
 		/// </summary>
 		/// <value>
-		/// Birth Day.
+		/// Bcc.
 		/// </value>
 		[DataMember]
-		public int? BirthDay { get; set; }
+		public string Bcc { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Birth Year.
+		/// Gets or sets the Subject.
 		/// </summary>
 		/// <value>
-		/// Birth Year.
+		/// Subject.
+		/// </value>
+		[MaxLength( 200 )]
+		[DataMember]
+		public string Subject { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Body.
+		/// </summary>
+		/// <value>
+		/// Body.
 		/// </value>
 		[DataMember]
-		public int? BirthYear { get; set; }
+		public string Body { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -169,24 +160,25 @@ namespace Rock.CRM
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.CRM.DTO.Person"/> object.
+        /// A <see cref="Rock.CRM.DTO.EmailTemplate"/> object.
         /// </value>
-		public Rock.CRM.DTO.Person DataTransferObject
+		public Rock.CRM.DTO.EmailTemplate DataTransferObject
 		{
 			get 
 			{ 
-				Rock.CRM.DTO.Person dto = new Rock.CRM.DTO.Person();
+				Rock.CRM.DTO.EmailTemplate dto = new Rock.CRM.DTO.EmailTemplate();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;
-				dto.FirstName = this.FirstName;
-				dto.NickName = this.NickName;
-				dto.LastName = this.LastName;
-				dto.Gender = this.GenderInternal;
-				dto.Email = this.Email;
-				dto.BirthMonth = this.BirthMonth;
-				dto.BirthDay = this.BirthDay;
-				dto.BirthYear = this.BirthYear;
+				dto.PersonId = this.PersonId;
+				dto.Category = this.Category;
+				dto.Title = this.Title;
+				dto.From = this.From;
+				dto.To = this.To;
+				dto.Cc = this.Cc;
+				dto.Bcc = this.Bcc;
+				dto.Subject = this.Subject;
+				dto.Body = this.Body;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -199,55 +191,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.Person"; } }
-        
-		/// <summary>
-        /// Gets or sets the Blog Posts.
-        /// </summary>
-        /// <value>
-        /// Collection of Blog Posts.
-        /// </value>
-		public virtual ICollection<CMS.BlogPost> BlogPosts { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Blog Post Comments.
-        /// </summary>
-        /// <value>
-        /// Collection of Blog Post Comments.
-        /// </value>
-		public virtual ICollection<CMS.BlogPostComment> BlogPostComments { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Users.
-        /// </summary>
-        /// <value>
-        /// Collection of Users.
-        /// </value>
-		public virtual ICollection<CMS.User> Users { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Email Templates.
-        /// </summary>
-        /// <value>
-        /// Collection of Email Templates.
-        /// </value>
-		public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Phone Numbers.
-        /// </summary>
-        /// <value>
-        /// Collection of Phone Numbers.
-        /// </value>
-		public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Members.
-        /// </summary>
-        /// <value>
-        /// Collection of Members.
-        /// </value>
-		public virtual ICollection<Groups.Member> Members { get; set; }
+		public override string AuthEntity { get { return "CRM.EmailTemplate"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
@@ -256,6 +200,14 @@ namespace Rock.CRM
         /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person CreatedByPerson { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Person"/> object.
+        /// </value>
+		public virtual Person Person { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
@@ -267,17 +219,17 @@ namespace Rock.CRM
 
     }
     /// <summary>
-    /// Person Configuration class.
+    /// Email Template Configuration class.
     /// </summary>
-    public partial class PersonConfiguration : EntityTypeConfiguration<Person>
+    public partial class EmailTemplateConfiguration : EntityTypeConfiguration<EmailTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="EmailTemplateConfiguration"/> class.
         /// </summary>
-        public PersonConfiguration()
+        public EmailTemplateConfiguration()
         {
-			this.Property( p => p.GenderInternal ).HasColumnName( "Gender" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
+			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
     }

@@ -60,7 +60,7 @@ namespace Rock.Web
                 else
                 {
                     Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
-                    Rock.CMS.SiteDomain siteDomain = siteDomainService.GetByDomain( requestContext.HttpContext.Request.Url.Host );
+                    Rock.CMS.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
                         sites.Add( host, siteDomain.SiteId );
@@ -68,19 +68,25 @@ namespace Rock.Web
                     }
                 }
 
+                cache[cacheKey] = sites;
+
                 if ( site != null && site.DefaultPageId.HasValue )
                     pageId = site.DefaultPageId.Value.ToString();
 
-                cache[cacheKey] = sites;
+                if ( string.IsNullOrEmpty( pageId ) )
+                    throw new SystemException( "Invalid Site Configuration" );
 			}
 
             Rock.Web.Cache.Page page = null;
-			
-			if ( ! string.IsNullOrEmpty( pageId ) )
-				page = Rock.Web.Cache.Page.Read( Convert.ToInt32( pageId ) );
 
-            if ( page == null )
-                throw new SystemException( "Invalid Site Configuration" );
+            if ( !string.IsNullOrEmpty( pageId ) )
+            {
+                page = Rock.Web.Cache.Page.Read( Convert.ToInt32( pageId ) );
+                if ( page == null )
+                {
+                    return new HttpHandlerError( 404 );
+                }
+            }
 
             if ( page != null && !String.IsNullOrEmpty( page.LayoutPath ) )
             {
@@ -147,4 +153,45 @@ namespace Rock.Web
             }
         }
     }
+
+    /// <summary>
+    /// Handler used when an error occurrs
+    /// </summary>
+    public class HttpHandlerError : System.Web.IHttpHandler
+    {
+        /// <summary>
+        /// Gets the status code.
+        /// </summary>
+        public int StatusCode { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpHandlerError"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        public HttpHandlerError( int statusCode )
+        {
+            StatusCode = statusCode;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler"/> instance.
+        /// </summary>
+        /// <returns>true if the <see cref="T:System.Web.IHttpHandler"/> instance is reusable; otherwise, false.</returns>
+        public bool IsReusable
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler"/> interface.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.Web.HttpContext"/> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
+        public void ProcessRequest( System.Web.HttpContext context )
+        {
+            context.Response.StatusCode = StatusCode;
+            context.Response.End();
+            return;
+        }
+    }
+
 }

@@ -15,13 +15,13 @@ using System;
 namespace Rock.CRM.DTO
 {
     /// <summary>
-    /// Person Data Transfer Object.
+    /// Email Template Data Transfer Object.
     /// </summary>
 	/// <remarks>
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    public partial class Person
+    public partial class EmailTemplate
     {
         /// <summary>
         /// The Id
@@ -45,68 +45,76 @@ namespace Rock.CRM.DTO
 		public bool System { get; set; }
 
 		/// <summary>
-		/// Gets or sets the First Name.
+		/// Gets or sets the Person Id.
 		/// </summary>
 		/// <value>
-		/// First Name.
+		/// Person Id.
 		/// </value>
-		public string FirstName { get; set; }
+		public int? PersonId { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Nick Name.
+		/// Gets or sets the Category.
 		/// </summary>
 		/// <value>
-		/// Nick Name.
+		/// Category.
 		/// </value>
-		public string NickName { get; set; }
+		public string Category { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Last Name.
+		/// Gets or sets the Title.
 		/// </summary>
 		/// <value>
-		/// Last Name.
+		/// Title.
 		/// </value>
-		public string LastName { get; set; }
+		public string Title { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Gender.
+		/// Gets or sets the From.
 		/// </summary>
 		/// <value>
-		/// Enum[Gender].
+		/// From.
 		/// </value>
-		public int? Gender { get; set; }
+		public string From { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Email.
+		/// Gets or sets the To.
 		/// </summary>
 		/// <value>
-		/// Email.
+		/// To.
 		/// </value>
-		public string Email { get; set; }
+		public string To { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Birth Month.
+		/// Gets or sets the Cc.
 		/// </summary>
 		/// <value>
-		/// Birth Month.
+		/// Cc.
 		/// </value>
-		public int? BirthMonth { get; set; }
+		public string Cc { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Birth Day.
+		/// Gets or sets the Bcc.
 		/// </summary>
 		/// <value>
-		/// Birth Day.
+		/// Bcc.
 		/// </value>
-		public int? BirthDay { get; set; }
+		public string Bcc { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Birth Year.
+		/// Gets or sets the Subject.
 		/// </summary>
 		/// <value>
-		/// Birth Year.
+		/// Subject.
 		/// </value>
-		public int? BirthYear { get; set; }
+		public string Subject { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Body.
+		/// </summary>
+		/// <value>
+		/// Body.
+		/// </value>
+		public string Body { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -141,9 +149,9 @@ namespace Rock.CRM.DTO
 		public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonDTO"/> class.
+        /// Initializes a new instance of the <see cref="EmailTemplateDTO"/> class.
         /// </summary>
-		public Person()
+		public EmailTemplate()
 		{
 		}
 	}
