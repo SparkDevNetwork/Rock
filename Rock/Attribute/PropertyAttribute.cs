@@ -162,7 +162,6 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
-        /// <param name="key">The key.</param>
         /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
         /// <param name="defaultValue">The default value.</param>

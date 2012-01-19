@@ -28,6 +28,13 @@ namespace Rock
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
+        /// <summary>
+        /// Replaces every instance of oldValue (regardless of case) with the newValue.
+        /// </summary>
+        /// <param name="str">The source string.</param>
+        /// <param name="oldValue">The value to replace.</param>
+        /// <param name="newValue">The value to insert.</param>
+        /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
             int count, position0, position1;
