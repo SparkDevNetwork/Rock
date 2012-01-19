@@ -706,14 +706,24 @@ namespace Rock.Web.UI
                 // Zone content configuration widget
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "style", "display: none;" );
                 zoneConfig.Attributes.Add( "class", "zone-configuration" );
 
-                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.Key ) ) );
+                HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
+                zoneConfigLink.Attributes.Add( "class", "icon-button zoneinstance-config" );
+                zoneConfigLink.Attributes.Add( "href", "#" );
+                zoneConfig.Controls.Add( zoneConfigLink );
+
+                HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
+                zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
+                zoneConfig.Controls.Add( zoneConfigBar );
+
+                HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
+                zoneConfigTitle.InnerText = zoneControl.Value.Key;
+                zoneConfigBar.Controls.Add( zoneConfigTitle );
 
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                zoneConfig.Controls.Add( aBlockConfig );
+                zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "height", "400px" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
@@ -723,10 +733,13 @@ namespace Rock.Web.UI
                 aBlockConfig.Attributes.Add( "secondary-button", "Done" );
                 aBlockConfig.InnerText = "Blocks";
 
-                parent.Controls.Remove( control );
-                zoneWrapper.Controls.Add( control );
-            }
+                HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
+                zoneContent.Attributes.Add( "class", "zone-content" );
+                zoneWrapper.Controls.Add( zoneContent );
 
+                parent.Controls.Remove( control );
+                zoneContent.Controls.Add( control );
+            }
         }
 
         // Adds the configuration html elements for editing a block
@@ -751,7 +764,10 @@ namespace Rock.Web.UI
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
-                blockConfigTitle.InnerText = blockInstance.Name;
+                if (string.IsNullOrWhiteSpace(blockInstance.Name))
+                    blockConfigTitle.InnerText = blockInstance.Block.Name;
+                else
+                    blockConfigTitle.InnerText = blockInstance.Name;
                 blockConfigBar.Controls.Add( blockConfigTitle );
 
                 foreach ( Control configControl in block.GetConfigurationControls( canConfig, canEdit ) )
