@@ -162,9 +162,7 @@
     // of each block's container and config options
     $('#cms-admin-footer .block-config').click(function () {
         $('.zone-configuration').hide();
-        $('.zone-instance').removeClass('outline');
         $('.block-configuration').toggle();
-        $('.block-instance').toggleClass('outline');
         return false;
     });
 
@@ -172,10 +170,23 @@
     // of each zone's container and config options
     $('#cms-admin-footer .page-zones').click(function () {
         $('.block-configuration').hide();
-        $('.block-instance').removeClass('outline');
         $('.zone-configuration').toggle();
-        $('.zone-instance').toggleClass('outline');
         return false;
     });
 
+    // Bind the block configure icon so that edit icons are displayed on hover
+    $(".block-configuration").hover(function () {
+        var barWidth = $('.block-configuration-bar').outerWidth() + 45 + 'px';
+        $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+    }, function () {
+        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
+    });
+
+    // Bind the zone configure icon so that edit icons are displayed on hover
+    $(".zone-configuration").hover(function () {
+        var barWidth = $('.zone-configuration-bar').outerWidth() + 45 + 'px';
+        $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+    }, function () {
+        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
+    });
 });
