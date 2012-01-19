@@ -28,22 +28,25 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-            _page = Rock.Web.Cache.Page.Read( pageId );
-            if ( _page != null )
-                canConfigure = _page.Authorized( "Configure", CurrentUser );
-            else
-                canConfigure = PageInstance.Authorized("Configure", CurrentUser);
-
-            if (canConfigure)
+            try
             {
-                rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.EnableAdd = true;
-                rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
-                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
+                _page = Rock.Web.Cache.Page.Read( pageId );
 
-                string script = string.Format( @"
+                if ( _page != null )
+                    canConfigure = _page.Authorized( "Configure", CurrentUser );
+                else
+                    canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+
+                if ( canConfigure )
+                {
+                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.AddClick += rGrid_GridAdd;
+                    rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                    rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+
+                    string script = string.Format( @"
         Sys.Application.add_load(function () {{
             $('td.grid-icon-cell.delete a').click(function(){{
                 return confirm('Are you sure you want to delete this page?');
@@ -51,7 +54,16 @@ namespace RockWeb.Blocks.Administration
         }});
     ", rGrid.ClientID );
 
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+                }
+                else
+                {
+                    DisplayError( "You are not authorized to configure this page" );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                DisplayError( ex.Message );
             }
 
             base.OnInit( e );
@@ -59,21 +71,10 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            nbMessage.Visible = false;
-
-            if ( canConfigure )
+            if ( !Page.IsPostBack && canConfigure )
             {
-                if ( !Page.IsPostBack )
-                {
-                    BindGrid();
-                    LoadLayouts();
-                }
-            }
-            else
-            {
-                rGrid.Visible = false;
-                nbMessage.Text = "You are not authorized to edit these pages";
-                nbMessage.Visible = true;
+                BindGrid();
+                LoadLayouts();
             }
 
             base.OnLoad( e );
@@ -174,8 +175,6 @@ namespace RockWeb.Blocks.Administration
 
                 pageService.Add( page, CurrentPersonId );
 
-                if (_page != null)
-                    Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
             }
             else
                 page = pageService.Get( pageId );
@@ -185,8 +184,11 @@ namespace RockWeb.Blocks.Administration
 
             pageService.Save( page, CurrentPersonId );
 
-            if ( _page != null ) 
+            if ( _page != null )
+            {
+                Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
                 _page.FlushChildPages();
+            }
 
             BindGrid();
 
@@ -221,20 +223,36 @@ namespace RockWeb.Blocks.Administration
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
-                ddlLayout.Text = page.Layout;
+                try { ddlLayout.Text = page.Layout; }
+                catch { }
                 tbPageName.Text = page.Name;
             }
             else
             {
                 hfPageId.Value = "0";
-                if ( _page != null )
-                    ddlLayout.Text = _page.Layout;
-                else
-                    ddlLayout.Text = PageInstance.Layout;
+
+                try
+                {
+                    if ( _page != null )
+                        ddlLayout.Text = _page.Layout;
+                    else
+                        ddlLayout.Text = PageInstance.Layout;
+                }
+                catch { }
+
                 tbPageName.Text = string.Empty;
             }
 
             pnlDetails.Visible = true;
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+
+            phContent.Visible = false;
         }
 
         #endregion

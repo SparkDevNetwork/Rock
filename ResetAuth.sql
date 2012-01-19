@@ -1,4 +1,5 @@
 delete cmsAuth
+where entityType in ('Cms.Page', 'Cms.BlockInstance')
 
 insert into cmsAuth (
 	EntityType,
@@ -9,7 +10,7 @@ insert into cmsAuth (
 	Action,
 	UserOrRoleName )
 select 
-	'Cms.Page',
+	'CMS.Page',
 	p.id,
 	0,
 	'A',
@@ -27,7 +28,7 @@ insert into cmsAuth (
 	Action,
 	UserOrRoleName )
 select 
-	'Cms.Page',
+	'CMS.Page',
 	p.id,
 	0,
 	'A',
@@ -45,7 +46,7 @@ insert into cmsAuth (
 	Action,
 	UserOrRoleName )
 select 
-	'Cms.BlockInstance',
+	'CMS.BlockInstance',
 	bi.id,
 	0,
 	'A',
@@ -63,7 +64,7 @@ insert into cmsAuth (
 	Action,
 	UserOrRoleName )
 select 
-	'Cms.BlockInstance',
+	'CMS.BlockInstance',
 	bi.id,
 	0,
 	'A',

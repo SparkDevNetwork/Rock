@@ -5,6 +5,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rock
@@ -24,6 +26,30 @@ namespace Rock
         public static string SplitCase( this string str )
         {
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+        }
+
+        public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
+        {
+            int count, position0, position1;
+            count = position0 = position1 = 0;
+            string upperString = str.ToUpper();
+            string upperPattern = oldValue.ToUpper();
+            int inc = ( str.Length / oldValue.Length ) *
+                      ( newValue.Length - oldValue.Length );
+            char[] chars = new char[str.Length + Math.Max( 0, inc )];
+            while ( ( position1 = upperString.IndexOf( upperPattern,
+                                              position0 ) ) != -1 )
+            {
+                for ( int i = position0; i < position1; ++i )
+                    chars[count++] = str[i];
+                for ( int i = 0; i < newValue.Length; ++i )
+                    chars[count++] = newValue[i];
+                position0 = position1 + oldValue.Length;
+            }
+            if ( position0 == 0 ) return str;
+            for ( int i = position0; i < str.Length; ++i )
+                chars[count++] = str[i];
+            return new string( chars, 0, count );
         }
 
         #endregion
@@ -66,6 +92,25 @@ namespace Rock
         public static T ConvertToEnum<T>( this String enumValue )
         {
             return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
+        }
+
+        #endregion
+
+        #region GenericCollection Extensions
+
+        /// <summary>
+        /// Concatonate the items
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">The items.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <returns></returns>
+        public static String AsDelimited<T>( this List<T> items, string delimiter)
+        {
+            List<string> strings = new List<string>();
+            foreach ( T item in items )
+                strings.Add( item.ToString() );
+            return String.Join( delimiter, strings.ToArray() );
         }
 
         #endregion

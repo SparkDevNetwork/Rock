@@ -8,7 +8,7 @@
     overflow: hidden;
     border: 1px solid green;
     margin: -1px; 
-    min-height: 60px;  
+    min-height: 36px;  
     min-width: 180px;
     display: block;
     width: 100%;
@@ -44,10 +44,9 @@
 }
 
 .block-instance.can-configure.outline {
-    overflow: hidden;
     border: 1px solid red;
     margin: -1px; 
-    min-height: 60px;  
+    min-height: 40px;  
     min-width: 180px;
     display: block;
 }
@@ -251,7 +250,7 @@ article.blog-post header ul li:last-child:after {
 
 .login .facebook-login {
     float: right;  
-    margin: -285px 15px 0 0; 
+    margin: -255px 15px 0 0; 
 }
 
 .login .forgot {
@@ -263,4 +262,61 @@ article.blog-post header ul li:last-child:after {
     padding-left: .5em;
     
 }
+
+/* Dialog Styling */
+#dialog 
+{
+    overflow: hidden;    
+}
+
+#dialog #modal-scroll-container 
+{
+    width: 530px;
+}
+
+#dialog #modal-scroll-container .viewport 
+{
+    height: 380px;
+    width: 515px; 
+}
+
+#dialog #modal-scroll-container .overview 
+{
+    width: 460px; 
+}
+
+#dialog #modal-scroll-container .thumb 
+{
+    margin-left: -6px;
+    background-color: #ccc;
+}
+
+#dialog #modal-scroll-container .track
+{
+    width: 0;
+    background-color: #ddd;
+    border-radius: 4px;  
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #fff;
+    padding: 0; 
+}
+
+#dialog #modal-scroll-container .end
+{
+    background-color: transparent; 
+}
+
+#dialog #modal-scroll-container .thumb:hover
+{
+    background-color: #bbb;
+}
+
+.modal-body.iframe
+{
+    background: url("../assets/images/ajax-loading.png") center center no-repeat;
+    /* http://preloaders.net/en/popular */
+}
+
+
+
 

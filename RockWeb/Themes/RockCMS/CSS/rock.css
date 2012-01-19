@@ -60,6 +60,18 @@
 
 
 /* Bootstrap Overrides */
+a {
+    color: #354A73;
+}
+
+input,
+textarea,
+select,
+.uneditable-input 
+{
+    color: #373737;
+}
+
 .topbar {
 	height: 100px;
 }
@@ -104,6 +116,23 @@ input, textarea, select, .uneditable-input
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 }
 
+.tabs 
+{
+    border-bottom: 1px solid #bbb;
+}
+
+.tabs li a {
+    border: 1px solid #bbb;
+    border-radius: 4px 4px 0 0;
+}
+
+/* CMS Overrides */
+.grid-table caption 
+{
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif;
+    letter-spacing: -0.03em;
+}
+
 /* Rock Style */
 body {
 	background-color: #e3e3e3;
@@ -131,7 +160,7 @@ header.topbar a.logo {
     text-indent: -9999px;
 }
 
-header.topbar .content {
+header.topbar .content .account-name {
 	text-align: right;
 	margin-top: 8px;
 	font-size: 13px;
@@ -217,7 +246,7 @@ header.topbar nav > ul > li:first-child {
 
 #page-title h1 
 {
-    margin: 0;
+    margin: 6px 0 0 0;
     height: 36px;
 }
 
@@ -233,10 +262,10 @@ header.topbar nav > ul > li:first-child {
 
 
 /* footer */
-body > footer {
+#page-frame > footer {
 	margin-top: 24px;
 	padding-top: 24px;
-	height: 120px;
+	min-height: 120px;
 	background-color: #222937;
 	color: #fff;
 }
@@ -274,6 +303,8 @@ header.topbar nav > ul > li:hover {
     border-bottom: 0;
     margin-right: -1px;
 	margin-left: -1px;
+	
+	
 }
 
 header.topbar nav ul li a {
@@ -294,8 +325,6 @@ header.topbar nav ul li .nav-menu {
 	-webkit-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     -moz-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
-
-	text-align: left;
 }
 
 header.topbar nav ul li .nav-menu .width-1column {
@@ -396,9 +425,15 @@ header.topbar nav ul > li:hover .nav-menu {
 	color: #595959;
 }
 
-.modal-body
+/* Modal Styles */
+.modal 
 {
-    background: url("../assets/images/ajax-loader.gif") center center no-repeat;
+    background-color: #ddd;   
+}
+
+body#dialog 
+{
+    background-color: #ddd;   
 }
 
 #modal-popup-iframe
@@ -412,3 +447,48 @@ header.topbar nav ul > li:hover .nav-menu {
     margin: 0;
     padding: 0 15px 0 0;
 }
+
+.modal-header {
+    border-bottom: 1px solid #CCCCCC;
+}
+
+body#dialog .grid-table tbody td
+{
+    background-color: #fff;   
+}
+
+c .grid-table thead th 
+{
+    background-color: #cbcaca;
+}
+
+body#dialog .actions 
+{
+    background: none;   
+}
+
+body#dialog .pills 
+{
+    background-color: #d5d6d5;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    padding: 6px 12px;
+}
+
+body#dialog .pills li a:hover 
+{
+    background-color: #c9cac9;
+    color: 	#5d5d5d;
+}
+
+body#dialog .pills li.active a, body#dialog .pills li.active a:hover 
+{
+    background-color: #afaeae;
+    color: #fff;
+}
+
+body#dialog .pills li a
+{
+    color: 	#404040;
+}
+

@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Administration.Address
             foreach ( KeyValuePair<int, Lazy<GeocodeService, IGeocodeServiceData>> service in GeocodeContainer.Instance.Services )
             {
                 Type type = service.Value.Value.GetType();
-                if ( Rock.Attribute.Helper.CreateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
                     Rock.Attribute.Helper.LoadAttributes( service.Value.Value );
                 dataSource.Add( new ServiceDescription( service.Key, service.Value.Value ) );
             }

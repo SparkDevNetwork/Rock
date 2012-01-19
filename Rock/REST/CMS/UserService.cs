@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingUser.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
-					UserService.Save( existingUser, currentUser.PersonId() );
+					
+					if (existingUser.IsValid)
+						UserService.Save( existingUser, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this User", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingUser.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
-						UserService.Save( existingUser, user.PersonId );
+					
+						if (existingUser.IsValid)
+							UserService.Save( existingUser, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this User", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.User existingUser = new Rock.CMS.User();
 				UserService.Add( existingUser, currentUser.PersonId() );
 				uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
-				UserService.Save( existingUser, currentUser.PersonId() );
+
+				if (existingUser.IsValid)
+					UserService.Save( existingUser, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.User existingUser = new Rock.CMS.User();
 					UserService.Add( existingUser, user.PersonId );
 					uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
-					UserService.Save( existingUser, user.PersonId );
+
+					if (existingUser.IsValid)
+						UserService.Save( existingUser, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

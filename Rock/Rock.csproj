@@ -95,6 +95,7 @@
     <Compile Include="CMS\BlogService.cs" />
     <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\BlogTagService.cs" />
+    <Compile Include="CMS\SiteDomainService.partial.cs" />
     <Compile Include="CMS\EntityAuthRepository.cs" />
     <Compile Include="CMS\EntityBlockInstanceRepository.cs" />
     <Compile Include="CMS\EntityBlockRepository.cs" />
@@ -139,12 +140,14 @@
     <Compile Include="CMS\SiteService.cs" />
     <Compile Include="CMS\User.cs" />
     <Compile Include="CMS\UserService.cs" />
+    <Compile Include="Communication\Email.cs" />
     <Compile Include="Core\Attribute.cs" />
     <Compile Include="Core\AttributeQualifier.cs" />
     <Compile Include="Core\AttributeQualifierService.cs" />
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValue.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\AttributeValue.Partial.cs" />
     <Compile Include="Core\DefinedType.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValue.cs" />
@@ -173,10 +176,15 @@
     <Compile Include="Core\ServiceLogService.cs" />
     <Compile Include="CRM\Address.cs" />
     <Compile Include="CRM\AddressService.cs" />
+    <Compile Include="CRM\EmailTemplate.Partial.cs" />
+    <Compile Include="CRM\EmailTemplate.cs" />
+    <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\EntityAddressRepository.cs" />
+    <Compile Include="CRM\EntityEmailTemplateRepository.cs" />
     <Compile Include="CRM\EntityPersonRepository.cs" />
     <Compile Include="CRM\EntityPhoneNumberRepository.cs" />
     <Compile Include="CRM\IAddressRepository.cs" />
+    <Compile Include="CRM\IEmailTemplateRepository.cs" />
     <Compile Include="CRM\IPersonRepository.cs" />
     <Compile Include="CRM\IPhoneNumberRepository.cs" />
     <Compile Include="CRM\Person.cs" />
@@ -199,7 +207,13 @@
     <Compile Include="Groups\IMemberRepository.cs" />
     <Compile Include="Groups\Member.cs" />
     <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="REST\CMS\IUserService.Partial.cs" />
+    <Compile Include="REST\CMS\UserService.Partial.cs" />
+    <Compile Include="REST\CRM\EmailTemplateService.cs" />
+    <Compile Include="REST\CRM\IEmailTemplateService.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
+    <Compile Include="Security\Encryption.cs" />
+    <Compile Include="Security\GenericEntity.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />
@@ -211,6 +225,9 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
+    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
+    <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
     <Compile Include="Web\UI\Page.cs">
       <SubType>ASPXCodeBehind</SubType>

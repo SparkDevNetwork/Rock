@@ -90,10 +90,11 @@ namespace RockWeb.Blocks.Administration
             }
 
             rGrid.DataKeyNames = new string[] { "id" };
-            rGrid.EnableAdd = true;
-            rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
             rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+
+            rGrid.Actions.EnableAdd = true;
+            rGrid.Actions.AddClick += new EventHandler( Actions_AddClick );
 
             string script = string.Format( @"
     Sys.Application.add_load(function () {{
@@ -131,6 +132,7 @@ namespace RockWeb.Blocks.Administration
 					tbPath.Text = block.Path;
 					tbName.Text = block.Name;
 					tbDescription.Text = block.Description;
+                    cbSystem.Checked = block.System;
 				}
 				else
 				{
@@ -141,7 +143,7 @@ namespace RockWeb.Blocks.Administration
 			}
 		}
 
-        void rGrid_GridAdd( object sender, EventArgs e )
+        void Actions_AddClick( object sender, EventArgs e )
         {
             Response.Redirect( "~/Bloc/Add" );
         }
@@ -177,6 +179,7 @@ namespace RockWeb.Blocks.Administration
 				block.Path = tbPath.Text;
 				block.Name = tbName.Text;
 				block.Description = tbDescription.Text;
+                block.System = cbSystem.Checked;
 
 				if ( _action == "add" )
                     blockService.Add( block, CurrentPersonId );

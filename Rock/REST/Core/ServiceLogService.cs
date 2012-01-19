@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingServiceLog.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
-					ServiceLogService.Save( existingServiceLog, currentUser.PersonId() );
+					
+					if (existingServiceLog.IsValid)
+						ServiceLogService.Save( existingServiceLog, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingServiceLog.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
-						ServiceLogService.Save( existingServiceLog, user.PersonId );
+					
+						if (existingServiceLog.IsValid)
+							ServiceLogService.Save( existingServiceLog, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.ServiceLog existingServiceLog = new Rock.Core.ServiceLog();
 				ServiceLogService.Add( existingServiceLog, currentUser.PersonId() );
 				uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
-				ServiceLogService.Save( existingServiceLog, currentUser.PersonId() );
+
+				if (existingServiceLog.IsValid)
+					ServiceLogService.Save( existingServiceLog, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.ServiceLog existingServiceLog = new Rock.Core.ServiceLog();
 					ServiceLogService.Add( existingServiceLog, user.PersonId );
 					uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
-					ServiceLogService.Save( existingServiceLog, user.PersonId );
+
+					if (existingServiceLog.IsValid)
+						ServiceLogService.Save( existingServiceLog, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

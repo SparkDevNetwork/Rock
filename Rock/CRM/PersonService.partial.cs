@@ -3,7 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
+using System;
+using System.Configuration;
 using System.Linq;
 
 namespace Rock.CRM
@@ -33,5 +34,26 @@ namespace Rock.CRM
                         ( p.NickName.ToLower().StartsWith( firstName.ToLower() ) ||
                         p.FirstName.StartsWith( firstName.ToLower() ) ) );
         }
-	}
+
+        public Person GetByEncryptedID( string encryptedID )
+        {
+            string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+            if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                encryptionPhrase = "Rock Rocks!";
+
+            string identifier = Rock.Security.Encryption.DecryptString( encryptedID, encryptionPhrase );
+
+            string[] idParts = identifier.Split( '|' );
+            if ( idParts.Length == 2 )
+            {
+                Guid personGuid = new Guid( idParts[0] );
+                int personId = Int32.Parse( idParts[1] );
+
+                return Repository.AsQueryable().
+                    Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
+            }
+
+            return null;
+        }
+    }
 }

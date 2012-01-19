@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlogCategory.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-					BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+					
+					if (existingBlogCategory.IsValid)
+						BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogCategory", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlogCategory.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-						BlogCategoryService.Save( existingBlogCategory, user.PersonId );
+					
+						if (existingBlogCategory.IsValid)
+							BlogCategoryService.Save( existingBlogCategory, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlogCategory", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogCategory existingBlogCategory = new Rock.CMS.BlogCategory();
 				BlogCategoryService.Add( existingBlogCategory, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-				BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+
+				if (existingBlogCategory.IsValid)
+					BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.BlogCategory existingBlogCategory = new Rock.CMS.BlogCategory();
 					BlogCategoryService.Add( existingBlogCategory, user.PersonId );
 					uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
-					BlogCategoryService.Save( existingBlogCategory, user.PersonId );
+
+					if (existingBlogCategory.IsValid)
+						BlogCategoryService.Save( existingBlogCategory, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

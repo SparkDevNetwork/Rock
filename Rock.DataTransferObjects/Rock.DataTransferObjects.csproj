@@ -64,6 +64,7 @@
     <Compile Include="Core\FieldType.cs" />
     <Compile Include="Core\ServiceLog.cs" />
     <Compile Include="CRM\Address.cs" />
+    <Compile Include="CRM\EmailTemplate.cs" />
     <Compile Include="CRM\Person.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Groups\Group.cs" />

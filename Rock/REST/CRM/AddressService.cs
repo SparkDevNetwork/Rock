@@ -92,7 +92,11 @@ namespace Rock.REST.CRM
 				if ( existingAddress.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
-					AddressService.Save( existingAddress, currentUser.PersonId() );
+					
+					if (existingAddress.IsValid)
+						AddressService.Save( existingAddress, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Address", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CRM
 					if ( existingAddress.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
-						AddressService.Save( existingAddress, user.PersonId );
+					
+						if (existingAddress.IsValid)
+							AddressService.Save( existingAddress, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Address", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CRM
 				Rock.CRM.Address existingAddress = new Rock.CRM.Address();
 				AddressService.Add( existingAddress, currentUser.PersonId() );
 				uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
-				AddressService.Save( existingAddress, currentUser.PersonId() );
+
+				if (existingAddress.IsValid)
+					AddressService.Save( existingAddress, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CRM
 					Rock.CRM.Address existingAddress = new Rock.CRM.Address();
 					AddressService.Add( existingAddress, user.PersonId );
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
-					AddressService.Save( existingAddress, user.PersonId );
+
+					if (existingAddress.IsValid)
+						AddressService.Save( existingAddress, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

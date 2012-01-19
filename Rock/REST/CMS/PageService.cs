@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingPage.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
-					PageService.Save( existingPage, currentUser.PersonId() );
+					
+					if (existingPage.IsValid)
+						PageService.Save( existingPage, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingPage.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Page", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingPage.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
-						PageService.Save( existingPage, user.PersonId );
+					
+						if (existingPage.IsValid)
+							PageService.Save( existingPage, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingPage.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Page", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.Page existingPage = new Rock.CMS.Page();
 				PageService.Add( existingPage, currentUser.PersonId() );
 				uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
-				PageService.Save( existingPage, currentUser.PersonId() );
+
+				if (existingPage.IsValid)
+					PageService.Save( existingPage, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingPage.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.Page existingPage = new Rock.CMS.Page();
 					PageService.Add( existingPage, user.PersonId );
 					uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
-					PageService.Save( existingPage, user.PersonId );
+
+					if (existingPage.IsValid)
+						PageService.Save( existingPage, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingPage.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
