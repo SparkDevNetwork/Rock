@@ -68,6 +68,9 @@ namespace Rock.CRM
             }
         }
 
+        /// <summary>
+        /// Gets the encrypted ID.
+        /// </summary>
         public string EncryptedID
         {
             get

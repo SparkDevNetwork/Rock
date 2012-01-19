@@ -8,7 +8,6 @@ using System;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -233,20 +232,19 @@ namespace RockWeb.Blocks.Security
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
                 {
-                    StringBuilder sb = new StringBuilder();
+                    var mergeObjects = new List<object>();
+                    mergeObjects.Add(person);
+
+                    var users = new List<object>();
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        sb.AppendLine( user.Username );
+                        users.Add(user);
+                    mergeObjects.Add(users);
 
-                    Dictionary<string, string> mergeValues = new Dictionary<string,string>();
-                    mergeValues.Add( "FirstName", person.FirstName );
-                    mergeValues.Add( "LastName", person.LastName );
-                    mergeValues.Add( "Usernames", sb.ToString() );
-
-                    Dictionary<string, Dictionary<string, string>> recipientInfo = new Dictionary<string,Dictionary<string,string>>();
-                    recipientInfo.Add(person.Email, mergeValues);
+                    var recipients = new Dictionary<string, List<object>>();
+                    recipients.Add(person.Email, mergeObjects);
 
                     Email email = new Email( SystemEmailTemplate.SECURITY_FORGOT_USERNAME );
-                    email.Send( recipientInfo );
+                    email.Send( recipients );
                 }
                 else
                     ShowErrorMessage( "Invalid Person" );
@@ -264,25 +262,24 @@ namespace RockWeb.Blocks.Security
             {
                 Rock.CMS.User user = CreateUser( personId, false );
 
-                string identifier = string.Format( "ROCK|{0}|{1}",
-                    user.Guid.ToString(), user.Username );
+                var mergeObjects = new List<object>();
+                mergeObjects.Add( person );
+
+                string identifier = string.Format( "ROCK|{0}|{1}", user.Guid.ToString(), user.Username );
 
                 string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
                 if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
                     encryptionPhrase = "Rock Rocks!";
 
-                string confirmationCode = Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                var values = new Dictionary<string, string>();
+                values.Add( "ConfirmationCode", Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase ) );
+                mergeObjects.Add( values );
 
-                Dictionary<string, string> mergeValues = new Dictionary<string, string>();
-                mergeValues.Add( "FirstName", person.FirstName );
-                mergeValues.Add( "LastName", person.LastName );
-                mergeValues.Add( "ConfirmationCode", confirmationCode );
-
-                Dictionary<string, Dictionary<string, string>> recipientInfo = new Dictionary<string, Dictionary<string, string>>();
-                recipientInfo.Add( person.Email, mergeValues );
+                var recipients = new Dictionary<string, List<object>>();
+                recipients.Add( person.Email, mergeObjects );
 
                 Email email = new Email( SystemEmailTemplate.SECURITY_CONFIRM_ACCOUNT );
-                email.Send( recipientInfo );
+                email.Send( recipients );
 
                 ShowPanel( 4 );
             }
@@ -308,15 +305,14 @@ namespace RockWeb.Blocks.Security
 
                 if ( person != null )
                 {
-                    Dictionary<string, string> mergeValues = new Dictionary<string, string>();
-                    mergeValues.Add( "FirstName", person.FirstName );
-                    mergeValues.Add( "LastName", person.LastName );
+                    var mergeObjects = new List<object>();
+                    mergeObjects.Add( person );
 
-                    Dictionary<string, Dictionary<string, string>> recipientInfo = new Dictionary<string, Dictionary<string, string>>();
-                    recipientInfo.Add( person.Email, mergeValues );
+                    var recipients = new Dictionary<string, List<object>>();
+                    recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( SystemEmailTemplate.SECURITY_ACCOUNT_CREATED );
-                    email.Send( recipientInfo );
+                    email.Send( recipients );
 
                     ShowPanel( 5 );
                 }
