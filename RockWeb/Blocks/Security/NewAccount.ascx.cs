@@ -272,7 +272,8 @@ namespace RockWeb.Blocks.Security
                     encryptionPhrase = "Rock Rocks!";
 
                 var values = new Dictionary<string, string>();
-                values.Add( "ConfirmationCode", Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase ) );
+                string value = Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                values.Add( "ConfirmationCode", HttpUtility.UrlEncode( value ) );
                 mergeObjects.Add( values );
 
                 var recipients = new Dictionary<string, List<object>>();
@@ -396,7 +397,7 @@ namespace RockWeb.Blocks.Security
             user.Username = tbUserName.Text;
             user.Password = tbPassword.Text;
             user.ApplicationName = "RockChMS";
-            user.IsLockedOut = !confirmed;
+            user.IsApproved = !confirmed;
 
             userService.Add( user, CurrentPersonId );
             userService.Save( user, CurrentPersonId );
