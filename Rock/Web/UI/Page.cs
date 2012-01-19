@@ -463,8 +463,12 @@ namespace Rock.Web.UI
                                         AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
                                 }
 
+                                HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
+                                blockContent.Attributes.Add( "class", "block-content" );
+                                blockWrapper.Controls.Add( blockContent );
+
                                 // Add the block
-                                blockWrapper.Controls.Add( control );
+                                blockContent.Controls.Add( control );
                             }
                         }
                     }
@@ -735,13 +739,25 @@ namespace Rock.Web.UI
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
                 blockConfig.ClientIDMode = ClientIDMode.AutoID;
                 blockConfig.Attributes.Add( "class", "block-configuration" );
-                blockConfig.Attributes.Add( "style", "display: none" );
                 blockWrapper.Controls.Add( blockConfig );
+
+                HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
+                blockConfigLink.Attributes.Add( "class", "icon-button blockinstance-config" );
+                blockConfigLink.Attributes.Add( "href", "#" );
+                blockConfig.Controls.Add( blockConfigLink );
+
+                HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
+                blockConfig.Controls.Add( blockConfigBar );
+
+                HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
+                blockConfigTitle.InnerText = blockInstance.Name;
+                blockConfigBar.Controls.Add( blockConfigTitle );
 
                 foreach ( Control configControl in block.GetConfigurationControls( canConfig, canEdit ) )
                 {
                     configControl.ClientIDMode = ClientIDMode.AutoID;
-                    blockConfig.Controls.Add( configControl );
+                    blockConfigBar.Controls.Add( configControl );
                 }
             }
         }
