@@ -92,7 +92,11 @@ namespace Rock.REST.Groups
 				if ( existingMember.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
-					MemberService.Save( existingMember, currentUser.PersonId() );
+					
+					if (existingMember.IsValid)
+						MemberService.Save( existingMember, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Member", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Groups
 					if ( existingMember.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
-						MemberService.Save( existingMember, user.PersonId );
+					
+						if (existingMember.IsValid)
+							MemberService.Save( existingMember, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Member", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Groups
 				Rock.Groups.Member existingMember = new Rock.Groups.Member();
 				MemberService.Add( existingMember, currentUser.PersonId() );
 				uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
-				MemberService.Save( existingMember, currentUser.PersonId() );
+
+				if (existingMember.IsValid)
+					MemberService.Save( existingMember, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Groups
 					Rock.Groups.Member existingMember = new Rock.Groups.Member();
 					MemberService.Add( existingMember, user.PersonId );
 					uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
-					MemberService.Save( existingMember, user.PersonId );
+
+					if (existingMember.IsValid)
+						MemberService.Save( existingMember, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

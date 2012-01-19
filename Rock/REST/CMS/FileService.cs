@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingFile.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
-					FileService.Save( existingFile, currentUser.PersonId() );
+					
+					if (existingFile.IsValid)
+						FileService.Save( existingFile, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this File", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingFile.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
-						FileService.Save( existingFile, user.PersonId );
+					
+						if (existingFile.IsValid)
+							FileService.Save( existingFile, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this File", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.File existingFile = new Rock.CMS.File();
 				FileService.Add( existingFile, currentUser.PersonId() );
 				uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
-				FileService.Save( existingFile, currentUser.PersonId() );
+
+				if (existingFile.IsValid)
+					FileService.Save( existingFile, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.File existingFile = new Rock.CMS.File();
 					FileService.Add( existingFile, user.PersonId );
 					uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
-					FileService.Save( existingFile, user.PersonId );
+
+					if (existingFile.IsValid)
+						FileService.Save( existingFile, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

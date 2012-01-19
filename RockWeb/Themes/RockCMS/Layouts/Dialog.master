@@ -19,6 +19,7 @@
     <script src="<%# ResolveUrl("~/Themes/Default/Scripts/jquery-placeholder-plugin.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
 
     <style>
         html, body 
@@ -38,11 +39,23 @@
 
 </head>
 
-<body class="dialog">
+<body id="dialog">
     <form id="form1" runat="server">
-        <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
-            <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-        </asp:ContentPlaceHolder>
+        
+        <div id="modal-scroll-container" class="scroll-container">
+	        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+	        <div class="viewport">
+		        <div class="overview">
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+			    </div>
+	        </div>
+        </div>		
     </form>
+
+    <script type="text/javascript">
+        Sys.Application.add_load(function () {
+            $('#modal-scroll-container').tinyscrollbar({ size: 150 });
+        });
+    </script>
 </body>
 </html>

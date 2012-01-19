@@ -16,7 +16,6 @@
 	<!-- Included CSS Files -->
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/base.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
 
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>

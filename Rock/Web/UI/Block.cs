@@ -266,13 +266,9 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string AttributeValue( string key )
         {
-            if ( BlockInstance == null )
-                return string.Empty;
-
-            if ( BlockInstance.AttributeValues == null )
-                return string.Empty;
-
-            if ( BlockInstance.AttributeValues.ContainsKey( key ) )
+            if ( BlockInstance != null  && 
+                BlockInstance.AttributeValues != null &&
+                BlockInstance.AttributeValues.ContainsKey( key ) )
                 return BlockInstance.AttributeValues[key].Value;
 
             return null;
@@ -350,6 +346,7 @@ namespace Rock.Web.UI
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security icon-button show-modal-iframe" );
+                aSecureBlock.Attributes.Add( "height", "400px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
                     Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
@@ -395,7 +392,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            if ( Rock.Attribute.Helper.CreateAttributes( this.GetType(), 
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
                 "Rock.CMS.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
             {
                 this.BlockInstance.ReloadAttributeValues();

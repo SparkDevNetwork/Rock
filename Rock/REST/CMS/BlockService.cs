@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlock.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
-					BlockService.Save( existingBlock, currentUser.PersonId() );
+					
+					if (existingBlock.IsValid)
+						BlockService.Save( existingBlock, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlock.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Block", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlock.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
-						BlockService.Save( existingBlock, user.PersonId );
+					
+						if (existingBlock.IsValid)
+							BlockService.Save( existingBlock, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlock.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Block", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.Block existingBlock = new Rock.CMS.Block();
 				BlockService.Add( existingBlock, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
-				BlockService.Save( existingBlock, currentUser.PersonId() );
+
+				if (existingBlock.IsValid)
+					BlockService.Save( existingBlock, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlock.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.Block existingBlock = new Rock.CMS.Block();
 					BlockService.Add( existingBlock, user.PersonId );
 					uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
-					BlockService.Save( existingBlock, user.PersonId );
+
+					if (existingBlock.IsValid)
+						BlockService.Save( existingBlock, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlock.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

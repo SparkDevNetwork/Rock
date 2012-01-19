@@ -28,37 +28,44 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
+            PageInstance.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
 
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Web.Cache.Page.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
+            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", PageInstance.Layout );
+
             // TODO: Managing layout block instances should probably be controlled by site security
             if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
-                gLayoutBlocks.EnableAdd = true;
-                gLayoutBlocks.GridAdd += new GridAddEventHandler( gLayoutBlocks_GridAdd );
-                gLayoutBlocks.GridReorder += new GridReorderEventHandler( gLayoutBlocks_GridReorder );
-                gLayoutBlocks.GridRebind += new GridRebindEventHandler( gLayoutBlocks_GridRebind );
+                gLayoutBlocks.Actions.EnableAdd = true;
+                gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
+                gLayoutBlocks.GridReorder += gLayoutBlocks_GridReorder;
+                gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
             }
 
             if ( _page.Authorized( "Configure", CurrentUser ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
-                gPageBlocks.EnableAdd = true;
-                gPageBlocks.GridAdd += new GridAddEventHandler( gPageBlocks_GridAdd );
-                gPageBlocks.GridReorder += new GridReorderEventHandler( gPageBlocks_GridReorder );
-                gPageBlocks.GridRebind += new GridRebindEventHandler( gPageBlocks_GridRebind );
+                gPageBlocks.Actions.EnableAdd = true;
+                gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
+                gPageBlocks.GridReorder += gPageBlocks_GridReorder;
+                gPageBlocks.GridRebind += gPageBlocks_GridRebind;
             }
 
             string script = string.Format( @"
         Sys.Application.add_load(function () {{
+
             $('td.grid-icon-cell.delete a').click(function(){{
                 return confirm('Are you sure you want to delete this block?');
                 }});
+            $('#modal-popup div.modal-header h3 small', window.parent.document).html('{1}');
+            $('#{2} a').click(function() {{ $('#{4}').val('Page'); }});
+            $('#{3} a').click(function() {{ $('#{4}').val('Layout'); }});
         }});
-    ", gPageBlocks.ClientID );
+    ", gPageBlocks.ClientID, _zoneName, liPage.ClientID, liLayout.ClientID, hfOption.ClientID );
 
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gPageBlocks.ClientID ), script, true );
 
@@ -87,6 +94,25 @@ namespace RockWeb.Blocks.Administration
             base.OnLoad( e );
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( hfOption.Value == "Page" )
+            {
+                liPage.Attributes["class"] = "active";
+                liLayout.Attributes["class"] = "";
+                divPage.Attributes["class"] = "active";
+                divLayout.Attributes["class"] = "";
+            }
+            else
+            {
+                liPage.Attributes["class"] = "";
+                liLayout.Attributes["class"] = "active";
+                divPage.Attributes["class"] = "";
+                divLayout.Attributes["class"] = "active";
+            }
+        }
         #endregion
 
         #region Grid Events
@@ -119,7 +145,7 @@ namespace RockWeb.Blocks.Administration
             BindGrids();
         }
 
-        void gLayoutBlocks_GridAdd( object sender, EventArgs e )
+        void LayoutBlocks_Add( object sender, EventArgs e )
         {
             ShowEdit( Rock.Web.Cache.BlockInstanceLocation.Layout, 0 );
         }
@@ -174,6 +200,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             pnlDetails.Visible = false;
+            pnlLists.Visible = true;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
@@ -227,6 +254,7 @@ namespace RockWeb.Blocks.Administration
             BindGrids();
 
             pnlDetails.Visible = false;
+            pnlLists.Visible = true;
         }
 
         #endregion
@@ -277,10 +305,10 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
                 
-                ddlBlockType.DataSource = blockService.Queryable().ToList();
-                ddlBlockType.DataTextField = "Name";
-                ddlBlockType.DataValueField = "Id";
-                ddlBlockType.DataBind();
+                ddlBlockType.DropDownList.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DropDownList.DataTextField = "Name";
+                ddlBlockType.DropDownList.DataValueField = "Id";
+                ddlBlockType.DropDownList.DataBind();
             }
         }
 
@@ -291,17 +319,22 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockInstance != null )
             {
+                lAction.Text = "Edit ";
                 hfBlockInstanceId.Value = blockInstance.Id.ToString();
                 ddlBlockType.SelectedValue = blockInstance.Block.Id.ToString();
                 tbBlockName.Text = blockInstance.Name;
             }
             else
             {
+                lAction.Text = "Add ";
                 hfBlockInstanceId.Value = "0";
-                ddlBlockType.SelectedIndex = -1;
+                ddlBlockType.DropDownList.SelectedIndex = -1;
                 tbBlockName.Text = string.Empty;
             }
 
+            lAction.Text += hfBlockLocation.Value;
+
+            pnlLists.Visible = false;
             pnlDetails.Visible = true;
         }
 

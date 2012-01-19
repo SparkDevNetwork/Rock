@@ -146,7 +146,7 @@ namespace Rock.Util
 		/// <value>
 		/// Name of the scheduler that the job ran under.  This is used to determine if a job ran in IIS or the Windows service..
 		/// </value>
-		[MaxLength( 20 )]
+		[MaxLength( 40 )]
 		[DataMember]
 		public string LastRunSchedulerName { get; set; }
 		

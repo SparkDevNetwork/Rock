@@ -21,6 +21,19 @@ namespace RockWeb.Blocks.Administration
         private Rock.CMS.AuthService authService = new Rock.CMS.AuthService();
         private Rock.Security.ISecured iSecured;
 
+        protected string CurrentAction
+        {
+            get
+            {
+                object currentAction = ViewState["CurrentAction"];
+                return currentAction != null ? currentAction.ToString() : "View";
+            }
+            set
+            {
+                ViewState["CurrentAction"] = value;
+            }
+        }
+
         #endregion
 
         #region Overridden Methods
@@ -37,17 +50,19 @@ namespace RockWeb.Blocks.Administration
             // Instantiate object
             iSecured = entityType.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, entityType, new object[] { entityId } ) as Rock.Security.ISecured;
 
-            lTitle.Text = iSecured.ToString();
-
             if ( iSecured.Authorized( "Configure", CurrentUser ) )
             {
-                ddlAction.DataSource = iSecured.SupportedActions;
-                ddlAction.DataBind();
+                rptActions.DataSource = iSecured.SupportedActions;
+                rptActions.DataBind();
                 ShowActionNote();
 
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                 rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.ShowHeaderWhenEmpty = false;
+                rGrid.EmptyDataText = string.Empty;
+                rGrid.ShowActionRow = false;
+
 
                 ddlRoles.DataSource = Rock.Security.Role.AllRoles();
                 ddlRoles.DataValueField = "Guid";
@@ -59,8 +74,9 @@ namespace RockWeb.Blocks.Administration
         $('#{0} td.grid-icon-cell.delete a').click(function(){{
             return confirm('Are you sure you want to delete this role/user?');
             }});
+        $('#modal-popup div.modal-header h3 small', window.parent.document).html('{1}');
     }});
-", rGrid.ClientID );
+", rGrid.ClientID, iSecured.ToString() );
 
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
             }
@@ -96,10 +112,10 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, ddlAction.Text ).ToList();
+            List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
 
-            Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+            Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
             BindGrid();
         }
@@ -122,7 +138,7 @@ namespace RockWeb.Blocks.Administration
                 authService.Delete( auth, CurrentPersonId );
                 authService.Save( auth, CurrentPersonId );
 
-                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
             }
 
             BindGrid();
@@ -135,10 +151,20 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        protected void ddlAction_SelectedIndexChanged( object sender, EventArgs e )
+        protected void lbAction_Click( object sender, EventArgs e )
         {
-            ShowActionNote();
-            SetRoleActions();
+            LinkButton lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                CurrentAction = lb.Text;
+
+                rptActions.DataSource = iSecured.SupportedActions;
+                rptActions.DataBind();
+
+                ShowActionNote();
+                SetRoleActions();
+            }
+
             BindGrid();
         }
 
@@ -156,7 +182,7 @@ namespace RockWeb.Blocks.Administration
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
                     authService.Save( auth, CurrentPersonId );
 
-                    Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                    Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
                 }
             }
 
@@ -165,21 +191,28 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbShowRole_Click( object sender, EventArgs e )
         {
-            pnlAddRole.Visible = true;
-            pnlAddUser.Visible = false;
             SetRoleActions();
+            pnlActions.Visible = false;
+            pnlAddRole.Visible = true;
         }
 
         protected void lbShowUser_Click( object sender, EventArgs e )
         {
+            pnlActions.Visible = false;
             pnlAddUser.Visible = true;
+        }
+
+        protected void lbCancelAdd_Click( object sender, EventArgs e )
+        {
             pnlAddRole.Visible = false;
+            pnlAddUser.Visible = false;
+            pnlActions.Visible = true;
         }
 
         protected void lbAddAllUsers_Click( object sender, EventArgs e )
         {
             List<Rock.Security.AuthRule> existingAuths =
-                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
             int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
 
@@ -199,7 +232,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.CMS.Auth auth = new Rock.CMS.Auth();
                 auth.EntityType = iSecured.AuthEntity;
                 auth.EntityId = iSecured.Id;
-                auth.Action = ddlAction.Text;
+                auth.Action = CurrentAction;
                 auth.AllowOrDeny = "A";
                 auth.UserOrRole = "U";
                 auth.UserOrRoleName = "*";
@@ -211,9 +244,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( actionUpdated )
-                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
-            pnlAddUser.Visible = false;
             BindGrid();
         }
 
@@ -263,6 +295,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             pnlAddRole.Visible = false;
+            pnlActions.Visible = true;
+
             BindGrid();
         }
 
@@ -277,7 +311,7 @@ namespace RockWeb.Blocks.Administration
         protected void lbAddUser_Click( object sender, EventArgs e )
         {
             List<Rock.Security.AuthRule> existingAuths =
-                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
             int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
 
@@ -301,7 +335,7 @@ namespace RockWeb.Blocks.Administration
                         Rock.CMS.Auth auth = new Rock.CMS.Auth();
                         auth.EntityType = iSecured.AuthEntity;
                         auth.EntityId = iSecured.Id;
-                        auth.Action = ddlAction.Text;
+                        auth.Action = CurrentAction;
                         auth.AllowOrDeny = "A";
                         auth.UserOrRole = "U";
                         auth.UserOrRoleName = li.Value;
@@ -316,9 +350,11 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( actionUpdated )
-                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
             pnlAddUser.Visible = false;
+            pnlActions.Visible = true;
+
             BindGrid();
         }
 
@@ -330,16 +366,25 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, ddlAction.Text );
+                rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
                 rGrid.DataBind();
             }
         }
 
+        protected string GetTabClass( object action )
+        {
+            if ( action.ToString() == CurrentAction )
+                return "active";
+            else
+                return "";
+        }
+
         private void ShowActionNote()
         {
-            bool defaultAction = iSecured.DefaultAuthorization( ddlAction.SelectedValue );
-            lActionNote.Text = string.Format( "By default, all users {0} be authorized to {1}.",
-                ( defaultAction ? "WILL" : "WILL NOT" ), ddlAction.SelectedValue );
+            bool defaultAction = iSecured.DefaultAuthorization( CurrentAction );
+            lActionNote.Text = string.Format( "By default, all users <span class='label {0}'>{1}</span> be authorized to {2}.",
+                ( defaultAction ? "success" : "important" ), ( defaultAction ? "WILL" : "WILL NOT" ), CurrentAction );
+            
         }
 
         private void SetRoleActions()
@@ -348,7 +393,7 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( string action in iSecured.SupportedActions )
             {
-                if ( action == ddlAction.Text )
+                if ( action == CurrentAction )
                 {
                     ListItem roleItem = new ListItem( action );
                     roleItem.Selected = true;

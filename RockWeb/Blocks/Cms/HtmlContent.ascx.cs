@@ -12,7 +12,11 @@ using Rock.CMS;
 
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Security.AdditionalActions( new string[] { "Approve" })]
+    [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
+    [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
+    [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
+    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer")]
+    [Rock.Attribute.Property( 3, "Entity Aware Key", "EntityAwareKey", "", "Query string key to use to 'personalize' the content to a particular entity.", false, "" )]
     public partial class HtmlContent : Rock.Web.UI.Block
     {
         public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit)

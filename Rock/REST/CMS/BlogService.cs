@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingBlog.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
-					BlogService.Save( existingBlog, currentUser.PersonId() );
+					
+					if (existingBlog.IsValid)
+						BlogService.Save( existingBlog, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Blog", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingBlog.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
-						BlogService.Save( existingBlog, user.PersonId );
+					
+						if (existingBlog.IsValid)
+							BlogService.Save( existingBlog, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Blog", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.Blog existingBlog = new Rock.CMS.Blog();
 				BlogService.Add( existingBlog, currentUser.PersonId() );
 				uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
-				BlogService.Save( existingBlog, currentUser.PersonId() );
+
+				if (existingBlog.IsValid)
+					BlogService.Save( existingBlog, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.Blog existingBlog = new Rock.CMS.Blog();
 					BlogService.Add( existingBlog, user.PersonId );
 					uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
-					BlogService.Save( existingBlog, user.PersonId );
+
+					if (existingBlog.IsValid)
+						BlogService.Save( existingBlog, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

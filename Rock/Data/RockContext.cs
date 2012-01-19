@@ -212,6 +212,14 @@ namespace Rock.Data
         public DbSet<Rock.CRM.Address> Addresses { get; set; }
 
         /// <summary>
+        /// Gets or sets the Email Templates.
+        /// </summary>
+        /// <value>
+        /// the Email Templates.
+        /// </value>
+        public DbSet<Rock.CRM.EmailTemplate> EmailTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the People.
         /// </summary>
         /// <value>
@@ -299,6 +307,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.CRM.EmailTemplateConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );

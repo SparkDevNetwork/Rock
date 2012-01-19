@@ -92,7 +92,11 @@ namespace Rock.REST.CMS
 				if ( existingAuth.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
-					AuthService.Save( existingAuth, currentUser.PersonId() );
+					
+					if (existingAuth.IsValid)
+						AuthService.Save( existingAuth, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CMS
 					if ( existingAuth.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
-						AuthService.Save( existingAuth, user.PersonId );
+					
+						if (existingAuth.IsValid)
+							AuthService.Save( existingAuth, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CMS
 				Rock.CMS.Auth existingAuth = new Rock.CMS.Auth();
 				AuthService.Add( existingAuth, currentUser.PersonId() );
 				uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
-				AuthService.Save( existingAuth, currentUser.PersonId() );
+
+				if (existingAuth.IsValid)
+					AuthService.Save( existingAuth, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CMS
 					Rock.CMS.Auth existingAuth = new Rock.CMS.Auth();
 					AuthService.Add( existingAuth, user.PersonId );
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
-					AuthService.Save( existingAuth, user.PersonId );
+
+					if (existingAuth.IsValid)
+						AuthService.Save( existingAuth, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

@@ -71,6 +71,28 @@ namespace Rock.CRM
 		public string LastName { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Gender.
+		/// </summary>
+		/// <value>
+		/// Enum[Gender].
+		/// </value>
+		[DataMember]
+		internal int? GenderInternal { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Gender.
+		/// </summary>
+		/// <value>
+		/// Enum[Gender].
+		/// </value>
+		[NotMapped]
+		public Gender Gender
+		{
+			get { return (Gender)this.GenderInternal; }
+			set { this.GenderInternal = (int)value; }
+		}
+		
+		/// <summary>
 		/// Gets or sets the Email.
 		/// </summary>
 		/// <value>
@@ -160,6 +182,7 @@ namespace Rock.CRM
 				dto.FirstName = this.FirstName;
 				dto.NickName = this.NickName;
 				dto.LastName = this.LastName;
+				dto.Gender = this.GenderInternal;
 				dto.Email = this.Email;
 				dto.BirthMonth = this.BirthMonth;
 				dto.BirthDay = this.BirthDay;
@@ -201,6 +224,14 @@ namespace Rock.CRM
         /// Collection of Users.
         /// </value>
 		public virtual ICollection<CMS.User> Users { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Email Templates.
+        /// </summary>
+        /// <value>
+        /// Collection of Email Templates.
+        /// </value>
+		public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
         
 		/// <summary>
         /// Gets or sets the Phone Numbers.
@@ -245,6 +276,7 @@ namespace Rock.CRM
         /// </summary>
         public PersonConfiguration()
         {
+			this.Property( p => p.GenderInternal ).HasColumnName( "Gender" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}

@@ -11,7 +11,7 @@
             $('#modal-popup a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
-            $('div.admin-dialog .actions').hide();
+            $('non-modal-actions').hide();
         }
 
     });
@@ -36,7 +36,7 @@
 
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <div class="actions">
+        <div id="non-modal-actions" class="actions">
             <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
         </div>
 

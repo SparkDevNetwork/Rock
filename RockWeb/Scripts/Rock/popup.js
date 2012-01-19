@@ -19,6 +19,30 @@ $(document).ready(function () {
     // modal div/iframe
     $('a.show-modal-iframe').click(function () {
 
+        var $primaryBtn = $('#modal-popup div.modal-footer a.btn.primary');
+        if ($(this).attr('primary-button') !== undefined) {
+            $primaryBtn.text($(this).attr('primary-button'));
+        } else {
+            $primaryBtn.text('Save');
+        }
+        if ($primaryBtn.text() !== '') {
+            $primaryBtn.show();
+        } else {
+            $primaryBtn.hide();
+        }
+
+        var $secondaryBtn = $('#modal-popup div.modal-footer a.btn.secondary');
+        if ($(this).attr('primary-button') !== undefined) {
+            $secondaryBtn.text($(this).attr('secondary-button'));
+        } else {
+            $secondaryBtn.text('Cancel');
+        }
+        if ($secondaryBtn.text() !== '') {
+            $secondaryBtn.show();
+        } else {
+            $secondaryBtn.hide();
+        }
+
         // Use the anchor tag's href attribute as the source for the iframe
         $('#modal-popup-iframe').attr('src', $(this).attr('href'));
 
@@ -38,7 +62,7 @@ $(document).ready(function () {
 
         // Use the anchor tag's title attribute as the title of the dialog box
         if ($(this).attr('title') != undefined)
-            $('#modal-popup h3').html($(this).attr('title'));
+            $('#modal-popup h3').html($(this).attr('title') + ' <small></small>');
 
         // popup the dialog box
         $('#modal-popup').modal('show');

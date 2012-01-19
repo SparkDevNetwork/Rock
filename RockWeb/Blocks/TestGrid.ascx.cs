@@ -20,9 +20,9 @@ namespace RockWeb.Blocks
         protected override void OnInit( EventArgs e )
         {
             rGrid.DataKeyNames = new string[] { "id" };
-            rGrid.EnableAdd = true;
+            rGrid.Actions.EnableAdd = true;
             //rGrid.ClientAddScript = "return addItem();";
-            rGrid.GridAdd += new GridAddEventHandler( rGrid_GridAdd );
+            rGrid.Actions.AddClick += rGrid_GridAdd;
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
             rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
             rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );

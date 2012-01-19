@@ -92,7 +92,11 @@ namespace Rock.REST.Core
 				if ( existingEntityChange.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-					EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
+					
+					if (existingEntityChange.IsValid)
+						EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this EntityChange", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.Core
 					if ( existingEntityChange.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-						EntityChangeService.Save( existingEntityChange, user.PersonId );
+					
+						if (existingEntityChange.IsValid)
+							EntityChangeService.Save( existingEntityChange, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this EntityChange", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.Core
 				Rock.Core.EntityChange existingEntityChange = new Rock.Core.EntityChange();
 				EntityChangeService.Add( existingEntityChange, currentUser.PersonId() );
 				uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-				EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
+
+				if (existingEntityChange.IsValid)
+					EntityChangeService.Save( existingEntityChange, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.Core
 					Rock.Core.EntityChange existingEntityChange = new Rock.Core.EntityChange();
 					EntityChangeService.Add( existingEntityChange, user.PersonId );
 					uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
-					EntityChangeService.Save( existingEntityChange, user.PersonId );
+
+					if (existingEntityChange.IsValid)
+						EntityChangeService.Save( existingEntityChange, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

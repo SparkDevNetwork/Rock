@@ -69,6 +69,14 @@ namespace Rock.CRM.DTO
 		public string LastName { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Gender.
+		/// </summary>
+		/// <value>
+		/// Enum[Gender].
+		/// </value>
+		public int? Gender { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Email.
 		/// </summary>
 		/// <value>

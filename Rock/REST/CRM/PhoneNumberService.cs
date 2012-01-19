@@ -92,7 +92,11 @@ namespace Rock.REST.CRM
 				if ( existingPhoneNumber.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
-					PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+					
+					if (existingPhoneNumber.IsValid)
+						PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+					else
+						throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -118,7 +122,11 @@ namespace Rock.REST.CRM
 					if ( existingPhoneNumber.Authorized( "Edit", user.Username ) )
 					{
 						uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
-						PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
+					
+						if (existingPhoneNumber.IsValid)
+							PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
+						else
+							throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -145,7 +153,11 @@ namespace Rock.REST.CRM
 				Rock.CRM.PhoneNumber existingPhoneNumber = new Rock.CRM.PhoneNumber();
 				PhoneNumberService.Add( existingPhoneNumber, currentUser.PersonId() );
 				uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
-				PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+
+				if (existingPhoneNumber.IsValid)
+					PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+				else
+					throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
@@ -167,7 +179,11 @@ namespace Rock.REST.CRM
 					Rock.CRM.PhoneNumber existingPhoneNumber = new Rock.CRM.PhoneNumber();
 					PhoneNumberService.Add( existingPhoneNumber, user.PersonId );
 					uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
-					PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
+
+					if (existingPhoneNumber.IsValid)
+						PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
+					else
+						throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
