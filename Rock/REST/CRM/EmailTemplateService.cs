@@ -32,7 +32,7 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.EmailTemplate Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( EmailTemplate.Authorized( "View", user.Username ) )
+					if ( EmailTemplate.Authorized( "View", user.UserName ) )
 						return EmailTemplate.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this EmailTemplate", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateEmailTemplate( string id, Rock.CRM.DTO.EmailTemplate EmailTemplate )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 					
 					if (existingEmailTemplate.IsValid)
-						EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId() );
+						EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( existingEmailTemplate.Authorized( "Edit", user.Username ) )
+					if ( existingEmailTemplate.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateEmailTemplate( Rock.CRM.DTO.EmailTemplate EmailTemplate )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 				Rock.CRM.EmailTemplate existingEmailTemplate = new Rock.CRM.EmailTemplate();
-				EmailTemplateService.Add( existingEmailTemplate, currentUser.PersonId() );
+				EmailTemplateService.Add( existingEmailTemplate, currentUser.PersonId );
 				uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 
 				if (existingEmailTemplate.IsValid)
-					EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId() );
+					EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteEmailTemplate( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CRM
 				Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
 				if ( EmailTemplate.Authorized( "Edit", currentUser ) )
 				{
-					EmailTemplateService.Delete( EmailTemplate, currentUser.PersonId() );
-					EmailTemplateService.Save( EmailTemplate, currentUser.PersonId() );
+					EmailTemplateService.Delete( EmailTemplate, currentUser.PersonId );
+					EmailTemplateService.Save( EmailTemplate, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this EmailTemplate", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( EmailTemplate.Authorized( "Edit", user.Username ) )
+					if ( EmailTemplate.Authorized( "Edit", user.UserName ) )
 					{
 						EmailTemplateService.Delete( EmailTemplate, user.PersonId );
 						EmailTemplateService.Save( EmailTemplate, user.PersonId );

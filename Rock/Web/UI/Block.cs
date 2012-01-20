@@ -10,7 +10,6 @@ using System.IO;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -59,7 +58,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in user.  If user is not logged in, returns null
         /// </summary>
-        public MembershipUser CurrentUser
+        public User CurrentUser
         {
             get { return ( ( Rock.Web.UI.Page )this.Page ).CurrentUser; }
         }

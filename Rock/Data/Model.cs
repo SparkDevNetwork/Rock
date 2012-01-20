@@ -99,7 +99,7 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
+        public virtual bool Authorized( string action, Rock.CMS.User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }

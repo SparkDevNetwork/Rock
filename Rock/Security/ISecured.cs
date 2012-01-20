@@ -42,7 +42,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        bool Authorized( string action, System.Web.Security.MembershipUser user );
+        bool Authorized( string action, Rock.CMS.User user );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,

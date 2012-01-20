@@ -20,7 +20,7 @@ namespace Rock.REST.CMS
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-                Rock.CMS.User User = UserService.GetByApplicationNameAndUsername( "RockChMS", username );
+                Rock.CMS.User User = UserService.GetByUserName( username );
                 return ( User == null );
             }
         }

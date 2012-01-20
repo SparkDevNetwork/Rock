@@ -11,10 +11,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.Web.Security;
 
 using Rock.CRM;
 using Rock.Web.UI.Controls;
@@ -77,9 +77,9 @@ namespace Rock.Web.UI
         {
             get
             {
-                MembershipUser user = CurrentUser;
+                Rock.CMS.User user = CurrentUser;
                 if ( user != null )
-                    return user.PersonId();
+                    return user.PersonId;
                 else
                     return null;
             }
@@ -88,17 +88,17 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in user.  Returns null if there is not a user logged in
         /// </summary>
-        public MembershipUser CurrentUser
+        public Rock.CMS.User CurrentUser
         {
             get
             {
                 if ( Context.Items.Contains( "CurrentUser" ) )
                 {
-                    return ( MembershipUser )Context.Items["CurrentUser"];
+                    return ( Rock.CMS.User )Context.Items["CurrentUser"];
                 }
                 else
                 {
-                    MembershipUser user = Membership.GetUser();
+                    Rock.CMS.User user = Rock.CMS.User.GetCurrentUser();
                     Context.Items.Add( "CurrentUser", user );
                     return user;
                 }
@@ -301,14 +301,14 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            MembershipUser user = CurrentUser;
+            Rock.CMS.User user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
                 UserName = user.UserName;
-                int? personId = user.PersonId();
+                int? personId = user.PersonId;
 
                 if ( personId.HasValue)
                 {
@@ -346,7 +346,7 @@ namespace Rock.Web.UI
                 // the user hasn't logged in yet, redirect to the login page
                 if ( !PageInstance.Authorized( "View", user ) )
                 {
-                    if ( user == null || !user.IsApproved )
+                    if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
                 }
                 else

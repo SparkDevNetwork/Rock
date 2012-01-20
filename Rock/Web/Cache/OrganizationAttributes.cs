@@ -22,6 +22,18 @@ namespace Rock.Web.Cache
         private OrganizationAttributes() { }
 
         /// <summary>
+        /// Organizational Attribute Value for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string Value (string key)
+        {
+            if (AttributeValues.Keys.Contains(key))
+                return AttributeValues[key].Value;
+            return null;
+        }
+
+        /// <summary>
         /// Gets or sets the attribute values.
         /// </summary>
         /// <value>
