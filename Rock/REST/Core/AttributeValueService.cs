@@ -32,7 +32,7 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.AttributeValue Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( AttributeValue.Authorized( "View", user.Username ) )
+					if ( AttributeValue.Authorized( "View", user.UserName ) )
 						return AttributeValue.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAttributeValue( string id, Rock.Core.DTO.AttributeValue AttributeValue )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
 					
 					if (existingAttributeValue.IsValid)
-						AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+						AttributeValueService.Save( existingAttributeValue, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue existingAttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( existingAttributeValue.Authorized( "Edit", user.Username ) )
+					if ( existingAttributeValue.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAttributeValue( Rock.Core.DTO.AttributeValue AttributeValue )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 				Rock.Core.AttributeValue existingAttributeValue = new Rock.Core.AttributeValue();
-				AttributeValueService.Add( existingAttributeValue, currentUser.PersonId() );
+				AttributeValueService.Add( existingAttributeValue, currentUser.PersonId );
 				uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
 
 				if (existingAttributeValue.IsValid)
-					AttributeValueService.Save( existingAttributeValue, currentUser.PersonId() );
+					AttributeValueService.Save( existingAttributeValue, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAttributeValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAttributeValue( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Core
 				Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
 				if ( AttributeValue.Authorized( "Edit", currentUser ) )
 				{
-					AttributeValueService.Delete( AttributeValue, currentUser.PersonId() );
-					AttributeValueService.Save( AttributeValue, currentUser.PersonId() );
+					AttributeValueService.Delete( AttributeValue, currentUser.PersonId );
+					AttributeValueService.Save( AttributeValue, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( AttributeValue.Authorized( "Edit", user.Username ) )
+					if ( AttributeValue.Authorized( "Edit", user.UserName ) )
 					{
 						AttributeValueService.Delete( AttributeValue, user.PersonId );
 						AttributeValueService.Save( AttributeValue, user.PersonId );

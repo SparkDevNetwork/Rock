@@ -27,53 +27,36 @@ namespace Rock.CMS
     public partial class User : ModelWithAttributes<User>, IAuditable
     {
 		/// <summary>
-		/// Gets or sets the Username.
+		/// Gets or sets the User Name.
 		/// </summary>
 		/// <value>
-		/// Username.
+		/// User Name.
 		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
-		public string Username { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Application Name.
-		/// </summary>
-		/// <value>
-		/// Application Name.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string ApplicationName { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Email.
-		/// </summary>
-		/// <value>
-		/// Email.
-		/// </value>
-		[MaxLength( 128 )]
-		[DataMember]
-		public string Email { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Comment.
-		/// </summary>
-		/// <value>
-		/// Comment.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string Comment { get; set; }
+		public string UserName { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Authentication Type.
 		/// </summary>
 		/// <value>
-		/// Authentication Type.
+		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
 		/// </value>
 		[DataMember]
-		public int AuthenticationType { get; set; }
+		internal int AuthenticationTypeInternal { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Authentication Type.
+		/// </summary>
+		/// <value>
+		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
+		/// </value>
+		[NotMapped]
+		public AuthenticationType AuthenticationType
+		{
+			get { return (AuthenticationType)this.AuthenticationTypeInternal; }
+			set { this.AuthenticationTypeInternal = (int)value; }
+		}
 		
 		/// <summary>
 		/// Gets or sets the Password.
@@ -86,33 +69,13 @@ namespace Rock.CMS
 		public string Password { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Password Question.
+		/// Gets or sets the Is Confirmed.
 		/// </summary>
 		/// <value>
-		/// Password Question.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string PasswordQuestion { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Password Answer.
-		/// </summary>
-		/// <value>
-		/// Password Answer.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string PasswordAnswer { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Is Approved.
-		/// </summary>
-		/// <value>
-		/// Is Approved.
+		/// Is Confirmed.
 		/// </value>
 		[DataMember]
-		public bool? IsApproved { get; set; }
+		public bool? IsConfirmed { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
@@ -196,31 +159,14 @@ namespace Rock.CMS
 		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Failed Password Answer Attempt Count.
+		/// Gets or sets the Api Key.
 		/// </summary>
 		/// <value>
-		/// Failed Password Answer Attempt Count.
+		/// Api Key.
 		/// </value>
+		[MaxLength( 50 )]
 		[DataMember]
-		public int? FailedPasswordAnswerAttemptCount { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Failed Password Answer Attempt Window Start.
-		/// </summary>
-		/// <value>
-		/// Failed Password Answer Attempt Window Start.
-		/// </value>
-		[DataMember]
-		public DateTime? FailedPasswordAnswerAttemptWindowStart { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Is Subscriber.
-		/// </summary>
-		/// <value>
-		/// Is Subscriber.
-		/// </value>
-		[DataMember]
-		public bool? IsSubscriber { get; set; }
+		public string ApiKey { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -268,16 +214,6 @@ namespace Rock.CMS
 		public int? ModifiedByPersonId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Api Key.
-		/// </summary>
-		/// <value>
-		/// Api Key.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string ApiKey { get; set; }
-		
-		/// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
@@ -290,15 +226,10 @@ namespace Rock.CMS
 				Rock.CMS.DTO.User dto = new Rock.CMS.DTO.User();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.Username = this.Username;
-				dto.ApplicationName = this.ApplicationName;
-				dto.Email = this.Email;
-				dto.Comment = this.Comment;
-				dto.AuthenticationType = this.AuthenticationType;
+				dto.UserName = this.UserName;
+				dto.AuthenticationType = this.AuthenticationTypeInternal;
 				dto.Password = this.Password;
-				dto.PasswordQuestion = this.PasswordQuestion;
-				dto.PasswordAnswer = this.PasswordAnswer;
-				dto.IsApproved = this.IsApproved;
+				dto.IsConfirmed = this.IsConfirmed;
 				dto.LastActivityDate = this.LastActivityDate;
 				dto.LastLoginDate = this.LastLoginDate;
 				dto.LastPasswordChangedDate = this.LastPasswordChangedDate;
@@ -308,15 +239,12 @@ namespace Rock.CMS
 				dto.LastLockedOutDate = this.LastLockedOutDate;
 				dto.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
 				dto.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
-				dto.FailedPasswordAnswerAttemptCount = this.FailedPasswordAnswerAttemptCount;
-				dto.FailedPasswordAnswerAttemptWindowStart = this.FailedPasswordAnswerAttemptWindowStart;
-				dto.IsSubscriber = this.IsSubscriber;
+				dto.ApiKey = this.ApiKey;
 				dto.PersonId = this.PersonId;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.ApiKey = this.ApiKey;
 				return dto; 
 			}
 		}
@@ -362,6 +290,7 @@ namespace Rock.CMS
         /// </summary>
         public UserConfiguration()
         {
+			this.Property( p => p.AuthenticationTypeInternal ).HasColumnName( "AuthenticationType" );
 			this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );

@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.HtmlContent Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 					Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
-					if ( HtmlContent.Authorized( "View", user.Username ) )
+					if ( HtmlContent.Authorized( "View", user.UserName ) )
 						return HtmlContent.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this HtmlContent", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateHtmlContent( string id, Rock.CMS.DTO.HtmlContent HtmlContent )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 					
 					if (existingHtmlContent.IsValid)
-						HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+						HtmlContentService.Save( existingHtmlContent, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 					Rock.CMS.HtmlContent existingHtmlContent = HtmlContentService.Get( int.Parse( id ) );
-					if ( existingHtmlContent.Authorized( "Edit", user.Username ) )
+					if ( existingHtmlContent.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateHtmlContent( Rock.CMS.DTO.HtmlContent HtmlContent )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 				Rock.CMS.HtmlContent existingHtmlContent = new Rock.CMS.HtmlContent();
-				HtmlContentService.Add( existingHtmlContent, currentUser.PersonId() );
+				HtmlContentService.Add( existingHtmlContent, currentUser.PersonId );
 				uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 
 				if (existingHtmlContent.IsValid)
-					HtmlContentService.Save( existingHtmlContent, currentUser.PersonId() );
+					HtmlContentService.Save( existingHtmlContent, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteHtmlContent( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
 				if ( HtmlContent.Authorized( "Edit", currentUser ) )
 				{
-					HtmlContentService.Delete( HtmlContent, currentUser.PersonId() );
-					HtmlContentService.Save( HtmlContent, currentUser.PersonId() );
+					HtmlContentService.Delete( HtmlContent, currentUser.PersonId );
+					HtmlContentService.Save( HtmlContent, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this HtmlContent", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 					Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
-					if ( HtmlContent.Authorized( "Edit", user.Username ) )
+					if ( HtmlContent.Authorized( "Edit", user.UserName ) )
 					{
 						HtmlContentService.Delete( HtmlContent, user.PersonId );
 						HtmlContentService.Save( HtmlContent, user.PersonId );
