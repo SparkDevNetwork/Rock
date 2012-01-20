@@ -240,9 +240,6 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
-    <Compile Include="Security\User.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SystemGuids.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs">
       <SubType>Code</SubType>

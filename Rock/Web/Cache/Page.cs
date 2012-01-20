@@ -10,6 +10,8 @@ using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
 
+using Rock.CMS;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -340,7 +342,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The current user.</param>
         /// <returns></returns>
-        public bool DisplayInNav( System.Web.Security.MembershipUser user )
+        public bool DisplayInNav( User user )
         {
             switch ( this.DisplayInNavWhen )
             {
@@ -681,7 +683,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, System.Web.Security.MembershipUser user )
+        public virtual bool Authorized( string action, User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }
@@ -706,7 +708,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public XDocument MenuXml( System.Web.Security.MembershipUser user )
+        public XDocument MenuXml( User user )
         {
             return MenuXml( 1, user );
         }
@@ -717,13 +719,13 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, System.Web.Security.MembershipUser user )
+        public XDocument MenuXml( int levelsDeep, User user )
         {
             XElement menuElement = MenuXmlElement( levelsDeep, user );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  System.Web.Security.MembershipUser user )
+        private XElement MenuXmlElement( int levelsDeep,  User user )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
             {

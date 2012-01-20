@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Security
             if ( Page.IsValid )
             {
                 Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.GetByApplicationNameAndUsername( "RockChMS", tbUserName.Text );
+                Rock.CMS.User user = userService.GetByUserName( tbUserName.Text );
                 if ( user == null )
                     DisplayDuplicates( Direction.Forward );
                 else
@@ -260,12 +260,12 @@ namespace RockWeb.Blocks.Security
 
             if (person != null)
             {
-                Rock.CMS.User user = CreateUser( personId, false );
+                Rock.CMS.User user = CreateUser( person, false );
 
                 var mergeObjects = new List<object>();
                 mergeObjects.Add( person );
 
-                string identifier = string.Format( "ROCK|{0}|{1}", user.Guid.ToString(), user.Username );
+                string identifier = string.Format( "ROCK|{0}|{1}", user.Guid.ToString(), user.UserName );
 
                 string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
                 if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Security
                 PagePanels[i].Visible = i == panel;
         }
 
-        private int CreatePerson()
+        private Person CreatePerson()
         {
             Rock.CRM.PersonService personService = new PersonService();
 
@@ -384,25 +384,12 @@ namespace RockWeb.Blocks.Security
             personService.Add(person, CurrentPersonId);
             personService.Save(person, CurrentPersonId);
 
-            return person.Id;
+            return person;
         }
 
-        private Rock.CMS.User CreateUser( int personId, bool confirmed )
+        private Rock.CMS.User CreateUser( Person person, bool confirmed )
         {
-            Rock.CMS.UserService userService = new Rock.CMS.UserService();
-
-            Rock.CMS.User user = new Rock.CMS.User();
-            user.PersonId = personId;
-            user.AuthenticationType = 1;
-            user.Username = tbUserName.Text;
-            user.Password = tbPassword.Text;
-            user.ApplicationName = "RockChMS";
-            user.IsApproved = !confirmed;
-
-            userService.Add( user, CurrentPersonId );
-            userService.Save( user, CurrentPersonId );
-            
-            return user;
+            return Rock.CMS.User.CreateUser( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, tbPassword.Text, confirmed, CurrentPersonId );
         }
 
         #endregion

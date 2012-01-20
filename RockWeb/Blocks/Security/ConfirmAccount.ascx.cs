@@ -32,6 +32,8 @@ namespace RockWeb.Blocks.Security
 
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
             pnlConfirmed.Visible = false;
             pnlDelete.Visible = false;
             pnlDeleted.Visible = false;
@@ -65,7 +67,7 @@ namespace RockWeb.Blocks.Security
 
                             if ( !Page.IsPostBack )
                             {
-                                if ( user != null && user.Username == username )
+                                if ( user != null && user.UserName == username )
                                 {
                                     string action = Request.QueryString["action"] ?? "";
                                     switch ( action.ToLower() )
@@ -84,7 +86,7 @@ namespace RockWeb.Blocks.Security
 
                                         default:
 
-                                            user.IsApproved = true;
+                                            user.IsConfirmed = true;
                                             service.Save( user, user.PersonId );
                                                 
                                             pnlConfirmed.Visible = true;

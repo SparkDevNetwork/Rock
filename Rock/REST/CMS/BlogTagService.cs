@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.BlogTag Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( BlogTag.Authorized( "View", user.Username ) )
+					if ( BlogTag.Authorized( "View", user.UserName ) )
 						return BlogTag.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogTag", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogTag( string id, Rock.CMS.DTO.BlogTag BlogTag )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
 					
 					if (existingBlogTag.IsValid)
-						BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+						BlogTagService.Save( existingBlogTag, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag existingBlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( existingBlogTag.Authorized( "Edit", user.Username ) )
+					if ( existingBlogTag.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogTag( Rock.CMS.DTO.BlogTag BlogTag )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 				Rock.CMS.BlogTag existingBlogTag = new Rock.CMS.BlogTag();
-				BlogTagService.Add( existingBlogTag, currentUser.PersonId() );
+				BlogTagService.Add( existingBlogTag, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
 
 				if (existingBlogTag.IsValid)
-					BlogTagService.Save( existingBlogTag, currentUser.PersonId() );
+					BlogTagService.Save( existingBlogTag, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlogTag.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogTag( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
 				if ( BlogTag.Authorized( "Edit", currentUser ) )
 				{
-					BlogTagService.Delete( BlogTag, currentUser.PersonId() );
-					BlogTagService.Save( BlogTag, currentUser.PersonId() );
+					BlogTagService.Delete( BlogTag, currentUser.PersonId );
+					BlogTagService.Save( BlogTag, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogTag", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( BlogTag.Authorized( "Edit", user.Username ) )
+					if ( BlogTag.Authorized( "Edit", user.UserName ) )
 					{
 						BlogTagService.Delete( BlogTag, user.PersonId );
 						BlogTagService.Save( BlogTag, user.PersonId );

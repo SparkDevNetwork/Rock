@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.Site Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-					if ( Site.Authorized( "View", user.Username ) )
+					if ( Site.Authorized( "View", user.UserName ) )
 						return Site.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Site", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateSite( string id, Rock.CMS.DTO.Site Site )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
 					
 					if (existingSite.IsValid)
-						SiteService.Save( existingSite, currentUser.PersonId() );
+						SiteService.Save( existingSite, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site existingSite = SiteService.Get( int.Parse( id ) );
-					if ( existingSite.Authorized( "Edit", user.Username ) )
+					if ( existingSite.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateSite( Rock.CMS.DTO.Site Site )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 				Rock.CMS.Site existingSite = new Rock.CMS.Site();
-				SiteService.Add( existingSite, currentUser.PersonId() );
+				SiteService.Add( existingSite, currentUser.PersonId );
 				uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
 
 				if (existingSite.IsValid)
-					SiteService.Save( existingSite, currentUser.PersonId() );
+					SiteService.Save( existingSite, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingSite.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteSite( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
 				if ( Site.Authorized( "Edit", currentUser ) )
 				{
-					SiteService.Delete( Site, currentUser.PersonId() );
-					SiteService.Save( Site, currentUser.PersonId() );
+					SiteService.Delete( Site, currentUser.PersonId );
+					SiteService.Save( Site, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Site", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-					if ( Site.Authorized( "Edit", user.Username ) )
+					if ( Site.Authorized( "Edit", user.UserName ) )
 					{
 						SiteService.Delete( Site, user.PersonId );
 						SiteService.Save( Site, user.PersonId );
