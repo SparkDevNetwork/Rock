@@ -72,7 +72,7 @@
 		        </div>
 	        </section>
 
-	        <section class="row container">     
+	        <section id="core-content" class="row container">     
   
                 <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
                 <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        

@@ -139,7 +139,7 @@
         </Columns>
         </Rock:Grid>
 
-        <div class="inputs-list">
+        <div class="inputs-list not-me">
             <label>
                 <input type="radio" value="0" name="DuplicatePerson" />        
                 <span>None of these are me</span>    
