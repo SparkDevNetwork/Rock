@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.Blog Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogService BlogService = new Rock.CMS.BlogService();
 					Rock.CMS.Blog Blog = BlogService.Get( int.Parse( id ) );
-					if ( Blog.Authorized( "View", user.Username ) )
+					if ( Blog.Authorized( "View", user.UserName ) )
 						return Blog.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Blog", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlog( string id, Rock.CMS.DTO.Blog Blog )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
 					
 					if (existingBlog.IsValid)
-						BlogService.Save( existingBlog, currentUser.PersonId() );
+						BlogService.Save( existingBlog, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogService BlogService = new Rock.CMS.BlogService();
 					Rock.CMS.Blog existingBlog = BlogService.Get( int.Parse( id ) );
-					if ( existingBlog.Authorized( "Edit", user.Username ) )
+					if ( existingBlog.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlog( Rock.CMS.DTO.Blog Blog )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.BlogService BlogService = new Rock.CMS.BlogService();
 				Rock.CMS.Blog existingBlog = new Rock.CMS.Blog();
-				BlogService.Add( existingBlog, currentUser.PersonId() );
+				BlogService.Add( existingBlog, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlog).CurrentValues.SetValues(Blog);
 
 				if (existingBlog.IsValid)
-					BlogService.Save( existingBlog, currentUser.PersonId() );
+					BlogService.Save( existingBlog, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlog( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.Blog Blog = BlogService.Get( int.Parse( id ) );
 				if ( Blog.Authorized( "Edit", currentUser ) )
 				{
-					BlogService.Delete( Blog, currentUser.PersonId() );
-					BlogService.Save( Blog, currentUser.PersonId() );
+					BlogService.Delete( Blog, currentUser.PersonId );
+					BlogService.Save( Blog, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Blog", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogService BlogService = new Rock.CMS.BlogService();
 					Rock.CMS.Blog Blog = BlogService.Get( int.Parse( id ) );
-					if ( Blog.Authorized( "Edit", user.Username ) )
+					if ( Blog.Authorized( "Edit", user.UserName ) )
 					{
 						BlogService.Delete( Blog, user.PersonId );
 						BlogService.Save( Blog, user.PersonId );

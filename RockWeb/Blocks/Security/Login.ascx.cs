@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Security;
 
 using Facebook;
 
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Membership.ValidateUser( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.CMS.User.ValidateUser( tbUserName.Text, tbPassword.Text ) )
                 {
                     // Save the current user's authentication cookie
                     FormsAuthenticationTicket tkt;
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Security
 
                     // query for matching id in the user table 
                     UserService userService = new UserService();
-                    var user = userService.Queryable().FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 ); // TODO: Make this an enum
+                    var user = userService.Queryable().FirstOrDefault( u => u.UserName == facebookId && u.AuthenticationType == AuthenticationType.Facebook ); 
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -177,20 +177,7 @@ namespace RockWeb.Blocks.Security
 
                             if ( person != null )
                             {
-                                // found exact match create a Facebook login for the user
-                                user = new Rock.CMS.User();
-                                user.PersonId = person.Id;
-                                user.Email = email;
-                                user.AuthenticationType = 2; // TODO: Make this a enum;
-                                user.Password = "fb";
-                                user.Username = facebookId;
-                                user.ApplicationName = "RockChMS";
-                                user.CreationDate = DateTime.Now;
-                                user.LastActivityDate = DateTime.Now;
-                                user.LastLoginDate = DateTime.Now;
-
-                                userService.Add( user, person.Id );
-                                userService.Save( user, person.Id );
+                                User.CreateUser( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
 
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
                                 DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
@@ -228,7 +215,7 @@ namespace RockWeb.Blocks.Security
                         userService.Save( user, user.PersonId );
                     }
 
-                    FormsAuthentication.SetAuthCookie( user.Username, false );
+                    FormsAuthentication.SetAuthCookie( user.UserName, false );
 
                     if ( state != null )
                     {

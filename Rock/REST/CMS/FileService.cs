@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.File Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
-					if ( File.Authorized( "View", user.Username ) )
+					if ( File.Authorized( "View", user.UserName ) )
 						return File.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this File", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateFile( string id, Rock.CMS.DTO.File File )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 					
 					if (existingFile.IsValid)
-						FileService.Save( existingFile, currentUser.PersonId() );
+						FileService.Save( existingFile, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File existingFile = FileService.Get( int.Parse( id ) );
-					if ( existingFile.Authorized( "Edit", user.Username ) )
+					if ( existingFile.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateFile( Rock.CMS.DTO.File File )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 				Rock.CMS.File existingFile = new Rock.CMS.File();
-				FileService.Add( existingFile, currentUser.PersonId() );
+				FileService.Add( existingFile, currentUser.PersonId );
 				uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 
 				if (existingFile.IsValid)
-					FileService.Save( existingFile, currentUser.PersonId() );
+					FileService.Save( existingFile, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteFile( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.File File = FileService.Get( int.Parse( id ) );
 				if ( File.Authorized( "Edit", currentUser ) )
 				{
-					FileService.Delete( File, currentUser.PersonId() );
-					FileService.Save( File, currentUser.PersonId() );
+					FileService.Delete( File, currentUser.PersonId );
+					FileService.Save( File, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this File", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
-					if ( File.Authorized( "Edit", user.Username ) )
+					if ( File.Authorized( "Edit", user.UserName ) )
 					{
 						FileService.Delete( File, user.PersonId );
 						FileService.Save( File, user.PersonId );

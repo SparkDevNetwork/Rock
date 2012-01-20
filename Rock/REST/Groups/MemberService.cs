@@ -32,7 +32,7 @@ namespace Rock.REST.Groups
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Groups.DTO.Member Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-					if ( Member.Authorized( "View", user.Username ) )
+					if ( Member.Authorized( "View", user.UserName ) )
 						return Member.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Member", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateMember( string id, Rock.Groups.DTO.Member Member )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
 					
 					if (existingMember.IsValid)
-						MemberService.Save( existingMember, currentUser.PersonId() );
+						MemberService.Save( existingMember, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member existingMember = MemberService.Get( int.Parse( id ) );
-					if ( existingMember.Authorized( "Edit", user.Username ) )
+					if ( existingMember.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateMember( Rock.Groups.DTO.Member Member )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 				Rock.Groups.Member existingMember = new Rock.Groups.Member();
-				MemberService.Add( existingMember, currentUser.PersonId() );
+				MemberService.Add( existingMember, currentUser.PersonId );
 				uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
 
 				if (existingMember.IsValid)
-					MemberService.Save( existingMember, currentUser.PersonId() );
+					MemberService.Save( existingMember, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingMember.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteMember( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Groups
 				Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
 				if ( Member.Authorized( "Edit", currentUser ) )
 				{
-					MemberService.Delete( Member, currentUser.PersonId() );
-					MemberService.Save( Member, currentUser.PersonId() );
+					MemberService.Delete( Member, currentUser.PersonId );
+					MemberService.Save( Member, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Member", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-					if ( Member.Authorized( "Edit", user.Username ) )
+					if ( Member.Authorized( "Edit", user.UserName ) )
 					{
 						MemberService.Delete( Member, user.PersonId );
 						MemberService.Save( Member, user.PersonId );

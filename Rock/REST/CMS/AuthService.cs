@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.Auth Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-					if ( Auth.Authorized( "View", user.Username ) )
+					if ( Auth.Authorized( "View", user.UserName ) )
 						return Auth.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAuth( string id, Rock.CMS.DTO.Auth Auth )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
 					if (existingAuth.IsValid)
-						AuthService.Save( existingAuth, currentUser.PersonId() );
+						AuthService.Save( existingAuth, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth existingAuth = AuthService.Get( int.Parse( id ) );
-					if ( existingAuth.Authorized( "Edit", user.Username ) )
+					if ( existingAuth.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAuth( Rock.CMS.DTO.Auth Auth )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 				Rock.CMS.Auth existingAuth = new Rock.CMS.Auth();
-				AuthService.Add( existingAuth, currentUser.PersonId() );
+				AuthService.Add( existingAuth, currentUser.PersonId );
 				uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 
 				if (existingAuth.IsValid)
-					AuthService.Save( existingAuth, currentUser.PersonId() );
+					AuthService.Save( existingAuth, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAuth( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
 				if ( Auth.Authorized( "Edit", currentUser ) )
 				{
-					AuthService.Delete( Auth, currentUser.PersonId() );
-					AuthService.Save( Auth, currentUser.PersonId() );
+					AuthService.Delete( Auth, currentUser.PersonId );
+					AuthService.Save( Auth, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-					if ( Auth.Authorized( "Edit", user.Username ) )
+					if ( Auth.Authorized( "Edit", user.UserName ) )
 					{
 						AuthService.Delete( Auth, user.PersonId );
 						AuthService.Save( Auth, user.PersonId );

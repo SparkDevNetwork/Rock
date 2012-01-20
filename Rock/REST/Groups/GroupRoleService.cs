@@ -32,7 +32,7 @@ namespace Rock.REST.Groups
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Groups.DTO.GroupRole Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( GroupRole.Authorized( "View", user.Username ) )
+					if ( GroupRole.Authorized( "View", user.UserName ) )
 						return GroupRole.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this GroupRole", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateGroupRole( string id, Rock.Groups.DTO.GroupRole GroupRole )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
 					
 					if (existingGroupRole.IsValid)
-						GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+						GroupRoleService.Save( existingGroupRole, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole existingGroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( existingGroupRole.Authorized( "Edit", user.Username ) )
+					if ( existingGroupRole.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateGroupRole( Rock.Groups.DTO.GroupRole GroupRole )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 				Rock.Groups.GroupRole existingGroupRole = new Rock.Groups.GroupRole();
-				GroupRoleService.Add( existingGroupRole, currentUser.PersonId() );
+				GroupRoleService.Add( existingGroupRole, currentUser.PersonId );
 				uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
 
 				if (existingGroupRole.IsValid)
-					GroupRoleService.Save( existingGroupRole, currentUser.PersonId() );
+					GroupRoleService.Save( existingGroupRole, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingGroupRole.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteGroupRole( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Groups
 				Rock.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
 				if ( GroupRole.Authorized( "Edit", currentUser ) )
 				{
-					GroupRoleService.Delete( GroupRole, currentUser.PersonId() );
-					GroupRoleService.Save( GroupRole, currentUser.PersonId() );
+					GroupRoleService.Delete( GroupRole, currentUser.PersonId );
+					GroupRoleService.Save( GroupRole, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this GroupRole", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( GroupRole.Authorized( "Edit", user.Username ) )
+					if ( GroupRole.Authorized( "Edit", user.UserName ) )
 					{
 						GroupRoleService.Delete( GroupRole, user.PersonId );
 						GroupRoleService.Save( GroupRole, user.PersonId );

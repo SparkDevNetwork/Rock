@@ -32,7 +32,7 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.DefinedValue Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( DefinedValue.Authorized( "View", user.Username ) )
+					if ( DefinedValue.Authorized( "View", user.UserName ) )
 						return DefinedValue.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this DefinedValue", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateDefinedValue( string id, Rock.Core.DTO.DefinedValue DefinedValue )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
 					
 					if (existingDefinedValue.IsValid)
-						DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+						DefinedValueService.Save( existingDefinedValue, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue existingDefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( existingDefinedValue.Authorized( "Edit", user.Username ) )
+					if ( existingDefinedValue.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateDefinedValue( Rock.Core.DTO.DefinedValue DefinedValue )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 				Rock.Core.DefinedValue existingDefinedValue = new Rock.Core.DefinedValue();
-				DefinedValueService.Add( existingDefinedValue, currentUser.PersonId() );
+				DefinedValueService.Add( existingDefinedValue, currentUser.PersonId );
 				uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
 
 				if (existingDefinedValue.IsValid)
-					DefinedValueService.Save( existingDefinedValue, currentUser.PersonId() );
+					DefinedValueService.Save( existingDefinedValue, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingDefinedValue.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteDefinedValue( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Core
 				Rock.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
 				if ( DefinedValue.Authorized( "Edit", currentUser ) )
 				{
-					DefinedValueService.Delete( DefinedValue, currentUser.PersonId() );
-					DefinedValueService.Save( DefinedValue, currentUser.PersonId() );
+					DefinedValueService.Delete( DefinedValue, currentUser.PersonId );
+					DefinedValueService.Save( DefinedValue, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this DefinedValue", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( DefinedValue.Authorized( "Edit", user.Username ) )
+					if ( DefinedValue.Authorized( "Edit", user.UserName ) )
 					{
 						DefinedValueService.Delete( DefinedValue, user.PersonId );
 						DefinedValueService.Save( DefinedValue, user.PersonId );

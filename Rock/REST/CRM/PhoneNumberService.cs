@@ -32,7 +32,7 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.PhoneNumber Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( PhoneNumber.Authorized( "View", user.Username ) )
+					if ( PhoneNumber.Authorized( "View", user.UserName ) )
 						return PhoneNumber.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePhoneNumber( string id, Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 					
 					if (existingPhoneNumber.IsValid)
-						PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+						PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( existingPhoneNumber.Authorized( "Edit", user.Username ) )
+					if ( existingPhoneNumber.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePhoneNumber( Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 				Rock.CRM.PhoneNumber existingPhoneNumber = new Rock.CRM.PhoneNumber();
-				PhoneNumberService.Add( existingPhoneNumber, currentUser.PersonId() );
+				PhoneNumberService.Add( existingPhoneNumber, currentUser.PersonId );
 				uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 
 				if (existingPhoneNumber.IsValid)
-					PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId() );
+					PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePhoneNumber( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.User.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CRM
 				Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 				if ( PhoneNumber.Authorized( "Edit", currentUser ) )
 				{
-					PhoneNumberService.Delete( PhoneNumber, currentUser.PersonId() );
-					PhoneNumberService.Save( PhoneNumber, currentUser.PersonId() );
+					PhoneNumberService.Delete( PhoneNumber, currentUser.PersonId );
+					PhoneNumberService.Save( PhoneNumber, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( PhoneNumber.Authorized( "Edit", user.Username ) )
+					if ( PhoneNumber.Authorized( "Edit", user.UserName ) )
 					{
 						PhoneNumberService.Delete( PhoneNumber, user.PersonId );
 						PhoneNumberService.Save( PhoneNumber, user.PersonId );

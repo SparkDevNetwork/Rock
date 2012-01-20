@@ -119,7 +119,7 @@ namespace Rock.Security
         /// <param name="action"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, System.Web.Security.MembershipUser user )
+        public static bool Authorized( ISecured entity, string action, Rock.CMS.User user )
         {
             return Authorized( entity, action, user != null ? user.UserName : string.Empty );
         }
