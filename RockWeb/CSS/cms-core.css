@@ -57,8 +57,8 @@
 
 /* Module Config */
 .block-configuration {
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.7);
-    border-color: rgba(90, 90, 90, 0.8);
+    background: #272727;
+    border-color: #565656;
     border-radius: 4px 4px 4px 4px;
     border-style: solid;
     border-width: 1px;
