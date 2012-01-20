@@ -1,7 +1,16 @@
 /* Zone Config */
+.zone-instance.outline 
+{
+    border: 1px solid #909090;;
+    min-height: 30px;
+    min-width: 120px;
+    position: relative;
+    margin: 1px;
+}
+
 .zone-configuration {
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.7);
-    border-color: rgba(90, 90, 90, 0.8);
+    background: #272727;
+    border-color: #565656;
     border-radius: 4px 4px 4px 4px;
     border-style: solid;
     border-width: 1px;
@@ -10,9 +19,11 @@
     height: 26px;
     overflow: hidden;
     position: absolute;
-    top: 2px;
+    top: 1px;
+    left: 1px;
     width: 25px;
     z-index: 40;
+    right:auto;
 }
 
 .zone-configuration > a.icon-button {
