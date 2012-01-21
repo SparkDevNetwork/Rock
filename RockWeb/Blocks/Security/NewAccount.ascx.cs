@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Security
     [Rock.Attribute.Property( 4, "Confirm", "ConfirmCaption", "Captions", "", false,
         "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
     [Rock.Attribute.Property( 5, "Success", "SuccessCaption", "Captions", "", false,
-        "Account has been created" )]
+        "{0}, Your account has been created" )]
     public partial class NewAccount : Rock.Web.UI.Block
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Security
             lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
             lSentLoginCaption.Text = AttributeValue( "SentLoginCaption" );
             lConfirmCaption.Text = AttributeValue( "ConfirmCaption" );
-            lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
         }
 
         protected override void OnLoad( System.EventArgs e )
@@ -308,12 +307,17 @@ namespace RockWeb.Blocks.Security
                 {
                     var mergeObjects = new List<object>();
                     mergeObjects.Add( person );
+                    mergeObjects.Add( user );
 
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( SystemEmailTemplate.SECURITY_ACCOUNT_CREATED );
                     email.Send( recipients );
+
+                    lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
+                    if ( lSuccessCaption.Text.Contains( "{0}" ) )
+                        lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
 
                     ShowPanel( 5 );
                 }
