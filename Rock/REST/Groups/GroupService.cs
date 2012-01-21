@@ -32,7 +32,7 @@ namespace Rock.REST.Groups
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Groups.DTO.Group Get( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -80,7 +80,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateGroup( string id, Rock.Groups.DTO.Group Group )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -142,7 +142,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateGroup( Rock.Groups.DTO.Group Group )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -196,7 +196,7 @@ namespace Rock.REST.Groups
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteGroup( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 

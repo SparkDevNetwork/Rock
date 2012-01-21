@@ -95,6 +95,7 @@
     <Compile Include="CMS\BlogService.cs" />
     <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\BlogTagService.cs" />
+    <Compile Include="CMS\UserService.partial.cs" />
     <Compile Include="CMS\SiteDomainService.partial.cs" />
     <Compile Include="CMS\EntityAuthRepository.cs" />
     <Compile Include="CMS\EntityBlockInstanceRepository.cs" />

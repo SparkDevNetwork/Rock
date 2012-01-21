@@ -98,7 +98,7 @@ namespace Rock.Web.UI
                 }
                 else
                 {
-                    Rock.CMS.User user = Rock.CMS.User.GetCurrentUser();
+                    Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
                     Context.Items.Add( "CurrentUser", user );
                     return user;
                 }
