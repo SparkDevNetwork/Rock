@@ -26,7 +26,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string Value (string key)
+        public string AttributeValue (string key)
         {
             if (AttributeValues.Keys.Contains(key))
                 return AttributeValues[key].Value;
@@ -92,6 +92,12 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( OrganizationAttributes.CacheKey() );
+        }
+
+        public static string Value(string key)
+        {
+            OrganizationAttributes orgAttributes = Read();
+            return orgAttributes.AttributeValue( key );
         }
 
         #endregion
