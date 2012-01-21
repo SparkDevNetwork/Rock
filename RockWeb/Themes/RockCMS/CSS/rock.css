@@ -80,7 +80,8 @@ select,
 	background-color: #222937;
     background-image: none;
     height: 90px;
-    color: #fff;
+    color: #aaa;
+    font-size: 11px;
 }
 
 .container, .row {
@@ -171,6 +172,7 @@ header.topbar .content .account-name {
 	width: 320px;
 	display: block;
 	float: right;
+	font-size: 11px;
 }
 
 header.topbar .content .account-name span 
@@ -185,8 +187,9 @@ header.topbar .content .account-actions {
 }
 
 header.topbar .content .account-actions a {
-	color: #fff;
+	color: #aaa;
 	text-decoration: none;
+	font-size: 11px;
 }
 
 header.topbar .content .account-actions a:hover {
@@ -260,6 +263,10 @@ header.topbar nav > ul > li:first-child {
 	padding-top: 0;
 }
 
+#core-content 
+{
+    margin-top: 10px;
+}
 
 /* footer */
 #page-frame > footer {
@@ -267,7 +274,8 @@ header.topbar nav > ul > li:first-child {
 	padding-top: 24px;
 	min-height: 120px;
 	background-color: #222937;
-	color: #fff;
+	color: #aaa;
+	font-size: 11px;
 }
 
 /* Page Navigation Styles */
