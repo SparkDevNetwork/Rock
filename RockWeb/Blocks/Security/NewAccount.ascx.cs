@@ -15,6 +15,7 @@ using System.Web.Security;
 
 using Rock.Communication;
 using Rock.CRM;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
@@ -236,13 +237,15 @@ namespace RockWeb.Blocks.Security
 
                     var users = new List<object>();
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        users.Add(user);
+                        if (user.AuthenticationType != Rock.CMS.AuthenticationType.Facebook)
+                            users.Add(user);
                     mergeObjects.Add(users);
 
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add(person.Email, mergeObjects);
 
                     Email email = new Email( SystemEmailTemplate.SECURITY_FORGOT_USERNAME );
+                    SetSMTPParameters( email );
                     email.Send( recipients );
                 }
                 else
@@ -279,6 +282,7 @@ namespace RockWeb.Blocks.Security
                 recipients.Add( person.Email, mergeObjects );
 
                 Email email = new Email( SystemEmailTemplate.SECURITY_CONFIRM_ACCOUNT );
+                SetSMTPParameters( email );
                 email.Send( recipients );
 
                 ShowPanel( 4 );
@@ -313,6 +317,7 @@ namespace RockWeb.Blocks.Security
                     recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( SystemEmailTemplate.SECURITY_ACCOUNT_CREATED );
+                    SetSMTPParameters( email );
                     email.Send( recipients );
 
                     lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
@@ -395,6 +400,24 @@ namespace RockWeb.Blocks.Security
         {
             Rock.CMS.UserService userService = new Rock.CMS.UserService();
             return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, tbPassword.Text, confirmed, CurrentPersonId );
+        }
+
+        private void SetSMTPParameters( Email email )
+        {
+            email.Server = OrganizationAttributes.Value( "SMTPServer" );
+
+            int port = 0;
+            if (!Int32.TryParse(OrganizationAttributes.Value( "SMTPPort" ), out port))
+                port = 0;
+            email.Port = port;
+
+            bool useSSL = false;
+            if ( !bool.TryParse( OrganizationAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+                useSSL = false;
+            email.UseSSL = useSSL;
+
+            email.UserName = OrganizationAttributes.Value( "SMTPUserName" );
+            email.Password = OrganizationAttributes.Value( "SMTPPassword" );
         }
 
         #endregion

@@ -121,9 +121,9 @@ namespace Rock.CMS
             int maxInvalidPasswordAttempts = int.MaxValue;
 
             Rock.Web.Cache.OrganizationAttributes orgAttributes = Rock.Web.Cache.OrganizationAttributes.Read();
-            if ( !Int32.TryParse( orgAttributes.Value( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
+            if ( !Int32.TryParse( orgAttributes.AttributeValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
                 passwordAttemptWindow = 0;
-            if ( !Int32.TryParse( orgAttributes.Value( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
+            if ( !Int32.TryParse( orgAttributes.AttributeValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
                 maxInvalidPasswordAttempts = int.MaxValue;
 
             DateTime firstAttempt = user.FailedPasswordAttemptWindowStart ?? DateTime.MinValue;

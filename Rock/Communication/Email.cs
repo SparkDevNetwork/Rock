@@ -66,6 +66,46 @@ namespace Rock.Communication
         public string Body { get; set; }
 
         /// <summary>
+        /// Gets or sets the SMTP server.
+        /// </summary>
+        /// <value>
+        /// The SMTP server.
+        /// </value>
+        public string Server { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMTP port.
+        /// </summary>
+        /// <value>
+        /// The SMTP port.
+        /// </value>
+        public int Port { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use SSL.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use SSL]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseSSL { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the SMTP user.
+        /// </summary>
+        /// <value>
+        /// The name of the SMTP user.
+        /// </value>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMTP password.
+        /// </summary>
+        /// <value>
+        /// The SMTP password.
+        /// </value>
+        public string Password { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Email"/> class.
         /// </summary>
         /// <param name="templateGuid">The template GUID.</param>
@@ -112,7 +152,7 @@ namespace Rock.Communication
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
-            Email.Send( From, to, cc, bcc, Subject, Body );
+            Email.Send( From, to, cc, bcc, Subject, Body, Server, Port, UseSSL, UserName, Password );
         }
 
         /// <summary>
@@ -132,7 +172,7 @@ namespace Rock.Communication
                 string subject = ResolveMergeCodes(Subject, recipient.Value);
                 string body = ResolveMergeCodes(Body, recipient.Value);
 
-                Email.Send( From, to, cc, bcc, subject, body );
+                Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
 
         }
@@ -244,27 +284,47 @@ namespace Rock.Communication
         /// <param name="bcc">The BCC.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
-        public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body )
+        /// <param name="smtpServer">The SMTP server.</param>
+        /// <param name="smtpPort">The SMTP port.</param>
+        /// <param name="smtpUserName">Name of the SMTP user.</param>
+        /// <param name="smtpPassword">The SMTP password.</param>
+        public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body, 
+            string server, int port, bool useSSL, string userName, string password)
         {
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress( from );
+            if (!string.IsNullOrEmpty(server))
+            {
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress( from );
 
-            foreach ( string e in to )
-                message.To.Add( new MailAddress( e ) );
+                foreach ( string e in to )
+                    message.To.Add( new MailAddress( e ) );
 
-            foreach ( string e in cc )
-                message.CC.Add( new MailAddress( e ) );
+                foreach ( string e in cc )
+                    message.CC.Add( new MailAddress( e ) );
 
-            foreach ( string e in bcc )
-                message.Bcc.Add( new MailAddress( e ) );
+                foreach ( string e in bcc )
+                    message.Bcc.Add( new MailAddress( e ) );
 
-            message.Subject = subject;
-            message.Body = body;
-            message.IsBodyHtml = true;
-            message.Priority = MailPriority.Normal;
+                message.Subject = subject;
+                message.Body = body;
+                message.IsBodyHtml = true;
+                message.Priority = MailPriority.Normal;
 
-            SmtpClient smtpClient = new SmtpClient( "ccvexchange07" );
-            smtpClient.Send( message );
+                SmtpClient smtpClient = new SmtpClient( server );
+                if ( port != 0 )
+                    smtpClient.Port = port;
+
+                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtpClient.EnableSsl = useSSL;
+
+                if ( !string.IsNullOrEmpty( userName ) )
+                {
+                    smtpClient.UseDefaultCredentials = false;
+                    smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
+                }
+
+                smtpClient.Send( message );
+            }
         }
     }
 }
