@@ -20,7 +20,7 @@ namespace Rock.REST.CRM
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
         public Rock.CRM.DTO.Address Geocode( Rock.CRM.DTO.Address address )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -75,7 +75,7 @@ namespace Rock.REST.CRM
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
         public Rock.CRM.DTO.Address Standardize( Rock.CRM.DTO.Address address )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 

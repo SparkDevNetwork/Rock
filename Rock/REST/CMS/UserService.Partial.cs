@@ -5,6 +5,7 @@
 //
 
 using System.ServiceModel.Web;
+using Rock.CMS;
 
 namespace Rock.REST.CMS
 {
@@ -19,8 +20,8 @@ namespace Rock.REST.CMS
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-                Rock.CMS.User User = UserService.GetByUserName( username );
+                Rock.CMS.UserService UserService = new Rock.CMS.UserService();
+                User User = UserService.GetByUserName( username );
                 return ( User == null );
             }
         }

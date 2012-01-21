@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Rock.CMS.User.ValidateUser( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
                     // Save the current user's authentication cookie
                     FormsAuthenticationTicket tkt;
@@ -154,11 +154,11 @@ namespace RockWeb.Blocks.Security
 
                     FacebookClient fbClient = new FacebookClient( accessToken );
                     dynamic me = fbClient.Get( "me" );
-                    string facebookId = me.id.ToString();
+                    string facebookId = "FACEBOOK_" + me.id.ToString();
 
                     // query for matching id in the user table 
                     UserService userService = new UserService();
-                    var user = userService.Queryable().FirstOrDefault( u => u.UserName == facebookId && u.AuthenticationType == AuthenticationType.Facebook ); 
+                    var user = userService.GetByUserName( facebookId ); 
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Security
 
                             if ( person != null )
                             {
-                                User.CreateUser( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
+                                userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
 
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
                                 DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
@@ -200,8 +200,9 @@ namespace RockWeb.Blocks.Security
                                 return;
                             }
                         }
-                        catch //( Exception ex )
+                        catch ( Exception ex )
                         {
+                            string msg = ex.Message;
                             // TODO: probably should report something...
                         }
 
@@ -222,8 +223,9 @@ namespace RockWeb.Blocks.Security
                         Response.Redirect( state );
                     }
                 }
-                catch //( FacebookOAuthException oae )
+                catch ( FacebookOAuthException oae )
                 {
+                    string msg = oae.Message;
                     // TODO: Add error handeling
                     // Error validating verification code. (usually from wrong return url very picky with formatting)
                     // Error validating client secret.

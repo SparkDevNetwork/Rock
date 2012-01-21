@@ -24,7 +24,7 @@ namespace Rock.REST.CMS
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}" )]
         public void Move( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 

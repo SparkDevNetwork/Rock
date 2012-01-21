@@ -32,7 +32,7 @@ namespace Rock.REST.Util
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Util.DTO.Job Get( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -80,7 +80,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateJob( string id, Rock.Util.DTO.Job Job )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -142,7 +142,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateJob( Rock.Util.DTO.Job Job )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -196,7 +196,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteJob( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 

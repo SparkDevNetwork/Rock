@@ -389,7 +389,8 @@ namespace RockWeb.Blocks.Security
 
         private Rock.CMS.User CreateUser( Person person, bool confirmed )
         {
-            return Rock.CMS.User.CreateUser( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, tbPassword.Text, confirmed, CurrentPersonId );
+            Rock.CMS.UserService userService = new Rock.CMS.UserService();
+            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, tbPassword.Text, confirmed, CurrentPersonId );
         }
 
         #endregion
