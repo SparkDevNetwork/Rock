@@ -353,6 +353,11 @@ article.blog-post header ul li:last-child:after {
     /* http://preloaders.net/en/popular */
 }
 
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
 
 
 
