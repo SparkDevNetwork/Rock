@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Security
             if (HttpContext.Current.User.Identity.IsAuthenticated)
             {
                 phHello.Controls.Add( new LiteralControl( "<span>Hello " ) );
-                phHello.Controls.Add( new LiteralControl( CurrentPerson.NickName ) );
+                phHello.Controls.Add( new LiteralControl( CurrentPerson.FirstName ) );
                 phHello.Controls.Add( new LiteralControl( "</span>" ) );
 
                 phMyAccount.Visible = true;
