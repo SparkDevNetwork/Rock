@@ -60,30 +60,9 @@ namespace RockWeb.Blocks.Security
             if ( Page.IsValid )
             {
                 if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
-                {
-                    // Save the current user's authentication cookie
-                    FormsAuthenticationTicket tkt;
-                    string cookiestr;
-                    HttpCookie ck;
-                    tkt = new FormsAuthenticationTicket( 1, tbUserName.Text, DateTime.Now, DateTime.Now.AddMinutes( 30 ), cbRememberMe.Checked, "your custom data" );
-                    cookiestr = FormsAuthentication.Encrypt( tkt );
-                    ck = new HttpCookie( FormsAuthentication.FormsCookieName, cookiestr );
-                    if ( cbRememberMe.Checked )
-                        ck.Expires = tkt.Expiration;
-                    ck.Path = FormsAuthentication.FormsCookiePath;
-                    Response.Cookies.Add( ck );
-
-                    // Redirect to any specified url, or the default url if non was specified
-                    string strRedirect;
-                    strRedirect = Request["ReturnUrl"];
-                    if ( strRedirect == null )
-                        strRedirect = FormsAuthentication.DefaultUrl;
-                    Response.Redirect( strRedirect, true );
-                }
+                    FormsAuthentication.RedirectFromLoginPage( tbUserName.Text, cbRememberMe.Checked );
                 else
-                {
                     DisplayError( "Invalid Login Information" );
-                }
             }
         }
 
