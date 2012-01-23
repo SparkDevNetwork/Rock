@@ -59,7 +59,7 @@ namespace RockWeb.Blocks
                     personService.Add( person, CurrentPersonId );
                 }
 
-                person.FirstName = txtFirstName.Text;
+                person.GivenName = txtFirstName.Text;
                 person.NickName = txtNickName.Text;
                 person.LastName = txtLastName.Text;
                 if ( person.Guid == Guid.Empty )

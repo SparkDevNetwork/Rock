@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.BlogCategory Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( BlogCategory.Authorized( "View", user.Username ) )
+					if ( BlogCategory.Authorized( "View", user.UserName ) )
 						return BlogCategory.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogCategory", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogCategory( string id, Rock.CMS.DTO.BlogCategory BlogCategory )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
 					
 					if (existingBlogCategory.IsValid)
-						BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+						BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory existingBlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( existingBlogCategory.Authorized( "Edit", user.Username ) )
+					if ( existingBlogCategory.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogCategory( Rock.CMS.DTO.BlogCategory BlogCategory )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 				Rock.CMS.BlogCategory existingBlogCategory = new Rock.CMS.BlogCategory();
-				BlogCategoryService.Add( existingBlogCategory, currentUser.PersonId() );
+				BlogCategoryService.Add( existingBlogCategory, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
 
 				if (existingBlogCategory.IsValid)
-					BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId() );
+					BlogCategoryService.Save( existingBlogCategory, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlogCategory.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogCategory( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
 				if ( BlogCategory.Authorized( "Edit", currentUser ) )
 				{
-					BlogCategoryService.Delete( BlogCategory, currentUser.PersonId() );
-					BlogCategoryService.Save( BlogCategory, currentUser.PersonId() );
+					BlogCategoryService.Delete( BlogCategory, currentUser.PersonId );
+					BlogCategoryService.Save( BlogCategory, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogCategory", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( BlogCategory.Authorized( "Edit", user.Username ) )
+					if ( BlogCategory.Authorized( "Edit", user.UserName ) )
 					{
 						BlogCategoryService.Delete( BlogCategory, user.PersonId );
 						BlogCategoryService.Save( BlogCategory, user.PersonId );

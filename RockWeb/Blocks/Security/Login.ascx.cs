@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Security;
 
 using Facebook;
 
@@ -59,31 +59,26 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Membership.ValidateUser( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
-                    // Save the current user's authentication cookie
-                    FormsAuthenticationTicket tkt;
-                    string cookiestr;
-                    HttpCookie ck;
-                    tkt = new FormsAuthenticationTicket( 1, tbUserName.Text, DateTime.Now, DateTime.Now.AddMinutes( 30 ), cbRememberMe.Checked, "your custom data" );
-                    cookiestr = FormsAuthentication.Encrypt( tkt );
-                    ck = new HttpCookie( FormsAuthentication.FormsCookieName, cookiestr );
-                    if ( cbRememberMe.Checked )
-                        ck.Expires = tkt.Expiration;
-                    ck.Path = FormsAuthentication.FormsCookiePath;
-                    Response.Cookies.Add( ck );
+                    FormsAuthentication.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked );
 
-                    // Redirect to any specified url, or the default url if non was specified
-                    string strRedirect;
-                    strRedirect = Request["ReturnUrl"];
-                    if ( strRedirect == null )
-                        strRedirect = FormsAuthentication.DefaultUrl;
-                    Response.Redirect( strRedirect, true );
+                    string returnUrl = Request.QueryString["returnurl"];
+                    if ( returnUrl != null )
+                    {
+                        returnUrl = returnUrl.ToLower();
+
+                        if ( returnUrl.Contains( "changepassword" ) ||
+                            returnUrl.Contains( "confirmaccount" ) ||
+                            returnUrl.Contains( "forgotusername" ) ||
+                            returnUrl.Contains( "newaccount" ) )
+                            returnUrl = FormsAuthentication.DefaultUrl;
+                    }
+
+                    Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
                 }
                 else
-                {
                     DisplayError( "Invalid Login Information" );
-                }
             }
         }
 
@@ -94,6 +89,17 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
+            Response.Redirect( "~/NewAccount", true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( "~", true );
         }
 
         /// <summary>
@@ -154,11 +160,11 @@ namespace RockWeb.Blocks.Security
 
                     FacebookClient fbClient = new FacebookClient( accessToken );
                     dynamic me = fbClient.Get( "me" );
-                    string facebookId = me.id.ToString();
+                    string facebookId = "FACEBOOK_" + me.id.ToString();
 
                     // query for matching id in the user table 
                     UserService userService = new UserService();
-                    var user = userService.Queryable().FirstOrDefault( u => u.Username == facebookId && u.AuthenticationType == 2 ); // TODO: Make this an enum
+                    var user = userService.GetByUserName( facebookId ); 
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -173,25 +179,10 @@ namespace RockWeb.Blocks.Security
                             string email = me.email.ToString();
 
                             var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && (u.FirstName == firstName || u.NickName == firstName) && u.Email == email );
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && (u.GivenName == firstName || u.NickName == firstName) && u.Email == email );
 
                             if ( person != null )
                             {
-                                // found exact match create a Facebook login for the user
-                                user = new Rock.CMS.User();
-                                user.PersonId = person.Id;
-                                user.Email = email;
-                                user.AuthenticationType = 2; // TODO: Make this a enum;
-                                user.Password = "fb";
-                                user.Username = facebookId;
-                                user.ApplicationName = "RockChMS";
-                                user.CreationDate = DateTime.Now;
-                                user.LastActivityDate = DateTime.Now;
-                                user.LastLoginDate = DateTime.Now;
-
-                                userService.Add( user, person.Id );
-                                userService.Save( user, person.Id );
-
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
                                 DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
 
@@ -204,39 +195,47 @@ namespace RockWeb.Blocks.Security
                             }
                             else
                             {
-                                // exact person match wasn't found
-                                // TODO: figure out what to do next the plan is:
-                                //         + Look for records with matching emails as the one from Facebook and allow the user to pick the correct person
-                                //         + If no match email is found (or the user states none of the provided ones is him) then allow then to register
-                                //           Registration form should have facebook fields pre-populated.
+                                person = new Person();
+                                person.GivenName = me.first_name.ToString();
+                                person.LastName = me.last_name.ToString();
+                                person.Email = me.email.ToString();
 
-                                return;
+                                if (me.gender.ToString() == "male")
+                                    person.Gender = Gender.Male;
+                                if (me.gender.ToString() == "female")
+                                    person.Gender = Gender.Female;
+
+                                person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
+
+                                personService.Add( person, null );
+                                personService.Save( person, null );
                             }
+
+                            user = userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
                         }
-                        catch //( Exception ex )
+                        catch ( Exception ex )
                         {
+                            string msg = ex.Message;
                             // TODO: probably should report something...
                         }
 
                         // TODO: Show label indicating inability to find user corresponding to facebook id
                     }
-                    else
-                    {
-                        // update user record noting the login datetime
-                        user.LastLoginDate = DateTime.Now;
-                        user.LastActivityDate = DateTime.Now;
-                        userService.Save( user, user.PersonId );
-                    }
 
-                    FormsAuthentication.SetAuthCookie( user.Username, false );
+                    // update user record noting the login datetime
+                    user.LastLoginDate = DateTime.Now;
+                    user.LastActivityDate = DateTime.Now;
+                    userService.Save( user, user.PersonId );
+
+                    FormsAuthentication.SetAuthCookie( user.UserName, false );
 
                     if ( state != null )
-                    {
                         Response.Redirect( state );
-                    }
+
                 }
-                catch //( FacebookOAuthException oae )
+                catch ( FacebookOAuthException oae )
                 {
+                    string msg = oae.Message;
                     // TODO: Add error handeling
                     // Error validating verification code. (usually from wrong return url very picky with formatting)
                     // Error validating client secret.

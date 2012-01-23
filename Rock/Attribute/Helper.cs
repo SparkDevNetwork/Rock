@@ -70,6 +70,7 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds or Updates a <see cref="Rock.Core.Attribute"/> item for the attribute.
         /// </summary>
+        /// <param name="property">The property.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>

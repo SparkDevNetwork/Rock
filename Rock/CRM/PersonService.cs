@@ -33,5 +33,15 @@ namespace Rock.CRM
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
+		/// <summary>
+		/// Gets People by Email
+		/// </summary>
+		/// <param name="email">Email.</param>
+		/// <returns>An enumerable list of Person objects.</returns>
+	    public IEnumerable<Rock.CRM.Person> GetByEmail( string email )
+        {
+            return Repository.Find( t => ( t.Email == email || ( email == null && t.Email == null ) ) );
+        }
+		
     }
 }

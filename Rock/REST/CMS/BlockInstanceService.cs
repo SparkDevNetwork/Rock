@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.BlockInstance Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
 					Rock.CMS.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
-					if ( BlockInstance.Authorized( "View", user.Username ) )
+					if ( BlockInstance.Authorized( "View", user.UserName ) )
 						return BlockInstance.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlockInstance( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
 					
 					if (existingBlockInstance.IsValid)
-						BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+						BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
 					Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
-					if ( existingBlockInstance.Authorized( "Edit", user.Username ) )
+					if ( existingBlockInstance.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlockInstance( Rock.CMS.DTO.BlockInstance BlockInstance )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
 				Rock.CMS.BlockInstance existingBlockInstance = new Rock.CMS.BlockInstance();
-				BlockInstanceService.Add( existingBlockInstance, currentUser.PersonId() );
+				BlockInstanceService.Add( existingBlockInstance, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlockInstance).CurrentValues.SetValues(BlockInstance);
 
 				if (existingBlockInstance.IsValid)
-					BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+					BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlockInstance.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlockInstance( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
 				if ( BlockInstance.Authorized( "Edit", currentUser ) )
 				{
-					BlockInstanceService.Delete( BlockInstance, currentUser.PersonId() );
-					BlockInstanceService.Save( BlockInstance, currentUser.PersonId() );
+					BlockInstanceService.Delete( BlockInstance, currentUser.PersonId );
+					BlockInstanceService.Save( BlockInstance, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
 					Rock.CMS.BlockInstance BlockInstance = BlockInstanceService.Get( int.Parse( id ) );
-					if ( BlockInstance.Authorized( "Edit", user.Username ) )
+					if ( BlockInstance.Authorized( "Edit", user.UserName ) )
 					{
 						BlockInstanceService.Delete( BlockInstance, user.PersonId );
 						BlockInstanceService.Save( BlockInstance, user.PersonId );

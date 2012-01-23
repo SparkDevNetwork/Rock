@@ -32,7 +32,7 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.AttributeQualifier Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "View", user.Username ) )
+					if ( AttributeQualifier.Authorized( "View", user.UserName ) )
 						return AttributeQualifier.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAttributeQualifier( string id, Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 					
 					if (existingAttributeQualifier.IsValid)
-						AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+						AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( existingAttributeQualifier.Authorized( "Edit", user.Username ) )
+					if ( existingAttributeQualifier.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAttributeQualifier( Rock.Core.DTO.AttributeQualifier AttributeQualifier )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 				Rock.Core.AttributeQualifier existingAttributeQualifier = new Rock.Core.AttributeQualifier();
-				AttributeQualifierService.Add( existingAttributeQualifier, currentUser.PersonId() );
+				AttributeQualifierService.Add( existingAttributeQualifier, currentUser.PersonId );
 				uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 
 				if (existingAttributeQualifier.IsValid)
-					AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId() );
+					AttributeQualifierService.Save( existingAttributeQualifier, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAttributeQualifier.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAttributeQualifier( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Core
 				Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
 				if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
 				{
-					AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId() );
-					AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId() );
+					AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId );
+					AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "Edit", user.Username ) )
+					if ( AttributeQualifier.Authorized( "Edit", user.UserName ) )
 					{
 						AttributeQualifierService.Delete( AttributeQualifier, user.PersonId );
 						AttributeQualifierService.Save( AttributeQualifier, user.PersonId );

@@ -11,10 +11,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.Web.Security;
 
 using Rock.CRM;
 using Rock.Web.UI.Controls;
@@ -77,9 +77,9 @@ namespace Rock.Web.UI
         {
             get
             {
-                MembershipUser user = CurrentUser;
+                Rock.CMS.User user = CurrentUser;
                 if ( user != null )
-                    return user.PersonId();
+                    return user.PersonId;
                 else
                     return null;
             }
@@ -88,17 +88,17 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in user.  Returns null if there is not a user logged in
         /// </summary>
-        public MembershipUser CurrentUser
+        public Rock.CMS.User CurrentUser
         {
             get
             {
                 if ( Context.Items.Contains( "CurrentUser" ) )
                 {
-                    return ( MembershipUser )Context.Items["CurrentUser"];
+                    return ( Rock.CMS.User )Context.Items["CurrentUser"];
                 }
                 else
                 {
-                    MembershipUser user = Membership.GetUser();
+                    Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
                     Context.Items.Add( "CurrentUser", user );
                     return user;
                 }
@@ -301,14 +301,14 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            MembershipUser user = CurrentUser;
+            Rock.CMS.User user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
                 UserName = user.UserName;
-                int? personId = user.PersonId();
+                int? personId = user.PersonId;
 
                 if ( personId.HasValue)
                 {
@@ -346,7 +346,7 @@ namespace Rock.Web.UI
                 // the user hasn't logged in yet, redirect to the login page
                 if ( !PageInstance.Authorized( "View", user ) )
                 {
-                    if ( user == null || !user.IsApproved )
+                    if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
                 }
                 else
@@ -463,8 +463,12 @@ namespace Rock.Web.UI
                                         AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
                                 }
 
+                                HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
+                                blockContent.Attributes.Add( "class", "block-content" );
+                                blockWrapper.Controls.Add( blockContent );
+
                                 // Add the block
-                                blockWrapper.Controls.Add( control );
+                                blockContent.Controls.Add( control );
                             }
                         }
                     }
@@ -702,14 +706,24 @@ namespace Rock.Web.UI
                 // Zone content configuration widget
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "style", "display: none;" );
                 zoneConfig.Attributes.Add( "class", "zone-configuration" );
 
-                zoneConfig.Controls.Add( new LiteralControl( string.Format( "<p>{0}</p> ", zoneControl.Value.Key ) ) );
+                HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
+                zoneConfigLink.Attributes.Add( "class", "icon-button zoneinstance-config" );
+                zoneConfigLink.Attributes.Add( "href", "#" );
+                zoneConfig.Controls.Add( zoneConfigLink );
+
+                HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
+                zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
+                zoneConfig.Controls.Add( zoneConfigBar );
+
+                HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
+                zoneConfigTitle.InnerText = zoneControl.Value.Key;
+                zoneConfigBar.Controls.Add( zoneConfigTitle );
 
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                zoneConfig.Controls.Add( aBlockConfig );
+                zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "height", "400px" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
@@ -719,10 +733,13 @@ namespace Rock.Web.UI
                 aBlockConfig.Attributes.Add( "secondary-button", "Done" );
                 aBlockConfig.InnerText = "Blocks";
 
-                parent.Controls.Remove( control );
-                zoneWrapper.Controls.Add( control );
-            }
+                HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
+                zoneContent.Attributes.Add( "class", "zone-content" );
+                zoneWrapper.Controls.Add( zoneContent );
 
+                parent.Controls.Remove( control );
+                zoneContent.Controls.Add( control );
+            }
         }
 
         // Adds the configuration html elements for editing a block
@@ -735,13 +752,28 @@ namespace Rock.Web.UI
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
                 blockConfig.ClientIDMode = ClientIDMode.AutoID;
                 blockConfig.Attributes.Add( "class", "block-configuration" );
-                blockConfig.Attributes.Add( "style", "display: none" );
                 blockWrapper.Controls.Add( blockConfig );
+
+                HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
+                blockConfigLink.Attributes.Add( "class", "icon-button blockinstance-config" );
+                blockConfigLink.Attributes.Add( "href", "#" );
+                blockConfig.Controls.Add( blockConfigLink );
+
+                HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
+                blockConfig.Controls.Add( blockConfigBar );
+
+                HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
+                if (string.IsNullOrWhiteSpace(blockInstance.Name))
+                    blockConfigTitle.InnerText = blockInstance.Block.Name;
+                else
+                    blockConfigTitle.InnerText = blockInstance.Name;
+                blockConfigBar.Controls.Add( blockConfigTitle );
 
                 foreach ( Control configControl in block.GetConfigurationControls( canConfig, canEdit ) )
                 {
                     configControl.ClientIDMode = ClientIDMode.AutoID;
-                    blockConfig.Controls.Add( configControl );
+                    blockConfigBar.Controls.Add( configControl );
                 }
             }
         }
@@ -1163,11 +1195,14 @@ namespace Rock.Web.UI
                 }
 
                 // add remaining parms to the query string
-                string delimitor = "?";
-                foreach ( KeyValuePair<string,string> parm in parms ) 
+                if ( parms != null )
                 {
-                    routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
-                    delimitor = "&";
+                    string delimitor = "?";
+                    foreach ( KeyValuePair<string, string> parm in parms )
+                    {
+                        routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        delimitor = "&";
+                    }
                 }
                 
                 return routeUrl;
