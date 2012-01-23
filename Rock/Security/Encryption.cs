@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 
 namespace Rock.Security
 {
+    /// <summary>
+    /// Encryption Helper class
+    /// </summary>
     public static class Encryption
     {
         /// <summary>

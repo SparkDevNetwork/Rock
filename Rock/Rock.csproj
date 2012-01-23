@@ -95,6 +95,7 @@
     <Compile Include="CMS\BlogService.cs" />
     <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\BlogTagService.cs" />
+    <Compile Include="CMS\UserService.partial.cs" />
     <Compile Include="CMS\SiteDomainService.partial.cs" />
     <Compile Include="CMS\EntityAuthRepository.cs" />
     <Compile Include="CMS\EntityBlockInstanceRepository.cs" />
@@ -222,6 +223,7 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
+    <Compile Include="Web\Cache\OrganizationAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
@@ -239,9 +241,6 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
-    <Compile Include="Security\User.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SystemGuids.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs">
       <SubType>Code</SubType>

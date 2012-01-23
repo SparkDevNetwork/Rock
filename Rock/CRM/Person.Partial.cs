@@ -15,6 +15,14 @@ namespace Rock.CRM
     //[MetadataType(typeof(CommentPerson))]
     public partial class Person
     {
+        public string FirstName
+        {
+            get
+            {
+                return NickName ?? GivenName;
+            }
+        }
+
         /// <summary>
         /// Gets the full name.
         /// </summary>
@@ -68,6 +76,9 @@ namespace Rock.CRM
             }
         }
 
+        /// <summary>
+        /// Gets the encrypted ID.
+        /// </summary>
         public string EncryptedID
         {
             get

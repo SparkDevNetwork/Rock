@@ -45,12 +45,12 @@ namespace Rock.CRM.DTO
 		public bool System { get; set; }
 
 		/// <summary>
-		/// Gets or sets the First Name.
+		/// Gets or sets the Given Name.
 		/// </summary>
 		/// <value>
-		/// First Name.
+		/// Given Name.
 		/// </value>
-		public string FirstName { get; set; }
+		public string GivenName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Nick Name.

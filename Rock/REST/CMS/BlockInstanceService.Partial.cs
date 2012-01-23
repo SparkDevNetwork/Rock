@@ -24,7 +24,7 @@ namespace Rock.REST.CMS
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}" )]
         public void Move( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -48,7 +48,7 @@ namespace Rock.REST.CMS
 
                     uow.objectContext.Entry( existingBlockInstance ).CurrentValues.SetValues( BlockInstance );
                     BlockInstanceService.Move( existingBlockInstance );
-                    BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId() );
+                    BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId );
                 }
                 else
                     throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -79,7 +79,7 @@ namespace Rock.REST.CMS
                     Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
                     Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
 
-                    if ( existingBlockInstance.Authorized( "Edit", user.Username ) )
+                    if ( existingBlockInstance.Authorized( "Edit", user.UserName ) )
                     {
                         // If the block was moved from or to the layout section, then all the pages
                         // that use that layout need to be flushed from cache

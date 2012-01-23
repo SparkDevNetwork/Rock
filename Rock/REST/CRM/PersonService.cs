@@ -32,7 +32,7 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.Person Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person Person = PersonService.Get( int.Parse( id ) );
-					if ( Person.Authorized( "View", user.Username ) )
+					if ( Person.Authorized( "View", user.UserName ) )
 						return Person.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Person", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePerson( string id, Rock.CRM.DTO.Person Person )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
 					
 					if (existingPerson.IsValid)
-						PersonService.Save( existingPerson, currentUser.PersonId() );
+						PersonService.Save( existingPerson, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person existingPerson = PersonService.Get( int.Parse( id ) );
-					if ( existingPerson.Authorized( "Edit", user.Username ) )
+					if ( existingPerson.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePerson( Rock.CRM.DTO.Person Person )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 				Rock.CRM.Person existingPerson = new Rock.CRM.Person();
-				PersonService.Add( existingPerson, currentUser.PersonId() );
+				PersonService.Add( existingPerson, currentUser.PersonId );
 				uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
 
 				if (existingPerson.IsValid)
-					PersonService.Save( existingPerson, currentUser.PersonId() );
+					PersonService.Save( existingPerson, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingPerson.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePerson( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CRM
 				Rock.CRM.Person Person = PersonService.Get( int.Parse( id ) );
 				if ( Person.Authorized( "Edit", currentUser ) )
 				{
-					PersonService.Delete( Person, currentUser.PersonId() );
-					PersonService.Save( Person, currentUser.PersonId() );
+					PersonService.Delete( Person, currentUser.PersonId );
+					PersonService.Save( Person, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Person", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person Person = PersonService.Get( int.Parse( id ) );
-					if ( Person.Authorized( "Edit", user.Username ) )
+					if ( Person.Authorized( "Edit", user.UserName ) )
 					{
 						PersonService.Delete( Person, user.PersonId );
 						PersonService.Save( Person, user.PersonId );

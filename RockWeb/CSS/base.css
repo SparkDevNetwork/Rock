@@ -240,7 +240,7 @@ img { -ms-interpolation-mode: bicubic; }
  Headings, body text, lists, code, and more for a versatile and durable typography system
  ---------------------------------------------------------------------------------------- */
 p {
-  font-size: 13px;
+  --font-size: 13px;
   font-weight: normal;
   line-height: 18px;
   margin-bottom: 9px;
@@ -1932,6 +1932,7 @@ footer {
   -ms-transition: 0.1s linear all;
   -o-transition: 0.1s linear all;
   transition: 0.1s linear all;
+  margin-right: 8px;
 }
 .btn:hover 
 {
@@ -2519,6 +2520,13 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
 }
 
 /* Rock Specific Base CSS */
+
+dd input,
+dd select,
+dd textarea 
+{
+     margin-right: 8px;  
+}
 
 /* filter search */
 div.filter-search {

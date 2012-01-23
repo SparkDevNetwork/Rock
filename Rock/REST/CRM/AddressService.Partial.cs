@@ -20,7 +20,7 @@ namespace Rock.REST.CRM
         [WebInvoke( Method = "PUT", UriTemplate = "Geocode" )]
         public Rock.CRM.DTO.Address Geocode( Rock.CRM.DTO.Address address )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -29,7 +29,7 @@ namespace Rock.REST.CRM
                 if ( address != null )
                 {
                     Rock.CRM.AddressService addressService = new Rock.CRM.AddressService();
-                    Rock.CRM.Address addressModel = addressService.Geocode( address, currentUser.PersonId() );
+                    Rock.CRM.Address addressModel = addressService.Geocode( address, currentUser.PersonId );
                     return addressModel.DataTransferObject;
                 }
                 else
@@ -75,7 +75,7 @@ namespace Rock.REST.CRM
         [WebInvoke( Method = "PUT", UriTemplate = "Standardize" )]
         public Rock.CRM.DTO.Address Standardize( Rock.CRM.DTO.Address address )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -84,7 +84,7 @@ namespace Rock.REST.CRM
                 if ( address != null )
                 {
                     Rock.CRM.AddressService addressService = new Rock.CRM.AddressService();
-                    Rock.CRM.Address addressModel = addressService.Standardize( address, currentUser.PersonId() );
+                    Rock.CRM.Address addressModel = addressService.Standardize( address, currentUser.PersonId );
                     return addressModel.DataTransferObject;
                 }
                 else

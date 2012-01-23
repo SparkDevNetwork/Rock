@@ -35,6 +35,11 @@ namespace Rock.CRM
                         p.FirstName.StartsWith( firstName.ToLower() ) ) );
         }
 
+        /// <summary>
+        /// Gets the by encrypted ID.
+        /// </summary>
+        /// <param name="encryptedID">The encrypted ID.</param>
+        /// <returns></returns>
         public Person GetByEncryptedID( string encryptedID )
         {
             string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];

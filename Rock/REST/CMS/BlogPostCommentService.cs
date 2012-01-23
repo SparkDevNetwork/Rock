@@ -32,7 +32,7 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.BlogPostComment Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( BlogPostComment.Authorized( "View", user.Username ) )
+					if ( BlogPostComment.Authorized( "View", user.UserName ) )
 						return BlogPostComment.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogPostComment( string id, Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 					
 					if (existingBlogPostComment.IsValid)
-						BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+						BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( existingBlogPostComment.Authorized( "Edit", user.Username ) )
+					if ( existingBlogPostComment.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogPostComment( Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 				Rock.CMS.BlogPostComment existingBlogPostComment = new Rock.CMS.BlogPostComment();
-				BlogPostCommentService.Add( existingBlogPostComment, currentUser.PersonId() );
+				BlogPostCommentService.Add( existingBlogPostComment, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 
 				if (existingBlogPostComment.IsValid)
-					BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId() );
+					BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogPostComment( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CMS
 				Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 				if ( BlogPostComment.Authorized( "Edit", currentUser ) )
 				{
-					BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId() );
-					BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId() );
+					BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId );
+					BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( BlogPostComment.Authorized( "Edit", user.Username ) )
+					if ( BlogPostComment.Authorized( "Edit", user.UserName ) )
 					{
 						BlogPostCommentService.Delete( BlogPostComment, user.PersonId );
 						BlogPostCommentService.Save( BlogPostComment, user.PersonId );

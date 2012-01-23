@@ -32,7 +32,7 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.Address Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-					if ( Address.Authorized( "View", user.Username ) )
+					if ( Address.Authorized( "View", user.UserName ) )
 						return Address.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Address", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAddress( string id, Rock.CRM.DTO.Address Address )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
 					if (existingAddress.IsValid)
-						AddressService.Save( existingAddress, currentUser.PersonId() );
+						AddressService.Save( existingAddress, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address existingAddress = AddressService.Get( int.Parse( id ) );
-					if ( existingAddress.Authorized( "Edit", user.Username ) )
+					if ( existingAddress.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAddress( Rock.CRM.DTO.Address Address )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 				Rock.CRM.Address existingAddress = new Rock.CRM.Address();
-				AddressService.Add( existingAddress, currentUser.PersonId() );
+				AddressService.Add( existingAddress, currentUser.PersonId );
 				uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 
 				if (existingAddress.IsValid)
-					AddressService.Save( existingAddress, currentUser.PersonId() );
+					AddressService.Save( existingAddress, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAddress( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.CRM
 				Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
 				if ( Address.Authorized( "Edit", currentUser ) )
 				{
-					AddressService.Delete( Address, currentUser.PersonId() );
-					AddressService.Save( Address, currentUser.PersonId() );
+					AddressService.Delete( Address, currentUser.PersonId );
+					AddressService.Save( Address, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Address", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-					if ( Address.Authorized( "Edit", user.Username ) )
+					if ( Address.Authorized( "Edit", user.UserName ) )
 					{
 						AddressService.Delete( Address, user.PersonId );
 						AddressService.Save( Address, user.PersonId );

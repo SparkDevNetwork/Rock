@@ -32,7 +32,7 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.DefinedType Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( DefinedType.Authorized( "View", user.Username ) )
+					if ( DefinedType.Authorized( "View", user.UserName ) )
 						return DefinedType.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateDefinedType( string id, Rock.Core.DTO.DefinedType DefinedType )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 					
 					if (existingDefinedType.IsValid)
-						DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+						DefinedTypeService.Save( existingDefinedType, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( existingDefinedType.Authorized( "Edit", user.Username ) )
+					if ( existingDefinedType.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateDefinedType( Rock.Core.DTO.DefinedType DefinedType )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 				Rock.Core.DefinedType existingDefinedType = new Rock.Core.DefinedType();
-				DefinedTypeService.Add( existingDefinedType, currentUser.PersonId() );
+				DefinedTypeService.Add( existingDefinedType, currentUser.PersonId );
 				uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 
 				if (existingDefinedType.IsValid)
-					DefinedTypeService.Save( existingDefinedType, currentUser.PersonId() );
+					DefinedTypeService.Save( existingDefinedType, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteDefinedType( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Core
 				Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
 				if ( DefinedType.Authorized( "Edit", currentUser ) )
 				{
-					DefinedTypeService.Delete( DefinedType, currentUser.PersonId() );
-					DefinedTypeService.Save( DefinedType, currentUser.PersonId() );
+					DefinedTypeService.Delete( DefinedType, currentUser.PersonId );
+					DefinedTypeService.Save( DefinedType, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( DefinedType.Authorized( "Edit", user.Username ) )
+					if ( DefinedType.Authorized( "Edit", user.UserName ) )
 					{
 						DefinedTypeService.Delete( DefinedType, user.PersonId );
 						DefinedTypeService.Save( DefinedType, user.PersonId );

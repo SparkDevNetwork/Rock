@@ -32,7 +32,7 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.FieldType Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( FieldType.Authorized( "View", user.Username ) )
+					if ( FieldType.Authorized( "View", user.UserName ) )
 						return FieldType.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateFieldType( string id, Rock.Core.DTO.FieldType FieldType )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
 					
 					if (existingFieldType.IsValid)
-						FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+						FieldTypeService.Save( existingFieldType, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType existingFieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( existingFieldType.Authorized( "Edit", user.Username ) )
+					if ( existingFieldType.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateFieldType( Rock.Core.DTO.FieldType FieldType )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 				Rock.Core.FieldType existingFieldType = new Rock.Core.FieldType();
-				FieldTypeService.Add( existingFieldType, currentUser.PersonId() );
+				FieldTypeService.Add( existingFieldType, currentUser.PersonId );
 				uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
 
 				if (existingFieldType.IsValid)
-					FieldTypeService.Save( existingFieldType, currentUser.PersonId() );
+					FieldTypeService.Save( existingFieldType, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingFieldType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteFieldType( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Core
 				Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
 				if ( FieldType.Authorized( "Edit", currentUser ) )
 				{
-					FieldTypeService.Delete( FieldType, currentUser.PersonId() );
-					FieldTypeService.Save( FieldType, currentUser.PersonId() );
+					FieldTypeService.Delete( FieldType, currentUser.PersonId );
+					FieldTypeService.Save( FieldType, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( FieldType.Authorized( "Edit", user.Username ) )
+					if ( FieldType.Authorized( "Edit", user.UserName ) )
 					{
 						FieldTypeService.Delete( FieldType, user.PersonId );
 						FieldTypeService.Save( FieldType, user.PersonId );

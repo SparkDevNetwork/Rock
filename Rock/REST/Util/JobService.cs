@@ -32,7 +32,7 @@ namespace Rock.REST.Util
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Util.DTO.Job Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -64,7 +64,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-					if ( Job.Authorized( "View", user.Username ) )
+					if ( Job.Authorized( "View", user.UserName ) )
 						return Job.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Job", System.Net.HttpStatusCode.Forbidden );
@@ -80,7 +80,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateJob( string id, Rock.Util.DTO.Job Job )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -94,7 +94,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
 					if (existingJob.IsValid)
-						JobService.Save( existingJob, currentUser.PersonId() );
+						JobService.Save( existingJob, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -119,7 +119,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job existingJob = JobService.Get( int.Parse( id ) );
-					if ( existingJob.Authorized( "Edit", user.Username ) )
+					if ( existingJob.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
@@ -142,7 +142,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateJob( Rock.Util.DTO.Job Job )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -151,11 +151,11 @@ namespace Rock.REST.Util
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Util.JobService JobService = new Rock.Util.JobService();
 				Rock.Util.Job existingJob = new Rock.Util.Job();
-				JobService.Add( existingJob, currentUser.PersonId() );
+				JobService.Add( existingJob, currentUser.PersonId );
 				uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 
 				if (existingJob.IsValid)
-					JobService.Save( existingJob, currentUser.PersonId() );
+					JobService.Save( existingJob, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -196,7 +196,7 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteJob( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -207,8 +207,8 @@ namespace Rock.REST.Util
 				Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
 				if ( Job.Authorized( "Edit", currentUser ) )
 				{
-					JobService.Delete( Job, currentUser.PersonId() );
-					JobService.Save( Job, currentUser.PersonId() );
+					JobService.Delete( Job, currentUser.PersonId );
+					JobService.Save( Job, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Job", System.Net.HttpStatusCode.Forbidden );
@@ -231,7 +231,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-					if ( Job.Authorized( "Edit", user.Username ) )
+					if ( Job.Authorized( "Edit", user.UserName ) )
 					{
 						JobService.Delete( Job, user.PersonId );
 						JobService.Save( Job, user.PersonId );

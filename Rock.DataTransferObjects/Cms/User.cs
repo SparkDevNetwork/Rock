@@ -37,42 +37,18 @@ namespace Rock.CMS.DTO
         public Guid Guid { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Username.
+		/// Gets or sets the User Name.
 		/// </summary>
 		/// <value>
-		/// Username.
+		/// User Name.
 		/// </value>
-		public string Username { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Application Name.
-		/// </summary>
-		/// <value>
-		/// Application Name.
-		/// </value>
-		public string ApplicationName { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Email.
-		/// </summary>
-		/// <value>
-		/// Email.
-		/// </value>
-		public string Email { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Comment.
-		/// </summary>
-		/// <value>
-		/// Comment.
-		/// </value>
-		public string Comment { get; set; }
+		public string UserName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Authentication Type.
 		/// </summary>
 		/// <value>
-		/// Authentication Type.
+		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
 		/// </value>
 		public int AuthenticationType { get; set; }
 
@@ -85,28 +61,12 @@ namespace Rock.CMS.DTO
 		public string Password { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Password Question.
+		/// Gets or sets the Is Confirmed.
 		/// </summary>
 		/// <value>
-		/// Password Question.
+		/// Is Confirmed.
 		/// </value>
-		public string PasswordQuestion { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Password Answer.
-		/// </summary>
-		/// <value>
-		/// Password Answer.
-		/// </value>
-		public string PasswordAnswer { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Is Approved.
-		/// </summary>
-		/// <value>
-		/// Is Approved.
-		/// </value>
-		public bool? IsApproved { get; set; }
+		public bool? IsConfirmed { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
@@ -181,28 +141,12 @@ namespace Rock.CMS.DTO
 		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Failed Password Answer Attempt Count.
+		/// Gets or sets the Api Key.
 		/// </summary>
 		/// <value>
-		/// Failed Password Answer Attempt Count.
+		/// Api Key.
 		/// </value>
-		public int? FailedPasswordAnswerAttemptCount { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Failed Password Answer Attempt Window Start.
-		/// </summary>
-		/// <value>
-		/// Failed Password Answer Attempt Window Start.
-		/// </value>
-		public DateTime? FailedPasswordAnswerAttemptWindowStart { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Is Subscriber.
-		/// </summary>
-		/// <value>
-		/// Is Subscriber.
-		/// </value>
-		public bool? IsSubscriber { get; set; }
+		public string ApiKey { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -243,14 +187,6 @@ namespace Rock.CMS.DTO
 		/// Modified By Person Id.
 		/// </value>
 		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Api Key.
-		/// </summary>
-		/// <value>
-		/// Api Key.
-		/// </value>
-		public string ApiKey { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserDTO"/> class.

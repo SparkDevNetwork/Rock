@@ -28,6 +28,13 @@ namespace Rock
             return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
+        /// <summary>
+        /// Replaces every instance of oldValue (regardless of case) with the newValue.
+        /// </summary>
+        /// <param name="str">The source string.</param>
+        /// <param name="oldValue">The value to replace.</param>
+        /// <param name="newValue">The value to insert.</param>
+        /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
             int count, position0, position1;
@@ -50,23 +57,6 @@ namespace Rock
             for ( int i = position0; i < str.Length; ++i )
                 chars[count++] = str[i];
             return new string( chars, 0, count );
-        }
-
-        #endregion
-
-        #region MembershipUser Extensions
-
-        /// <summary>
-        /// Returns the PersonId associated with the <see cref="System.Web.Security.MembershipUser"/> object
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public static int? PersonId( this System.Web.Security.MembershipUser user )
-        {
-            if ( user.ProviderUserKey != null )
-                return ( int )user.ProviderUserKey;
-            else
-                return null;
         }
 
         #endregion

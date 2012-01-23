@@ -824,7 +824,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.<#= Namespace #>.DTO.<#= Entity #> Get( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -856,7 +856,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( <#= Entity #>.Authorized( "View", user.Username ) )
+					if ( <#= Entity #>.Authorized( "View", user.UserName ) )
 						return <#= Entity #>.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
@@ -872,7 +872,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void Update<#= Entity #>( string id, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -886,7 +886,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
 					
 					if (existing<#= Entity #>.IsValid)
-						<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+						<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -911,7 +911,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( existing<#= Entity #>.Authorized( "Edit", user.Username ) )
+					if ( existing<#= Entity #>.Authorized( "Edit", user.UserName ) )
 					{
 						uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
 					
@@ -934,7 +934,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void Create<#= Entity #>( Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -943,11 +943,11 @@ namespace Rock.REST<#= projectNamespace #>
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 				<#= QualifiedEntity #> existing<#= Entity #> = new <#= QualifiedEntity #>();
-				<#= Entity #>Service.Add( existing<#= Entity #>, currentUser.PersonId() );
+				<#= Entity #>Service.Add( existing<#= Entity #>, currentUser.PersonId );
 				uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
 
 				if (existing<#= Entity #>.IsValid)
-					<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId() );
+					<#= Entity #>Service.Save( existing<#= Entity #>, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existing<#= Entity #>.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -988,7 +988,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void Delete<#= Entity #>( string id )
         {
-            var currentUser = System.Web.Security.Membership.GetUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -999,8 +999,8 @@ namespace Rock.REST<#= projectNamespace #>
 				<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
 				if ( <#= Entity #>.Authorized( "Edit", currentUser ) )
 				{
-					<#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId() );
-					<#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId() );
+					<#= Entity #>Service.Delete( <#= Entity #>, currentUser.PersonId );
+					<#= Entity #>Service.Save( <#= Entity #>, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
@@ -1023,7 +1023,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( <#= Entity #>.Authorized( "Edit", user.Username ) )
+					if ( <#= Entity #>.Authorized( "Edit", user.UserName ) )
 					{
 						<#= Entity #>Service.Delete( <#= Entity #>, user.PersonId );
 						<#= Entity #>Service.Save( <#= Entity #>, user.PersonId );

@@ -94,7 +94,7 @@ namespace Rock.Security
 
                     foreach ( Rock.Groups.Member member in groupModel.Members )
                         foreach ( Rock.CMS.User userModel in member.Person.Users )
-                            role.Users.Add( userModel.Username );
+                            role.Users.Add( userModel.UserName );
 
                     cache.Set( cacheKey, role, new CacheItemPolicy() );
 

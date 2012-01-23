@@ -34,28 +34,6 @@ namespace Rock.CMS
         }
 		
 		/// <summary>
-		/// Gets User by Application Name And Username
-		/// </summary>
-		/// <param name="applicationName">Application Name.</param>
-		/// <param name="username">Username.</param>
-		/// <returns>User object.</returns>
-	    public Rock.CMS.User GetByApplicationNameAndUsername( string applicationName, string username )
-        {
-            return Repository.FirstOrDefault( t => t.ApplicationName == applicationName && t.Username == username );
-        }
-		
-		/// <summary>
-		/// Gets Users by Application Name And Email
-		/// </summary>
-		/// <param name="applicationName">Application Name.</param>
-		/// <param name="email">Email.</param>
-		/// <returns>An enumerable list of User objects.</returns>
-	    public IEnumerable<Rock.CMS.User> GetByApplicationNameAndEmail( string applicationName, string email )
-        {
-            return Repository.Find( t => t.ApplicationName == applicationName && t.Email == email );
-        }
-		
-		/// <summary>
 		/// Gets User by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
@@ -73,6 +51,16 @@ namespace Rock.CMS
 	    public IEnumerable<Rock.CMS.User> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
+        }
+		
+		/// <summary>
+		/// Gets User by User Name
+		/// </summary>
+		/// <param name="userName">User Name.</param>
+		/// <returns>User object.</returns>
+	    public Rock.CMS.User GetByUserName( string userName )
+        {
+            return Repository.FirstOrDefault( t => t.UserName == userName );
         }
 		
     }
