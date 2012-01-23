@@ -5,13 +5,12 @@
 //
 
 using System;
-using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.Security;
 
 using Rock.Communication;
 using Rock.CRM;
@@ -22,19 +21,50 @@ namespace RockWeb.Blocks.Security
     [Rock.Attribute.Property( 0, "Check for Duplicates", "Duplicates", "", 
         "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
         false, "true", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 1, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
+    [Rock.Attribute.Property( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
         "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
-    [Rock.Attribute.Property( 2, "Existing Account", "ExistingAccountCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,
         "{0}, you already have an existing account.  Would you like us to email you the username?" )]
-    [Rock.Attribute.Property( 3, "Sent Login", "SentLoginCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,
         "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
-    [Rock.Attribute.Property( 4, "Confirm", "ConfirmCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 5, "Confirm", "ConfirmCaption", "Captions", "", false,
         "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
-    [Rock.Attribute.Property( 5, "Success", "SuccessCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 6, "Success", "SuccessCaption", "Captions", "", false,
         "{0}, Your account has been created" )]
     public partial class NewAccount : Rock.Web.UI.Block
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
+
+        #region Properties
+
+        protected string Password
+        {
+            get
+            {
+                string password = ViewState["Password"] as string;
+                return password ?? "";
+            }
+            set
+            {
+                ViewState["Password"] = value;
+            }
+        }
+
+        protected string PasswordConfirm
+        {
+            get
+            {
+                string password = ViewState["PasswordConfirm"] as string;
+                return password ?? "";
+            }
+            set
+            {
+                ViewState["PasswordConfirm"] = value;
+            }
+        }
+
+        #endregion
 
         #region Overridden Page Methods
 
@@ -79,6 +109,16 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( tbPassword.Text == string.Empty && Password != string.Empty )
+                tbPassword.Text = Password;
+            if ( tbPasswordConfirm.Text == string.Empty && PasswordConfirm != string.Empty )
+                tbPasswordConfirm.Text = PasswordConfirm;
+        }
+
         #endregion
 
         #region Events
@@ -92,6 +132,9 @@ namespace RockWeb.Blocks.Security
 
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
+            Password = tbPassword.Text;
+            PasswordConfirm = tbPasswordConfirm.Text;
+
             if ( Page.IsValid )
             {
                 Rock.CMS.UserService userService = new Rock.CMS.UserService();
@@ -233,13 +276,22 @@ namespace RockWeb.Blocks.Security
                 if ( person != null )
                 {
                     var mergeObjects = new List<object>();
-                    mergeObjects.Add(person);
 
-                    var users = new List<object>();
+                    var values = new Dictionary<string, string>();
+                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeObjects.Add( values );
+
+                    Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
+                    var userObjects = new List<object>();
+
+                    mergeObjects.Add( person );
+
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
                         if (user.AuthenticationType != Rock.CMS.AuthenticationType.Facebook)
-                            users.Add(user);
-                    mergeObjects.Add(users);
+                            userObjects.Add( user );
+
+                    personObjects.Add( person, userObjects );
+                    mergeObjects.Add(personObjects);
 
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add(person.Email, mergeObjects);
@@ -266,16 +318,10 @@ namespace RockWeb.Blocks.Security
 
                 var mergeObjects = new List<object>();
                 mergeObjects.Add( person );
-
-                string identifier = string.Format( "ROCK|{0}|{1}", user.Guid.ToString(), user.UserName );
-
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
+                mergeObjects.Add( user );
 
                 var values = new Dictionary<string, string>();
-                string value = Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
-                values.Add( "ConfirmationCode", HttpUtility.UrlEncode( value ) );
+                values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
                 mergeObjects.Add( values );
 
                 var recipients = new Dictionary<string, List<object>>();
@@ -293,14 +339,8 @@ namespace RockWeb.Blocks.Security
 
         private void DisplaySuccess( Rock.CMS.User user )
         {
-            FormsAuthenticationTicket tkt;
-            string cookiestr;
-            HttpCookie ck;
-            tkt = new FormsAuthenticationTicket( 1, tbUserName.Text, DateTime.Now, DateTime.Now.AddMinutes( 30 ), false, "your custom data" );
-            cookiestr = FormsAuthentication.Encrypt( tkt );
-            ck = new HttpCookie( FormsAuthentication.FormsCookieName, cookiestr );
-            ck.Path = FormsAuthentication.FormsCookiePath;
-            Response.Cookies.Add( ck );
+            FormsAuthentication.SignOut();
+            FormsAuthentication.SetAuthCookie( tbUserName.Text, false );
 
             if ( user != null && user.PersonId.HasValue )
             {
@@ -312,6 +352,10 @@ namespace RockWeb.Blocks.Security
                     var mergeObjects = new List<object>();
                     mergeObjects.Add( person );
                     mergeObjects.Add( user );
+
+                    var values = new Dictionary<string, string>();
+                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeObjects.Add( values );
 
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add( person.Email, mergeObjects );
@@ -365,7 +409,7 @@ namespace RockWeb.Blocks.Security
             Rock.CRM.PersonService personService = new PersonService();
 
             Person person = new Person();
-            person.FirstName = tbFirstName.Text;
+            person.GivenName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             switch(ddlGender.SelectedValue)
@@ -399,7 +443,7 @@ namespace RockWeb.Blocks.Security
         private Rock.CMS.User CreateUser( Person person, bool confirmed )
         {
             Rock.CMS.UserService userService = new Rock.CMS.UserService();
-            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, tbPassword.Text, confirmed, CurrentPersonId );
+            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )

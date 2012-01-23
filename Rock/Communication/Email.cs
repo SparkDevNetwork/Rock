@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
 using System.Text;
@@ -169,15 +170,15 @@ namespace Rock.Communication
                 List<string> to = SplitRecipient( To );
                 to.Add( recipient.Key );
 
-                string subject = ResolveMergeCodes(Subject, recipient.Value);
-                string body = ResolveMergeCodes(Body, recipient.Value);
+                string subject = Resolve(Subject, recipient.Value);
+                string body = Resolve(Body, recipient.Value);
 
                 Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
 
         }
 
-        private string ResolveMergeCodes( string content, List<object> objects )
+        private string Resolve( string content, List<object> objects )
         {
             if (!content.Contains("{"))
                 return content;
@@ -217,7 +218,7 @@ namespace Rock.Communication
                 if ( itemList.Count > 0 )
                 {
                     Type type = itemList[0].GetType();
-                    if ( itemList[0] is Rock.Data.IModel )
+                    if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
                         type = type.BaseType;
 
                     string itemName = type.Name.ToLower();
@@ -241,10 +242,42 @@ namespace Rock.Communication
 
             }
 
+            else if ( item is Dictionary<object, List<object>> )
+            {
+                Dictionary<object, List<object>> itemList = item as Dictionary<object, List<object>>;
+                if ( itemList.Count > 0 )
+                {
+                    Type type = itemList.Keys.First().GetType();
+                    if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+                        type = type.BaseType;
+
+                    string itemName = type.Name.ToLower();
+
+                    string contentLc = content.ToLower();
+                    int start = contentLc.IndexOf( "{" + itemName + ":repeatbegin}" );
+                    int end = contentLc.IndexOf( "{" + itemName + ":repeatend}" );
+
+                    if ( start >= 0 && end > start )
+                    {
+                        int startOffset = start + itemName.Length + 14;
+                        string targetContent = content.Substring( startOffset, end - startOffset );
+
+                        StringBuilder sb = new StringBuilder();
+                        foreach ( KeyValuePair<object, List<object>> kvp in itemList )
+                        {
+                            string resolvedContent = ResolveMergeCodes( targetContent, kvp.Key );
+                            sb.Append( ResolveMergeCodes( resolvedContent, kvp.Value ) );
+                        }
+
+                        result = result.Substring( 0, start ) + sb.ToString() + result.Substring( end + itemName.Length + 12 );
+                    }
+                }
+            }
+
             else
             {
                 Type type = item.GetType();
-                if ( item is Rock.Data.IModel )
+                if ( type.Namespace == "System.Data.Entity.DynamicProxies")
                     type = type.BaseType;
 
                 string itemName = type.Name;

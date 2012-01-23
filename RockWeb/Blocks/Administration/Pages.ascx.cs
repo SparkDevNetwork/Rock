@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnCancel_Click( object sender, EventArgs e )
         {
+            rGrid.Visible = true;
             pnlDetails.Visible = false;
         }
 
@@ -192,6 +193,7 @@ namespace RockWeb.Blocks.Administration
 
             BindGrid();
 
+            rGrid.Visible = true; 
             pnlDetails.Visible = false;
         }
 
@@ -226,6 +228,9 @@ namespace RockWeb.Blocks.Administration
                 try { ddlLayout.Text = page.Layout; }
                 catch { }
                 tbPageName.Text = page.Name;
+
+                lEditAction.Text = "Edit";
+                btnSave.Text = "Save";
             }
             else
             {
@@ -241,8 +246,12 @@ namespace RockWeb.Blocks.Administration
                 catch { }
 
                 tbPageName.Text = string.Empty;
+
+                lEditAction.Text = "Add";
+                btnSave.Text = "Add";
             }
 
+            rGrid.Visible = false;
             pnlDetails.Visible = true;
         }
 

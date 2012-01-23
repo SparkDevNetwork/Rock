@@ -5,15 +5,9 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Configuration;
 using System.Security.Cryptography;
-using System.Security.Principal;
-using System.Runtime.Serialization;
 using System.Text;
-using System.Threading;
-using System.Web;
-using System.Web.Hosting;
 
 namespace Rock.CMS
 {
@@ -61,7 +55,7 @@ namespace Rock.CMS
         }
 
         /// <summary>
-        /// Changes the password.
+        /// Changes the password after first validating the existing password
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="oldPassword">The old password.</param>
@@ -76,6 +70,17 @@ namespace Rock.CMS
             user.LastPasswordChangedDate = DateTime.Now;
 
             return true;
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        public void ChangePassword( User user, string password )
+        {
+            user.Password = EncodePassword( password );
+            user.LastPasswordChangedDate = DateTime.Now;
         }
 
         /// <summary>
@@ -147,6 +152,50 @@ namespace Rock.CMS
                 user.FailedPasswordAttemptWindowStart = DateTime.Now;
             }
         }
+
+        /// <summary>
+        /// Gets the user by the encrypted confirmation code.
+        /// </summary>
+        /// <param name="code">The encrypted confirmation code.</param>
+        /// <returns></returns>
+        public Rock.CMS.User GetByConfirmationCode( string code )
+        {
+            if ( !string.IsNullOrEmpty( code ) )
+            {
+                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                    encryptionPhrase = "Rock Rocks!";
+
+                string identifier = string.Empty;
+                try { identifier = Rock.Security.Encryption.DecryptString( code, encryptionPhrase ); }
+                catch { }
+
+                if ( identifier.StartsWith( "ROCK|" ) )
+                {
+                    string[] idParts = identifier.Split( '|' );
+                    if ( idParts.Length == 4 )
+                    {
+                        string guid = idParts[1];
+                        string username = idParts[2];
+                        long ticks = 0;
+                        if (!long.TryParse(idParts[3], out ticks))
+                            ticks = 0;
+                        DateTime dateTime = new DateTime(ticks);
+
+                        // Confirmation Code is only valid for an hour
+                        if (DateTime.Now.Subtract(dateTime).Hours > 1)
+                            return null;
+
+                        User user = this.GetByGuid( new Guid( guid ) );
+                        if ( user.UserName == username )
+                            return user;
+                    }
+                }
+            }
+
+            return null;
+        }
+		
 
         #region Static Methods
 
