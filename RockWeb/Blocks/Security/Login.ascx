@@ -26,10 +26,11 @@
     <div class="actions">
         <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn primary" OnClick="btnLogin_Click" />
         <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn secondary" OnClick="btnNewAccount_Click" />
+        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click" />
     </div>
 
     <span class="forgot">
-        Help: <a href="needToImplement">I forgot my username/password</a>
+        Help: <a href='<%= Page.ResolveUrl("~") + "ForgotUserName" %>'>I forgot my username/password</a>
     </span>
 
     <asp:PlaceHolder ID="phFacebookLogin" runat="server">

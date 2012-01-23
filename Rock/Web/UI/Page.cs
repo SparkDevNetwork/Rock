@@ -1195,11 +1195,14 @@ namespace Rock.Web.UI
                 }
 
                 // add remaining parms to the query string
-                string delimitor = "?";
-                foreach ( KeyValuePair<string,string> parm in parms ) 
+                if ( parms != null )
                 {
-                    routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
-                    delimitor = "&";
+                    string delimitor = "?";
+                    foreach ( KeyValuePair<string, string> parm in parms )
+                    {
+                        routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        delimitor = "&";
+                    }
                 }
                 
                 return routeUrl;

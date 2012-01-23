@@ -262,7 +262,7 @@ namespace Rock.Data
             if ( !( entity is Rock.Core.EntityChange ) )
             {
                 Type entityType = entity.GetType();
-                if ( entity is Rock.Data.IModel )
+                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                     entityType = entityType.BaseType;
 
                 Guid changeSet = Guid.NewGuid();

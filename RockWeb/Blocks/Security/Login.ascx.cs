@@ -60,7 +60,23 @@ namespace RockWeb.Blocks.Security
             if ( Page.IsValid )
             {
                 if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
-                    FormsAuthentication.RedirectFromLoginPage( tbUserName.Text, cbRememberMe.Checked );
+                {
+                    FormsAuthentication.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked );
+
+                    string returnUrl = Request.QueryString["returnurl"];
+                    if ( returnUrl != null )
+                    {
+                        returnUrl = returnUrl.ToLower();
+
+                        if ( returnUrl.Contains( "changepassword" ) ||
+                            returnUrl.Contains( "confirmaccount" ) ||
+                            returnUrl.Contains( "forgotusername" ) ||
+                            returnUrl.Contains( "newaccount" ) )
+                            returnUrl = FormsAuthentication.DefaultUrl;
+                    }
+
+                    Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
+                }
                 else
                     DisplayError( "Invalid Login Information" );
             }
@@ -73,6 +89,17 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
+            Response.Redirect( "~/NewAccount", true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( "~", true );
         }
 
         /// <summary>
@@ -152,12 +179,10 @@ namespace RockWeb.Blocks.Security
                             string email = me.email.ToString();
 
                             var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && (u.FirstName == firstName || u.NickName == firstName) && u.Email == email );
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && (u.GivenName == firstName || u.NickName == firstName) && u.Email == email );
 
                             if ( person != null )
                             {
-                                userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
-
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
                                 DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
 
@@ -170,14 +195,23 @@ namespace RockWeb.Blocks.Security
                             }
                             else
                             {
-                                // exact person match wasn't found
-                                // TODO: figure out what to do next the plan is:
-                                //         + Look for records with matching emails as the one from Facebook and allow the user to pick the correct person
-                                //         + If no match email is found (or the user states none of the provided ones is him) then allow then to register
-                                //           Registration form should have facebook fields pre-populated.
+                                person = new Person();
+                                person.GivenName = me.first_name.ToString();
+                                person.LastName = me.last_name.ToString();
+                                person.Email = me.email.ToString();
 
-                                return;
+                                if (me.gender.ToString() == "male")
+                                    person.Gender = Gender.Male;
+                                if (me.gender.ToString() == "female")
+                                    person.Gender = Gender.Female;
+
+                                person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
+
+                                personService.Add( person, null );
+                                personService.Save( person, null );
                             }
+
+                            user = userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {
@@ -187,20 +221,17 @@ namespace RockWeb.Blocks.Security
 
                         // TODO: Show label indicating inability to find user corresponding to facebook id
                     }
-                    else
-                    {
-                        // update user record noting the login datetime
-                        user.LastLoginDate = DateTime.Now;
-                        user.LastActivityDate = DateTime.Now;
-                        userService.Save( user, user.PersonId );
-                    }
+
+                    // update user record noting the login datetime
+                    user.LastLoginDate = DateTime.Now;
+                    user.LastActivityDate = DateTime.Now;
+                    userService.Save( user, user.PersonId );
 
                     FormsAuthentication.SetAuthCookie( user.UserName, false );
 
                     if ( state != null )
-                    {
                         Response.Redirect( state );
-                    }
+
                 }
                 catch ( FacebookOAuthException oae )
                 {

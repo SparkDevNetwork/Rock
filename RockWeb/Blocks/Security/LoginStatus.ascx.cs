@@ -11,28 +11,35 @@ namespace RockWeb.Blocks.Security
 {
     public partial class LoginStatus : Rock.Web.UI.Block
     {
-        protected void Page_Load( object sender, EventArgs e )
-        {
-            phHello.Controls.Clear();
+        string action = string.Empty;
 
-            if (HttpContext.Current.User.Identity.IsAuthenticated)
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            action = hfTest.Value;
+
+            if (HttpContext.Current.User.Identity.IsAuthenticated && CurrentPerson != null)
             {
-                phHello.Controls.Add( new LiteralControl( "<span>Hello " ) );
-                phHello.Controls.Add( new LiteralControl( CurrentPerson.FirstName ) );
-                phHello.Controls.Add( new LiteralControl( "</span>" ) );
+                phHello.Visible = true;
+                lHello.Text = string.Format( "<span>Hello {0}</span>", CurrentPerson.FirstName );
 
                 phMyAccount.Visible = true;
                 lbLoginLogout.Text = "Logout";
             }
             else
             {
+                phHello.Visible = false;
                 phMyAccount.Visible = false;
                 lbLoginLogout.Text = "Login";
             }
+
+            hfTest.Value = lbLoginLogout.Text;
         }
+
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
-            if ( lbLoginLogout.Text == "Login" )
+            if ( action == "Login" )
                 FormsAuthentication.RedirectToLoginPage();
             else
             {

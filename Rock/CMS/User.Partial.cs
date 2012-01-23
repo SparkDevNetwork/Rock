@@ -5,15 +5,11 @@
 //
 
 using System;
-using System.Security.Cryptography;
+using System.Configuration;
 using System.Security.Principal;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 using System.Web;
 using System.Web.Hosting;
-
-using Rock.CRM;
 
 namespace Rock.CMS
 {
@@ -27,6 +23,30 @@ namespace Rock.CMS
         public override bool DefaultAuthorization( string action )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Gets the encrypted confirmation code.
+        /// </summary>
+        public string ConfirmationCode
+        {
+            get
+            {
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.Guid.ToString(), this.UserName, DateTime.Now.Ticks );
+                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                    encryptionPhrase = "Rock Rocks!";
+                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                return encryptedCode;
+            }
+        }
+
+        public string ConfirmationCodeEncoded
+        {
+            get
+            {
+                return HttpUtility.UrlEncode( ConfirmationCode );
+            }
         }
 
         #region Static Methods
