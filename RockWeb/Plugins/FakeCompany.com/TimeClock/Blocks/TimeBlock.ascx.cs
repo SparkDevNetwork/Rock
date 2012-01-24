@@ -8,7 +8,7 @@ using System;
 
 namespace FakeCompany.Examples
 {
-    public partial class ExampleTimeBlock : Rock.Web.UI.Block
+    public partial class TimeBlock : Rock.Web.UI.Block
 	{
 		protected void Page_Load( object sender, EventArgs e )
 		{
