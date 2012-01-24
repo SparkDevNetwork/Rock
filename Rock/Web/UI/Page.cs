@@ -28,7 +28,6 @@ namespace Rock.Web.UI
     {
         #region Private Variables
 
-        private Dictionary<string, KeyValuePair<string, Control>> _zones;
         private PlaceHolder phLoadTime;
 
         #endregion
@@ -51,24 +50,18 @@ namespace Rock.Web.UI
         public Rock.Web.Cache.Page PageInstance { get; set; }
 
         /// <summary>
+        /// The Page Title controls on the page.
+        /// </summary>
+        public List<PageTitle> PageTitles { get; private set; }
+
+        /// <summary>
         /// The content areas on a layout page that blocks can be added to 
         /// </summary>
         /// <remarks>
         /// The Dictionary's key is the zonekey and the KeyValuePair is a combination 
         /// of the friendly zone name and the zone control
         /// </remarks>
-        public Dictionary<string, KeyValuePair<string, Control>> Zones
-        {
-            get
-            {
-                if ( _zones == null )
-                {
-                    _zones = new Dictionary<string, KeyValuePair<string, Control>>();
-                    DefineZones();
-                }
-                return _zones;
-            }
-        }
+        public Dictionary<string, KeyValuePair<string, Zone>> Zones { get; private set; }
 
         /// <summary>
         /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
@@ -168,50 +161,44 @@ namespace Rock.Web.UI
             }
         }
 
-        #endregion
-
-        #region Abstract Methods
-
-        /// <summary>
-        /// Each layout page should define it's content zones in this method
-        /// <code>
-        ///     AddZone( "FirstColumn", FirstColumn );
-        /// </code>
-        /// </summary>
-        protected abstract void DefineZones();
 
         #endregion
 
         #region Protected Methods
 
         /// <summary>
-        /// Adds a zone control to the Zones collection
+        /// Recurses a control collection looking for any zone controls
         /// </summary>
-        /// <param name="key">A unique name for the zone.</param>
-        /// <param name="control">The zone control.</param>
-        public void AddZone( string key, Control control )
+        /// <param name="controls">The controls.</param>
+        protected virtual void FindRockControls( ControlCollection controls )
         {
-            AddZone(key, key.SplitCase(), control);
+            if ( controls != null )
+            {
+                foreach ( Control control in controls )
+                {
+                    if ( control is Zone )
+                    {
+                        Zone zone = control as Zone;
+                        if ( zone != null )
+                            Zones.Add( zone.ID, new KeyValuePair<string, Zone>( zone.Name, zone ) );
+                    }
+
+                    if ( control is PageTitle )
+                    {
+                        PageTitle pageTitle = control as PageTitle;
+                        if ( pageTitle != null )
+                            PageTitles.Add( pageTitle );
+                    }
+
+                    FindRockControls( control.Controls );
+                }
+            }
         }
 
         /// <summary>
-        /// Adds a zone control to the Zones collection
-        /// </summary>
-        /// <param name="key">A unique key name for the zone.</param>
-        /// <param name="name">A user-friednly name for the zone.</param>
-        /// <param name="control">The zone control.</param>
-        public void AddZone( string key, string name, Control control )
-        {
-            Zones.Add( key, new KeyValuePair<string, Control>( name, control ) );
-        }
-
-        /// <summary>
-        /// Find the <see cref="System.Web.UI.Control"/> for the specified zone name.  First looks in the
-        /// <see cref="Zones"/> property to see if it has been defined.  If not will then Recurse through 
-        /// the controls on the page to find a control who's id ends with the specified zone name.
-        /// </summary>
-        /// <remarks>
-        /// If an existing zone <see cref="System.Web.UI.Control"/> cannot be found, the <see cref="HtmlForm"/> control
+        /// Find the <see cref="Rock.Web.UI.Controls.Zone"/> for the specified zone name.  Looks in the
+        /// <see cref="Zones"/> property to see if it has been defined.  If an existing zone 
+        /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the <see cref="HtmlForm"/> control
         /// is returned
         /// </remarks>
         /// <param name="zoneName">Name of the zone.</param>
@@ -222,35 +209,8 @@ namespace Rock.Web.UI
             if ( Zones.ContainsKey( zoneName ) )
                 return Zones[zoneName].Value;
 
-            // Then try to find a control with the zonename as the id
-            Control zone = RecurseControls( this, zoneName );
-            if ( zone != null )
-                return zone;
-
-            // If still no match, just add module to the form
+            // If no match, just add module to the form
             return this.Form;
-        }
-
-        /// <summary>
-        /// Recurses the page's control heirarchy looking for any control who's id ends
-        /// with the conrolId property
-        /// </summary>
-        /// <param name="parentControl"></param>
-        /// <param name="controlId"></param>
-        /// <returns></returns>
-        protected virtual Control RecurseControls( Control parentControl, string controlId )
-        {
-            if ( parentControl.ID != null && parentControl.ID.ToLower().EndsWith( controlId.ToLower() ) )
-                return parentControl;
-
-            foreach ( Control childControl in parentControl.Controls )
-            {
-                Control zoneControl = RecurseControls( childControl, controlId.ToLower() );
-                if ( zoneControl != null )
-                    return zoneControl;
-            }
-
-            return null;
         }
 
         #endregion
@@ -282,6 +242,11 @@ namespace Rock.Web.UI
                 sm.ID = "sManager";
                 Page.Form.Controls.AddAt( 0, sm );
             }
+
+            // Recurse the page controls to find the rock page title and zone controls
+            PageTitles = new List<PageTitle>();
+            Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
+            FindRockControls( this.Controls );
 
             // Add a Rock version meta tag
             string version = typeof(Rock.Web.UI.Page).Assembly.GetName().Version.ToString();
@@ -603,6 +568,9 @@ namespace Rock.Web.UI
         /// <param name="title">The title.</param>
         public virtual void SetTitle( string title )
         {
+            foreach(PageTitle pageTitle in PageTitles)
+                pageTitle.Text = title;
+            
             this.Title = title;
         }
 
@@ -692,7 +660,7 @@ namespace Rock.Web.UI
 
             AddBlockMove();
             // Add Zone Wrappers
-            foreach ( KeyValuePair<string, KeyValuePair<string, Control>> zoneControl in this.Zones )
+            foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
             {
                 Control control = zoneControl.Value.Value;
                 Control parent = zoneControl.Value.Value.Parent;
