@@ -10,7 +10,7 @@ To build the project, clone it locally:
 
     git clone git@github.com:SparkDevNetwork/Rock-ChMS.git
     cd Rock-ChMS
-    .\Build-Solution.ps1
+    .\Build-Solution.ps1 (NOTE: THIS DOES NOT CURRENTLY WORK YET)
 
 The `Build-Solution.ps1` script will build the solution and update the database (from migrations).
 

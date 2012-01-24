@@ -50,6 +50,10 @@ Rock ChMS is intended to be packaged in such a way as to be compliant with the a
 statements from the Google Maps API Terms of Service.  Any changes made by the user-admin
 should be done with the Google Maps API Terms of Service in mind to maintain compliance.
 
+ImageResizer:
+http://imageresizing.net/licenses/freedom
+The core and the 17 basic plugins are free and open-source. No strings attached. 
+They are under a modified MIT license called the Freedom license. No restrictions, no money.
 
 Quartz.Net Job Scheduling Framework v2.0
 Apache License, Version 2.0.
