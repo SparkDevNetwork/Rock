@@ -223,7 +223,7 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
-    <Compile Include="Web\Cache\OrganizationAttributes.cs" />
+    <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
