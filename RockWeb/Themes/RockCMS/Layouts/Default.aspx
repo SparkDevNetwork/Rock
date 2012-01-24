@@ -2,12 +2,21 @@
     AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+
+    <script type="text/javascript">
+
+        Sys.Application.add_load(function () {
+            $('a.logo').attr('href', rock.baseUrl);
+        });
+
+    </script>
+
     <div id="page-frame">
         <header class="topbar topbar-inner">
 		    <section class="container">
 			    <div class="row">
 				    <div class="three columns">
-                        <a href='<%= ResolveUrl("~") %>' class='logo'>Home</a>
+                        <a class='logo'>Home</a>
 
 				    </div>
 				    <div class="five columns offset-by-four content">
