@@ -188,7 +188,7 @@ namespace Rock.Communication
             foreach ( object item in objects )
                 result = ResolveMergeCodes(result, item);
 
-            var orgAttributes = Rock.Web.Cache.OrganizationAttributes.Read();
+            var orgAttributes = Rock.Web.Cache.GlobalAttributes.Read();
             result = ResolveMergeCodes( result, orgAttributes.AttributeValues );
 
             return result;

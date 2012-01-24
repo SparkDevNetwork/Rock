@@ -448,20 +448,20 @@ namespace RockWeb.Blocks.Security
 
         private void SetSMTPParameters( Email email )
         {
-            email.Server = OrganizationAttributes.Value( "SMTPServer" );
+            email.Server = GlobalAttributes.Value( "SMTPServer" );
 
             int port = 0;
-            if (!Int32.TryParse(OrganizationAttributes.Value( "SMTPPort" ), out port))
+            if (!Int32.TryParse(GlobalAttributes.Value( "SMTPPort" ), out port))
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( OrganizationAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = OrganizationAttributes.Value( "SMTPUserName" );
-            email.Password = OrganizationAttributes.Value( "SMTPPassword" );
+            email.UserName = GlobalAttributes.Value( "SMTPUserName" );
+            email.Password = GlobalAttributes.Value( "SMTPPassword" );
         }
 
         #endregion
