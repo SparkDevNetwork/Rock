@@ -227,6 +227,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
@@ -251,7 +252,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\UI\Controls\LabeledDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\Grid\SecurityField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ReorderField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditField.cs" />

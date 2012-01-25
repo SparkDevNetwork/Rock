@@ -79,9 +79,6 @@ namespace RockWeb.Blocks.Security
 
             if (!Page.IsPostBack)
             {
-                tbPassword.TextBox.TextMode = TextBoxMode.Password;
-                tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
-
                 lDeleted.Text = AttributeValue( "DeletedCaption" );
 
                 string invalidCaption = AttributeValue( "InvalidCaption" );
