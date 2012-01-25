@@ -20,25 +20,36 @@ namespace Rock.CMS
 		/// <returns>a collection of <see cref="Rock.CMS.Block">Blocks</see> that are not yet registered</returns>
         public IEnumerable<Rock.CMS.Block> GetUnregisteredBlocks( string physWebAppPath )
         {
-            // Determine the block path (it will be "C:\blahblahblah\Blocks\")
-            string blockPath = physWebAppPath;
-            blockPath += ( physWebAppPath.EndsWith( @"\" ) ) ? @"Blocks\" : @"\Blocks\";
-
-            // search for all blocks under the block path 
-            string[] allBlockNames = Directory.GetFiles( blockPath, "*.ascx", SearchOption.AllDirectories );
-
-            // Convert them to logical file/path: ~/Blocks/foo/bar.ascx
             List<string> list = new List<string>();
-            string fileName = string.Empty;
-            for ( int i = 0; i < allBlockNames.Length; i++ )
-            {
-                fileName = allBlockNames[i].Replace( blockPath, "~/Blocks/" );
-                list.Add( fileName.Replace( @"\", "/" ) );
-            }
+
+            // Find all the blocks in the Blocks folder...
+            FindAllBlocksInPath( physWebAppPath, list, "Blocks" );
+
+            // Now do the exact same thing for the Plugins folder...
+            FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
             // Now remove from the list any that are already registered (via the path)
             var registered = from r in Repository.GetAll() select r.Path;
             return ( from u in list.Except( registered ) select new Block { Path = u, Guid = Guid.NewGuid() } );
+        }
+
+        private static void FindAllBlocksInPath( string physWebAppPath, List<string> list, string folder )
+        {
+            // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
+            string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
+            // Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
+            string virtualPath = string.Format( "~/{0}/", folder );
+
+            // search for all blocks under the physical path 
+            string[] allBlockNames = Directory.GetFiles( physicalPath, "*.ascx", SearchOption.AllDirectories );
+            string fileName = string.Empty;
+
+            // Convert them to virtual file/path: ~/<folder>/foo/bar.ascx
+            for  (int i = 0; i < allBlockNames.Length; i++ )
+            {
+                fileName = allBlockNames[i].Replace( physicalPath, virtualPath );
+                list.Add( fileName.Replace(@"\", "/") );
+            }
         }
 	}
 }
