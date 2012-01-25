@@ -5,7 +5,7 @@
     <fieldset class="stacked">
 	    <legend>Login</legend> 
         <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
-        <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
+        <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:LabeledTextBox>
         <dl>
             <dt></dt>
             <dd>

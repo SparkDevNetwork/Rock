@@ -305,10 +305,10 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
                 
-                ddlBlockType.DropDownList.DataSource = blockService.Queryable().ToList();
-                ddlBlockType.DropDownList.DataTextField = "Name";
-                ddlBlockType.DropDownList.DataValueField = "Id";
-                ddlBlockType.DropDownList.DataBind();
+                ddlBlockType.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DataTextField = "Name";
+                ddlBlockType.DataValueField = "Id";
+                ddlBlockType.DataBind();
             }
         }
 
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Administration
             {
                 lAction.Text = "Add ";
                 hfBlockInstanceId.Value = "0";
-                ddlBlockType.DropDownList.SelectedIndex = -1;
+                ddlBlockType.SelectedIndex = -1;
                 tbBlockName.Text = string.Empty;
             }
 

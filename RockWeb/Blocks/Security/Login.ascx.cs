@@ -31,11 +31,6 @@ namespace RockWeb.Blocks.Security
         {
             pnlMessage.Visible = false;
 
-            // Add the jquery that will handle client-side validation and display the invalid controls correctly
-            PageInstance.AddScriptLink( Page, "~/Scripts/Rock/validation.js" );
-
-            tbPassword.TextBox.TextMode = TextBoxMode.Password;
-
             // Determine if Facebook login enabled
             string facebookAppId = PageInstance.Site.FacebookAppId;
             string facebookAppSecret = PageInstance.Site.FacebookAppSecret;

@@ -25,10 +25,5 @@ namespace RockWeb
             listControl.DataValueField = "Key";
             listControl.DataBind();
         }
-
-        public static void BindToEnum( this Rock.Web.UI.Controls.DataDropDownList listControl, Type enumType )
-        {
-            listControl.DropDownList.BindToEnum( enumType );
-        }
     }
 }

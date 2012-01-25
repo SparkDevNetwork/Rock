@@ -36,10 +36,6 @@ namespace RockWeb.Blocks.Security
             {
                 if ( CurrentUser != null )
                     tbUserName.Text = CurrentUser.UserName;
-
-                tbOldPassword.TextBox.TextMode = TextBoxMode.Password;
-                tbPassword.TextBox.TextMode = TextBoxMode.Password;
-                tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
             }
         }
 

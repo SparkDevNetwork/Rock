@@ -11,7 +11,7 @@
         AttributeId = id;
         AttributeValueId = valueId;
 
-        $('#<%= tbValue.ClientID %>_tb').val(value);
+        $('#<%= tbValue.ClientID %>').val(value);
 
         $('#modal-details').modal('show').bind('shown', function () {
             $('#modal-details').appendTo('#<%= upSettings.ClientID %>');
@@ -33,7 +33,7 @@
                 attributeValue.Id = AttributeValueId;
                 attributeValue.AttributeId = AttributeId;
                 attributeValue.EntityId = <%= entityId %>;
-                attributeValue.Value = $('#<%= tbValue.ClientID %>_tb').val();
+                attributeValue.Value = $('#<%= tbValue.ClientID %>').val();
 
                 if (attributeValue.Id === 0)
                     restAction = 'POST';

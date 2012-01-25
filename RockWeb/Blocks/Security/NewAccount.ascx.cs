@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Security
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
+            
             lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
             lSentLoginCaption.Text = AttributeValue( "SentLoginCaption" );
             lConfirmCaption.Text = AttributeValue( "ConfirmCaption" );
@@ -94,8 +94,8 @@ namespace RockWeb.Blocks.Security
             if ( !Page.IsPostBack )
             {
 
-                tbPassword.TextBox.TextMode = TextBoxMode.Password;
-                tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
+                //tbPassword.TextBox.TextMode = TextBoxMode.Password;
+                //tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
                 LoadBirthDays();
 
                 int year = DateTime.Now.Year;

@@ -29,9 +29,9 @@ namespace Rock.Web.UI.Controls
                 Select( f => new { f.Id, f.Name } ).
                 OrderBy( f => f.Name );
 
-            DropDownList.Items.Clear();
+            this.Items.Clear();
             foreach ( var item in items )
-                DropDownList.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                this.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
         }
     }
 }

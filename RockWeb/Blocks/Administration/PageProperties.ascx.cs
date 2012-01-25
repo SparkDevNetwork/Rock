@@ -128,8 +128,8 @@ namespace RockWeb.Blocks.Administration
 
             ddlLayout.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx.cs" ) )
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx.cs" ) ) ) );
+            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
+                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
 
             ddlMenuWhen.BindToEnum( typeof( Rock.CMS.DisplayInNavWhen ) );
         }
