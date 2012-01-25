@@ -44,59 +44,106 @@
     code-parts that make up an application, widget, control, module -- or
     whatever you you call them.</para>
 
-    <para>When combined layouts and building blocks allow you to compose a
-    powerful application. In fact, the ChMS parts of Rock are built using
-    these very things. We like to say "Rock is built on Rock".</para>
+    <para>When combined, Layouts and Blocks allow you to compose a powerful
+    application. In fact, the ChMS parts of Rock are built using these very
+    things. We like to say "Rock is built on Rock".</para>
   </section>
 
   <section>
     <title>Theme Layouts</title>
 
-    <para>A Theme Layout is simply an ASP.NET Web Page (.aspx) that basically
-    defines zero or more "zones" where Blocks can reside and will also refer
-    to css, javascripts, and images. Theme Layouts can include just about
-    anything you wish but they must inherit from the Rock.Cms.CmsPage
-    class.</para>
+    <para>A Theme Layout is really just HTML. It's simply an ASP.NET Web Page
+    (.aspx) that basically defines zero or more "zones" where Blocks can
+    reside and will also refer to css, javascripts, and images. Theme Layouts
+    can include just about anything you wish, <emphasis>but they must inherit
+    from the Rock.Web.UI.Page class</emphasis> as shown in the following
+    example.</para>
 
     <para><figure>
-        <title>An example Theme Layout; Splash.aspx</title>
+        <title>An example Theme Layout, Splash.aspx, which has a single
+        Zone</title>
 
         <graphic fileref="images/ExampleThemeLayout_Splash.png"/>
-      </figure>Notice in the code-behind for the Splash.aspx layout a single
-    zone is added to the Zones collection in the DefineZones() method which is
-    overridden from the parent Rock.Web.UI.Page class. Any ASP control that
-    can have child controls (such as the asp:PlaceHolder) can be used as a
-    zone.<programlisting>using System;
+      </figure></para>
 
-namespace RockWeb.Themes.RockCMS.Layouts
-{
-    public partial class Splash : Rock.Web.UI.Page
-    {
-        protected override void DefineZones()
-        {
-            AddZone( "Content", Content );
-        }
-    }
-}</programlisting></para>
+    <para/>
+
+    <figure>
+      <title>Code behind file (Splash.aspx.cs) for the Splash layout</title>
+
+      <screenshot>
+        <screeninfo/>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/ExampleThemeLayout_SplashCodeBehind.png"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </figure>
+
+    <para>Notice how a single Zone named "Content" is added by defining a
+    DefineZones() method which is overridden from the parent Rock.Web.UI.Page
+    class. Any ASP control that can have child controls (such as the
+    asp:PlaceHolder) can be used as a zone.</para>
 
     <para>The recommended folder structure for any custom themes you create
-    should be similar to the default RockCMS theme which has four layouts
-    (Default, Dialog, OneColumn, and Splash) as shown below.</para>
+    should be similar to the default <emphasis>RockCMS</emphasis> theme which
+    has four layouts (Default, Dialog, OneColumn, and Splash) as shown
+    below.</para>
 
-    <para><graphic fileref="images/ThemeFolderLayout.png"/>We recommend an
-    Assets folder be used to store any fonts, icons and images your theme
-    uses. Likewise, the CSS and Scripts folder would be used to store
-    stylesheets and any JavaScripts (respectively). </para>
+    <para><figure>
+        <title>Sample folder structure for the RockCMS theme</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/ThemeFolderLayout.png"/>
+          </imageobject>
+        </mediaobject>
+      </figure>We also recommend an Assets folder be used to store any fonts,
+    icons and images your theme uses. Likewise, the CSS and Scripts folder
+    would be used to store stylesheets and any JavaScripts
+    (respectively).</para>
   </section>
 
   <section>
     <title>Blocks</title>
 
-    <para>Blocks are simply special ASP.NET User Controls and are the
-    fundamental, functional "building blocks" that make up your plugin,
-    widget, application or whatever you want to call it. They can include
-    anything you want but they must inherit from the Rock.Web.UI.Block class
-    and should be put into your own folder under the Plugins folder:</para>
+    <para>Blocks are usually small pieces of HTML and code (your custom
+    ASP.NET User Controls) and are the fundamental, functional "building
+    blocks" that make up your plugin, widget, application or whatever you want
+    to call it. They can include anything you want but they <emphasis>must
+    inherit from the Rock.Web.UI.Block class</emphasis> as shown in the
+    following example.</para>
+
+    <para><figure>
+        <title>An example Block (ExampleCustomBlock.ascx)</title>
+
+        <screenshot>
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/ExampleBlock.png"/>
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+      </figure></para>
+
+    <para><figure>
+        <title>The code-behind for the example Block
+        (ExampleCustomBlock.ascx.cs)</title>
+
+        <screenshot>
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/ExampleBlockCodeBehind.png"/>
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+      </figure></para>
+
+    <para>The standard location for all custom blocks is in the Plugins
+    folder. We recommend you create your own folder under the Plugins folder
+    to hold any custom blocks created by your team:</para>
 
     <para><figure>
         <title>Location of Custom Blocks</title>
@@ -109,35 +156,80 @@ namespace RockWeb.Themes.RockCMS.Layouts
           </mediaobject>
         </screenshot>
       </figure></para>
-
-    <para><figure>
-        <title>An example Block</title>
-
-        <graphic fileref="images/ExampleBlock.png"/>
-
-        <programlisting>using System;
-
-namespace FakeCompany.Examples
-{
-    public partial class ExampleCustomBlock : Rock.Web.UI.Block
-    {
-        protected void Page_Load( object sender, EventArgs e )
-        {
-            lTime.Text = DateTime.Now.ToShortTimeString();
-        }
-    }
-}
-</programlisting>
-      </figure></para>
   </section>
 
   <section>
     <title>Hello World</title>
 
-    <para>Now let's walk through an example so you can see how easy it is to
-    create a custom block and assemble a simple page.</para>
+    <para>Now let's walk through an complete example so you can see how easy
+    it is to create a custom block and assemble a simple page. EDITOR NOTE:
+    This should be turned into a video screen capture.</para>
 
-    <para/>
+    <para>Create a "MyStuff" folder under the Plugins folder, then right click
+    it an select "Add New Item". Next choose "Web User Control".</para>
+
+    <para><figure>
+        <title>Choose Web User Control and name it HelloWorld.ascx</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/HelloWorld/WebUserControl.png"/>
+          </imageobject>
+        </mediaobject>
+      </figure>Add the <emphasis>Inherits="Rock.Web.UI.Block"</emphasis>
+    string in the first Control line and type your Hello World as HTML as
+    shown in the screenshot.</para>
+
+    <figure>
+      <title>The complete HelloWorld.ascx block</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/HelloWorld/HelloWorldASCX.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>Now open Rock ChMS and login as an Administrator. Next, navigate to
+    a test page and then choose the "Page Zones" icon from the toolbar in the
+    bottom right corner. This is how you add Blocks to the Zones on a page.
+    Select the <emphasis>Content</emphasis> zone's Zone Blocks as shown
+    here:</para>
+
+    <para><figure>
+        <title/>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/HelloWorld/AddingABlockToAZone.png"/>
+          </imageobject>
+        </mediaobject>
+      </figure>Select the Add New button from the dialog box that appears.
+    Doing this will search for all registered blocks and also will register
+    any new blocks, including the new HelloWorld block you just created.
+    Select your HelloWorld block Type and give it a name on this page.</para>
+
+    <para><figure>
+        <title/>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/HelloWorld/AddHelloWorldBlock.png"/>
+          </imageobject>
+        </mediaobject>
+      </figure>Once the page is refreshed, you will see an instance of your
+    block on the page.</para>
+
+    <para><figure>
+        <title>A test page showing an instance of your HelloWorld
+        block</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/HelloWorld/FinalPage.png"/>
+          </imageobject>
+        </mediaobject>
+      </figure></para>
   </section>
 
   <section>
