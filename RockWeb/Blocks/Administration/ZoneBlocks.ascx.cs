@@ -294,6 +294,8 @@ namespace RockWeb.Blocks.Administration
                         if ( control is Rock.Web.UI.Block )
                         {
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                            // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
+                            block.Name = System.Text.RegularExpressions.Regex.Replace( block.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
                             block.Description = block.Path;
 
                             blockService.Add( block, CurrentPersonId );
