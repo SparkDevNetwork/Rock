@@ -149,6 +149,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnRefresh_Click( object sender, EventArgs e )
         {
+            BindFilter();
             BindGrid();
         }
 

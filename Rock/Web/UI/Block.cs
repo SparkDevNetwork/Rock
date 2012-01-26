@@ -84,6 +84,18 @@ namespace Rock.Web.UI
             get { return ( ( Rock.Web.UI.Page )this.Page ).ThemePath; }
         }
 
+        /// <summary>
+        /// Gets the root URL Path.
+        /// </summary>
+        public string RootPath
+        {
+            get
+            {
+                Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + Page.ResolveUrl( "~" );
+            }
+        }
+
         #endregion
 
         #region Protected Caching Methods

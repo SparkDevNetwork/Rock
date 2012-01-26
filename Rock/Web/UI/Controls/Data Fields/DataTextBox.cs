@@ -14,10 +14,9 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataTextBox runat=server></{0}:DataTextBox>" )]
-    public class DataTextBox : CompositeControl
+    public class DataTextBox : TextBox
     {
         private Label label;
-        private TextBox textBox;
         private Validation.DataAnnotationValidator validator;
 
         /// <summary>
@@ -42,84 +41,6 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["Tip"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the text mode for the textbox.
-        /// </summary>
-        /// <value>
-        /// TextBoxMode (single line, multi-line, password)
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "Sets the TextMode for the textbox control." )
-        ]
-        public TextBoxMode TextBoxTextMode
-        {
-            get
-            {
-                EnsureChildControls();
-                return textBox.TextMode;
-            }
-            set
-            {
-                EnsureChildControls();
-                textBox.TextMode = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the number of rows for the textbox.
-        /// </summary>
-        /// <value>
-        /// Number of rows for the textbox.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "Sets the number of rows for the textbox control." )
-        ]
-        public int TextBoxRows
-        {
-            get
-            {
-                EnsureChildControls();
-                return textBox.Rows;
-            }
-            set
-            {
-                EnsureChildControls();
-                textBox.Rows = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the CSS class of the textbox control.
-        /// </summary>
-        /// <value>
-        /// The CSS class(s) for the textbox control.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "Sets the number of rows for the textbox control." )
-        ]
-        public string TextBoxCssClass
-        {
-            get
-            {
-                EnsureChildControls();
-                return textBox.CssClass;
-            }
-            set
-            {
-                EnsureChildControls();
-                textBox.CssClass = value;
             }
         }
 
@@ -171,44 +92,6 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 label.Text = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the textbox text.
-        /// </summary>
-        /// <value>
-        /// The textbox text.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the textbox." )
-        ]
-        public string Text
-        {
-            get
-            {
-                EnsureChildControls();
-                return textBox.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                textBox.Text = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets the text box.
-        /// </summary>
-        public TextBox TextBox
-        {
-            get
-            {
-                EnsureChildControls();
-                return textBox;
             }
         }
 
@@ -267,21 +150,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
-        /// </summary>
-        protected override void RecreateChildControls()
-        {
-            EnsureChildControls();
-        }
-
-        /// <summary>
         /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            AddAttributesToRender( writer );
-
             bool isValid = validator.IsValid;
 
             writer.AddAttribute( "class", isValid ? "" : "error" );
@@ -294,7 +167,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderBeginTag( HtmlTextWriterTag.Dd );
-            textBox.RenderControl( writer );
+            base.Render( writer );
+
             validator.RenderControl( writer );
 
             if ( Tip.Trim() != string.Empty )
@@ -327,23 +201,21 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            base.CreateChildControls();
+
             Controls.Clear();
 
-            textBox = new TextBox();
-            textBox.ID = "tb";
-
             label = new Label();
-            label.AssociatedControlID = textBox.ID;
+            label.AssociatedControlID = this.ID;
 
             validator = new Validation.DataAnnotationValidator();
-            validator.ID = "dav";
-            validator.ControlToValidate = textBox.ID;
-            validator.Display = ValidatorDisplay.None;
-            validator.ForeColor = System.Drawing.Color.Red;
+            validator.ID = this.ID + "_dav";
+            validator.ControlToValidate = this.ID;
+            validator.Display = ValidatorDisplay.Dynamic;
+            validator.CssClass = "validation-error";
 
-            this.Controls.Add( label );
-            this.Controls.Add( textBox );
-            this.Controls.Add( validator );
+            Controls.Add( label );
+            Controls.Add( validator );
         }
     }
 }

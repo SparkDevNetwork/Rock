@@ -1,18 +1,27 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCMS/Layouts/Site.Master"
-    AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="RockWeb.Themes.RockCMS.Layouts.Default" %>
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCMS/Layouts/Site.Master" 
+    AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+
+    <script type="text/javascript">
+
+        Sys.Application.add_load(function () {
+            $('a.logo').attr('href', rock.baseUrl);
+        });
+
+    </script>
+
     <div id="page-frame">
         <header class="topbar topbar-inner">
 		    <section class="container">
 			    <div class="row">
 				    <div class="three columns">
-                        <asp:Literal ID="lLogo" runat="server"></asp:Literal>
+                        <a class='logo'>Home</a>
 
 				    </div>
 				    <div class="five columns offset-by-four content">
 
-					    <asp:PlaceHolder ID="Header" runat="server"></asp:PlaceHolder>
+					    <Rock:Zone ID="Header" runat="server" />
 
 					    <div class="filter-search">
 						    <input id="search-words">
@@ -52,7 +61,7 @@
 			    </div>
 			    <div class="row">
 				    <nav class="twelve columns">
-					    <asp:PlaceHolder ID="Menu" runat="server"></asp:PlaceHolder>
+					    <Rock:Zone ID="Menu" runat="server" />
 
 					    <a href="" id="header-lock">Lock</a>
 				    </nav>
@@ -64,30 +73,31 @@
             <section id="page-title">
 		        <div class="row">	
                     <div class="four columns">
-			            <h1><asp:Literal ID="lPageTitle" runat="server"></asp:Literal></h1>
+			            <h1><Rock:PageTitle runat="server" /></h1>
                     </div>
                     <div class="six columns">
-                        <asp:PlaceHolder ID="PageTitleBar" runat="server"></asp:PlaceHolder>
+                        <Rock:Zone ID="PageTitleBar" runat="server" />
                     </div>
 		        </div>
 	        </section>
 
 	        <section id="core-content" class="row container">     
   
-                <asp:PlaceHolder ID="ContentLeft" runat="server"></asp:PlaceHolder>                        
-                <asp:PlaceHolder ID="ContentRight" runat="server"></asp:PlaceHolder>                        
-                <asp:PlaceHolder ID="Content" runat="server"></asp:PlaceHolder>
-                <asp:PlaceHolder ID="UpperBand" runat="server"></asp:PlaceHolder>
-                <asp:PlaceHolder ID="LowerBand" runat="server"></asp:PlaceHolder>
-                <asp:PlaceHolder ID="LowerContentLeft" runat="server"></asp:PlaceHolder>
-                <asp:PlaceHolder ID="LowerContentRight" runat="server"></asp:PlaceHolder>
-                <asp:PlaceHolder ID="LowerContent" runat="server"></asp:PlaceHolder>           
+                <Rock:Zone ID="ContentLeft" runat="server" />                       
+                <Rock:Zone ID="ContentRight" runat="server" />
+                <Rock:Zone ID="Content" runat="server" />
+                <Rock:Zone ID="UpperBand" runat="server" />
+                <Rock:Zone ID="LowerBand" runat="server" />
+                <Rock:Zone ID="LowerContentLeft" runat="server" />
+                <Rock:Zone ID="LowerContentRight" runat="server" />
+                <Rock:Zone ID="LowerContent" runat="server" />
+                        
             </section>
 	    </div>
 
 	    <footer>
 		    <div class="row">
-		        <asp:PlaceHolder ID="Footer" runat="server"></asp:PlaceHolder>
+		        <Rock:Zone ID="Footer" runat="server" />
 		    </div>
 	    </footer>        
     </div>

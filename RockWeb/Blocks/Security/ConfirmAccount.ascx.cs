@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -16,113 +17,251 @@ using Rock.CMS;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 1, "Confirmed", "ConfirmedCaption", "Captions", "", false,
-        "Your account has been confirmed.  Thank you for creating the account" )]
-    [Rock.Attribute.Property( 2, "Delete", "DeleteCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,
+        "{0}, Your account has been confirmed.  Thank you for creating the account" )]
+    [Rock.Attribute.Property( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,
+        "{0}, Enter a new password for your '{1}' account" )]
+    [Rock.Attribute.Property( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,
+        "{0}, The password for your '{1}' account has been changed" )]
+    [Rock.Attribute.Property( 3, "Delete", "DeleteCaption", "Captions", "", false,
         "Are you sure you want to delete the '{0}' account?" )]
-    [Rock.Attribute.Property( 3, "Deleted", "DeletedCaption", "Captions", "", false,
+    [Rock.Attribute.Property( 4, "Deleted", "DeletedCaption", "Captions", "", false,
         "The account has been deleted." )]
-    [Rock.Attribute.Property( 4, "Invalid", "InvalidCaption", "Captions", "", false,
-        "Sorry, but the confirmation code you are using is no longer valid.  Please try creating a new account" )]
+    [Rock.Attribute.Property( 5, "Invalid", "InvalidCaption", "Captions", "", false,
+        "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
     public partial class ConfirmAccount : Rock.Web.UI.Block
     {
+        private UserService userService = null;
         private User user = null;
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the confirmation code.
+        /// </summary>
+        /// <value>
+        /// The confirmation code.
+        /// </value>
+        protected string ConfirmationCode
+        {
+            get
+            {
+                string confirmationCode = ViewState["ConfirmationCode"] as string;
+                return confirmationCode ?? string.Empty;
+            }
+            set
+            {
+                ViewState["ConfirmationCode"] = value;
+            }
+        }
+
+        #endregion
 
         #region Overridden Page Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
+            pnlCode.Visible = false;
             pnlConfirmed.Visible = false;
+            pnlResetPassword.Visible = false;
+            pnlResetSuccess.Visible = false;
             pnlDelete.Visible = false;
             pnlDeleted.Visible = false;
             pnlInvalid.Visible = false;
 
-            lConfirmed.Text = AttributeValue("ConfirmedCaption");
-            lDeleted.Text = AttributeValue( "DeletedCaption" );
-            lInvalid.Text = AttributeValue("InvalidCaption");
+            userService = new UserService();
 
-            string confirmationCode = Request.QueryString["cc"];
-            if ( !string.IsNullOrEmpty( confirmationCode ) )
+            if (!Page.IsPostBack)
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
+                lDeleted.Text = AttributeValue( "DeletedCaption" );
 
-                string identifier = Rock.Security.Encryption.DecryptString( confirmationCode, encryptionPhrase );
+                string invalidCaption = AttributeValue( "InvalidCaption" );
+                if ( invalidCaption.Contains( "{0}" ) )
+                    invalidCaption = string.Format( invalidCaption, ResolveUrl( "~/NewAccount" ) );
+                lInvalid.Text = invalidCaption;
 
-                if ( identifier.StartsWith( "ROCK|" ) )
+                ConfirmationCode = Request.QueryString["cc"];
+
+                user = userService.GetByConfirmationCode( ConfirmationCode );
+                string action = Request.QueryString["action"] ?? "";
+
+                switch ( action.ToLower() )
                 {
-                    string[] idParts = identifier.Split( '|' );
-                    if ( idParts.Length == 3)
-                    {
-                        string guid = idParts[1];
-                        string username = idParts[2];
-
-                        try
-                        {
-                            UserService service = new UserService();
-                            user = service.GetByGuid( new Guid( guid ) );
-
-                            if ( !Page.IsPostBack )
-                            {
-                                if ( user != null && user.UserName == username )
-                                {
-                                    string action = Request.QueryString["action"] ?? "";
-                                    switch ( action.ToLower() )
-                                    {
-                                        case "delete":
-
-                                            string deleteCaption = AttributeValue( "DeleteCaption" );
-                                            if ( deleteCaption.Contains( "{0}" ) )
-                                                lDelete.Text = string.Format( deleteCaption, username );
-                                            else
-                                                lDelete.Text = deleteCaption;
-
-                                            pnlDelete.Visible = true;
-
-                                            break;
-
-                                        default:
-
-                                            user.IsConfirmed = true;
-                                            service.Save( user, user.PersonId );
-                                                
-                                            pnlConfirmed.Visible = true;
-                                                
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                        catch { }
-                    }
+                    case "delete":
+                        ShowDelete();
+                        break;
+                    case "reset":
+                        ShowResetPassword();
+                        break;
+                    default:
+                        ShowConfirmed();
+                        break;
                 }
             }
-        }
-
-        protected override void Render( HtmlTextWriter writer )
-        {
-            pnlInvalid.Visible = !pnlConfirmed.Visible && !pnlDelete.Visible && !pnlDeleted.Visible;
-
-            base.Render( writer );
         }
 
         #endregion
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the btnCodeConfirm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnCodeConfirm_Click( object sender, EventArgs e )
+        {
+            ConfirmationCode = tbConfirmationCode.Text;
+            user = userService.GetByConfirmationCode( ConfirmationCode );
+            ShowConfirmed();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCodeReset control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnCodeReset_Click( object sender, EventArgs e )
+        {
+            ConfirmationCode = tbConfirmationCode.Text;
+            user = userService.GetByConfirmationCode( ConfirmationCode );
+            ShowResetPassword();
+        }
+
+        protected void btnResetPassword_Click( object sender, EventArgs e )
+        {
+            user = userService.GetByConfirmationCode( ConfirmationCode );
+            ShowResetSuccess();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCodeDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void btnCodeDelete_Click( object sender, EventArgs e )
+        {
+            ConfirmationCode = tbConfirmationCode.Text;
+            user = userService.GetByConfirmationCode( ConfirmationCode );
+            ShowDelete();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            UserService service = new UserService();
-            service.Delete( user, user.PersonId );
-            service.Save( user, user.PersonId );
-
-            pnlDeleted.Visible = true;
+            user = userService.GetByConfirmationCode( ConfirmationCode );
+            ShowDeleted();
         }
 
         #endregion
 
+        #region Private Methods
+
+        private void ShowCode()
+        {
+            pnlCode.Visible = true;
+            pnlInvalid.Visible = !string.IsNullOrEmpty(ConfirmationCode);
+        }
+
+        private void ShowConfirmed()
+        {
+            if ( user != null )
+            {
+                user.IsConfirmed = true;
+                userService.Save( user, user.PersonId );
+
+                FormsAuthentication.SetAuthCookie( user.UserName, false );
+
+                string caption = AttributeValue( "ConfirmedCaption" );
+                if ( caption.Contains( "{0}" ) )
+                    caption = string.Format( caption, user.Person.FirstName );
+                lConfirmed.Text = caption;
+
+                pnlConfirmed.Visible = true;
+            }
+            else
+                ShowCode();
+        }
+
+        private void ShowResetPassword()
+        {
+            if ( user != null )
+            {
+                string caption = AttributeValue( "ResetPasswordCaption" );
+                if ( caption.Contains( "{1}" ) )
+                    caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                else if (caption.Contains( "{0}"))
+                    caption = string.Format( caption, user.Person.FirstName );
+                lResetPassword.Text = caption;
+
+                pnlResetPassword.Visible = true;
+            }
+            else
+                ShowCode();
+        }
+
+        private void ShowResetSuccess()
+        {
+            if ( user != null )
+            {
+                string caption = AttributeValue( "PasswordResetCaption" );
+                if ( caption.Contains( "{1}" ) )
+                    caption = string.Format( caption, user.Person.FirstName, user.UserName );
+                else if ( caption.Contains( "{0}" ) )
+                    caption = string.Format( caption, user.Person.FirstName );
+                lResetSuccess.Text = caption;
+
+                userService.ChangePassword( user, tbPassword.Text );
+                user.IsConfirmed = true;
+                userService.Save( user, user.PersonId );
+
+                pnlResetSuccess.Visible = true;
+            }
+            else
+                ShowCode();
+        }
+
+        private void ShowDelete()
+        {
+            if ( user != null )
+            {
+                string caption = AttributeValue( "DeleteCaption" );
+                if ( caption.Contains( "{0}" ) )
+                    caption = string.Format( caption, user.UserName );
+                lDelete.Text = caption;
+
+                pnlDelete.Visible = true;
+            }
+            else
+                ShowCode();
+        }
+
+        private void ShowDeleted()
+        {
+            if ( user != null )
+            {
+                if ( CurrentUser != null && CurrentUser.UserName == user.UserName )
+                    FormsAuthentication.SignOut();
+
+                userService.Delete( user, user.PersonId );
+                userService.Save( user, user.PersonId );
+
+                pnlDeleted.Visible = true;
+            }
+            else
+                ShowCode();
+        }
+
+        #endregion
     }
 }

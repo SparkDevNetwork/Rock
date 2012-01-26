@@ -21,6 +21,8 @@
     <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
 
+    <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
+
     <style>
         html, body 
         {

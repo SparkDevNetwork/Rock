@@ -63,9 +63,6 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.EnableAdd = true;
                     rGrid.Actions.ClientAddScript = "editAttribute(0)";
 
-                    tbDescription.TextBox.TextMode = TextBoxMode.MultiLine;
-                    tbDescription.TextBox.Rows = 3;
-
                     string script = string.Format( @"
         Sys.Application.add_load(function () {{
             $('td.grid-icon-cell.delete a').click(function(){{

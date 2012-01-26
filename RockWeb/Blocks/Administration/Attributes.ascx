@@ -8,13 +8,13 @@
 
         attribute = null;
 
-        $('#<%= tbKey.ClientID %>_tb').val('');
-        $('#<%= tbName.ClientID %>_tb').val('');
-        $('#<%= tbCategory.ClientID %>_tb').val('');
-        $('#<%= tbDescription.ClientID %>_tb').val('');
-        $('#<%= tbDescription.ClientID %>_tb').val('');
-        $('#<%= ddlFieldType.ClientID %>_ddl').val('');
-        $('#<%= tbDefaultValue.ClientID %>_tb').val('');
+        $('#<%= tbKey.ClientID %>').val('');
+        $('#<%= tbName.ClientID %>').val('');
+        $('#<%= tbCategory.ClientID %>').val('');
+        $('#<%= tbDescription.ClientID %>').val('');
+        $('#<%= tbDescription.ClientID %>').val('');
+        $('#<%= ddlFieldType.ClientID %>').val('');
+        $('#<%= tbDefaultValue.ClientID %>').val('');
         $('#<%= cbRequired.ClientID %>').removeAttr('checked');
 
         if (attributeId != 0) {
@@ -28,12 +28,12 @@
 
                     attribute = getData;
 
-                    $('#<%= tbKey.ClientID %>_tb').val(attribute.Key);
-                    $('#<%= tbName.ClientID %>_tb').val(attribute.Name);
-                    $('#<%= tbCategory.ClientID %>_tb').val(attribute.Category);
-                    $('#<%= tbDescription.ClientID %>_tb').val(attribute.Description);
-                    $('#<%= ddlFieldType.ClientID %>_ddl').val(attribute.FieldTypeId);
-                    $('#<%= tbDefaultValue.ClientID %>_tb').val(attribute.DefaultValue);
+                    $('#<%= tbKey.ClientID %>').val(attribute.Key);
+                    $('#<%= tbName.ClientID %>').val(attribute.Name);
+                    $('#<%= tbCategory.ClientID %>').val(attribute.Category);
+                    $('#<%= tbDescription.ClientID %>').val(attribute.Description);
+                    $('#<%= ddlFieldType.ClientID %>').val(attribute.FieldTypeId);
+                    $('#<%= tbDefaultValue.ClientID %>').val(attribute.DefaultValue);
                     if (attribute.Required)
                         $('#<%= cbRequired.ClientID %>').attr('checked', 'checked');
 
@@ -55,7 +55,7 @@
 
             var category = $('#<%= ddlCategoryFilter.ClientID %>').val();
             category = category == '[All]' ? '' : category;
-            $('#<%= tbCategory.ClientID %>_tb').val(category);
+            $('#<%= tbCategory.ClientID %>').val(category);
 
             $('#modal-details').modal('show').bind('shown', function () {
                 $('#modal-details').appendTo('#<%= upSettings.ClientID %>');
@@ -91,12 +91,12 @@
                     restUrl += attribute.Id;
                 }
 
-                attribute.Key = $('#<%= tbKey.ClientID %>_tb').val();
-                attribute.Name = $('#<%= tbName.ClientID %>_tb').val();
-                attribute.Category = $('#<%= tbCategory.ClientID %>_tb').val();
-                attribute.Description = $('#<%= tbDescription.ClientID %>_tb').val();
-                attribute.FieldTypeId = $('#<%= ddlFieldType.ClientID %>_ddl').val();
-                attribute.DefaultValue = $('#<%= tbDefaultValue.ClientID %>_tb').val();
+                attribute.Key = $('#<%= tbKey.ClientID %>').val();
+                attribute.Name = $('#<%= tbName.ClientID %>').val();
+                attribute.Category = $('#<%= tbCategory.ClientID %>').val();
+                attribute.Description = $('#<%= tbDescription.ClientID %>').val();
+                attribute.FieldTypeId = $('#<%= ddlFieldType.ClientID %>').val();
+                attribute.DefaultValue = $('#<%= tbDefaultValue.ClientID %>').val();
                 attribute.Required = $('#<%= cbRequired.ClientID %>').is(':checked');
 
                 $.ajax({
@@ -179,7 +179,7 @@
                 <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
                 <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
-                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" />
+                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                 <Rock:FieldTypeList ID="ddlFieldType" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="FieldTypeId" LabelText="Field Type" />
                 <Rock:DataTextBox ID="tbDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
                 <Rock:LabeledCheckBox ID="cbRequired" runat="server" LabelText="Required" />

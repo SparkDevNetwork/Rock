@@ -824,7 +824,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.<#= Namespace #>.DTO.<#= Entity #> Get( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -872,7 +872,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void Update<#= Entity #>( string id, Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -934,7 +934,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void Create<#= Entity #>( Rock.<#= Namespace #>.DTO.<#= Entity #> <#= Entity #> )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
@@ -988,7 +988,7 @@ namespace Rock.REST<#= projectNamespace #>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void Delete<#= Entity #>( string id )
         {
-            var currentUser = Rock.CMS.User.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 

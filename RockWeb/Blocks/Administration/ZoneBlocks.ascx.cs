@@ -294,6 +294,8 @@ namespace RockWeb.Blocks.Administration
                         if ( control is Rock.Web.UI.Block )
                         {
                             block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                            // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
+                            block.Name = System.Text.RegularExpressions.Regex.Replace( block.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
                             block.Description = block.Path;
 
                             blockService.Add( block, CurrentPersonId );
@@ -305,10 +307,10 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
                 
-                ddlBlockType.DropDownList.DataSource = blockService.Queryable().ToList();
-                ddlBlockType.DropDownList.DataTextField = "Name";
-                ddlBlockType.DropDownList.DataValueField = "Id";
-                ddlBlockType.DropDownList.DataBind();
+                ddlBlockType.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DataTextField = "Name";
+                ddlBlockType.DataValueField = "Id";
+                ddlBlockType.DataBind();
             }
         }
 
@@ -328,7 +330,7 @@ namespace RockWeb.Blocks.Administration
             {
                 lAction.Text = "Add ";
                 hfBlockInstanceId.Value = "0";
-                ddlBlockType.DropDownList.SelectedIndex = -1;
+                ddlBlockType.SelectedIndex = -1;
                 tbBlockName.Text = string.Empty;
             }
 

@@ -95,6 +95,7 @@
     <Compile Include="CMS\BlogService.cs" />
     <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\BlogTagService.cs" />
+    <Compile Include="CMS\UserService.partial.cs" />
     <Compile Include="CMS\SiteDomainService.partial.cs" />
     <Compile Include="CMS\EntityAuthRepository.cs" />
     <Compile Include="CMS\EntityBlockInstanceRepository.cs" />
@@ -222,14 +223,17 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
-    <Compile Include="Web\Cache\OrganizationAttributes.cs" />
+    <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
+    <Compile Include="Web\UI\Controls\PageTitle.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
+    <Compile Include="Web\UI\Controls\Zone.cs" />
     <Compile Include="Web\UI\Page.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -248,7 +252,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\UI\Controls\LabeledDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\Grid\SecurityField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ReorderField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditField.cs" />
