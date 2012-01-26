@@ -861,7 +861,7 @@ textarea[readonly] {
   margin-left: -1px;
 }
 .inputs-list {
-  margin: 0 0 5px;
+  margin: 0 0 5px 12px;
   width: 100%;
 }
 .inputs-list li {
