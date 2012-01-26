@@ -5,7 +5,7 @@
 
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
-        var usernameTextbox = $('#<%= tbUserName.ClientID %>_tb');
+        var usernameTextbox = $('#<%= tbUserName.ClientID %>');
 
         availabilityMessageRow.hide();
 
@@ -61,8 +61,10 @@
                         <dt></dt>
                         <dd><div id="availabilityMessage" class="alert-message"/></dd>
                     </dl>
-                    <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" ></Rock:LabeledTextBox>
-                    <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" LabelText="Confirmation" Required="true" ></Rock:LabeledTextBox>
+                    <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
+                    <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" LabelText="Confirmation" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
+                    <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
+
                 </fieldset>
 
             </div>

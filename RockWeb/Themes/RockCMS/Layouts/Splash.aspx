@@ -1,5 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" 
-    AutoEventWireup="true" CodeFile="Splash.aspx.cs" Inherits="RockWeb.Themes.RockCMS.Layouts.Splash" %>
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <html>
 <head id="Head1" runat="server">
@@ -34,9 +33,7 @@
                 <h1>Rock ChMS</h1>
                 
                 <div id="content-box" class="group">
-                    <asp:PlaceHolder ID="Content" runat="server">
-                        
-                    </asp:PlaceHolder>
+                    <Rock:Zone ID="Content" runat="server" />
                 </div>
             </div>
 

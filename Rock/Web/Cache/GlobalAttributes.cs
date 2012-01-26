@@ -11,22 +11,22 @@ using System.Runtime.Caching;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Organization Attributes
+    /// Global Attributes
     /// This information will be cached by the engine
     /// </summary>
-    public class OrganizationAttributes
+    public class GlobalAttributes
     {
         /// <summary>
-        /// Use Static Read() method to instantiate a new Organization Attributes object
+        /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
-        private OrganizationAttributes() { }
+        private GlobalAttributes() { }
 
         /// <summary>
-        /// Organizational Attribute Value for the specified key.
+        /// Global Attribute Value for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string Value (string key)
+        public string AttributeValue (string key)
         {
             if (AttributeValues.Keys.Contains(key))
                 return AttributeValues[key].Value;
@@ -49,22 +49,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Returns Organization Attributes from cache.  If they are not already in cache, they
+        /// Returns Global Attributes from cache.  If they are not already in cache, they
         /// will be read and added to cache
         /// </summary>
         /// <returns></returns>
-        public static OrganizationAttributes Read()
+        public static GlobalAttributes Read()
         {
-            string cacheKey = OrganizationAttributes.CacheKey();
+            string cacheKey = GlobalAttributes.CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
-            OrganizationAttributes orgAttributes = cache[cacheKey] as OrganizationAttributes;
+            GlobalAttributes orgAttributes = cache[cacheKey] as GlobalAttributes;
 
             if ( orgAttributes != null )
                 return orgAttributes;
             else
             {
-                orgAttributes = new OrganizationAttributes();
+                orgAttributes = new GlobalAttributes();
                 orgAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
                 var attributeService = new Rock.Core.AttributeService();
@@ -86,12 +86,18 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes Organization Attributes from cache
+        /// Removes Global Attributes from cache
         /// </summary>
         public static void Flush()
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( OrganizationAttributes.CacheKey() );
+            cache.Remove( GlobalAttributes.CacheKey() );
+        }
+
+        public static string Value(string key)
+        {
+            GlobalAttributes orgAttributes = Read();
+            return orgAttributes.AttributeValue( key );
         }
 
         #endregion

@@ -36,17 +36,14 @@ namespace Rock.CRM
 		public bool System { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the First Name.
+		/// Gets or sets the Given Name.
 		/// </summary>
 		/// <value>
-		/// First Name.
+		/// Given Name.
 		/// </value>
 		[MaxLength( 50 )]
-		[TrackChanges]
-		[Required( ErrorMessage = "First Name must be between 1 and 12 characters" )]
-		[StringLength( 12, ErrorMessage = "First Name is required" )]
 		[DataMember]
-		public string FirstName { get; set; }
+		public string GivenName { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Nick Name.
@@ -179,7 +176,7 @@ namespace Rock.CRM
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;
-				dto.FirstName = this.FirstName;
+				dto.GivenName = this.GivenName;
 				dto.NickName = this.NickName;
 				dto.LastName = this.LastName;
 				dto.Gender = this.GenderInternal;

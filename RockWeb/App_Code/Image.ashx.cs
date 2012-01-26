@@ -43,7 +43,7 @@ namespace RockWeb
 
 				// is it cached?
 				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-				string physFilePath = context.Request.MapPath( string.Format( "~/cache/{0}", cacheName ) );
+				string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
 				bool cached = FetchFromCache( file, physFilePath );
 
 				// Image resizing requested?
@@ -108,9 +108,7 @@ namespace RockWeb
 		/// <returns>True if the request desires image resizing/manipulation; false otherwise.</returns>
 		private static bool WantsImageResizing( HttpContext context )
 		{
-			NameValueCollection nvc = context.Request.QueryString;
-			return ( nvc["maxwidth"] != null || nvc["maxheight"] != null || nvc["width"] != null ||
-				nvc["height"] != null || nvc["rotate"] != null || nvc["scale"] != null );
+			return context.Request.QueryString.Count > 1;
 		}
 
 		private static void SendFile( HttpContext context, Rock.CMS.File file )
@@ -119,7 +117,6 @@ namespace RockWeb
 			context.Response.AddHeader( "content-disposition", "inline;filename=" + file.FileName );
 			context.Response.BinaryWrite( file.Data );
 			context.Response.Flush();
-			context.Response.End();
 		}
 
         public bool IsReusable

@@ -13,7 +13,7 @@ namespace Rock.Core
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get { return new Security.GenericEntity( "Organization" ); }
+            get { return new Security.GenericEntity( "Global" ); }
         }
     }
 }

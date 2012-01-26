@@ -5,46 +5,50 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.Security;
 
 namespace RockWeb.Blocks.Security
 {
     public partial class LoginStatus : Rock.Web.UI.Block
     {
-        protected void Page_Load( object sender, EventArgs e )
+        string action = string.Empty;
+
+        protected override void OnLoad( EventArgs e )
         {
-            phHello.Controls.Clear();
-            phActions.Controls.Clear();
+            base.OnLoad( e );
 
-            if (HttpContext.Current.User.Identity.IsAuthenticated)
+            action = hfTest.Value;
+
+            if (HttpContext.Current.User.Identity.IsAuthenticated && CurrentPerson != null)
             {
-                phHello.Controls.Add( new LiteralControl( "<span>Hello " ) );
-                phHello.Controls.Add( new LiteralControl( CurrentPerson.NickName ) );
-                phHello.Controls.Add( new LiteralControl( "</span>" ) );
+                phHello.Visible = true;
+                lHello.Text = string.Format( "<span>Hello {0}</span>", CurrentPerson.FirstName );
 
-                HtmlGenericControl aMyAccount = new HtmlGenericControl("a");
-                aMyAccount.Attributes.Add( "href", ResolveUrl( "~/myaccount" ) );
-                aMyAccount.InnerText = "My Account";
-                phActions.Controls.Add( aMyAccount );
-
-                phActions.Controls.Add( new LiteralControl( " | " ) );
-
-                Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference( PageInstance.Id, PageInstance.RouteId );
-
-                Dictionary<string, string> parms = new Dictionary<string, string>();
-                parms.Add( "logout", "true" );
-                
-                HtmlGenericControl aLogout = new HtmlGenericControl( "a" );
-                aLogout.Attributes.Add( "href", PageInstance.BuildUrl( pageRef, parms ) );
-                aLogout.InnerText = "Logout";
-                phActions.Controls.Add( aLogout );
+                phMyAccount.Visible = true;
+                lbLoginLogout.Text = "Logout";
             }
             else
             {
-                HtmlGenericControl aLogin = new HtmlGenericControl("a");
-                aLogin.Attributes.Add( "href", ResolveUrl( "~/login" ) );
-                aLogin.InnerText = "Login";
-                phActions.Controls.Add( aLogin );
+                phHello.Visible = false;
+                phMyAccount.Visible = false;
+                lbLoginLogout.Text = "Login";
             }
+
+            hfTest.Value = lbLoginLogout.Text;
+        }
+
+        protected void lbLoginLogout_Click( object sender, EventArgs e )
+        {
+            if ( action == "Login" )
+                FormsAuthentication.RedirectToLoginPage();
+            else
+            {
+                FormsAuthentication.SignOut();
+
+                Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference (PageInstance.Id, PageInstance.RouteId );
+                Response.Redirect( PageInstance.BuildUrl( pageRef, null ) );
+            }
+
         }
     }
 }
