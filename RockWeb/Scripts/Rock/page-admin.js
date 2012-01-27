@@ -164,6 +164,7 @@
         $('.zone-configuration').hide();
         $('.zone-instance').removeClass('outline');
         $('.block-configuration').toggle();
+        $('.block-instance').toggleClass('outline');
         return false;
     });
 
@@ -171,6 +172,7 @@
     // of each zone's container and config options
     $('#cms-admin-footer .page-zones').click(function () {
         $('.block-configuration').hide();
+        $('.block-instance').removeClass('outline');
         $('.zone-instance').toggleClass('outline');
         $('.zone-configuration').toggle();
         return false;
