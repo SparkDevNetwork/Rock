@@ -10,183 +10,212 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-	public partial class Blocks : Rock.Web.UI.Block
-	{
-		private string _action = string.Empty;
-		private int _blockId = 0;
+    public partial class Blocks : Rock.Web.UI.Block
+    {
+        #region Fields
+
+        private Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
 
         protected override void OnInit( EventArgs e )
         {
-			_action = PageParameter( "action" ).ToLower();
-			switch ( _action )
-			{
-				case "":
-				case "list":
-					DisplayList();
-					break;
-				case "add":
-					_blockId = 0;
-					DisplayEdit( _blockId );
-					break;
-				case "edit":
-					if ( Int32.TryParse( PageParameter( "BlockId" ), out _blockId ) )
-						DisplayEdit( _blockId );
-					else
-                        throw new System.Exception( "Invalid Block Id" );
-					break;
-			}
-		}
+            base.OnInit( e );
+
+            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            {
+                gBlocks.DataKeyNames = new string[] { "id" };
+                gBlocks.Actions.EnableAdd = true;
+                gBlocks.Actions.AddClick += gBlocks_Add;
+                gBlocks.GridRebind += gBlocks_GridRebind;
+            }
+
+            string script = @"
+        Sys.Application.add_load(function () {
+            $('td.grid-icon-cell.delete a').click(function(){
+                return confirm('Are you sure you want to delete this block?');
+                });
+        });
+    ";
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gBlocks.ClientID ), script, true );
+
+        }
+
+        #endregion
+
+        #region Control Methods
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack )
+            nbMessage.Visible = false;
+
+            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
             {
-                _action = PageParameter( "action" ).ToLower();
-                switch ( _action )
+                if ( !Page.IsPostBack )
                 {
-                    case "":
-                    case "list":
-                        BindGrid();
-                        break;
+                    ScanForBlocks();
+
+                    BindGrid();
                 }
             }
+            else
+            {
+                gBlocks.Visible = false;
+                nbMessage.Text = "You are not authorized to edit blocks";
+                nbMessage.Visible = true;
+            }
+
+            base.OnLoad( e );
         }
 
+        #endregion
 
-        private void DisplayList()
+        #region Grid Events
+
+        protected void gBlocks_Edit( object sender, RowEventArgs e )
         {
-            phList.Visible = true;
-            phDetails.Visible = false;
+            ShowEdit( ( int )gBlocks.DataKeys[e.RowIndex]["id"] );
+        }
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+        protected void gBlocks_Delete( object sender, RowEventArgs e )
+        {
+            Rock.CMS.Block block = blockService.Get( ( int )gBlocks.DataKeys[e.RowIndex]["id"] );
+            if ( BlockInstance != null )
             {
-                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
+                blockService.Delete( block, CurrentPersonId );
+                blockService.Save( block, CurrentPersonId );
 
-                // Add any unregistered blocks
-                foreach ( Rock.CMS.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
-                {
-                    try
-                    {
-                        Control control = LoadControl( block.Path );
-                        if ( control is Rock.Web.UI.Block )
-                        {
-                            block.Name = Path.GetFileNameWithoutExtension( block.Path );
-                            block.Description = block.Path;
-
-                            blockService.Add( block, CurrentPersonId );
-                            Rock.CMS.Block testBlock = block;
-                            blockService.Save( block, CurrentPersonId );
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-
+                Rock.Web.Cache.Block.Flush( block.Id );
             }
 
-            rGrid.DataKeyNames = new string[] { "id" };
-            rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );
-            rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+            BindGrid();
+        }
 
-            rGrid.Actions.EnableAdd = true;
-            rGrid.Actions.AddClick += new EventHandler( Actions_AddClick );
+        protected void gBlocks_Add( object sender, EventArgs e )
+        {
+            ShowEdit( 0 );
+        }
 
-            string script = string.Format( @"
-    Sys.Application.add_load(function () {{
-        $('td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this Block?');
-            }});
-    }});
-", rGrid.ClientID );
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+        protected void gBlocks_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
+        #endregion
+
+        #region Edit Events
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            Rock.CMS.Block block;
+
+            int blockId = 0;
+            if ( !Int32.TryParse( hfBlockId.Value, out blockId ) )
+                blockId = 0;
+
+            if ( blockId == 0 )
+            {
+                block = new Rock.CMS.Block();
+                blockService.Add( block, CurrentPersonId );
+            }
+            else
+                block = blockService.Get( blockId );
+
+            block.Name = tbName.Text;
+            block.Path = tbPath.Text;
+            block.Description = tbDescription.Text;
+
+            blockService.Save( block, CurrentPersonId );
+
+            Rock.Web.Cache.Block.Flush( block.Id );
+
+            BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        private void ScanForBlocks()
+        {
+            foreach ( Rock.CMS.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            {
+                try
+                {
+                    Control control = LoadControl( block.Path );
+                    if ( control is Rock.Web.UI.Block )
+                    {
+                        block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                        block.Description = block.Path;
+
+                        blockService.Add( block, CurrentPersonId );
+                        blockService.Save( block, CurrentPersonId );
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
 
         private void BindGrid()
         {
-            Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
-            rGrid.DataSource = blockService.Queryable().ToList();
-            rGrid.DataBind();
+            IQueryable<Rock.CMS.Block> blocks = blockService.Queryable();
+
+            SortProperty sortProperty = gBlocks.SortProperty;
+            if (sortProperty != null)
+                blocks = blocks.Sort(sortProperty);
+            //{
+            //    if ( sortProperty.Direction == SortDirection.Ascending )
+            //        blocks = blocks.OrderBy( sortProperty.Property );
+            //    else
+            //        blocks = blocks.OrderByDescending( sortProperty.Property );
+            //}
+            else
+                blocks = blocks.OrderBy( b => b.Name );
+
+            gBlocks.DataSource = blocks.ToList();
+            gBlocks.DataBind();
         }
 
-		private void DisplayEdit( int blockId )
-		{
-			phList.Visible = false;
-			phDetails.Visible = true;
-
-			using ( new Rock.Data.UnitOfWorkScope() )
-			{
-                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
-
-				if ( blockId > 0 )
-				{
-					Rock.CMS.Block block = blockService.Get( Convert.ToInt32( PageParameter( "BlockId" ) ) );
-                    if (block == null)
-                        throw new System.Exception( "Invalid Block Id" );
-
-					tbPath.Text = block.Path;
-					tbName.Text = block.Name;
-					tbDescription.Text = block.Description;
-                    cbSystem.Checked = block.System;
-				}
-				else
-				{
-					tbPath.Text = string.Empty;
-					tbName.Text = string.Empty;
-					tbDescription.Text = string.Empty;
-				}
-			}
-		}
-
-        void Actions_AddClick( object sender, EventArgs e )
+        protected void ShowEdit( int blockId )
         {
-            Response.Redirect( "~/Bloc/Add" );
-        }
+            Rock.CMS.Block block = blockService.Get( blockId );
 
-        protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
-        {
-            Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
-            Rock.CMS.Block block = blockService.Get( ( int )e.Keys["id"] );
             if ( block != null )
             {
-                blockService.Delete( block, CurrentPersonId );
-                blockService.Save( block, CurrentPersonId );
+                lAction.Text = "Edit";
+                hfBlockId.Value = block.Id.ToString();
+
+                tbName.Text = block.Name;
+                tbPath.Text = block.Path;
+                tbDescription.Text = block.Description;
+            }
+            else
+            {
+                lAction.Text = "Add";
+                tbName.Text = string.Empty;
+                tbPath.Text = string.Empty;
+                tbDescription.Text = string.Empty;
             }
 
-            BindGrid();
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
         }
 
-        void rGrid_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid();
-        }
+        #endregion
 
-        protected void lbSave_Click( object sender, EventArgs e )
-		{
-			using ( new Rock.Data.UnitOfWorkScope() )
-			{
-                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
-
-				Rock.CMS.Block block = _action == "add" ?
-					new Rock.CMS.Block() :
-					blockService.Get( _blockId );
-
-				block.Path = tbPath.Text;
-				block.Name = tbName.Text;
-				block.Description = tbDescription.Text;
-                block.System = cbSystem.Checked;
-
-				if ( _action == "add" )
-                    blockService.Add( block, CurrentPersonId );
-				blockService.Save( block, CurrentPersonId );
-
-				Response.Redirect( "~/Bloc/list" );
-			}
-		}
-	}
+    }
 }

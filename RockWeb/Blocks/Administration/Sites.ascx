@@ -1,26 +1,65 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Sites.ascx.cs" Inherits="RockWeb.Blocks.Administration.Sites" %>
 
-<asp:PlaceHolder ID="phList" runat="server" Visible="false">
-    <asp:GridView ID="gvList" runat="server" AutoGenerateColumns="false">
-        <Columns>
-            <asp:HyperLinkField HeaderText="Site" DataNavigateUrlFormatString="~/Site/Edit/{0}" DataNavigateUrlFields="Id" DataTextField="Name" />
-            <asp:BoundField HeaderText="Description" DataField="Description" />
-            <asp:BoundField HeaderText="Theme" DataField="Theme" />
-            <asp:BoundField HeaderText="Default Page" DataField="DefaultPage" />
-        </Columns>
-    </asp:GridView> 
-	<asp:HyperLink NavigateUrl="~/Site/Add" runat="server">Add New Site</asp:HyperLink>
-</asp:PlaceHolder>
+<asp:UpdatePanel ID="upSites" runat="server">
+<ContentTemplate>
 
-<asp:PlaceHolder ID="phDetails" runat="server" Visible="false">
-    <asp:Label AssociatedControlID="tbName">Site Name</asp:Label>
-    <asp:TextBox ID="tbName" runat="server"></asp:TextBox><br />
-    <asp:Label AssociatedControlID="tbDescription">Description</asp:Label>
-    <asp:TextBox ID="tbDescription" runat="server"></asp:TextBox><br />
-    <asp:Label AssociatedControlID="tbTheme">Theme</asp:Label>
-	<asp:DropDownList ID="ddlTheme" runat="server"></asp:DropDownList><br />
-    <asp:Label AssociatedControlID="tbDefaultPage">Default Page</asp:Label>
-    <asp:DropDownList ID="ddlDefaultPage" runat="server" DataTextField="Name" DataValueField="Id"></asp:DropDownList><br />
-    <asp:LinkButton ID="lbSave" runat="server" Text="Save" OnClick="lbSave_Click"></asp:LinkButton>&nbsp;
-	<asp:HyperLink NavigateUrl="~/Site/List" runat="server">Cancel</asp:HyperLink>
-</asp:PlaceHolder>
+    <asp:Panel ID="pnlList" runat="server">
+        
+        <Rock:Grid ID="gSites" runat="server" EmptyDataText="No Sites Found">
+            <Columns>
+                <asp:BoundField DataField="Name" HeaderText="Name" />
+                <asp:BoundField HeaderText="Description" DataField="Description" />
+                <asp:BoundField HeaderText="Theme" DataField="Theme" />
+                <Rock:EditField OnClick="gSites_Edit" />
+                <Rock:DeleteField OnClick="gSites_Delete" />
+            </Columns>
+        </Rock:Grid>
+
+    </asp:Panel>
+
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+    
+        <asp:HiddenField ID="hfSiteId" runat="server" />
+
+        <asp:ValidationSummary runat="server" CssClass="failureNotification"/>
+
+        <div class="row">
+
+            <div class="6 columns">
+
+                <fieldset>
+                    <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Site</legend>
+                    <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Name" />
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                    <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Theme" />
+                    <Rock:DataDropDownList ID="ddlDefaultPage" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="DefaultPageId" LabelText="Default Page" />
+                </fieldset>
+
+            </div>
+
+            <div class="6 columns">
+
+                <fieldset>
+                    <legend>&nbsp;</legend>
+                    <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FaviconUrl" />
+                    <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="AppleTouchIconUrl" />
+                    <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FacebookAppId" />
+                    <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FacebookAppSecret" />
+                </fieldset>
+
+            </div>
+
+        </div>
+
+        <div class="actions">
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+        </div>
+
+    </asp:Panel>
+
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+
+</ContentTemplate>
+</asp:UpdatePanel>
+
