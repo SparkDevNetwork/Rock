@@ -5,110 +5,216 @@
 //
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
     public partial class Sites : Rock.Web.UI.Block
     {
-        private string _action = string.Empty;
-        private int _siteId = 0;
+        #region Fields
 
-        protected void Page_Init( object sender, EventArgs e )
+        private Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
+
+        #endregion
+
+        #region Control Methods
+
+        protected override void OnInit( EventArgs e )
         {
-            _action = PageParameter( "action" ).ToLower();
-            switch ( _action )
+            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
             {
-                case "":
-                case "list":
-                    DisplayList();
-                    break;
-                case "add":
-                    _siteId = 0;
-                    DisplayEdit( _siteId );
-                    break;
-                case "edit":
-                    if ( Int32.TryParse( PageParameter( "SiteId" ), out _siteId ) )
-                        DisplayEdit( _siteId );
-                    else
-                        throw new System.Exception( "Invalid Site Id" );
-                    break;
+                gSites.DataKeyNames = new string[] { "id" };
+                gSites.Actions.EnableAdd = true;
+                gSites.Actions.AddClick += gSites_Add;
+                gSites.GridRebind += gSites_GridRebind;
             }
+
+            string script = @"
+        Sys.Application.add_load(function () {
+            $('td.grid-icon-cell.delete a').click(function(){
+                return confirm('Are you sure you want to delete this site?');
+                });
+        });
+    ";
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gSites.ClientID ), script, true );
+
+            base.OnInit( e );
         }
 
-        protected void Page_Load( object sender, EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
-        }
+            nbMessage.Visible = false;
 
-        private void DisplayList()
-        {
-            phList.Visible = true;
-            phDetails.Visible = false;
-
-            Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-            gvList.DataSource = siteService.Queryable().ToList();
-            gvList.DataBind();
-        }
-
-        private void DisplayEdit( int siteId )
-        {
-            phList.Visible = false;
-            phDetails.Visible = true;
-
-            using ( new Rock.Data.UnitOfWorkScope() )
+            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
             {
-                Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                Rock.CMS.ThemeService themeService = new Rock.CMS.ThemeService( Request.RequestContext.HttpContext.Server.MapPath( "~" ) );
-
-                ddlDefaultPage.DataSource = pageService.Queryable().Where( p => p.ParentPage == null ).ToList();
-                ddlDefaultPage.DataBind();
-
-				ddlTheme.DataSource = themeService.GetThemesNames();
-				ddlTheme.DataBind();
-
-                if ( siteId > 0 )
+                if ( !Page.IsPostBack )
                 {
-                    Rock.CMS.Site site = siteService.Get( Convert.ToInt32( PageParameter( "SiteId" ) ) );
-                    tbName.Text = site.Name;
-                    tbDescription.Text = site.Description;
-					//tbTheme.Text = site.Theme;
-					ddlTheme.SelectedValue = site.Theme;
-                    ddlDefaultPage.SelectedValue = site.DefaultPageId.ToString();
-                }
-                else
-                {
-                    tbName.Text = string.Empty;
-                    tbDescription.Text = string.Empty;
-                    //tbTheme.Text = string.Empty;
+                    BindGrid();
+                    LoadDropDowns();
                 }
             }
+            else
+            {
+                gSites.Visible = false;
+                nbMessage.Text = "You are not authorized to edit sites";
+                nbMessage.Visible = true;
+            }
+
+            base.OnLoad( e );
         }
 
-        protected void lbSave_Click( object sender, EventArgs e )
+        #endregion
+
+        #region Grid Events
+
+        protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            ShowEdit( ( int )gSites.DataKeys[e.RowIndex]["id"] );
+        }
+
+        protected void gSites_Delete( object sender, RowEventArgs e )
+        {
+            Rock.CMS.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
+            if ( BlockInstance != null )
             {
-                Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-
-                Rock.CMS.Site site = _action == "add" ?
-                    new Rock.CMS.Site() :
-                    siteService.Get( _siteId );
-
-                site.Name = tbName.Text;
-                site.Description = tbDescription.Text;
-				site.Theme = ddlTheme.SelectedValue;
-
-                Rock.CMS.Page page = pageService.Get( Convert.ToInt32( ddlDefaultPage.SelectedValue ) );
-                site.DefaultPage = page;
-
-                if ( _action == "add" )
-                    siteService.Add( site, CurrentPersonId );
+                siteService.Delete( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
-                Response.Redirect( "~/site/list" );
+                Rock.Web.Cache.Site.Flush( site.Id );
             }
+
+            BindGrid();
         }
+
+        void gSites_Add( object sender, EventArgs e )
+        {
+            ShowEdit( 0 );
+        }
+
+        void gSites_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        #endregion
+
+        #region Edit Events
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            Rock.CMS.Site site;
+
+            int siteId = 0;
+            if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
+                siteId = 0;
+
+            if ( siteId == 0 )
+            {
+                site = new Rock.CMS.Site();
+                siteService.Add( site, CurrentPersonId );
+            }
+            else
+                site = siteService.Get( siteId );
+
+            site.Name = tbSiteName.Text;
+            site.Description = tbDescription.Text;
+            site.Theme = ddlTheme.Text;
+            site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
+            site.FaviconUrl = tbFaviconUrl.Text;
+            site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
+            site.FacebookAppId = tbFacebookAppId.Text;
+            site.FacebookAppSecret = tbFacebookAppSecret.Text;
+
+            siteService.Save( site, CurrentPersonId );
+
+            Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
+            
+            Rock.Web.Cache.Site.Flush( site.Id );
+
+            BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        private void BindGrid()
+        {
+            gSites.DataSource = siteService.Queryable().OrderBy( s => s.Name ).ToList();
+            gSites.DataBind();
+        }
+
+        private void LoadDropDowns()
+        {
+            ddlDefaultPage.Items.Clear();
+            ddlDefaultPage.Items.Add( new ListItem( "Root", "0" ) );
+            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
+                AddPage( page, 1 );
+
+            ddlTheme.Items.Clear();
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.ThemePath ) );
+            foreach ( var themeDir in di.Parent.EnumerateDirectories())
+                ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
+        }
+
+        private void AddPage( Rock.CMS.Page page, int level )
+        {
+            string pageName = new string( '-', level ) + page.Name;
+            ddlDefaultPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );
+            foreach ( var childPage in page.Pages )
+                AddPage( childPage, level + 1 );
+        }
+
+        protected void ShowEdit( int siteId )
+        {
+            Rock.CMS.Site site = siteService.Get( siteId );
+
+            if ( site != null )
+            {
+                lAction.Text = "Edit";
+                hfSiteId.Value = site.Id.ToString();
+
+                tbSiteName.Text = site.Name;
+                tbDescription.Text = site.Description;
+                ddlTheme.SetValue( site.Theme );
+                ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
+                tbFaviconUrl.Text = site.FaviconUrl;
+                tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
+                tbFacebookAppId.Text = site.FacebookAppId;
+                tbFacebookAppSecret.Text = site.FacebookAppSecret;
+            }
+            else
+            {
+                lAction.Text = "Add";
+                tbSiteName.Text = string.Empty;
+                tbDescription.Text = string.Empty;
+                ddlDefaultPage.SelectedValue = "0";
+                ddlTheme.Text = PageInstance.Site.Theme;
+                tbFaviconUrl.Text = string.Empty;
+                tbAppleTouchIconUrl.Text = string.Empty;
+                tbFacebookAppId.Text = string.Empty;
+                tbFacebookAppSecret.Text = string.Empty;
+            }
+
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        #endregion
+
     }
 }
