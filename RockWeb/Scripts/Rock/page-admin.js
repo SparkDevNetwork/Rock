@@ -139,7 +139,7 @@
                 type: 'DELETE',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'api/Cms/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Remove the block instance's container div
