@@ -112,8 +112,6 @@ namespace Rock.Web.UI.Controls
             base.AllowPaging = true;
             base.PageSize = 25;
             base.PageIndex = 0;
-
-            base.AllowSorting = true;
         }
 
         #endregion
