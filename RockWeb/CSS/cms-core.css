@@ -72,6 +72,14 @@
     z-index: 40;
 }
 
+.block-instance.outline 
+{
+    min-height: 36px;
+    clear: both;
+    display: block;
+    position: relative;
+}
+
 .block-configuration > a.icon-button {
     float: left;
     margin-left: 4px;
