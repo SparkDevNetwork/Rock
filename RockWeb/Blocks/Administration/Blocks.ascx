@@ -24,14 +24,12 @@
 
         <asp:ValidationSummary runat="server" CssClass="failureNotification"/>
 
-            <fieldset>
-                <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Path" />
-            </fieldset>
-
-        </div>
+        <fieldset>
+            <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+            <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Path" />
+        </fieldset>
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
@@ -39,8 +37,6 @@
         </div>
 
     </asp:Panel>
-
-    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
 
 </ContentTemplate>
 </asp:UpdatePanel>
