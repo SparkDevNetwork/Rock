@@ -15,11 +15,11 @@ namespace Rock.Address.Geocode
     /// The USAddressVerification service from <a href="http://www.strikeiron.com/Home.aspx">StrikeIron</a>
     /// </summary>
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
-    [Export( typeof( GeocodeService ) )]
-    [ExportMetadata( "ServiceName", "StrikeIron" )]
+    [Export( typeof( GeocodeComponent ) )]
+    [ExportMetadata( "ComponentName", "StrikeIron" )]
     [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
     [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
-    public class StrikeIron : GeocodeService
+    public class StrikeIron : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.

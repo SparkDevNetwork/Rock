@@ -11,12 +11,13 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock.Address;
+using Rock.Extension;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration.Address
 {
     /// <summary>
-    /// Used to manage the <see cref="Rock.Address.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
+    /// Used to manage the <see cref="Rock.Extension.StandardizeComponent"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
     public partial class Standardization : Rock.Web.UI.Block
@@ -81,7 +82,7 @@ namespace RockWeb.Blocks.Administration.Address
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 int order = 0;
-                foreach ( KeyValuePair<int, Lazy<StandardizeService, IStandardizeServiceData>> service in services )
+                foreach ( KeyValuePair<int, Lazy<StandardizeComponent, Rock.Extension.IComponentData>> service in services )
                 {
                     foreach ( var category in service.Value.Value.Attributes )
                         foreach ( var attribute in category.Value )
@@ -138,7 +139,7 @@ namespace RockWeb.Blocks.Administration.Address
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            StandardizeService service = StandardizeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )].Value;
+            StandardizeComponent service = StandardizeContainer.Instance.Services[Int32.Parse( hfServiceId.Value )].Value;
 
             Rock.Attribute.Helper.GetEditValues( olProperties, service );
 
@@ -162,13 +163,13 @@ namespace RockWeb.Blocks.Administration.Address
         /// </summary>
         private void BindGrid()
         {
-            var dataSource = new List<ServiceDescription>();
-            foreach ( KeyValuePair<int, Lazy<StandardizeService, IStandardizeServiceData>> service in StandardizeContainer.Instance.Services )
+            var dataSource = new List<ComponentDescription>();
+            foreach ( KeyValuePair<int, Lazy<StandardizeComponent, Rock.Extension.IComponentData>> service in StandardizeContainer.Instance.Services )
             {
                 Type type = service.Value.Value.GetType();
                 if ( Rock.Attribute.Helper.UpdateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
                     Rock.Attribute.Helper.LoadAttributes( service.Value.Value );
-                dataSource.Add( new ServiceDescription( service.Key, service.Value.Value ) );
+                dataSource.Add( new ComponentDescription( service.Key, service.Value.Value ) );
             }
 
             rGrid.DataSource = dataSource;
@@ -182,7 +183,7 @@ namespace RockWeb.Blocks.Administration.Address
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId, bool setValues )
         {
-            StandardizeService service = StandardizeContainer.Instance.Services[serviceId].Value;
+            StandardizeComponent service = StandardizeContainer.Instance.Services[serviceId].Value;
             hfServiceId.Value = serviceId.ToString();
 
             olProperties.Controls.Clear();
