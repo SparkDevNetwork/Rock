@@ -65,6 +65,11 @@ namespace Rock
 
         #region DropDownList Extensions
 
+        /// <summary>
+        /// Try's to set the selected value, if the value does not exist, wills et the first item in the list
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
         public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
         {
             try

@@ -502,9 +502,26 @@ namespace Rock.Web.UI.Controls
     [Serializable]
     public class SortProperty
     {
+        /// <summary>
+        /// Gets or sets the direction.
+        /// </summary>
+        /// <value>
+        /// The direction.
+        /// </value>
         public System.Web.UI.WebControls.SortDirection Direction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the property name
+        /// </summary>
+        /// <value>
+        /// The property.
+        /// </value>
         public string Property { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SortProperty"/> class.
+        /// </summary>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
         public SortProperty( GridViewSortEventArgs e )
         {
             Direction = e.SortDirection;
