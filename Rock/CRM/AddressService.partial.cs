@@ -37,7 +37,7 @@ namespace Rock.CRM
             string inputAddress = address.ToString();
 
             // Try each of the standardization services that were found through MEF
-            foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeService, Rock.Address.IStandardizeServiceData>> service in Rock.Address.StandardizeContainer.Instance.Services )
+            foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeComponent, Rock.Extension.IComponentData>> service in Rock.Address.StandardizeContainer.Instance.Services )
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     string result;
@@ -47,7 +47,7 @@ namespace Rock.CRM
                     Core.ServiceLog log = new Core.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Address Standardize";
-                    log.Name = service.Value.Metadata.ServiceName;
+                    log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputAddress;
                     log.Result = result;
                     log.Success = success;
@@ -57,7 +57,7 @@ namespace Rock.CRM
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        address.StandardizeService = service.Value.Metadata.ServiceName;
+                        address.StandardizeService = service.Value.Metadata.ComponentName;
                         address.StandardizeResult = result;
                         address.StandardizeDate = DateTime.Now;
                         break;
@@ -93,7 +93,8 @@ namespace Rock.CRM
             string inputAddress = address.ToString();
 
             // Try each of the geocoding services that were found through MEF
-            foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeService, Rock.Address.IGeocodeServiceData>> service in Rock.Address.GeocodeContainer.Instance.Services )
+            
+            foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeComponent, Rock.Extension.IComponentData>> service in Rock.Address.GeocodeContainer.Instance.Services )
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value ) )
                 {
                     string result;
@@ -103,7 +104,7 @@ namespace Rock.CRM
                     Core.ServiceLog log = new Core.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Address Geocode";
-                    log.Name = service.Value.Metadata.ServiceName;
+                    log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputAddress;
                     log.Result = result;
                     log.Success = success;
@@ -113,7 +114,7 @@ namespace Rock.CRM
                     // If succesful, set the results and stop processing
                     if ( success  )
                     {
-                        address.GeocodeService = service.Value.Metadata.ServiceName;
+                        address.GeocodeService = service.Value.Metadata.ComponentName;
                         address.GeocodeResult = result;
                         address.GeocodeDate = DateTime.Now;
                         break;
