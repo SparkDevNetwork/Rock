@@ -309,7 +309,7 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Sends the specified from.
+        /// Sends the email.
         /// </summary>
         /// <param name="from">From.</param>
         /// <param name="to">To.</param>
@@ -317,10 +317,11 @@ namespace Rock.Communication
         /// <param name="bcc">The BCC.</param>
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
-        /// <param name="smtpServer">The SMTP server.</param>
-        /// <param name="smtpPort">The SMTP port.</param>
-        /// <param name="smtpUserName">Name of the SMTP user.</param>
-        /// <param name="smtpPassword">The SMTP password.</param>
+        /// <param name="server">The server.</param>
+        /// <param name="port">The port.</param>
+        /// <param name="useSSL">if set to <c>true</c> [use SSL].</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
         public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body, 
             string server, int port, bool useSSL, string userName, string password)
         {

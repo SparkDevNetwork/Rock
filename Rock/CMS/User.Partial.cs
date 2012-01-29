@@ -41,6 +41,9 @@ namespace Rock.CMS
             }
         }
 
+        /// <summary>
+        /// Gets a urlencoded and encrypted confirmation code.
+        /// </summary>
         public string ConfirmationCodeEncoded
         {
             get

@@ -15,6 +15,9 @@ namespace Rock.CRM
     //[MetadataType(typeof(CommentPerson))]
     public partial class Person
     {
+        /// <summary>
+        /// Gets NickName if not null, otherwise gets GivenName.
+        /// </summary>
         public string FirstName
         {
             get
