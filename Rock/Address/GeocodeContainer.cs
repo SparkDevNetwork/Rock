@@ -49,7 +49,7 @@ namespace Rock.Address
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( GeocodeComponent ) )]
-        protected override IEnumerable<Lazy<GeocodeComponent, IComponentData>> Components { get; set; }
+        protected override IEnumerable<Lazy<GeocodeComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
 
         #endregion
