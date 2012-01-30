@@ -43,7 +43,7 @@ namespace Rock.Address
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( StandardizeComponent ) )]
-        protected override IEnumerable<Lazy<StandardizeComponent, IComponentData>> Components { get; set; }
+        protected override IEnumerable<Lazy<StandardizeComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
 
     }
