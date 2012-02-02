@@ -1,1 +1,0 @@
-﻿<%@ WebHandler Language="C#" CodeBehind="~/App_Code/File.ashx.cs" Class="RockWeb.File" %>
