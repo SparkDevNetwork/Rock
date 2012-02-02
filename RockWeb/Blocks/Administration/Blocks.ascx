@@ -1,35 +1,43 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Blocks.ascx.cs" Inherits="RockWeb.Blocks.Administration.Blocks" %>
 
-<asp:PlaceHolder ID="phList" runat="server" Visible="false">
-    <Rock:Grid ID="rGrid" runat="server" >
-        <Columns>
-            <asp:HyperLinkField HeaderText="Block" DataTextField="Name" DataNavigateUrlFormatString="~/Bloc/Edit/{0}" DataNavigateUrlFields="id" />
-            <asp:BoundField HeaderText="Description" DataField="Description" />
-            <Rock:BoolField DataField="System" HeaderText="System" SortExpression="System"></Rock:BoolField>
-            <Rock:DeleteField/>
-        </Columns>
-    </Rock:Grid>
-</asp:PlaceHolder>
+<asp:UpdatePanel ID="upBlocks" runat="server">
+<ContentTemplate>
 
-<asp:UpdatePanel UpdateMode="Always" runat="server">
-	<ContentTemplate>
+    <asp:Panel ID="pnlList" runat="server">
+        
+        <Rock:Grid ID="gBlocks" runat="server" EmptyDataText="No Blocks Found" AllowSorting="true" >
+            <Columns>
+                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
+                <asp:BoundField HeaderText="Description" DataField="Description" />
+                <Rock:BoolField DataField="System" HeaderText="System" />
+                <Rock:EditField OnClick="gBlocks_Edit" />
+                <Rock:DeleteField OnClick="gBlocks_Delete" />
+            </Columns>
+        </Rock:Grid>
 
-		<asp:PlaceHolder ID="phDetails" runat="server" Visible="false">
-            <fieldset>
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Name" />
+    </asp:Panel>
 
-			    <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xlarge" PropertyName="Path" />
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+    
+        <asp:HiddenField ID="hfBlockId" runat="server" />
 
-                <Rock:DataTextBox ID="tbDescription" runat="server" TextBoxTextMode="MultiLine" TextBoxRows="6" SourceTypeName="Rock.CMS.Block, Rock" TextBoxCssClass="xxlarge" PropertyName="Description" />
+        <asp:ValidationSummary runat="server" CssClass="failureNotification"/>
 
-                <Rock:LabeledCheckBox ID="cbSystem" runat="server" LabelText="Is this a system block?"></Rock:LabeledCheckBox>
+        <fieldset>
+            <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+            <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Path" />
+        </fieldset>
 
-                <div class="actions">
-			        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn primary" OnClick="lbSave_Click"/>&nbsp;
-			        <asp:HyperLink ID="hlCancel" runat="server" Text="Cancel" CssClass="btn" NavigateUrl="~/Bloc/List" />
-                </div>
-            </fieldset>
-		</asp:PlaceHolder>
+        <div class="actions">
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+        </div>
 
-    </ContentTemplate>
+    </asp:Panel>
+
+</ContentTemplate>
 </asp:UpdatePanel>
+

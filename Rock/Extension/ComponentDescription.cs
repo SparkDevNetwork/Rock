@@ -6,12 +6,12 @@
 
 using System;
 
-namespace Rock.Address
+namespace Rock.Extension
 {
     /// <summary>
     /// Helper class for wrapping the properties of a MEF class to use in databinding
     /// </summary>
-    public class ServiceDescription
+    public class ComponentDescription
     {
         /// <summary>
         /// Gets or sets the id.
@@ -38,7 +38,7 @@ namespace Rock.Address
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ServiceDescription"/> is active.
+        /// Gets or sets a value indicating whether this <see cref="ComponentDescription"/> is active.
         /// </summary>
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
@@ -46,11 +46,11 @@ namespace Rock.Address
         public bool Active { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceDescription"/> class.
+        /// Initializes a new instance of the <see cref="ComponentDescription"/> class.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ServiceDescription( int id, Rock.Attribute.IHasAttributes service )
+        public ComponentDescription( int id, Rock.Attribute.IHasAttributes service )
         {
             Id = id;
 

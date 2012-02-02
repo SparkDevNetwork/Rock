@@ -200,7 +200,7 @@ namespace Rock.Web.UI
         /// <see cref="Zones"/> property to see if it has been defined.  If an existing zone 
         /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the <see cref="HtmlForm"/> control
         /// is returned
-        /// </remarks>
+        /// </summary>
         /// <param name="zoneName">Name of the zone.</param>
         /// <returns></returns>
         protected virtual Control FindZone( string zoneName )

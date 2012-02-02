@@ -65,19 +65,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Address\Geocode\TeleAtlas.cs" />
-    <Compile Include="Address\ServiceDescription.cs" />
-    <Compile Include="Address\Standardize\MelissaData.cs" />
-    <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Extension\Component.cs" />
+    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\Container.cs" />
+    <Compile Include="Address\Geocode\TeleAtlas.cs" />
+    <Compile Include="Extension\ComponentDescription.cs" />
+    <Compile Include="Address\Standardize\MelissaData.cs" />
+    <Compile Include="Address\Standardize\StrikeIron.cs" />
     <Compile Include="Address\StandardizeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Address\Geocode\StrikeIron.cs" />
-    <Compile Include="Address\StandardizeService.cs" />
-    <Compile Include="Address\GeocodeService.cs" />
+    <Compile Include="Address\StandardizeComponent.cs" />
+    <Compile Include="Address\GeocodeComponent.cs" />
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
     <Compile Include="CMS\Auth.cs" />
     <Compile Include="CMS\AuthService.cs" />
@@ -192,6 +195,7 @@
     <Compile Include="CRM\PersonService.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
+    <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Groups\EntityGroupRepository.cs" />
     <Compile Include="Groups\EntityGroupRoleRepository.cs" />
     <Compile Include="Groups\EntityGroupTypeRepository.cs" />

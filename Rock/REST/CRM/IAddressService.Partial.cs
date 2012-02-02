@@ -6,7 +6,7 @@
 
 using System.ServiceModel;
 
-using Rock.Address;
+using Rock.Extension;
 using Rock.CRM;
 
 namespace Rock.REST.CRM

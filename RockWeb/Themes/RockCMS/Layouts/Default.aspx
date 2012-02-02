@@ -21,7 +21,7 @@
 				    </div>
 				    <div class="five columns offset-by-four content">
 
-					    <Rock:Zone ID="Header" runat="server" />
+					    <Rock:Zone ID="zHeader" Name="Header" runat="server" />
 
 					    <div class="filter-search">
 						    <input id="search-words">
