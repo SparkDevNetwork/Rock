@@ -1,0 +1,128 @@
+/* CSS Overrides for the Spark Website */
+body {
+	background-color: #dfdfdf;
+}
+
+.container {
+	width: 960px; /* set page width to fixed 960px */
+	margin-top: 26px;
+}
+
+.pills a {
+	color: #4e4e4e;
+}
+
+.pills a:hover {
+	background-color: #d0d0d0;
+}
+
+.pills .active a {
+	background-color: #a1a1a1;
+}
+
+.btn.primary {
+  color: #ffffff;
+  background-color: #ee3b1e;
+  background-repeat: repeat-x;
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#f5482c), to(#ee3b1e));
+  background-image: -moz-linear-gradient(top, #f5482c, #ee3b1e);
+  background-image: -ms-linear-gradient(top, #f5482c, #ee3b1e);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f5482c), color-stop(100%, #ee3b1e));
+  background-image: -webkit-linear-gradient(top, #f5482c, #ee3b1e);
+  background-image: -o-linear-gradient(top, #f5482c, #ee3b1e);
+  background-image: linear-gradient(top, #f5482c, #ee3b1e);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f5482c', endColorstr='#ee3b1e', GradientType=0);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  border-color: #ee3b1e #ee3b1e #003f81;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+
+table td, table tbody th {
+  border-top: 1px solid #797979;
+}
+
+.hero-unit {
+	background-color: #d0d0d0;
+}
+
+dd {
+	margin-bottom: 12px;
+}
+
+.actions {
+	background-color: #d0d0d0;
+}
+
+/* specific spark elements */
+
+
+h1.header-logo {
+	background: url("../assets/images/spark-logo.png") no-repeat scroll 0 0 transparent;
+    display: block;
+    float: left;
+    width: 179px;
+    height: 47px;
+    margin-top: 2px;
+    text-indent: -9999px;
+}
+
+.nav {
+	float: right;
+}
+
+.splash {
+	margin-top: 26px;
+}
+
+.home-column {
+	background: url("../assets/images/home-column-sep.jpg") no-repeat top right; 
+	min-height: 200px;
+	margin-top: 26px;
+}
+
+.home-column:last-child {
+	background: none;
+}
+
+.home-column > article {
+	width: 270px;
+}
+
+.home-column img, .home-column form, .home-column .alert-message {
+	margin-top: 12px;
+}
+
+.home-column .form-stacked {
+    padding-left: 0;
+}
+
+#subscribe-msg {
+	display: none;
+}
+
+.page-header {
+	border-bottom: 1px solid #797979;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    margin-bottom: 17px;    
+}
+
+.page-header h1 small {
+	color: #797979;
+}
+
+footer.row {
+	margin-top: 70px;
+	margin-bottom: 50px;
+	text-shadow: 0 1px 0 #FFFFFF;
+	border: 0;
+	
+}
+
+.row > h2 {
+	margin-top: 30px;
+}
+
+.row p img {
+	display: block;   
+	margin: 12px auto;
+}
