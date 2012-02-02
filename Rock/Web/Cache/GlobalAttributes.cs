@@ -94,6 +94,11 @@ namespace Rock.Web.Cache
             cache.Remove( GlobalAttributes.CacheKey() );
         }
 
+        /// <summary>
+        /// Gets the Global Attribute values for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public static string Value(string key)
         {
             GlobalAttributes orgAttributes = Read();

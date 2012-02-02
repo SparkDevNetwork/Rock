@@ -6,7 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Rock
@@ -61,6 +63,29 @@ namespace Rock
 
         #endregion
 
+        #region DropDownList Extensions
+
+        /// <summary>
+        /// Try's to set the selected value, if the value does not exist, wills et the first item in the list
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
+        {
+            try
+            {
+                ddl.SelectedValue = value;
+            }
+            catch
+            {
+                if ( ddl.Items.Count > 0 )
+                    ddl.SelectedIndex = 0;
+            }
+                
+        }
+
+        #endregion
+
         #region Enum Extensions
 
         /// <summary>
@@ -105,5 +130,98 @@ namespace Rock
 
         #endregion
 
+        #region IQueryable extensions
+
+        /// <summary>
+        /// Orders the list by the name of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The type of object.</param>
+        /// <param name="property">The property to order by.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<T> OrderBy<T>( this IQueryable<T> source, string property )
+        {
+            return ApplyOrder<T>( source, property, "OrderBy" );
+        }
+
+        /// <summary>
+        /// Orders the list by the name of a property in descending order
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The type of object.</param>
+        /// <param name="property">The property to order by.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<T> OrderByDescending<T>( this IQueryable<T> source, string property )
+        {
+            return ApplyOrder<T>( source, property, "OrderByDescending" );
+        }
+
+        /// <summary>
+        /// Then Orders the list by the name of a property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The type of object.</param>
+        /// <param name="property">The property to order by.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<T> ThenBy<T>( this IOrderedQueryable<T> source, string property )
+        {
+            return ApplyOrder<T>( source, property, "ThenBy" );
+        }
+
+        /// <summary>
+        /// Then Orders the list by a a property in descending order
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The type of object.</param>
+        /// <param name="property">The property to order by.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<T> ThenByDescending<T>( this IOrderedQueryable<T> source, string property )
+        {
+            return ApplyOrder<T>( source, property, "ThenByDescending" );
+        }
+
+        static IOrderedQueryable<T> ApplyOrder<T>( IQueryable<T> source, string property, string methodName )
+        {
+            string[] props = property.Split( '.' );
+            Type type = typeof( T );
+            ParameterExpression arg = Expression.Parameter( type, "x" );
+            Expression expr = arg;
+            foreach ( string prop in props )
+            {
+                // use reflection (not ComponentModel) to mirror LINQ
+                PropertyInfo pi = type.GetProperty( prop );
+                expr = Expression.Property( expr, pi );
+                type = pi.PropertyType;
+            }
+            Type delegateType = typeof( Func<,> ).MakeGenericType( typeof( T ), type );
+            LambdaExpression lambda = Expression.Lambda( delegateType, expr, arg );
+
+            object result = typeof( Queryable ).GetMethods().Single(
+                    method => method.Name == methodName
+                            && method.IsGenericMethodDefinition
+                            && method.GetGenericArguments().Length == 2
+                            && method.GetParameters().Length == 2 )
+                    .MakeGenericMethod( typeof( T ), type )
+                    .Invoke( null, new object[] { source, lambda } );
+            return ( IOrderedQueryable<T> )result;
+        }
+
+        /// <summary>
+        /// Sorts the object by the specified sort property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
+        {
+            if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                return source.OrderBy( sortProperty.Property );
+            else
+                return source.OrderByDescending( sortProperty.Property );
+        }
+
+
+        #endregion
     }
 }

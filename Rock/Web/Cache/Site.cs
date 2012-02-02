@@ -7,13 +7,15 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
+using Rock.CMS;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
     /// Information about a site that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
-    public class Site
+    public class Site : Security.ISecured
     {
         /// <summary>
         /// Use Static Read() method to instantiate a new Site object
@@ -178,6 +180,9 @@ namespace Rock.Web.Cache
 
                     site.AttributeValues = siteModel.AttributeValues;
 
+                    site.AuthEntity = siteModel.AuthEntity;
+                    site.SupportedActions = siteModel.SupportedActions;
+
                     cache.Set( cacheKey, site, new CacheItemPolicy() );
 
                     return site;
@@ -199,5 +204,55 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecure Implementation
+
+        /// <summary>
+        /// Gets or sets the auth entity.
+        /// </summary>
+        /// <value>
+        /// The auth entity.
+        /// </value>
+        public string AuthEntity { get; set; }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
+        public Security.ISecured ParentAuthority
+        {
+            get { return null; }
+        }
+
+        /// <summary>
+        /// A list of actions that this class supports.
+        /// </summary>
+        public List<string> SupportedActions { get; set; }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="user">The user.</param>
+        /// <returns></returns>
+        public virtual bool Authorized( string action, User user )
+        {
+            return Security.Authorization.Authorized( this, action, user );
+        }
+
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public bool DefaultAuthorization( string action )
+        {
+            return action == "View";
+        }
+
+        #endregion
+
+
     }
 }

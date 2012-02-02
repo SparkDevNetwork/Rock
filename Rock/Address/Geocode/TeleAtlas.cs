@@ -14,12 +14,12 @@ namespace Rock.Address.Geocode
     /// The EZ-Locate geocoding service from <a href="http://www.geocode.com/">Tele Atlas</a>
     /// </summary>
     [Description( "Address Geocoding service from Tele Atlas (EZ-Locate)" )]
-    [Export( typeof( GeocodeService ) )]
-    [ExportMetadata( "ServiceName", "TelaAtlas" )]
+    [Export( typeof( GeocodeComponent ) )]
+    [ExportMetadata( "ComponentName", "TelaAtlas" )]
     [Rock.Attribute.Property( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
     [Rock.Attribute.Property( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
     [Rock.Attribute.Property( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
-    public class TelaAtlas : GeocodeService
+    public class TelaAtlas : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.

@@ -16,11 +16,11 @@ namespace Rock.Address.Standardize
     /// The USAddressVerification service from <a href="http://www.strikeiron.com/Home.aspx">StrikeIron</a>
     /// </summary>
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
-    [Export( typeof( StandardizeService ) )]
-    [ExportMetadata( "ServiceName", "StrikeIron" )]
+    [Export( typeof( StandardizeComponent ) )]
+    [ExportMetadata( "ComponentName", "StrikeIron" )]
     [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
     [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
-    public class StrikeIron : StandardizeService
+    public class StrikeIron : StandardizeComponent
     {
         /// <summary>
         /// Standardizes the specified address.

@@ -78,6 +78,15 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the sort property.
+        /// </summary>
+        public SortProperty SortProperty
+        {
+            get { return ViewState["SortProperty"] as SortProperty; }
+            private set { ViewState["SortProperty"] = value; }
+        }
+
         #endregion
 
         #region Constructors
@@ -121,6 +130,8 @@ namespace Rock.Web.UI.Controls
             pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
             pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
             this.PagerTemplate = pagerTemplate;
+
+            this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
 
             base.OnInit( e );
         }
@@ -230,6 +241,29 @@ namespace Rock.Web.UI.Controls
             return result;
         }
 
+        /// <summary>
+        /// Handles the Sorting event of the Grid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
+        protected void Grid_Sorting( object sender, GridViewSortEventArgs e )
+        {
+            SortProperty sortProperty = this.SortProperty;
+            if ( sortProperty != null && sortProperty.Property == e.SortExpression )
+            {
+                if ( sortProperty.Direction == SortDirection.Ascending )
+                    sortProperty.Direction = SortDirection.Descending;
+                else
+                    sortProperty.Direction = SortDirection.Ascending;
+
+                this.SortProperty = sortProperty;
+            }
+            else
+                this.SortProperty = new SortProperty( e );
+
+            OnGridRebind( e );
+        }
+
         #endregion
 
         #region Internal Methods
@@ -287,6 +321,8 @@ namespace Rock.Web.UI.Controls
                 GridReorderEventArgs args = new GridReorderEventArgs( dataKey, oldIndex, newIndex );
                 OnGridReorder( args );
             }
+            else
+                base.RaisePostBackEvent( eventArgument );
         }
         
         #endregion
@@ -457,6 +493,39 @@ namespace Rock.Web.UI.Controls
             serializer.Serialize( this, sb );
 
             return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Class for saving sort expression
+    /// </summary>
+    [Serializable]
+    public class SortProperty
+    {
+        /// <summary>
+        /// Gets or sets the direction.
+        /// </summary>
+        /// <value>
+        /// The direction.
+        /// </value>
+        public System.Web.UI.WebControls.SortDirection Direction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the property name
+        /// </summary>
+        /// <value>
+        /// The property.
+        /// </value>
+        public string Property { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SortProperty"/> class.
+        /// </summary>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
+        public SortProperty( GridViewSortEventArgs e )
+        {
+            Direction = e.SortDirection;
+            Property = e.SortExpression;
         }
     }
 

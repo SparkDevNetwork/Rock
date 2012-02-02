@@ -14,11 +14,11 @@ namespace Rock.Address.Geocode
     /// <summary>
     /// Geocoder service from <a href="http://www.serviceobjects.com">ServiceObjects</a>
     /// </summary>
-    [Description("Service Objects Geocoding Service")]
-    [Export( typeof( GeocodeService ) )]
-    [ExportMetadata( "ServiceName", "ServiceObjects" )]
+    [Description("Service Objects Geocoding service")]
+    [Export( typeof( GeocodeComponent ) )]
+    [ExportMetadata( "ComponentName", "ServiceObjects" )]
     [Rock.Attribute.Property( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
-    public class ServiceObjects : GeocodeService
+    public class ServiceObjects : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.

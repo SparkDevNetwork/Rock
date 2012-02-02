@@ -15,10 +15,10 @@ namespace Rock.Address.Standardize
     /// The AddressCheck service from <a href="http://www.melissadata.com/">Melissa Data</a>
     /// </summary>
     [Description( "Address Standardization service from Melissa Data" )]
-    [Export( typeof( StandardizeService ) )]
-    [ExportMetadata( "ServiceName", "MelissaData" )]
+    [Export( typeof( StandardizeComponent ) )]
+    [ExportMetadata( "ComponentName", "MelissaData" )]
     [Rock.Attribute.Property( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
-    public class MelissaData : StandardizeService
+    public class MelissaData : StandardizeComponent
     {
         /// <summary>
         /// Standardizes the address
