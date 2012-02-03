@@ -639,7 +639,9 @@ namespace Rock<#= projectNamespace #>
 <#
 			foreach(Index index in oneTable.Indexes)
 			{
-				if (index.IndexKeyType != IndexKeyType.DriPrimaryKey)
+				if (index.IndexKeyType != IndexKeyType.DriPrimaryKey && 
+					index.IndexedColumns[0].Name != "CreatedByPersonId" &&
+					index.IndexedColumns[0].Name != "ModifiedByPersonId")
 				{
 					string returnName = index.IsUnique ? Entity : pls.Pluralize( Entity );
 					string returnType = index.IsUnique ? QualifiedEntity : string.Format("IEnumerable<{0}>", QualifiedEntity);
