@@ -36,6 +36,51 @@ namespace Rock.CRM
 		public bool System { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Record Type Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? RecordTypeId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Record Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? RecordStatusId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Record Status Reason Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? RecordStatusReasonId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Person Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? PersonStatusId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Title Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? TitleId { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Given Name.
 		/// </summary>
 		/// <value>
@@ -68,6 +113,51 @@ namespace Rock.CRM
 		public string LastName { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Suffix Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? SuffixId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Photo Id.
+		/// </summary>
+		/// <value>
+		/// Photo Id.
+		/// </value>
+		[DataMember]
+		public int? PhotoId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Birth Day.
+		/// </summary>
+		/// <value>
+		/// Birth Day.
+		/// </value>
+		[DataMember]
+		public int? BirthDay { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Birth Month.
+		/// </summary>
+		/// <value>
+		/// Birth Month.
+		/// </value>
+		[DataMember]
+		public int? BirthMonth { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Birth Year.
+		/// </summary>
+		/// <value>
+		/// Birth Year.
+		/// </value>
+		[DataMember]
+		public int? BirthYear { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Gender.
 		/// </summary>
 		/// <value>
@@ -90,6 +180,33 @@ namespace Rock.CRM
 		}
 		
 		/// <summary>
+		/// Gets or sets the Marital Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		[DataMember]
+		public int? MaritalStatusId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Anniversary Date.
+		/// </summary>
+		/// <value>
+		/// Anniversary Date.
+		/// </value>
+		[DataMember]
+		public DateTime? AnniversaryDate { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Graduation Date.
+		/// </summary>
+		/// <value>
+		/// Graduation Date.
+		/// </value>
+		[DataMember]
+		public DateTime? GraduationDate { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Email.
 		/// </summary>
 		/// <value>
@@ -100,31 +217,14 @@ namespace Rock.CRM
 		public string Email { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Birth Month.
+		/// Gets or sets the System Note.
 		/// </summary>
 		/// <value>
-		/// Birth Month.
+		/// System Note.
 		/// </value>
+		[MaxLength( 1000 )]
 		[DataMember]
-		public int? BirthMonth { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Birth Day.
-		/// </summary>
-		/// <value>
-		/// Birth Day.
-		/// </value>
-		[DataMember]
-		public int? BirthDay { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Birth Year.
-		/// </summary>
-		/// <value>
-		/// Birth Year.
-		/// </value>
-		[DataMember]
-		public int? BirthYear { get; set; }
+		public string SystemNote { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -176,14 +276,25 @@ namespace Rock.CRM
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.System = this.System;
+				dto.RecordTypeId = this.RecordTypeId;
+				dto.RecordStatusId = this.RecordStatusId;
+				dto.RecordStatusReasonId = this.RecordStatusReasonId;
+				dto.PersonStatusId = this.PersonStatusId;
+				dto.TitleId = this.TitleId;
 				dto.GivenName = this.GivenName;
 				dto.NickName = this.NickName;
 				dto.LastName = this.LastName;
-				dto.Gender = this.GenderInternal;
-				dto.Email = this.Email;
-				dto.BirthMonth = this.BirthMonth;
+				dto.SuffixId = this.SuffixId;
+				dto.PhotoId = this.PhotoId;
 				dto.BirthDay = this.BirthDay;
+				dto.BirthMonth = this.BirthMonth;
 				dto.BirthYear = this.BirthYear;
+				dto.Gender = this.GenderInternal;
+				dto.MaritalStatusId = this.MaritalStatusId;
+				dto.AnniversaryDate = this.AnniversaryDate;
+				dto.GraduationDate = this.GraduationDate;
+				dto.Email = this.Email;
+				dto.SystemNote = this.SystemNote;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -247,6 +358,62 @@ namespace Rock.CRM
 		public virtual ICollection<Groups.Member> Members { get; set; }
         
 		/// <summary>
+        /// Gets or sets the Marital Status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue MaritalStatus { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Person Status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue PersonStatus { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Record Status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue RecordStatus { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Record Status Reason.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue RecordStatusReason { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Record Type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue RecordType { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Suffix.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue Suffix { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+		public virtual Core.DefinedValue Title { get; set; }
+        
+		/// <summary>
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
@@ -274,6 +441,13 @@ namespace Rock.CRM
         public PersonConfiguration()
         {
 			this.Property( p => p.GenderInternal ).HasColumnName( "Gender" );
+			this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId );
+			this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId );
+			this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId );
+			this.HasOptional( p => p.RecordStatusReason ).WithMany().HasForeignKey( p => p.RecordStatusReasonId );
+			this.HasOptional( p => p.RecordType ).WithMany().HasForeignKey( p => p.RecordTypeId );
+			this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId );
+			this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
