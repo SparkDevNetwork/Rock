@@ -45,6 +45,46 @@ namespace Rock.CRM.DTO
 		public bool System { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Record Type Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? RecordTypeId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Record Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? RecordStatusId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Record Status Reason Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? RecordStatusReasonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? PersonStatusId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Title Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? TitleId { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Given Name.
 		/// </summary>
 		/// <value>
@@ -69,28 +109,20 @@ namespace Rock.CRM.DTO
 		public string LastName { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Gender.
+		/// Gets or sets the Suffix Id.
 		/// </summary>
 		/// <value>
-		/// Enum[Gender].
+		/// .
 		/// </value>
-		public int? Gender { get; set; }
+		public int? SuffixId { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Email.
+		/// Gets or sets the Photo Id.
 		/// </summary>
 		/// <value>
-		/// Email.
+		/// Photo Id.
 		/// </value>
-		public string Email { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Birth Month.
-		/// </summary>
-		/// <value>
-		/// Birth Month.
-		/// </value>
-		public int? BirthMonth { get; set; }
+		public int? PhotoId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Birth Day.
@@ -101,12 +133,68 @@ namespace Rock.CRM.DTO
 		public int? BirthDay { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Birth Month.
+		/// </summary>
+		/// <value>
+		/// Birth Month.
+		/// </value>
+		public int? BirthMonth { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Birth Year.
 		/// </summary>
 		/// <value>
 		/// Birth Year.
 		/// </value>
 		public int? BirthYear { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Gender.
+		/// </summary>
+		/// <value>
+		/// Enum[Gender].
+		/// </value>
+		public int? Gender { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Marital Status Id.
+		/// </summary>
+		/// <value>
+		/// .
+		/// </value>
+		public int? MaritalStatusId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Anniversary Date.
+		/// </summary>
+		/// <value>
+		/// Anniversary Date.
+		/// </value>
+		public DateTime? AnniversaryDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Graduation Date.
+		/// </summary>
+		/// <value>
+		/// Graduation Date.
+		/// </value>
+		public DateTime? GraduationDate { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Email.
+		/// </summary>
+		/// <value>
+		/// Email.
+		/// </value>
+		public string Email { get; set; }
+
+		/// <summary>
+		/// Gets or sets the System Note.
+		/// </summary>
+		/// <value>
+		/// System Note.
+		/// </value>
+		public string SystemNote { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.
