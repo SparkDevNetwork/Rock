@@ -199,7 +199,6 @@ namespace Rock<#= projectNamespace #>
 <#
 					}
 
-					string dataMember = "[DataMember]";
 					string property = "";
 					
 					bool isEnum = false;
@@ -207,37 +206,30 @@ namespace Rock<#= projectNamespace #>
 					if (column.DataType.ToString() == "int")
 					{
 						// Check for enumeration in the description property in the format enum[NameOfEnum]
-						if (colDesc != "")
+						var r = new Regex( @"(?<=Enum\[).*(?=])", RegexOptions.IgnoreCase);
+						var match = r.Match(colDesc);
+						
+						if (match.Success)
 						{
-							int iStart = colDesc.ToLower().IndexOf("enum[");
-							if (iStart >= 0)
-							{
-								iStart += 5;
-								int iEnd = colDesc.IndexOf("]", iStart);
-								if (iEnd > iStart)
-								{
-									string enumName = colDesc.Substring(iStart, iEnd - iStart);
+							string enumName = match.Value;
 									
-									dataMember = "[DataMember]";
-									
-									property = 
-									"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
-									"\t\t" + xmlComments +
-									"\n\t\t[NotMapped]\n" +
-									"\t\tpublic " + enumName + " " + column.Name + "\n" +
-									"\t\t{\n" +
-									"\t\t\tget { return (" + enumName + ")this." + column.Name + "Internal; }\n" +
-									"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
-									"\t\t}";
+							property = 
+							"internal " + TemplateHelper.ConvertDataType(column) + " " + column.Name + "Internal { get; set; }\n\n" +
+							"\t\t" + xmlComments +
+							"\n\t\t[NotMapped]\n" +
+							"\t\tpublic " + enumName + " " + column.Name + "\n" +
+							"\t\t{\n" +
+							"\t\t\tget { return (" + enumName + ")this." + column.Name + "Internal; }\n" +
+							"\t\t\tset { this." + column.Name + "Internal = (int)value; }\n" + 
+							"\t\t}";
 
-									isEnum = true;
-									DTOProperties.Add(xmlComments + "\n\t\tpublic " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }\n");
+							isEnum = true;
+							DTOProperties.Add(xmlComments + "\n\t\tpublic " + TemplateHelper.ConvertDataType(column) + " " + column.Name + " { get; set; }\n");
 
-									specialReferences.Add(string.Format(
-										"this.Property( p => p.{0}Internal ).HasColumnName( \"{0}\" );", column.Name));
-								}
-							}
-						}						
+							specialReferences.Add(string.Format(
+								"this.Property( p => p.{0}Internal ).HasColumnName( \"{0}\" );", column.Name));
+						}	
+						
 					}
 						
 					if (property == "")
@@ -261,7 +253,7 @@ namespace Rock<#= projectNamespace #>
 						DTOConstructs.Add(string.Format("dto.{0} = this.{0}Internal;", column.Name));
 					}
 #>
-		<#= dataMember #>
+		[DataMember]
 		<#= property #>
 		
 <#
