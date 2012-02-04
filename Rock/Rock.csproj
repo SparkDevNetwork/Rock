@@ -68,6 +68,11 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CRM\PersonTrailService.partial.cs" />
+    <Compile Include="CRM\EntityPersonTrailRepository.cs" />
+    <Compile Include="CRM\IPersonTrailRepository.cs" />
+    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonTrailService.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
@@ -216,6 +221,8 @@
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\CRM\EmailTemplateService.cs" />
     <Compile Include="REST\CRM\IEmailTemplateService.cs" />
+    <Compile Include="REST\CRM\IPersonTrailService.cs" />
+    <Compile Include="REST\CRM\PersonTrailService.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />

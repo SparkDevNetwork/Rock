@@ -54,11 +54,54 @@ namespace Rock.CRM
                 Guid personGuid = new Guid( idParts[0] );
                 int personId = Int32.Parse( idParts[1] );
 
-                return Repository.AsQueryable().
+                Person person = Repository.AsQueryable().
                     Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
+
+                if ( person != null )
+                    return person;
+
+                // Check to see if the record was merged
+                PersonTrailService personTrailService = new PersonTrailService();
+                PersonTrail personTrail = personTrailService.Queryable().
+                    Where( p => p.PrevGuid == personGuid && p.PrevId == personId ).FirstOrDefault();
+
+                if ( personTrail != null )
+                    return Get( personTrail.Id, true );
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets Person by Id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <param name="followTrail">if set to <c>true</c> follow the merge trail.</param>
+        /// <returns>
+        /// Person object.
+        /// </returns>
+        public Rock.CRM.Person Get( int id, bool followTrail )
+        {
+            if ( followTrail )
+                id = new PersonTrailService().Current( id );
+
+            return Get( id );
+        }
+
+        /// <summary>
+        /// Gets Person by Guid
+        /// </summary>
+        /// <param name="guid">Guid.</param>
+        /// <param name="followTrail">if set to <c>true</c> follow the merge trail</param>
+        /// <returns>
+        /// Person object.
+        /// </returns>
+        public Rock.CRM.Person GetByGuid( Guid guid, bool followTrail )
+        {
+            if ( followTrail )
+                guid = new PersonTrailService().Current( guid );
+
+            return GetByGuid( guid );
         }
     }
 }
