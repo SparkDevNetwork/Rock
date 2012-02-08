@@ -173,12 +173,12 @@ namespace Rock.Util.DTO
 		public DateTime? ModifiedDateTime { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Create By Person Id.
+		/// Gets or sets the Created By Person Id.
 		/// </summary>
 		/// <value>
-		/// Create By Person Id.
+		/// Created By Person Id.
 		/// </value>
-		public int? CreateByPersonId { get; set; }
+		public int? CreatedByPersonId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Modified By Person Id.

@@ -24,7 +24,7 @@ namespace Rock.Util
     /// Job POCO Entity.
     /// </summary>
     [Table( "utilJob" )]
-    public partial class Job : ModelWithAttributes<Job>
+    public partial class Job : ModelWithAttributes<Job>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -201,13 +201,13 @@ namespace Rock.Util
 		public DateTime? ModifiedDateTime { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Create By Person Id.
+		/// Gets or sets the Created By Person Id.
 		/// </summary>
 		/// <value>
-		/// Create By Person Id.
+		/// Created By Person Id.
 		/// </value>
 		[DataMember]
-		public int? CreateByPersonId { get; set; }
+		public int? CreatedByPersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Modified By Person Id.
@@ -248,7 +248,7 @@ namespace Rock.Util
 				dto.NotificationStatus = this.NotificationStatusInternal;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreateByPersonId = this.CreateByPersonId;
+				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
 				return dto; 
 			}
@@ -261,12 +261,12 @@ namespace Rock.Util
 		public override string AuthEntity { get { return "Util.Job"; } }
         
 		/// <summary>
-        /// Gets or sets the Create By Person.
+        /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
         /// A <see cref="CRM.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreateByPerson { get; set; }
+		public virtual CRM.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
@@ -288,7 +288,7 @@ namespace Rock.Util
         public JobConfiguration()
         {
 			this.Property( p => p.NotificationStatusInternal ).HasColumnName( "NotificationStatus" );
-			this.HasOptional( p => p.CreateByPerson ).WithMany().HasForeignKey( p => p.CreateByPersonId );
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
 		}
     }
