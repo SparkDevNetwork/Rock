@@ -228,6 +228,14 @@ namespace Rock.Data
         public DbSet<Rock.CRM.Person> People { get; set; }
 
         /// <summary>
+        /// Gets or sets the Person Trails.
+        /// </summary>
+        /// <value>
+        /// the Person Trails.
+        /// </value>
+        public DbSet<Rock.CRM.PersonTrail> PersonTrails { get; set; }
+
+        /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
@@ -309,6 +317,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.EmailTemplateConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PersonConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.CRM.PersonTrailConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );

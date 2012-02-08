@@ -25,9 +25,15 @@ namespace Rock
         /// <summary>
         /// Job Pulse Attribute Guid
         /// </summary>
-        public static Guid JOB_PULSE_ATTRIBUTE_GUID 
-        {
-            get { return new Guid( "254F45EE-071C-4337-A522-DFDC20B7966A" );}
-        }
+        public static Guid JOB_PULSE_ATTRIBUTE_GUID { get { return new Guid( "254F45EE-071C-4337-A522-DFDC20B7966A" ); } }
+
+        public static Guid DEFINED_TYPE_PERSON_RECORD_TYPE { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_RECORD_STATUS { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_RECORD_STATUS_REASON { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_STATUS { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_TITLE { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_SUFFIX { get { return new Guid( "" ); } }
+        public static Guid DEFINED_TYPE_PERSON_MARITAL_STATUS { get { return new Guid( "" ); } }
+
     }
 }
