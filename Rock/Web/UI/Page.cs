@@ -782,6 +782,14 @@ namespace Rock.Web.UI
             legend.InnerText = "New Location";
             fsZoneSelect.Controls.Add( legend );
 
+            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            ddlZones.ClientIDMode = ClientIDMode.Static;
+            ddlZones.ID = "block-move-zone";
+            ddlZones.LabelText = "Zone";
+            foreach ( var zone in Zones )
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+            fsZoneSelect.Controls.Add( ddlZones );
+
             LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
             rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
             rblLocation.ClientIDMode = ClientIDMode.Static;
@@ -789,16 +797,8 @@ namespace Rock.Web.UI
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
             rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", PageInstance.Layout ) ) );
-            rblLocation.LabelText = "";
+            rblLocation.LabelText = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
-
-            LabeledDropDownList ddlZones = new LabeledDropDownList();
-            ddlZones.ClientIDMode = ClientIDMode.Static;
-            ddlZones.ID = "block-move-zone";
-            ddlZones.LabelText = "New Zone";
-            foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
-            fsZoneSelect.Controls.Add( ddlZones );
 
             HtmlGenericControl divBlockMoveFooter = new HtmlGenericControl( "div" );
             divBlockMoveFooter.Attributes.Add( "class", "modal-footer" );
