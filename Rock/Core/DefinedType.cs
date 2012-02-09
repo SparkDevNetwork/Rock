@@ -54,6 +54,16 @@ namespace Rock.Core
 		public int Order { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Category.
+		/// </summary>
+		/// <value>
+		/// Category.
+		/// </value>
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Category { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Name.
 		/// </summary>
 		/// <value>
@@ -124,6 +134,7 @@ namespace Rock.Core
 				dto.System = this.System;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Order = this.Order;
+				dto.Category = this.Category;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
 				dto.CreatedDateTime = this.CreatedDateTime;
