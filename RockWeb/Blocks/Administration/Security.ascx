@@ -73,10 +73,10 @@
             <asp:LinkButton ID="lbAddAllUsers" runat="server" Text="Add All Users" CssClass="btn primary" onclick="lbAddAllUsers_Click"></asp:LinkButton>
         </asp:panel>
 
-        <asp:Panel ID="pnlAddRole" runat="server" Visible="false">
+        <asp:Panel ID="pnlAddRole" runat="server" Visible="false" CssClass="add-role">
         
             <fieldset>
-                <legend>Add Role</legend>
+                <legend>Select Role to Add</legend>
                 <Rock:LabeledDropDownList ID="ddlRoles" runat="server" LabelText="Role" AutoPostBack="true" onselectedindexchanged="ddlRoles_SelectedIndexChanged" />
                 <dl>
                     <dt></dt>
@@ -94,15 +94,15 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlAddUser" runat="server" Visible="false">
+        <asp:Panel ID="pnlAddUser" runat="server" Visible="false" CssClass="add-user">
         
             <fieldset>
-                <legend>Add User</legend>
+                <legend>Select User to Add</legend>
                 <Rock:LabeledTextBox ID="tbUser" runat="server" LabelText="User" />
                 <dl>
                     <dt></dt>
                     <dd>
-                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click"></asp:LinkButton>
+                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn x-small"></asp:LinkButton>
                         <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list"></asp:CheckBoxList>
                     </dd>
                 </dl>
