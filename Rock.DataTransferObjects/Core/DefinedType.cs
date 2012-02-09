@@ -61,6 +61,14 @@ namespace Rock.Core.DTO
 		public int Order { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Category.
+		/// </summary>
+		/// <value>
+		/// Category.
+		/// </value>
+		public string Category { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Name.
 		/// </summary>
 		/// <value>
