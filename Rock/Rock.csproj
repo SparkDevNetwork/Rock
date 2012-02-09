@@ -226,6 +226,7 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />
@@ -255,7 +256,7 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
-    <Compile Include="SystemGuids.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs">
       <SubType>Code</SubType>
     </Compile>
