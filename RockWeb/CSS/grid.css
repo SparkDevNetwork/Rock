@@ -20,6 +20,34 @@
     background-color: #d1d1d1;
 }
 
+.grid-table thead th.ascending, .grid-table thead th.descending
+{
+    background-color: #c6c2c7;
+}
+
+.grid-table thead th.ascending a:before
+{
+    padding-right: 5px;
+	content: url(../Assets/Images/Grid/asc.png);
+}
+
+.grid-table thead th.descending a:before
+{
+    padding-right: 5px;
+	content: url(../Assets/Images/Grid/desc.png);
+}
+
+.grid-table thead th a 
+{
+    color: #456a95;
+    display: block;
+}
+
+.grid-table thead th a:hover
+{
+    text-decoration: none;
+}
+
 .grid-table tbody tr:hover 
 {
     background-color: #d6d4d4;
