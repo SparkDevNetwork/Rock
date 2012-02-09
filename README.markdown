@@ -17,7 +17,8 @@ The `Build-Solution.ps1` script will build the solution and update the database 
 ## Contribute
 We're just in the earliest stages of the project so until we get a little more organized you may
 just want to hang tight.  If you're chomping at the bit to get involved and are a creative and artistic
-web designer or an experienced C# developer send an email to jon(at)sparkdevnetwork.org.
+web designer or an experienced C# developer send an email to jon(at)sparkdevnetwork.org. We'll also post
+some tasks and projects over on the SDN [Get Involved](http://www.sparkdevelopmentnetwork.com/getinvolved.php) page
 
 If you're feeling brave and want to try figuring things out, feel free to do so. 
 If somehow you figure things out and find a bug with, please visit the Issue tracker (https://github.com/SparkDevNetwork/Rock-ChMS/issues) and 
@@ -78,7 +79,7 @@ This is the Git workflow we're currently using:
     Follow this loop while making small changes and committing often.    
 
     1. Make changes.
-    2. Test your changes (you're practicing TDD, right?)
+    2. Test your changes
     3. Add your changes to git's index.
         
             git add -A
