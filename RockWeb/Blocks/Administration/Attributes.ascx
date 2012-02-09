@@ -142,7 +142,7 @@
 
         <div class="grid-filter">
             <fieldset>
-                <legend>Filter</legend>
+                <legend>Filter Options</legend>
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
             </fieldset>
         </div>

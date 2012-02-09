@@ -17,12 +17,12 @@
 
 .grid-table thead th 
 {
-    background-color: #d1d1d1;
+    background-color: #d6d6d6;
 }
 
 .grid-table thead th.ascending, .grid-table thead th.descending
 {
-    background-color: #c6c2c7;
+    background-color: #cdcbcb;
 }
 
 .grid-table thead th.ascending a:before
@@ -111,7 +111,7 @@
 .grid-table tfoot td 
 {
     padding: 5px 9px;  
-    background-color: #d1d1d1;
+    background-color: #d6d6d6;
     border-color: #d1d1d1;
 }
 
@@ -174,4 +174,30 @@
     color: #fff;
 }
 
+/* grid filter styles */
+.grid-filter 
+{
+    background-color: #dadada;
+    border-radius: 4px 4px 4px 4px;
+    border-width: 1px;
+    border-color: #c4c4c4;
+    border-style: solid;
+    padding: 24px 0;
+    margin-top: 24px;
+}
 
+.grid-filter fieldset 
+{
+    margin-bottom: 0;
+}
+
+.grid-filter legend 
+{
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.grid-filter +  div .grid-table 
+{
+    margin-top: -12px;   
+}
