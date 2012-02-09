@@ -32,7 +32,7 @@ namespace Rock.CRM
             return Repository.AsQueryable().
                     Where( p => p.LastName.ToLower().StartsWith( lastName.ToLower() ) &&
                         ( p.NickName.ToLower().StartsWith( firstName.ToLower() ) ||
-                        p.FirstName.StartsWith( firstName.ToLower() ) ) );
+                        p.GivenName.StartsWith( firstName.ToLower() ) ) );
         }
 
         /// <summary>
