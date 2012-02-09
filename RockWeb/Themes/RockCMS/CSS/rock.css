@@ -478,7 +478,7 @@ body#dialog .actions
 body#dialog .pills 
 {
     background-color: #d5d6d5;
-    border: 1px solid #fff;
+    border: 1px solid #c4c4c4;
     border-radius: 4px;
     padding: 6px 12px;
 }

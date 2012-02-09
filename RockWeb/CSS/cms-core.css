@@ -105,7 +105,7 @@
     padding-right: 20px;
 }
 
-/* Context Help */
+/* context help */
 a.tooltip {
 	background-image: url('../Assets/Icons/help.png');
 	display: inline-block;
@@ -367,5 +367,27 @@ article.blog-post header ul li:last-child:after {
     margin-left: 21px;
 }
 
+/* security dialog styles */
+.add-user fieldset, .add-role fieldset 
+{
+    border: 1px solid #c4c4c4;
+    border-radius: 4px;   
+    margin-top: 22px;
+}
 
+.add-user legend, .add-role legend
+{
+    font-size: 16px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
 
+.add-user table 
+{
+    margin-top: 10px;   
+}
+
+.add-user table td 
+{
+    padding: 0 10px 6px;   
+}

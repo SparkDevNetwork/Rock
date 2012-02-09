@@ -2001,6 +2001,10 @@ footer {
   padding: 7px 9px 7px;
   font-size: 11px;
 }
+.btn.x-small {
+  padding: 4px 9px;
+  font-size: 10px;
+}
 :root .alert-message, :root .btn {
   border-radius: 0 \0;
 }
