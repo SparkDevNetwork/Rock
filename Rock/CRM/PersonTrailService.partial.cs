@@ -19,11 +19,11 @@ namespace Rock.CRM
         /// <returns></returns>
         public Guid Current( Guid guid )
         {
-            PersonTrail personTrail = GetByPrevGuid( guid );
+            PersonTrail personTrail = GetByGuid( guid );
             while ( personTrail != null )
             {
                 guid = personTrail.Guid;
-                personTrail = GetByPrevGuid( guid );
+                personTrail = GetByGuid( guid );
             }
             return guid;
         }
@@ -35,11 +35,11 @@ namespace Rock.CRM
         /// <returns></returns>
         public int Current( int id )
         {
-            PersonTrail personTrail = GetByPrevId( id );
+            PersonTrail personTrail = Get( id );
             while ( personTrail != null )
             {
                 id = personTrail.Id;
-                personTrail = GetByPrevId( id );
+                personTrail = Get( id );
             }
             return id;
         }
