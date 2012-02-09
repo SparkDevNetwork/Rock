@@ -17,7 +17,7 @@
 
 .grid-table thead th 
 {
-    background-color: #ddd;
+    background-color: #d1d1d1;
 }
 
 .grid-table tbody tr:hover 
@@ -82,9 +82,9 @@
 
 .grid-table tfoot td 
 {
-    padding: 5px 9px;
-    border-radius: 0 0 6px 6px;   
-    background-color: #ddd;
+    padding: 5px 9px;  
+    background-color: #d1d1d1;
+    border-color: #d1d1d1;
 }
 
 .grid-table tfoot .grid-actions
