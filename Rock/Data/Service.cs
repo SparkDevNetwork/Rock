@@ -114,7 +114,7 @@ namespace Rock.Data
         /// <param name="personId">The person id.</param>
         public void Save( T item, int? personId )
         {
-            if ( item.Guid == Guid.Empty )
+            if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
             List<Rock.Core.EntityChange> entityChanges = _repository.Save( personId );
