@@ -3,7 +3,9 @@
 <asp:UpdatePanel ID="upBlocks" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlList" runat="server">
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+
+    <asp:PlaceHolder ID="phList" runat="server">
         
         <Rock:Grid ID="gBlocks" runat="server" EmptyDataText="No Blocks Found" AllowSorting="true" >
             <Columns>
@@ -16,7 +18,7 @@
             </Columns>
         </Rock:Grid>
 
-    </asp:Panel>
+    </asp:PlaceHolder>
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false">
     

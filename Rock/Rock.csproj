@@ -234,6 +234,7 @@
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
+    <Compile Include="SystemGuid\EmailTemplate.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />

@@ -1,17 +1,14 @@
-//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
-using System;
-
-namespace Rock.CRM
+namespace Rock.SystemGuid
 {
     /// <summary>
     /// System Email Templates
     /// </summary>
-    public static class SystemEmailTemplate
+    public static class EmailTemplate
     {
         /// <summary>
         /// Gets the template guid for the Forgot Username email
