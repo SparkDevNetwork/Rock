@@ -79,7 +79,7 @@ namespace Rock.REST.CMS
                     Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
                     Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
 
-                    if ( existingBlockInstance.Authorized( "Edit", user.UserName ) )
+                    if ( existingBlockInstance.Authorized( "Edit", user ) )
                     {
                         // If the block was moved from or to the layout section, then all the pages
                         // that use that layout need to be flushed from cache

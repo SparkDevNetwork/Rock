@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
-					if ( File.Authorized( "View", user.UserName ) )
+					if ( File.Authorized( "View", user ) )
 						return File.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this File", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File existingFile = FileService.Get( int.Parse( id ) );
-					if ( existingFile.Authorized( "Edit", user.UserName ) )
+					if ( existingFile.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
-					if ( File.Authorized( "Edit", user.UserName ) )
+					if ( File.Authorized( "Edit", user ) )
 					{
 						FileService.Delete( File, user.PersonId );
 						FileService.Save( File, user.PersonId );
