@@ -144,6 +144,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             hfComponentId.Value = string.Empty;
+            pnlList.Visible = true;
             pnlDetails.Visible = false;
         }
 
@@ -208,6 +209,9 @@ namespace RockWeb.Blocks.Administration
                 if (li.Attributes["attribute-key"] != "Order")
                     dlProperties.Controls.Add( li );
 
+            lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
+
+            pnlList.Visible = false;
             pnlDetails.Visible = true;
         }
 
