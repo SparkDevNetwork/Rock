@@ -200,6 +200,7 @@
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
     <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="FieldTypes\Date.cs" />
     <Compile Include="FieldTypes\Image.cs" />
     <Compile Include="Groups\EntityGroupRepository.cs" />
     <Compile Include="Groups\EntityGroupRoleRepository.cs" />
@@ -217,6 +218,8 @@
     <Compile Include="Groups\IMemberRepository.cs" />
     <Compile Include="Groups\Member.cs" />
     <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="Jobs\CleanCachedImages.cs" />
+    <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\CRM\EmailTemplateService.cs" />
