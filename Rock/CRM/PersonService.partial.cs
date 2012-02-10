@@ -63,7 +63,7 @@ namespace Rock.CRM
                 // Check to see if the record was merged
                 PersonTrailService personTrailService = new PersonTrailService();
                 PersonTrail personTrail = personTrailService.Queryable().
-                    Where( p => p.PrevGuid == personGuid && p.PrevId == personId ).FirstOrDefault();
+                    Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
 
                 if ( personTrail != null )
                     return Get( personTrail.Id, true );
