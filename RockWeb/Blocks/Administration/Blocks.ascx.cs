@@ -8,7 +8,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Web.UI.Controls;
@@ -19,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private bool _isAuthorizedToConfigure = false;
+        private bool _canConfigure = false;
         private Rock.CMS.BlockService _blockService = new Rock.CMS.BlockService();
 
         #endregion
@@ -30,25 +29,40 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gBlocks.DataKeyNames = new string[] { "id" };
-            gBlocks.Actions.EnableAdd = true;
-            gBlocks.Actions.AddClick += gBlocks_Add;
-            gBlocks.GridRebind += gBlocks_GridRebind;
+            try
+            {
+                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
 
-            string script = @"
+                if ( _canConfigure )
+                {
+                    gBlocks.DataKeyNames = new string[] { "id" };
+                    gBlocks.Actions.EnableAdd = true;
+                    gBlocks.Actions.AddClick += gBlocks_Add;
+                    gBlocks.GridRebind += gBlocks_GridRebind;
+
+                    string script = @"
         Sys.Application.add_load(function () {
             $('td.grid-icon-cell.delete a').click(function(){
                 return confirm('Are you sure you want to delete this block?');
                 });
         });
     ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gBlocks.ClientID ), script, true );
-
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gBlocks.ClientID ), script, true );
+                }
+                else
+                {
+                    DisplayError( "You are not authorized to configure this page" );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                DisplayError( ex.Message );
+            }
         }
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && _canConfigure )
             {
                 ScanForUnregisteredBlocks();
                 BindGrid();
@@ -97,7 +111,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             pnlDetails.Visible = false;
-            pnlList.Visible = true;
+            phList.Visible = true;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
@@ -127,7 +141,7 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
 
             pnlDetails.Visible = false;
-            pnlList.Visible = true;
+            phList.Visible = true;
         }
 
         #endregion
@@ -158,17 +172,11 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            IQueryable<Rock.CMS.Block> blocks = _blockService.Queryable();
+            var blocks = _blockService.Queryable();
 
             SortProperty sortProperty = gBlocks.SortProperty;
             if (sortProperty != null)
                 blocks = blocks.Sort(sortProperty);
-            //{
-            //    if ( sortProperty.Direction == SortDirection.Ascending )
-            //        blocks = blocks.OrderBy( sortProperty.Property );
-            //    else
-            //        blocks = blocks.OrderByDescending( sortProperty.Property );
-            //}
             else
                 blocks = blocks.OrderBy( b => b.Name );
 
@@ -197,8 +205,18 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = string.Empty;
             }
 
-            pnlList.Visible = false;
+            phList.Visible = false;
             pnlDetails.Visible = true;
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+
+            phList.Visible = false;
+            pnlDetails.Visible = false;
         }
 
         #endregion

@@ -12,7 +12,6 @@
         $('#<%= tbName.ClientID %>').val('');
         $('#<%= tbCategory.ClientID %>').val('');
         $('#<%= tbDescription.ClientID %>').val('');
-        $('#<%= tbDescription.ClientID %>').val('');
         $('#<%= ddlFieldType.ClientID %>').val('');
         $('#<%= tbDefaultValue.ClientID %>').val('');
         $('#<%= cbRequired.ClientID %>').removeAttr('checked');
