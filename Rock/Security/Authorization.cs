@@ -121,7 +121,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.CMS.User user )
         {
-            return Authorized( entity, action, user != null ? user.UserName : string.Empty );
+            return Authorized( entity, action, user != null ? user.Person.Guid.ToString() : string.Empty );
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="userName">Name of the user.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, string userName )
+        private static bool Authorized( ISecured entity, string action, string userName )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -147,10 +147,19 @@ namespace Rock.Security
             {
                 foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
                 {
-                    if ( authRule.UserOrRoleName == "*" )
+                    // All Users
+                    if ( authRule.UserOrRoleName == "*AU" )
                         return authRule.AllowOrDeny == "A";
 
-                    if ( userName != string.Empty )
+                    // All Authenticated Users
+                    if (authRule.UserOrRoleName == "*AAU" && userName.Trim() != string.Empty)
+                        return authRule.AllowOrDeny == "A";
+
+                    // All Unauthenticated Users
+                    if ( authRule.UserOrRoleName == "*AUU" && userName.Trim() == string.Empty )
+                        return authRule.AllowOrDeny == "A";
+
+                    if ( !authRule.UserOrRoleName.StartsWith("*") && userName != string.Empty )
                     {
                         if ( authRule.UserOrRole == "U" && userName == authRule.UserOrRoleName )
                             return authRule.AllowOrDeny == "A";
@@ -345,11 +354,20 @@ namespace Rock.Security
         {
             get
             {
+                // All Users
+                if ( UserOrRoleName == "*AU" )
+                    return "All Users";
+
+                // All Authenticated Users
+                if ( UserOrRoleName == "*AAU" )
+                    return "All Authenticated Users";
+
+                // All Unauthenticated Users
+                if ( UserOrRoleName == "*AUU" )
+                    return "All Un-Authenticated Users";
+
                 if ( UserOrRole == "U" )
                 {
-                    if ( UserOrRoleName == "*" )
-                        return "All Users";
-
                     try
                     {
                         Rock.CRM.PersonService personService = new CRM.PersonService();

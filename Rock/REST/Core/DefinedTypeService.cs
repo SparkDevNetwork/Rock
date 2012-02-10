@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( DefinedType.Authorized( "View", user.UserName ) )
+					if ( DefinedType.Authorized( "View", user ) )
 						return DefinedType.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( existingDefinedType.Authorized( "Edit", user.UserName ) )
+					if ( existingDefinedType.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
 					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
-					if ( DefinedType.Authorized( "Edit", user.UserName ) )
+					if ( DefinedType.Authorized( "Edit", user ) )
 					{
 						DefinedTypeService.Delete( DefinedType, user.PersonId );
 						DefinedTypeService.Save( DefinedType, user.PersonId );

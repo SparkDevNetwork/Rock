@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
 					Rock.CMS.User User = UserService.Get( int.Parse( id ) );
-					if ( User.Authorized( "View", user.UserName ) )
+					if ( User.Authorized( "View", user ) )
 						return User.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this User", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
 					Rock.CMS.User existingUser = UserService.Get( int.Parse( id ) );
-					if ( existingUser.Authorized( "Edit", user.UserName ) )
+					if ( existingUser.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
 					Rock.CMS.User User = UserService.Get( int.Parse( id ) );
-					if ( User.Authorized( "Edit", user.UserName ) )
+					if ( User.Authorized( "Edit", user ) )
 					{
 						UserService.Delete( User, user.PersonId );
 						UserService.Save( User, user.PersonId );

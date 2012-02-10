@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
 					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( PersonTrail.Authorized( "View", user.UserName ) )
+					if ( PersonTrail.Authorized( "View", user ) )
 						return PersonTrail.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this PersonTrail", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
 					Rock.CRM.PersonTrail existingPersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( existingPersonTrail.Authorized( "Edit", user.UserName ) )
+					if ( existingPersonTrail.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
 					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( PersonTrail.Authorized( "Edit", user.UserName ) )
+					if ( PersonTrail.Authorized( "Edit", user ) )
 					{
 						PersonTrailService.Delete( PersonTrail, user.PersonId );
 						PersonTrailService.Save( PersonTrail, user.PersonId );

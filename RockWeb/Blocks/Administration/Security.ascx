@@ -24,9 +24,9 @@
     }
 
     Sys.Application.add_load(function () {
-        $('ol[id$=cblRoleActionList]').hide();
+        $('ul[id$=cblRoleActionList]').hide();
         $('a.show-action-list').click(function () {
-            $('ol[id$=cblRoleActionList]').toggle('fast');
+            $('ul[id$=cblRoleActionList]').toggle('fast');
             return false;
         });
     });
@@ -47,31 +47,34 @@
 
         <p><asp:Literal ID="lActionNote" runat="server"></asp:Literal></p>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
-            <Columns>
-                <Rock:ReorderField />
-                <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                <asp:TemplateField>
-                    <HeaderTemplate>Allow or Deny</HeaderTemplate>
-                    <HeaderStyle HorizontalAlign="Left" />
-                    <ItemStyle Wrap="false" HorizontalAlign="Left" />
-                    <ItemTemplate>
-                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
-                            OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
-                            <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
-                            <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
-                        </asp:RadioButtonList>
-                    </ItemTemplate>
-                </asp:TemplateField>
-                <Rock:DeleteField OnClick="rGrid_Delete" />
-            </Columns>
-        </Rock:Grid>
+        <asp:PlaceHolder ID="phList" runat="server">
 
-        <asp:panel id="pnlActions" runat="server" CssClass="actions">
-            <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
-            <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
-            <asp:LinkButton ID="lbAddAllUsers" runat="server" Text="Add All Users" CssClass="btn primary" onclick="lbAddAllUsers_Click"></asp:LinkButton>
-        </asp:panel>
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
+                <Columns>
+                    <Rock:ReorderField />
+                    <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                        <HeaderStyle HorizontalAlign="Left" />
+                        <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                        <ItemTemplate>
+                            <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
+                                OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
+                                <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
+                                <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
+                            </asp:RadioButtonList>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <Rock:DeleteField OnClick="rGrid_Delete" />
+                </Columns>
+            </Rock:Grid>
+
+            <asp:panel id="pnlActions" runat="server" CssClass="actions">
+                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
+            </asp:panel>
+
+        </asp:PlaceHolder>
 
         <asp:Panel ID="pnlAddRole" runat="server" Visible="false" CssClass="add-role">
         
