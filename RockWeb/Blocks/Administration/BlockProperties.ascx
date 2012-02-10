@@ -11,7 +11,7 @@
             $('#modal-popup a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
-            $('non-modal-actions').hide();
+            $('#non-modal-actions').hide();
         }
 
     });
