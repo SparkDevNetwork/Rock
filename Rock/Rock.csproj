@@ -185,7 +185,6 @@
     <Compile Include="Core\ServiceLogService.cs" />
     <Compile Include="CRM\Address.cs" />
     <Compile Include="CRM\AddressService.cs" />
-    <Compile Include="CRM\EmailTemplate.Partial.cs" />
     <Compile Include="CRM\EmailTemplate.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\EntityAddressRepository.cs" />
@@ -228,6 +227,7 @@
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\EmailTemplate.cs" />
     <Compile Include="Util\EntityJobRepository.cs" />
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />

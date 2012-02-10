@@ -296,7 +296,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add(person.Email, mergeObjects);
 
-                    Email email = new Email( SystemEmailTemplate.SECURITY_FORGOT_USERNAME );
+                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
                     SetSMTPParameters( email );
                     email.Send( recipients );
                 }
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, List<object>>();
                 recipients.Add( person.Email, mergeObjects );
 
-                Email email = new Email( SystemEmailTemplate.SECURITY_CONFIRM_ACCOUNT );
+                Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
                 SetSMTPParameters( email );
                 email.Send( recipients );
 
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Security
                     var recipients = new Dictionary<string, List<object>>();
                     recipients.Add( person.Email, mergeObjects );
 
-                    Email email = new Email( SystemEmailTemplate.SECURITY_ACCOUNT_CREATED );
+                    Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
                     SetSMTPParameters( email );
                     email.Send( recipients );
 
