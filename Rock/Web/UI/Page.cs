@@ -15,9 +15,11 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.Security;
+using System.Configuration;
 
 using Rock.CRM;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
 
 namespace Rock.Web.UI
 {
@@ -540,6 +542,20 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             Page.Header.DataBind();
+
+            // create a page view transaction if enabled
+            if ( Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            {
+                PageViewTransaction transaction = new PageViewTransaction();
+                transaction.DateViewed = DateTime.Now;
+                transaction.PageId = PageInstance.Id;
+                if ( CurrentPersonId != null )
+                    transaction.PersonId = (int)CurrentPersonId;
+                transaction.IPAddress = Request.UserHostAddress;
+                transaction.UserAgent = Request.UserAgent;
+
+                RockQueue.TransactionQueue.Enqueue( transaction );
+            }
         }
 
 

@@ -11,6 +11,7 @@ using System.Net;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Routing;
+using System.Collections.Generic;
 
 using Quartz;
 using Quartz.Impl;
@@ -19,6 +20,7 @@ using Quartz.Impl.Matchers;
 using Rock.CMS;
 using Rock.Jobs;
 using Rock.Util;
+using Rock.Transactions;
 
 namespace RockWeb
 {
@@ -27,13 +29,15 @@ namespace RockWeb
         // global Quartz scheduler for jobs
         IScheduler sched = null;
 
+        public static bool QueueInUse = false;
+
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
         #region Asp.Net Events
 
         protected void Application_Start( object sender, EventArgs e )
-        {
+        {            
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
@@ -72,10 +76,10 @@ namespace RockWeb
 
                 // start the scheduler
                 sched.Start();
-
-                // add call back to keep IIS process awake at night
-                AddCallBack();
             }
+
+            // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+            AddCallBack();
             
             RegisterRoutes( RouteTable.Routes );
 
@@ -86,14 +90,34 @@ namespace RockWeb
 
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            // call a page on the site to keep IIS alive
-            //var test = HttpContext.Current.Request.Url.Host; 
+            // call a page on the site to keep IIS alive 
             string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
             WebRequest request = WebRequest.Create( url );
             WebResponse response = request.GetResponse();
 
             // add cache item again
             AddCallBack();
+
+            // process the transaction queue
+            if ( !Global.QueueInUse )
+            {
+                Global.QueueInUse = true;
+
+                try
+                {
+                    do
+                    {
+                        ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
+                        transaction.Execute();
+                    } while ( RockQueue.TransactionQueue.Count != 0 );
+                }
+                catch ( Exception ex )
+                {
+                    // TODO log exception
+                }
+
+                Global.QueueInUse = false;
+            }
         }
 
         protected void Session_Start( object sender, EventArgs e )
@@ -139,8 +163,8 @@ namespace RockWeb
         private void AddCallBack()
         {
             OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
-            HttpRuntime.Cache.Insert( "IISCallBack", 600, null,
-                DateTime.Now.AddSeconds( 600 ), Cache.NoSlidingExpiration,
+            HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
+                DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
         }
 
