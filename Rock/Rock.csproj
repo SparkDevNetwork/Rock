@@ -185,7 +185,6 @@
     <Compile Include="Core\ServiceLogService.cs" />
     <Compile Include="CRM\Address.cs" />
     <Compile Include="CRM\AddressService.cs" />
-    <Compile Include="CRM\EmailTemplate.Partial.cs" />
     <Compile Include="CRM\EmailTemplate.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\EntityAddressRepository.cs" />
