@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "View", user.UserName ) )
+					if ( AttributeQualifier.Authorized( "View", user ) )
 						return AttributeQualifier.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( existingAttributeQualifier.Authorized( "Edit", user.UserName ) )
+					if ( existingAttributeQualifier.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "Edit", user.UserName ) )
+					if ( AttributeQualifier.Authorized( "Edit", user ) )
 					{
 						AttributeQualifierService.Delete( AttributeQualifier, user.PersonId );
 						AttributeQualifierService.Save( AttributeQualifier, user.PersonId );

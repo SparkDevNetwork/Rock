@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( SiteDomain.Authorized( "View", user.UserName ) )
+					if ( SiteDomain.Authorized( "View", user ) )
 						return SiteDomain.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this SiteDomain", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain existingSiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( existingSiteDomain.Authorized( "Edit", user.UserName ) )
+					if ( existingSiteDomain.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( SiteDomain.Authorized( "Edit", user.UserName ) )
+					if ( SiteDomain.Authorized( "Edit", user ) )
 					{
 						SiteDomainService.Delete( SiteDomain, user.PersonId );
 						SiteDomainService.Save( SiteDomain, user.PersonId );
