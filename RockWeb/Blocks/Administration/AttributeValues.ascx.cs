@@ -199,7 +199,8 @@ namespace RockWeb.Blocks.Administration
                         a.Id,
                         a.Category,
                         a.Name,
-                        a.Description
+                        a.Description,
+                        a.DefaultValue
                     } ).
                     ToList();
 

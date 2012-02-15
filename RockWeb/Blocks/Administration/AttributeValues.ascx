@@ -93,6 +93,7 @@
                 <asp:BoundField DataField="Category" HeaderText="Category" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
+                <asp:BoundField DataField="DefaultValue" HeaderText="Default Value" />
                 <asp:TemplateField>
                     <HeaderTemplate>Value</HeaderTemplate>
                     <ItemTemplate><asp:Literal ID="lValue" runat="server"></asp:Literal></ItemTemplate>
