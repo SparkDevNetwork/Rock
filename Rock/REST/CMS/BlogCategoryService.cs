@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( BlogCategory.Authorized( "View", user.UserName ) )
+					if ( BlogCategory.Authorized( "View", user ) )
 						return BlogCategory.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogCategory", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory existingBlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( existingBlogCategory.Authorized( "Edit", user.UserName ) )
+					if ( existingBlogCategory.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlogCategory).CurrentValues.SetValues(BlogCategory);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogCategoryService BlogCategoryService = new Rock.CMS.BlogCategoryService();
 					Rock.CMS.BlogCategory BlogCategory = BlogCategoryService.Get( int.Parse( id ) );
-					if ( BlogCategory.Authorized( "Edit", user.UserName ) )
+					if ( BlogCategory.Authorized( "Edit", user ) )
 					{
 						BlogCategoryService.Delete( BlogCategory, user.PersonId );
 						BlogCategoryService.Save( BlogCategory, user.PersonId );

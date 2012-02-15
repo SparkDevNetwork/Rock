@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( DefinedValue.Authorized( "View", user.UserName ) )
+					if ( DefinedValue.Authorized( "View", user ) )
 						return DefinedValue.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this DefinedValue", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue existingDefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( existingDefinedValue.Authorized( "Edit", user.UserName ) )
+					if ( existingDefinedValue.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingDefinedValue).CurrentValues.SetValues(DefinedValue);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.DefinedValueService DefinedValueService = new Rock.Core.DefinedValueService();
 					Rock.Core.DefinedValue DefinedValue = DefinedValueService.Get( int.Parse( id ) );
-					if ( DefinedValue.Authorized( "Edit", user.UserName ) )
+					if ( DefinedValue.Authorized( "Edit", user ) )
 					{
 						DefinedValueService.Delete( DefinedValue, user.PersonId );
 						DefinedValueService.Save( DefinedValue, user.PersonId );

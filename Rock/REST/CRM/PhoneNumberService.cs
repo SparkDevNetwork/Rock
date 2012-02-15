@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( PhoneNumber.Authorized( "View", user.UserName ) )
+					if ( PhoneNumber.Authorized( "View", user ) )
 						return PhoneNumber.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( existingPhoneNumber.Authorized( "Edit", user.UserName ) )
+					if ( existingPhoneNumber.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
-					if ( PhoneNumber.Authorized( "Edit", user.UserName ) )
+					if ( PhoneNumber.Authorized( "Edit", user ) )
 					{
 						PhoneNumberService.Delete( PhoneNumber, user.PersonId );
 						PhoneNumberService.Save( PhoneNumber, user.PersonId );

@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( BlogTag.Authorized( "View", user.UserName ) )
+					if ( BlogTag.Authorized( "View", user ) )
 						return BlogTag.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogTag", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag existingBlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( existingBlogTag.Authorized( "Edit", user.UserName ) )
+					if ( existingBlogTag.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlogTag).CurrentValues.SetValues(BlogTag);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogTagService BlogTagService = new Rock.CMS.BlogTagService();
 					Rock.CMS.BlogTag BlogTag = BlogTagService.Get( int.Parse( id ) );
-					if ( BlogTag.Authorized( "Edit", user.UserName ) )
+					if ( BlogTag.Authorized( "Edit", user ) )
 					{
 						BlogTagService.Delete( BlogTag, user.PersonId );
 						BlogTagService.Save( BlogTag, user.PersonId );
