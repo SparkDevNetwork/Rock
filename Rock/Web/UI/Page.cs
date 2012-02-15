@@ -549,6 +549,7 @@ namespace Rock.Web.UI
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
                 transaction.PageId = PageInstance.Id;
+                transaction.SiteId = PageInstance.Site.Id;
                 if ( CurrentPersonId != null )
                     transaction.PersonId = (int)CurrentPersonId;
                 transaction.IPAddress = Request.UserHostAddress;

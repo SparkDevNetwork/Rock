@@ -105,11 +105,11 @@ namespace RockWeb
 
                 try
                 {
-                    do
+                    while ( RockQueue.TransactionQueue.Count != 0 )
                     {
                         ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
-                    } while ( RockQueue.TransactionQueue.Count != 0 );
+                    } 
                 }
                 catch ( Exception ex )
                 {
