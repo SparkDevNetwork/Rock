@@ -2,6 +2,7 @@
 
 <script type="text/javascript">
 
+    var AttributeEntity = '<%= entity %>';
     var AttributeId = null;
     var AttributeValueId = null;
     var AttributeValue = null;
@@ -47,6 +48,14 @@
                     data: JSON.stringify(attributeValue),
                     url: restUrl,
                     success: function (data, status, xhr) {
+
+                        if (AttributeEntity == '')
+                            $.ajax({
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                url:  rock.baseUrl + 'REST/Core/Attribute/FlushGlobal/'
+                            });
 
                         $('#modal-details').modal('hide');
                         $('#<%= btnRefresh.ClientID %>').click();
