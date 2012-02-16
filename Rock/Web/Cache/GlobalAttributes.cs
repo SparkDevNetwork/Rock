@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
                         ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
                 {
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
-                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attributeValue != null ? attributeValue.Value : attribute.DefaultValue ) );
+                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && attributeValue.Value != string.Empty) ? attributeValue.Value : attribute.DefaultValue ) );
                 }
 
                 cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );

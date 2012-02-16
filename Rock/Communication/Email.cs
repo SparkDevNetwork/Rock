@@ -185,11 +185,11 @@ namespace Rock.Communication
 
             string result = content;
 
-            foreach ( object item in objects )
-                result = ResolveMergeCodes(result, item);
-
             var orgAttributes = Rock.Web.Cache.GlobalAttributes.Read();
             result = ResolveMergeCodes( result, orgAttributes.AttributeValues );
+
+            foreach ( object item in objects )
+                result = ResolveMergeCodes(result, item);
 
             Dictionary<string, string> configValues = new Dictionary<string, string>();
             foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
