@@ -58,7 +58,7 @@ namespace Rock.REST.Core
         /// </summary>
         /// <param name="apiKey">The API key.</param>
         [WebInvoke( Method = "PUT", UriTemplate = "FlushGlobal/{apiKey}" )]
-        public void FlushGlobal( string apiKey )
+        public void ApiFlushGlobal( string apiKey )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {

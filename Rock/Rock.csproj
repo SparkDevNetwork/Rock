@@ -223,6 +223,7 @@
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
+    <Compile Include="REST\Core\IAttributeService.Partial.cs" />
     <Compile Include="REST\CRM\EmailTemplateService.cs" />
     <Compile Include="REST\CRM\IEmailTemplateService.cs" />
     <Compile Include="REST\CRM\IPersonTrailService.cs" />
