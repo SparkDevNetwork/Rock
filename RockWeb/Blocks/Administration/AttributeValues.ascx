@@ -54,7 +54,10 @@
                                 type: 'PUT',
                                 contentType: 'application/json',
                                 dataType: 'json',
-                                url:  rock.baseUrl + 'REST/Core/Attribute/FlushGlobal/'
+                                url:  rock.baseUrl + 'REST/Core/Attribute/FlushGlobal',
+                                error: function (xhr, status, error) {
+                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                                }
                             });
 
                         $('#modal-details').modal('hide');
