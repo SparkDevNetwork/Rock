@@ -191,6 +191,11 @@ namespace Rock.Communication
             var orgAttributes = Rock.Web.Cache.GlobalAttributes.Read();
             result = ResolveMergeCodes( result, orgAttributes.AttributeValues );
 
+            Dictionary<string, string> configValues = new Dictionary<string, string>();
+            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+                configValues.Add( "config:" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
+            result = ResolveMergeCodes( result, configValues );
+
             return result;
         }
 
