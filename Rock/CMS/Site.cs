@@ -134,6 +134,16 @@ namespace Rock.CMS
 		public string RegistrationPageReference { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Error Page.
+		/// </summary>
+		/// <value>
+		/// Path to the error page for this site..
+		/// </value>
+		[MaxLength( 200 )]
+		[DataMember]
+		public string ErrorPage { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Created Date Time.
 		/// </summary>
 		/// <value>
@@ -193,6 +203,7 @@ namespace Rock.CMS
 				dto.FacebookAppSecret = this.FacebookAppSecret;
 				dto.LoginPageReference = this.LoginPageReference;
 				dto.RegistrationPageReference = this.RegistrationPageReference;
+				dto.ErrorPage = this.ErrorPage;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;

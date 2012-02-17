@@ -125,6 +125,14 @@ namespace Rock.CMS.DTO
 		public string RegistrationPageReference { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Error Page.
+		/// </summary>
+		/// <value>
+		/// Path to the error page for this site..
+		/// </value>
+		public string ErrorPage { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Created Date Time.
 		/// </summary>
 		/// <value>

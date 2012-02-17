@@ -26,7 +26,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Gets Exception Logs by Parent Id
 		/// </summary>
-		/// <param name="parentId">Parent Id.</param>
+		/// <param name="parentId">Parent Id of the exeption, used for linking inner exceptions..</param>
 		/// <returns>An enumerable list of ExceptionLog objects.</returns>
 	    public IEnumerable<Rock.Core.ExceptionLog> GetByParentId( int? parentId )
         {
@@ -36,7 +36,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Gets Exception Logs by Site Id
 		/// </summary>
-		/// <param name="siteId">Site Id.</param>
+		/// <param name="siteId">Site Id that the exception occurred on..</param>
 		/// <returns>An enumerable list of ExceptionLog objects.</returns>
 	    public IEnumerable<Rock.Core.ExceptionLog> GetBySiteId( int? siteId )
         {
@@ -46,7 +46,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Gets Exception Logs by Person Id
 		/// </summary>
-		/// <param name="personId">Person Id.</param>
+		/// <param name="personId">Person Id of the logged in person who experienced the exception..</param>
 		/// <returns>An enumerable list of ExceptionLog objects.</returns>
 	    public IEnumerable<Rock.Core.ExceptionLog> GetByPersonId( int? personId )
         {
