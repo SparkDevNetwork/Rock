@@ -144,11 +144,15 @@ namespace RockWeb
             System.Exception ex = Context.Server.GetLastError();
 
             // log error
-            if (!(ex.Message == "File does not exist." && ex.Source == "System.Web")) // ignore 404 error
-                LogError( ex, -1, context ); 
+            if ( !( ex.Message == "File does not exist." && ex.Source == "System.Web" ) ) // ignore 404 error
+            {
+                LogError( ex, -1, context );
 
-            //context.Server.ClearError();
-            //Response.Redirect( "some_error_occured_we_are_sorry .aspx" );
+                context.Server.ClearError();
+                Response.Redirect( "~/error.aspx" );
+            }
+
+            
         }
 
         private void LogError( Exception ex, int parentException, System.Web.HttpContext context )
@@ -177,7 +181,7 @@ namespace RockWeb
                     exceptionLog.SiteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
 
                 if ( context.Items["Rock:PageId"] != null )
-                    exceptionLog.SiteId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
+                    exceptionLog.PageId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
 
                 exceptionLog.ExceptionType = ex.GetType().Name;
                 exceptionLog.PageUrl = context.Request.RawUrl;
@@ -193,6 +197,16 @@ namespace RockWeb
 
                 cookies.Append( "</table>" );
                 exceptionLog.Cookies = cookies.ToString();
+
+                // write form items
+                StringBuilder formItems = new StringBuilder();
+                cookies.Append( "<table class=\"formItems\">" );
+
+                foreach ( string formItem in context.Request.Form )
+                    cookies.Append( "<tr><td><b>" + formItem + "</b></td><td>" + context.Request.Form[formItem].ToString() + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.Form = formItems.ToString();
 
                 // write server vars
                 StringBuilder serverVars = new StringBuilder();
@@ -217,7 +231,7 @@ namespace RockWeb
             }
             catch ( Exception exception )
             {
-
+                // if you get an exception while logging an exception I guess you're hosed...
             }            
         }
 
