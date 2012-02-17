@@ -500,3 +500,23 @@ body#dialog .pills li a
     color: 	#404040;
 }
 
+/* Exception Styles */
+.stack-trace 
+{
+    font-size: 9px;
+}
+
+a.exception-type 
+{
+    cursor: pointer;
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    text-transform: none;
+}
+
+a.exception-type:hover
+{
+    text-decoration: none;
+    color: #fff;
+}

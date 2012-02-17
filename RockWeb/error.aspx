@@ -1,16 +1,48 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="error.aspx.cs" Inherits="error" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title></title>
+    <title>Opps...</title>
+
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/base.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/cms-core.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
+
+    <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
+
+    <script>
+        $(document).ready(function () {
+            $(".stack-trace").hide();
+            
+            //toggle the componenet with class msg_body
+            $(".exception-type").click(function () {
+                $(this).next(".stack-trace").slideToggle(500);
+            });
+        });
+    </script>
+
+
+
 </head>
-<body>
+<body id="splash">
     <form id="form1" runat="server">
-    <div>
     
-    </div>
+        
+        <div id="content">
+            <h1>Rock ChMS</h1>
+            <div id="content-box">
+                <h1>Ah Man... An Error Occurred...</h1>
+                <p>An error has occurred while processing your request.  The Rock ChMS admistrators have 
+                been notified of this problem.</p>
+
+                <p><a onclick="history.go(-1);" class="btn small">Go Back</a></p>
+
+                <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
+            </div>
+        </div>
+
     </form>
 </body>
 </html>

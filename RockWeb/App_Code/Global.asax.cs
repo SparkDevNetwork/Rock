@@ -140,24 +140,61 @@ namespace RockWeb
         // default error handling
         protected void Application_Error( object sender, EventArgs e )
         {
+            // log error
             System.Web.HttpContext context = HttpContext.Current;
             System.Exception ex = Context.Server.GetLastError();
 
-            // log error
-            if ( !( ex.Message == "File does not exist." && ex.Source == "System.Web" ) ) // ignore 404 error
-            {
-                LogError( ex, -1, context );
+            bool logException = true;
 
-                context.Server.ClearError();
-                Response.Redirect( "~/error.aspx" );
+            // string to send a message to the error page to prevent infinite loops
+            // of error reporting from incurring if there is an exception on the error page
+            string errorQueryParm = "?error=1";
+
+            if (context.Request.Url.ToString().Contains("?error=1")) 
+            {
+                errorQueryParm = "?error=2";
+            }
+            else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
+            {
+                // something really bad is occurring stop logging errors as we're in an infinate loop
+                logException = false;
             }
 
-            
+
+            if ( logException )
+            {
+                if ( !( ex.Message == "File does not exist." && ex.Source == "System.Web" ) ) // ignore 404 error
+                {
+                    LogError( ex, -1, context );
+                    context.Server.ClearError();
+
+                    string errorPage = string.Empty;
+
+                    // determine error page based on the site
+                    if ( context.Items["Rock:SiteId"] != null )
+                    {
+                        int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+
+                        // load site
+                        SiteService service = new SiteService();
+                        Site site = service.Get( siteId );
+
+                        errorPage = site.ErrorPage;
+                    }
+
+                    // store exception in session
+                    Session["Exception"] = ex;
+                    
+                    if ( errorPage != null && errorPage != string.Empty )
+                        Response.Redirect( errorPage + errorQueryParm );
+                    else
+                        Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
+                }
+            }
         }
 
         private void LogError( Exception ex, int parentException, System.Web.HttpContext context )
         {
-
             try
             {
                 // get the current user
