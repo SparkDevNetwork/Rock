@@ -12,6 +12,7 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Routing;
 using System.Collections.Generic;
+using System.Text;
 
 using Quartz;
 using Quartz.Impl;
@@ -21,6 +22,7 @@ using Rock.CMS;
 using Rock.Jobs;
 using Rock.Util;
 using Rock.Transactions;
+using Rock.Core;
 
 namespace RockWeb
 {
@@ -135,9 +137,88 @@ namespace RockWeb
 
         }
 
+        // default error handling
         protected void Application_Error( object sender, EventArgs e )
         {
+            System.Web.HttpContext context = HttpContext.Current;
+            System.Exception ex = Context.Server.GetLastError();
 
+            // log error
+            if (!(ex.Message == "File does not exist." && ex.Source == "System.Web")) // ignore 404 error
+                LogError( ex, -1, context ); 
+
+            //context.Server.ClearError();
+            //Response.Redirect( "some_error_occured_we_are_sorry .aspx" );
+        }
+
+        private void LogError( Exception ex, int parentException, System.Web.HttpContext context )
+        {
+
+            try
+            {
+                // get the current user
+                Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+
+                // save the exception info to the db
+                ExceptionLogService service = new ExceptionLogService();
+                ExceptionLog exceptionLog = new ExceptionLog(); ;
+
+                exceptionLog.ParentId = parentException;
+                exceptionLog.ExceptionDate = DateTime.Now;
+
+                if ( ex.InnerException != null )
+                    exceptionLog.HasInnerException = true;
+
+                exceptionLog.Description = ex.Message;
+                exceptionLog.StackTrace = ex.StackTrace;
+                exceptionLog.Source = ex.Source;
+
+                if ( context.Items["Rock:SiteId"] != null )
+                    exceptionLog.SiteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+
+                if ( context.Items["Rock:PageId"] != null )
+                    exceptionLog.SiteId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
+
+                exceptionLog.ExceptionType = ex.GetType().Name;
+                exceptionLog.PageUrl = context.Request.RawUrl;
+                
+                exceptionLog.QueryString = context.Request.QueryString.ToString();
+
+                // write cookies
+                StringBuilder cookies = new StringBuilder();
+                cookies.Append("<table class=\"cookies\">");
+
+                foreach ( string cookie in context.Request.Cookies )
+                    cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + context.Request.Cookies[cookie].Value + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.Cookies = cookies.ToString();
+
+                // write server vars
+                StringBuilder serverVars = new StringBuilder();
+                cookies.Append( "<table class=\"server-variables\">" );
+
+                foreach ( string serverVar in context.Request.ServerVariables )
+                    serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.ServerVariables = serverVars.ToString();
+
+                if (user != null)
+                    exceptionLog.PersonId = user.PersonId;
+
+                service.Add( exceptionLog, null );
+                service.Save( exceptionLog, null );
+
+                //  log inner exceptions
+                if ( ex.InnerException != null )
+                    LogError( ex.InnerException, exceptionLog.Id, context );
+
+            }
+            catch ( Exception exception )
+            {
+
+            }            
         }
 
         protected void Session_End( object sender, EventArgs e )

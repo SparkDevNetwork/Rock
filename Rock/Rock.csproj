@@ -68,6 +68,10 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\EntityExceptionLogRepository.cs" />
+    <Compile Include="Core\ExceptionLog.cs" />
+    <Compile Include="Core\ExceptionLogService.cs" />
+    <Compile Include="Core\IExceptionLogRepository.cs" />
     <Compile Include="CRM\PersonTrailService.partial.cs" />
     <Compile Include="CRM\EntityPersonTrailRepository.cs" />
     <Compile Include="CRM\IPersonTrailRepository.cs" />
