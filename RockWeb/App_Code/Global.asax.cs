@@ -163,9 +163,20 @@ namespace RockWeb
 
             if ( logException )
             {
-                if ( !( ex.Message == "File does not exist." && ex.Source == "System.Web" ) ) // ignore 404 error
+                string status = "500";
+                
+                // determine if 404's should be tracked as exceptions
+                bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributes.Value( "Log404AsException" ) );
+                
+                // set status to 404
+                if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )  
                 {
-                    LogError( ex, -1, context );
+                    status = "404";
+                }
+
+                if (status == "500" || track404)
+                {
+                    LogError( ex, -1, status, context );
                     context.Server.ClearError();
 
                     string errorPage = string.Empty;
@@ -193,7 +204,7 @@ namespace RockWeb
             }
         }
 
-        private void LogError( Exception ex, int parentException, System.Web.HttpContext context )
+        private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
         {
             try
             {
@@ -213,6 +224,7 @@ namespace RockWeb
                 exceptionLog.Description = ex.Message;
                 exceptionLog.StackTrace = ex.StackTrace;
                 exceptionLog.Source = ex.Source;
+                exceptionLog.StatusCode = status;
 
                 if ( context.Items["Rock:SiteId"] != null )
                     exceptionLog.SiteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
@@ -263,7 +275,7 @@ namespace RockWeb
 
                 //  log inner exceptions
                 if ( ex.InnerException != null )
-                    LogError( ex.InnerException, exceptionLog.Id, context );
+                    LogError( ex.InnerException, exceptionLog.Id, status, context );
 
             }
             catch ( Exception exception )
