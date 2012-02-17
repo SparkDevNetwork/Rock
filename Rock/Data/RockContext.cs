@@ -188,6 +188,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.EntityChange> EntityChanges { get; set; }
 
         /// <summary>
+        /// Gets or sets the Exception Logs.
+        /// </summary>
+        /// <value>
+        /// the Exception Logs.
+        /// </value>
+        public DbSet<Rock.Core.ExceptionLog> ExceptionLogs { get; set; }
+
+        /// <summary>
         /// Gets or sets the Field Types.
         /// </summary>
         /// <value>
@@ -312,6 +320,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
