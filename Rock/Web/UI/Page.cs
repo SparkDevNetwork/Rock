@@ -49,7 +49,20 @@ namespace Rock.Web.UI
         /// The current Rock page instance being requested.  This value is set 
         /// by the RockRouteHandler immediately after instantiating the page
         /// </summary>
-        public Rock.Web.Cache.Page PageInstance { get; set; }
+        public Rock.Web.Cache.Page PageInstance 
+        {
+            get 
+            { 
+                return _pageInstance; 
+            }
+            set
+            {
+                _pageInstance = value;
+                HttpContext.Current.Items.Add( "Rock:SiteId", _pageInstance.Site.Id );
+                HttpContext.Current.Items.Add( "Rock:PageId", _pageInstance.Id);
+            }
+        }
+        private Rock.Web.Cache.Page _pageInstance = null;
 
         /// <summary>
         /// The Page Title controls on the page.
