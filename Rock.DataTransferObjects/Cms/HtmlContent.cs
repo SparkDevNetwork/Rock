@@ -45,14 +45,6 @@ namespace Rock.CMS.DTO
 		public int BlockId { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Content.
-		/// </summary>
-		/// <value>
-		/// Content.
-		/// </value>
-		public string Content { get; set; }
-
-		/// <summary>
 		/// Gets or sets the Entity Value.
 		/// </summary>
 		/// <value>
@@ -61,12 +53,20 @@ namespace Rock.CMS.DTO
 		public string EntityValue { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Version Label.
+		/// Gets or sets the Version.
 		/// </summary>
 		/// <value>
-		/// Version Label.
+		/// Version.
 		/// </value>
-		public int VersionLabel { get; set; }
+		public int Version { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Content.
+		/// </summary>
+		/// <value>
+		/// Content.
+		/// </value>
+		public string Content { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Approved.

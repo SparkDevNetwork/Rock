@@ -36,6 +36,25 @@ namespace Rock.CMS
 		public int BlockId { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Entity Value.
+		/// </summary>
+		/// <value>
+		/// Entity Value.
+		/// </value>
+		[MaxLength( 200 )]
+		[DataMember]
+		public string EntityValue { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Version.
+		/// </summary>
+		/// <value>
+		/// Version.
+		/// </value>
+		[DataMember]
+		public int Version { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Content.
 		/// </summary>
 		/// <value>
@@ -43,25 +62,6 @@ namespace Rock.CMS
 		/// </value>
 		[DataMember]
 		public string Content { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Value.
-		/// </summary>
-		/// <value>
-		/// Entity Value.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Version Label.
-		/// </summary>
-		/// <value>
-		/// Version Label.
-		/// </value>
-		[DataMember]
-		public int VersionLabel { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Approved.
@@ -158,9 +158,9 @@ namespace Rock.CMS
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.BlockId = this.BlockId;
-				dto.Content = this.Content;
 				dto.EntityValue = this.EntityValue;
-				dto.VersionLabel = this.VersionLabel;
+				dto.Version = this.Version;
+				dto.Content = this.Content;
 				dto.Approved = this.Approved;
 				dto.ApprovedByPersonId = this.ApprovedByPersonId;
 				dto.ApprovedDateTime = this.ApprovedDateTime;

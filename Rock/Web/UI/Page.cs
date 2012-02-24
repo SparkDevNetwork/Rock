@@ -428,13 +428,14 @@ namespace Rock.Web.UI
                                     block.PageInstance = PageInstance;
                                     block.BlockInstance = blockInstance;
 
+                                    block.ReadAdditionalActions();
+
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
                                     {
                                         block.CreateAttributes();
-                                        block.ReadAdditionalActions();
                                         blockInstance.Block.InstancePropertiesVerified = true;
                                     }
 
@@ -862,6 +863,9 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( string name )
         {
+            if ( String.IsNullOrEmpty( name ) )
+                return string.Empty;
+
             if ( Page.RouteData.Values.ContainsKey( name ) )
                 return ( string )Page.RouteData.Values[name];
 
