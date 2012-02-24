@@ -340,7 +340,7 @@ namespace Rock.Communication
             if ( String.IsNullOrWhiteSpace( recipients ) )
                 return new List<string>();
             else
-                return new List<string>( recipients.Split( ';' ) );
+                return new List<string>( recipients.Split( ',' ) );
         }
 
         /// <summary>
