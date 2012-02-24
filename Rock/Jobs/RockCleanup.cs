@@ -27,6 +27,7 @@ using System.Linq;
 
 using Quartz;
 using Rock.CMS;
+using Rock.Core;
 
 namespace Rock.Jobs
 {
@@ -38,6 +39,7 @@ namespace Rock.Jobs
     /// <author>Spark Development Network</author>
 
     [Rock.Attribute.Property( 0, "Hours to Keep Unconfirmed Accounts", "HoursKeepUnconfirmedAccounts", "General", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)",  false, "48", "Rock", "Rock.FieldTypes.Integer" )]
+    [Rock.Attribute.Property( 0, "Days to Keep Exceptions in Log", "DaysKeepExceptions", "General", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, "14", "Rock", "Rock.FieldTypes.Integer" )]
     public class RockCleanup : IJob
 	{        
         /// <summary> 
@@ -77,7 +79,19 @@ namespace Rock.Jobs
             }
 
             userService.Save( null, null );
-            
+
+            // purge exception log
+            int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );
+            DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
+
+            ExceptionLogService exceptionLogService = new ExceptionLogService();
+
+            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDate < exceptionExpireDate ) )
+            {
+                exceptionLogService.Delete( exception, null );
+            }
+
+            exceptionLogService.Save( null, null );
 		}
 
 	}
