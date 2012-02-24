@@ -23,6 +23,7 @@ using Rock.Jobs;
 using Rock.Util;
 using Rock.Transactions;
 using Rock.Core;
+using Rock.Communication;
 
 namespace RockWeb
 {
@@ -182,26 +183,98 @@ namespace RockWeb
                     string errorPage = string.Empty;
 
                     // determine error page based on the site
+                    SiteService service = new SiteService();
+                    Site site = null;
+                    string siteName = string.Empty;
+
                     if ( context.Items["Rock:SiteId"] != null )
                     {
                         int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
 
                         // load site
-                        SiteService service = new SiteService();
-                        Site site = service.Get( siteId );
+                        site = service.Get( siteId );
 
+                        siteName = site.Name;
                         errorPage = site.ErrorPage;
                     }
 
                     // store exception in session
                     Session["Exception"] = ex;
                     
+                    // email notifications if 500 error
+                    if ( status == "500" )
+                    {
+                        // setup merge codes for email
+                        var mergeObjects = new List<object>();
+
+                        var values = new Dictionary<string, string>();
+
+                        string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
+                        values.Add( "ExceptionDetails", exceptionDetails );
+                        mergeObjects.Add( values );
+                        
+                        // get email addresses to send to
+                        string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
+
+                        string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
+
+                        var recipients = new Dictionary<string, List<object>>();
+
+                        foreach ( string emailAddress in emailAddresses )
+                        {
+                            recipients.Add( emailAddress, mergeObjects );
+                        }
+
+                        if ( recipients.Count > 0 )
+                        {
+                            Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+                            SetSMTPParameters( email );  //TODO move this set up to the email object
+                            email.Send( recipients );
+                        }
+                    }
+
+                    // redirect to error page
                     if ( errorPage != null && errorPage != string.Empty )
                         Response.Redirect( errorPage + errorQueryParm );
                     else
                         Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
                 }
             }
+        }
+
+        private string FormatException( Exception ex, string exLevel )
+        {
+            string message = string.Empty;
+            
+            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
+
+            // check for inner exception
+            if ( ex.InnerException != null )
+            {
+                //lErrorInfo.Text += "<p /><p />";
+                message += FormatException( ex.InnerException, "-" + exLevel );
+            }
+
+            return message;
+        }
+
+        private void SetSMTPParameters( Email email )
+        {
+            email.Server = Rock.Web.Cache.GlobalAttributes.Value( "SMTPServer" );
+
+            int port = 0;
+            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPPort" ), out port ) )
+                port = 0;
+            email.Port = port;
+
+            bool useSSL = false;
+            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+                useSSL = false;
+            email.UseSSL = useSSL;
+
+            email.UserName = Rock.Web.Cache.GlobalAttributes.Value( "SMTPUserName" );
+            email.Password = Rock.Web.Cache.GlobalAttributes.Value( "SMTPPassword" );
         }
 
         private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
