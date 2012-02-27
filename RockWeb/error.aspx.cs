@@ -30,13 +30,9 @@ public partial class error : System.Web.UI.Page
                 // is an admin
                 lErrorInfo.Text = "<h4>Exception Log:</h4>";
 
-                Exception ex = null;
-
                 // get exception from Session
                 if ( Session["Exception"] != null )
-                    ex = ( Exception )Session["Exception"];
-
-                ProcessException( ex, " " );
+                    ProcessException( ( Exception )Session["Exception"], " " );
             }
         }
 
