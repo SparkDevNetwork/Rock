@@ -88,6 +88,8 @@ namespace RockWeb.Blocks.Cms
 
             HtmlContentService service = new HtmlContentService();
             Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            if ( content == null )
+                content = new Rock.CMS.HtmlContent();
 
             string script = string.Format( @"
 
