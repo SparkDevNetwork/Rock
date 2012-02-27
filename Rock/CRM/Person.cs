@@ -217,6 +217,15 @@ namespace Rock.CRM
 		public string Email { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Do Not Email.
+		/// </summary>
+		/// <value>
+		/// Do Not Email.
+		/// </value>
+		[DataMember]
+		public bool DoNotEmail { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the System Note.
 		/// </summary>
 		/// <value>
@@ -294,6 +303,7 @@ namespace Rock.CRM
 				dto.AnniversaryDate = this.AnniversaryDate;
 				dto.GraduationDate = this.GraduationDate;
 				dto.Email = this.Email;
+				dto.DoNotEmail = this.DoNotEmail;
 				dto.SystemNote = this.SystemNote;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
