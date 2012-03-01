@@ -43,11 +43,7 @@
 
                 },
                 error: function (xhr, status, error) {
-
-                    if (displayError) {
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }
-
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         }

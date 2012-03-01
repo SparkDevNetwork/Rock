@@ -63,6 +63,85 @@ namespace Rock
 
         #endregion
 
+        #region DateTime Extensions
+
+        /// <summary>
+        /// The total months.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <returns></returns>
+        public static int TotalMonths( this DateTime end, DateTime start )
+        {
+            return ( start.Year * 12 + start.Month ) - ( end.Year * 12 + end.Month );
+        }
+
+        /// <summary>
+        /// The total years.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <returns></returns>
+        public static int TotalYears( this DateTime end, DateTime start )
+        {
+            return ( start.Year) - ( end.Year);
+        }
+
+        /// <summary>
+        /// Returns a friendly elapsed time string.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static string ToElapsedString( this DateTime? dateTime )
+        {
+            if ( dateTime.HasValue )
+            {
+                string direction = "Ago";
+                TimeSpan timeSpan = DateTime.Now.Subtract( dateTime.Value );
+                if ( timeSpan.TotalMilliseconds < 0 )
+                {
+                    direction = "From Now";
+                    timeSpan = timeSpan.Negate();
+                }
+
+                string duration = "";
+
+                // Less than one second
+                if ( timeSpan.TotalSeconds <= 1 )
+                    duration = "1 Second";
+
+                else if ( timeSpan.TotalSeconds < 60 )
+                    duration = string.Format( "{0:N0} Seconds", Math.Truncate( timeSpan.TotalSeconds ) );
+                else if ( timeSpan.TotalMinutes <= 1 )
+                    duration = "1 Minute";
+                else if ( timeSpan.TotalMinutes < 60 )
+                    duration = string.Format( "{0:N0} Minutes", Math.Truncate( timeSpan.TotalMinutes ) );
+                else if ( timeSpan.TotalHours <= 1 )
+                    duration = "1 Hour";
+                else if ( timeSpan.TotalHours < 24 )
+                    duration = string.Format( "{0:N0} Hours", Math.Truncate( timeSpan.TotalHours ) );
+                else if ( timeSpan.TotalDays <= 1 )
+                    duration = "1 Day";
+                else if ( timeSpan.TotalDays < 31 )
+                    duration = string.Format( "{0:N0} Days", Math.Truncate( timeSpan.TotalDays ) );
+                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 1 )
+                    duration = "1 Month";
+                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 18 )
+                    duration = string.Format( "{0:N0} Months", DateTime.Now.TotalMonths( dateTime.Value ) );
+                else if ( DateTime.Now.TotalYears( dateTime.Value ) <= 1 )
+                    duration = "1 Year";
+                else
+                    duration = string.Format( "{0:N0} Years", DateTime.Now.TotalYears( dateTime.Value ) );
+
+                return duration + " " + direction;
+            }
+            else
+                return string.Empty;
+
+        }
+
+        #endregion
+
         #region WebControl Extensions
 
         /// <summary>
