@@ -25,8 +25,8 @@
 
     <div class="actions">
         <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn primary" OnClick="btnLogin_Click" />
-        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn secondary" OnClick="btnNewAccount_Click" />
-        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click" />
+        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn secondary" OnClick="btnNewAccount_Click" CausesValidation="false" />
+        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click" CausesValidation="false" />
     </div>
 
     <span class="forgot">
