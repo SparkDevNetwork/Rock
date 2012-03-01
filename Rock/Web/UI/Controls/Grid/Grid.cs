@@ -11,6 +11,10 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.IO;
+using System.Data;
+
+using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
 {
@@ -133,8 +137,88 @@ namespace Rock.Web.UI.Controls
             this.PagerTemplate = pagerTemplate;
 
             this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
+            this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
 
             base.OnInit( e );
+        }
+
+        void Actions_ExcelExportClick( object sender, EventArgs e )
+        {
+            // create default settings
+            string filename = "export.xlsx";
+            string workSheetName = "Export";
+            string title = "Rock ChMS Export";
+
+
+            MemoryStream ms = new MemoryStream();
+            ExcelPackage excel = new ExcelPackage( ms );
+
+            // if the grid has a caption customize on it
+            if ( this.Caption != null && this.Caption != string.Empty )
+            {
+                excel.Workbook.Properties.Title = this.Caption;
+                workSheetName = this.Caption;
+                filename = this.Caption.Replace( " ", "" ) + ".xlsx";
+                title = this.Caption;
+            }
+            else
+            {
+                excel.Workbook.Properties.Title = "Rock ChMS Export";
+            }
+
+            // add author info
+            Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+            if (user != null)
+                excel.Workbook.Properties.Author = user.Person.FullName;
+            else
+                excel.Workbook.Properties.Author = "Rock ChMS";
+
+            // add the page that created this
+            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
+
+            ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
+
+            // write data to worksheet
+            DataTable data = null;
+            
+            if (this.DataSource is DataTable)
+                data = (DataTable)this.DataSource;
+            else if (this.DataSource is DataView)
+                data = ((DataView)this.DataSource).Table;
+
+            //TODO add logic for other data types
+
+            int rowCounter = 3;
+            foreach ( DataRow row in data.Rows )
+            {
+                for (int i = 0; i < data.Columns.Count; i++)
+                {
+                    worksheet.Cell( rowCounter, i ).Value = row[i].ToString();
+                }
+                rowCounter++;
+            }
+
+            // set some footer text
+            worksheet.HeaderFooter.oddHeader.CenteredText = title;
+            worksheet.HeaderFooter.oddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
+
+            excel.Save();
+
+            byte[] byteArray = ms.ToArray();
+
+            // send the spreadsheet to the browser
+            this.Page.EnableViewState = false;
+            this.Page.Response.Clear();
+            //this.Page.Response.ContentType = "application/vnd.ms-excel";
+            this.Page.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + filename );
+
+            this.Page.Response.Charset = "";
+            this.Page.Response.BinaryWrite( byteArray );
+            this.Page.Response.Flush();
+            this.Page.Response.End();
+            
+            throw new NotImplementedException();
         }
 
         /// <summary>
