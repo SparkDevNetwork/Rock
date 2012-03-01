@@ -245,6 +245,7 @@
     <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />
     <Compile Include="Util\JobService.cs" />
+    <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\Attribute.cs" />
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
