@@ -98,8 +98,10 @@
 	    <footer>
 		    <div class="row">
 		        <Rock:Zone ID="Footer" runat="server" />
+        
+                Version: <%= Rock.Version.Current.ToString() %>     
 		    </div>
-	    </footer>        
+	    </footer>   
     </div>
     <script>
         /* script to manage header lock */

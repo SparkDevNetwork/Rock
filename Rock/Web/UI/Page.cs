@@ -15,9 +15,11 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.Security;
+using System.Configuration;
 
 using Rock.CRM;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
 
 namespace Rock.Web.UI
 {
@@ -47,7 +49,20 @@ namespace Rock.Web.UI
         /// The current Rock page instance being requested.  This value is set 
         /// by the RockRouteHandler immediately after instantiating the page
         /// </summary>
-        public Rock.Web.Cache.Page PageInstance { get; set; }
+        public Rock.Web.Cache.Page PageInstance 
+        {
+            get 
+            { 
+                return _pageInstance; 
+            }
+            set
+            {
+                _pageInstance = value;
+                HttpContext.Current.Items.Add( "Rock:SiteId", _pageInstance.Site.Id );
+                HttpContext.Current.Items.Add( "Rock:PageId", _pageInstance.Id);
+            }
+        }
+        private Rock.Web.Cache.Page _pageInstance = null;
 
         /// <summary>
         /// The Page Title controls on the page.
@@ -413,13 +428,14 @@ namespace Rock.Web.UI
                                     block.PageInstance = PageInstance;
                                     block.BlockInstance = blockInstance;
 
+                                    block.ReadAdditionalActions();
+
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
                                     if ( !blockInstance.Block.InstancePropertiesVerified )
                                     {
                                         block.CreateAttributes();
-                                        block.ReadAdditionalActions();
                                         blockInstance.Block.InstancePropertiesVerified = true;
                                     }
 
@@ -540,6 +556,21 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             Page.Header.DataBind();
+
+            // create a page view transaction if enabled
+            if ( Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            {
+                PageViewTransaction transaction = new PageViewTransaction();
+                transaction.DateViewed = DateTime.Now;
+                transaction.PageId = PageInstance.Id;
+                transaction.SiteId = PageInstance.Site.Id;
+                if ( CurrentPersonId != null )
+                    transaction.PersonId = (int)CurrentPersonId;
+                transaction.IPAddress = Request.UserHostAddress;
+                transaction.UserAgent = Request.UserAgent;
+
+                RockQueue.TransactionQueue.Enqueue( transaction );
+            }
         }
 
 
@@ -782,6 +813,14 @@ namespace Rock.Web.UI
             legend.InnerText = "New Location";
             fsZoneSelect.Controls.Add( legend );
 
+            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            ddlZones.ClientIDMode = ClientIDMode.Static;
+            ddlZones.ID = "block-move-zone";
+            ddlZones.LabelText = "Zone";
+            foreach ( var zone in Zones )
+                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
+            fsZoneSelect.Controls.Add( ddlZones );
+
             LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
             rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
             rblLocation.ClientIDMode = ClientIDMode.Static;
@@ -789,16 +828,8 @@ namespace Rock.Web.UI
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
             rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", PageInstance.Layout ) ) );
-            rblLocation.LabelText = "";
+            rblLocation.LabelText = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
-
-            LabeledDropDownList ddlZones = new LabeledDropDownList();
-            ddlZones.ClientIDMode = ClientIDMode.Static;
-            ddlZones.ID = "block-move-zone";
-            ddlZones.LabelText = "New Zone";
-            foreach ( var zone in Zones )
-                ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
-            fsZoneSelect.Controls.Add( ddlZones );
 
             HtmlGenericControl divBlockMoveFooter = new HtmlGenericControl( "div" );
             divBlockMoveFooter.Attributes.Add( "class", "modal-footer" );
@@ -832,6 +863,9 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( string name )
         {
+            if ( String.IsNullOrEmpty( name ) )
+                return string.Empty;
+
             if ( Page.RouteData.Values.ContainsKey( name ) )
                 return ( string )Page.RouteData.Values[name];
 

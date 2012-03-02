@@ -24,9 +24,9 @@
     }
 
     Sys.Application.add_load(function () {
-        $('ol[id$=cblRoleActionList]').hide();
+        $('ul[id$=cblRoleActionList]').hide();
         $('a.show-action-list').click(function () {
-            $('ol[id$=cblRoleActionList]').toggle('fast');
+            $('ul[id$=cblRoleActionList]').toggle('fast');
             return false;
         });
     });
@@ -47,36 +47,39 @@
 
         <p><asp:Literal ID="lActionNote" runat="server"></asp:Literal></p>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
-            <Columns>
-                <Rock:ReorderField />
-                <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
-                <asp:TemplateField>
-                    <HeaderTemplate>Allow or Deny</HeaderTemplate>
-                    <HeaderStyle HorizontalAlign="Left" />
-                    <ItemStyle Wrap="false" HorizontalAlign="Left" />
-                    <ItemTemplate>
-                        <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
-                            OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
-                            <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
-                            <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
-                        </asp:RadioButtonList>
-                    </ItemTemplate>
-                </asp:TemplateField>
-                <Rock:DeleteField OnClick="rGrid_Delete" />
-            </Columns>
-        </Rock:Grid>
+        <asp:PlaceHolder ID="phList" runat="server">
 
-        <asp:panel id="pnlActions" runat="server" CssClass="actions">
-            <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
-            <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
-            <asp:LinkButton ID="lbAddAllUsers" runat="server" Text="Add All Users" CssClass="btn primary" onclick="lbAddAllUsers_Click"></asp:LinkButton>
-        </asp:panel>
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
+                <Columns>
+                    <Rock:ReorderField />
+                    <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                        <HeaderStyle HorizontalAlign="Left" />
+                        <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                        <ItemTemplate>
+                            <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
+                                OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
+                                <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
+                                <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
+                            </asp:RadioButtonList>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <Rock:DeleteField OnClick="rGrid_Delete" />
+                </Columns>
+            </Rock:Grid>
 
-        <asp:Panel ID="pnlAddRole" runat="server" Visible="false">
+            <asp:panel id="pnlActions" runat="server" CssClass="actions">
+                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
+            </asp:panel>
+
+        </asp:PlaceHolder>
+
+        <asp:Panel ID="pnlAddRole" runat="server" Visible="false" CssClass="add-role">
         
             <fieldset>
-                <legend>Add Role</legend>
+                <legend>Select Role to Add</legend>
                 <Rock:LabeledDropDownList ID="ddlRoles" runat="server" LabelText="Role" AutoPostBack="true" onselectedindexchanged="ddlRoles_SelectedIndexChanged" />
                 <dl>
                     <dt></dt>
@@ -94,15 +97,15 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlAddUser" runat="server" Visible="false">
+        <asp:Panel ID="pnlAddUser" runat="server" Visible="false" CssClass="add-user">
         
             <fieldset>
-                <legend>Add User</legend>
+                <legend>Select User to Add</legend>
                 <Rock:LabeledTextBox ID="tbUser" runat="server" LabelText="User" />
                 <dl>
                     <dt></dt>
                     <dd>
-                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click"></asp:LinkButton>
+                        <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn x-small"></asp:LinkButton>
                         <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list"></asp:CheckBoxList>
                     </dd>
                 </dl>

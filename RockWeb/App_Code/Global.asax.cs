@@ -11,6 +11,8 @@ using System.Net;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Routing;
+using System.Collections.Generic;
+using System.Text;
 
 using Quartz;
 using Quartz.Impl;
@@ -19,6 +21,9 @@ using Quartz.Impl.Matchers;
 using Rock.CMS;
 using Rock.Jobs;
 using Rock.Util;
+using Rock.Transactions;
+using Rock.Core;
+using Rock.Communication;
 
 namespace RockWeb
 {
@@ -27,13 +32,15 @@ namespace RockWeb
         // global Quartz scheduler for jobs
         IScheduler sched = null;
 
+        public static bool QueueInUse = false;
+
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
 
         #region Asp.Net Events
 
         protected void Application_Start( object sender, EventArgs e )
-        {
+        {            
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
@@ -72,10 +79,10 @@ namespace RockWeb
 
                 // start the scheduler
                 sched.Start();
-
-                // add call back to keep IIS process awake at night
-                AddCallBack();
             }
+
+            // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+            AddCallBack();
             
             RegisterRoutes( RouteTable.Routes );
 
@@ -86,14 +93,34 @@ namespace RockWeb
 
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            // call a page on the site to keep IIS alive
-            //var test = HttpContext.Current.Request.Url.Host; 
+            // call a page on the site to keep IIS alive 
             string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
             WebRequest request = WebRequest.Create( url );
             WebResponse response = request.GetResponse();
 
             // add cache item again
             AddCallBack();
+
+            // process the transaction queue
+            if ( !Global.QueueInUse )
+            {
+                Global.QueueInUse = true;
+
+                try
+                {
+                    while ( RockQueue.TransactionQueue.Count != 0 )
+                    {
+                        ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
+                        transaction.Execute();
+                    } 
+                }
+                catch ( Exception ex )
+                {
+                    // TODO log exception
+                }
+
+                Global.QueueInUse = false;
+            }
         }
 
         protected void Session_Start( object sender, EventArgs e )
@@ -111,9 +138,223 @@ namespace RockWeb
 
         }
 
+        // default error handling
         protected void Application_Error( object sender, EventArgs e )
         {
+            // log error
+            System.Web.HttpContext context = HttpContext.Current;
+            System.Exception ex = Context.Server.GetLastError();
 
+            bool logException = true;
+
+            // string to send a message to the error page to prevent infinite loops
+            // of error reporting from incurring if there is an exception on the error page
+            string errorQueryParm = "?error=1";
+
+            if (context.Request.Url.ToString().Contains("?error=1")) 
+            {
+                errorQueryParm = "?error=2";
+            }
+            else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
+            {
+                // something really bad is occurring stop logging errors as we're in an infinate loop
+                logException = false;
+            }
+
+
+            if ( logException )
+            {
+                string status = "500";
+                
+                // determine if 404's should be tracked as exceptions
+                bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributes.Value( "Log404AsException" ) );
+                
+                // set status to 404
+                if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )  
+                {
+                    status = "404";
+                }
+
+                if (status == "500" || track404)
+                {
+                    LogError( ex, -1, status, context );
+                    context.Server.ClearError();
+
+                    string errorPage = string.Empty;
+
+                    // determine error page based on the site
+                    SiteService service = new SiteService();
+                    Site site = null;
+                    string siteName = string.Empty;
+
+                    if ( context.Items["Rock:SiteId"] != null )
+                    {
+                        int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+
+                        // load site
+                        site = service.Get( siteId );
+
+                        siteName = site.Name;
+                        errorPage = site.ErrorPage;
+                    }
+
+                    // store exception in session
+                    Session["Exception"] = ex;
+                    
+                    // email notifications if 500 error
+                    if ( status == "500" )
+                    {
+                        // setup merge codes for email
+                        var mergeObjects = new List<object>();
+
+                        var values = new Dictionary<string, string>();
+
+                        string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
+                        values.Add( "ExceptionDetails", exceptionDetails );
+                        mergeObjects.Add( values );
+                        
+                        // get email addresses to send to
+                        string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
+
+                        string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
+
+                        var recipients = new Dictionary<string, List<object>>();
+
+                        foreach ( string emailAddress in emailAddresses )
+                        {
+                            recipients.Add( emailAddress, mergeObjects );
+                        }
+
+                        if ( recipients.Count > 0 )
+                        {
+                            Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+                            SetSMTPParameters( email );  //TODO move this set up to the email object
+                            email.Send( recipients );
+                        }
+                    }
+
+                    // redirect to error page
+                    if ( errorPage != null && errorPage != string.Empty )
+                        Response.Redirect( errorPage + errorQueryParm );
+                    else
+                        Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
+                }
+            }
+        }
+
+        private string FormatException( Exception ex, string exLevel )
+        {
+            string message = string.Empty;
+            
+            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
+
+            // check for inner exception
+            if ( ex.InnerException != null )
+            {
+                //lErrorInfo.Text += "<p /><p />";
+                message += FormatException( ex.InnerException, "-" + exLevel );
+            }
+
+            return message;
+        }
+
+        private void SetSMTPParameters( Email email )
+        {
+            email.Server = Rock.Web.Cache.GlobalAttributes.Value( "SMTPServer" );
+
+            int port = 0;
+            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPPort" ), out port ) )
+                port = 0;
+            email.Port = port;
+
+            bool useSSL = false;
+            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+                useSSL = false;
+            email.UseSSL = useSSL;
+
+            email.UserName = Rock.Web.Cache.GlobalAttributes.Value( "SMTPUserName" );
+            email.Password = Rock.Web.Cache.GlobalAttributes.Value( "SMTPPassword" );
+        }
+
+        private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
+        {
+            try
+            {
+                // get the current user
+                Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+
+                // save the exception info to the db
+                ExceptionLogService service = new ExceptionLogService();
+                ExceptionLog exceptionLog = new ExceptionLog(); ;
+
+                exceptionLog.ParentId = parentException;
+                exceptionLog.ExceptionDate = DateTime.Now;
+
+                if ( ex.InnerException != null )
+                    exceptionLog.HasInnerException = true;
+
+                exceptionLog.Description = ex.Message;
+                exceptionLog.StackTrace = ex.StackTrace;
+                exceptionLog.Source = ex.Source;
+                exceptionLog.StatusCode = status;
+
+                if ( context.Items["Rock:SiteId"] != null )
+                    exceptionLog.SiteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+
+                if ( context.Items["Rock:PageId"] != null )
+                    exceptionLog.PageId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
+
+                exceptionLog.ExceptionType = ex.GetType().Name;
+                exceptionLog.PageUrl = context.Request.RawUrl;
+                
+                exceptionLog.QueryString = context.Request.QueryString.ToString();
+
+                // write cookies
+                StringBuilder cookies = new StringBuilder();
+                cookies.Append("<table class=\"cookies\">");
+
+                foreach ( string cookie in context.Request.Cookies )
+                    cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + context.Request.Cookies[cookie].Value + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.Cookies = cookies.ToString();
+
+                // write form items
+                StringBuilder formItems = new StringBuilder();
+                cookies.Append( "<table class=\"formItems\">" );
+
+                foreach ( string formItem in context.Request.Form )
+                    cookies.Append( "<tr><td><b>" + formItem + "</b></td><td>" + context.Request.Form[formItem].ToString() + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.Form = formItems.ToString();
+
+                // write server vars
+                StringBuilder serverVars = new StringBuilder();
+                cookies.Append( "<table class=\"server-variables\">" );
+
+                foreach ( string serverVar in context.Request.ServerVariables )
+                    serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
+
+                cookies.Append( "</table>" );
+                exceptionLog.ServerVariables = serverVars.ToString();
+
+                if (user != null)
+                    exceptionLog.PersonId = user.PersonId;
+
+                service.Add( exceptionLog, null );
+                service.Save( exceptionLog, null );
+
+                //  log inner exceptions
+                if ( ex.InnerException != null )
+                    LogError( ex.InnerException, exceptionLog.Id, status, context );
+
+            }
+            catch ( Exception exception )
+            {
+                // if you get an exception while logging an exception I guess you're hosed...
+            }            
         }
 
         protected void Session_End( object sender, EventArgs e )
@@ -139,8 +380,8 @@ namespace RockWeb
         private void AddCallBack()
         {
             OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
-            HttpRuntime.Cache.Insert( "IISCallBack", 600, null,
-                DateTime.Now.AddSeconds( 600 ), Cache.NoSlidingExpiration,
+            HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
+                DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
         }
 

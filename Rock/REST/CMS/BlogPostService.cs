@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostService BlogPostService = new Rock.CMS.BlogPostService();
 					Rock.CMS.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
-					if ( BlogPost.Authorized( "View", user.UserName ) )
+					if ( BlogPost.Authorized( "View", user ) )
 						return BlogPost.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogPost", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostService BlogPostService = new Rock.CMS.BlogPostService();
 					Rock.CMS.BlogPost existingBlogPost = BlogPostService.Get( int.Parse( id ) );
-					if ( existingBlogPost.Authorized( "Edit", user.UserName ) )
+					if ( existingBlogPost.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlogPost).CurrentValues.SetValues(BlogPost);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostService BlogPostService = new Rock.CMS.BlogPostService();
 					Rock.CMS.BlogPost BlogPost = BlogPostService.Get( int.Parse( id ) );
-					if ( BlogPost.Authorized( "Edit", user.UserName ) )
+					if ( BlogPost.Authorized( "Edit", user ) )
 					{
 						BlogPostService.Delete( BlogPost, user.PersonId );
 						BlogPostService.Save( BlogPost, user.PersonId );

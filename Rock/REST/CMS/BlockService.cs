@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockService BlockService = new Rock.CMS.BlockService();
 					Rock.CMS.Block Block = BlockService.Get( int.Parse( id ) );
-					if ( Block.Authorized( "View", user.UserName ) )
+					if ( Block.Authorized( "View", user ) )
 						return Block.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Block", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockService BlockService = new Rock.CMS.BlockService();
 					Rock.CMS.Block existingBlock = BlockService.Get( int.Parse( id ) );
-					if ( existingBlock.Authorized( "Edit", user.UserName ) )
+					if ( existingBlock.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlock).CurrentValues.SetValues(Block);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlockService BlockService = new Rock.CMS.BlockService();
 					Rock.CMS.Block Block = BlockService.Get( int.Parse( id ) );
-					if ( Block.Authorized( "Edit", user.UserName ) )
+					if ( Block.Authorized( "Edit", user ) )
 					{
 						BlockService.Delete( Block, user.PersonId );
 						BlockService.Save( Block, user.PersonId );

@@ -24,6 +24,26 @@ namespace Rock.CRM
     public partial class PersonTrailService : Service<Rock.CRM.PersonTrail>
     {
 		/// <summary>
+		/// Gets Person Trails by Current Guid
+		/// </summary>
+		/// <param name="currentGuid">Current Guid.</param>
+		/// <returns>An enumerable list of PersonTrail objects.</returns>
+	    public IEnumerable<Rock.CRM.PersonTrail> GetByCurrentGuid( Guid currentGuid )
+        {
+            return Repository.Find( t => t.CurrentGuid == currentGuid );
+        }
+		
+		/// <summary>
+		/// Gets Person Trails by Current Id
+		/// </summary>
+		/// <param name="currentId">Current Id.</param>
+		/// <returns>An enumerable list of PersonTrail objects.</returns>
+	    public IEnumerable<Rock.CRM.PersonTrail> GetByCurrentId( int currentId )
+        {
+            return Repository.Find( t => t.CurrentId == currentId );
+        }
+		
+		/// <summary>
 		/// Gets Person Trail by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
@@ -31,26 +51,6 @@ namespace Rock.CRM
 	    public Rock.CRM.PersonTrail GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-		/// <summary>
-		/// Gets Person Trail by Prev Guid
-		/// </summary>
-		/// <param name="prevGuid">Prev Guid.</param>
-		/// <returns>PersonTrail object.</returns>
-	    public Rock.CRM.PersonTrail GetByPrevGuid( Guid prevGuid )
-        {
-            return Repository.FirstOrDefault( t => t.PrevGuid == prevGuid );
-        }
-		
-		/// <summary>
-		/// Gets Person Trail by Prev Id
-		/// </summary>
-		/// <param name="prevId">Prev Id.</param>
-		/// <returns>PersonTrail object.</returns>
-	    public Rock.CRM.PersonTrail GetByPrevId( int prevId )
-        {
-            return Repository.FirstOrDefault( t => t.PrevId == prevId );
         }
 		
     }

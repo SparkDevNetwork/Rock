@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( ServiceLog.Authorized( "View", user.UserName ) )
+					if ( ServiceLog.Authorized( "View", user ) )
 						return ServiceLog.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog existingServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( existingServiceLog.Authorized( "Edit", user.UserName ) )
+					if ( existingServiceLog.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( ServiceLog.Authorized( "Edit", user.UserName ) )
+					if ( ServiceLog.Authorized( "Edit", user ) )
 					{
 						ServiceLogService.Delete( ServiceLog, user.PersonId );
 						ServiceLogService.Save( ServiceLog, user.PersonId );

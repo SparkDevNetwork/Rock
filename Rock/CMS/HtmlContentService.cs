@@ -23,5 +23,17 @@ namespace Rock.CMS
 	/// </summary>
     public partial class HtmlContentService : Service<Rock.CMS.HtmlContent>
     {
+		/// <summary>
+		/// Gets Html Content by Block Id And Entity Value And Version
+		/// </summary>
+		/// <param name="blockId">Block Id.</param>
+		/// <param name="entityValue">Entity Value.</param>
+		/// <param name="version">Version.</param>
+		/// <returns>HtmlContent object.</returns>
+	    public Rock.CMS.HtmlContent GetByBlockIdAndEntityValueAndVersion( int blockId, string entityValue, int version )
+        {
+            return Repository.FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
+        }
+		
     }
 }

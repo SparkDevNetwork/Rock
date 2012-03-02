@@ -66,7 +66,7 @@
 		string EntityVar = Entity.Substring(0,1).ToLower() + Entity.Substring(1);
 		string QualifiedEntity = "Rock." + Namespace + "." + Entity;
 
-		if (!oneTable.IsSystemObject && !TemplateHelper.Many2Many(oneTable))
+		if (!oneTable.IsSystemObject && !TemplateHelper.Many2Many(oneTable) && !oneTable.Name.StartsWith("-"))
 		{
 			// Save list of primary keys so that the get[Entity] method in the 
 			// service layer class can be created correctly
@@ -850,7 +850,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( <#= Entity #>.Authorized( "View", user.UserName ) )
+					if ( <#= Entity #>.Authorized( "View", user ) )
 						return <#= Entity #>.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this <#= Entity #>", System.Net.HttpStatusCode.Forbidden );
@@ -905,7 +905,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> existing<#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( existing<#= Entity #>.Authorized( "Edit", user.UserName ) )
+					if ( existing<#= Entity #>.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existing<#= Entity #>).CurrentValues.SetValues(<#= Entity #>);
 					
@@ -1017,7 +1017,7 @@ namespace Rock.REST<#= projectNamespace #>
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock<#= projectNamespace #>.<#= Entity #>Service <#= Entity #>Service = new Rock<#= projectNamespace #>.<#= Entity #>Service();
 					<#= QualifiedEntity #> <#= Entity #> = <#= Entity #>Service.Get( int.Parse( id ) );
-					if ( <#= Entity #>.Authorized( "Edit", user.UserName ) )
+					if ( <#= Entity #>.Authorized( "Edit", user ) )
 					{
 						<#= Entity #>Service.Delete( <#= Entity #>, user.PersonId );
 						<#= Entity #>Service.Save( <#= Entity #>, user.PersonId );

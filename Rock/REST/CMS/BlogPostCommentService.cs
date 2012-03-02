@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( BlogPostComment.Authorized( "View", user.UserName ) )
+					if ( BlogPostComment.Authorized( "View", user ) )
 						return BlogPostComment.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( existingBlogPostComment.Authorized( "Edit", user.UserName ) )
+					if ( existingBlogPostComment.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
-					if ( BlogPostComment.Authorized( "Edit", user.UserName ) )
+					if ( BlogPostComment.Authorized( "Edit", user ) )
 					{
 						BlogPostCommentService.Delete( BlogPostComment, user.PersonId );
 						BlogPostCommentService.Save( BlogPostComment, user.PersonId );

@@ -37,20 +37,20 @@ namespace Rock.CRM.DTO
         public Guid Guid { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Prev Id.
+		/// Gets or sets the Current Id.
 		/// </summary>
 		/// <value>
-		/// Prev Id.
+		/// Current Id.
 		/// </value>
-		public int PrevId { get; set; }
+		public int CurrentId { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Prev Guid.
+		/// Gets or sets the Current Guid.
 		/// </summary>
 		/// <value>
-		/// Prev Guid.
+		/// Current Guid.
 		/// </value>
-		public Guid PrevGuid { get; set; }
+		public Guid CurrentGuid { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.

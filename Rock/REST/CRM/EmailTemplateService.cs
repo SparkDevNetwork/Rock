@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( EmailTemplate.Authorized( "View", user.UserName ) )
+					if ( EmailTemplate.Authorized( "View", user ) )
 						return EmailTemplate.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this EmailTemplate", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( existingEmailTemplate.Authorized( "Edit", user.UserName ) )
+					if ( existingEmailTemplate.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
 					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
-					if ( EmailTemplate.Authorized( "Edit", user.UserName ) )
+					if ( EmailTemplate.Authorized( "Edit", user ) )
 					{
 						EmailTemplateService.Delete( EmailTemplate, user.PersonId );
 						EmailTemplateService.Save( EmailTemplate, user.PersonId );
