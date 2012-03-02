@@ -131,11 +131,17 @@
     height: 16px;
     width: 16px;
     background-repeat: no-repeat;
+    margin-left: 10px;
 }
 
 .grid-table tfoot .grid-actions a.add
 {
     background: url("../Assets/Images/Grid/add.png") ;
+}
+
+.grid-table tfoot .grid-actions a.excel-export
+{
+    background: url("../Assets/Images/Grid/excel-export.png") ;
 }
 
 .grid-table tfoot .pagination {

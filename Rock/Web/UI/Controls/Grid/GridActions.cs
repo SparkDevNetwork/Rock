@@ -20,6 +20,9 @@ namespace Rock.Web.UI.Controls
         HtmlGenericControl aAdd;
         LinkButton lbAdd;
 
+        HtmlGenericControl aExcelExport;
+        LinkButton lbExcelExport;
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable add].
         /// </summary>
@@ -36,6 +39,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["EnableAdd"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable add].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableExcelExport
+        {
+            get
+            {
+                bool? b = ViewState["EnableExcelExport"] as bool?;
+                return ( b == null ) ? false : b.Value;
+            }
+            set
+            {
+                ViewState["EnableExcelExport"] = value;
             }
         }
 
@@ -61,6 +83,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the client excel export script.
+        /// </summary>
+        /// <value>
+        /// The client excel export script.
+        /// </value>
+        public string ClientExcelExportScript
+        {
+            get
+            {
+                EnsureChildControls();
+                return aExcelExport.Attributes["onclick"];
+            }
+
+            set
+            {
+                EnsureChildControls();
+                aExcelExport.Attributes["onclick"] = value;
+            }
+        }
+
+        /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl"/> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object, for display on the client.
         /// </summary>
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
@@ -68,6 +111,9 @@ namespace Rock.Web.UI.Controls
         {
             aAdd.Visible = EnableAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
             lbAdd.Visible = EnableAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+
+            aExcelExport.Visible = EnableExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            lbExcelExport.Visible = EnableExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
             base.Render( writer );
         }
@@ -106,6 +152,7 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            // controls for add
             aAdd = new HtmlGenericControl( "a" );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
@@ -120,6 +167,22 @@ namespace Rock.Web.UI.Controls
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
             Controls.Add( lbAdd );
+
+            // controls for excel export
+            aExcelExport = new HtmlGenericControl( "a" );
+            aExcelExport.ID = "aExcelExport";
+            aExcelExport.Attributes.Add( "href", "#" );
+            aExcelExport.Attributes.Add( "class", "excel-export" );
+            aExcelExport.InnerText = "Export To Excel";
+            Controls.Add( aExcelExport );
+
+            lbExcelExport = new LinkButton();
+            lbExcelExport.ID = "lbExcelExport";
+            lbExcelExport.CssClass = "excel-export";
+            lbExcelExport.Text = "Export to Excel";
+            lbExcelExport.Click += lbExcelExport_Click;
+            lbExcelExport.CausesValidation = false;
+            Controls.Add( lbExcelExport );
         }
 
         void lbAdd_Click( object sender, EventArgs e )
@@ -128,9 +191,20 @@ namespace Rock.Web.UI.Controls
                 AddClick( sender, e );
         }
 
+        void lbExcelExport_Click( object sender, EventArgs e )
+        {
+            if ( ExcelExportClick != null )
+                ExcelExportClick( sender, e );
+        }
+
         /// <summary>
         /// Occurs when add action is clicked.
         /// </summary>
         public event EventHandler AddClick;
+
+        /// <summary>
+        /// Occurs when add action is clicked.
+        /// </summary>
+        public event EventHandler ExcelExportClick;
     }
 }
