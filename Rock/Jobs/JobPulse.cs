@@ -61,7 +61,7 @@ namespace Rock.Jobs
                 AttributeService attribService = new AttributeService();
                 AttributeValueService attributeValueService = new AttributeValueService();
 
-                Rock.Core.Attribute jobPulseAttrib = attribService.GetByGuid( SystemGuids.JOB_PULSE_ATTRIBUTE_GUID );
+                Rock.Core.Attribute jobPulseAttrib = attribService.GetByGuid( SystemGuid.Attribute.JOB_PULSE );
                 Rock.Core.AttributeValue jobPulseAttribValue = jobPulseAttrib.AttributeValues.FirstOrDefault();
 
                 // create attribute value if one does not exist

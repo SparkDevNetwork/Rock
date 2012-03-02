@@ -110,10 +110,10 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="username">The user name.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, string username )
-        {
-            return Security.Authorization.Authorized( this, action, username );
-        }
+        //public virtual bool Authorized( string action, string username )
+        //{
+        //    return Security.Authorization.Authorized( this, action, username );
+        //}
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,

@@ -17,7 +17,35 @@
 
 .grid-table thead th 
 {
-    background-color: #ddd;
+    background-color: #d6d6d6;
+}
+
+.grid-table thead th.ascending, .grid-table thead th.descending
+{
+    background-color: #cdcbcb;
+}
+
+.grid-table thead th.ascending a:before
+{
+    padding-right: 5px;
+	content: url(../Assets/Images/Grid/asc.png);
+}
+
+.grid-table thead th.descending a:before
+{
+    padding-right: 5px;
+	content: url(../Assets/Images/Grid/desc.png);
+}
+
+.grid-table thead th a 
+{
+    color: #456a95;
+    display: block;
+}
+
+.grid-table thead th a:hover
+{
+    text-decoration: none;
 }
 
 .grid-table tbody tr:hover 
@@ -82,9 +110,9 @@
 
 .grid-table tfoot td 
 {
-    padding: 5px 9px;
-    border-radius: 0 0 6px 6px;   
-    background-color: #ddd;
+    padding: 5px 9px;  
+    background-color: #d6d6d6;
+    border-color: #d1d1d1;
 }
 
 .grid-table tfoot .grid-actions
@@ -146,4 +174,30 @@
     color: #fff;
 }
 
+/* grid filter styles */
+.grid-filter 
+{
+    background-color: #dadada;
+    border-radius: 4px 4px 4px 4px;
+    border-width: 1px;
+    border-color: #c4c4c4;
+    border-style: solid;
+    padding: 24px 0;
+    margin-top: 24px;
+}
 
+.grid-filter fieldset 
+{
+    margin-bottom: 0;
+}
+
+.grid-filter legend 
+{
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.grid-filter +  div .grid-table 
+{
+    margin-top: -12px;   
+}

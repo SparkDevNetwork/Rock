@@ -2,6 +2,7 @@
 
 <script type="text/javascript">
 
+    var AttributeEntity = '<%= entity %>';
     var AttributeId = null;
     var AttributeValueId = null;
     var AttributeValue = null;
@@ -48,6 +49,17 @@
                     url: restUrl,
                     success: function (data, status, xhr) {
 
+                        if (AttributeEntity == '')
+                            $.ajax({
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                url:  rock.baseUrl + 'REST/Core/Attribute/FlushGlobal',
+                                error: function (xhr, status, error) {
+                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                                }
+                            });
+
                         $('#modal-details').modal('hide');
                         $('#<%= btnRefresh.ClientID %>').click();
 
@@ -93,6 +105,7 @@
                 <asp:BoundField DataField="Category" HeaderText="Category" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
+                <asp:BoundField DataField="DefaultValue" HeaderText="Default Value" />
                 <asp:TemplateField>
                     <HeaderTemplate>Value</HeaderTemplate>
                     <ItemTemplate><asp:Literal ID="lValue" runat="server"></asp:Literal></ItemTemplate>

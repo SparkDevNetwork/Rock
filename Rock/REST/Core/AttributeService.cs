@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeService AttributeService = new Rock.Core.AttributeService();
 					Rock.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
-					if ( Attribute.Authorized( "View", user.UserName ) )
+					if ( Attribute.Authorized( "View", user ) )
 						return Attribute.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Attribute", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeService AttributeService = new Rock.Core.AttributeService();
 					Rock.Core.Attribute existingAttribute = AttributeService.Get( int.Parse( id ) );
-					if ( existingAttribute.Authorized( "Edit", user.UserName ) )
+					if ( existingAttribute.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAttribute).CurrentValues.SetValues(Attribute);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeService AttributeService = new Rock.Core.AttributeService();
 					Rock.Core.Attribute Attribute = AttributeService.Get( int.Parse( id ) );
-					if ( Attribute.Authorized( "Edit", user.UserName ) )
+					if ( Attribute.Authorized( "Edit", user ) )
 					{
 						AttributeService.Delete( Attribute, user.PersonId );
 						AttributeService.Save( Attribute, user.PersonId );

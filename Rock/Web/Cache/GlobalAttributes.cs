@@ -45,7 +45,7 @@ namespace Rock.Web.Cache
 
         private static string CacheKey()
         {
-            return "Rock:OrgAttributes";
+            return "Rock:GlobalAttributes";
         }
 
         /// <summary>
@@ -58,14 +58,14 @@ namespace Rock.Web.Cache
             string cacheKey = GlobalAttributes.CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
-            GlobalAttributes orgAttributes = cache[cacheKey] as GlobalAttributes;
+            GlobalAttributes globalAttributes = cache[cacheKey] as GlobalAttributes;
 
-            if ( orgAttributes != null )
-                return orgAttributes;
+            if ( globalAttributes != null )
+                return globalAttributes;
             else
             {
-                orgAttributes = new GlobalAttributes();
-                orgAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
+                globalAttributes = new GlobalAttributes();
+                globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
                 var attributeService = new Rock.Core.AttributeService();
                 var attributeValueService = new Rock.Core.AttributeValueService();
@@ -76,12 +76,12 @@ namespace Rock.Web.Cache
                         ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
                 {
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
-                    orgAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attributeValue != null ? attributeValue.Value : "" ) );
+                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
                 }
 
-                cache.Set( cacheKey, orgAttributes, new CacheItemPolicy() );
+                cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
 
-                return orgAttributes;
+                return globalAttributes;
             }
         }
 
@@ -101,8 +101,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string Value(string key)
         {
-            GlobalAttributes orgAttributes = Read();
-            return orgAttributes.AttributeValue( key );
+            GlobalAttributes globalAttributes = Read();
+            return globalAttributes.AttributeValue( key );
         }
 
         #endregion

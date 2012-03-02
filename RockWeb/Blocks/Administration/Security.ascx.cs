@@ -63,11 +63,7 @@ namespace RockWeb.Blocks.Administration
                 rGrid.EmptyDataText = string.Empty;
                 rGrid.ShowActionRow = false;
 
-
-                ddlRoles.DataSource = Rock.Security.Role.AllRoles();
-                ddlRoles.DataValueField = "Guid";
-                ddlRoles.DataTextField = "Name";
-                ddlRoles.DataBind();
+                BindRoles();
 
                 string script = string.Format( @"
     Sys.Application.add_load(function () {{
@@ -192,13 +188,13 @@ namespace RockWeb.Blocks.Administration
         protected void lbShowRole_Click( object sender, EventArgs e )
         {
             SetRoleActions();
-            pnlActions.Visible = false;
+            phList.Visible = false;
             pnlAddRole.Visible = true;
         }
 
         protected void lbShowUser_Click( object sender, EventArgs e )
         {
-            pnlActions.Visible = false;
+            phList.Visible = false;
             pnlAddUser.Visible = true;
         }
 
@@ -206,47 +202,7 @@ namespace RockWeb.Blocks.Administration
         {
             pnlAddRole.Visible = false;
             pnlAddUser.Visible = false;
-            pnlActions.Visible = true;
-        }
-
-        protected void lbAddAllUsers_Click( object sender, EventArgs e )
-        {
-            List<Rock.Security.AuthRule> existingAuths =
-                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-
-            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
-
-            bool actionUpdated = false;
-
-            bool alreadyExists = false;
-
-            foreach ( Rock.Security.AuthRule auth in existingAuths )
-                if ( auth.UserOrRole == "U" && auth.UserOrRoleName == "*" )
-                {
-                    alreadyExists = true;
-                    break;
-                }
-
-            if ( !alreadyExists )
-            {
-                Rock.CMS.Auth auth = new Rock.CMS.Auth();
-                auth.EntityType = iSecured.AuthEntity;
-                auth.EntityId = iSecured.Id;
-                auth.Action = CurrentAction;
-                auth.AllowOrDeny = "A";
-                auth.UserOrRole = "U";
-                auth.UserOrRoleName = "*";
-                auth.Order = ++maxOrder;
-                authService.Add( auth, CurrentPersonId );
-                authService.Save( auth, CurrentPersonId );
-
-                actionUpdated = true;
-            }
-
-            if ( actionUpdated )
-                Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-
-            BindGrid();
+            phList.Visible = true;
         }
 
         protected void ddlRoles_SelectedIndexChanged( object sender, EventArgs e )
@@ -256,21 +212,26 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbAddRole_Click( object sender, EventArgs e )
         {
+            List<Rock.Security.AuthRule> existingAuths =
+                Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
+
+            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : -1;
+
             foreach ( ListItem li in cblRoleActionList.Items )
             {
                 if (li.Selected)
                 {
                     bool actionUpdated = false;
                     bool alreadyExists = false;
-                    int maxOrder = 0;
 
                     foreach ( Rock.Security.AuthRule rule in
                         Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, li.Text ) )
                     {
                         if ( rule.UserOrRole == "R" && rule.UserOrRoleName == ddlRoles.SelectedValue )
+                        {
                             alreadyExists = true;
-                        if (rule.Order > maxOrder)
-                            maxOrder = rule.Order;
+                            break;
+                        }
                     }
 
                     if ( !alreadyExists )
@@ -295,7 +256,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             pnlAddRole.Visible = false;
-            pnlActions.Visible = true;
+            phList.Visible = true;
 
             BindGrid();
         }
@@ -313,7 +274,7 @@ namespace RockWeb.Blocks.Administration
             List<Rock.Security.AuthRule> existingAuths =
                 Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
-            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : 0;
+            int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : -1;
 
             bool actionUpdated = false;
 
@@ -353,7 +314,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
             pnlAddUser.Visible = false;
-            pnlActions.Visible = true;
+            phList.Visible = true;
 
             BindGrid();
         }
@@ -369,6 +330,18 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
                 rGrid.DataBind();
             }
+        }
+
+        private void BindRoles()
+        {
+            ddlRoles.Items.Clear();
+
+            ddlRoles.Items.Add(new ListItem("[All Users]", "*AU"));
+            ddlRoles.Items.Add(new ListItem("[All Authenticated Users]", "*AAU"));
+            ddlRoles.Items.Add(new ListItem("[All Un-Authenticated Users]", "*AUU"));
+
+            foreach(var role in Rock.Security.Role.AllRoles())
+                ddlRoles.Items.Add(new ListItem(role.Name, role.Guid.ToString()));
         }
 
         protected string GetTabClass( object action )

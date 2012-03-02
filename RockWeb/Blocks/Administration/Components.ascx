@@ -26,7 +26,7 @@
         <asp:ValidationSummary runat="server" CssClass="failureNotification" />
 
         <fieldset>
-            <legend>Properties</legend>
+            <legend><asp:Literal ID="lProperties" runat="server"></asp:Literal></legend>
             <dl id="dlProperties" runat="server">
             </dl>
         </fieldset>

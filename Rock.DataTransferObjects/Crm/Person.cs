@@ -189,6 +189,14 @@ namespace Rock.CRM.DTO
 		public string Email { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Do Not Email.
+		/// </summary>
+		/// <value>
+		/// Do Not Email.
+		/// </value>
+		public bool DoNotEmail { get; set; }
+
+		/// <summary>
 		/// Gets or sets the System Note.
 		/// </summary>
 		/// <value>

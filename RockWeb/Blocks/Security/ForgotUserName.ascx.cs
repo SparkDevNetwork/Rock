@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, List<object>>();
                 recipients.Add( tbEmail.Text, mergeObjects );
 
-                Email email = new Email( SystemEmailTemplate.SECURITY_FORGOT_USERNAME );
+                Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
                 SetSMTPParameters( email );
                 email.Send( recipients );
 

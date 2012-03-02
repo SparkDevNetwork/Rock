@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person Person = PersonService.Get( int.Parse( id ) );
-					if ( Person.Authorized( "View", user.UserName ) )
+					if ( Person.Authorized( "View", user ) )
 						return Person.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Person", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person existingPerson = PersonService.Get( int.Parse( id ) );
-					if ( existingPerson.Authorized( "Edit", user.UserName ) )
+					if ( existingPerson.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPerson).CurrentValues.SetValues(Person);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonService PersonService = new Rock.CRM.PersonService();
 					Rock.CRM.Person Person = PersonService.Get( int.Parse( id ) );
-					if ( Person.Authorized( "Edit", user.UserName ) )
+					if ( Person.Authorized( "Edit", user ) )
 					{
 						PersonService.Delete( Person, user.PersonId );
 						PersonService.Save( Person, user.PersonId );

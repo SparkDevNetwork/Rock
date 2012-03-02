@@ -2,6 +2,7 @@
 
 <script type="text/javascript">
 
+    var AttributeEntity = '<%= entity %>';
     var attribute = null;
         
     function editAttribute( attributeId ) {
@@ -11,7 +12,6 @@
         $('#<%= tbKey.ClientID %>').val('');
         $('#<%= tbName.ClientID %>').val('');
         $('#<%= tbCategory.ClientID %>').val('');
-        $('#<%= tbDescription.ClientID %>').val('');
         $('#<%= tbDescription.ClientID %>').val('');
         $('#<%= ddlFieldType.ClientID %>').val('');
         $('#<%= tbDefaultValue.ClientID %>').val('');
@@ -43,11 +43,7 @@
 
                 },
                 error: function (xhr, status, error) {
-
-                    if (displayError) {
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }
-
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         }
@@ -107,6 +103,17 @@
                     url: restUrl,
                     success: function (data, status, xhr) {
 
+                        if (AttributeEntity == '')
+                            $.ajax({
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                url: rock.baseUrl + 'REST/Core/Attribute/FlushGlobal',
+                                error: function (xhr, status, error) {
+                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                                }
+                            });
+
                         $('#modal-details').modal('hide');
                         $('#<%= btnRefresh.ClientID %>').click();
 
@@ -142,7 +149,7 @@
 
         <div class="grid-filter">
             <fieldset>
-                <legend>Filter</legend>
+                <legend>Filter Options</legend>
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
             </fieldset>
         </div>

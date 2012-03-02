@@ -61,6 +61,7 @@
     <Compile Include="Core\DefinedType.cs" />
     <Compile Include="Core\DefinedValue.cs" />
     <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\ExceptionLog.cs" />
     <Compile Include="Core\FieldType.cs" />
     <Compile Include="Core\ServiceLog.cs" />
     <Compile Include="CRM\Address.cs" />

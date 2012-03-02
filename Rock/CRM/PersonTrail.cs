@@ -27,22 +27,22 @@ namespace Rock.CRM
     public partial class PersonTrail : ModelWithAttributes<PersonTrail>
     {
 		/// <summary>
-		/// Gets or sets the Prev Id.
+		/// Gets or sets the Current Id.
 		/// </summary>
 		/// <value>
-		/// Prev Id.
+		/// Current Id.
 		/// </value>
 		[DataMember]
-		public int PrevId { get; set; }
+		public int CurrentId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Prev Guid.
+		/// Gets or sets the Current Guid.
 		/// </summary>
 		/// <value>
-		/// Prev Guid.
+		/// Current Guid.
 		/// </value>
 		[DataMember]
-		public Guid PrevGuid { get; set; }
+		public Guid CurrentGuid { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -75,8 +75,8 @@ namespace Rock.CRM
 				Rock.CRM.DTO.PersonTrail dto = new Rock.CRM.DTO.PersonTrail();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.PrevId = this.PrevId;
-				dto.PrevGuid = this.PrevGuid;
+				dto.CurrentId = this.CurrentId;
+				dto.CurrentGuid = this.CurrentGuid;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				return dto; 

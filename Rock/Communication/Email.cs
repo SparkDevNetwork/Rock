@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Rock.Communication
 {
@@ -175,21 +176,55 @@ namespace Rock.Communication
 
                 Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
-
         }
+
 
         private string Resolve( string content, List<object> objects )
         {
-            if (!content.Contains("{"))
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+}.*" ) )
                 return content;
 
             string result = content;
 
-            foreach ( object item in objects )
-                result = ResolveMergeCodes(result, item);
+            // Get the global attributes and recursively resolve any that include other global attributes
+            var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            Dictionary<string, string> globalAttributeValues = new Dictionary<string, string>();
+            foreach ( KeyValuePair<string, KeyValuePair<string, string>> kvp in globalAttributes.AttributeValues )
+                globalAttributeValues.Add( kvp.Key, ResolveGlobalAttributes( kvp.Value.Value, globalAttributes.AttributeValues ) );
 
-            var orgAttributes = Rock.Web.Cache.GlobalAttributes.Read();
-            result = ResolveMergeCodes( result, orgAttributes.AttributeValues );
+            // Resolve the content with the global attribute values
+            result = ResolveMergeCodes( result, globalAttributeValues );
+
+            // Resolve any objects that were included
+            foreach ( object item in objects )
+                result = ResolveMergeCodes( result, item );
+
+            // Resolve any application config values
+            Dictionary<string, string> configValues = new Dictionary<string, string>();
+            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+                configValues.Add( "config:" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
+            result = ResolveMergeCodes( result, configValues );
+
+            return result;
+        }
+
+        private string ResolveGlobalAttributes( string value, Dictionary<string, KeyValuePair<string, string>> globalAttributes )
+        {
+            // If the attribute doesn't contain any merge codes, return the content
+            if ( !Regex.IsMatch( value, @".*\{.+}.*" ) )
+                return value;
+
+            // Resolve the merge codes
+            string content = value;
+            string result = ResolveMergeCodes(content, globalAttributes);
+
+            // If anything was resolved, keep resolving until nothing changed.
+            while (result != content)
+            {
+                content = result;
+                result = ResolveGlobalAttributes( content, globalAttributes);
+            }
 
             return result;
         }
@@ -305,7 +340,7 @@ namespace Rock.Communication
             if ( String.IsNullOrWhiteSpace( recipients ) )
                 return new List<string>();
             else
-                return new List<string>( recipients.Split( ';' ) );
+                return new List<string>( recipients.Split( ',' ) );
         }
 
         /// <summary>

@@ -6,6 +6,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -173,6 +174,7 @@ namespace Rock.Web.UI.Controls
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
             if ( PagerTemplate != null )
                 pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize );
+
         }
 
         /// <summary>
@@ -182,6 +184,32 @@ namespace Rock.Web.UI.Controls
         protected override void OnRowDataBound( GridViewRowEventArgs e )
         {
             base.OnRowDataBound( e );
+
+            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
+            {
+                string asc = SortDirection.Ascending.ToString();
+                string desc = SortDirection.Descending.ToString();
+
+                // Remove the sort css classes
+                foreach ( TableCell cell in e.Row.Cells )
+                {
+                    cell.RemoveCssClass( asc );
+                    cell.RemoveCssClass( desc );
+                }
+
+                // Add the new sort css class
+                SortProperty sortProperty = this.SortProperty;
+                if ( sortProperty != null )
+                    foreach ( var column in this.Columns )
+                    {
+                        var dcf = column as DataControlField;
+                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                        {
+                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                            break;
+                        }
+                    }
+            }
 
             if ( e.Row.DataItem != null && this.DataKeys != null && this.DataKeys.Count > 0 )
             {

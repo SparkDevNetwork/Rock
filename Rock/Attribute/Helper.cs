@@ -54,9 +54,8 @@ namespace Rock.Attribute
                     existingKeys.Add( blockInstanceProperty.Key );
                 }
 
-                // Delete any removed attributes
                 Core.AttributeService attributeService = new Core.AttributeService();
-                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue))
+                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
                     if ( !existingKeys.Contains( a.Key ) )
                     {
                         attributeService.Delete( a, currentPersonId );

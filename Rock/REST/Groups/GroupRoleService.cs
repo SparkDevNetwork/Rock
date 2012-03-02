@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( GroupRole.Authorized( "View", user.UserName ) )
+					if ( GroupRole.Authorized( "View", user ) )
 						return GroupRole.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this GroupRole", System.Net.HttpStatusCode.Forbidden );
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole existingGroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( existingGroupRole.Authorized( "Edit", user.UserName ) )
+					if ( existingGroupRole.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingGroupRole).CurrentValues.SetValues(GroupRole);
 					
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupRoleService GroupRoleService = new Rock.Groups.GroupRoleService();
 					Rock.Groups.GroupRole GroupRole = GroupRoleService.Get( int.Parse( id ) );
-					if ( GroupRole.Authorized( "Edit", user.UserName ) )
+					if ( GroupRole.Authorized( "Edit", user ) )
 					{
 						GroupRoleService.Delete( GroupRole, user.PersonId );
 						GroupRoleService.Save( GroupRole, user.PersonId );

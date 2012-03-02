@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Administration
             {
                 canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
 
+                BindFilter();
+
                 if ( canConfigure )
                 {
                     entity = AttributeValue( "Entity" );
@@ -86,10 +88,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack && canConfigure )
-            {
-                BindFilter();
                 BindGrid();
-            }
 
             base.OnLoad( e );
         }
@@ -200,7 +199,8 @@ namespace RockWeb.Blocks.Administration
                         a.Id,
                         a.Category,
                         a.Name,
-                        a.Description
+                        a.Description,
+                        a.DefaultValue
                     } ).
                     ToList();
 
