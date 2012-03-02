@@ -13,7 +13,12 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.IO;
 using System.Data;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Drawing;
 
+using Rock;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
@@ -84,6 +89,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the export to excel action should be displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the eport to excel action should be displayed; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show Action Export to Excel" )
+        ]
+        public virtual bool ShowActionExcelExport
+        {
+            get
+            {
+                object showActionExcelExport = this.ViewState["ShowActionExcelExport"];
+                return ( ( showActionExcelExport == null ) || ( ( bool )showActionExcelExport ) );
+            }
+            set
+            {
+                bool showActionExcelExport = this.ShowActionExcelExport;
+                if ( value != showActionExcelExport )
+                    this.ViewState["ShowActionExcelExport"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the sort property.
         /// </summary>
         public SortProperty SortProperty
@@ -139,6 +170,8 @@ namespace Rock.Web.UI.Controls
             this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
             this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
 
+            this.Actions.EnableExcelExport = this.ShowActionExcelExport;
+
             base.OnInit( e );
         }
 
@@ -165,42 +198,146 @@ namespace Rock.Web.UI.Controls
             {
                 excel.Workbook.Properties.Title = "Rock ChMS Export";
             }
-
+ 
             // add author info
             Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
             if (user != null)
                 excel.Workbook.Properties.Author = user.Person.FullName;
             else
                 excel.Workbook.Properties.Author = "Rock ChMS";
-
+             
             // add the page that created this
             excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
 
             ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
+             
+            // write data to worksheet there are three supported data sources
+            // DataTables, DataViews and ILists
 
-            // write data to worksheet
-            DataTable data = null;
-            
-            if (this.DataSource is DataTable)
-                data = (DataTable)this.DataSource;
-            else if (this.DataSource is DataView)
-                data = ((DataView)this.DataSource).Table;
+            int rowCounter = 4;
+            int columnCounter = 1;
 
-            //TODO add logic for other data types
-
-            int rowCounter = 3;
-            foreach ( DataRow row in data.Rows )
+            if ( this.DataSource is DataTable || this.DataSource is DataView )
             {
-                for (int i = 0; i < data.Columns.Count; i++)
+                DataTable data = null;
+                
+                if ( this.DataSource is DataTable )
+                    data = ( DataTable )this.DataSource;
+                else if ( this.DataSource is DataView )
+                    data = ( ( DataView )this.DataSource ).Table;
+
+                // print headings
+                foreach ( DataColumn column in data.Columns )
                 {
-                    worksheet.Cell( rowCounter, i ).Value = row[i].ToString();
+                    worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
+                    columnCounter++;
                 }
-                rowCounter++;
+                
+                // print data
+                foreach ( DataRow row in data.Rows )
+                {
+                    for (int i = 0; i < data.Columns.Count; i++)
+                    {
+                        worksheet.Cells[ rowCounter, i ].Value = row[i].ToString();
+
+                        // format background color for alternating rows
+                        if ( rowCounter % 2 == 1 )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                        }
+                    }
+                    rowCounter++;
+                }
+            }
+            else
+            {
+                // get access to the List<> and its properties
+                IList data = ( IList )this.DataSource;
+                Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+                IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
+
+                // print column headings
+                foreach ( PropertyInfo prop in props )
+                {
+                    worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                    columnCounter++;
+                }
+
+                // print data
+                foreach ( var item in data )
+                {
+                    columnCounter = 1;
+                    foreach ( PropertyInfo prop in props )
+                    {
+                        object propValue = prop.GetValue( item, null );
+
+                        string value = "";
+                        if ( propValue != null )
+                            value = propValue.ToString();
+
+                        worksheet.Cells[rowCounter, columnCounter].Value = value;
+
+                        // format background color for alternating rows
+                        if ( rowCounter % 2 == 1 )
+                        {
+                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
+                        }
+
+                        if ( propValue is DateTime )
+                            worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+
+                        columnCounter++;
+                    }
+
+                    rowCounter++;
+                }
             }
 
+            // format header range
+            using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )
+            {
+                r.Style.Font.Bold = true;
+                r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                r.Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 223, 223, 223 ) );
+                r.Style.Font.Color.SetColor( Color.Black );
+                r.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+            }
+
+            // format and set title
+            worksheet.Cells[1, 1].Value = title;
+            using ( ExcelRange r = worksheet.Cells[1, 1, 1, columnCounter] )
+            {
+                r.Merge = true;
+                r.Style.Font.SetFromFont( new Font( "Calibri", 22, FontStyle.Regular ) );
+                r.Style.Font.Color.SetColor( Color.White );
+                r.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                r.Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 34, 41, 55 ) );
+
+                // set border
+                r.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                r.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                r.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                r.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            }
+
+            // freeze panes
+            worksheet.View.FreezePanes( 3, 1 );
+
+            // autofit columns for all cells
+            worksheet.Cells.AutoFitColumns( 0 );
+
+            // add the auto filter / sorting
+            worksheet.Cells[3, 1, rowCounter, columnCounter].AutoFilter = true;
+
+            // add alternating highlights
+            
+
             // set some footer text
-            worksheet.HeaderFooter.oddHeader.CenteredText = title;
-            worksheet.HeaderFooter.oddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
+            worksheet.HeaderFooter.OddHeader.CenteredText = title;
+            worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
 
             excel.Save();
 
