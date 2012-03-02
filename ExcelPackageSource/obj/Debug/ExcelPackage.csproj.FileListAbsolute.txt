@@ -1,5 +1,0 @@
-D:\Development\Rock-ChMS\ExcelPackageSource\bin\Debug\ExcelPackage.dll
-D:\Development\Rock-ChMS\ExcelPackageSource\bin\Debug\ExcelPackage.pdb
-D:\Development\Rock-ChMS\ExcelPackageSource\obj\Debug\ResolveAssemblyReference.cache
-D:\Development\Rock-ChMS\ExcelPackageSource\obj\Debug\ExcelPackage.dll
-D:\Development\Rock-ChMS\ExcelPackageSource\obj\Debug\ExcelPackage.pdb
