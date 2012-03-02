@@ -57,3 +57,7 @@ They are under a modified MIT license called the Freedom license. No restriction
 
 Quartz.Net Job Scheduling Framework v2.0
 Apache License, Version 2.0.
+
+EPPlus Excel writer
+http://epplus.codeplex.com/
+License: LGPL

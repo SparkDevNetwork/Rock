@@ -18,6 +18,10 @@ namespace RockWeb.Blocks
     {
         protected override void OnInit( EventArgs e )
         {
+            int zero = 0;
+            int test = 2 / zero;
+            
+            
             base.OnInit( e );
 
             if ( CurrentPerson != null )
