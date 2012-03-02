@@ -323,6 +323,8 @@ namespace Rock.Web.UI.Controls
                 r.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
             }
 
+            // TODO: add image to worksheet
+
             // freeze panes
             worksheet.View.FreezePanes( 3, 1 );
 
