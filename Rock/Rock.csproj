@@ -41,6 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft ADO.NET Entity Framework 4.1\Binaries\EntityFramework.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus">
+      <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -577,10 +580,6 @@
     <WCFMetadataStorage Include="Service References\TeleAtlas.Geocoding\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExcelPackageSource\ExcelPackage.csproj">
-      <Project>{7B288026-5502-4A39-BF41-77E086F3E4A3}</Project>
-      <Name>ExcelPackage</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Quartz\Quartz.csproj">
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
