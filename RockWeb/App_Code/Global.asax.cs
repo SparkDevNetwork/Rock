@@ -102,6 +102,12 @@ namespace RockWeb
             AddCallBack();
 
             // process the transaction queue
+            DrainTransactionQueue();
+        }
+
+        private void DrainTransactionQueue()
+        {
+            // process the transaction queue
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
@@ -112,7 +118,7 @@ namespace RockWeb
                     {
                         ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
-                    } 
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -371,6 +377,9 @@ namespace RockWeb
                 if ( sched != null )
                     sched.Shutdown();
             }
+
+            // process the transaction queue
+            DrainTransactionQueue();
         }
 
         #endregion
