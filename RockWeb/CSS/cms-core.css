@@ -229,6 +229,24 @@ a.zoneinstance-config {
     margin-top: 6px;
 }
 
+.html-content-version-label 
+{
+    float: left;
+    margin: 11px 0 0 16px;
+}
+
+.html-content-edit-header 
+{
+    padding: 6px 16px 0 16px;
+}
+
+.html-content-approve 
+{
+    float: right;
+    margin-top: 4px;
+}
+
+
 /* CK Editor Tweaks */
 span.cke_skin_kama {
     padding: 0 !important;   
@@ -315,13 +333,13 @@ article.blog-post header ul li:last-child:after {
 
 #dialog #modal-scroll-container 
 {
-    width: 530px;
+    width: 720px;
 }
 
 #dialog #modal-scroll-container .viewport 
 {
     height: 380px;
-    width: 515px; 
+    width: 690px; 
 }
 
 #dialog #modal-scroll-container .overview 
@@ -359,6 +377,15 @@ article.blog-post header ul li:last-child:after {
 {
     background: url("../assets/images/ajax-loading.png") center center no-repeat;
     /* http://preloaders.net/en/popular */
+}
+
+.modal-header {
+    min-height: 34px;
+}
+
+.modal-header h3 
+{
+    float: left;
 }
 
 /* user registration styles */
