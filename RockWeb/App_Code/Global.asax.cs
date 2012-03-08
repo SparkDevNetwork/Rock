@@ -221,21 +221,23 @@ namespace RockWeb
                         
                         // get email addresses to send to
                         string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
-
-                        string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
-
-                        var recipients = new Dictionary<string, List<object>>();
-
-                        foreach ( string emailAddress in emailAddresses )
+                        if ( emailAddressesList != null )
                         {
-                            recipients.Add( emailAddress, mergeObjects );
-                        }
+                            string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
 
-                        if ( recipients.Count > 0 )
-                        {
-                            Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                            SetSMTPParameters( email );  //TODO move this set up to the email object
-                            email.Send( recipients );
+                            var recipients = new Dictionary<string, List<object>>();
+
+                            foreach ( string emailAddress in emailAddresses )
+                            {
+                                recipients.Add( emailAddress, mergeObjects );
+                            }
+
+                            if ( recipients.Count > 0 )
+                            {
+                                Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+                                SetSMTPParameters( email );  //TODO move this set up to the email object
+                                email.Send( recipients );
+                            }
                         }
                     }
 
