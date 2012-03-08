@@ -11,13 +11,14 @@
             <div class="modal-header">
                 <a href="#" class="close">&times;</a>
                 <h3>HTML Content</h3>
+                <a id="html-content-version-<%=BlockInstance.Id %>" class="html-content-version-label">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a>
             </div>
             <div id="html-content-versions-<%=BlockInstance.Id %>" style="display:none">
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
                     <Columns>
                         <asp:TemplateField SortExpression="Version" HeaderText="Version">
                             <ItemTemplate>
-                                <a html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=BlockInstance.Id %>" href="#"><%# Eval("Version") %></a>
+                                <a html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=BlockInstance.Id %>" href="#">Version <%# Eval("Version") %></a>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="ModifiedDateTime" HeaderText="Modified" SortExpression="ModifiedDateTime" />
@@ -35,17 +36,19 @@
             <div id="html-content-edit-<%=BlockInstance.Id %>">
                 <asp:Panel ID="pnlVersioningHeader" runat="server" class="html-content-edit-header">
                     <asp:HiddenField ID="hfVersion" runat="server" />
-                    <a id="html-content-version-<%=BlockInstance.Id %>">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a>
+                    
                     Start: <asp:TextBox ID="tbStartDate" runat="server"></asp:TextBox>
                     Expire: <asp:TextBox ID="tbExpireDate" runat="server"></asp:TextBox>
-                    <asp:CheckBox ID="cbApprove" runat="server" TextAlign="Left" Text="Approve" />
+                    <div class="html-content-approve inline-form"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
                 </asp:Panel>
                 <div class="modal-body">
                     <asp:TextBox ID="txtHtmlContentEditor" CssClass="html-content-editor" TextMode="MultiLine" runat="server"></asp:TextBox>
                 </div>
                 <div class="modal-footer">
-                    <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
-                    <input id="btnCancel" runat="server" type="button" class="btn secondary" value="Cancel" />
+                    <span class="inline-form">
+                        <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
+                        <input id="btnCancel" runat="server" type="button" class="btn secondary" value="Cancel" />
+                    </span>
                     <asp:Button ID="btnSaveContent" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveContent_Click" />
                 </div>
             </div>
