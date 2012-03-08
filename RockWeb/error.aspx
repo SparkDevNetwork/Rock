@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Opps...</title>
+    <title>Oops...</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/base.css") %>">
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/cms-core.css") %>">
