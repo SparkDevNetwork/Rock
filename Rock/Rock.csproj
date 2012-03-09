@@ -71,6 +71,9 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Communication\BouncedEmail.cs" />
+    <Compile Include="Communication\IEmailProvider.cs" />
+    <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Core\EntityExceptionLogRepository.cs" />
     <Compile Include="Core\ExceptionLog.cs" />
     <Compile Include="Core\ExceptionLogService.cs" />
@@ -226,6 +229,7 @@
     <Compile Include="Groups\Member.cs" />
     <Compile Include="Groups\MemberService.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
+    <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
