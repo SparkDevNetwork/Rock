@@ -189,6 +189,22 @@ namespace Rock.CRM.DTO
 		public string Email { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Email Is Active.
+		/// </summary>
+		/// <value>
+		/// Email Is Active.
+		/// </value>
+		public bool? EmailIsActive { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Email Note.
+		/// </summary>
+		/// <value>
+		/// Email Note.
+		/// </value>
+		public string EmailNote { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Do Not Email.
 		/// </summary>
 		/// <value>
@@ -203,6 +219,14 @@ namespace Rock.CRM.DTO
 		/// System Note.
 		/// </value>
 		public string SystemNote { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Viewed Count.
+		/// </summary>
+		/// <value>
+		/// Viewed Count.
+		/// </value>
+		public int? ViewedCount { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.
