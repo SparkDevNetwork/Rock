@@ -307,7 +307,6 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
-            modelBuilder.Configurations.Add( new Rock._cccev.TestConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.AuthConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockInstanceConfiguration() );

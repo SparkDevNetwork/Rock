@@ -78,11 +78,15 @@
     <Compile Include="Core\ExceptionLog.cs" />
     <Compile Include="Core\ExceptionLogService.cs" />
     <Compile Include="Core\IExceptionLogRepository.cs" />
+    <Compile Include="CRM\EntityPersonViewedRepository.cs" />
+    <Compile Include="CRM\IPersonViewedRepository.cs" />
     <Compile Include="CRM\PersonTrailService.partial.cs" />
     <Compile Include="CRM\EntityPersonTrailRepository.cs" />
     <Compile Include="CRM\IPersonTrailRepository.cs" />
     <Compile Include="CRM\PersonTrail.cs" />
     <Compile Include="CRM\PersonTrailService.cs" />
+    <Compile Include="CRM\PersonViewed.cs" />
+    <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
@@ -244,6 +248,7 @@
     <Compile Include="Security\GenericEntity.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />

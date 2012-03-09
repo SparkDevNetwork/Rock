@@ -383,22 +383,6 @@ namespace Rock.CRM
 		public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Person Vieweds.
-        /// </summary>
-        /// <value>
-        /// Collection of Person Vieweds.
-        /// </value>
-		public virtual ICollection<PersonViewed> PersonVieweds { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Person Vieweds.
-        /// </summary>
-        /// <value>
-        /// Collection of Person Vieweds.
-        /// </value>
-		public virtual ICollection<PersonViewed> PersonVieweds { get; set; }
-        
-		/// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
