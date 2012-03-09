@@ -102,6 +102,12 @@ namespace RockWeb
             AddCallBack();
 
             // process the transaction queue
+            DrainTransactionQueue();
+        }
+
+        private void DrainTransactionQueue()
+        {
+            // process the transaction queue
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
@@ -112,7 +118,7 @@ namespace RockWeb
                     {
                         ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
-                    } 
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -215,21 +221,23 @@ namespace RockWeb
                         
                         // get email addresses to send to
                         string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
-
-                        string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
-
-                        var recipients = new Dictionary<string, List<object>>();
-
-                        foreach ( string emailAddress in emailAddresses )
+                        if ( emailAddressesList != null )
                         {
-                            recipients.Add( emailAddress, mergeObjects );
-                        }
+                            string[] emailAddresses = emailAddressesList.Split( new char[] { ',' } );
 
-                        if ( recipients.Count > 0 )
-                        {
-                            Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                            SetSMTPParameters( email );  //TODO move this set up to the email object
-                            email.Send( recipients );
+                            var recipients = new Dictionary<string, List<object>>();
+
+                            foreach ( string emailAddress in emailAddresses )
+                            {
+                                recipients.Add( emailAddress, mergeObjects );
+                            }
+
+                            if ( recipients.Count > 0 )
+                            {
+                                Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+                                SetSMTPParameters( email );  //TODO move this set up to the email object
+                                email.Send( recipients );
+                            }
                         }
                     }
 
@@ -371,6 +379,9 @@ namespace RockWeb
                 if ( sched != null )
                     sched.Shutdown();
             }
+
+            // process the transaction queue
+            DrainTransactionQueue();
         }
 
         #endregion
