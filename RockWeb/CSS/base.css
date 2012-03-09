@@ -418,6 +418,23 @@ pre {
  Forms (Twitter Bootstrap)
  Base styles for various input types, form layouts, and states
  ------------------------------------------------------------- */
+ 
+ /* in-line form style for form items not in a fieldset JME */
+ .inline-form input + label 
+{
+    margin-left: 4px ;
+    padding-top: 0; 
+    line-height: 18px;
+}
+
+.inline-form input[type=checkbox], .inline-form input[type=radio]  
+{
+    margin: 0 0 2px;
+    vertical-align: bottom;
+}
+/* end in-line forms */
+ 
+ 
 form {
   margin-bottom: 18px;
 }
@@ -459,7 +476,8 @@ textarea {
   font-weight: normal;
   line-height: normal;
 }
-label {
+
+fieldset label {
   padding-top: 6px;
   font-size: 13px;
   line-height: 18px;
@@ -515,7 +533,7 @@ input[type=file] {
 }
 input[type=button], input[type=reset], input[type=submit] {
   width: auto;
-  height: auto;
+  height: 28px;
 }
 select, input[type=file] {
   height: 27px;
@@ -2216,7 +2234,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   top: 50%;
   left: 50%;
   z-index: 11000;
-  width: 560px;
+  width: 750px;
   margin: -250px 0 0 -280px;
   background-color: #ffffff;
   border: 1px solid #999;
@@ -2253,7 +2271,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   padding: 5px 15px;
 }
 .modal-body {
-  padding: 15px;
+  padding: 8px 12px 12px 12px;
 }
 .modal-body form {
   margin-bottom: 0;
