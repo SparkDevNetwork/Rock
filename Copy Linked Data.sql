@@ -3,8 +3,8 @@ BEGIN TRANSACTION
 SET NOCOUNT ON
 
 DECLARE @LinkedServerDB varchar(128)
-SET @LinkedServerDB = '[VSERVER01.CYTANIUM.COM].[sparkdevcms]'
---SET @LinkedServerDB = '[24.249.179.215].[RockChMS]'
+--SET @LinkedServerDB = '[VSERVER01.CYTANIUM.COM].[sparkdevcms]'
+SET @LinkedServerDB = '[24.249.179.215].[RockChMS]'
 
 DECLARE @ConstraintName varchar(128)
 DECLARE @IsDisabled bit
@@ -185,8 +185,13 @@ DEALLOCATE ConstraintCursor
 
 DROP TABLE #ConstraintTable
 
--- Update the statistics on the table since all the records have been deleted
---UPDATE STATISTICS util_blob
+-- Delete Sensitive Data
+DELETE av
+FROM coreAttributeValue av
+INNER JOIN coreAttribute a 
+	ON a.Id = av.AttributeId
+WHERE a.Entity = ''
+OR a.Entity LIKE 'Rock.Address%'
 
 SET NOCOUNT OFF
 
