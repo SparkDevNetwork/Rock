@@ -24,8 +24,17 @@ namespace Rock.CMS
     /// File POCO Entity.
     /// </summary>
     [Table( "cmsFile" )]
-    public partial class File : ModelWithAttributes<File>
+    public partial class File : ModelWithAttributes<File>, IAuditable
     {
+		/// <summary>
+		/// Gets or sets the Temporary.
+		/// </summary>
+		/// <value>
+		/// Temporary.
+		/// </value>
+		[DataMember]
+		public bool Temporary { get; set; }
+		
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -90,7 +99,7 @@ namespace Rock.CMS
 		/// Created Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime CreatedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Modified Date Time.
@@ -99,7 +108,7 @@ namespace Rock.CMS
 		/// Modified Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime ModifiedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created By Person Id.
@@ -132,6 +141,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.File dto = new Rock.CMS.DTO.File();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
+				dto.Temporary = this.Temporary;
 				dto.System = this.System;
 				dto.Data = this.Data;
 				dto.Url = this.Url;
