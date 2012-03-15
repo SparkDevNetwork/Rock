@@ -18,79 +18,59 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Core
 {
     /// <summary>
-    /// File POCO Entity.
+    /// Note POCO Entity.
     /// </summary>
-    [Table( "cmsFile" )]
-    public partial class File : ModelWithAttributes<File>, IAuditable
+    [Table( "coreNote" )]
+    public partial class Note : ModelWithAttributes<Note>, IAuditable
     {
 		/// <summary>
-		/// Gets or sets the Temporary.
+		/// Gets or sets the Category.
 		/// </summary>
 		/// <value>
-		/// Temporary.
+		/// Category.
 		/// </value>
 		[DataMember]
-		public bool Temporary { get; set; }
+		public int? Category { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the System.
+		/// Gets or sets the Target.
 		/// </summary>
 		/// <value>
-		/// System.
+		/// Target.
 		/// </value>
 		[DataMember]
-		public bool System { get; set; }
+		public int? Target { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Data.
+		/// Gets or sets the Caption.
 		/// </summary>
 		/// <value>
-		/// Data.
+		/// Caption.
 		/// </value>
+		[MaxLength( 100 )]
 		[DataMember]
-		public byte[] Data { get; set; }
+		public string Caption { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Url.
+		/// Gets or sets the Note.
 		/// </summary>
 		/// <value>
-		/// Url.
+		/// Note.
 		/// </value>
-		[MaxLength( 255 )]
 		[DataMember]
-		public string Url { get; set; }
+		public string Note { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the File Name.
+		/// Gets or sets the Effective Date Time.
 		/// </summary>
 		/// <value>
-		/// File Name.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string FileName { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Mime Type.
-		/// </summary>
-		/// <value>
-		/// Mime Type.
-		/// </value>
-		[MaxLength( 255 )]
-		[DataMember]
-		public string MimeType { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
+		/// Effective Date Time.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public DateTime? EffectiveDateTime { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -132,22 +112,20 @@ namespace Rock.CMS
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.CMS.DTO.File"/> object.
+        /// A <see cref="Rock.Core.DTO.Note"/> object.
         /// </value>
-		public Rock.CMS.DTO.File DataTransferObject
+		public Rock.Core.DTO.Note DataTransferObject
 		{
 			get 
 			{ 
-				Rock.CMS.DTO.File dto = new Rock.CMS.DTO.File();
+				Rock.Core.DTO.Note dto = new Rock.Core.DTO.Note();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.Temporary = this.Temporary;
-				dto.System = this.System;
-				dto.Data = this.Data;
-				dto.Url = this.Url;
-				dto.FileName = this.FileName;
-				dto.MimeType = this.MimeType;
-				dto.Description = this.Description;
+				dto.Category = this.Category;
+				dto.Target = this.Target;
+				dto.Caption = this.Caption;
+				dto.Note = this.Note;
+				dto.EffectiveDateTime = this.EffectiveDateTime;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -160,7 +138,7 @@ namespace Rock.CMS
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CMS.File"; } }
+		public override string AuthEntity { get { return "Core.Note"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
@@ -180,14 +158,14 @@ namespace Rock.CMS
 
     }
     /// <summary>
-    /// File Configuration class.
+    /// Note Configuration class.
     /// </summary>
-    public partial class FileConfiguration : EntityTypeConfiguration<File>
+    public partial class NoteConfiguration : EntityTypeConfiguration<Note>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="NoteConfiguration"/> class.
         /// </summary>
-        public FileConfiguration()
+        public NoteConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );

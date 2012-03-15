@@ -12,16 +12,16 @@
 //
 using System;
 
-namespace Rock.CMS.DTO
+namespace Rock.Core.DTO
 {
     /// <summary>
-    /// File Data Transfer Object.
+    /// Note Data Transfer Object.
     /// </summary>
 	/// <remarks>
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    public partial class File
+    public partial class Note
     {
         /// <summary>
         /// The Id
@@ -37,60 +37,44 @@ namespace Rock.CMS.DTO
         public Guid Guid { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Temporary.
+		/// Gets or sets the Category.
 		/// </summary>
 		/// <value>
-		/// Temporary.
+		/// Category.
 		/// </value>
-		public bool Temporary { get; set; }
+		public int? Category { get; set; }
 
 		/// <summary>
-		/// Gets or sets the System.
+		/// Gets or sets the Target.
 		/// </summary>
 		/// <value>
-		/// System.
+		/// Target.
 		/// </value>
-		public bool System { get; set; }
+		public int? Target { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Data.
+		/// Gets or sets the Caption.
 		/// </summary>
 		/// <value>
-		/// Data.
+		/// Caption.
 		/// </value>
-		public byte[] Data { get; set; }
+		public string Caption { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Url.
+		/// Gets or sets the Note.
 		/// </summary>
 		/// <value>
-		/// Url.
+		/// Note.
 		/// </value>
-		public string Url { get; set; }
+		public string Note { get; set; }
 
 		/// <summary>
-		/// Gets or sets the File Name.
+		/// Gets or sets the Effective Date Time.
 		/// </summary>
 		/// <value>
-		/// File Name.
+		/// Effective Date Time.
 		/// </value>
-		public string FileName { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Mime Type.
-		/// </summary>
-		/// <value>
-		/// Mime Type.
-		/// </value>
-		public string MimeType { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		public string Description { get; set; }
+		public DateTime? EffectiveDateTime { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -125,9 +109,9 @@ namespace Rock.CMS.DTO
 		public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileDTO"/> class.
+        /// Initializes a new instance of the <see cref="NoteDTO"/> class.
         /// </summary>
-		public File()
+		public Note()
 		{
 		}
 	}
