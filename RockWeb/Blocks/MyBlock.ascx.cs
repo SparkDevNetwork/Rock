@@ -7,6 +7,14 @@
 using System;
 using System.Web.UI.WebControls;
 
+//using Novacode;
+using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
+using System.Collections.Generic;
+
+using Rock.Transactions;
+
 namespace RockWeb.Blocks
 {
     [Rock.Attribute.Property( 0, "ShowColor", "ShowColor", "Display", "Show Color Div", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
@@ -18,10 +26,6 @@ namespace RockWeb.Blocks
     {
         protected override void OnInit( EventArgs e )
         {
-            int zero = 0;
-            int test = 2 / zero;
-            
-            
             base.OnInit( e );
 
             if ( CurrentPerson != null )
@@ -64,6 +68,31 @@ namespace RockWeb.Blocks
 
             ShowAttributeValue();
 
+
+            /* make a test word doc */
+            /*
+            DocX doc = DocX.Load( "D:\\Development\\Rock-ChMS\\RockWeb\\Assets\\Word Merge Docs\\test.docx" );
+            
+            doc.AddCustomProperty( new CustomProperty( "nick_name", "Mike" ) );
+            doc.AddCustomProperty( new CustomProperty( "last_name", "Sever" ) );
+
+            doc.SaveAs( "d:\\out.docx" );
+             * */
+
+            /* test person viewed transaction */
+            PersonViewTransaction transaction = new PersonViewTransaction();
+            transaction.DateViewed = DateTime.Now;
+            transaction.Source = "Site: " + PageInstance.Site.Id.ToString() + "Page: " + PageInstance.Id.ToString();
+            if ( CurrentPersonId != null )
+                transaction.ViewerPersonId = ( int )CurrentPersonId;
+            transaction.IPAddress = Request.UserHostAddress;
+
+            RockQueue.TransactionQueue.Enqueue( transaction );
+
+            Rock.Communication.SendGridEmailProvider sgp = new Rock.Communication.SendGridEmailProvider();
+            List<Rock.Communication.BouncedEmail> bouncedMail = sgp.BouncedEmails(false);
+            bool result = sgp.DeleteBouncedEmail( "jon@jonedmiston.com" );
+            
         }
 
         void MyBlock_AttributesUpdated( object sender, EventArgs e )
@@ -85,9 +114,9 @@ namespace RockWeb.Blocks
 
             switch ( AttributeValue( "Border" ) )
             {
-                case "solid": pnlAttribute.BorderStyle = BorderStyle.Solid; break;
-                case "dashed": pnlAttribute.BorderStyle = BorderStyle.Dashed; break;
-                default: pnlAttribute.BorderStyle = BorderStyle.None; break;
+                //case "solid": pnlAttribute.BorderStyle = BorderStyle.Solid; break;
+                //case "dashed": pnlAttribute.BorderStyle = BorderStyle.Dashed; break;
+                //default: pnlAttribute.BorderStyle = BorderStyle.None; break;
             }
 
         }
