@@ -37,6 +37,14 @@ namespace Rock.CMS.DTO
         public Guid Guid { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Temporary.
+		/// </summary>
+		/// <value>
+		/// Temporary.
+		/// </value>
+		public bool Temporary { get; set; }
+
+		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
 		/// <value>
@@ -90,7 +98,7 @@ namespace Rock.CMS.DTO
 		/// <value>
 		/// Created Date Time.
 		/// </value>
-		public DateTime CreatedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Modified Date Time.
@@ -98,7 +106,7 @@ namespace Rock.CMS.DTO
 		/// <value>
 		/// Modified Date Time.
 		/// </value>
-		public DateTime ModifiedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created By Person Id.

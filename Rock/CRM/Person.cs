@@ -217,6 +217,25 @@ namespace Rock.CRM
 		public string Email { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Email Is Active.
+		/// </summary>
+		/// <value>
+		/// Email Is Active.
+		/// </value>
+		[DataMember]
+		public bool? EmailIsActive { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Email Note.
+		/// </summary>
+		/// <value>
+		/// Email Note.
+		/// </value>
+		[MaxLength( 250 )]
+		[DataMember]
+		public string EmailNote { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Do Not Email.
 		/// </summary>
 		/// <value>
@@ -234,6 +253,15 @@ namespace Rock.CRM
 		[MaxLength( 1000 )]
 		[DataMember]
 		public string SystemNote { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Viewed Count.
+		/// </summary>
+		/// <value>
+		/// Viewed Count.
+		/// </value>
+		[DataMember]
+		public int? ViewedCount { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -303,8 +331,11 @@ namespace Rock.CRM
 				dto.AnniversaryDate = this.AnniversaryDate;
 				dto.GraduationDate = this.GraduationDate;
 				dto.Email = this.Email;
+				dto.EmailIsActive = this.EmailIsActive;
+				dto.EmailNote = this.EmailNote;
 				dto.DoNotEmail = this.DoNotEmail;
 				dto.SystemNote = this.SystemNote;
+				dto.ViewedCount = this.ViewedCount;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;

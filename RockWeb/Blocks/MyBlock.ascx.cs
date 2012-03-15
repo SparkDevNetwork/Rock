@@ -14,12 +14,13 @@ namespace RockWeb.Blocks
     [Rock.Attribute.Property( 2, "Border", "Border", "Display", "Border Style", false, "none", "Rock", "Rock.FieldTypes.SelectSingle" )]
     [Rock.Attribute.Property( 3, "Border Width", "BorderWidth", "width of border", false, "1", "Rock", "Rock.FieldTypes.SelectSingle" )]
     [Rock.Attribute.Property( 4, "Movie", "Movie", "Misc", "Favorite Sci-Fi Movie", false, "Star Wars", "Rock", "Rock.FieldTypes.SelectSingle" )]
+    [Rock.Attribute.Property( 5, "Image", "Image", "Image", "Test Image Attribute", false, "0", "Rock", "Rock.FieldTypes.Image" )]
     public partial class MyBlock : Rock.Web.UI.Block
     {
         protected override void OnInit( EventArgs e )
         {
-            int zero = 0;
-            int test = 2 / zero;
+            //int zero = 0;
+            //int test = 2 / zero;
             
             
             base.OnInit( e );
