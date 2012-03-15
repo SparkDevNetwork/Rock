@@ -204,14 +204,6 @@ namespace Rock.Data
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the Notes.
-        /// </summary>
-        /// <value>
-        /// the Notes.
-        /// </value>
-        public DbSet<Rock.Core.Note> Notes { get; set; }
-
-        /// <summary>
         /// Gets or sets the Service Logs.
         /// </summary>
         /// <value>
@@ -338,7 +330,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.NoteConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.EmailTemplateConfiguration() );

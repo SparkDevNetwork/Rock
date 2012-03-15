@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web.Script.Serialization;
 
 namespace Rock
 {
@@ -18,6 +19,34 @@ namespace Rock
     /// </summary>
     public static class ExtensionMethods
     {
+        #region Object Extensions
+
+        /// <summary>
+        /// Converts object to JSON string
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <returns></returns>
+        public static string ToJSON( this object obj )
+        {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            return serializer.Serialize( obj );
+        }
+
+        /// <summary>
+        /// Converts object to JSON string
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="recursionDepth">constrains the number of object levels to process.</param>
+        /// <returns></returns>
+        public static string ToJSON( this object obj, int recursionDepth )
+        {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            serializer.RecursionLimit = recursionDepth;
+            return serializer.Serialize( obj );
+        }
+
+        #endregion
+
         #region String Extensions
 
         /// <summary>

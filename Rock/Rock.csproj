@@ -266,6 +266,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\ImageSelector.cs" />
     <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />

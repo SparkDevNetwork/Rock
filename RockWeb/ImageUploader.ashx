@@ -28,17 +28,20 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 		// *********************************************
 		// TODO: verify user is authorized to save file!
 		// *********************************************
-		var currentUser = System.Web.Security.Membership.GetUser();
 
-		if ( currentUser == null )
+		if ( !context.User.Identity.IsAuthenticated )
 			throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 	
 		try
 		{
-			Rock.CMS.File cmsFile;
-			
-			HttpPostedFile uploadedFile = context.Request.Files["Filedata"];
-			
+            HttpPostedFile uploadedFile = null;
+            HttpFileCollection hfc = context.Request.Files;
+            foreach ( string fk in hfc.AllKeys )
+            {
+                uploadedFile = hfc[fk];
+                break;
+            }
+                
 			// No file or no data?  No good.
 			if ( uploadedFile == null || uploadedFile.ContentLength == 0 )
 			{
@@ -48,10 +51,12 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			
 			FileService fileService = new FileService();
 
+            Rock.CMS.File cmsFile;
+                        
 			// was an ID given? if so, fetch that file and replace it with the new one
-			if ( context.Request.QueryString["id"] != null )
+            if ( context.Request.QueryString.Count > 0)
 			{
-				string anID = context.Request.QueryString["id"];
+				string anID = context.Request.QueryString[0];
 				int id;
 				cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
 			}
@@ -59,6 +64,8 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			{
 				// ...otherwise create a new CMS File
 				cmsFile = new Rock.CMS.File();
+                cmsFile.Temporary = true;
+                fileService.Add( cmsFile, null );
 			}
 
 			cmsFile.MimeType = uploadedFile.ContentType;
@@ -97,8 +104,9 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 				// TODO: Log unable to rotate and/or resize.
 			}
 			
-			//fileService.Save( cmsFile, currentUser.PersonId() );
-			context.Response.Write( cmsFile.Guid.ToString() );
+			fileService.Save( cmsFile, null );
+            
+			context.Response.Write( cmsFile.Id.ToJSON() );
 
 		}
 		catch ( Exception ex )
@@ -126,6 +134,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 		switch ( contentType )
 		{
 			case "image/jpg":
+            case "image/jpeg":
 				return ImageFormat.Jpeg;
 			case "image/png":
 				return ImageFormat.Png;
