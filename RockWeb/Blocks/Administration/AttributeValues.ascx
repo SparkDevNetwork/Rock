@@ -7,12 +7,14 @@
     var AttributeValueId = null;
     var AttributeValue = null;
         
-    function editValue( id, valueId, value ) {
+    function editValue( id, valueId, value, updateScript ) {
 
         AttributeId = id;
         AttributeValueId = valueId;
 
-        $('#<%= tbValue.ClientID %>').val(value);
+        eval(updateScript);
+
+        $('#<%= hfAttributeValue.ClientID %>').val(value);
 
         $('#modal-details').modal('show').bind('shown', function () {
             $('#modal-details').appendTo('#<%= upSettings.ClientID %>');
@@ -25,8 +27,7 @@
 
         $('#modal-details a.btn.primary').click(function () {
 
-            if (Page_ClientValidate()) {
-
+            if (typeof Page_ClientValidate !== "function" || Page_ClientValidate()) {
                 var restAction = 'PUT';
                 var restUrl = rock.baseUrl + 'REST/Core/AttributeValue/';
 
@@ -34,7 +35,7 @@
                 attributeValue.Id = AttributeValueId;
                 attributeValue.AttributeId = AttributeId;
                 attributeValue.EntityId = <%= entityId %>;
-                attributeValue.Value = $('#<%= tbValue.ClientID %>').val();
+                attributeValue.Value = $('#<%= hfAttributeValue.ClientID %>').val();
 
                 if (attributeValue.Id === 0)
                     restAction = 'POST';
@@ -130,8 +131,13 @@
         </div>
         <div class="modal-body">
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+            <asp:HiddenField ID="hfAttributeValue" runat="server" />
             <fieldset>
-                <Rock:DataTextBox ID="tbValue" runat="server" SourceTypeName="Rock.Core.AttributeValue, Rock" PropertyName="Value" />
+                <dl>
+                    <dt><label>Value</label></dt>
+                    <dd id="attribute_value_<%=BlockInstance.Id %>"></dd>
+                </dl>
+                <dt></dt>
             </fieldset>
         </div>
         <div class="modal-footer">

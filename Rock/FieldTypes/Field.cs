@@ -52,10 +52,11 @@ namespace Rock.FieldTypes
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public virtual string FormatValue( string value, bool condensed )
+        public virtual string FormatValue( Control parentControl, string value, bool condensed )
         {
             return value;
         }
@@ -96,6 +97,36 @@ namespace Rock.FieldTypes
             if ( control != null && control is TextBox )
                 return ( ( TextBox )control ).Text;
             return null;
+        }
+
+        /// <summary>
+        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="id">The id.</param>
+        /// <param name="id">The current value.</param>
+        /// <param name="parentElement">The parent element.</param>
+        /// <param name="targetElement">The target element.</param>
+        /// <returns></returns>
+        public virtual string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement )
+        {
+            string uniqueId = parentElement + (string.IsNullOrWhiteSpace( id ) ? "" : "_" + id);
+            string functionName = uniqueId + "_Save_" + this.GetType().Name;
+
+            string script = string.Format( @"
+
+    function {0}(value){{
+        $('#{1}').html('<input type=""text"" id=""{2}"" value=""' + value + '"">' );
+        $('#{1} #{2}').change(function(){{
+            $('#{3}').val($(this).val());
+        }});
+    }}
+
+", functionName, parentElement, uniqueId, targetElement);
+
+            page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
+
+            return functionName;
         }
     }
 
