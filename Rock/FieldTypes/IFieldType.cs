@@ -32,10 +32,11 @@ namespace Rock.FieldTypes
         /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        string FormatValue( string value, bool condensed );
+        string FormatValue( Control parentControl, string value, bool condensed );
 
         /// <summary>
         /// Creates an HTML control.
@@ -51,5 +52,15 @@ namespace Rock.FieldTypes
         /// <param name="control">The control.</param>
         /// <returns></returns>
         string ReadValue( Control control );
+
+        /// <summary>
+        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="id">The id.</param>
+        /// <param name="parentElement">The parent element.</param>
+        /// <param name="targetElement">The target element.</param>
+        /// <returns></returns>
+        string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement );
     }
 }
