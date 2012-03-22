@@ -1,0 +1,26 @@
+﻿<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>T4Scaffolding.Core.ScaffolderLocators.ScaffolderInfo</Name>
+      <ViewSelectedBy>
+        <TypeName>T4Scaffolding.Core.ScaffolderLocators.ScaffolderInfo</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader><Label>Name</Label><Width>35</Width></TableColumnHeader>
+          <TableColumnHeader><Label>Description</Label></TableColumnHeader>
+          <TableColumnHeader><Label>Package</Label><Width>30</Width></TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem><PropertyName>Name</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>Description</PropertyName></TableColumnItem>
+              <TableColumnItem><PropertyName>PackageName</PropertyName></TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>
