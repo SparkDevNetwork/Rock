@@ -1,0 +1,103 @@
+﻿<#@ template language="C#" HostSpecific="True"  inherits="DynamicTransform" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="EnvDTE" #>
+<#@ Output Extension="cs" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Web;
+<# foreach(var ns in new[] { Model.ModelTypeNamespace, Model.DbContextNamespace }.Where(x => !string.IsNullOrEmpty(x) && (x != Model.RepositoryNamespace)).Distinct()) { #>
+using <#= ns #>;
+<# } #>
+
+namespace <#= Model.RepositoryNamespace #>
+{ 
+<# 
+    var modelType = (CodeType)Model.ModelType; 
+    var modelName = modelType.Name; 
+    var modelNamePlural = Model.ModelTypePluralized; 
+    var contextName = ((CodeType)Model.DbContextType).Name; 
+    var primaryKeyProperty = modelType.VisibleMembers().OfType<CodeProperty>().Single(x => x.Name == Model.PrimaryKey);
+    var isObjectContext = ((CodeType)Model.DbContextType).IsAssignableTo<System.Data.Objects.ObjectContext>();
+#>
+    public class <#= modelName #>Repository : I<#= modelName #>Repository
+    {
+        <#= contextName #> context = new <#= contextName #>();
+
+        public IQueryable<<#= modelName #>> All
+        {
+            get { return context.<#= modelNamePlural #>; }
+        }
+
+        public IQueryable<<#= modelName #>> AllIncluding(params Expression<Func<<#= modelName #>, object>>[] includeProperties)
+        {
+            IQueryable<<#= modelName #>> query = context.<#= modelNamePlural #>;
+            foreach (var includeProperty in includeProperties) {
+                query = query.Include(includeProperty);
+            }
+            return query;
+        }
+
+        public <#= modelName #> Find(<#= primaryKeyProperty.Type.AsString #> id)
+        {
+<# if(isObjectContext) { #>
+            return context.<#= modelNamePlural #>.Single(x => x.<#= Model.PrimaryKey #> == id);
+<# } else { #>
+            return context.<#= modelNamePlural #>.Find(id);
+<# } #>
+        }
+
+        public void InsertOrUpdate(<#= modelName #> <#= modelName.ToLower() #>)
+        {
+            if (<#= modelName.ToLower() #>.<#= Model.PrimaryKey #> == default(<#= primaryKeyProperty.Type.AsString #>)) {
+                // New entity
+<# if(primaryKeyProperty.Type.AsString == "System.Guid") { #>
+                <#= modelName.ToLower() #>.<#= primaryKeyProperty.Name #> = Guid.NewGuid();
+<# } #>
+<# if(isObjectContext) { #>
+                context.<#= modelNamePlural #>.AddObject(<#= modelName.ToLower() #>);
+<# } else { #>
+                context.<#= modelNamePlural #>.Add(<#= modelName.ToLower() #>);
+<# } #>
+            } else {
+                // Existing entity
+<# if(isObjectContext) { #>
+                context.<#= modelNamePlural #>.Attach(<#= modelName.ToLower() #>);
+                context.ObjectStateManager.ChangeObjectState(<#= modelName.ToLower() #>, EntityState.Modified);
+<# } else { #>
+                context.Entry(<#= modelName.ToLower() #>).State = EntityState.Modified;
+<# } #>
+            }
+        }
+
+        public void Delete(<#= primaryKeyProperty.Type.AsString #> id)
+        {
+<# if(isObjectContext) { #>
+            var <#= modelName.ToLower() #> = context.<#= modelNamePlural #>.Single(x => x.<#= Model.PrimaryKey #> == id);
+            context.<#= modelNamePlural #>.DeleteObject(<#= modelName.ToLower() #>);
+<# } else { #>
+            var <#= modelName.ToLower() #> = context.<#= modelNamePlural #>.Find(id);
+            context.<#= modelNamePlural #>.Remove(<#= modelName.ToLower() #>);
+<# } #>
+        }
+
+        public void Save()
+        {
+            context.SaveChanges();
+        }
+    }
+
+    public interface I<#= modelName #>Repository
+    {
+        IQueryable<<#= modelName #>> All { get; }
+        IQueryable<<#= modelName #>> AllIncluding(params Expression<Func<<#= modelName #>, object>>[] includeProperties);
+        <#= modelName #> Find(<#= primaryKeyProperty.Type.AsString #> id);
+        void InsertOrUpdate(<#= modelName #> <#= modelName.ToLower() #>);
+        void Delete(<#= primaryKeyProperty.Type.AsString #> id);
+        void Save();
+    }
+}
