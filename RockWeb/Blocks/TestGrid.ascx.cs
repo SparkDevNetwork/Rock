@@ -21,7 +21,7 @@ namespace RockWeb.Blocks
         {
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.Actions.EnableAdd = true;
-            rGrid.Actions.EnableExcelExport = true;
+            //rGrid.Actions.EnableExcelExport = true;
             //rGrid.ClientAddScript = "return addItem();";
             rGrid.Actions.AddClick += rGrid_GridAdd;
             rGrid.RowDeleting += new GridViewDeleteEventHandler( rGrid_RowDeleting );

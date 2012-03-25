@@ -12,7 +12,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Core;
+using Rock.FieldTypes;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -113,6 +115,10 @@ namespace RockWeb.Blocks.Administration
                 {
                     int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
+                    AttributeService attributeService = new AttributeService();
+                    var attribute = attributeService.Get( attributeId );
+                    var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
+
                     AttributeValueService attributeValueService = new AttributeValueService();
 
                     int? iEntityId = null;
@@ -121,17 +127,30 @@ namespace RockWeb.Blocks.Administration
                         catch { }
 
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, iEntityId );
-
                     if ( attributeValue != null )
                     {
-                        lValue.Text = attributeValue.Value;
-                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, {1}, '{2}');",
-                            attributeId, attributeValue.Id, attributeValue.Value ) );
+                        string clientUpdateScript = fieldType.Field.ClientUpdateScript(
+                            this.Page,
+                            "0",
+                            attributeValue.Value,
+                            "attribute_value_" + BlockInstance.Id.ToString(),
+                            hfAttributeValue.ClientID ) + "(\"" + attributeValue.Value.EscapeQuotes() + "\");";
+
+                        lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
+                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, {1}, '{2}', '{3}');",
+                            attributeId, attributeValue.Id, attributeValue.Value.EscapeQuotes(), clientUpdateScript ) );
                     }
                     else
                     {
-                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, 0, '');",
-                            attributeId ) );
+                        string clientUpdateScript = fieldType.Field.ClientUpdateScript(
+                            this.Page,
+                            "0",
+                            string.Empty,
+                            "attribute_value_" + BlockInstance.Id.ToString(),
+                            hfAttributeValue.ClientID ) + "('');";
+
+                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, 0, '', \"{1}\");",
+                            attributeId, clientUpdateScript ) );
                     }
                 }
             }
