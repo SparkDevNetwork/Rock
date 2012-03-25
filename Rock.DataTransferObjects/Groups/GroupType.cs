@@ -66,7 +66,7 @@ namespace Rock.Groups.DTO
 		/// <value>
 		/// Default Group Role Id.
 		/// </value>
-		public int DefaultGroupRoleId { get; set; }
+		public int? DefaultGroupRoleId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.
