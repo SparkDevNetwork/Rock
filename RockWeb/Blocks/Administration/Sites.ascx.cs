@@ -17,8 +17,10 @@ namespace RockWeb.Blocks.Administration
     public partial class Sites : Rock.Web.UI.Block
     {
         #region Fields
-
-        private Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
+        
+        Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
+        Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
+        
 
         #endregion
 
@@ -114,38 +116,71 @@ namespace RockWeb.Blocks.Administration
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Rock.CMS.Site site;
-
-            int siteId = 0;
-            if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
-                siteId = 0;
-
-            if ( siteId == 0 )
+            Rock.CMS.SiteDomain sd;
+            bool newSite = false;
+                        
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                site = new Rock.CMS.Site();
-                siteService.Add( site, CurrentPersonId );
+
+                siteService = new Rock.CMS.SiteService();
+                siteDomainService = new Rock.CMS.SiteDomainService();
+
+                int siteId = 0;
+                if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
+                    siteId = 0;
+
+                if ( siteId == 0 )
+                {
+                    newSite = true;
+                    site = new Rock.CMS.Site();
+                    siteService.Add( site, CurrentPersonId );
+                }
+                else
+                {
+                    site = siteService.Get( siteId );
+                    //sd = siteDomainService.Get( siteId );
+                    //delete old site domains
+                    foreach ( var dom in site.SiteDomains.ToList() )
+                        siteDomainService.Delete( dom, CurrentPersonId );
+                    site.SiteDomains.Clear();
+                }
+
+                site.Name = tbSiteName.Text;
+                site.Description = tbDescription.Text;
+                site.Theme = ddlTheme.Text;
+                site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
+                
+               
+
+                char[] delims = { ',', ' ' };
+
+                foreach ( string domain in tbSiteDomains.Text.Split( delims, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    sd = new Rock.CMS.SiteDomain();
+                    sd.Domain = domain;
+                    sd.Guid = Guid.NewGuid();
+                    site.SiteDomains.Add( sd );
+                }
+
+                site.FaviconUrl = tbFaviconUrl.Text;
+                site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
+                site.FacebookAppId = tbFacebookAppId.Text;
+                site.FacebookAppSecret = tbFacebookAppSecret.Text;
+
+                siteService.Save( site, CurrentPersonId );
+
+                if ( newSite )
+                    Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
+
+                Rock.Web.Cache.Site.Flush( site.Id );
+
+                BindGrid();
+
+                pnlDetails.Visible = false;
+                pnlList.Visible = true;
             }
-            else
-                site = siteService.Get( siteId );
 
-            site.Name = tbSiteName.Text;
-            site.Description = tbDescription.Text;
-            site.Theme = ddlTheme.Text;
-            site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
-            site.FaviconUrl = tbFaviconUrl.Text;
-            site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-            site.FacebookAppId = tbFacebookAppId.Text;
-            site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
-            siteService.Save( site, CurrentPersonId );
-
-            Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
             
-            Rock.Web.Cache.Site.Flush( site.Id );
-
-            BindGrid();
-
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
         }
 
         #endregion
@@ -192,6 +227,8 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
                 ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
+                //split out array to delimited list
+                tbSiteDomains.Text = string.Join(",", site.SiteDomains.Select(dom => dom.Domain).ToArray());
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
                 tbFacebookAppId.Text = site.FacebookAppId;
@@ -204,6 +241,7 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = string.Empty;
                 ddlDefaultPage.SelectedValue = "0";
                 ddlTheme.Text = PageInstance.Site.Theme;
+                tbSiteDomains.Text = string.Empty;
                 tbFaviconUrl.Text = string.Empty;
                 tbAppleTouchIconUrl.Text = string.Empty;
                 tbFacebookAppId.Text = string.Empty;
