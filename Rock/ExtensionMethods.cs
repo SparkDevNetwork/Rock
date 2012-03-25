@@ -90,6 +90,11 @@ namespace Rock
             return new string( chars, 0, count );
         }
 
+        public static string EscapeQuotes( this string str )
+        {
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+        }
+
         #endregion
 
         #region DateTime Extensions

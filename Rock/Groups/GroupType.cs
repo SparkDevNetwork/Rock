@@ -61,7 +61,7 @@ namespace Rock.Groups
 		/// Default Group Role Id.
 		/// </value>
 		[DataMember]
-		public int DefaultGroupRoleId { get; set; }
+		public int? DefaultGroupRoleId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -200,7 +200,7 @@ namespace Rock.Groups
 			this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
-			this.HasRequired( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId );
+			this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId );
 		}
     }
 }
