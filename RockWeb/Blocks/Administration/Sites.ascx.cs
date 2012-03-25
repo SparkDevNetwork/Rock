@@ -21,7 +21,6 @@ namespace RockWeb.Blocks.Administration
         Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
         Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
         
-
         #endregion
 
         #region Control Methods
@@ -49,6 +48,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnLoad( EventArgs e )
+
         {
             nbMessage.Visible = false;
 
@@ -121,7 +121,6 @@ namespace RockWeb.Blocks.Administration
                         
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-
                 siteService = new Rock.CMS.SiteService();
                 siteDomainService = new Rock.CMS.SiteDomainService();
 
@@ -138,10 +137,8 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     site = siteService.Get( siteId );
-                    //sd = siteDomainService.Get( siteId );
-                    //delete old site domains
-                    foreach ( var dom in site.SiteDomains.ToList() )
-                        siteDomainService.Delete( dom, CurrentPersonId );
+                    foreach ( var domain in site.SiteDomains.ToList() )
+                        siteDomainService.Delete( domain, CurrentPersonId );
                     site.SiteDomains.Clear();
                 }
 
@@ -150,8 +147,6 @@ namespace RockWeb.Blocks.Administration
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
                 
-               
-
                 char[] delims = { ',', ' ' };
 
                 foreach ( string domain in tbSiteDomains.Text.Split( delims, StringSplitOptions.RemoveEmptyEntries ) )
@@ -179,8 +174,6 @@ namespace RockWeb.Blocks.Administration
                 pnlDetails.Visible = false;
                 pnlList.Visible = true;
             }
-
-            
         }
 
         #endregion
@@ -227,7 +220,6 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
                 ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
-                //split out array to delimited list
                 tbSiteDomains.Text = string.Join(",", site.SiteDomains.Select(dom => dom.Domain).ToArray());
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;

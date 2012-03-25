@@ -1,6 +1,8 @@
 /*.cache
 /*.force
+/*.tlog
 /RockJobSchedulerService.csproj.FileListAbsolute.txt
 /RockJobSchedulerService.csproj.GenerateResource.Cache
 /RockJobSchedulerService.exe
 /RockJobSchedulerService.pdb
+

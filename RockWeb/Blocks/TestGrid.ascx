@@ -6,7 +6,7 @@
     }
 </script>
 
-<Rock:Grid ID="rGrid" runat="server" Caption="Listing of the Top Pages in Rock">
+<Rock:Grid ID="rGrid" runat="server" Caption="Listing of the Top Pages in Rock" >
     <Columns>
         <asp:HyperLinkField DataTextField="Name" DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" HeaderText="Page Name" />
         <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
