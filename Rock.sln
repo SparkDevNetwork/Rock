@@ -22,6 +22,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb", "{3ADB
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "6229"
+		VWDDynamicPort = "false"
 		DefaultWebSiteLanguage = "Visual C#"
 	EndProjectSection
 EndProject
