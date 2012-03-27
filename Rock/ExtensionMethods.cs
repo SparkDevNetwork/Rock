@@ -60,6 +60,17 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str )
+        {
+            char[] delimiter = new char[] {','};
+            return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+        }
+
+        /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
         /// </summary>
         /// <param name="str">The source string.</param>
