@@ -133,6 +133,14 @@ namespace Rock.Core.DTO
 		public string DefaultValue { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Multi Value.
+		/// </summary>
+		/// <value>
+		/// Multi Value.
+		/// </value>
+		public bool MultiValue { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Required.
 		/// </summary>
 		/// <value>
