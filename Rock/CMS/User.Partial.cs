@@ -63,7 +63,7 @@ namespace Rock.CMS
             if ( HostingEnvironment.IsHosted )
             {
                 HttpContext current = HttpContext.Current;
-                if ( current != null )
+                if ( current != null && current.User != null )
                     return current.User.Identity.Name;
             }
             IPrincipal currentPrincipal = Thread.CurrentPrincipal;

@@ -7,13 +7,14 @@
     var AttributeValueId = null;
     var AttributeValue = null;
         
-    function editValue( id, valueId, value, updateScript ) {
+    function editValue( id, valueId, caption, value, updateScript ) {
 
         AttributeId = id;
         AttributeValueId = valueId;
 
         eval(updateScript);
 
+        $('#attribute_caption_<%=BlockInstance.Id %>').html(caption);
         $('#<%= hfAttributeValue.ClientID %>').val(value);
 
         $('#modal-details').modal('show').bind('shown', function () {
@@ -134,7 +135,7 @@
             <asp:HiddenField ID="hfAttributeValue" runat="server" />
             <fieldset>
                 <dl>
-                    <dt><label>Value</label></dt>
+                    <dt><label id="attribute_caption_<%=BlockInstance.Id %>">Value</label></dt>
                     <dd id="attribute_value_<%=BlockInstance.Id %>"></dd>
                 </dl>
                 <dt></dt>

@@ -142,6 +142,15 @@ namespace Rock.Core
 		public string DefaultValue { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Multi Value.
+		/// </summary>
+		/// <value>
+		/// Multi Value.
+		/// </value>
+		[DataMember]
+		public bool MultiValue { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Required.
 		/// </summary>
 		/// <value>
@@ -211,6 +220,7 @@ namespace Rock.Core
 				dto.Order = this.Order;
 				dto.GridColumn = this.GridColumn;
 				dto.DefaultValue = this.DefaultValue;
+				dto.MultiValue = this.MultiValue;
 				dto.Required = this.Required;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
