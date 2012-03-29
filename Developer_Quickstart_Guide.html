@@ -1,58 +1,20 @@
----
+﻿---
 layout: header_only_layout
-title: Rock Developer Quick-Start Guide
+title: Rock-ChMS Developer
 ---
-
-      <div class="sidebar" style="position: fixed; top: 60px;">
-        <div class="well">
-          <a name="toc">
-            <h5>Contents</h5>
-          </a>
-          <ul>
-            <li>
-              <a href="#Rock Basics">Rock Basics</a>
-            </li>
-            <li>
-              <a href="#Blocks">Blocks</a>
-            </li>
-            <li>
-              <a href="#Theme Layouts">Theme Layouts</a>
-            </li>
-            <li>
-              <a href="#Hello World">Hello World</a>
-            </li>
-            <li>
-              <a href="#Pages">Pages</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="content">
-        <ul>
-          <a style="padding-top:50px; display: block;" name="Rock Basics">
-            <h1 class="page-header">Rock Basics</h1>
-          </a>
-          <p>From a simplified perspective, Rock is primarily made up of two
+<div class="sidebar" style="position: fixed; top: 60px;"><div class="well"><a name="toc"><h5>Contents</h5></a><ul><li><a href="#Rock Basics">Rock Basics</a></li><li><a href="#Blocks">Blocks</a></li><li><a href="#Theme Layouts">Theme Layouts</a></li><li><a href="#Hello World">Hello World</a></li><li><a href="#Pages">Pages</a></li></ul></div></div><div class="content"><a style="padding-top:50px; display: block;" name="Rock Basics"><h1 class="page-header">Rock Basics</h1></a><p>From a simplified perspective, Rock is primarily made up of two
     parts, Theme Layouts and Blocks. Themes have layouts that control the
     placement and definition of content areas called "Zones" and also include
     the pieces that define the styling. Blocks are the fundamental, functional
     code-parts that make up an application, widget, control, module -- or
-    whatever you you call them.</p>
-          <p>When combined, Layouts and Blocks allow you to compose a powerful
+    whatever you you call them. </p><p>When combined, Layouts and Blocks allow you to compose a powerful
     application. In fact, the ChMS parts of Rock are built using these very
-    things. We like to say "Rock is built on Rock".</p>
-          <br />
-          <a style="padding-top:50px; display: block;" name="Blocks">
-            <h1 class="page-header">Blocks</h1>
-          </a>
-          <p>Blocks are usually small pieces of HTML and code (your custom
+    things. We like to say "Rock is built on Rock".</p><br /><a style="padding-top:50px; display: block;" name="Blocks"><h1 class="page-header">Blocks</h1></a><p>Blocks are usually small pieces of HTML and code (your custom
     ASP.NET User Controls) and are the fundamental, functional "building
     blocks" that make up your plugin, widget, application or whatever you want
     to call it. They can include anything you want but they must
     inherit from the Rock.Web.UI.Block class as shown in the
-    following example which is using a Code Behind file.</p>
-          <p>
+    following example which is using a Code Behind file.</p><p>
         An example Block (ExampleCustomBlock.ascx)
 
         
@@ -62,8 +24,7 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      <div class="well" style="background-color: white"><img src="images/ExampleBlock.png" /><br /><br /><caption><em styl="small">Figure: An example Block (ExampleCustomBlock.ascx)</em></caption></div></p>
-          <p>
+      <div class="well" style="background-color: white"><img src="images/ExampleBlock.png" /><br /><br /><caption><em styl="small">Figure: An example Block (ExampleCustomBlock.ascx)</em></caption></div></p><p>
         The code-behind for the example Block
         (ExampleCustomBlock.ascx.cs)
 
@@ -75,11 +36,9 @@ title: Rock Developer Quick-Start Guide
           
         
       <div class="well" style="background-color: white"><img src="images/ExampleBlockCodeBehind.png" /><br /><br /><caption><em styl="small">Figure: The code-behind for the example Block
-        (ExampleCustomBlock.ascx.cs)</em></caption></div></p>
-          <p>The standard location for all custom blocks is in the Plugins
+        (ExampleCustomBlock.ascx.cs)</em></caption></div></p><p>The standard location for all custom blocks is in the Plugins
     folder. We recommend you create your own folder under the Plugins folder
-    to hold any custom blocks created by your team:</p>
-          <p>
+    to hold any custom blocks created by your team:</p><p>
         Location of Custom Blocks
 
         
@@ -89,36 +48,18 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      <div class="well" style="background-color: white"><img src="images/CustomBlockFolderLayout.png" /><br /><br /><caption><em styl="small">Figure: Location of Custom Blocks</em></caption></div></p>
-          <br />
-          <a style="padding-top:50px; display: block;" name="Theme Layouts">
-            <h1 class="page-header">Theme Layouts</h1>
-          </a>
-          <p>
-      A Theme Layout is really just HTML. It's simply an ASP.NET Web Page
-      (.aspx) that basically defines zero or more "zones" where Blocks can
-      reside and will also refer to css, javascripts, and images. Theme Layouts
-      can include just about anything you wish, 
-        but they must inherit
-        from the Rock.Web.UI.Page class
-       as shown in the following
-      example.
-    </p>
-          <p>
-      
-        
-          An example Theme Layout, Splash.aspx, which has a single
-          Zone
-        
+      <div class="well" style="background-color: white"><img src="images/CustomBlockFolderLayout.png" /><br /><br /><caption><em styl="small">Figure: Location of Custom Blocks</em></caption></div></p><br /><a style="padding-top:50px; display: block;" name="Theme Layouts"><h1 class="page-header">Theme Layouts</h1></a><p>A Theme Layout is really just HTML. It's simply an ASP.NET Web Page
+    (.aspx) that basically defines zero or more "zones" where Blocks can
+    reside and will also refer to css, javascripts, and images. Theme Layouts
+    can include just about anything you wish,  but they must inherit
+    from the Rock.Web.UI.Page class  as shown in the following
+    example.</p><p>
+        An example Theme Layout, Splash.aspx, which has a single
+        Zone
 
         
-      
-    <div class="well" style="background-color: white"><img src="images/ExampleThemeLayout_Splash.png" /><br /><br /><caption><em styl="small">Figure: 
-          An example Theme Layout, Splash.aspx, which has a single
-          Zone
-        </em></caption></div></p>
-          <p>
-      
+      <div class="well" style="background-color: white"><img src="images/ExampleThemeLayout_Splash.png" /><br /><br /><caption><em styl="small">Figure: An example Theme Layout, Splash.aspx, which has a single
+        Zone</em></caption></div></p><p>
         Code behind file (Splash.aspx.cs) for the Splash layout
 
         
@@ -128,22 +69,13 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      
-    <div class="well" style="background-color: white"><img src="images/ExampleThemeLayout_SplashCodeBehind.png" /><br /><br /><caption><em styl="small">Figure: Code behind file (Splash.aspx.cs) for the Splash layout</em></caption></div></p>
-          <p>
-      Notice how a single Zone named "Content" is added by defining a
-      DefineZones() method which is overridden from the parent Rock.Web.UI.Page
-      class. Any ASP control that can have child controls (such as the
-      asp:PlaceHolder) can be used as a zone.
-    </p>
-          <p>
-      The recommended folder structure for any custom themes you create
-      should be similar to the default RockCMS theme which
-      has four layouts (Default, Dialog, OneColumn, and Splash) as shown
-      below.
-    </p>
-          <p>
-      
+      <div class="well" style="background-color: white"><img src="images/ExampleThemeLayout_SplashCodeBehind.png" /><br /><br /><caption><em styl="small">Figure: Code behind file (Splash.aspx.cs) for the Splash layout</em></caption></div></p><p>Notice how a single Zone named "Content" is added by defining a
+    DefineZones() method which is overridden from the parent Rock.Web.UI.Page
+    class. Any ASP control that can have child controls (such as the
+    asp:PlaceHolder) can be used as a zone.</p><p>The recommended folder structure for any custom themes you create
+    should be similar to the default RockCMS theme which
+    has four layouts (Default, Dialog, OneColumn, and Splash) as shown
+    below.</p><p>
         Sample folder structure for the RockCMS theme
 
         
@@ -151,26 +83,14 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      
-      <div class="well" style="background-color: white"><img src="images/ThemeFolderLayout.png" /><br /><br /><caption><em styl="small">Figure: Sample folder structure for the RockCMS theme</em></caption></div></p>
-          <p>
-      We also recommend an Assets folder be used to store any fonts,
-      icons and images your theme uses. Likewise, the CSS and Scripts folder
-      would be used to store stylesheets and any JavaScripts
-      (respectively).
-    </p>
-          <br />
-          <a style="padding-top:50px; display: block;" name="Hello World">
-            <h1 class="page-header">Hello World</h1>
-          </a>
-          <p>Now let's walk through an complete example so you can see how easy
+      <div class="well" style="background-color: white"><img src="images/ThemeFolderLayout.png" /><br /><br /><caption><em styl="small">Figure: Sample folder structure for the RockCMS theme</em></caption></div></p><p>We also recommend an Assets folder be used to store any fonts, icons
+    and images your theme uses. Likewise, the CSS and Scripts folder would be
+    used to store stylesheets and any JavaScripts (respectively).</p><br /><a style="padding-top:50px; display: block;" name="Hello World"><h1 class="page-header">Hello World</h1></a><p>Now let's walk through an complete example so you can see how easy
     it is to create a custom block and assemble a simple page. EDITOR NOTE:
-    This should be turned into a video screen capture.</p>
-          <p>Create a "MyStuff" folder under the Plugins folder, then right click
+    This should be turned into a video screen capture.</p><p>Create a "MyStuff" folder under the Plugins folder, then right click
     it an select "Add New Item". Next choose "Web User Control", uncheck the
     "Place code in separate file" checkbox and give it the name
-    HelloWorld.ascx.</p>
-          <p>
+    HelloWorld.ascx.</p><p>
         Choose Web User Control and name it HelloWorld.ascx
 
         
@@ -178,16 +98,11 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      
-    <div class="well" style="background-color: white"><img src="images/HelloWorld/WebUserControl.png" /><br /><br /><caption><em styl="small">Figure: Choose Web User Control and name it HelloWorld.ascx</em></caption></div></p>
-          <p>
-    Add the Inherits="Rock.Web.UI.Block"
-    string in the first Control line and type your Hello World as HTML as
-    shown in the screenshot. Note: If you're using
-    code-behind file (*.ascx.cs) you'll need to change the inheritance in the
-    *.cs file instead.</p>
-          <p>
-      
+      <div class="well" style="background-color: white"><img src="images/HelloWorld/WebUserControl.png" /><br /><br /><caption><em styl="small">Figure: Choose Web User Control and name it HelloWorld.ascx</em></caption></div></p><p>Add the Inherits="Rock.Web.UI.Block" string in
+    the first Control line and type your Hello World as HTML as shown in the
+    screenshot. Note: If you're using code-behind file (*.ascx.cs)
+    you'll need to change the inheritance in the *.cs file
+    instead.</p><p>
         The complete HelloWorld.ascx block
 
         
@@ -195,14 +110,11 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      
-    <div class="well" style="background-color: white"><img src="images/HelloWorld/HelloWorldASCX.png" /><br /><br /><caption><em styl="small">Figure: The complete HelloWorld.ascx block</em></caption></div></p>
-          <p>Now open Rock ChMS and login as an Administrator. Next, navigate to
+      <div class="well" style="background-color: white"><img src="images/HelloWorld/HelloWorldASCX.png" /><br /><br /><caption><em styl="small">Figure: The complete HelloWorld.ascx block</em></caption></div></p><p>Now open Rock ChMS and login as an Administrator. Next, navigate to
     a test page and then choose the "Page Zones" icon from the toolbar in the
     bottom right corner. This is how you add Blocks to the Zones on a page.
     Select the Content zone's Zone Blocks as shown
-    here:</p>
-          <p>
+    here:</p><p>
         Editing the zones on a page
 
         
@@ -210,14 +122,10 @@ title: Rock Developer Quick-Start Guide
             
           
         
-      
-    <div class="well" style="background-color: white"><img src="images/HelloWorld/AddingABlockToAZone.png" /><br /><br /><caption><em styl="small">Figure: Editing the zones on a page</em></caption></div></p>
-          <p>  
-    Select the Add New button from the dialog box that appears.
-    Doing this will search for all registered blocks and also will register
-    any new blocks, including the new HelloWorld block you just created.
-    Select your HelloWorld block Type and give it a name on this page.</p>
-          <p>
+      <div class="well" style="background-color: white"><img src="images/HelloWorld/AddingABlockToAZone.png" /><br /><br /><caption><em styl="small">Figure: Editing the zones on a page</em></caption></div></p><p>Select the Add New button from the dialog box that appears. Doing
+    this will search for all registered blocks and also will register any new
+    blocks, including the new HelloWorld block you just created. Select your
+    HelloWorld block Type and give it a name on this page.</p><p>
         Adding a block to a page zone
 
         
@@ -226,8 +134,7 @@ title: Rock Developer Quick-Start Guide
           
         
       Once the page is refreshed, you will see an instance of your
-    block on the page.<div class="well" style="background-color: white"><img src="images/HelloWorld/AddHelloWorldBlock.png" /><br /><br /><caption><em styl="small">Figure: Adding a block to a page zone</em></caption></div></p>
-          <p>
+    block on the page.<div class="well" style="background-color: white"><img src="images/HelloWorld/AddHelloWorldBlock.png" /><br /><br /><caption><em styl="small">Figure: Adding a block to a page zone</em></caption></div></p><p>
         A test page showing an instance of your HelloWorld
         block
 
@@ -237,12 +144,4 @@ title: Rock Developer Quick-Start Guide
           
         
       <div class="well" style="background-color: white"><img src="images/HelloWorld/FinalPage.png" /><br /><br /><caption><em styl="small">Figure: A test page showing an instance of your HelloWorld
-        block</em></caption></div></p>
-          <br />
-          <a style="padding-top:50px; display: block;" name="Pages">
-            <h1 class="page-header">Pages</h1>
-          </a>
-          <p>TBD</p>
-          <br />
-        </ul>
-      </div>
+        block</em></caption></div></p><br /><a style="padding-top:50px; display: block;" name="Pages"><h1 class="page-header">Pages</h1></a><p>TBD</p><br /></div>
