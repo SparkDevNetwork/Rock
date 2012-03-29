@@ -72,5 +72,35 @@ namespace Rock.FieldTypes
                 return ( ( CheckBox )control ).Checked.ToString();
             return null;
         }
+
+        /// <summary>
+        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="id">The id.</param>
+        /// <param name="value"></param>
+        /// <param name="parentElement">The parent element.</param>
+        /// <param name="targetElement">The target element.</param>
+        /// <returns></returns>
+        public override string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement )
+        {
+            string uniqueId = parentElement + ( string.IsNullOrWhiteSpace( id ) ? "" : "_" + id );
+            string functionName = uniqueId + "_Save_" + this.GetType().Name;
+
+            string script = string.Format( @"
+
+    function {0}(value){{
+        $('#{1}').html('<input type=""checkbox"" id=""{2}"" name=""{2}""' + ((value.toLowerCase() === 'true') ? ' checked=""checked""' : '') + '>' );
+        $('#{1} #{2}').change(function(){{
+            $('#{3}').val($(this).is(':checked'));
+        }});
+    }}
+
+", functionName, parentElement, uniqueId, targetElement );
+
+            page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
+
+            return functionName;
+        }
     }
 }

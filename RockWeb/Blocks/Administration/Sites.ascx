@@ -41,6 +41,7 @@
 
                 <fieldset>
                     <legend>&nbsp;</legend>
+                    <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="SiteDomains" />
                     <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FaviconUrl" />
                     <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="AppleTouchIconUrl" />
                     <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FacebookAppId" />

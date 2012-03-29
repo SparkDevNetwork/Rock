@@ -137,8 +137,8 @@ namespace RockWeb.Blocks.Administration
                             hfAttributeValue.ClientID ) + "(\"" + attributeValue.Value.EscapeQuotes() + "\");";
 
                         lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
-                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, {1}, '{2}', '{3}');",
-                            attributeId, attributeValue.Id, attributeValue.Value.EscapeQuotes(), clientUpdateScript ) );
+                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, {1}, '{2}', '{3}', '{4}');",
+                            attributeId, attributeValue.Id, attribute.Name.EscapeQuotes(), attributeValue.Value.EscapeQuotes(), clientUpdateScript ) );
                     }
                     else
                     {
@@ -149,8 +149,8 @@ namespace RockWeb.Blocks.Administration
                             "attribute_value_" + BlockInstance.Id.ToString(),
                             hfAttributeValue.ClientID ) + "('');";
 
-                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, 0, '', \"{1}\");",
-                            attributeId, clientUpdateScript ) );
+                        aEdit.Attributes.Add( "onclick", string.Format( "editValue({0}, 0, '{1}', '', \"{2}\");",
+                            attributeId, attribute.Name.EscapeQuotes(), clientUpdateScript ) );
                     }
                 }
             }
