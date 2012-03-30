@@ -235,10 +235,6 @@
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
-    <Compile Include="Migrations\201203302152351_InitialMigration.cs" />
-    <Compile Include="Migrations\201203302152351_InitialMigration.Designer.cs">
-      <DependentUpon>201203302152351_InitialMigration.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
