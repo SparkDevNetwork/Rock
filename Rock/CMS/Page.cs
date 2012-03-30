@@ -37,7 +37,17 @@ namespace Rock.CMS
 		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
-		
+
+        [MaxLength( 20 )]
+        [TrackChanges]
+        [DataMember]
+        public string DefaultBackgroundColor { get; set; }
+
+        [MaxLength(20)]
+        [TrackChanges]
+        [DataMember]
+        public string DefaultForegroundColor { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Title.
 		/// </summary>

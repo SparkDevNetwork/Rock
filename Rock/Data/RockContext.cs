@@ -11,6 +11,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
@@ -307,6 +308,8 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+
             modelBuilder.Configurations.Add( new Rock.CMS.AuthConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockInstanceConfiguration() );
