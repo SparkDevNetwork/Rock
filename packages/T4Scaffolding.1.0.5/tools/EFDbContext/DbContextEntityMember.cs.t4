@@ -1,0 +1,2 @@
+<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+public DbSet<<#= ((EnvDTE.CodeType)Model.EntityType).FullName #>> <#= Model.EntityTypeNamePluralized #> { get; set; }
