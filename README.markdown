@@ -1,7 +1,11 @@
 [Rock ChMS](http://rockchms.org/) - Rock Church Management System
 =================================================================
-The Spark Development Network is now formed and is just starting the development of Rock ChMS.  Rock ChMS
-is a .Net 4.0 Entity Framework project written in C#.
+The Spark Development Network is now formed and is just starting the development of an open source
+Church Management System (ChMS) called *Rock ChMS*.  It's a .Net 4.0 Entity Framework web app written in C#.
+
+Our main Developer starting point site is [the gh-pages branch website](http://sparkdevnetwork.github.com/Rock-ChMS/).
+
+__NOTE__: EVERYTHING YOU ARE ABOUT TO READ BELOW IS NOT READY YET -- but once it is, the workflow will be something like this...
 
 ## Getting Started
 
