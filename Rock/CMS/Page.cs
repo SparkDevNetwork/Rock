@@ -37,7 +37,7 @@ namespace Rock.CMS
 		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
-		
+
 		/// <summary>
 		/// Gets or sets the Title.
 		/// </summary>
