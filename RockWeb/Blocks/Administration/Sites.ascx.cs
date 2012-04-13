@@ -147,9 +147,7 @@ namespace RockWeb.Blocks.Administration
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
                 
-                char[] delims = { ',', ' ' };
-
-                foreach ( string domain in tbSiteDomains.Text.Split( delims, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
                 {
                     sd = new Rock.CMS.SiteDomain();
                     sd.Domain = domain;
@@ -220,7 +218,7 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
                 ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
-                tbSiteDomains.Text = string.Join(",", site.SiteDomains.Select(dom => dom.Domain).ToArray());
+                tbSiteDomains.Text = string.Join("\n", site.SiteDomains.Select(dom => dom.Domain).ToArray());
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
                 tbFacebookAppId.Text = site.FacebookAppId;
