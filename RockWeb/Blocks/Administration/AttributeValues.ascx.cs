@@ -45,30 +45,30 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
-                canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                entity = AttributeValue( "Entity" );
+                if ( string.IsNullOrWhiteSpace( entity ) )
+                    entity = PageParameter( "Entity" );
+
+                entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+                if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
+                    entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
+
+                entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+                if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
+                    entityQualifierValue = PageParameter( "EntityQualifierValue" );
+
+                entityId = AttributeValue( "EntityId" );
+                if ( string.IsNullOrWhiteSpace( entityId ) )
+                    entityId = PageParameter( "EntityId" );
+                if ( string.IsNullOrWhiteSpace( entityId ) )
+                    entityId = "null";
 
                 BindFilter();
 
+                canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+
                 if ( canConfigure )
                 {
-                    entity = AttributeValue( "Entity" );
-                    if ( string.IsNullOrWhiteSpace( entity ) )
-                        entity = PageParameter( "Entity" );
-
-                    entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
-                    if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
-                        entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
-
-                    entityQualifierValue = AttributeValue( "EntityQualifierValue" );
-                    if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
-                        entityQualifierValue = PageParameter( "EntityQualifierValue" );
-
-                    entityId =  AttributeValue( "EntityId" );
-                    if ( string.IsNullOrWhiteSpace( entityId ) )
-                        entityId = PageParameter( "EntityId" );
-                    if ( string.IsNullOrWhiteSpace( entityId ) )
-                        entityId = "null";
-
                     rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.ShowActionRow = false;
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
@@ -126,7 +126,8 @@ namespace RockWeb.Blocks.Administration
                         try { iEntityId = Int32.Parse( entityId ); }
                         catch { }
 
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, iEntityId );
+                    // TODO: Need to add support for multiple values
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, iEntityId ).FirstOrDefault();
                     if ( attributeValue != null )
                     {
                         string clientUpdateScript = fieldType.Field.ClientUpdateScript(

@@ -232,7 +232,7 @@ namespace Rock.Core
         /// </summary>
         public ExceptionLogConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId );
+			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

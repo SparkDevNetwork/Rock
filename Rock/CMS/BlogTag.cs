@@ -97,7 +97,7 @@ namespace Rock.CMS
         /// </summary>
         public BlogTagConfiguration()
         {
-			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogTags ).HasForeignKey( p => p.BlogId );
+			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogTags ).HasForeignKey( p => p.BlogId ).WillCascadeOnDelete(true);
 		}
     }
 }

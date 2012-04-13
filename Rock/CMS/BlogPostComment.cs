@@ -194,10 +194,10 @@ namespace Rock.CMS
         /// </summary>
         public BlogPostCommentConfiguration()
         {
-			this.HasRequired( p => p.Post ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PostId );
-			this.HasOptional( p => p.Person ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PersonId );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasRequired( p => p.Post ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PostId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.Person ).WithMany( p => p.BlogPostComments ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

@@ -158,10 +158,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Attribute.IHasAttributes component = _container.Dictionary[Int32.Parse( hfComponentId.Value )].Value;
 
             Rock.Attribute.Helper.GetEditValues( dlProperties, component );
-
-            foreach ( var category in component.Attributes )
-                foreach ( var attribute in category.Value )
-                    Rock.Attribute.Helper.SaveAttributeValue( component, attribute, component.AttributeValues[attribute.Key].Value, CurrentPersonId );
+            Rock.Attribute.Helper.SaveAttributeValues( component, CurrentPersonId );
 
             hfComponentId.Value = string.Empty;
 

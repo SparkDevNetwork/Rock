@@ -180,11 +180,11 @@ namespace Rock.Groups
         /// </summary>
         public MemberConfiguration()
         {
-			this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
-			this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId );
-			this.HasRequired( p => p.GroupRole ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupRoleId );
+			this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
+			this.HasRequired( p => p.GroupRole ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
 		}
     }
 }

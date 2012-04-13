@@ -61,6 +61,14 @@ namespace Rock.Core.DTO
 		public int? EntityId { get; set; }
 
 		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		public int? Order { get; set; }
+
+		/// <summary>
 		/// Gets or sets the Value.
 		/// </summary>
 		/// <value>

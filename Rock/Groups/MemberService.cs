@@ -34,6 +34,18 @@ namespace Rock.Groups
         }
 		
 		/// <summary>
+		/// Gets Member by Group Id And Person Id And Group Role Id
+		/// </summary>
+		/// <param name="groupId">Group Id.</param>
+		/// <param name="personId">Person Id.</param>
+		/// <param name="groupRoleId">Group Role Id.</param>
+		/// <returns>Member object.</returns>
+	    public Rock.Groups.Member GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId )
+        {
+            return Repository.FirstOrDefault( t => t.GroupId == groupId && t.PersonId == personId && t.GroupRoleId == groupRoleId );
+        }
+		
+		/// <summary>
 		/// Gets Members by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>

@@ -161,7 +161,7 @@ namespace Rock.Core
         /// </summary>
         public EntityChangeConfiguration()
         {
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

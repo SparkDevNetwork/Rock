@@ -24,14 +24,14 @@ namespace Rock.Core
     public partial class AttributeValueService : Service<Rock.Core.AttributeValue>
     {
 		/// <summary>
-		/// Gets Attribute Value by Attribute Id And Entity Id
+		/// Gets Attribute Values by Attribute Id And Entity Id
 		/// </summary>
 		/// <param name="attributeId">Attribute Id.</param>
 		/// <param name="entityId">Entity Id.</param>
-		/// <returns>AttributeValue object.</returns>
-	    public Rock.Core.AttributeValue GetByAttributeIdAndEntityId( int attributeId, int? entityId )
+		/// <returns>An enumerable list of AttributeValue objects.</returns>
+	    public IEnumerable<Rock.Core.AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
-            return Repository.FirstOrDefault( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
 		/// <summary>

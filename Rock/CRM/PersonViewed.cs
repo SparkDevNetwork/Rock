@@ -128,8 +128,8 @@ namespace Rock.CRM
         /// </summary>
         public PersonViewedConfiguration()
         {
-			this.HasOptional( p => p.ViewerPerson ).WithMany().HasForeignKey( p => p.ViewerPersonId );
-			this.HasOptional( p => p.TargetPerson ).WithMany().HasForeignKey( p => p.TargetPersonId );
+			this.HasOptional( p => p.ViewerPerson ).WithMany().HasForeignKey( p => p.ViewerPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.TargetPerson ).WithMany().HasForeignKey( p => p.TargetPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }
