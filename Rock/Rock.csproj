@@ -216,6 +216,7 @@
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="FieldTypes\Date.cs" />
     <Compile Include="FieldTypes\Image.cs" />
+    <Compile Include="FieldTypes\Video.cs" />
     <Compile Include="Groups\EntityGroupRepository.cs" />
     <Compile Include="Groups\EntityGroupRoleRepository.cs" />
     <Compile Include="Groups\EntityGroupTypeRepository.cs" />

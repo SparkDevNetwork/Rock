@@ -16,6 +16,8 @@ namespace Rock.Data
     [IgnoreProperties(new[] { "AttributeValues" })]
     public class ModelWithAttributes<T> : Model<T>, Rock.Attribute.IHasAttributes
     {
+        private bool _attributesLoaded = false;
+
         // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
         // to tell WCF Data Services not to worry about the associated properties.
 
@@ -27,7 +29,20 @@ namespace Rock.Data
         /// The attributes.
         /// </value>
         [NotMapped]
-        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
+        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
+        {
+            get 
+            {
+                if ( _attributes == null && !_attributesLoaded )
+                {
+                    Attribute.Helper.LoadAttributes( this );
+                    _attributesLoaded = true;
+                }
+                return _attributes; 
+            }
+            set { _attributes = value; }
+        }
+        private SortedDictionary<string, List<Rock.Web.Cache.Attribute>> _attributes;
 
         /// <summary>
         /// Dictionary of all attributes and their value.
@@ -36,6 +51,19 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues
+        {
+            get 
+            {
+                if ( _attributeValues == null && !_attributesLoaded )
+                {
+                    Attribute.Helper.LoadAttributes( this );
+                    _attributesLoaded = true;
+                }
+                return _attributeValues; 
+            }
+            set { _attributeValues = value; }
+        }
+        private Dictionary<string, KeyValuePair<string, string>> _attributeValues;
     }
 }

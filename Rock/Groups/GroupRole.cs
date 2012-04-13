@@ -174,8 +174,8 @@ namespace Rock.Groups
         public GroupRoleConfiguration()
         {
 			this.HasMany( p => p.GroupTypes ).WithMany( c => c.GroupRoles ).Map( m => { m.MapLeftKey("GroupTypeId"); m.MapRightKey("GroupRoleId"); m.ToTable("groupsGroupTypeRole" ); } );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

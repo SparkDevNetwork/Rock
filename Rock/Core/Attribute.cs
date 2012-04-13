@@ -287,9 +287,9 @@ namespace Rock.Core
         /// </summary>
         public AttributeConfiguration()
         {
-			this.HasRequired( p => p.FieldType ).WithMany( p => p.Attributes ).HasForeignKey( p => p.FieldTypeId );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasRequired( p => p.FieldType ).WithMany( p => p.Attributes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

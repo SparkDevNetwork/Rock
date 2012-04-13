@@ -155,17 +155,16 @@ namespace Rock.Attribute
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
-            Type modelType = item.GetType();
-            if (item is Rock.Data.IModel)
-                modelType = modelType.BaseType;
-            string entityType = modelType.FullName;
+            Type entityType = item.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
 
-            foreach ( PropertyInfo propertyInfo in modelType.GetProperties() )
+            foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
             Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
 
-            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType ) )
+            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
@@ -186,6 +185,13 @@ namespace Rock.Attribute
             item.AttributeValues = attributeValues;
         }
 
+        public static void SaveAttributeValues( IHasAttributes model, int? personId )
+        {
+            foreach ( var category in model.Attributes )
+                foreach ( var attribute in category.Value )
+                    SaveAttributeValue( model, attribute, model.AttributeValues[attribute.Key].Value, personId );
+        }
+
         /// <summary>
         /// Saves an attribute value.
         /// </summary>
@@ -196,7 +202,8 @@ namespace Rock.Attribute
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string value, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
-            Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id );
+            // TODO: add support for multivalue
+            Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
 
             if ( attributeValue == null )
             {

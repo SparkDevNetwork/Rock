@@ -225,10 +225,10 @@ namespace Rock.CMS
         /// </summary>
         public BlockInstanceConfiguration()
         {
-			this.HasRequired( p => p.Block ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.BlockId );
-			this.HasOptional( p => p.Page ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.PageId );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasRequired( p => p.Block ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.Page ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

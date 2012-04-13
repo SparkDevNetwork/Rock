@@ -382,17 +382,18 @@ namespace Rock<#= projectNamespace #>
 					else
 						propertyName = colName.Substring( 0, colName.Length - 2 );
 					
-						string relationshipType = oneTable.Columns[colName].Nullable ? "Optional" : "Required";
-						
-						// Create the configuration text to be added in the model's configuration class
-						if (foreignKey.Name.ToLower().Contains("nomodel"))
-							specialReferences.Add(string.Format(
-								"this.Has{0}( p => p.{1} ).WithMany().HasForeignKey( p => p.{2} );",
-								relationshipType, propertyName, colName ));
-						else
-							specialReferences.Add(string.Format(
-								"this.Has{0}( p => p.{1} ).WithMany( p => p.{2} ).HasForeignKey( p => p.{3} );",
-								relationshipType, propertyName, pls.Pluralize( Entity), colName ));
+					string relationshipType = oneTable.Columns[colName].Nullable ? "Optional" : "Required";
+					string deleteCascade = ((bool)(foreignKey.DeleteAction == ForeignKeyAction.Cascade)).ToString().ToLower();
+					
+					// Create the configuration text to be added in the model's configuration class
+					if (foreignKey.Name.ToLower().Contains("nomodel"))
+						specialReferences.Add(string.Format(
+							"this.Has{0}( p => p.{1} ).WithMany().HasForeignKey( p => p.{2} ).WillCascadeOnDelete({3});",
+							relationshipType, propertyName, colName, deleteCascade ));
+					else
+						specialReferences.Add(string.Format(
+							"this.Has{0}( p => p.{1} ).WithMany( p => p.{2} ).HasForeignKey( p => p.{3} ).WillCascadeOnDelete({4});",
+							relationshipType, propertyName, pls.Pluralize( Entity), colName, deleteCascade ) );
 				}
 #>
         
@@ -1055,6 +1056,7 @@ namespace Rock.REST<#= projectNamespace #>
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
@@ -1086,6 +1088,8 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+
 <#
 		foreach ( KeyValuePair<string, string> entity in entities )
 		{

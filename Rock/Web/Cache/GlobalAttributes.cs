@@ -75,7 +75,8 @@ namespace Rock.Web.Cache
                         ( a.EntityQualifierColumn ?? string.Empty ) == "" &&
                         ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
                 {
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
+                    // TODO: Need to add support for multiple values
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
                     globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
                 }
 

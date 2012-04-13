@@ -219,6 +219,38 @@ namespace Rock
 
         #endregion
 
+        #region HtmlControl Extensions
+
+        /// <summary>
+        /// Adds a CSS class name to an html control
+        /// </summary>
+        /// <param name="htmlControl">The html control.</param>
+        /// <param name="className">Name of the class.</param>
+        public static void AddCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
+        {
+            string match = @"\b" + className + "\b";
+            string css = htmlControl.Attributes["class"] ?? string.Empty;
+
+            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                htmlControl.Attributes["class"] = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+        }
+
+        /// <summary>
+        /// Removes a CSS class name from an html control.
+        /// </summary>
+        /// <param name="htmlControl">The html control.</param>
+        /// <param name="className">Name of the class.</param>
+        public static void RemoveCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
+        {
+            string match = @"\s*\b" + className + "\b";
+            string css = htmlControl.Attributes["class"] ?? string.Empty;
+
+            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                htmlControl.Attributes["class"] = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+        }
+
+        #endregion
+
         #region DropDownList Extensions
 
         /// <summary>

@@ -54,6 +54,15 @@ namespace Rock.Core
 		public int? EntityId { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		[DataMember]
+		public int? Order { get; set; }
+		
+		/// <summary>
 		/// Gets or sets the Value.
 		/// </summary>
 		/// <value>
@@ -114,6 +123,7 @@ namespace Rock.Core
 				dto.System = this.System;
 				dto.AttributeId = this.AttributeId;
 				dto.EntityId = this.EntityId;
+				dto.Order = this.Order;
 				dto.Value = this.Value;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
@@ -164,9 +174,9 @@ namespace Rock.Core
         /// </summary>
         public AttributeValueConfiguration()
         {
-			this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId );
+			this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

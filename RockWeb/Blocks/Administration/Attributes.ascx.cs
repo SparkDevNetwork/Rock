@@ -42,24 +42,24 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
+                entity = AttributeValue( "Entity" );
+                if ( string.IsNullOrWhiteSpace( entity ) )
+                    entity = PageParameter( "Entity" );
+
+                entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+                if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
+                    entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
+
+                entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+                if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
+                    entityQualifierValue = PageParameter( "EntityQualifierValue" );
+
                 canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
 
                 BindFilter();
 
                 if ( canConfigure )
                 {
-                    entity = AttributeValue( "Entity" );
-                    if ( string.IsNullOrWhiteSpace( entity ) )
-                        entity = PageParameter( "Entity" );
-
-                    entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
-                    if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
-                        entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
-
-                    entityQualifierValue = AttributeValue( "EntityQualifierValue" );
-                    if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
-                        entityQualifierValue = PageParameter( "EntityQualifierValue" );
-
                     rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                     rGrid.Actions.EnableAdd = true;
