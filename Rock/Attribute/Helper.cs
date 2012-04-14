@@ -83,7 +83,7 @@ namespace Rock.Attribute
             Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Core.Attribute attribute = attributeService.GetAttributeByEntityQualifierAndKey(
+            Core.Attribute attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
                 entity, entityQualifierColumn, entityQualifierValue, property.Key );
 
             if ( attribute == null )

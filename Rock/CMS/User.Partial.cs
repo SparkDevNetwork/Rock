@@ -32,7 +32,7 @@ namespace Rock.CMS
         {
             get
             {
-                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.Guid.ToString(), this.UserName, DateTime.Now.Ticks );
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.PublicKey.ToString(), this.UserName, DateTime.Now.Ticks );
                 string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
                 if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
                     encryptionPhrase = "Rock Rocks!";

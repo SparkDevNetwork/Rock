@@ -24,16 +24,6 @@ namespace Rock.CMS
     public partial class PageRouteService : Service<Rock.CMS.PageRoute>
     {
 		/// <summary>
-		/// Gets Page Routes by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of PageRoute objects.</returns>
-	    public IEnumerable<Rock.CMS.PageRoute> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Page Routes by Page Id
 		/// </summary>
 		/// <param name="pageId">Page Id.</param>

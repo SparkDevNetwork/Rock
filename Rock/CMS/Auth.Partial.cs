@@ -18,4 +18,30 @@ namespace Rock.CMS
             return false;
         }
     }
+
+    /// <summary>
+    /// Authorization for a special group of users not defined by a specific role or person
+    /// </summary>
+    public enum SpecialRole
+    {
+        /// <summary>
+        /// No special role
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Authorize all users
+        /// </summary>
+        AllUsers = 1,
+
+        /// <summary>
+        /// Authorize all authenticated users
+        /// </summary>
+        AllAuthenticatedUsers = 2,
+
+        /// <summary>
+        /// Authorize all un-authenticated users
+        /// </summary>
+        AllUnAuthenticatedUsers = 3,
+    }
 }

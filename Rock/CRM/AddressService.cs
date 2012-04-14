@@ -38,16 +38,6 @@ namespace Rock.CRM
         }
 		
 		/// <summary>
-		/// Gets Address by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Address object.</returns>
-	    public Rock.CRM.Address GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Address by Raw
 		/// </summary>
 		/// <param name="raw">Raw.</param>

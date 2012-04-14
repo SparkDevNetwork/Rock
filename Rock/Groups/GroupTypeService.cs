@@ -23,15 +23,5 @@ namespace Rock.Groups
 	/// </summary>
     public partial class GroupTypeService : Service<Rock.Groups.GroupType>
     {
-		/// <summary>
-		/// Gets Group Types by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of GroupType objects.</returns>
-	    public IEnumerable<Rock.Groups.GroupType> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
     }
 }

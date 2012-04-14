@@ -52,8 +52,9 @@ namespace Rock.Security
                 actionPermissions.Add( new AuthRule(
                     auth.Id,
                     auth.AllowOrDeny,
-                    auth.UserOrRole,
-                    auth.UserOrRoleName,
+                    auth.SpecialRole,
+                    auth.PersonId,
+                    auth.GroupId,
                     auth.Order) );
             }
         }
@@ -96,9 +97,10 @@ namespace Rock.Security
                     actionPermissions.Add( new AuthRule(
                         auth.Id,
                         auth.AllowOrDeny,
-                        auth.UserOrRole,
-                        auth.UserOrRoleName,
-                        auth.Order) );
+                        auth.SpecialRole,
+                        auth.PersonId,
+                        auth.GroupId,
+                        auth.Order ) );
                 }
             }
         }
@@ -121,19 +123,19 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Rock.CMS.User user )
         {
-            return Authorized( entity, action, user != null ? user.Person.Guid.ToString() : string.Empty );
-        }
+        //    return Authorized( entity, action, user != null ? user.Person.Guid.ToString() : string.Empty );
+        //}
 
-        /// <summary>
-        /// Evaluates whether a selected user is allowed to perform the selected action on the selected
-        /// entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="userName">Name of the user.</param>
-        /// <returns></returns>
-        private static bool Authorized( ISecured entity, string action, string userName )
-        {
+        ///// <summary>
+        ///// Evaluates whether a selected user is allowed to perform the selected action on the selected
+        ///// entity.
+        ///// </summary>
+        ///// <param name="entity">The entity.</param>
+        ///// <param name="action">The action.</param>
+        ///// <param name="userName">Name of the user.</param>
+        ///// <returns></returns>
+        //private static bool Authorized( ISecured entity, string action, string userName )
+        //{
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
                 Load();
@@ -145,28 +147,35 @@ namespace Rock.Security
                 Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
                 Authorizations[entity.AuthEntity][entity.Id].Keys.Contains( action ) )
             {
+
+                string userName = user != null ? user.Person.Guid.ToString() : string.Empty;
+
                 foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
                 {
                     // All Users
-                    if ( authRule.UserOrRoleName == "*AU" )
+                    if ( authRule.SpecialRole == SpecialRole.AllUsers )
                         return authRule.AllowOrDeny == "A";
 
                     // All Authenticated Users
-                    if (authRule.UserOrRoleName == "*AAU" && userName.Trim() != string.Empty)
+                    if (authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && userName.Trim() != string.Empty)
                         return authRule.AllowOrDeny == "A";
 
                     // All Unauthenticated Users
-                    if ( authRule.UserOrRoleName == "*AUU" && userName.Trim() == string.Empty )
+                    if ( authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && userName.Trim() == string.Empty )
                         return authRule.AllowOrDeny == "A";
 
-                    if ( !authRule.UserOrRoleName.StartsWith("*") && userName != string.Empty )
+                    if ( authRule.SpecialRole == SpecialRole.None && userName != string.Empty )
                     {
-                        if ( authRule.UserOrRole == "U" && userName == authRule.UserOrRoleName )
+                        // See if person has been authorized to entity
+                        if ( authRule.PersonId.HasValue && 
+                            user.PersonId.HasValue && 
+                            authRule.PersonId.Value == user.PersonId.Value )
                             return authRule.AllowOrDeny == "A";
 
-                        if ( authRule.UserOrRole == "R" )
+                        // See if person is in role authorized
+                        if (authRule.GroupId.HasValue)
                         {
-                            Role role = Role.Read( authRule.UserOrRoleName );
+                            Role role = Role.Read( authRule.GroupId.Value );
                             if ( role != null && role.UserInRole( userName ) )
                                 return authRule.AllowOrDeny == "A";
                         }
@@ -178,7 +187,7 @@ namespace Rock.Security
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
             if ( entity.ParentAuthority != null )
-                return Authorized( entity.ParentAuthority, action, userName );
+                return Authorized( entity.ParentAuthority, action, user );
             else
                 return entity.DefaultAuthorization( action );
 
@@ -277,13 +286,14 @@ namespace Rock.Security
                                 auth.Order = order;
                                 auth.Action = action.Key;
                                 auth.AllowOrDeny = rule.AllowOrDeny;
-                                auth.UserOrRole = rule.UserOrRole;
-                                auth.UserOrRoleName = rule.UserOrRoleName;
+                                auth.SpecialRole = rule.SpecialRole;
+                                auth.PersonId = rule.PersonId;
+                                auth.GroupId = rule.GroupId;
 
                                 authService.Add( auth, personId );
                                 authService.Save( auth, personId );
 
-                                newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.UserOrRole, rule.UserOrRoleName, rule.Order ) );
+                                newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
 
                                 order++;
                             }
@@ -324,20 +334,28 @@ namespace Rock.Security
         public string AllowOrDeny { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if this is for a User or a Role.  Acceptable values are "U" or "R"
+        /// Gets or sets the special role.
         /// </summary>
         /// <value>
-        /// The user or role.
+        /// The special role.
         /// </value>
-        public string UserOrRole { get; set; }
+        public SpecialRole SpecialRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the user or role.
+        /// Gets or sets the person id.
         /// </summary>
         /// <value>
-        /// The name of the user or role.
+        /// The person id.
         /// </value>
-        public string UserOrRoleName { get; set; }
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group id.
+        /// </summary>
+        /// <value>
+        /// The group id.
+        /// </value>
+        public int? GroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -355,33 +373,43 @@ namespace Rock.Security
             get
             {
                 // All Users
-                if ( UserOrRoleName == "*AU" )
-                    return "All Users";
-
-                // All Authenticated Users
-                if ( UserOrRoleName == "*AAU" )
-                    return "All Authenticated Users";
-
-                // All Unauthenticated Users
-                if ( UserOrRoleName == "*AUU" )
-                    return "All Un-Authenticated Users";
-
-                if ( UserOrRole == "U" )
+                switch (SpecialRole)
                 {
-                    try
-                    {
-                        Rock.CRM.PersonService personService = new CRM.PersonService();
-                        Rock.CRM.Person person = personService.GetByGuid( new Guid( UserOrRoleName ) );
-                        return person.FullName + " (User)";
-                    }
-                    catch
-                    {
-                        return "*** Unknown User ***";
-                    }
-                }
-                else
-                {
-                    return Role.Read( UserOrRoleName ).Name + " (Role)";
+                    case CMS.SpecialRole.AllUsers:
+                        return "All Users";
+
+                    case CMS.SpecialRole.AllAuthenticatedUsers:
+                        return "All Authenticated Users";
+
+                    case CMS.SpecialRole.AllUnAuthenticatedUsers:
+                        return "All Un-Authenticated Users";
+
+                    default:
+
+                        if (PersonId.HasValue)
+                        {
+                            try
+                            {
+                                Rock.CRM.PersonService personService = new CRM.PersonService();
+                                Rock.CRM.Person person = personService.Get( PersonId.Value );
+                                if (person != null)
+                                    return person.FullName + " (User)";
+                            }
+                            catch {}
+                        }
+
+                        if (GroupId.HasValue)
+                        {
+                            try 
+                            {
+                                var role = Role.Read(GroupId.Value);
+                                if (role != null)
+                                    return role.Name + " (Role)";
+                            }
+                            catch {}
+                        }
+
+                        return "*** Unknown User/Role ***";
                 }
             }
         }
@@ -394,12 +422,13 @@ namespace Rock.Security
         /// <param name="userOrRole">User or Role ("U" or "R").</param>
         /// <param name="userOrRoleName">Name of the user or role.</param>
         /// <param name="order">The order.</param>
-        public AuthRule( int id, string allowOrDeny, string userOrRole, string userOrRoleName, int order )
+        public AuthRule( int id, string allowOrDeny, SpecialRole specialRole, int? personId, int? groupId, int order )
         {
             Id = id;
             AllowOrDeny = allowOrDeny;
-            UserOrRole = userOrRole;
-            UserOrRoleName = userOrRoleName;
+            SpecialRole = specialRole;
+            PersonId = personId;
+            GroupId = groupId;
             Order = order;
         }
     }

@@ -24,16 +24,6 @@ namespace Rock.CMS
     public partial class BlockService : Service<Rock.CMS.Block>
     {
 		/// <summary>
-		/// Gets Blocks by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Rock.CMS.Block> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Blocks by Name
 		/// </summary>
 		/// <param name="name">Name.</param>

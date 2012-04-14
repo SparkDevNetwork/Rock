@@ -61,22 +61,6 @@ namespace Rock.CMS.DTO
 		public int Order { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Allow Or Deny.
-		/// </summary>
-		/// <value>
-		/// A = Allow, D = Deny.
-		/// </value>
-		public string AllowOrDeny { get; set; }
-
-		/// <summary>
-		/// Gets or sets the User Or Role.
-		/// </summary>
-		/// <value>
-		/// U = User, R = Role.
-		/// </value>
-		public string UserOrRole { get; set; }
-
-		/// <summary>
 		/// Gets or sets the Action.
 		/// </summary>
 		/// <value>
@@ -85,12 +69,36 @@ namespace Rock.CMS.DTO
 		public string Action { get; set; }
 
 		/// <summary>
-		/// Gets or sets the User Or Role Name.
+		/// Gets or sets the Allow Or Deny.
 		/// </summary>
 		/// <value>
-		/// User Or Role Name.
+		/// A = Allow, D = Deny.
 		/// </value>
-		public string UserOrRoleName { get; set; }
+		public string AllowOrDeny { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Special Role.
+		/// </summary>
+		/// <value>
+		/// Enum[SpecialRole].
+		/// </value>
+		public int SpecialRole { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
+		public int? PersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Group Id.
+		/// </summary>
+		/// <value>
+		/// Group Id.
+		/// </value>
+		public int? GroupId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.

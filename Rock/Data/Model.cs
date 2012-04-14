@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 using System.Data.Services;
 using System.Data.Services.Common;
 using System.Runtime.Serialization;
@@ -39,6 +40,23 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets a publicly viewable unique key for the model.
+        /// </summary>
+        [NotMapped]
+        public string PublicKey
+        {
+            get
+            {
+                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                    encryptionPhrase = "Rock Rocks!";
+
+                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+            }
+        }
 
         /// <summary>
         /// Gets the validation results.

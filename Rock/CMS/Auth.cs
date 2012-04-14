@@ -55,24 +55,6 @@ namespace Rock.CMS
 		public int Order { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Allow Or Deny.
-		/// </summary>
-		/// <value>
-		/// A = Allow, D = Deny.
-		/// </value>
-		[DataMember]
-		public string AllowOrDeny { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the User Or Role.
-		/// </summary>
-		/// <value>
-		/// U = User, R = Role.
-		/// </value>
-		[DataMember]
-		public string UserOrRole { get; set; }
-		
-		/// <summary>
 		/// Gets or sets the Action.
 		/// </summary>
 		/// <value>
@@ -83,14 +65,53 @@ namespace Rock.CMS
 		public string Action { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the User Or Role Name.
+		/// Gets or sets the Allow Or Deny.
 		/// </summary>
 		/// <value>
-		/// User Or Role Name.
+		/// A = Allow, D = Deny.
 		/// </value>
-		[MaxLength( 100 )]
 		[DataMember]
-		public string UserOrRoleName { get; set; }
+		public string AllowOrDeny { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Special Role.
+		/// </summary>
+		/// <value>
+		/// Enum[SpecialRole].
+		/// </value>
+		[DataMember]
+		internal int SpecialRoleInternal { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Special Role.
+		/// </summary>
+		/// <value>
+		/// Enum[SpecialRole].
+		/// </value>
+		[NotMapped]
+		public SpecialRole SpecialRole
+		{
+			get { return (SpecialRole)this.SpecialRoleInternal; }
+			set { this.SpecialRoleInternal = (int)value; }
+		}
+		
+		/// <summary>
+		/// Gets or sets the Person Id.
+		/// </summary>
+		/// <value>
+		/// Person Id.
+		/// </value>
+		[DataMember]
+		public int? PersonId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Group Id.
+		/// </summary>
+		/// <value>
+		/// Group Id.
+		/// </value>
+		[DataMember]
+		public int? GroupId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -144,10 +165,11 @@ namespace Rock.CMS
 				dto.EntityType = this.EntityType;
 				dto.EntityId = this.EntityId;
 				dto.Order = this.Order;
-				dto.AllowOrDeny = this.AllowOrDeny;
-				dto.UserOrRole = this.UserOrRole;
 				dto.Action = this.Action;
-				dto.UserOrRoleName = this.UserOrRoleName;
+				dto.AllowOrDeny = this.AllowOrDeny;
+				dto.SpecialRole = this.SpecialRoleInternal;
+				dto.PersonId = this.PersonId;
+				dto.GroupId = this.GroupId;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -177,6 +199,22 @@ namespace Rock.CMS
         /// A <see cref="CRM.Person"/> object.
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Group.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Groups.Group"/> object.
+        /// </value>
+		public virtual Groups.Group Group { get; set; }
+        
+		/// <summary>
+        /// Gets or sets the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="CRM.Person"/> object.
+        /// </value>
+		public virtual CRM.Person Person { get; set; }
 
     }
     /// <summary>
@@ -189,8 +227,11 @@ namespace Rock.CMS
         /// </summary>
         public AuthConfiguration()
         {
+			this.Property( p => p.SpecialRoleInternal ).HasColumnName( "SpecialRole" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
 		}
     }
 }

@@ -58,7 +58,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			{
 				string anID = context.Request.QueryString[0];
 				int id;
-				cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByGuid( anID );
+				cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByPublicKey( anID );
 			}
 			else
 			{

@@ -24,16 +24,6 @@ namespace Rock.CRM
     public partial class PersonService : Service<Rock.CRM.Person>
     {
 		/// <summary>
-		/// Gets Person by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Person object.</returns>
-	    public Rock.CRM.Person GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets People by Email
 		/// </summary>
 		/// <param name="email">Email.</param>

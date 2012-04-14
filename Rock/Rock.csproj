@@ -78,6 +78,7 @@
     <Compile Include="Core\ExceptionLog.cs" />
     <Compile Include="Core\ExceptionLogService.cs" />
     <Compile Include="Core\IExceptionLogRepository.cs" />
+    <Compile Include="CRM\PersonTrail.Partial.cs" />
     <Compile Include="CRM\EntityPersonViewedRepository.cs" />
     <Compile Include="CRM\IPersonViewedRepository.cs" />
     <Compile Include="CRM\PersonTrailService.partial.cs" />
@@ -286,7 +287,6 @@
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
-    <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -452,7 +452,6 @@
     <Compile Include="CMS\BlogService.Partial.cs" />
     <Compile Include="CMS\AuthService.partial.cs" />
     <Compile Include="CMS\BlockInstanceService.partial.cs" />
-    <Compile Include="CMS\FileService.partial.cs" />
     <Compile Include="CMS\HtmlContentService.Partial.cs" />
     <Compile Include="CMS\ThemeService.partial.cs">
       <SubType>Code</SubType>

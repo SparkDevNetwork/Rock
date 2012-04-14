@@ -23,5 +23,15 @@ namespace Rock.Core
 	/// </summary>
     public partial class DefinedTypeService : Service<Rock.Core.DefinedType>
     {
+		/// <summary>
+		/// Gets Defined Type by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>DefinedType object.</returns>
+	    public Rock.Core.DefinedType GetByGuid( Guid guid )
+        {
+            return Repository.FirstOrDefault( t => t.Guid == guid );
+        }
+		
     }
 }
