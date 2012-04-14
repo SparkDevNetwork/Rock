@@ -24,16 +24,6 @@ namespace Rock.Groups
     public partial class GroupService : Service<Rock.Groups.Group>
     {
 		/// <summary>
-		/// Gets Group by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Group object.</returns>
-	    public Rock.Groups.Group GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Groups by Group Type Id
 		/// </summary>
 		/// <param name="groupTypeId">Group Type Id.</param>
@@ -41,6 +31,16 @@ namespace Rock.Groups
 	    public IEnumerable<Rock.Groups.Group> GetByGroupTypeId( int groupTypeId )
         {
             return Repository.Find( t => t.GroupTypeId == groupTypeId );
+        }
+		
+		/// <summary>
+		/// Gets Group by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>Group object.</returns>
+	    public Rock.Groups.Group GetByGuid( Guid guid )
+        {
+            return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 		
 		/// <summary>
