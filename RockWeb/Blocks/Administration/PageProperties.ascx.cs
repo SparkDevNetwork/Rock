@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 string script = "window.parent.closeModal()";
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, btnSave.GetType(), "close-modal", script, true );
             }
         }
 
