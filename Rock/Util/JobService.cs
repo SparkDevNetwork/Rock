@@ -23,15 +23,5 @@ namespace Rock.Util
 	/// </summary>
     public partial class JobService : Service<Rock.Util.Job>
     {
-		/// <summary>
-		/// Gets Jobs by Guid
-		/// </summary>
-		/// <param name="guid">Guid of the job..</param>
-		/// <returns>An enumerable list of Job objects.</returns>
-	    public IEnumerable<Rock.Util.Job> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
     }
 }

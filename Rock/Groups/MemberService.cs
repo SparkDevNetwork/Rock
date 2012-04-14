@@ -46,16 +46,6 @@ namespace Rock.Groups
         }
 		
 		/// <summary>
-		/// Gets Members by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Member objects.</returns>
-	    public IEnumerable<Rock.Groups.Member> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Members by Person Id
 		/// </summary>
 		/// <param name="personId">Person Id.</param>

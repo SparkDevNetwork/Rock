@@ -24,16 +24,6 @@ namespace Rock.CMS
     public partial class PageService : Service<Rock.CMS.Page>
     {
 		/// <summary>
-		/// Gets Pages by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Page objects.</returns>
-	    public IEnumerable<Rock.CMS.Page> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid ).OrderBy( t => t.Order );
-        }
-		
-		/// <summary>
 		/// Gets Pages by Parent Page Id
 		/// </summary>
 		/// <param name="parentPageId">Parent Page Id.</param>

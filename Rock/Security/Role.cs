@@ -28,11 +28,6 @@ namespace Rock.Security
         public int Id { get; private set; }
 
         /// <summary>
-        /// Gets the GUID.
-        /// </summary>
-        public Guid Guid { get; private set; }
-
-        /// <summary>
         /// Gets the name.
         /// </summary>
         public string Name { get; private set; }
@@ -54,9 +49,9 @@ namespace Rock.Security
 
         #region Static Methods
 
-        private static string CacheKey( Guid guid )
+        private static string CacheKey( int id )
         {
-            return string.Format( "Rock:Role:{0}", guid );
+            return string.Format( "Rock:Role:{0}", id );
         }
 
         /// <summary>
@@ -65,13 +60,9 @@ namespace Rock.Security
         /// </summary>
         /// <param name="roleGuid"></param>
         /// <returns></returns>
-        public static Role Read( string roleGuid )
+        public static Role Read( int id )
         {
-            Guid guid;
-            if ( !Guid.TryParse( roleGuid, out guid ) )
-                throw new ArgumentOutOfRangeException( "roleGuid", "Not a valid Guid" );
-
-            string cacheKey = Role.CacheKey( guid );
+            string cacheKey = Role.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
             Role role = cache[cacheKey] as Role;
@@ -81,14 +72,12 @@ namespace Rock.Security
             else
             {
                 Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
-                Rock.Groups.Group groupModel = groupService.
-                    Queryable().
-                    Where( g => g.Guid == guid && g.IsSecurityRole == true).FirstOrDefault();
-                if ( groupModel != null )
+                Rock.Groups.Group groupModel = groupService.Get( id );
+
+                if ( groupModel != null && groupModel.IsSecurityRole == true )
                 {
                     role = new Role();
                     role.Id = groupModel.Id;
-                    role.Guid = groupModel.Guid;
                     role.Name = groupModel.Name;
                     role.Users = new List<string>();
 
@@ -114,10 +103,10 @@ namespace Rock.Security
             List<Role> roles = new List<Role>();
 
             Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
-            foreach(Guid guid in groupService.
-                Queryable().Where( g => g.IsSecurityRole == true).Select( g => g.Guid).ToList())
+            foreach(int id in groupService.
+                Queryable().Where( g => g.IsSecurityRole == true).Select( g => g.Id).ToList())
             {
-                roles.Add( Role.Read( guid.ToString() ) );
+                roles.Add( Role.Read( id ) );
             }
 
             return roles;
@@ -127,10 +116,10 @@ namespace Rock.Security
         /// Removes role from cache
         /// </summary>
         /// <param name="guid"></param>
-        public static void Flush( Guid guid )
+        public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Role.CacheKey( guid ) );
+            cache.Remove( Role.CacheKey( id ) );
         }
 
         #endregion

@@ -70,6 +70,7 @@ namespace Rock.Core
 		/// <value>
 		/// Entity Qualifier Value.
 		/// </value>
+		[MaxLength( 200 )]
 		[DataMember]
 		public string EntityQualifierValue { get; set; }
 		

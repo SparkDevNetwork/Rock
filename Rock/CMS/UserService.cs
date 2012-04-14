@@ -34,16 +34,6 @@ namespace Rock.CMS
         }
 		
 		/// <summary>
-		/// Gets User by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>User object.</returns>
-	    public Rock.CMS.User GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Users by Person Id
 		/// </summary>
 		/// <param name="personId">Person Id.</param>

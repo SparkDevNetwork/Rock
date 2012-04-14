@@ -23,15 +23,5 @@ namespace Rock.CMS
 	/// </summary>
     public partial class SiteService : Service<Rock.CMS.Site>
     {
-		/// <summary>
-		/// Gets Sites by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of Site objects.</returns>
-	    public IEnumerable<Rock.CMS.Site> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
     }
 }

@@ -175,7 +175,7 @@ namespace Rock.CMS
                     string[] idParts = identifier.Split( '|' );
                     if ( idParts.Length == 4 )
                     {
-                        string guid = idParts[1];
+                        string publicKey = idParts[1];
                         string username = idParts[2];
                         long ticks = 0;
                         if (!long.TryParse(idParts[3], out ticks))
@@ -186,7 +186,7 @@ namespace Rock.CMS
                         if (DateTime.Now.Subtract(dateTime).Hours > 1)
                             return null;
 
-                        User user = this.GetByGuid( new Guid( guid ) );
+                        User user = this.GetByPublicKey ( publicKey );
                         if ( user.UserName == username )
                             return user;
                     }

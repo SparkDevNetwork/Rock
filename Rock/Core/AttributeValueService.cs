@@ -44,15 +44,5 @@ namespace Rock.Core
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 		
-		/// <summary>
-		/// Gets Attribute Values by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of AttributeValue objects.</returns>
-	    public IEnumerable<Rock.Core.AttributeValue> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
     }
 }

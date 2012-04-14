@@ -24,16 +24,6 @@ namespace Rock.Core
     public partial class FieldTypeService : Service<Rock.Core.FieldType>
     {
 		/// <summary>
-		/// Gets Field Types by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of FieldType objects.</returns>
-	    public IEnumerable<Rock.Core.FieldType> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Field Types by Name
 		/// </summary>
 		/// <param name="name">Name.</param>

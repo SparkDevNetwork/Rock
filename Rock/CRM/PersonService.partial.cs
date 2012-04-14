@@ -96,12 +96,12 @@ namespace Rock.CRM
         /// <returns>
         /// Person object.
         /// </returns>
-        public Rock.CRM.Person GetByGuid( Guid guid, bool followTrail )
+        public Rock.CRM.Person GetByPublicKey( string publicKey, bool followTrail )
         {
             if ( followTrail )
-                guid = new PersonTrailService().Current( guid );
+                publicKey = new PersonTrailService().Current( publicKey );
 
-            return GetByGuid( guid );
+            return GetByPublicKey( publicKey );
         }
     }
 }

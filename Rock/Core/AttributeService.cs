@@ -30,17 +30,20 @@ namespace Rock.Core
 		/// <returns>An enumerable list of Attribute objects.</returns>
 	    public IEnumerable<Rock.Core.Attribute> GetByEntity( string entity )
         {
-            return Repository.Find( t => t.Entity == entity ).OrderBy( t => t.Order );
+            return Repository.Find( t => ( t.Entity == entity || ( entity == null && t.Entity == null ) ) ).OrderBy( t => t.Order );
         }
 		
 		/// <summary>
-		/// Gets Attribute by Guid
+		/// Gets Attribute by Entity And Entity Qualifier Column And Entity Qualifier Value And Key
 		/// </summary>
-		/// <param name="guid">Guid.</param>
+		/// <param name="entity">Entity.</param>
+		/// <param name="entityQualifierColumn">Entity Qualifier Column.</param>
+		/// <param name="entityQualifierValue">Entity Qualifier Value.</param>
+		/// <param name="key">Key.</param>
 		/// <returns>Attribute object.</returns>
-	    public Rock.Core.Attribute GetByGuid( Guid guid )
+	    public Rock.Core.Attribute GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey( string entity, string entityQualifierColumn, string entityQualifierValue, string key )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Repository.FirstOrDefault( t => ( t.Entity == entity || ( entity == null && t.Entity == null ) ) && ( t.EntityQualifierColumn == entityQualifierColumn || ( entityQualifierColumn == null && t.EntityQualifierColumn == null ) ) && ( t.EntityQualifierValue == entityQualifierValue || ( entityQualifierValue == null && t.EntityQualifierValue == null ) ) && t.Key == key );
         }
 		
     }

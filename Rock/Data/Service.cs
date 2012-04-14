@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 
 namespace Rock.Data
@@ -58,6 +59,37 @@ namespace Rock.Data
         public T Get( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
+        }
+
+        public T GetByPublicKey( string publicKey )
+        {
+            try
+            {
+                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                    encryptionPhrase = "Rock Rocks!";
+
+                string identifier = Rock.Security.Encryption.DecryptString( publicKey, encryptionPhrase );
+
+                string[] idParts = identifier.Split( '>' );
+                if ( idParts.Length == 2 )
+                {
+                    int id = Int32.Parse( idParts[0] );
+                    Guid guid = new Guid( idParts[1] );
+
+                    T model = Get( id );
+
+                    if ( model != null && model.Guid.CompareTo(guid) == 0  )
+                        return model;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+
         }
 
         /// <summary>

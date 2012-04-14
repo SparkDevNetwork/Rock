@@ -224,10 +224,24 @@ namespace RockWeb.Blocks.Administration
                     bool actionUpdated = false;
                     bool alreadyExists = false;
 
+                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    int? groupId = Int32.Parse(ddlRoles.SelectedValue);
+
+                    switch(groupId)
+                    {
+                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                    }
+
+                    if (groupId < 0)
+                        groupId = null;
+
                     foreach ( Rock.Security.AuthRule rule in
                         Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, li.Text ) )
                     {
-                        if ( rule.UserOrRole == "R" && rule.UserOrRoleName == ddlRoles.SelectedValue )
+                        if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {
                             alreadyExists = true;
                             break;
@@ -241,8 +255,8 @@ namespace RockWeb.Blocks.Administration
                         auth.EntityId = iSecured.Id;
                         auth.Action = li.Text;
                         auth.AllowOrDeny = "A";
-                        auth.UserOrRole = "R";
-                        auth.UserOrRoleName = ddlRoles.SelectedValue;
+                        auth.SpecialRole = specialRole;
+                        auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
                         authService.Add( auth, CurrentPersonId );
                         authService.Save( auth, CurrentPersonId );
@@ -264,7 +278,7 @@ namespace RockWeb.Blocks.Administration
         protected void lbUserSearch_Click( object sender, EventArgs e )
         {
             cbUsers.DataTextField = "FullName";
-            cbUsers.DataValueField = "Guid";
+            cbUsers.DataValueField = "Id";
             cbUsers.DataSource = new Rock.CRM.PersonService().GetByFullName( tbUser.Text ).ToList();
             cbUsers.DataBind();
         }
@@ -284,8 +298,10 @@ namespace RockWeb.Blocks.Administration
                 {
                     bool alreadyExists = false;
 
+                    int personId = Int32.Parse( li.Value );
+
                     foreach ( Rock.Security.AuthRule auth in existingAuths )
-                        if ( auth.UserOrRole == "U" && auth.UserOrRoleName == li.Value )
+                        if ( auth.PersonId.HasValue && auth.PersonId.Value == personId)
                         {
                             alreadyExists = true;
                             break;
@@ -298,8 +314,8 @@ namespace RockWeb.Blocks.Administration
                         auth.EntityId = iSecured.Id;
                         auth.Action = CurrentAction;
                         auth.AllowOrDeny = "A";
-                        auth.UserOrRole = "U";
-                        auth.UserOrRoleName = li.Value;
+                        auth.SpecialRole = Rock.CMS.SpecialRole.None;
+                        auth.PersonId = personId;
                         auth.Order = ++maxOrder;
                         authService.Add( auth, CurrentPersonId );
                         authService.Save( auth, CurrentPersonId );
@@ -336,12 +352,12 @@ namespace RockWeb.Blocks.Administration
         {
             ddlRoles.Items.Clear();
 
-            ddlRoles.Items.Add(new ListItem("[All Users]", "*AU"));
-            ddlRoles.Items.Add(new ListItem("[All Authenticated Users]", "*AAU"));
-            ddlRoles.Items.Add(new ListItem("[All Un-Authenticated Users]", "*AUU"));
+            ddlRoles.Items.Add(new ListItem("[All Users]", "-1"));
+            ddlRoles.Items.Add(new ListItem("[All Authenticated Users]", "-2"));
+            ddlRoles.Items.Add(new ListItem("[All Un-Authenticated Users]", "-3"));
 
             foreach(var role in Rock.Security.Role.AllRoles())
-                ddlRoles.Items.Add(new ListItem(role.Name, role.Guid.ToString()));
+                ddlRoles.Items.Add(new ListItem(role.Name, role.Id.ToString()));
         }
 
         protected string GetTabClass( object action )
@@ -375,10 +391,25 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     bool alreadyAdded = false;
+
+                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    int? groupId = Int32.Parse( ddlRoles.SelectedValue );
+
+                    switch ( groupId )
+                    {
+                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                    }
+
+                    if ( groupId < 0 )
+                        groupId = null;
+
                     foreach ( Rock.Security.AuthRule rule in
                         Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, action ) )
                     {
-                        if ( rule.UserOrRole == "R" && rule.UserOrRoleName == ddlRoles.SelectedValue )
+                        if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {
                             alreadyAdded = true;
                             break;

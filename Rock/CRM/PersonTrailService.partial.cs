@@ -17,15 +17,15 @@ namespace Rock.CRM
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public Guid Current( Guid guid )
+        public string Current( string publicKey )
         {
-            PersonTrail personTrail = GetByGuid( guid );
+            PersonTrail personTrail = GetByPublicKey ( publicKey );
             while ( personTrail != null )
             {
-                guid = personTrail.Guid;
-                personTrail = GetByGuid( guid );
+                publicKey = personTrail.CurrentPublicKey;
+                personTrail = GetByPublicKey( publicKey );
             }
-            return guid;
+            return publicKey;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.CRM
             PersonTrail personTrail = Get( id );
             while ( personTrail != null )
             {
-                id = personTrail.Id;
+                id = personTrail.CurrentId;
                 personTrail = Get( id );
             }
             return id;

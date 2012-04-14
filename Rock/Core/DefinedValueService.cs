@@ -33,5 +33,15 @@ namespace Rock.Core
             return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }
 		
+		/// <summary>
+		/// Gets Defined Value by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>DefinedValue object.</returns>
+	    public Rock.Core.DefinedValue GetByGuid( Guid guid )
+        {
+            return Repository.FirstOrDefault( t => t.Guid == guid );
+        }
+		
     }
 }

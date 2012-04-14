@@ -26,20 +26,13 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Gets the attributes by entity qualifier and key.
+        /// Gets a global attribute.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public Rock.Core.Attribute GetAttributeByEntityQualifierAndKey( string entity, string entityQualifierColumn, string entityQualifierValue, string key )
+        public Rock.Core.Attribute GetGlobalAttribute( string key )
         {
-            return Repository.FirstOrDefault( t =>
-                t.Entity == entity &&
-                t.EntityQualifierColumn == entityQualifierColumn &&
-                t.EntityQualifierValue == entityQualifierValue &&
-                t.Key == key );
+            return this.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey( string.Empty, string.Empty, string.Empty, key );
         }
     }
 }

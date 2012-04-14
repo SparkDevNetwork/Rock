@@ -34,16 +34,6 @@ namespace Rock.CMS
         }
 		
 		/// <summary>
-		/// Gets Site Domains by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>An enumerable list of SiteDomain objects.</returns>
-	    public IEnumerable<Rock.CMS.SiteDomain> GetByGuid( Guid guid )
-        {
-            return Repository.Find( t => t.Guid == guid );
-        }
-		
-		/// <summary>
 		/// Gets Site Domains by Site Id And Domain
 		/// </summary>
 		/// <param name="siteId">Site Id.</param>
