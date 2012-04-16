@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Blog Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int BlogId { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -153,8 +155,8 @@ namespace Rock.CMS
         /// </summary>
         public BlogCategoryConfiguration()
         {
-			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategories ).Map( m => { m.MapLeftKey("BlogPostId"); m.MapRightKey("BlogCategoryId"); m.ToTable("cmsBlogPostCategory" ); } );
-			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogCategories ).HasForeignKey( p => p.BlogId ).WillCascadeOnDelete(true);
+			this.HasMany( p => p.BlogPosts ).WithMany( c => c.BlogCategories ).Map( m => { m.MapLeftKey("BlogCategoryId"); m.MapRightKey("BlogPostId"); m.ToTable("cmsBlogPostCategory" ); } );
+			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogCategories ).HasForeignKey( p => p.BlogId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

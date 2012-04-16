@@ -39,7 +39,11 @@ namespace Rock.Data
         /// The GUID.
         /// </value>
         [DataMember]
-        public Guid Guid { get; set; }
+        public Guid Guid { 
+            get { return _guid; }
+            set { _guid = value; }
+        }
+        private Guid _guid = Guid.NewGuid();
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.

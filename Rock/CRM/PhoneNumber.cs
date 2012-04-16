@@ -32,6 +32,7 @@ namespace Rock.CRM
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Person Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int PersonId { get; set; }
 		
@@ -50,6 +52,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Number.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Number { get; set; }

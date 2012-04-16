@@ -50,6 +50,7 @@ namespace Rock.Util
 		/// <value>
 		/// Friendly name for the job..
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -80,6 +81,7 @@ namespace Rock.Util
 		/// <value>
 		/// The class name of the job to run..
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Class { get; set; }
@@ -90,6 +92,7 @@ namespace Rock.Util
 		/// <value>
 		/// The cron expression that is used to determine the schedule of the job (see http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger for syntax.).
 		/// </value>
+		[Required]
 		[MaxLength( 120 )]
 		[DataMember]
 		public string CronExpression { get; set; }
@@ -166,6 +169,7 @@ namespace Rock.Util
 		/// <value>
 		/// States that should be used to determine when to notify (valid values = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
 		/// </value>
+		[Required]
 		[DataMember]
 		internal int NotificationStatusInternal { get; set; }
 

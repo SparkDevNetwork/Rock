@@ -32,9 +32,9 @@ namespace Rock.CMS
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[TrackChanges]
-		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
 		
@@ -54,6 +54,7 @@ namespace Rock.CMS
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -91,6 +92,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Requires Encryption.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool RequiresEncryption { get; set; }
 		
@@ -100,8 +102,14 @@ namespace Rock.CMS
 		/// <value>
 		/// Enable View State.
 		/// </value>
+		[Required]
 		[DataMember]
-		public bool EnableViewState { get; set; }
+        public bool EnableViewState
+        {
+            get { return _enableViewState; }
+            set { _enableViewState = value; }
+        }
+        private bool _enableViewState = true;
 		
 		/// <summary>
 		/// Gets or sets the Menu Display Description.
@@ -109,6 +117,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Menu Display Description.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool MenuDisplayDescription { get; set; }
 		
@@ -118,6 +127,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Menu Display Icon.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool MenuDisplayIcon { get; set; }
 		
@@ -127,6 +137,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Menu Display Child Pages.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool MenuDisplayChildPages { get; set; }
 		
@@ -141,6 +152,7 @@ namespace Rock.CMS
 		/// 
 		/// Enum[DisplayInNavWhen].
 		/// </value>
+		[Required]
 		[DataMember]
 		internal int DisplayInNavWhenInternal { get; set; }
 
@@ -168,6 +180,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Order.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int Order { get; set; }
 		
@@ -177,6 +190,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Output Cache Duration.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
@@ -195,8 +209,14 @@ namespace Rock.CMS
 		/// <value>
 		/// Include Admin Footer.
 		/// </value>
+		[Required]
 		[DataMember]
-		public bool IncludeAdminFooter { get; set; }
+        public bool IncludeAdminFooter
+        {
+            get { return _includeAdminFooter; }
+            set { _includeAdminFooter = value; }
+        }
+        private bool _includeAdminFooter = true;
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.

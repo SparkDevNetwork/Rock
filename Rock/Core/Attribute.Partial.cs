@@ -34,18 +34,4 @@ namespace Rock.Core
             get { return new Security.GenericEntity( "Global" ); }
         }
     }
-
-#pragma warning disable
-
-    public class CommentPage
-    {
-        [Required( ErrorMessage = "Key is required" )]
-        public string Key { get; set; }
-
-        [Required( ErrorMessage = "Name is required" )]
-        public string Name { get; set; }
-    }
-
-#pragma warning restore
-
 }

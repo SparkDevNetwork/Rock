@@ -190,6 +190,14 @@ namespace Rock<#= projectNamespace #>
 						}
 					}
 				
+					// Add the [Required] attribute for all non-nullable columns
+					if (!column.Nullable && !column.Identity)
+					{
+#>
+		[Required]
+<#
+					}
+				
 					// If the column is a varchar with a specific length, add the [MaxLength]
 					// validation attribute
 					if ((column.DataType.ToString() == "varchar" || column.DataType.ToString() == "nvarchar") && column.DataType.MaximumLength > 0)
@@ -478,8 +486,8 @@ namespace Rock<#= projectNamespace #>
 }
 <#
 			// Write the POCO model
-		    relativeOutputFilePath = @"..\..\" + projectSubFolder + Entity + ".cs";
-		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
+//		    relativeOutputFilePath = @"..\..\" + projectSubFolder + Entity + ".cs";
+//		    TemplateHelper.WriteTemplateOutputToFile(relativeOutputFilePath, Host, GenerationEnvironment);
 			
 		    GenerationEnvironment = new System.Text.StringBuilder();
 			

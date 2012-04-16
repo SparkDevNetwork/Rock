@@ -9,7 +9,7 @@ namespace Rock.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
         }
 
         protected override void Seed(Rock.Data.RockContext context)

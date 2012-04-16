@@ -237,7 +237,14 @@
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
+    <Compile Include="Migrations\201204161500249_CreateDatabase.cs" />
+    <Compile Include="Migrations\201204161500249_CreateDatabase.Designer.cs">
+      <DependentUpon>201204161500249_CreateDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\CreateDatabase.Partial.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />

@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Temporary.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool Temporary { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CMS
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -69,6 +71,7 @@ namespace Rock.CMS
 		/// <value>
 		/// File Name.
 		/// </value>
+		[Required]
 		[MaxLength( 255 )]
 		[DataMember]
 		public string FileName { get; set; }
@@ -79,6 +82,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Mime Type.
 		/// </value>
+		[Required]
 		[MaxLength( 255 )]
 		[DataMember]
 		public string MimeType { get; set; }

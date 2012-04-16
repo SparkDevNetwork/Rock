@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Site Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int SiteId { get; set; }
 		
@@ -50,6 +52,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Domain.
 		/// </value>
+		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Domain { get; set; }

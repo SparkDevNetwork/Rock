@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Post Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int PostId { get; set; }
 		
@@ -50,6 +51,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Person Name.
 		/// </value>
+		[Required]
 		[MaxLength( 250 )]
 		[DataMember]
 		public string PersonName { get; set; }
@@ -69,6 +71,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Email Address.
 		/// </value>
+		[Required]
 		[MaxLength( 150 )]
 		[DataMember]
 		public string EmailAddress { get; set; }
@@ -79,6 +82,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Comment.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string Comment { get; set; }
 		

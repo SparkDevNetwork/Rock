@@ -32,6 +32,7 @@ namespace Rock.Core
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.Core
 		/// <value>
 		/// Field Type Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int FieldTypeId { get; set; }
 		
@@ -80,8 +82,8 @@ namespace Rock.Core
 		/// <value>
 		/// Key.
 		/// </value>
+		[Required]
 		[MaxLength( 50 )]
-		[Required( ErrorMessage = "Key is required" )]
 		[DataMember]
 		public string Key { get; set; }
 		
@@ -91,8 +93,8 @@ namespace Rock.Core
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
-		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
 		
@@ -121,6 +123,7 @@ namespace Rock.Core
 		/// <value>
 		/// Order.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int Order { get; set; }
 		
@@ -130,6 +133,7 @@ namespace Rock.Core
 		/// <value>
 		/// Grid Column.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool GridColumn { get; set; }
 		
@@ -139,6 +143,7 @@ namespace Rock.Core
 		/// <value>
 		/// Default Value.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string DefaultValue { get; set; }
 		
@@ -148,6 +153,7 @@ namespace Rock.Core
 		/// <value>
 		/// Multi Value.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool MultiValue { get; set; }
 		
@@ -157,6 +163,7 @@ namespace Rock.Core
 		/// <value>
 		/// Required.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool Required { get; set; }
 		

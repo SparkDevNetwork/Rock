@@ -80,6 +80,7 @@ namespace Rock.Core
 		/// <value>
 		/// Success.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool Success { get; set; }
 		

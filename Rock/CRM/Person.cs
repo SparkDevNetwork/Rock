@@ -32,6 +32,7 @@ namespace Rock.CRM
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -89,8 +90,8 @@ namespace Rock.CRM
 		[MaxLength( 50 )]
 		[DataMember]
 		public string GivenName { get; set; }
-		
-		/// <summary>
+
+        /// <summary>
 		/// Gets or sets the Nick Name.
 		/// </summary>
 		/// <value>
@@ -100,8 +101,8 @@ namespace Rock.CRM
 		[TrackChanges]
 		[DataMember]
 		public string NickName { get; set; }
-		
-		/// <summary>
+
+        /// <summary>
 		/// Gets or sets the Last Name.
 		/// </summary>
 		/// <value>
@@ -241,6 +242,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Do Not Email.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool DoNotEmail { get; set; }
 		

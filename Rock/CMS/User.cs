@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// User Name.
 		/// </value>
+		[Required]
 		[MaxLength( 255 )]
 		[DataMember]
 		public string UserName { get; set; }
@@ -42,8 +43,14 @@ namespace Rock.CMS
 		/// <value>
 		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
 		/// </value>
+		[Required]
 		[DataMember]
-		internal int AuthenticationTypeInternal { get; set; }
+        public int AuthenticationTypeInternal
+        {
+            get { return _authenticationTypeInternal; }
+            set { _authenticationTypeInternal = value; }
+        }
+        private int _authenticationTypeInternal = 1;
 
 		/// <summary>
 		/// Gets or sets the Authentication Type.
@@ -64,6 +71,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Password.
 		/// </value>
+		[Required]
 		[MaxLength( 128 )]
 		[DataMember]
 		public string Password { get; set; }

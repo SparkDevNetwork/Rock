@@ -32,6 +32,7 @@ namespace Rock.Core
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.Core
 		/// <value>
 		/// Attribute Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int AttributeId { get; set; }
 		

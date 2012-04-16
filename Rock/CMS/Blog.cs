@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 75 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -62,8 +63,14 @@ namespace Rock.CMS
 		/// <value>
 		/// Moderate Comments.
 		/// </value>
+		[Required]
 		[DataMember]
-		public bool ModerateComments { get; set; }
+        public bool ModerateComments
+        {
+            get { return _moderateComments; }
+            set { _moderateComments = value; }
+        }
+        private bool _moderateComments = true;
 		
 		/// <summary>
 		/// Gets or sets the Public Publishing Point.
@@ -101,8 +108,14 @@ namespace Rock.CMS
 		/// <value>
 		/// Allow Comments.
 		/// </value>
+		[Required]
 		[DataMember]
-		public bool AllowComments { get; set; }
+        public bool AllowComments
+        {
+            get { return _allowComments; }
+            set { _allowComments = value; }
+        }
+        private bool _allowComments = true;
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.

@@ -32,6 +32,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Current Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int CurrentId { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Current Guid.
 		/// </value>
+		[Required]
 		[DataMember]
 		public Guid CurrentGuid { get; set; }
 		

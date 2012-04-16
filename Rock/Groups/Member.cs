@@ -32,6 +32,7 @@ namespace Rock.Groups
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.Groups
 		/// <value>
 		/// Group Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int GroupId { get; set; }
 		
@@ -50,6 +52,7 @@ namespace Rock.Groups
 		/// <value>
 		/// Person Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int PersonId { get; set; }
 		
@@ -59,6 +62,7 @@ namespace Rock.Groups
 		/// <value>
 		/// Group Role Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int GroupRoleId { get; set; }
 		
