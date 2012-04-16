@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 
 namespace Rock.Data
@@ -65,11 +64,7 @@ namespace Rock.Data
         {
             try
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
-
-                string identifier = Rock.Security.Encryption.DecryptString( publicKey, encryptionPhrase );
+                string identifier = Rock.Security.Encryption.DecryptString( publicKey );
 
                 string[] idParts = identifier.Split( '>' );
                 if ( idParts.Length == 2 )

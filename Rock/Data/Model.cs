@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Configuration;
 using System.Data.Services;
 using System.Data.Services.Common;
 using System.Runtime.Serialization;
@@ -53,12 +52,8 @@ namespace Rock.Data
         {
             get
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
-
                 string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
 

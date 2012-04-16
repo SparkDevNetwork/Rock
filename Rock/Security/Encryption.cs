@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Security.Cryptography;
 
 namespace Rock.Security
@@ -14,8 +15,12 @@ namespace Rock.Security
         /// <param name="Message">The string to encrypt.</param>
         /// <param name="Passphrase">The passphrase to use.</param>
         /// <returns></returns>
-        public static string EncryptString( string Message, string Passphrase )
+        public static string EncryptString( string Message )
         {
+            string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+            if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                encryptionPhrase = "Rock Rocks!";
+
             byte[] Results;
             System.Text.UTF8Encoding UTF8 = new System.Text.UTF8Encoding();
 
@@ -24,7 +29,7 @@ namespace Rock.Security
             // which is a valid length for the TripleDES encoder we use below
 
             MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider();
-            byte[] TDESKey = HashProvider.ComputeHash( UTF8.GetBytes( Passphrase ) );
+            byte[] TDESKey = HashProvider.ComputeHash( UTF8.GetBytes( encryptionPhrase ) );
 
             // Step 2. Create a new TripleDESCryptoServiceProvider object
             TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider();
@@ -60,8 +65,12 @@ namespace Rock.Security
         /// <param name="Message">The string to decrypt.</param>
         /// <param name="Passphrase">The passphrase to use.</param>
         /// <returns></returns>
-        public static string DecryptString( string Message, string Passphrase )
+        public static string DecryptString( string Message )
         {
+            string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
+            if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
+                encryptionPhrase = "Rock Rocks!";
+
             byte[] Results;
             System.Text.UTF8Encoding UTF8 = new System.Text.UTF8Encoding();
 
@@ -70,7 +79,7 @@ namespace Rock.Security
             // which is a valid length for the TripleDES encoder we use below
 
             MD5CryptoServiceProvider HashProvider = new MD5CryptoServiceProvider();
-            byte[] TDESKey = HashProvider.ComputeHash( UTF8.GetBytes( Passphrase ) );
+            byte[] TDESKey = HashProvider.ComputeHash( UTF8.GetBytes( encryptionPhrase ) );
 
             // Step 2. Create a new TripleDESCryptoServiceProvider object
             TripleDESCryptoServiceProvider TDESAlgorithm = new TripleDESCryptoServiceProvider();

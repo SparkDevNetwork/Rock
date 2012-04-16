@@ -5,7 +5,6 @@
 //
 
 using System;
-using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -162,12 +161,8 @@ namespace Rock.CMS
         {
             if ( !string.IsNullOrEmpty( code ) )
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
-
                 string identifier = string.Empty;
-                try { identifier = Rock.Security.Encryption.DecryptString( code, encryptionPhrase ); }
+                try { identifier = Rock.Security.Encryption.DecryptString( code ); }
                 catch { }
 
                 if ( identifier.StartsWith( "ROCK|" ) )

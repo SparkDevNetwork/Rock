@@ -5,7 +5,6 @@
 //
 
 using System;
-using System.Configuration;
 using System.ComponentModel.DataAnnotations;
 
 using Rock.Data;
@@ -86,12 +85,8 @@ namespace Rock.CRM
         {
             get
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if (String.IsNullOrWhiteSpace(encryptionPhrase))
-                    encryptionPhrase = "Rock Rocks!";
-
                 string identifier = this.Guid.ToString() + "|" + this.Id.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
     }
