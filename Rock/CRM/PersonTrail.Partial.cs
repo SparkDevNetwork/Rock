@@ -4,11 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System;
-using System.Configuration;
 using System.ComponentModel.DataAnnotations;
-
-using Rock.Data;
 
 namespace Rock.CRM
 {
@@ -22,12 +18,8 @@ namespace Rock.CRM
         {
             get
             {
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
-
                 string identifier = this.CurrentId.ToString() + ">" + this.CurrentGuid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
 

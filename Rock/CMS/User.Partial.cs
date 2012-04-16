@@ -5,7 +5,6 @@
 //
 
 using System;
-using System.Configuration;
 using System.Security.Principal;
 using System.Threading;
 using System.Web;
@@ -33,10 +32,7 @@ namespace Rock.CMS
             get
             {
                 string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.PublicKey.ToString(), this.UserName, DateTime.Now.Ticks );
-                string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-                if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                    encryptionPhrase = "Rock Rocks!";
-                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier, encryptionPhrase );
+                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
                 return encryptedCode;
             }
         }

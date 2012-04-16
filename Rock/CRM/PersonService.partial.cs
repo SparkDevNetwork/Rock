@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Configuration;
 using System.Linq;
 
 namespace Rock.CRM
@@ -42,11 +41,7 @@ namespace Rock.CRM
         /// <returns></returns>
         public Person GetByEncryptedID( string encryptedID )
         {
-            string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
-            if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                encryptionPhrase = "Rock Rocks!";
-
-            string identifier = Rock.Security.Encryption.DecryptString( encryptedID, encryptionPhrase );
+            string identifier = Rock.Security.Encryption.DecryptString( encryptedID );
 
             string[] idParts = identifier.Split( '|' );
             if ( idParts.Length == 2 )
