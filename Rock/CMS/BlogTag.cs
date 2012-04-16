@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Blog Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int BlogId { get; set; }
 		
@@ -97,7 +98,7 @@ namespace Rock.CMS
         /// </summary>
         public BlogTagConfiguration()
         {
-			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogTags ).HasForeignKey( p => p.BlogId ).WillCascadeOnDelete(true);
+			this.HasRequired( p => p.Blog ).WithMany( p => p.BlogTags ).HasForeignKey( p => p.BlogId ).WillCascadeOnDelete(false);
 		}
     }
 }

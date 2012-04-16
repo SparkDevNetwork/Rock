@@ -32,6 +32,7 @@ namespace Rock.Core
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.Core
 		/// <value>
 		/// Attribute Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int AttributeId { get; set; }
 		
@@ -50,6 +52,7 @@ namespace Rock.Core
 		/// <value>
 		/// Key.
 		/// </value>
+		[Required]
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Key { get; set; }
@@ -60,6 +63,7 @@ namespace Rock.Core
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }
@@ -70,6 +74,7 @@ namespace Rock.Core
 		/// <value>
 		/// Value.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string Value { get; set; }
 		

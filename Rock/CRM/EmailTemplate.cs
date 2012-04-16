@@ -32,6 +32,7 @@ namespace Rock.CRM
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -60,6 +61,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Title.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Title { get; set; }
@@ -107,6 +109,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Subject.
 		/// </value>
+		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Subject { get; set; }
@@ -117,6 +120,7 @@ namespace Rock.CRM
 		/// <value>
 		/// Body.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string Body { get; set; }
 		

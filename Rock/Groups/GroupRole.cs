@@ -32,6 +32,7 @@ namespace Rock.Groups
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -51,6 +52,7 @@ namespace Rock.Groups
 		/// <value>
 		/// Description.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string Description { get; set; }
 		

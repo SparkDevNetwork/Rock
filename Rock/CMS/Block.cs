@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Path.
 		/// </value>
+		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
 		public string Path { get; set; }
@@ -51,6 +53,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Name.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Name { get; set; }

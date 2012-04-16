@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// System.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool System { get; set; }
 		
@@ -60,6 +61,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Block Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int BlockId { get; set; }
 		
@@ -69,6 +71,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Zone.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Zone { get; set; }
@@ -79,6 +82,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Order.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int Order { get; set; }
 		
@@ -100,6 +104,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Output Cache Duration.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		

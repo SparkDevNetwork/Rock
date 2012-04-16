@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Entity Type.
 		/// </value>
+		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
 		public string EntityType { get; set; }
@@ -51,6 +52,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Order.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int Order { get; set; }
 		
@@ -60,6 +62,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Action.
 		/// </value>
+		[Required]
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Action { get; set; }
@@ -70,6 +73,8 @@ namespace Rock.CMS
 		/// <value>
 		/// A = Allow, D = Deny.
 		/// </value>
+		[Required]
+		[MaxLength( 1 )]
 		[DataMember]
 		public string AllowOrDeny { get; set; }
 		
@@ -79,6 +84,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Enum[SpecialRole].
 		/// </value>
+		[Required]
 		[DataMember]
 		internal int SpecialRoleInternal { get; set; }
 

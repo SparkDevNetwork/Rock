@@ -32,6 +32,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Block Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int BlockId { get; set; }
 		
@@ -51,6 +52,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Version.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int Version { get; set; }
 		
@@ -60,6 +62,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Content.
 		/// </value>
+		[Required]
 		[DataMember]
 		public string Content { get; set; }
 		
@@ -69,6 +72,7 @@ namespace Rock.CMS
 		/// <value>
 		/// Approved.
 		/// </value>
+		[Required]
 		[DataMember]
 		public bool Approved { get; set; }
 		

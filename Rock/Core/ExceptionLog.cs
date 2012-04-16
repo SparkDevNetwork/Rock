@@ -59,6 +59,7 @@ namespace Rock.Core
 		/// <value>
 		/// Date / time that the exception occurred..
 		/// </value>
+		[Required]
 		[DataMember]
 		public DateTime ExceptionDate { get; set; }
 		

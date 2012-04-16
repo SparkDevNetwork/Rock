@@ -32,6 +32,7 @@ namespace Rock.Core
 		/// <value>
 		/// Change Set.
 		/// </value>
+		[Required]
 		[DataMember]
 		public Guid ChangeSet { get; set; }
 		
@@ -41,6 +42,7 @@ namespace Rock.Core
 		/// <value>
 		/// Change Type.
 		/// </value>
+		[Required]
 		[MaxLength( 10 )]
 		[DataMember]
 		public string ChangeType { get; set; }
@@ -51,6 +53,7 @@ namespace Rock.Core
 		/// <value>
 		/// Entity Type.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string EntityType { get; set; }
@@ -61,6 +64,7 @@ namespace Rock.Core
 		/// <value>
 		/// Entity Id.
 		/// </value>
+		[Required]
 		[DataMember]
 		public int EntityId { get; set; }
 		
@@ -70,6 +74,7 @@ namespace Rock.Core
 		/// <value>
 		/// Property.
 		/// </value>
+		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
 		public string Property { get; set; }

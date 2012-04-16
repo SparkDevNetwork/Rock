@@ -38,7 +38,6 @@ namespace Rock.CMS
     public class CommentPage
     {
         [TrackChanges]
-        [Required( ErrorMessage = "Name is required" )]
         public string Name { get; set; }
     }
 
