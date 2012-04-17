@@ -71,8 +71,8 @@ namespace Rock.Security
                 return role;
             else
             {
-                Rock.Groups.GroupRepository groupRepository = new Rock.Groups.GroupRepository();
-                Rock.Groups.Group groupModel = groupRepository.Get( id );
+                Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
+                Rock.Groups.Group groupModel = groupService.Get( id );
 
                 if ( groupModel != null && groupModel.IsSecurityRole == true )
                 {
@@ -102,9 +102,9 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
-            Rock.Groups.GroupRepository groupRepository = new Rock.Groups.GroupRepository();
-            foreach(int id in groupRepository.
-                AsQueryable().Where( g => g.IsSecurityRole == true).Select( g => g.Id).ToList())
+            Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
+            foreach(int id in groupService.
+                Queryable().Where( g => g.IsSecurityRole == true).Select( g => g.Id).ToList())
             {
                 roles.Add( Role.Read( id ) );
             }

@@ -59,8 +59,8 @@ namespace Rock.Web
                     site = Rock.Web.Cache.Site.Read( sites[host] );
                 else
                 {
-                    Rock.CMS.SiteDomainRepository siteDomainRepository = new Rock.CMS.SiteDomainRepository();
-                    Rock.CMS.SiteDomain siteDomain = siteDomainRepository.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
+                    Rock.CMS.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
                         sites.Add( host, siteDomain.SiteId );

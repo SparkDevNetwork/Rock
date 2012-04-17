@@ -32,14 +32,14 @@ namespace RockWeb
 
             context.Response.Clear();
 
-			FileRepository fileRepository = new FileRepository();
+			FileService fileService = new FileService();
 			string anID = context.Request.QueryString[0];
 			int id;
 
 			try
 			{
 				// Fetch the file...
-				Rock.CMS.File file = ( int.TryParse( anID, out id ) ) ? fileRepository.Get( id ) : fileRepository.GetByPublicKey( anID );
+				Rock.CMS.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByPublicKey( anID );
 
 				// is it cached?
 				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );

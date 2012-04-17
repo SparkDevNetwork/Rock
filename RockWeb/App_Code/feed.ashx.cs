@@ -48,8 +48,8 @@ namespace RockWeb
                 string errorMessage = string.Empty;
                 string contentType = string.Empty;
 
-                BlogRepository blogRepository = new BlogRepository();
-                string feedXml = blogRepository.ReturnFeed(key, count, format, out errorMessage, out contentType);
+                BlogService blogService = new BlogService();
+                string feedXml = blogService.ReturnFeed(key, count, format, out errorMessage, out contentType);
 
                 if ( errorMessage == string.Empty )
                 {

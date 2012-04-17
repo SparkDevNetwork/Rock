@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Cms
             PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
             PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
 
-            HtmlContentRepository service = new HtmlContentRepository();
+            HtmlContentService service = new HtmlContentService();
             Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
             if ( content == null )
                 content = new Rock.CMS.HtmlContent();
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Cms
             if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
             {
                 Rock.CMS.HtmlContent content = null;
-                HtmlContentRepository service = new HtmlContentRepository();
+                HtmlContentService service = new HtmlContentService();
 
                 // get settings
                 string entityValue = EntityValue();
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( _supportVersioning )
                     {
-                        int? maxVersion = service.AsQueryable().
+                        int? maxVersion = service.Queryable().
                             Where( c => c.BlockId == BlockInstance.Id &&
                                 c.EntityValue == entityValue ).
                             Select( c => ( int? )c.Version ).Max();
@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.CMS.HtmlContent content = new HtmlContentRepository().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
 
                 if ( content != null )
                 {
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            HtmlContentRepository service = new HtmlContentRepository();
+            HtmlContentService service = new HtmlContentService();
 
             var versions = service.GetContent(BlockInstance.Id, EntityValue()).
                 Select( v => new {

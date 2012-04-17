@@ -34,8 +34,8 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
                 if ( user != null )
                     Flush(id);
@@ -62,8 +62,8 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+                Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
                 if ( user != null )
                     FlushGlobal();

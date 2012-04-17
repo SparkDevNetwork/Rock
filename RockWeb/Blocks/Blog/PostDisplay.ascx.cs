@@ -31,8 +31,8 @@ namespace RockWeb.Blocks.Blog
             {
             }
 
-            Rock.CMS.BlogPostRepository postRepository = new Rock.CMS.BlogPostRepository();
-            post = postRepository.Get( postId );
+            Rock.CMS.BlogPostService postService = new Rock.CMS.BlogPostService();
+            post = postService.Get( postId );
 
             lTitle.Text = post.Title;
             lContents.Text = post.Content;
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Blog
             if ( Page.IsValid )
             {
                 // save comment
-                Rock.CMS.BlogPostCommentRepository commentRepository = new Rock.CMS.BlogPostCommentRepository();
+                Rock.CMS.BlogPostCommentService commentService = new Rock.CMS.BlogPostCommentService();
                 BlogPostComment comment = new BlogPostComment();
                 comment.Comment = txtComment.Text;
                 comment.CommentDate = DateTime.Now;
@@ -114,8 +114,8 @@ namespace RockWeb.Blocks.Blog
                 comment.PersonName = txtName.Text;
                 comment.PersonId = CurrentPersonId;
 
-                commentRepository.Add( comment, CurrentPersonId );
-                commentRepository.Save( comment, CurrentPersonId );
+                commentService.Add( comment, CurrentPersonId );
+                commentService.Save( comment, CurrentPersonId );
 
                 // load comments
                 post.BlogPostComments.Add( comment );

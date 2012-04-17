@@ -32,15 +32,15 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.Address Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-				Rock.CRM.Address Address = AddressRepository.Get( int.Parse( id ) );
+				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+				Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
 				if ( Address.Authorized( "View", currentUser ) )
 					return Address.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CRM
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-					Rock.CRM.Address Address = AddressRepository.Get( int.Parse( id ) );
+					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
 					if ( Address.Authorized( "View", user ) )
 						return Address.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAddress( string id, Rock.CRM.DTO.Address Address )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-				Rock.CRM.Address existingAddress = AddressRepository.Get( int.Parse( id ) );
+				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+				Rock.CRM.Address existingAddress = AddressService.Get( int.Parse( id ) );
 				if ( existingAddress.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
 					if (existingAddress.IsValid)
-						AddressRepository.Save( existingAddress, currentUser.PersonId );
+						AddressService.Save( existingAddress, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-					Rock.CRM.Address existingAddress = AddressRepository.Get( int.Parse( id ) );
+					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+					Rock.CRM.Address existingAddress = AddressService.Get( int.Parse( id ) );
 					if ( existingAddress.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
 						if (existingAddress.IsValid)
-							AddressRepository.Save( existingAddress, user.PersonId );
+							AddressService.Save( existingAddress, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAddress( Rock.CRM.DTO.Address Address )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
+				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 				Rock.CRM.Address existingAddress = new Rock.CRM.Address();
-				AddressRepository.Add( existingAddress, currentUser.PersonId );
+				AddressService.Add( existingAddress, currentUser.PersonId );
 				uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 
 				if (existingAddress.IsValid)
-					AddressRepository.Save( existingAddress, currentUser.PersonId );
+					AddressService.Save( existingAddress, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
+					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address existingAddress = new Rock.CRM.Address();
-					AddressRepository.Add( existingAddress, user.PersonId );
+					AddressService.Add( existingAddress, user.PersonId );
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 
 					if (existingAddress.IsValid)
-						AddressRepository.Save( existingAddress, user.PersonId );
+						AddressService.Save( existingAddress, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingAddress.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAddress( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-				Rock.CRM.Address Address = AddressRepository.Get( int.Parse( id ) );
+				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+				Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
 				if ( Address.Authorized( "Edit", currentUser ) )
 				{
-					AddressRepository.Delete( Address, currentUser.PersonId );
-					AddressRepository.Save( Address, currentUser.PersonId );
+					AddressService.Delete( Address, currentUser.PersonId );
+					AddressService.Save( Address, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Address", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.AddressRepository AddressRepository = new Rock.CRM.AddressRepository();
-					Rock.CRM.Address Address = AddressRepository.Get( int.Parse( id ) );
+					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
+					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
 					if ( Address.Authorized( "Edit", user ) )
 					{
-						AddressRepository.Delete( Address, user.PersonId );
-						AddressRepository.Save( Address, user.PersonId );
+						AddressService.Delete( Address, user.PersonId );
+						AddressService.Save( Address, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Address", System.Net.HttpStatusCode.Forbidden );

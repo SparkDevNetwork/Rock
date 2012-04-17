@@ -15,7 +15,7 @@ namespace RockWeb.Blocks
 {
     public partial class TestGrid : Rock.Web.UI.Block
     {
-        Rock.CMS.PageRepository pageRepository = new Rock.CMS.PageRepository();
+        Rock.CMS.PageService pageService = new Rock.CMS.PageService();
 
         protected override void OnInit( EventArgs e )
         {
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks
 
         private void BindGrid()
         {
-            rGrid.DataSource = pageRepository.GetByParentPageId( null ).ToList();
+            rGrid.DataSource = pageService.GetByParentPageId( null ).ToList();
             rGrid.DataBind();
         }
 
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks
             Rock.CMS.Page page = new Rock.CMS.Page();
             page.Name = "New Page";
 
-            Rock.CMS.Page lastPage = pageRepository.AsQueryable().
+            Rock.CMS.Page lastPage = pageService.Queryable().
                 Where( p => !p.ParentPageId.HasValue).
                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -67,19 +67,19 @@ namespace RockWeb.Blocks
             else
                 page.Order = 0;
 
-            pageRepository.Add( page, CurrentPersonId );
-            pageRepository.Save( page, CurrentPersonId );
+            pageService.Add( page, CurrentPersonId );
+            pageService.Save( page, CurrentPersonId );
 
             BindGrid();
         }
 
         protected void rGrid_RowDeleting( object sender, GridViewDeleteEventArgs e )
         {
-            Rock.CMS.Page page = pageRepository.Get((int)e.Keys["id"]);
+            Rock.CMS.Page page = pageService.Get((int)e.Keys["id"]);
             if ( page != null )
             {
-                pageRepository.Delete( page, CurrentPersonId );
-                pageRepository.Save( page, CurrentPersonId );
+                pageService.Delete( page, CurrentPersonId );
+                pageService.Save( page, CurrentPersonId );
             }
 
             BindGrid();
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            pageRepository.Reorder( (List<Rock.CMS.Page>)rGrid.DataSource, 
+            pageService.Reorder( (List<Rock.CMS.Page>)rGrid.DataSource, 
                 e.OldIndex, e.NewIndex, CurrentPersonId );
         }
 

@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Administration
         protected string entityQualifierValue = string.Empty;
 
         private bool canConfigure = false;
-        private Rock.Core.AttributeRepository attributeRepository = new Rock.Core.AttributeRepository();
+        private Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
 
         #endregion
 
@@ -107,13 +107,13 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.Attribute attribute = attributeRepository.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Core.Attribute attribute = attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.Attribute.Flush( attribute.Id );
 
-                attributeRepository.Delete( attribute, CurrentPersonId );
-                attributeRepository.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonId );
+                attributeService.Save( attribute, CurrentPersonId );
             }
 
             BindGrid();
@@ -143,8 +143,8 @@ namespace RockWeb.Blocks.Administration
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
-            AttributeRepository attributeRepository = new AttributeRepository();
-            var items = attributeRepository.AsQueryable().
+            AttributeService attributeService = new AttributeService();
+            var items = attributeService.Queryable().
                 Where( a => a.Entity == entity &&
                     ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
                     ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue &&
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = attributeRepository.AsQueryable().
+            var queryable = attributeService.Queryable().
                 Where( a => a.Entity == entity &&
                     ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
                     ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue );

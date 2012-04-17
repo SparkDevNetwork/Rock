@@ -153,7 +153,7 @@ namespace Quartz.Impl
         /// </summary>
         public virtual ICollection<IScheduler> AllSchedulers
         {
-            get { return SchedulerRepository.Instance.LookupAll(); }
+            get { return SchedulerService.Instance.LookupAll(); }
         }
 
         /// <summary>
@@ -343,7 +343,7 @@ Please add configuration to your application config file to correctly initialize
             TimeSpan dbFailureRetry = TimeSpan.Zero;
             IThreadExecutor threadExecutor;
 
-            SchedulerRepository schedRep = SchedulerRepository.Instance;
+            SchedulerService schedRep = SchedulerService.Instance;
 
             // Get Scheduler Properties
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -987,7 +987,7 @@ Please add configuration to your application config file to correctly initialize
                 jrsf.Initialize(sched);
                 qs.Initialize();
 
-                // prevents the repository from being garbage collected
+                // prevents the service from being garbage collected
                 qs.AddNoGCObject(schedRep);
                 // prevents the db manager from being garbage collected
                 if (dbMgr != null)
@@ -1062,7 +1062,7 @@ Please add configuration to your application config file to correctly initialize
                 Initialize();
             }
 
-            SchedulerRepository schedRep = SchedulerRepository.Instance;
+            SchedulerService schedRep = SchedulerService.Instance;
 
             IScheduler sched = schedRep.Lookup(SchedulerName);
 
@@ -1090,7 +1090,7 @@ Please add configuration to your application config file to correctly initialize
         /// </summary>
         public virtual IScheduler GetScheduler(string schedName)
         {
-            return SchedulerRepository.Instance.Lookup(schedName);
+            return SchedulerService.Instance.Lookup(schedName);
         }
     }
 }

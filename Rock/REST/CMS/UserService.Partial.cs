@@ -20,7 +20,7 @@ namespace Rock.REST.CMS
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                Rock.CMS.UserRepository UserService = new Rock.CMS.UserRepository();
+                Rock.CMS.UserService UserService = new Rock.CMS.UserService();
                 User User = UserService.GetByUserName( username );
                 return ( User == null );
             }

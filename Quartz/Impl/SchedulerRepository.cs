@@ -28,22 +28,22 @@ namespace Quartz.Impl
 	/// </summary>
 	/// <author>James House</author>
 	/// <author>Marko Lahma (.NET)</author>
-	public class SchedulerRepository
+	public class SchedulerService
 	{
         private readonly Dictionary<string, IScheduler> schedulers;
-        private static readonly SchedulerRepository inst = new SchedulerRepository();
+        private static readonly SchedulerService inst = new SchedulerService();
         private readonly object syncRoot = new object();
         
         /// <summary>
 		/// Gets the singleton instance.
 		/// </summary>
 		/// <value>The instance.</value>
-		public static SchedulerRepository Instance
+		public static SchedulerService Instance
 		{
 			get { return inst; }
 		}
 
-		private SchedulerRepository()
+		private SchedulerService()
 		{
 			schedulers = new Dictionary<string, IScheduler>();
 		}

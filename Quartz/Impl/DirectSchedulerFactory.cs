@@ -96,7 +96,7 @@ namespace Quartz.Impl
 		/// </summary>
 		public virtual ICollection<IScheduler> AllSchedulers
 		{
-			get { return SchedulerRepository.Instance.LookupAll(); }
+			get { return SchedulerService.Instance.LookupAll(); }
 		}
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Quartz.Impl
 		    proxyBuilder.Address = proxyAddress;
 		    RemoteScheduler remoteScheduler = new RemoteScheduler(uid, proxyBuilder);
 			
-            SchedulerRepository schedRep = SchedulerRepository.Instance;
+            SchedulerService schedRep = SchedulerService.Instance;
 			schedRep.Bind(remoteScheduler);
 		    initialized = true;
 		}
@@ -319,9 +319,9 @@ namespace Quartz.Impl
                 }
             }
 
-            SchedulerRepository schedRep = SchedulerRepository.Instance;
+            SchedulerService schedRep = SchedulerService.Instance;
 
-            qs.AddNoGCObject(schedRep); // prevents the repository from being
+            qs.AddNoGCObject(schedRep); // prevents the service from being
             // garbage collected
 
             schedRep.Bind(scheduler);
@@ -345,7 +345,7 @@ namespace Quartz.Impl
 				throw new SchedulerException(
 					"you must call createRemoteScheduler or createScheduler methods before calling getScheduler()");
 			}
-			SchedulerRepository schedRep = SchedulerRepository.Instance;
+			SchedulerService schedRep = SchedulerService.Instance;
 
 			return schedRep.Lookup(DefaultSchedulerName);
 		}
@@ -355,7 +355,7 @@ namespace Quartz.Impl
 		/// </summary>
 		public virtual IScheduler GetScheduler(string schedName)
 		{
-			SchedulerRepository schedRep = SchedulerRepository.Instance;
+			SchedulerService schedRep = SchedulerService.Instance;
 
 			return schedRep.Lookup(schedName);
 		}
