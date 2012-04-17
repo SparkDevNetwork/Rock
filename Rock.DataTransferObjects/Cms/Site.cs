@@ -128,7 +128,7 @@ namespace Rock.CMS.DTO
 		/// Gets or sets the Error Page.
 		/// </summary>
 		/// <value>
-		/// Path to the error page for this site..
+		/// Error Page.
 		/// </value>
 		public string ErrorPage { get; set; }
 

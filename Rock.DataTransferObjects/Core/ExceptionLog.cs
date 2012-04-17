@@ -40,7 +40,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Parent Id.
 		/// </summary>
 		/// <value>
-		/// Parent Id of the exeption, used for linking inner exceptions..
+		/// Parent Id.
 		/// </value>
 		public int? ParentId { get; set; }
 
@@ -48,7 +48,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Site Id.
 		/// </summary>
 		/// <value>
-		/// Site Id that the exception occurred on..
+		/// Site Id.
 		/// </value>
 		public int? SiteId { get; set; }
 
@@ -56,7 +56,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Page Id.
 		/// </summary>
 		/// <value>
-		/// Page Id that the exception occurred on..
+		/// Page Id.
 		/// </value>
 		public int? PageId { get; set; }
 
@@ -64,7 +64,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Exception Date.
 		/// </summary>
 		/// <value>
-		/// Date / time that the exception occurred..
+		/// Exception Date.
 		/// </value>
 		public DateTime ExceptionDate { get; set; }
 
@@ -72,7 +72,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Has Inner Exception.
 		/// </summary>
 		/// <value>
-		/// Whether the exception has an inner exception..
+		/// Has Inner Exception.
 		/// </value>
 		public bool? HasInnerException { get; set; }
 
@@ -80,7 +80,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Person Id.
 		/// </summary>
 		/// <value>
-		/// Person Id of the logged in person who experienced the exception..
+		/// Person Id.
 		/// </value>
 		public int? PersonId { get; set; }
 
@@ -88,7 +88,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Status Code.
 		/// </summary>
 		/// <value>
-		/// Status code that would have been thrown (404, 500, etc).
+		/// Status Code.
 		/// </value>
 		public string StatusCode { get; set; }
 
@@ -96,7 +96,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Exception Type.
 		/// </summary>
 		/// <value>
-		/// Name of the exception.
+		/// Exception Type.
 		/// </value>
 		public string ExceptionType { get; set; }
 
@@ -104,7 +104,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Description.
 		/// </summary>
 		/// <value>
-		/// The exception message..
+		/// Description.
 		/// </value>
 		public string Description { get; set; }
 
@@ -112,7 +112,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Source.
 		/// </summary>
 		/// <value>
-		/// What assembly the exception occurred in..
+		/// Source.
 		/// </value>
 		public string Source { get; set; }
 
@@ -120,7 +120,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Stack Trace.
 		/// </summary>
 		/// <value>
-		/// The stack trace that was produced..
+		/// Stack Trace.
 		/// </value>
 		public string StackTrace { get; set; }
 
@@ -128,7 +128,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Page Url.
 		/// </summary>
 		/// <value>
-		/// The URL of the page that generated the exception..
+		/// Page Url.
 		/// </value>
 		public string PageUrl { get; set; }
 
@@ -136,7 +136,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Server Variables.
 		/// </summary>
 		/// <value>
-		/// Server variables at the time of the exception..
+		/// Server Variables.
 		/// </value>
 		public string ServerVariables { get; set; }
 
@@ -144,7 +144,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Query String.
 		/// </summary>
 		/// <value>
-		/// Full query string..
+		/// Query String.
 		/// </value>
 		public string QueryString { get; set; }
 
@@ -152,7 +152,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Form.
 		/// </summary>
 		/// <value>
-		/// Form items at the time of the exception..
+		/// Form.
 		/// </value>
 		public string Form { get; set; }
 
@@ -160,7 +160,7 @@ namespace Rock.Core.DTO
 		/// Gets or sets the Cookies.
 		/// </summary>
 		/// <value>
-		/// Cookies at the time of the exception..
+		/// Cookies.
 		/// </value>
 		public string Cookies { get; set; }
 

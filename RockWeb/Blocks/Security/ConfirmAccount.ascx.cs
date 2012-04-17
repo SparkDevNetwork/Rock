@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Security
         "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
     public partial class ConfirmAccount : Rock.Web.UI.Block
     {
-        private UserService userService = null;
+        private UserRepository userRepository = null;
         private User user = null;
 
         #region Properties
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Security
             pnlDeleted.Visible = false;
             pnlInvalid.Visible = false;
 
-            userService = new UserService();
+            userRepository = new UserRepository();
 
             if (!Page.IsPostBack)
             {
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Security
 
                 ConfirmationCode = Request.QueryString["cc"];
 
-                user = userService.GetByConfirmationCode( ConfirmationCode );
+                user = userRepository.GetByConfirmationCode( ConfirmationCode );
                 string action = Request.QueryString["action"] ?? "";
 
                 switch ( action.ToLower() )
@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeConfirm_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userRepository.GetByConfirmationCode( ConfirmationCode );
             ShowConfirmed();
         }
 
@@ -130,13 +130,13 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeReset_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userRepository.GetByConfirmationCode( ConfirmationCode );
             ShowResetPassword();
         }
 
         protected void btnResetPassword_Click( object sender, EventArgs e )
         {
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userRepository.GetByConfirmationCode( ConfirmationCode );
             ShowResetSuccess();
         }
 
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeDelete_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userRepository.GetByConfirmationCode( ConfirmationCode );
             ShowDelete();
         }
 
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userRepository.GetByConfirmationCode( ConfirmationCode );
             ShowDeleted();
         }
 
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Security
             if ( user != null )
             {
                 user.IsConfirmed = true;
-                userService.Save( user, user.PersonId );
+                userRepository.Save( user, user.PersonId );
 
                 FormsAuthentication.SetAuthCookie( user.UserName, false );
 
@@ -221,9 +221,9 @@ namespace RockWeb.Blocks.Security
                     caption = string.Format( caption, user.Person.FirstName );
                 lResetSuccess.Text = caption;
 
-                userService.ChangePassword( user, tbPassword.Text );
+                userRepository.ChangePassword( user, tbPassword.Text );
                 user.IsConfirmed = true;
-                userService.Save( user, user.PersonId );
+                userRepository.Save( user, user.PersonId );
 
                 pnlResetSuccess.Visible = true;
             }
@@ -253,8 +253,8 @@ namespace RockWeb.Blocks.Security
                 if ( CurrentUser != null && CurrentUser.UserName == user.UserName )
                     FormsAuthentication.SignOut();
 
-                userService.Delete( user, user.PersonId );
-                userService.Save( user, user.PersonId );
+                userRepository.Delete( user, user.PersonId );
+                userRepository.Save( user, user.PersonId );
 
                 pnlDeleted.Visible = true;
             }

@@ -24,15 +24,15 @@ namespace Rock.REST.CMS
         [WebInvoke( Method = "PUT", UriTemplate = "Move/{id}" )]
         public void Move( string id, Rock.CMS.DTO.BlockInstance BlockInstance )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>( "Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
                 uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
+                Rock.CMS.BlockInstanceRepository BlockInstanceRepository = new Rock.CMS.BlockInstanceRepository();
+                Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceRepository.Get( int.Parse( id ) );
 
                 if ( existingBlockInstance.Authorized( "Edit", currentUser ) )
                 {
@@ -47,8 +47,8 @@ namespace Rock.REST.CMS
                     }
 
                     uow.objectContext.Entry( existingBlockInstance ).CurrentValues.SetValues( BlockInstance );
-                    BlockInstanceService.Move( existingBlockInstance );
-                    BlockInstanceService.Save( existingBlockInstance, currentUser.PersonId );
+                    BlockInstanceRepository.Move( existingBlockInstance );
+                    BlockInstanceRepository.Save( existingBlockInstance, currentUser.PersonId );
                 }
                 else
                     throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );
@@ -70,14 +70,14 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
                 if ( user != null )
                 {
                     uow.objectContext.Configuration.ProxyCreationEnabled = false;
-                    Rock.CMS.BlockInstanceService BlockInstanceService = new Rock.CMS.BlockInstanceService();
-                    Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceService.Get( int.Parse( id ) );
+                    Rock.CMS.BlockInstanceRepository BlockInstanceRepository = new Rock.CMS.BlockInstanceRepository();
+                    Rock.CMS.BlockInstance existingBlockInstance = BlockInstanceRepository.Get( int.Parse( id ) );
 
                     if ( existingBlockInstance.Authorized( "Edit", user ) )
                     {
@@ -92,8 +92,8 @@ namespace Rock.REST.CMS
                         }
 
                         uow.objectContext.Entry( existingBlockInstance ).CurrentValues.SetValues( BlockInstance );
-                        BlockInstanceService.Move( existingBlockInstance );
-                        BlockInstanceService.Save( existingBlockInstance, user.PersonId );
+                        BlockInstanceRepository.Move( existingBlockInstance );
+                        BlockInstanceRepository.Save( existingBlockInstance, user.PersonId );
                     }
                     else
                         throw new WebFaultException<string>( "Not Authorized to Edit this BlockInstance", System.Net.HttpStatusCode.Forbidden );

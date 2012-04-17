@@ -115,11 +115,11 @@ namespace RockWeb.Blocks.Administration
                 {
                     int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
-                    AttributeService attributeService = new AttributeService();
-                    var attribute = attributeService.Get( attributeId );
+                    AttributeRepository attributeRepository = new AttributeRepository();
+                    var attribute = attributeRepository.Get( attributeId );
                     var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
 
-                    AttributeValueService attributeValueService = new AttributeValueService();
+                    AttributeValueRepository attributeValueRepository = new AttributeValueRepository();
 
                     int? iEntityId = null;
                     if ( entityId != "null" )
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Administration
                         catch { }
 
                     // TODO: Need to add support for multiple values
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, iEntityId ).FirstOrDefault();
+                    var attributeValue = attributeValueRepository.GetByAttributeIdAndEntityId( attributeId, iEntityId ).FirstOrDefault();
                     if ( attributeValue != null )
                     {
                         string clientUpdateScript = fieldType.Field.ClientUpdateScript(
@@ -181,8 +181,8 @@ namespace RockWeb.Blocks.Administration
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
-            AttributeService attributeService = new AttributeService();
-            var items = attributeService.Queryable().
+            AttributeRepository attributeRepository = new AttributeRepository();
+            var items = attributeRepository.AsQueryable().
                 Where( a => a.Entity == entity &&
                     ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
                     ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue &&
@@ -199,10 +199,10 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                AttributeService attributeService = new AttributeService();
+                AttributeRepository attributeRepository = new AttributeRepository();
 
-                var queryable = attributeService.
-                    Queryable().
+                var queryable = attributeRepository.
+                    AsQueryable().
                     Where( a => a.Entity == entity &&
                         ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
                         ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue );

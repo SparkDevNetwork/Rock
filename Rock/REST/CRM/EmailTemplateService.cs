@@ -32,15 +32,15 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.EmailTemplate Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-				Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+				Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+				Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 				if ( EmailTemplate.Authorized( "View", currentUser ) )
 					return EmailTemplate.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CRM
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+					Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 					if ( EmailTemplate.Authorized( "View", user ) )
 						return EmailTemplate.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateEmailTemplate( string id, Rock.CRM.DTO.EmailTemplate EmailTemplate )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-				Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+				Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+				Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 				if ( existingEmailTemplate.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 					
 					if (existingEmailTemplate.IsValid)
-						EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId );
+						EmailTemplateRepository.Save( existingEmailTemplate, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-					Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+					Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+					Rock.CRM.EmailTemplate existingEmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 					if ( existingEmailTemplate.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 					
 						if (existingEmailTemplate.IsValid)
-							EmailTemplateService.Save( existingEmailTemplate, user.PersonId );
+							EmailTemplateRepository.Save( existingEmailTemplate, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateEmailTemplate( Rock.CRM.DTO.EmailTemplate EmailTemplate )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
+				Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
 				Rock.CRM.EmailTemplate existingEmailTemplate = new Rock.CRM.EmailTemplate();
-				EmailTemplateService.Add( existingEmailTemplate, currentUser.PersonId );
+				EmailTemplateRepository.Add( existingEmailTemplate, currentUser.PersonId );
 				uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 
 				if (existingEmailTemplate.IsValid)
-					EmailTemplateService.Save( existingEmailTemplate, currentUser.PersonId );
+					EmailTemplateRepository.Save( existingEmailTemplate, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
+					Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
 					Rock.CRM.EmailTemplate existingEmailTemplate = new Rock.CRM.EmailTemplate();
-					EmailTemplateService.Add( existingEmailTemplate, user.PersonId );
+					EmailTemplateRepository.Add( existingEmailTemplate, user.PersonId );
 					uow.objectContext.Entry(existingEmailTemplate).CurrentValues.SetValues(EmailTemplate);
 
 					if (existingEmailTemplate.IsValid)
-						EmailTemplateService.Save( existingEmailTemplate, user.PersonId );
+						EmailTemplateRepository.Save( existingEmailTemplate, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingEmailTemplate.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteEmailTemplate( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-				Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+				Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+				Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 				if ( EmailTemplate.Authorized( "Edit", currentUser ) )
 				{
-					EmailTemplateService.Delete( EmailTemplate, currentUser.PersonId );
-					EmailTemplateService.Save( EmailTemplate, currentUser.PersonId );
+					EmailTemplateRepository.Delete( EmailTemplate, currentUser.PersonId );
+					EmailTemplateRepository.Save( EmailTemplate, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this EmailTemplate", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.EmailTemplateService EmailTemplateService = new Rock.CRM.EmailTemplateService();
-					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateService.Get( int.Parse( id ) );
+					Rock.CRM.EmailTemplateRepository EmailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
+					Rock.CRM.EmailTemplate EmailTemplate = EmailTemplateRepository.Get( int.Parse( id ) );
 					if ( EmailTemplate.Authorized( "Edit", user ) )
 					{
-						EmailTemplateService.Delete( EmailTemplate, user.PersonId );
-						EmailTemplateService.Save( EmailTemplate, user.PersonId );
+						EmailTemplateRepository.Delete( EmailTemplate, user.PersonId );
+						EmailTemplateRepository.Save( EmailTemplate, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this EmailTemplate", System.Net.HttpStatusCode.Forbidden );

@@ -67,16 +67,16 @@ namespace Rock.Web.Cache
                 globalAttributes = new GlobalAttributes();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
-                var attributeService = new Rock.Core.AttributeService();
-                var attributeValueService = new Rock.Core.AttributeValueService();
+                var attributeRepository = new Rock.Core.AttributeRepository();
+                var attributeValueRepository = new Rock.Core.AttributeValueRepository();
 
-                foreach ( Rock.Core.Attribute attribute in attributeService.Queryable().
+                foreach ( Rock.Core.Attribute attribute in attributeRepository.AsQueryable().
                     Where( a => a.Entity == "" &&
                         ( a.EntityQualifierColumn ?? string.Empty ) == "" &&
                         ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
                 {
                     // TODO: Need to add support for multiple values
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
+                    var attributeValue = attributeValueRepository.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
                     globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
                 }
 

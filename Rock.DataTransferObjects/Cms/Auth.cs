@@ -72,7 +72,7 @@ namespace Rock.CMS.DTO
 		/// Gets or sets the Allow Or Deny.
 		/// </summary>
 		/// <value>
-		/// A = Allow, D = Deny.
+		/// Allow Or Deny.
 		/// </value>
 		public string AllowOrDeny { get; set; }
 
@@ -80,7 +80,7 @@ namespace Rock.CMS.DTO
 		/// Gets or sets the Special Role.
 		/// </summary>
 		/// <value>
-		/// Enum[SpecialRole].
+		/// Special Role.
 		/// </value>
 		public int SpecialRole { get; set; }
 

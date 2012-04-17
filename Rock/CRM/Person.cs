@@ -472,6 +472,81 @@ namespace Rock.CRM
         /// </value>
 		public virtual Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets NickName if not null, otherwise gets GivenName.
+        /// </summary>
+        public string FirstName
+        {
+            get
+            {
+                return NickName ?? GivenName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the full name.
+        /// </summary>
+        public string FullName
+        {
+            get
+            {
+                return FirstName + " " + LastName;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the birth date.
+        /// </summary>
+        /// <value>
+        /// The birth date.
+        /// </value>
+        [NotMapped]
+        public DateTime? BirthDate
+        {
+            // notes
+            // if no birthday is available then DateTime.MinValue is returned
+            // if no birth year is given then the birth year will be DateTime.MinValue.Year
+            get
+            {
+                if ( BirthDay == null || BirthMonth == null )
+                {
+                    return null;
+                }
+                else
+                {
+                    string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
+                    return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
+                }
+            }
+
+            set
+            {
+                if ( value.HasValue )
+                {
+                    BirthMonth = value.Value.Month;
+                    BirthDay = value.Value.Day;
+                    BirthYear = value.Value.Year;
+                }
+                else
+                {
+                    BirthMonth = null;
+                    BirthDay = null;
+                    BirthYear = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the encrypted ID.
+        /// </summary>
+        public string EncryptedID
+        {
+            get
+            {
+                string identifier = this.Guid.ToString() + "|" + this.Id.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier );
+            }
+        }
     }
     /// <summary>
     /// Person Configuration class.
@@ -495,4 +570,26 @@ namespace Rock.CRM
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
+
+    /// <summary>
+    /// The gender of a person
+    /// </summary>
+    public enum Gender
+    {
+        /// <summary>
+        /// Unknown
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Male
+        /// </summary>
+        Male = 1,
+
+        /// <summary>
+        /// Female
+        /// </summary>
+        Female = 2
+    }
+
 }

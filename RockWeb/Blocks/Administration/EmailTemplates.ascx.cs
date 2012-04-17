@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool _canConfigure = false;
-        private Rock.CRM.EmailTemplateService _emailTemplateService = new Rock.CRM.EmailTemplateService();
+        private Rock.CRM.EmailTemplateRepository _emailTemplateRepository = new Rock.CRM.EmailTemplateRepository();
 
         #endregion
 
@@ -91,11 +91,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateRepository.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
-                _emailTemplateService.Delete( emailTemplate, CurrentPersonId );
-                _emailTemplateService.Save( emailTemplate, CurrentPersonId );
+                _emailTemplateRepository.Delete( emailTemplate, CurrentPersonId );
+                _emailTemplateRepository.Save( emailTemplate, CurrentPersonId );
             }
 
             BindGrid();
@@ -132,10 +132,10 @@ namespace RockWeb.Blocks.Administration
             if (emailTemplateId == 0)
             {
                 emailTemplate = new EmailTemplate();
-                _emailTemplateService.Add(emailTemplate, CurrentPersonId);
+                _emailTemplateRepository.Add(emailTemplate, CurrentPersonId);
             }
             else
-                emailTemplate = _emailTemplateService.Get(emailTemplateId);
+                emailTemplate = _emailTemplateRepository.Get(emailTemplateId);
 
             emailTemplate.Category = tbCategory.Text;
             emailTemplate.Title = tbTitle.Text;
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Administration
             emailTemplate.Subject = tbSubject.Text;
             emailTemplate.Body = tbBody.Text;
 
-            _emailTemplateService.Save(emailTemplate, CurrentPersonId);
+            _emailTemplateRepository.Save(emailTemplate, CurrentPersonId);
 
             BindFilter();
             BindGrid();
@@ -165,8 +165,8 @@ namespace RockWeb.Blocks.Administration
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
-            EmailTemplateService emailTemplateService = new EmailTemplateService();
-            var items = emailTemplateService.Queryable().
+            EmailTemplateRepository emailTemplateRepository = new EmailTemplateRepository();
+            var items = emailTemplateRepository.AsQueryable().
                 Where( a => a.Category.Trim() != "" && a.Category != null ).
                 OrderBy( a => a.Category ).
                 Select( a => a.Category.Trim() ).
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var emailTemplates = _emailTemplateService.Queryable();
+            var emailTemplates = _emailTemplateRepository.AsQueryable();
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
                 emailTemplates = emailTemplates.
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int emailTemplateId )
         {
-            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateService.Get( emailTemplateId );
+            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateRepository.Get( emailTemplateId );
 
             if ( emailTemplate != null )
             {

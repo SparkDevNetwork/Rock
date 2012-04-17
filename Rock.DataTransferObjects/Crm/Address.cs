@@ -128,7 +128,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Standardize Result.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Standardize Result.
 		/// </value>
 		public string StandardizeResult { get; set; }
 
@@ -160,7 +160,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Geocode Result.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Geocode Result.
 		/// </value>
 		public string GeocodeResult { get; set; }
 

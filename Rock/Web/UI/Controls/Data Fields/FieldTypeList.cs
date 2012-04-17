@@ -23,9 +23,9 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            Rock.Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
-            var items = fieldTypeService.
-                Queryable().
+            Rock.Core.FieldTypeRepository fieldTypeRepository = new Core.FieldTypeRepository();
+            var items = fieldTypeRepository.
+                AsQueryable().
                 Select( f => new { f.Id, f.Name } ).
                 OrderBy( f => f.Name );
 

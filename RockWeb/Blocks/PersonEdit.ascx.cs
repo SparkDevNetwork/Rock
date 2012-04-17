@@ -23,14 +23,14 @@ namespace RockWeb.Blocks
                 if ( string.IsNullOrEmpty( personId ) )
                     personId = Request.QueryString["PersonId"];
 
-                PersonService personService = new PersonService();
+                PersonRepository personRepository = new PersonRepository();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personService.Get( Convert.ToInt32( personId ) );
+                    person = personRepository.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personService.Add( person, CurrentPersonId );
+                    personRepository.Add( person, CurrentPersonId );
                 }
 
                 txtFirstName.Text = person.FirstName;
@@ -49,22 +49,22 @@ namespace RockWeb.Blocks
                 if ( string.IsNullOrEmpty( personId ) )
                     personId = Request.QueryString["PersonId"];
 
-                PersonService personService = new PersonService();
+                PersonRepository personRepository = new PersonRepository();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personService.Get( Convert.ToInt32( personId ) );
+                    person = personRepository.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personService.Add( person, CurrentPersonId );
+                    personRepository.Add( person, CurrentPersonId );
                 }
 
                 person.GivenName = txtFirstName.Text;
                 person.NickName = txtNickName.Text;
                 person.LastName = txtLastName.Text;
                 if ( person.Guid == Guid.Empty )
-                    personService.Add( person, CurrentPersonId );
-                personService.Save( person, CurrentPersonId );
+                    personRepository.Add( person, CurrentPersonId );
+                personRepository.Save( person, CurrentPersonId );
             }
         }
     }

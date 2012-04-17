@@ -137,8 +137,8 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.GetByUserName( tbUserName.Text );
+                Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.GetByUserName( tbUserName.Text );
                 if ( user == null )
                     DisplayDuplicates( Direction.Forward );
                 else
@@ -160,8 +160,8 @@ namespace RockWeb.Blocks.Security
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                var users = userService.GetByPersonId(personId).ToList();
+                Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                var users = userRepository.GetByPersonId(personId).ToList();
                 if (users.Count > 0)
                     DisplaySendLogin( personId, Direction.Forward );
                 else
@@ -215,9 +215,9 @@ namespace RockWeb.Blocks.Security
 
             if ( Convert.ToBoolean( AttributeValue( "Duplicates" ) ) )
             {
-                PersonService personService = new PersonService();
-                var matches = personService.
-                    Queryable().
+                PersonRepository personRepository = new PersonRepository();
+                var matches = personRepository.
+                    AsQueryable().
                     Where( p =>
                         p.Email.ToLower() == tbEmail.Text.ToLower() &&
                         p.LastName.ToLower() == tbLastName.Text.ToLower() ).
@@ -256,8 +256,8 @@ namespace RockWeb.Blocks.Security
             lExistingAccountCaption.Text = AttributeValue( "ExistingAccountCaption" );
             if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
             {
-                PersonService personService = new PersonService();
-                Person person = personService.Get( personId );
+                PersonRepository personRepository = new PersonRepository();
+                Person person = personRepository.Get( personId );
                 if ( person != null )
                     lExistingAccountCaption.Text = string.Format( lExistingAccountCaption.Text, person.FirstName );
             }
@@ -269,10 +269,10 @@ namespace RockWeb.Blocks.Security
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                PersonService personService = new PersonService();
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                PersonRepository personRepository = new PersonRepository();
+                Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
 
-                Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
+                Person person = personRepository.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
                 {
                     var mergeObjects = new List<object>();
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Security
 
                     mergeObjects.Add( person );
 
-                    foreach ( var user in userService.GetByPersonId( person.Id ) )
+                    foreach ( var user in userRepository.GetByPersonId( person.Id ) )
                         if (user.AuthenticationType != Rock.CMS.AuthenticationType.Facebook)
                             userObjects.Add( user );
 
@@ -309,8 +309,8 @@ namespace RockWeb.Blocks.Security
 
         private void DisplayConfirmation( int personId )
         {
-            PersonService personService = new PersonService();
-            Person person = personService.Get(personId);
+            PersonRepository personRepository = new PersonRepository();
+            Person person = personRepository.Get(personId);
 
             if (person != null)
             {
@@ -344,8 +344,8 @@ namespace RockWeb.Blocks.Security
 
             if ( user != null && user.PersonId.HasValue )
             {
-                PersonService personService = new PersonService();
-                Person person = personService.Get( user.PersonId.Value );
+                PersonRepository personRepository = new PersonRepository();
+                Person person = personRepository.Get( user.PersonId.Value );
 
                 if ( person != null )
                 {
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.Security
 
         private Person CreatePerson()
         {
-            Rock.CRM.PersonService personService = new PersonService();
+            Rock.CRM.PersonRepository personRepository = new PersonRepository();
 
             Person person = new Person();
             person.GivenName = tbFirstName.Text;
@@ -434,16 +434,16 @@ namespace RockWeb.Blocks.Security
             if (ddlBirthYear.SelectedValue != "0")
                 person.BirthYear = Int32.Parse(ddlBirthYear.SelectedValue);
 
-            personService.Add(person, CurrentPersonId);
-            personService.Save(person, CurrentPersonId);
+            personRepository.Add(person, CurrentPersonId);
+            personRepository.Save(person, CurrentPersonId);
 
             return person;
         }
 
         private Rock.CMS.User CreateUser( Person person, bool confirmed )
         {
-            Rock.CMS.UserService userService = new Rock.CMS.UserService();
-            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
+            Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+            return userRepository.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )

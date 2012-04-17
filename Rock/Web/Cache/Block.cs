@@ -78,8 +78,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.BlockService blockService = new CMS.BlockService();
-            Rock.CMS.Block blockModel = blockService.Get( this.Id );
+            Rock.CMS.BlockRepository blockRepository = new CMS.BlockRepository();
+            Rock.CMS.Block blockModel = blockRepository.Get( this.Id );
 
             if ( blockModel != null )
             {
@@ -114,8 +114,8 @@ namespace Rock.Web.Cache
                 return block;
             else
             {
-                Rock.CMS.BlockService blockService = new CMS.BlockService();
-                Rock.CMS.Block blockModel = blockService.Get( id );
+                Rock.CMS.BlockRepository blockRepository = new CMS.BlockRepository();
+                Rock.CMS.Block blockModel = blockRepository.Get( id );
                 if ( blockModel != null )
                 {
                     block = new Block();

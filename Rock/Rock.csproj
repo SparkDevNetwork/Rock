@@ -71,23 +71,43 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CMS\AuthRepository.cs" />
+    <Compile Include="CMS\BlockInstanceRepository.cs" />
+    <Compile Include="CMS\BlockRepository.cs" />
+    <Compile Include="CMS\BlogCategoryRepository.cs" />
+    <Compile Include="CMS\BlogPostCommentRepository.cs" />
+    <Compile Include="CMS\BlogPostRepository.cs" />
+    <Compile Include="CMS\BlogRepository.cs" />
+    <Compile Include="CMS\BlogTagRepository.cs" />
+    <Compile Include="CMS\FileRepository.cs" />
+    <Compile Include="CMS\HtmlContentRepository.cs" />
+    <Compile Include="CMS\PageRepository.cs" />
+    <Compile Include="CMS\PageRouteRepository.cs" />
+    <Compile Include="CMS\SiteDomainRepository.cs" />
+    <Compile Include="CMS\SiteRepository.cs" />
+    <Compile Include="CMS\UserRepository.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
-    <Compile Include="Core\EntityExceptionLogRepository.cs" />
+    <Compile Include="Core\AttributeQualifierRepository.cs" />
+    <Compile Include="Core\AttributeRepository.cs" />
+    <Compile Include="Core\AttributeValueRepository.cs" />
+    <Compile Include="Core\DefinedTypeRepository.cs" />
+    <Compile Include="Core\DefinedValueRepository.cs" />
+    <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\EntityChangeRepository.cs" />
     <Compile Include="Core\ExceptionLog.cs" />
-    <Compile Include="Core\ExceptionLogService.cs" />
-    <Compile Include="Core\IExceptionLogRepository.cs" />
-    <Compile Include="CRM\PersonTrail.Partial.cs" />
-    <Compile Include="CRM\EntityPersonViewedRepository.cs" />
-    <Compile Include="CRM\IPersonViewedRepository.cs" />
-    <Compile Include="CRM\PersonTrailService.partial.cs" />
-    <Compile Include="CRM\EntityPersonTrailRepository.cs" />
-    <Compile Include="CRM\IPersonTrailRepository.cs" />
+    <Compile Include="Core\ExceptionLogRepository.cs" />
+    <Compile Include="Core\FieldTypeRepository.cs" />
+    <Compile Include="Core\ServiceLogRepository.cs" />
+    <Compile Include="CRM\AddressRepository.cs" />
+    <Compile Include="CRM\EmailTemplateRepository.cs" />
+    <Compile Include="CRM\PersonRepository.cs" />
+    <Compile Include="CRM\PersonTrailRepository.cs" />
     <Compile Include="CRM\PersonTrail.cs" />
-    <Compile Include="CRM\PersonTrailService.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
-    <Compile Include="CRM\PersonViewedService.cs" />
+    <Compile Include="CRM\PersonViewedRepository.cs" />
+    <Compile Include="CRM\PhoneNumberRepository.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
@@ -103,137 +123,44 @@
     <Compile Include="Address\GeocodeComponent.cs" />
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
     <Compile Include="CMS\Auth.cs" />
-    <Compile Include="CMS\AuthService.cs" />
     <Compile Include="CMS\Block.cs" />
     <Compile Include="CMS\BlockInstance.cs" />
-    <Compile Include="CMS\BlockInstanceService.cs" />
-    <Compile Include="CMS\BlockService.cs" />
     <Compile Include="CMS\Blog.cs" />
     <Compile Include="CMS\BlogCategory.cs" />
-    <Compile Include="CMS\BlogCategoryService.cs" />
     <Compile Include="CMS\BlogPost.cs" />
     <Compile Include="CMS\BlogPostComment.cs" />
-    <Compile Include="CMS\BlogPostCommentService.cs" />
-    <Compile Include="CMS\BlogPostService.cs" />
-    <Compile Include="CMS\BlogService.cs" />
     <Compile Include="CMS\BlogTag.cs" />
-    <Compile Include="CMS\BlogTagService.cs" />
-    <Compile Include="CMS\UserService.partial.cs" />
-    <Compile Include="CMS\SiteDomainService.partial.cs" />
-    <Compile Include="CMS\EntityAuthRepository.cs" />
-    <Compile Include="CMS\EntityBlockInstanceRepository.cs" />
-    <Compile Include="CMS\EntityBlockRepository.cs" />
-    <Compile Include="CMS\EntityBlogCategoryRepository.cs" />
-    <Compile Include="CMS\EntityBlogPostCommentRepository.cs" />
-    <Compile Include="CMS\EntityBlogPostRepository.cs" />
-    <Compile Include="CMS\EntityBlogRepository.cs" />
-    <Compile Include="CMS\EntityBlogTagRepository.cs" />
-    <Compile Include="CMS\EntityFileRepository.cs" />
-    <Compile Include="CMS\EntityHtmlContentRepository.cs" />
-    <Compile Include="CMS\EntityPageRepository.cs" />
-    <Compile Include="CMS\EntityPageRouteRepository.cs" />
-    <Compile Include="CMS\EntitySiteDomainRepository.cs" />
-    <Compile Include="CMS\EntitySiteRepository.cs" />
-    <Compile Include="CMS\EntityUserRepository.cs" />
     <Compile Include="CMS\File.cs" />
-    <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContent.cs" />
-    <Compile Include="CMS\HtmlContentService.cs" />
-    <Compile Include="CMS\IAuthRepository.cs" />
-    <Compile Include="CMS\IBlockInstanceRepository.cs" />
-    <Compile Include="CMS\IBlockRepository.cs" />
-    <Compile Include="CMS\IBlogCategoryRepository.cs" />
-    <Compile Include="CMS\IBlogPostCommentRepository.cs" />
-    <Compile Include="CMS\IBlogPostRepository.cs" />
-    <Compile Include="CMS\IBlogRepository.cs" />
-    <Compile Include="CMS\IBlogTagRepository.cs" />
-    <Compile Include="CMS\IFileRepository.cs" />
-    <Compile Include="CMS\IHtmlContentRepository.cs" />
-    <Compile Include="CMS\IPageRepository.cs" />
-    <Compile Include="CMS\IPageRouteRepository.cs" />
-    <Compile Include="CMS\ISiteDomainRepository.cs" />
-    <Compile Include="CMS\ISiteRepository.cs" />
-    <Compile Include="CMS\IUserRepository.cs" />
     <Compile Include="CMS\Page.cs" />
     <Compile Include="CMS\PageRoute.cs" />
-    <Compile Include="CMS\PageRouteService.cs" />
-    <Compile Include="CMS\PageService.cs" />
     <Compile Include="CMS\Site.cs" />
     <Compile Include="CMS\SiteDomain.cs" />
-    <Compile Include="CMS\SiteDomainService.cs" />
-    <Compile Include="CMS\SiteService.cs" />
     <Compile Include="CMS\User.cs" />
-    <Compile Include="CMS\UserService.cs" />
     <Compile Include="Communication\Email.cs" />
     <Compile Include="Core\Attribute.cs" />
     <Compile Include="Core\AttributeQualifier.cs" />
-    <Compile Include="Core\AttributeQualifierService.cs" />
-    <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValue.cs" />
-    <Compile Include="Core\AttributeValueService.cs" />
-    <Compile Include="Core\AttributeValue.Partial.cs" />
     <Compile Include="Core\DefinedType.cs" />
-    <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValue.cs" />
-    <Compile Include="Core\DefinedValueService.cs" />
-    <Compile Include="Core\EntityAttributeQualifierRepository.cs" />
-    <Compile Include="Core\EntityAttributeRepository.cs" />
-    <Compile Include="Core\EntityAttributeValueRepository.cs" />
-    <Compile Include="Core\EntityChange.cs" />
-    <Compile Include="Core\EntityChangeService.cs" />
-    <Compile Include="Core\EntityDefinedTypeRepository.cs" />
-    <Compile Include="Core\EntityDefinedValueRepository.cs" />
-    <Compile Include="Core\EntityEntityChangeRepository.cs" />
-    <Compile Include="Core\EntityFieldTypeRepository.cs" />
-    <Compile Include="Core\EntityServiceLogRepository.cs" />
     <Compile Include="Core\FieldType.cs" />
-    <Compile Include="Core\FieldTypeService.cs" />
-    <Compile Include="Core\IAttributeQualifierRepository.cs" />
-    <Compile Include="Core\IAttributeRepository.cs" />
-    <Compile Include="Core\IAttributeValueRepository.cs" />
-    <Compile Include="Core\IDefinedTypeRepository.cs" />
-    <Compile Include="Core\IDefinedValueRepository.cs" />
-    <Compile Include="Core\IEntityChangeRepository.cs" />
-    <Compile Include="Core\IFieldTypeRepository.cs" />
-    <Compile Include="Core\IServiceLogRepository.cs" />
     <Compile Include="Core\ServiceLog.cs" />
-    <Compile Include="Core\ServiceLogService.cs" />
     <Compile Include="CRM\Address.cs" />
-    <Compile Include="CRM\AddressService.cs" />
     <Compile Include="CRM\EmailTemplate.cs" />
-    <Compile Include="CRM\EmailTemplateService.cs" />
-    <Compile Include="CRM\EntityAddressRepository.cs" />
-    <Compile Include="CRM\EntityEmailTemplateRepository.cs" />
-    <Compile Include="CRM\EntityPersonRepository.cs" />
-    <Compile Include="CRM\EntityPhoneNumberRepository.cs" />
-    <Compile Include="CRM\IAddressRepository.cs" />
-    <Compile Include="CRM\IEmailTemplateRepository.cs" />
-    <Compile Include="CRM\IPersonRepository.cs" />
-    <Compile Include="CRM\IPhoneNumberRepository.cs" />
     <Compile Include="CRM\Person.cs" />
-    <Compile Include="CRM\PersonService.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
-    <Compile Include="CRM\PhoneNumberService.cs" />
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="FieldTypes\Date.cs" />
     <Compile Include="FieldTypes\Image.cs" />
     <Compile Include="FieldTypes\Video.cs" />
-    <Compile Include="Groups\EntityGroupRepository.cs" />
-    <Compile Include="Groups\EntityGroupRoleRepository.cs" />
-    <Compile Include="Groups\EntityGroupTypeRepository.cs" />
-    <Compile Include="Groups\EntityMemberRepository.cs" />
     <Compile Include="Groups\Group.cs" />
+    <Compile Include="Groups\GroupRepository.cs" />
     <Compile Include="Groups\GroupRole.cs" />
-    <Compile Include="Groups\GroupRoleService.cs" />
-    <Compile Include="Groups\GroupService.cs" />
+    <Compile Include="Groups\GroupRoleRepository.cs" />
     <Compile Include="Groups\GroupType.cs" />
-    <Compile Include="Groups\GroupTypeService.cs" />
-    <Compile Include="Groups\IGroupRepository.cs" />
-    <Compile Include="Groups\IGroupRoleRepository.cs" />
-    <Compile Include="Groups\IGroupTypeRepository.cs" />
-    <Compile Include="Groups\IMemberRepository.cs" />
+    <Compile Include="Groups\GroupTypeRepository.cs" />
     <Compile Include="Groups\Member.cs" />
-    <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="Groups\MemberRepository.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
@@ -263,10 +190,8 @@
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
-    <Compile Include="Util\EntityJobRepository.cs" />
-    <Compile Include="Util\IJobRepository.cs" />
     <Compile Include="Util\Job.cs" />
-    <Compile Include="Util\JobService.cs" />
+    <Compile Include="Util\JobRepository.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\Attribute.cs" />
     <Compile Include="Web\Cache\Block.cs" />
@@ -334,18 +259,8 @@
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
     <Compile Include="Jobs\TestJob.cs" />
-    <Compile Include="CMS\BlogPost.Partial.cs" />
-    <Compile Include="CMS\Auth.Partial.cs" />
-    <Compile Include="CMS\BlockInstance.Partial.cs" />
-    <Compile Include="CMS\User.Partial.cs" />
-    <Compile Include="CMS\HtmlContent.Partial.cs" />
-    <Compile Include="CMS\Page.Partial.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
-    <Compile Include="CRM\Address.Partial.cs" />
     <Compile Include="Data\IOrdered.cs" />
-    <Compile Include="Core\Attribute.Partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Data\IAuditable.cs" />
     <Compile Include="Data\IModel.cs" />
     <Compile Include="Data\Model.cs" />
@@ -355,13 +270,8 @@
     <Compile Include="Data\TrackChangesAttribute.cs" />
     <Compile Include="Data\RockContext.cs" />
     <Compile Include="Data\UnitOfWorkScope.cs" />
-    <Compile Include="CRM\Person.Partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Util\Job.Partial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Data\EntityRepository.cs" />
-    <Compile Include="Data\IRepository.cs" />
+    <Compile Include="Data\Repository.cs" />
     <Compile Include="REST\CMS\AuthService.cs" />
     <Compile Include="REST\CMS\BlockInstanceService.cs" />
     <Compile Include="REST\CMS\BlockInstanceService.Partial.cs" />
@@ -455,26 +365,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="CMS\BlockService.partial.cs" />
-    <Compile Include="CMS\BlogService.Partial.cs" />
-    <Compile Include="CMS\AuthService.partial.cs" />
-    <Compile Include="CMS\BlockInstanceService.partial.cs" />
-    <Compile Include="CMS\HtmlContentService.Partial.cs" />
-    <Compile Include="CMS\ThemeService.partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Core\AttributeService.Partial.cs" />
-    <Compile Include="CRM\AddressService.partial.cs" />
-    <Compile Include="CRM\PersonService.partial.cs" />
     <Compile Include="Data\IFeed.cs" />
-    <Compile Include="Data\Service.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
-    <Compile Include="Util\JobService.Partial.cs" />
-    <Compile Include="T4\Model1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -543,10 +435,6 @@
     </None>
     <None Include="Service References\TeleAtlas.Geocoding\Rock.TeleAtlas.Geocoding.OutputField.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="T4\Model.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Model1.cs</LastGenOutput>
     </None>
     <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
     <None Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />

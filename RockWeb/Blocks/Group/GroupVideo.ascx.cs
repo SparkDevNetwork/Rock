@@ -110,12 +110,12 @@ namespace RockWeb.Blocks.Group
 
         private void BuildHierarchy()
         {
-            GroupService groupService = new GroupService();
+            GroupRepository groupRepository = new GroupRepository();
 
             int groupId = 0;
             if ( Int32.TryParse( AttributeValue( "GroupId" ), out groupId ) )
             {
-                var parentGroup = groupService.Get( groupId );
+                var parentGroup = groupRepository.Get( groupId );
                 if ( parentGroup != null )
                 {
                     lParentGroup.Text = parentGroup.Name;

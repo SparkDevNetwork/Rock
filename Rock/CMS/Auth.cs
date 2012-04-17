@@ -154,8 +154,8 @@ namespace Rock.CMS
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
+
+        /// <summary>
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
@@ -222,6 +222,16 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person Person { get; set; }
 
+        /// <summary>
+        /// The default authorization for a specific action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public override bool DefaultAuthorization( string action )
+        {
+            return false;
+        }
+
     }
     /// <summary>
     /// Auth Configuration class.
@@ -240,4 +250,31 @@ namespace Rock.CMS
 			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
 		}
     }
+
+    /// <summary>
+    /// Authorization for a special group of users not defined by a specific role or person
+    /// </summary>
+    public enum SpecialRole
+    {
+        /// <summary>
+        /// No special role
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Authorize all users
+        /// </summary>
+        AllUsers = 1,
+
+        /// <summary>
+        /// Authorize all authenticated users
+        /// </summary>
+        AllAuthenticatedUsers = 2,
+
+        /// <summary>
+        /// Authorize all un-authenticated users
+        /// </summary>
+        AllUnAuthenticatedUsers = 3,
+    }
+
 }

@@ -68,8 +68,8 @@ namespace Rock.Web.Cache
                 return fieldType;
             else
             {
-                Rock.Core.FieldTypeService fieldTypeService = new Rock.Core.FieldTypeService();
-                Rock.Core.FieldType fieldTypeModel = fieldTypeService.Get( id );
+                Rock.Core.FieldTypeRepository fieldTypeRepository = new Rock.Core.FieldTypeRepository();
+                Rock.Core.FieldType fieldTypeModel = fieldTypeRepository.Get( id );
                 if ( fieldTypeModel != null )
                 {
                     fieldType = new FieldType();

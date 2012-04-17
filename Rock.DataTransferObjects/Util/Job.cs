@@ -40,7 +40,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the System.
 		/// </summary>
 		/// <value>
-		/// Determines whether the job is a system job..
+		/// System.
 		/// </value>
 		public bool? System { get; set; }
 
@@ -48,7 +48,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Active.
 		/// </summary>
 		/// <value>
-		/// Determines is the job is currently active..
+		/// Active.
 		/// </value>
 		public bool? Active { get; set; }
 
@@ -56,7 +56,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Name.
 		/// </summary>
 		/// <value>
-		/// Friendly name for the job..
+		/// Name.
 		/// </value>
 		public string Name { get; set; }
 
@@ -64,7 +64,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Description.
 		/// </summary>
 		/// <value>
-		/// Notes about the job..
+		/// Description.
 		/// </value>
 		public string Description { get; set; }
 
@@ -72,7 +72,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Assemby.
 		/// </summary>
 		/// <value>
-		/// Assembly (.dll) that contains the job class..
+		/// Assemby.
 		/// </value>
 		public string Assemby { get; set; }
 
@@ -80,7 +80,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Class.
 		/// </summary>
 		/// <value>
-		/// The class name of the job to run..
+		/// Class.
 		/// </value>
 		public string Class { get; set; }
 
@@ -88,7 +88,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Cron Expression.
 		/// </summary>
 		/// <value>
-		/// The cron expression that is used to determine the schedule of the job (see http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger for syntax.).
+		/// Cron Expression.
 		/// </value>
 		public string CronExpression { get; set; }
 
@@ -96,7 +96,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Successful Run.
 		/// </summary>
 		/// <value>
-		/// Date and time the job last completed successfully..
+		/// Last Successful Run.
 		/// </value>
 		public DateTime? LastSuccessfulRun { get; set; }
 
@@ -104,7 +104,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Run Date.
 		/// </summary>
 		/// <value>
-		/// Last date and time the job attempted to run..
+		/// Last Run Date.
 		/// </value>
 		public DateTime? LastRunDate { get; set; }
 
@@ -112,7 +112,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Run Duration.
 		/// </summary>
 		/// <value>
-		/// Number of seconds that the last job took to finish..
+		/// Last Run Duration.
 		/// </value>
 		public int? LastRunDuration { get; set; }
 
@@ -120,7 +120,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Status.
 		/// </summary>
 		/// <value>
-		/// The completion status from the last time the job was run (valid values 'Success', 'Exception', 'Error Loading Job')..
+		/// Last Status.
 		/// </value>
 		public string LastStatus { get; set; }
 
@@ -128,7 +128,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Status Message.
 		/// </summary>
 		/// <value>
-		/// Message from the last run.  Usually used to store the exception message..
+		/// Last Status Message.
 		/// </value>
 		public string LastStatusMessage { get; set; }
 
@@ -136,7 +136,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Last Run Scheduler Name.
 		/// </summary>
 		/// <value>
-		/// Name of the scheduler that the job ran under.  This is used to determine if a job ran in IIS or the Windows service..
+		/// Last Run Scheduler Name.
 		/// </value>
 		public string LastRunSchedulerName { get; set; }
 
@@ -144,7 +144,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Notification Emails.
 		/// </summary>
 		/// <value>
-		/// Email addresses (separated with commas) to be used for notification..
+		/// Notification Emails.
 		/// </value>
 		public string NotificationEmails { get; set; }
 
@@ -152,7 +152,7 @@ namespace Rock.Util.DTO
 		/// Gets or sets the Notification Status.
 		/// </summary>
 		/// <value>
-		/// States that should be used to determine when to notify (valid values = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
+		/// Notification Status.
 		/// </value>
 		public int NotificationStatus { get; set; }
 

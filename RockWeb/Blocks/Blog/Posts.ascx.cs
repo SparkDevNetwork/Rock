@@ -75,14 +75,14 @@ namespace RockWeb.Blocks.Blog
 
             if ( blogId != -1 )
             {
-                Rock.CMS.BlogService blogService = new Rock.CMS.BlogService();
+                Rock.CMS.BlogRepository blogRepository = new Rock.CMS.BlogRepository();
                 
                 // try loading the blog object from the page cache
                 Rock.CMS.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.CMS.Blog;
 
                 if ( blog == null )
                 {
-                    blog = blogService.Get( blogId );
+                    blog = blogRepository.Get( blogId );
                     PageInstance.SaveSharedItem( "blog", blog );
                 }
 
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Blog
 
                 // load posts
                 //var posts = blog.BlogPosts.Select( p => new { p.Title, p.PublishDate, p.State, AuthorFirstName = p.Author.FirstName, AuthorLastName = p.Author.LastName, p.Content } ).Where( p => p.State == (int)BlogPost.PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).ToList();
-                IQueryable<BlogPost> qPosts = blog.BlogPosts.Where( p => p.State == (int)BlogPost.PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).AsQueryable();
+                IQueryable<BlogPost> qPosts = blog.BlogPosts.Where( p => p.State == (int)PostStatus.Published && p.PublishDate < DateTime.Now ).OrderByDescending( p => p.PublishDate ).Skip( skipCount ).Take( takeCount + 1 ).AsQueryable();
 
                 // add category and tag filters if requested
                 if ( categoryId != 0 )

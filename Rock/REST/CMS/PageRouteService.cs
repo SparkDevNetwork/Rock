@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.PageRoute Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-				Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
+				Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+				Rock.CMS.PageRoute PageRoute = PageRouteRepository.Get( int.Parse( id ) );
 				if ( PageRoute.Authorized( "View", currentUser ) )
 					return PageRoute.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-					Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
+					Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+					Rock.CMS.PageRoute PageRoute = PageRouteRepository.Get( int.Parse( id ) );
 					if ( PageRoute.Authorized( "View", user ) )
 						return PageRoute.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePageRoute( string id, Rock.CMS.DTO.PageRoute PageRoute )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-				Rock.CMS.PageRoute existingPageRoute = PageRouteService.Get( int.Parse( id ) );
+				Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+				Rock.CMS.PageRoute existingPageRoute = PageRouteRepository.Get( int.Parse( id ) );
 				if ( existingPageRoute.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 					
 					if (existingPageRoute.IsValid)
-						PageRouteService.Save( existingPageRoute, currentUser.PersonId );
+						PageRouteRepository.Save( existingPageRoute, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-					Rock.CMS.PageRoute existingPageRoute = PageRouteService.Get( int.Parse( id ) );
+					Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+					Rock.CMS.PageRoute existingPageRoute = PageRouteRepository.Get( int.Parse( id ) );
 					if ( existingPageRoute.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 					
 						if (existingPageRoute.IsValid)
-							PageRouteService.Save( existingPageRoute, user.PersonId );
+							PageRouteRepository.Save( existingPageRoute, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePageRoute( Rock.CMS.DTO.PageRoute PageRoute )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
+				Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
 				Rock.CMS.PageRoute existingPageRoute = new Rock.CMS.PageRoute();
-				PageRouteService.Add( existingPageRoute, currentUser.PersonId );
+				PageRouteRepository.Add( existingPageRoute, currentUser.PersonId );
 				uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 
 				if (existingPageRoute.IsValid)
-					PageRouteService.Save( existingPageRoute, currentUser.PersonId );
+					PageRouteRepository.Save( existingPageRoute, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
+					Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
 					Rock.CMS.PageRoute existingPageRoute = new Rock.CMS.PageRoute();
-					PageRouteService.Add( existingPageRoute, user.PersonId );
+					PageRouteRepository.Add( existingPageRoute, user.PersonId );
 					uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 
 					if (existingPageRoute.IsValid)
-						PageRouteService.Save( existingPageRoute, user.PersonId );
+						PageRouteRepository.Save( existingPageRoute, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingPageRoute.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePageRoute( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-				Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
+				Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+				Rock.CMS.PageRoute PageRoute = PageRouteRepository.Get( int.Parse( id ) );
 				if ( PageRoute.Authorized( "Edit", currentUser ) )
 				{
-					PageRouteService.Delete( PageRoute, currentUser.PersonId );
-					PageRouteService.Save( PageRoute, currentUser.PersonId );
+					PageRouteRepository.Delete( PageRoute, currentUser.PersonId );
+					PageRouteRepository.Save( PageRoute, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PageRoute", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
-					Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
+					Rock.CMS.PageRouteRepository PageRouteRepository = new Rock.CMS.PageRouteRepository();
+					Rock.CMS.PageRoute PageRoute = PageRouteRepository.Get( int.Parse( id ) );
 					if ( PageRoute.Authorized( "Edit", user ) )
 					{
-						PageRouteService.Delete( PageRoute, user.PersonId );
-						PageRouteService.Save( PageRoute, user.PersonId );
+						PageRouteRepository.Delete( PageRoute, user.PersonId );
+						PageRouteRepository.Save( PageRoute, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this PageRoute", System.Net.HttpStatusCode.Forbidden );

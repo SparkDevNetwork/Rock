@@ -66,14 +66,14 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+                    Rock.CMS.BlockInstanceRepository blockInstanceRepository = new Rock.CMS.BlockInstanceRepository();
+                    Rock.CMS.BlockInstance blockInstance = blockInstanceRepository.Get( _blockInstance.Id );
 
                     Rock.Attribute.Helper.LoadAttributes( blockInstance );
 
                     blockInstance.Name = tbBlockName.Text;
                     blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                    blockInstanceService.Save( blockInstance, CurrentPersonId );
+                    blockInstanceRepository.Save( blockInstance, CurrentPersonId );
 
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _blockInstance );
                     _blockInstance.SaveAttributeValues( CurrentPersonId );

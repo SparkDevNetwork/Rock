@@ -116,8 +116,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-            Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+            Rock.CMS.BlockInstanceRepository blockInstanceRepository = new CMS.BlockInstanceRepository();
+            Rock.CMS.BlockInstance blockInstanceModel = blockInstanceRepository.Get( this.Id );
 
             if ( blockInstanceModel != null )
             {
@@ -135,8 +135,8 @@ namespace Rock.Web.Cache
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+                Rock.CMS.BlockInstanceRepository blockInstanceRepository = new CMS.BlockInstanceRepository();
+                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceRepository.Get( this.Id );
 
                 if ( blockInstanceModel != null )
                 {
@@ -204,8 +204,8 @@ namespace Rock.Web.Cache
                 return blockInstance;
             else
             {
-                Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
+                Rock.CMS.BlockInstanceRepository blockInstanceRepository = new CMS.BlockInstanceRepository();
+                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceRepository.Get( id );
                 if ( blockInstanceModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );

@@ -45,13 +45,13 @@ namespace RockWeb.Blocks.Security
 
         protected void btnChange_Click( object sender, EventArgs e )
         {
-            UserService userService = new UserService();
-            User user = userService.GetByUserName( tbUserName.Text );
+            UserRepository userRepository = new UserRepository();
+            User user = userRepository.GetByUserName( tbUserName.Text );
             if ( user != null )
             {
-                if ( userService.ChangePassword( user, tbOldPassword.Text, tbPassword.Text ) )
+                if ( userRepository.ChangePassword( user, tbOldPassword.Text, tbPassword.Text ) )
                 {
-                    userService.Save( user, CurrentPersonId );
+                    userRepository.Save( user, CurrentPersonId );
 
                     lSuccess.Text = AttributeValue( "SuccessCaption" );
                     pnlEntry.Visible = false;

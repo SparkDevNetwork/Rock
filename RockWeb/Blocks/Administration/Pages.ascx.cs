@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
 
         private bool canConfigure = false;
         private Rock.Web.Cache.Page _page = null;
-        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+        private Rock.CMS.PageRepository pageRepository = new Rock.CMS.PageRepository();
 
         #endregion
 
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
             if (_page != null)
                 parentPageId = _page.Id;
 
-            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
+            pageRepository.Reorder( pageRepository.GetByParentPageId( parentPageId ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrid();
@@ -103,13 +103,13 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Page page = pageRepository.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
                 Rock.Web.Cache.Page.Flush( page.Id );
 
-                pageService.Delete( page, CurrentPersonId );
-                pageService.Save( page, CurrentPersonId );
+                pageRepository.Delete( page, CurrentPersonId );
+                pageRepository.Save( page, CurrentPersonId );
 
                 if (_page != null)
                     _page.FlushChildPages();
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Administration
                 page.IncludeAdminFooter = true;
 
                 Rock.CMS.Page lastPage =
-                    pageService.GetByParentPageId( _page.Id ).
+                    pageRepository.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastPage != null )
@@ -174,16 +174,16 @@ namespace RockWeb.Blocks.Administration
                 else
                     page.Order = 0;
 
-                pageService.Add( page, CurrentPersonId );
+                pageRepository.Add( page, CurrentPersonId );
 
             }
             else
-                page = pageService.Get( pageId );
+                page = pageRepository.Get( pageId );
 
             page.Layout = ddlLayout.Text;
             page.Name = tbPageName.Text;
 
-            pageService.Save( page, CurrentPersonId );
+            pageRepository.Save( page, CurrentPersonId );
 
             if ( _page != null )
             {
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Administration
             if ( _page != null )
                 parentPageId = _page.Id;
 
-            rGrid.DataSource = pageService.GetByParentPageId( parentPageId ).ToList();
+            rGrid.DataSource = pageRepository.GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.CMS.Page page = pageService.Get( pageId );
+            Rock.CMS.Page page = pageRepository.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

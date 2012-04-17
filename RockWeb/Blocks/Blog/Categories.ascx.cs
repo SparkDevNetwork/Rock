@@ -35,14 +35,14 @@ namespace RockWeb.Blocks.Blog
 
             if ( blogId != -1 )
             {
-                Rock.CMS.BlogService blogService = new Rock.CMS.BlogService();
+                Rock.CMS.BlogRepository blogRepository = new Rock.CMS.BlogRepository();
 
                 // try loading the blog object from the page cache
                 Rock.CMS.Blog blog = PageInstance.GetSharedItem( "blog" ) as Rock.CMS.Blog;
 
                 if ( blog == null )
                 {
-                    blog = blogService.Get( blogId );
+                    blog = blogRepository.Get( blogId );
                     PageInstance.SaveSharedItem( "blog", blog );
                 }
 

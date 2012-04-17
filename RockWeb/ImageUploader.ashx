@@ -49,7 +49,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 				return;
 			}
 			
-			FileService fileService = new FileService();
+			FileRepository fileRepository = new FileRepository();
 
             Rock.CMS.File cmsFile;
                         
@@ -58,14 +58,14 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			{
 				string anID = context.Request.QueryString[0];
 				int id;
-				cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByPublicKey( anID );
+				cmsFile = ( int.TryParse( anID, out id ) ) ? fileRepository.Get( id ) : fileRepository.GetByPublicKey( anID );
 			}
 			else
 			{
 				// ...otherwise create a new CMS File
 				cmsFile = new Rock.CMS.File();
                 cmsFile.Temporary = true;
-                fileService.Add( cmsFile, null );
+                fileRepository.Add( cmsFile, null );
 			}
 
 			cmsFile.MimeType = uploadedFile.ContentType;
@@ -104,7 +104,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 				// TODO: Log unable to rotate and/or resize.
 			}
 			
-			fileService.Save( cmsFile, null );
+			fileRepository.Save( cmsFile, null );
             
 			context.Response.Write( cmsFile.Id.ToJSON() );
 

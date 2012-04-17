@@ -152,8 +152,8 @@ namespace Rock.Web.Cache
                 return attribute;
             else
             {
-                Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
-                Rock.Core.Attribute attributeModel = attributeService.Get( id );
+                Rock.Core.AttributeRepository attributeRepository = new Rock.Core.AttributeRepository();
+                Rock.Core.Attribute attributeModel = attributeRepository.Get( id );
                 if ( attributeModel != null )
                 {
                     attribute = Attribute.CopyModel( attributeModel );
