@@ -32,15 +32,15 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.DefinedType Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-				Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
+				Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+				Rock.Core.DefinedType DefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 				if ( DefinedType.Authorized( "View", currentUser ) )
 					return DefinedType.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.Core
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
+					Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+					Rock.Core.DefinedType DefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 					if ( DefinedType.Authorized( "View", user ) )
 						return DefinedType.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateDefinedType( string id, Rock.Core.DTO.DefinedType DefinedType )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-				Rock.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
+				Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+				Rock.Core.DefinedType existingDefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 				if ( existingDefinedType.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 					
 					if (existingDefinedType.IsValid)
-						DefinedTypeService.Save( existingDefinedType, currentUser.PersonId );
+						DefinedTypeRepository.Save( existingDefinedType, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-					Rock.Core.DefinedType existingDefinedType = DefinedTypeService.Get( int.Parse( id ) );
+					Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+					Rock.Core.DefinedType existingDefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 					if ( existingDefinedType.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 					
 						if (existingDefinedType.IsValid)
-							DefinedTypeService.Save( existingDefinedType, user.PersonId );
+							DefinedTypeRepository.Save( existingDefinedType, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateDefinedType( Rock.Core.DTO.DefinedType DefinedType )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
+				Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
 				Rock.Core.DefinedType existingDefinedType = new Rock.Core.DefinedType();
-				DefinedTypeService.Add( existingDefinedType, currentUser.PersonId );
+				DefinedTypeRepository.Add( existingDefinedType, currentUser.PersonId );
 				uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 
 				if (existingDefinedType.IsValid)
-					DefinedTypeService.Save( existingDefinedType, currentUser.PersonId );
+					DefinedTypeRepository.Save( existingDefinedType, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
+					Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
 					Rock.Core.DefinedType existingDefinedType = new Rock.Core.DefinedType();
-					DefinedTypeService.Add( existingDefinedType, user.PersonId );
+					DefinedTypeRepository.Add( existingDefinedType, user.PersonId );
 					uow.objectContext.Entry(existingDefinedType).CurrentValues.SetValues(DefinedType);
 
 					if (existingDefinedType.IsValid)
-						DefinedTypeService.Save( existingDefinedType, user.PersonId );
+						DefinedTypeRepository.Save( existingDefinedType, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingDefinedType.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteDefinedType( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-				Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
+				Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+				Rock.Core.DefinedType DefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 				if ( DefinedType.Authorized( "Edit", currentUser ) )
 				{
-					DefinedTypeService.Delete( DefinedType, currentUser.PersonId );
-					DefinedTypeService.Save( DefinedType, currentUser.PersonId );
+					DefinedTypeRepository.Delete( DefinedType, currentUser.PersonId );
+					DefinedTypeRepository.Save( DefinedType, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this DefinedType", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.DefinedTypeService DefinedTypeService = new Rock.Core.DefinedTypeService();
-					Rock.Core.DefinedType DefinedType = DefinedTypeService.Get( int.Parse( id ) );
+					Rock.Core.DefinedTypeRepository DefinedTypeRepository = new Rock.Core.DefinedTypeRepository();
+					Rock.Core.DefinedType DefinedType = DefinedTypeRepository.Get( int.Parse( id ) );
 					if ( DefinedType.Authorized( "Edit", user ) )
 					{
-						DefinedTypeService.Delete( DefinedType, user.PersonId );
-						DefinedTypeService.Save( DefinedType, user.PersonId );
+						DefinedTypeRepository.Delete( DefinedType, user.PersonId );
+						DefinedTypeRepository.Save( DefinedType, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this DefinedType", System.Net.HttpStatusCode.Forbidden );

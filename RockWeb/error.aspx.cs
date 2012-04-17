@@ -20,9 +20,9 @@ public partial class error : System.Web.UI.Page
         if ( errorLevel == 1 )
         {
             // check to see if the user is an admin, if so allow them to view the error details
-            Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+            Rock.CMS.User user = Rock.CMS.UserRepository.GetCurrentUser();
 
-            GroupService service = new GroupService();
+            GroupRepository service = new GroupRepository();
             Group adminGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS );
 
             if ( user != null && adminGroup.Members.Where( m => m.PersonId == user.PersonId ).Count() > 0 )

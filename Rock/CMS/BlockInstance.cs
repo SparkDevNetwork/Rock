@@ -219,6 +219,24 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        public override List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
     /// <summary>
     /// Block Instance Configuration class.

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -284,6 +285,26 @@ namespace Rock.Core
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets the value of an attribute
+        /// </summary>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public string GetValue( int entityId )
+        {
+            AttributeValue attributeValue = this.AttributeValues.Where( v => v.EntityId == entityId ).FirstOrDefault();
+            if ( attributeValue != null )
+                return attributeValue.Value;
+            return DefaultValue;
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
     }
     /// <summary>
     /// Attribute Configuration class.

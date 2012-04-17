@@ -65,10 +65,10 @@ namespace Rock.Transactions
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
 
-                    PersonViewedService pvService = new PersonViewedService();
+                    PersonViewedRepository pvRepository = new PersonViewedRepository();
 
                     PersonViewed pvRecord = new PersonViewed();
-                    pvService.Add( pvRecord, null );
+                    pvRepository.Add( pvRecord, null );
 
                     pvRecord.IpAddress = IPAddress;
                     pvRecord.TargetPersonId = TargetPersonId;
@@ -76,7 +76,7 @@ namespace Rock.Transactions
                     pvRecord.ViewDateTime = DateViewed;
                     pvRecord.Source = Source;
 
-                    pvService.Save( pvRecord, null );
+                    pvRepository.Save( pvRecord, null );
                 }
             }
         }

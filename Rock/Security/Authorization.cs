@@ -32,9 +32,9 @@ namespace Rock.Security
         {
             Authorizations = new Dictionary<string, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
 
-            AuthService authService = new AuthService();
+            AuthRepository authRepository = new AuthRepository();
 
-            foreach ( Auth auth in authService.Queryable().
+            foreach ( Auth auth in authRepository.AsQueryable().
                 OrderBy( A => A.EntityType ).ThenBy( A => A.EntityId ).ThenBy( A => A.Action ).ThenBy( A => A.Order ) )
             {
                 if ( !Authorizations.ContainsKey( auth.EntityType ) )
@@ -79,8 +79,8 @@ namespace Rock.Security
                             Authorizations[entityType][entityId][action] = new List<AuthRule>();
 
                 // Find the Authrules for the given entity type, entity id, and action
-                AuthService authService = new AuthService();
-                foreach ( Auth auth in authService.GetAuths(entityType, entityId, action))
+                AuthRepository authRepository = new AuthRepository();
+                foreach ( Auth auth in authRepository.GetAuths(entityType, entityId, action))
                 {
                     if ( !Authorizations.ContainsKey( auth.EntityType ) )
                         Authorizations.Add( auth.EntityType, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
@@ -263,11 +263,11 @@ namespace Rock.Security
                 if ( Authorizations == null )
                     Load();
 
-                AuthService authService = new AuthService();
+                AuthRepository authRepository = new AuthRepository();
 
                 // Delete the current authorizations for the target entity
-                foreach ( Auth auth in authService.GetByEntityTypeAndEntityId( targetEntity.AuthEntity, targetEntity.Id ) )
-                    authService.Delete( auth, personId );
+                foreach ( Auth auth in authRepository.GetByEntityTypeAndEntityId( targetEntity.AuthEntity, targetEntity.Id ) )
+                    authRepository.Delete( auth, personId );
 
                 Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
 
@@ -290,8 +290,8 @@ namespace Rock.Security
                                 auth.PersonId = rule.PersonId;
                                 auth.GroupId = rule.GroupId;
 
-                                authService.Add( auth, personId );
-                                authService.Save( auth, personId );
+                                authRepository.Add( auth, personId );
+                                authRepository.Save( auth, personId );
 
                                 newActions[action.Key].Add( new AuthRule( rule.Id, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
 
@@ -390,8 +390,8 @@ namespace Rock.Security
                         {
                             try
                             {
-                                Rock.CRM.PersonService personService = new CRM.PersonService();
-                                Rock.CRM.Person person = personService.Get( PersonId.Value );
+                                Rock.CRM.PersonRepository personRepository = new CRM.PersonRepository();
+                                Rock.CRM.Person person = personRepository.Get( PersonId.Value );
                                 if (person != null)
                                     return person.FullName + " (User)";
                             }

@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSend_Click( object sender, EventArgs e )
         {
-            PersonService personService = new PersonService();
+            PersonRepository personRepository = new PersonRepository();
 
             var mergeObjects = new List<object>();
 
@@ -60,12 +60,12 @@ namespace RockWeb.Blocks.Security
 
             Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
 
-            foreach(Person person in personService.GetByEmail(tbEmail.Text))
+            foreach(Person person in personRepository.GetByEmail(tbEmail.Text))
             {
                 var userObjects = new List<object>();
 
-                UserService userService = new UserService();
-                foreach ( User user in userService.GetByPersonId( person.Id ) )
+                UserRepository userRepository = new UserRepository();
+                foreach ( User user in userRepository.GetByPersonId( person.Id ) )
                     if ( user.AuthenticationType != AuthenticationType.Facebook )
                         userObjects.Add( user );
 

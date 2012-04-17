@@ -48,7 +48,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Record Type Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Record Type Id.
 		/// </value>
 		public int? RecordTypeId { get; set; }
 
@@ -56,7 +56,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Record Status Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Record Status Id.
 		/// </value>
 		public int? RecordStatusId { get; set; }
 
@@ -64,7 +64,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Record Status Reason Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Record Status Reason Id.
 		/// </value>
 		public int? RecordStatusReasonId { get; set; }
 
@@ -72,7 +72,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Person Status Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Person Status Id.
 		/// </value>
 		public int? PersonStatusId { get; set; }
 
@@ -80,7 +80,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Title Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Title Id.
 		/// </value>
 		public int? TitleId { get; set; }
 
@@ -112,7 +112,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Suffix Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Suffix Id.
 		/// </value>
 		public int? SuffixId { get; set; }
 
@@ -152,7 +152,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Gender.
 		/// </summary>
 		/// <value>
-		/// Enum[Gender].
+		/// Gender.
 		/// </value>
 		public int? Gender { get; set; }
 
@@ -160,7 +160,7 @@ namespace Rock.CRM.DTO
 		/// Gets or sets the Marital Status Id.
 		/// </summary>
 		/// <value>
-		/// .
+		/// Marital Status Id.
 		/// </value>
 		public int? MaritalStatusId { get; set; }
 
@@ -259,6 +259,14 @@ namespace Rock.CRM.DTO
 		/// Modified By Person Id.
 		/// </value>
 		public int? ModifiedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Middle Name.
+		/// </summary>
+		/// <value>
+		/// Middle Name.
+		/// </value>
+		public string MiddleName { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonDTO"/> class.

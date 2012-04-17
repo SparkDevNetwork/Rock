@@ -32,15 +32,15 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.EntityChange Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-				Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
+				Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+				Rock.Core.EntityChange EntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 				if ( EntityChange.Authorized( "View", currentUser ) )
 					return EntityChange.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.Core
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-					Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
+					Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+					Rock.Core.EntityChange EntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 					if ( EntityChange.Authorized( "View", user ) )
 						return EntityChange.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateEntityChange( string id, Rock.Core.DTO.EntityChange EntityChange )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-				Rock.Core.EntityChange existingEntityChange = EntityChangeService.Get( int.Parse( id ) );
+				Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+				Rock.Core.EntityChange existingEntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 				if ( existingEntityChange.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 					
 					if (existingEntityChange.IsValid)
-						EntityChangeService.Save( existingEntityChange, currentUser.PersonId );
+						EntityChangeRepository.Save( existingEntityChange, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-					Rock.Core.EntityChange existingEntityChange = EntityChangeService.Get( int.Parse( id ) );
+					Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+					Rock.Core.EntityChange existingEntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 					if ( existingEntityChange.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 					
 						if (existingEntityChange.IsValid)
-							EntityChangeService.Save( existingEntityChange, user.PersonId );
+							EntityChangeRepository.Save( existingEntityChange, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateEntityChange( Rock.Core.DTO.EntityChange EntityChange )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
+				Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
 				Rock.Core.EntityChange existingEntityChange = new Rock.Core.EntityChange();
-				EntityChangeService.Add( existingEntityChange, currentUser.PersonId );
+				EntityChangeRepository.Add( existingEntityChange, currentUser.PersonId );
 				uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 
 				if (existingEntityChange.IsValid)
-					EntityChangeService.Save( existingEntityChange, currentUser.PersonId );
+					EntityChangeRepository.Save( existingEntityChange, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
+					Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
 					Rock.Core.EntityChange existingEntityChange = new Rock.Core.EntityChange();
-					EntityChangeService.Add( existingEntityChange, user.PersonId );
+					EntityChangeRepository.Add( existingEntityChange, user.PersonId );
 					uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 
 					if (existingEntityChange.IsValid)
-						EntityChangeService.Save( existingEntityChange, user.PersonId );
+						EntityChangeRepository.Save( existingEntityChange, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingEntityChange.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteEntityChange( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-				Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
+				Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+				Rock.Core.EntityChange EntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 				if ( EntityChange.Authorized( "Edit", currentUser ) )
 				{
-					EntityChangeService.Delete( EntityChange, currentUser.PersonId );
-					EntityChangeService.Save( EntityChange, currentUser.PersonId );
+					EntityChangeRepository.Delete( EntityChange, currentUser.PersonId );
+					EntityChangeRepository.Save( EntityChange, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this EntityChange", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
-					Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
+					Rock.Core.EntityChangeRepository EntityChangeRepository = new Rock.Core.EntityChangeRepository();
+					Rock.Core.EntityChange EntityChange = EntityChangeRepository.Get( int.Parse( id ) );
 					if ( EntityChange.Authorized( "Edit", user ) )
 					{
-						EntityChangeService.Delete( EntityChange, user.PersonId );
-						EntityChangeService.Save( EntityChange, user.PersonId );
+						EntityChangeRepository.Delete( EntityChange, user.PersonId );
+						EntityChangeRepository.Save( EntityChange, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this EntityChange", System.Net.HttpStatusCode.Forbidden );

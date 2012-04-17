@@ -48,7 +48,7 @@ namespace Rock.CMS.DTO
 		/// Gets or sets the Authentication Type.
 		/// </summary>
 		/// <value>
-		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
+		/// Authentication Type.
 		/// </value>
 		public int AuthenticationType { get; set; }
 

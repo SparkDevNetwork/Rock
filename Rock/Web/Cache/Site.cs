@@ -120,8 +120,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.SiteService siteService = new CMS.SiteService();
-            Rock.CMS.Site siteModel = siteService.Get( this.Id );
+            Rock.CMS.SiteRepository siteRepository = new CMS.SiteRepository();
+            Rock.CMS.Site siteModel = siteRepository.Get( this.Id );
             if ( siteModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
@@ -157,8 +157,8 @@ namespace Rock.Web.Cache
                 return site;
             else
             {
-                Rock.CMS.SiteService siteService = new CMS.SiteService();
-                Rock.CMS.Site siteModel = siteService.Get( id );
+                Rock.CMS.SiteRepository siteRepository = new CMS.SiteRepository();
+                Rock.CMS.Site siteModel = siteRepository.Get( id );
                 if ( siteModel != null )
                 {
                     site = new Site();

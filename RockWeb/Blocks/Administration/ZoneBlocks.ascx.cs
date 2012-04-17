@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
 
         private Rock.Web.Cache.Page _page = null;
         private string _zoneName = string.Empty;
-        private Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
+        private Rock.CMS.BlockInstanceRepository blockInstanceRepository = new Rock.CMS.BlockInstanceRepository();
 
         #endregion
 
@@ -119,8 +119,8 @@ namespace RockWeb.Blocks.Administration
 
         void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            blockInstanceService.Reorder(
-                blockInstanceService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList(),
+            blockInstanceRepository.Reorder(
+                blockInstanceRepository.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
@@ -133,11 +133,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.BlockInstance blockInstance = blockInstanceRepository.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                blockInstanceService.Delete( blockInstance, CurrentPersonId );
-                blockInstanceService.Save( blockInstance, CurrentPersonId );
+                blockInstanceRepository.Delete( blockInstance, CurrentPersonId );
+                blockInstanceRepository.Save( blockInstance, CurrentPersonId );
 
                 _page.FlushBlockInstances();
             }
@@ -157,8 +157,8 @@ namespace RockWeb.Blocks.Administration
 
         void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            blockInstanceService.Reorder(
-                blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
+            blockInstanceRepository.Reorder(
+                blockInstanceRepository.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
@@ -171,11 +171,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.BlockInstance blockInstance = blockInstanceRepository.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                blockInstanceService.Delete( blockInstance, CurrentPersonId );
-                blockInstanceService.Save( blockInstance, CurrentPersonId );
+                blockInstanceRepository.Delete( blockInstance, CurrentPersonId );
+                blockInstanceRepository.Save( blockInstance, CurrentPersonId );
 
                 _page.FlushBlockInstances();
             }
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Administration
                 blockInstance.Zone = _zoneName;
 
                 Rock.CMS.BlockInstance lastBlock =
-                    blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
+                    blockInstanceRepository.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
                                                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastBlock != null )
@@ -238,15 +238,15 @@ namespace RockWeb.Blocks.Administration
                 else
                     blockInstance.Order = 0;
 
-                blockInstanceService.Add( blockInstance, CurrentPersonId );
+                blockInstanceRepository.Add( blockInstance, CurrentPersonId );
             }
             else
-                blockInstance = blockInstanceService.Get( blockInstanceId );
+                blockInstance = blockInstanceRepository.Get( blockInstanceId );
 
             blockInstance.Name = tbBlockName.Text;
             blockInstance.BlockId = Convert.ToInt32( ddlBlockType.SelectedValue );
 
-            blockInstanceService.Save( blockInstance, CurrentPersonId );
+            blockInstanceRepository.Save( blockInstance, CurrentPersonId );
 
             Rock.Security.Authorization.CopyAuthorization( _page, blockInstance, CurrentPersonId );
             _page.FlushBlockInstances();
@@ -269,13 +269,13 @@ namespace RockWeb.Blocks.Administration
 
         private void BindLayoutGrid()
         {
-            gLayoutBlocks.DataSource = blockInstanceService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList();
+            gLayoutBlocks.DataSource = blockInstanceRepository.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList();
             gLayoutBlocks.DataBind();
         }
 
         private void BindPageGrid()
         {
-            gPageBlocks.DataSource = blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
+            gPageBlocks.DataSource = blockInstanceRepository.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
             gPageBlocks.DataBind();
         }
 
@@ -283,10 +283,10 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
+                Rock.CMS.BlockRepository blockRepository = new Rock.CMS.BlockRepository();
 
                 // Add any unregistered blocks
-                foreach ( Rock.CMS.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+                foreach ( Rock.CMS.Block block in blockRepository.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
                 {
                     try
                     {
@@ -298,16 +298,16 @@ namespace RockWeb.Blocks.Administration
                             block.Name = System.Text.RegularExpressions.Regex.Replace( block.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
                             block.Description = block.Path;
 
-                            blockService.Add( block, CurrentPersonId );
-                            blockService.Save( block, CurrentPersonId );
+                            blockRepository.Add( block, CurrentPersonId );
+                            blockRepository.Save( block, CurrentPersonId );
                         }
                     }
                     catch
                     {
                     }
                 }
-                
-                ddlBlockType.DataSource = blockService.Queryable().ToList();
+
+                ddlBlockType.DataSource = blockRepository.AsQueryable().ToList();
                 ddlBlockType.DataTextField = "Name";
                 ddlBlockType.DataValueField = "Id";
                 ddlBlockType.DataBind();
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( Rock.Web.Cache.BlockInstanceLocation location, int blockInstanceId )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( blockInstanceId );
+            Rock.CMS.BlockInstance blockInstance = blockInstanceRepository.Get( blockInstanceId );
             hfBlockLocation.Value = location.ConvertToString();
 
             if ( blockInstance != null )

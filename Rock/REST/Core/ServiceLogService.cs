@@ -32,15 +32,15 @@ namespace Rock.REST.Core
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Core.DTO.ServiceLog Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-				Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
+				Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+				Rock.Core.ServiceLog ServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 				if ( ServiceLog.Authorized( "View", currentUser ) )
 					return ServiceLog.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.Core
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
+					Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+					Rock.Core.ServiceLog ServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 					if ( ServiceLog.Authorized( "View", user ) )
 						return ServiceLog.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateServiceLog( string id, Rock.Core.DTO.ServiceLog ServiceLog )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-				Rock.Core.ServiceLog existingServiceLog = ServiceLogService.Get( int.Parse( id ) );
+				Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+				Rock.Core.ServiceLog existingServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 				if ( existingServiceLog.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 					
 					if (existingServiceLog.IsValid)
-						ServiceLogService.Save( existingServiceLog, currentUser.PersonId );
+						ServiceLogRepository.Save( existingServiceLog, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-					Rock.Core.ServiceLog existingServiceLog = ServiceLogService.Get( int.Parse( id ) );
+					Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+					Rock.Core.ServiceLog existingServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 					if ( existingServiceLog.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 					
 						if (existingServiceLog.IsValid)
-							ServiceLogService.Save( existingServiceLog, user.PersonId );
+							ServiceLogRepository.Save( existingServiceLog, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateServiceLog( Rock.Core.DTO.ServiceLog ServiceLog )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
+				Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
 				Rock.Core.ServiceLog existingServiceLog = new Rock.Core.ServiceLog();
-				ServiceLogService.Add( existingServiceLog, currentUser.PersonId );
+				ServiceLogRepository.Add( existingServiceLog, currentUser.PersonId );
 				uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 
 				if (existingServiceLog.IsValid)
-					ServiceLogService.Save( existingServiceLog, currentUser.PersonId );
+					ServiceLogRepository.Save( existingServiceLog, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
+					Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
 					Rock.Core.ServiceLog existingServiceLog = new Rock.Core.ServiceLog();
-					ServiceLogService.Add( existingServiceLog, user.PersonId );
+					ServiceLogRepository.Add( existingServiceLog, user.PersonId );
 					uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 
 					if (existingServiceLog.IsValid)
-						ServiceLogService.Save( existingServiceLog, user.PersonId );
+						ServiceLogRepository.Save( existingServiceLog, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingServiceLog.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.Core
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteServiceLog( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-				Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
+				Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+				Rock.Core.ServiceLog ServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 				if ( ServiceLog.Authorized( "Edit", currentUser ) )
 				{
-					ServiceLogService.Delete( ServiceLog, currentUser.PersonId );
-					ServiceLogService.Save( ServiceLog, currentUser.PersonId );
+					ServiceLogRepository.Delete( ServiceLog, currentUser.PersonId );
+					ServiceLogRepository.Save( ServiceLog, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.Core
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
-					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
+					Rock.Core.ServiceLogRepository ServiceLogRepository = new Rock.Core.ServiceLogRepository();
+					Rock.Core.ServiceLog ServiceLog = ServiceLogRepository.Get( int.Parse( id ) );
 					if ( ServiceLog.Authorized( "Edit", user ) )
 					{
-						ServiceLogService.Delete( ServiceLog, user.PersonId );
-						ServiceLogService.Save( ServiceLog, user.PersonId );
+						ServiceLogRepository.Delete( ServiceLog, user.PersonId );
+						ServiceLogRepository.Save( ServiceLog, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this ServiceLog", System.Net.HttpStatusCode.Forbidden );

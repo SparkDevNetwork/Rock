@@ -58,10 +58,10 @@ namespace Rock.Jobs
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                AttributeService attribService = new AttributeService();
-                AttributeValueService attributeValueService = new AttributeValueService();
+                AttributeRepository attribRepository = new AttributeRepository();
+                AttributeValueRepository attributeValueRepository = new AttributeValueRepository();
 
-                Rock.Core.Attribute jobPulseAttrib = attribService.GetGlobalAttribute( "JobPulse" );
+                Rock.Core.Attribute jobPulseAttrib = attribRepository.GetGlobalAttribute( "JobPulse" );
                 Rock.Core.AttributeValue jobPulseAttribValue = jobPulseAttrib.AttributeValues.FirstOrDefault();
 
                 // create attribute value if one does not exist
@@ -69,14 +69,14 @@ namespace Rock.Jobs
                 {
                     jobPulseAttribValue = new AttributeValue();
                     jobPulseAttribValue.AttributeId = jobPulseAttrib.Id;
-                    attributeValueService.Add( jobPulseAttribValue, null );
+                    attributeValueRepository.Add( jobPulseAttribValue, null );
                 }
 
                 // store todays date and time
                 jobPulseAttribValue.Value = DateTime.Now.ToString();
 
                 // save attribute
-                attributeValueService.Save( jobPulseAttribValue, null );
+                attributeValueRepository.Save( jobPulseAttribValue, null );
             }
 		}
 

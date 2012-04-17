@@ -71,27 +71,27 @@ namespace Rock.Jobs
             int userExpireHours = Int32.Parse( dataMap.GetString( "HoursKeepUnconfirmedAccounts" ) );
             DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1,0,0 ) );
 
-            UserService userService = new UserService();
+            UserRepository userRepository = new UserRepository();
 
-            foreach (var user in userService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
+            foreach (var user in userRepository.AsQueryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
             {
-                userService.Delete( user, null );
+                userRepository.Delete( user, null );
             }
 
-            userService.Save( null, null );
+            userRepository.Save( null, null );
 
             // purge exception log
             int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );
             DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
 
-            ExceptionLogService exceptionLogService = new ExceptionLogService();
+            ExceptionLogRepository exceptionLogRepository = new ExceptionLogRepository();
 
-            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDate < exceptionExpireDate ) )
+            foreach ( var exception in exceptionLogRepository.AsQueryable().Where( e => e.ExceptionDate < exceptionExpireDate ) )
             {
-                exceptionLogService.Delete( exception, null );
+                exceptionLogRepository.Delete( exception, null );
             }
 
-            exceptionLogService.Save( null, null );
+            exceptionLogRepository.Save( null, null );
 		}
 
 	}

@@ -91,6 +91,18 @@ namespace Rock.CRM
 		[NotMapped]
 		public override string AuthEntity { get { return "CRM.PersonTrail"; } }
 
+        /// <summary>
+        /// Gets a publicly viewable unique key for the model.
+        /// </summary>
+        [NotMapped]
+        public string CurrentPublicKey
+        {
+            get
+            {
+                string identifier = this.CurrentId.ToString() + ">" + this.CurrentGuid.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier );
+            }
+        }
     }
     /// <summary>
     /// Person Trail Configuration class.

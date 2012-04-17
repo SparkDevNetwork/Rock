@@ -11,10 +11,13 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Security.Principal;
+using System.Threading;
+using System.Web;
+using System.Web.Hosting;
 
 using Rock.Data;
 
@@ -287,6 +290,63 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// The default authorization for the selected action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public override bool DefaultAuthorization( string action )
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the encrypted confirmation code.
+        /// </summary>
+        public string ConfirmationCode
+        {
+            get
+            {
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.PublicKey.ToString(), this.UserName, DateTime.Now.Ticks );
+                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
+                return encryptedCode;
+            }
+        }
+
+        /// <summary>
+        /// Gets a urlencoded and encrypted confirmation code.
+        /// </summary>
+        public string ConfirmationCodeEncoded
+        {
+            get
+            {
+                return HttpUtility.UrlEncode( ConfirmationCode );
+            }
+        }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Gets the name of the current user.
+        /// </summary>
+        /// <returns></returns>
+        internal static string GetCurrentUserName()
+        {
+            if ( HostingEnvironment.IsHosted )
+            {
+                HttpContext current = HttpContext.Current;
+                if ( current != null && current.User != null )
+                    return current.User.Identity.Name;
+            }
+            IPrincipal currentPrincipal = Thread.CurrentPrincipal;
+            if ( currentPrincipal == null || currentPrincipal.Identity == null )
+                return string.Empty;
+            else
+                return currentPrincipal.Identity.Name;
+        }
+
+        #endregion
+
     }
     /// <summary>
     /// User Configuration class.
@@ -303,5 +363,26 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// How user is authenticated
+    /// </summary>
+    public enum AuthenticationType
+    {
+        /// <summary>
+        /// Athenticate login against Rock database
+        /// </summary>
+        Database = 1,
+
+        /// <summary>
+        /// Authenticate using Facebook
+        /// </summary>
+        Facebook = 2,
+
+        /// <summary>
+        /// Authenticate using Active Directory
+        /// </summary>
+        ActiveDirectory = 3
     }
 }

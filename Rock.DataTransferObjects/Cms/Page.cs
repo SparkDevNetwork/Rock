@@ -128,12 +128,7 @@ namespace Rock.CMS.DTO
 		/// Gets or sets the Display In Nav When.
 		/// </summary>
 		/// <value>
-		/// Determines when to display in a navigation 
-		/// 0 = When Security Allows
-		/// 1 = Always
-		/// 3 = Never   
-		/// 
-		/// Enum[DisplayInNavWhen].
+		/// Display In Nav When.
 		/// </value>
 		public int DisplayInNavWhen { get; set; }
 

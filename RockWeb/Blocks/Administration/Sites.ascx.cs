@@ -18,8 +18,8 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
         
-        Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-        Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
+        Rock.CMS.SiteRepository siteRepository = new Rock.CMS.SiteRepository();
+        Rock.CMS.SiteDomainRepository siteDomainRepository = new Rock.CMS.SiteDomainRepository();
         
         #endregion
 
@@ -81,11 +81,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Site site = siteRepository.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                siteService.Delete( site, CurrentPersonId );
-                siteService.Save( site, CurrentPersonId );
+                siteRepository.Delete( site, CurrentPersonId );
+                siteRepository.Save( site, CurrentPersonId );
 
                 Rock.Web.Cache.Site.Flush( site.Id );
             }
@@ -121,8 +121,8 @@ namespace RockWeb.Blocks.Administration
                         
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                siteService = new Rock.CMS.SiteService();
-                siteDomainService = new Rock.CMS.SiteDomainService();
+                siteRepository = new Rock.CMS.SiteRepository();
+                siteDomainRepository = new Rock.CMS.SiteDomainRepository();
 
                 int siteId = 0;
                 if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
@@ -132,13 +132,13 @@ namespace RockWeb.Blocks.Administration
                 {
                     newSite = true;
                     site = new Rock.CMS.Site();
-                    siteService.Add( site, CurrentPersonId );
+                    siteRepository.Add( site, CurrentPersonId );
                 }
                 else
                 {
-                    site = siteService.Get( siteId );
+                    site = siteRepository.Get( siteId );
                     foreach ( var domain in site.SiteDomains.ToList() )
-                        siteDomainService.Delete( domain, CurrentPersonId );
+                        siteDomainRepository.Delete( domain, CurrentPersonId );
                     site.SiteDomains.Clear();
                 }
 
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Administration
                 site.FacebookAppId = tbFacebookAppId.Text;
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
 
-                siteService.Save( site, CurrentPersonId );
+                siteRepository.Save( site, CurrentPersonId );
 
                 if ( newSite )
                     Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            gSites.DataSource = siteService.Queryable().OrderBy( s => s.Name ).ToList();
+            gSites.DataSource = siteRepository.AsQueryable().OrderBy( s => s.Name ).ToList();
             gSites.DataBind();
         }
 
@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlDefaultPage.Items.Clear();
             ddlDefaultPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
+            foreach ( var page in new Rock.CMS.PageRepository().GetByParentPageId( null ) )
                 AddPage( page, 1 );
 
             ddlTheme.Items.Clear();
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int siteId )
         {
-            Rock.CMS.Site site = siteService.Get( siteId );
+            Rock.CMS.Site site = siteRepository.Get( siteId );
 
             if ( site != null )
             {

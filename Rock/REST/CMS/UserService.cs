@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.User Get( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-				Rock.CMS.User User = UserService.Get( int.Parse( id ) );
+				Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+				Rock.CMS.User User = UserRepository.Get( int.Parse( id ) );
 				if ( User.Authorized( "View", currentUser ) )
 					return User.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-					Rock.CMS.User User = UserService.Get( int.Parse( id ) );
+					Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+					Rock.CMS.User User = UserRepository.Get( int.Parse( id ) );
 					if ( User.Authorized( "View", user ) )
 						return User.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateUser( string id, Rock.CMS.DTO.User User )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-				Rock.CMS.User existingUser = UserService.Get( int.Parse( id ) );
+				Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+				Rock.CMS.User existingUser = UserRepository.Get( int.Parse( id ) );
 				if ( existingUser.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
 					
 					if (existingUser.IsValid)
-						UserService.Save( existingUser, currentUser.PersonId );
+						UserRepository.Save( existingUser, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-					Rock.CMS.User existingUser = UserService.Get( int.Parse( id ) );
+					Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+					Rock.CMS.User existingUser = UserRepository.Get( int.Parse( id ) );
 					if ( existingUser.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
 					
 						if (existingUser.IsValid)
-							UserService.Save( existingUser, user.PersonId );
+							UserRepository.Save( existingUser, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateUser( Rock.CMS.DTO.User User )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
+				Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
 				Rock.CMS.User existingUser = new Rock.CMS.User();
-				UserService.Add( existingUser, currentUser.PersonId );
+				UserRepository.Add( existingUser, currentUser.PersonId );
 				uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
 
 				if (existingUser.IsValid)
-					UserService.Save( existingUser, currentUser.PersonId );
+					UserRepository.Save( existingUser, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
+					Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
 					Rock.CMS.User existingUser = new Rock.CMS.User();
-					UserService.Add( existingUser, user.PersonId );
+					UserRepository.Add( existingUser, user.PersonId );
 					uow.objectContext.Entry(existingUser).CurrentValues.SetValues(User);
 
 					if (existingUser.IsValid)
-						UserService.Save( existingUser, user.PersonId );
+						UserRepository.Save( existingUser, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingUser.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteUser( string id )
         {
-            var currentUser = Rock.CMS.UserService.GetCurrentUser();
+            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-				Rock.CMS.User User = UserService.Get( int.Parse( id ) );
+				Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+				Rock.CMS.User User = UserRepository.Get( int.Parse( id ) );
 				if ( User.Authorized( "Edit", currentUser ) )
 				{
-					UserService.Delete( User, currentUser.PersonId );
-					UserService.Save( User, currentUser.PersonId );
+					UserRepository.Delete( User, currentUser.PersonId );
+					UserRepository.Save( User, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this User", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
+                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.UserService UserService = new Rock.CMS.UserService();
-					Rock.CMS.User User = UserService.Get( int.Parse( id ) );
+					Rock.CMS.UserRepository UserRepository = new Rock.CMS.UserRepository();
+					Rock.CMS.User User = UserRepository.Get( int.Parse( id ) );
 					if ( User.Authorized( "Edit", user ) )
 					{
-						UserService.Delete( User, user.PersonId );
-						UserService.Save( User, user.PersonId );
+						UserRepository.Delete( User, user.PersonId );
+						UserRepository.Save( User, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this User", System.Net.HttpStatusCode.Forbidden );
