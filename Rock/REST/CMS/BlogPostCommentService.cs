@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.BlogPostComment Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-				Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+				Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+				Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 				if ( BlogPostComment.Authorized( "View", currentUser ) )
 					return BlogPostComment.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 					if ( BlogPostComment.Authorized( "View", user ) )
 						return BlogPostComment.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateBlogPostComment( string id, Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-				Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+				Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+				Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 				if ( existingBlogPostComment.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 					
 					if (existingBlogPostComment.IsValid)
-						BlogPostCommentRepository.Save( existingBlogPostComment, currentUser.PersonId );
+						BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-					Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+					Rock.CMS.BlogPostComment existingBlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 					if ( existingBlogPostComment.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 					
 						if (existingBlogPostComment.IsValid)
-							BlogPostCommentRepository.Save( existingBlogPostComment, user.PersonId );
+							BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateBlogPostComment( Rock.CMS.DTO.BlogPostComment BlogPostComment )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
+				Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 				Rock.CMS.BlogPostComment existingBlogPostComment = new Rock.CMS.BlogPostComment();
-				BlogPostCommentRepository.Add( existingBlogPostComment, currentUser.PersonId );
+				BlogPostCommentService.Add( existingBlogPostComment, currentUser.PersonId );
 				uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 
 				if (existingBlogPostComment.IsValid)
-					BlogPostCommentRepository.Save( existingBlogPostComment, currentUser.PersonId );
+					BlogPostCommentService.Save( existingBlogPostComment, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
+					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
 					Rock.CMS.BlogPostComment existingBlogPostComment = new Rock.CMS.BlogPostComment();
-					BlogPostCommentRepository.Add( existingBlogPostComment, user.PersonId );
+					BlogPostCommentService.Add( existingBlogPostComment, user.PersonId );
 					uow.objectContext.Entry(existingBlogPostComment).CurrentValues.SetValues(BlogPostComment);
 
 					if (existingBlogPostComment.IsValid)
-						BlogPostCommentRepository.Save( existingBlogPostComment, user.PersonId );
+						BlogPostCommentService.Save( existingBlogPostComment, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingBlogPostComment.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteBlogPostComment( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-				Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+				Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+				Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 				if ( BlogPostComment.Authorized( "Edit", currentUser ) )
 				{
-					BlogPostCommentRepository.Delete( BlogPostComment, currentUser.PersonId );
-					BlogPostCommentRepository.Save( BlogPostComment, currentUser.PersonId );
+					BlogPostCommentService.Delete( BlogPostComment, currentUser.PersonId );
+					BlogPostCommentService.Save( BlogPostComment, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this BlogPostComment", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.BlogPostCommentRepository BlogPostCommentRepository = new Rock.CMS.BlogPostCommentRepository();
-					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentRepository.Get( int.Parse( id ) );
+					Rock.CMS.BlogPostCommentService BlogPostCommentService = new Rock.CMS.BlogPostCommentService();
+					Rock.CMS.BlogPostComment BlogPostComment = BlogPostCommentService.Get( int.Parse( id ) );
 					if ( BlogPostComment.Authorized( "Edit", user ) )
 					{
-						BlogPostCommentRepository.Delete( BlogPostComment, user.PersonId );
-						BlogPostCommentRepository.Save( BlogPostComment, user.PersonId );
+						BlogPostCommentService.Delete( BlogPostComment, user.PersonId );
+						BlogPostCommentService.Save( BlogPostComment, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this BlogPostComment", System.Net.HttpStatusCode.Forbidden );

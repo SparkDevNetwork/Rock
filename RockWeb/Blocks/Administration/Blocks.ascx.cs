@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool _canConfigure = false;
-        private Rock.CMS.BlockRepository _blockRepository = new Rock.CMS.BlockRepository();
+        private Rock.CMS.BlockService _blockService = new Rock.CMS.BlockService();
 
         #endregion
 
@@ -82,11 +82,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void gBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Block block = _blockRepository.Get( ( int )gBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Block block = _blockService.Get( ( int )gBlocks.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                _blockRepository.Delete( block, CurrentPersonId );
-                _blockRepository.Save( block, CurrentPersonId );
+                _blockService.Delete( block, CurrentPersonId );
+                _blockService.Save( block, CurrentPersonId );
 
                 Rock.Web.Cache.Block.Flush( block.Id );
             }
@@ -125,16 +125,16 @@ namespace RockWeb.Blocks.Administration
             if ( blockId == 0 )
             {
                 block = new Rock.CMS.Block();
-                _blockRepository.Add( block, CurrentPersonId );
+                _blockService.Add( block, CurrentPersonId );
             }
             else
-                block = _blockRepository.Get( blockId );
+                block = _blockService.Get( blockId );
 
             block.Name = tbName.Text;
             block.Path = tbPath.Text;
             block.Description = tbDescription.Text;
 
-            _blockRepository.Save( block, CurrentPersonId );
+            _blockService.Save( block, CurrentPersonId );
 
             Rock.Web.Cache.Block.Flush( block.Id );
 
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Administration
 
         private void ScanForUnregisteredBlocks()
         {
-            foreach ( Rock.CMS.Block block in _blockRepository.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.CMS.Block block in _blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {
@@ -160,8 +160,8 @@ namespace RockWeb.Blocks.Administration
                         block.Name = Path.GetFileNameWithoutExtension( block.Path );
                         block.Description = block.Path;
 
-                        _blockRepository.Add( block, CurrentPersonId );
-                        _blockRepository.Save( block, CurrentPersonId );
+                        _blockService.Add( block, CurrentPersonId );
+                        _blockService.Save( block, CurrentPersonId );
                     }
                 }
                 catch
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var blocks = _blockRepository.AsQueryable();
+            var blocks = _blockService.Queryable();
 
             SortProperty sortProperty = gBlocks.SortProperty;
             if (sortProperty != null)
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int blockId )
         {
-            Rock.CMS.Block block = _blockRepository.Get( blockId );
+            Rock.CMS.Block block = _blockService.Get( blockId );
 
             if ( block != null )
             {

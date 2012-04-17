@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.File Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-				Rock.CMS.File File = FileRepository.Get( int.Parse( id ) );
+				Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+				Rock.CMS.File File = FileService.Get( int.Parse( id ) );
 				if ( File.Authorized( "View", currentUser ) )
 					return File.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-					Rock.CMS.File File = FileRepository.Get( int.Parse( id ) );
+					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
 					if ( File.Authorized( "View", user ) )
 						return File.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateFile( string id, Rock.CMS.DTO.File File )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-				Rock.CMS.File existingFile = FileRepository.Get( int.Parse( id ) );
+				Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+				Rock.CMS.File existingFile = FileService.Get( int.Parse( id ) );
 				if ( existingFile.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 					
 					if (existingFile.IsValid)
-						FileRepository.Save( existingFile, currentUser.PersonId );
+						FileService.Save( existingFile, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-					Rock.CMS.File existingFile = FileRepository.Get( int.Parse( id ) );
+					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+					Rock.CMS.File existingFile = FileService.Get( int.Parse( id ) );
 					if ( existingFile.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 					
 						if (existingFile.IsValid)
-							FileRepository.Save( existingFile, user.PersonId );
+							FileService.Save( existingFile, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateFile( Rock.CMS.DTO.File File )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
+				Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 				Rock.CMS.File existingFile = new Rock.CMS.File();
-				FileRepository.Add( existingFile, currentUser.PersonId );
+				FileService.Add( existingFile, currentUser.PersonId );
 				uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 
 				if (existingFile.IsValid)
-					FileRepository.Save( existingFile, currentUser.PersonId );
+					FileService.Save( existingFile, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
+					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
 					Rock.CMS.File existingFile = new Rock.CMS.File();
-					FileRepository.Add( existingFile, user.PersonId );
+					FileService.Add( existingFile, user.PersonId );
 					uow.objectContext.Entry(existingFile).CurrentValues.SetValues(File);
 
 					if (existingFile.IsValid)
-						FileRepository.Save( existingFile, user.PersonId );
+						FileService.Save( existingFile, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingFile.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteFile( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-				Rock.CMS.File File = FileRepository.Get( int.Parse( id ) );
+				Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+				Rock.CMS.File File = FileService.Get( int.Parse( id ) );
 				if ( File.Authorized( "Edit", currentUser ) )
 				{
-					FileRepository.Delete( File, currentUser.PersonId );
-					FileRepository.Save( File, currentUser.PersonId );
+					FileService.Delete( File, currentUser.PersonId );
+					FileService.Save( File, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this File", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.FileRepository FileRepository = new Rock.CMS.FileRepository();
-					Rock.CMS.File File = FileRepository.Get( int.Parse( id ) );
+					Rock.CMS.FileService FileService = new Rock.CMS.FileService();
+					Rock.CMS.File File = FileService.Get( int.Parse( id ) );
 					if ( File.Authorized( "Edit", user ) )
 					{
-						FileRepository.Delete( File, user.PersonId );
-						FileRepository.Save( File, user.PersonId );
+						FileService.Delete( File, user.PersonId );
+						FileService.Save( File, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this File", System.Net.HttpStatusCode.Forbidden );

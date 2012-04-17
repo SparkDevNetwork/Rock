@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.Auth Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-				Rock.CMS.Auth Auth = AuthRepository.Get( int.Parse( id ) );
+				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+				Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
 				if ( Auth.Authorized( "View", currentUser ) )
 					return Auth.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-					Rock.CMS.Auth Auth = AuthRepository.Get( int.Parse( id ) );
+					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
 					if ( Auth.Authorized( "View", user ) )
 						return Auth.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateAuth( string id, Rock.CMS.DTO.Auth Auth )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-				Rock.CMS.Auth existingAuth = AuthRepository.Get( int.Parse( id ) );
+				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+				Rock.CMS.Auth existingAuth = AuthService.Get( int.Parse( id ) );
 				if ( existingAuth.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
 					if (existingAuth.IsValid)
-						AuthRepository.Save( existingAuth, currentUser.PersonId );
+						AuthService.Save( existingAuth, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-					Rock.CMS.Auth existingAuth = AuthRepository.Get( int.Parse( id ) );
+					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+					Rock.CMS.Auth existingAuth = AuthService.Get( int.Parse( id ) );
 					if ( existingAuth.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
 						if (existingAuth.IsValid)
-							AuthRepository.Save( existingAuth, user.PersonId );
+							AuthService.Save( existingAuth, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateAuth( Rock.CMS.DTO.Auth Auth )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
+				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 				Rock.CMS.Auth existingAuth = new Rock.CMS.Auth();
-				AuthRepository.Add( existingAuth, currentUser.PersonId );
+				AuthService.Add( existingAuth, currentUser.PersonId );
 				uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 
 				if (existingAuth.IsValid)
-					AuthRepository.Save( existingAuth, currentUser.PersonId );
+					AuthService.Save( existingAuth, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
+					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth existingAuth = new Rock.CMS.Auth();
-					AuthRepository.Add( existingAuth, user.PersonId );
+					AuthService.Add( existingAuth, user.PersonId );
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 
 					if (existingAuth.IsValid)
-						AuthRepository.Save( existingAuth, user.PersonId );
+						AuthService.Save( existingAuth, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingAuth.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteAuth( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-				Rock.CMS.Auth Auth = AuthRepository.Get( int.Parse( id ) );
+				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+				Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
 				if ( Auth.Authorized( "Edit", currentUser ) )
 				{
-					AuthRepository.Delete( Auth, currentUser.PersonId );
-					AuthRepository.Save( Auth, currentUser.PersonId );
+					AuthService.Delete( Auth, currentUser.PersonId );
+					AuthService.Save( Auth, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.AuthRepository AuthRepository = new Rock.CMS.AuthRepository();
-					Rock.CMS.Auth Auth = AuthRepository.Get( int.Parse( id ) );
+					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
+					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
 					if ( Auth.Authorized( "Edit", user ) )
 					{
-						AuthRepository.Delete( Auth, user.PersonId );
-						AuthRepository.Save( Auth, user.PersonId );
+						AuthService.Delete( Auth, user.PersonId );
+						AuthService.Save( Auth, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Auth", System.Net.HttpStatusCode.Forbidden );

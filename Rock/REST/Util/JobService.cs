@@ -32,15 +32,15 @@ namespace Rock.REST.Util
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.Util.DTO.Job Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-				Rock.Util.Job Job = JobRepository.Get( int.Parse( id ) );
+				Rock.Util.JobService JobService = new Rock.Util.JobService();
+				Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
 				if ( Job.Authorized( "View", currentUser ) )
 					return Job.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.Util
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-					Rock.Util.Job Job = JobRepository.Get( int.Parse( id ) );
+					Rock.Util.JobService JobService = new Rock.Util.JobService();
+					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
 					if ( Job.Authorized( "View", user ) )
 						return Job.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateJob( string id, Rock.Util.DTO.Job Job )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-				Rock.Util.Job existingJob = JobRepository.Get( int.Parse( id ) );
+				Rock.Util.JobService JobService = new Rock.Util.JobService();
+				Rock.Util.Job existingJob = JobService.Get( int.Parse( id ) );
 				if ( existingJob.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
 					if (existingJob.IsValid)
-						JobRepository.Save( existingJob, currentUser.PersonId );
+						JobService.Save( existingJob, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.Util
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-					Rock.Util.Job existingJob = JobRepository.Get( int.Parse( id ) );
+					Rock.Util.JobService JobService = new Rock.Util.JobService();
+					Rock.Util.Job existingJob = JobService.Get( int.Parse( id ) );
 					if ( existingJob.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
 						if (existingJob.IsValid)
-							JobRepository.Save( existingJob, user.PersonId );
+							JobService.Save( existingJob, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateJob( Rock.Util.DTO.Job Job )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
+				Rock.Util.JobService JobService = new Rock.Util.JobService();
 				Rock.Util.Job existingJob = new Rock.Util.Job();
-				JobRepository.Add( existingJob, currentUser.PersonId );
+				JobService.Add( existingJob, currentUser.PersonId );
 				uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 
 				if (existingJob.IsValid)
-					JobRepository.Save( existingJob, currentUser.PersonId );
+					JobService.Save( existingJob, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.Util
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
+					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job existingJob = new Rock.Util.Job();
-					JobRepository.Add( existingJob, user.PersonId );
+					JobService.Add( existingJob, user.PersonId );
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 
 					if (existingJob.IsValid)
-						JobRepository.Save( existingJob, user.PersonId );
+						JobService.Save( existingJob, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingJob.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.Util
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteJob( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-				Rock.Util.Job Job = JobRepository.Get( int.Parse( id ) );
+				Rock.Util.JobService JobService = new Rock.Util.JobService();
+				Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
 				if ( Job.Authorized( "Edit", currentUser ) )
 				{
-					JobRepository.Delete( Job, currentUser.PersonId );
-					JobRepository.Save( Job, currentUser.PersonId );
+					JobService.Delete( Job, currentUser.PersonId );
+					JobService.Save( Job, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this Job", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.Util
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.Util.JobRepository JobRepository = new Rock.Util.JobRepository();
-					Rock.Util.Job Job = JobRepository.Get( int.Parse( id ) );
+					Rock.Util.JobService JobService = new Rock.Util.JobService();
+					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
 					if ( Job.Authorized( "Edit", user ) )
 					{
-						JobRepository.Delete( Job, user.PersonId );
-						JobRepository.Save( Job, user.PersonId );
+						JobService.Delete( Job, user.PersonId );
+						JobService.Save( Job, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this Job", System.Net.HttpStatusCode.Forbidden );

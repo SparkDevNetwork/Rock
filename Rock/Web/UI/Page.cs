@@ -106,7 +106,7 @@ namespace Rock.Web.UI
                 }
                 else
                 {
-                    Rock.CMS.User user = Rock.CMS.UserRepository.GetCurrentUser();
+                    Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
                     Context.Items.Add( "CurrentUser", user );
                     return user;
                 }
@@ -136,8 +136,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.CRM.PersonRepository personRepository = new CRM.PersonRepository();
-                        Person person = personRepository.Get( personId.Value );
+                        Rock.CRM.PersonService personService = new CRM.PersonService();
+                        Person person = personService.Get( personId.Value );
                         Context.Items.Add( "CurrentPerson", person );
                         return person;
                     }
@@ -299,8 +299,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.CRM.PersonRepository personRepository = new CRM.PersonRepository();
-                        Rock.CRM.Person person = personRepository.Get( personId.Value );
+                        Rock.CRM.PersonService personService = new CRM.PersonService();
+                        Rock.CRM.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;

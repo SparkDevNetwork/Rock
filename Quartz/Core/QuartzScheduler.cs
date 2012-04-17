@@ -627,7 +627,7 @@ namespace Quartz.Core
 
             NotifySchedulerListenersShutdown();
 
-            SchedulerRepository.Instance.Remove(resources.Name);
+            SchedulerService.Instance.Remove(resources.Name);
 
             holdToPreventGC.Clear();
         }

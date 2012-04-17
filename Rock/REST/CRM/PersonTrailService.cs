@@ -32,15 +32,15 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.PersonTrail Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-				Rock.CRM.PersonTrail PersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+				Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
 				if ( PersonTrail.Authorized( "View", currentUser ) )
 					return PersonTrail.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CRM
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-					Rock.CRM.PersonTrail PersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
 					if ( PersonTrail.Authorized( "View", user ) )
 						return PersonTrail.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePersonTrail( string id, Rock.CRM.DTO.PersonTrail PersonTrail )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-				Rock.CRM.PersonTrail existingPersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+				Rock.CRM.PersonTrail existingPersonTrail = PersonTrailService.Get( int.Parse( id ) );
 				if ( existingPersonTrail.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
 					
 					if (existingPersonTrail.IsValid)
-						PersonTrailRepository.Save( existingPersonTrail, currentUser.PersonId );
+						PersonTrailService.Save( existingPersonTrail, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-					Rock.CRM.PersonTrail existingPersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+					Rock.CRM.PersonTrail existingPersonTrail = PersonTrailService.Get( int.Parse( id ) );
 					if ( existingPersonTrail.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
 					
 						if (existingPersonTrail.IsValid)
-							PersonTrailRepository.Save( existingPersonTrail, user.PersonId );
+							PersonTrailService.Save( existingPersonTrail, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePersonTrail( Rock.CRM.DTO.PersonTrail PersonTrail )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
+				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
 				Rock.CRM.PersonTrail existingPersonTrail = new Rock.CRM.PersonTrail();
-				PersonTrailRepository.Add( existingPersonTrail, currentUser.PersonId );
+				PersonTrailService.Add( existingPersonTrail, currentUser.PersonId );
 				uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
 
 				if (existingPersonTrail.IsValid)
-					PersonTrailRepository.Save( existingPersonTrail, currentUser.PersonId );
+					PersonTrailService.Save( existingPersonTrail, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
+					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
 					Rock.CRM.PersonTrail existingPersonTrail = new Rock.CRM.PersonTrail();
-					PersonTrailRepository.Add( existingPersonTrail, user.PersonId );
+					PersonTrailService.Add( existingPersonTrail, user.PersonId );
 					uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
 
 					if (existingPersonTrail.IsValid)
-						PersonTrailRepository.Save( existingPersonTrail, user.PersonId );
+						PersonTrailService.Save( existingPersonTrail, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePersonTrail( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-				Rock.CRM.PersonTrail PersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+				Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
 				if ( PersonTrail.Authorized( "Edit", currentUser ) )
 				{
-					PersonTrailRepository.Delete( PersonTrail, currentUser.PersonId );
-					PersonTrailRepository.Save( PersonTrail, currentUser.PersonId );
+					PersonTrailService.Delete( PersonTrail, currentUser.PersonId );
+					PersonTrailService.Save( PersonTrail, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailRepository PersonTrailRepository = new Rock.CRM.PersonTrailRepository();
-					Rock.CRM.PersonTrail PersonTrail = PersonTrailRepository.Get( int.Parse( id ) );
+					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
+					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
 					if ( PersonTrail.Authorized( "Edit", user ) )
 					{
-						PersonTrailRepository.Delete( PersonTrail, user.PersonId );
-						PersonTrailRepository.Save( PersonTrail, user.PersonId );
+						PersonTrailService.Delete( PersonTrail, user.PersonId );
+						PersonTrailService.Save( PersonTrail, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );

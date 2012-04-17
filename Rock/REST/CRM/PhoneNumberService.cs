@@ -32,15 +32,15 @@ namespace Rock.REST.CRM
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CRM.DTO.PhoneNumber Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-				Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+				Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+				Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 				if ( PhoneNumber.Authorized( "View", currentUser ) )
 					return PhoneNumber.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CRM
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 					if ( PhoneNumber.Authorized( "View", user ) )
 						return PhoneNumber.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdatePhoneNumber( string id, Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-				Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+				Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+				Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 				if ( existingPhoneNumber.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 					
 					if (existingPhoneNumber.IsValid)
-						PhoneNumberRepository.Save( existingPhoneNumber, currentUser.PersonId );
+						PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-					Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+					Rock.CRM.PhoneNumber existingPhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 					if ( existingPhoneNumber.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 					
 						if (existingPhoneNumber.IsValid)
-							PhoneNumberRepository.Save( existingPhoneNumber, user.PersonId );
+							PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreatePhoneNumber( Rock.CRM.DTO.PhoneNumber PhoneNumber )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
+				Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 				Rock.CRM.PhoneNumber existingPhoneNumber = new Rock.CRM.PhoneNumber();
-				PhoneNumberRepository.Add( existingPhoneNumber, currentUser.PersonId );
+				PhoneNumberService.Add( existingPhoneNumber, currentUser.PersonId );
 				uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 
 				if (existingPhoneNumber.IsValid)
-					PhoneNumberRepository.Save( existingPhoneNumber, currentUser.PersonId );
+					PhoneNumberService.Save( existingPhoneNumber, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
+					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
 					Rock.CRM.PhoneNumber existingPhoneNumber = new Rock.CRM.PhoneNumber();
-					PhoneNumberRepository.Add( existingPhoneNumber, user.PersonId );
+					PhoneNumberService.Add( existingPhoneNumber, user.PersonId );
 					uow.objectContext.Entry(existingPhoneNumber).CurrentValues.SetValues(PhoneNumber);
 
 					if (existingPhoneNumber.IsValid)
-						PhoneNumberRepository.Save( existingPhoneNumber, user.PersonId );
+						PhoneNumberService.Save( existingPhoneNumber, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingPhoneNumber.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CRM
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeletePhoneNumber( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-				Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+				Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+				Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 				if ( PhoneNumber.Authorized( "Edit", currentUser ) )
 				{
-					PhoneNumberRepository.Delete( PhoneNumber, currentUser.PersonId );
-					PhoneNumberRepository.Save( PhoneNumber, currentUser.PersonId );
+					PhoneNumberService.Delete( PhoneNumber, currentUser.PersonId );
+					PhoneNumberService.Save( PhoneNumber, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this PhoneNumber", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CRM
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PhoneNumberRepository PhoneNumberRepository = new Rock.CRM.PhoneNumberRepository();
-					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberRepository.Get( int.Parse( id ) );
+					Rock.CRM.PhoneNumberService PhoneNumberService = new Rock.CRM.PhoneNumberService();
+					Rock.CRM.PhoneNumber PhoneNumber = PhoneNumberService.Get( int.Parse( id ) );
 					if ( PhoneNumber.Authorized( "Edit", user ) )
 					{
-						PhoneNumberRepository.Delete( PhoneNumber, user.PersonId );
-						PhoneNumberRepository.Save( PhoneNumber, user.PersonId );
+						PhoneNumberService.Delete( PhoneNumber, user.PersonId );
+						PhoneNumberService.Save( PhoneNumber, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this PhoneNumber", System.Net.HttpStatusCode.Forbidden );

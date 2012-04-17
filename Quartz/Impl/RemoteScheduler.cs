@@ -235,7 +235,7 @@ namespace Quartz.Impl
             {
                 string schedulerName = SchedulerName;
                 GetRemoteScheduler().Shutdown();
-                SchedulerRepository.Instance.Remove(schedulerName);
+                SchedulerService.Instance.Remove(schedulerName);
             }
             catch (RemotingException re)
             {

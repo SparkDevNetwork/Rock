@@ -32,15 +32,15 @@ namespace Rock.REST.CMS
 		[WebGet( UriTemplate = "{id}" )]
         public Rock.CMS.DTO.HtmlContent Get( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-				Rock.CMS.HtmlContent HtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+				Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+				Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
 				if ( HtmlContent.Authorized( "View", currentUser ) )
 					return HtmlContent.DataTransferObject;
 				else
@@ -56,14 +56,14 @@ namespace Rock.REST.CMS
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-					Rock.CMS.HtmlContent HtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+					Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
 					if ( HtmlContent.Authorized( "View", user ) )
 						return HtmlContent.DataTransferObject;
 					else
@@ -80,21 +80,21 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
         public void UpdateHtmlContent( string id, Rock.CMS.DTO.HtmlContent HtmlContent )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-				Rock.CMS.HtmlContent existingHtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+				Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+				Rock.CMS.HtmlContent existingHtmlContent = HtmlContentService.Get( int.Parse( id ) );
 				if ( existingHtmlContent.Authorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 					
 					if (existingHtmlContent.IsValid)
-						HtmlContentRepository.Save( existingHtmlContent, currentUser.PersonId );
+						HtmlContentService.Save( existingHtmlContent, currentUser.PersonId );
 					else
 						throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -111,20 +111,20 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-					Rock.CMS.HtmlContent existingHtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+					Rock.CMS.HtmlContent existingHtmlContent = HtmlContentService.Get( int.Parse( id ) );
 					if ( existingHtmlContent.Authorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 					
 						if (existingHtmlContent.IsValid)
-							HtmlContentRepository.Save( existingHtmlContent, user.PersonId );
+							HtmlContentService.Save( existingHtmlContent, user.PersonId );
 						else
 							throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
@@ -142,20 +142,20 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
         public void CreateHtmlContent( Rock.CMS.DTO.HtmlContent HtmlContent )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
+				Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 				Rock.CMS.HtmlContent existingHtmlContent = new Rock.CMS.HtmlContent();
-				HtmlContentRepository.Add( existingHtmlContent, currentUser.PersonId );
+				HtmlContentService.Add( existingHtmlContent, currentUser.PersonId );
 				uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 
 				if (existingHtmlContent.IsValid)
-					HtmlContentRepository.Save( existingHtmlContent, currentUser.PersonId );
+					HtmlContentService.Save( existingHtmlContent, currentUser.PersonId );
 				else
 					throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
@@ -169,19 +169,19 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
+					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
 					Rock.CMS.HtmlContent existingHtmlContent = new Rock.CMS.HtmlContent();
-					HtmlContentRepository.Add( existingHtmlContent, user.PersonId );
+					HtmlContentService.Add( existingHtmlContent, user.PersonId );
 					uow.objectContext.Entry(existingHtmlContent).CurrentValues.SetValues(HtmlContent);
 
 					if (existingHtmlContent.IsValid)
-						HtmlContentRepository.Save( existingHtmlContent, user.PersonId );
+						HtmlContentService.Save( existingHtmlContent, user.PersonId );
 					else
 						throw new WebFaultException<string>( existingHtmlContent.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
@@ -196,19 +196,19 @@ namespace Rock.REST.CMS
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
         public void DeleteHtmlContent( string id )
         {
-            var currentUser = Rock.CMS.UserRepository.GetCurrentUser();
+            var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
                 throw new WebFaultException<string>("Must be logged in", System.Net.HttpStatusCode.Forbidden );
 
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-				Rock.CMS.HtmlContent HtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+				Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+				Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
 				if ( HtmlContent.Authorized( "Edit", currentUser ) )
 				{
-					HtmlContentRepository.Delete( HtmlContent, currentUser.PersonId );
-					HtmlContentRepository.Save( HtmlContent, currentUser.PersonId );
+					HtmlContentService.Delete( HtmlContent, currentUser.PersonId );
+					HtmlContentService.Save( HtmlContent, currentUser.PersonId );
 				}
 				else
 					throw new WebFaultException<string>( "Not Authorized to Edit this HtmlContent", System.Net.HttpStatusCode.Forbidden );
@@ -223,18 +223,18 @@ namespace Rock.REST.CMS
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
-				Rock.CMS.UserRepository userRepository = new Rock.CMS.UserRepository();
-                Rock.CMS.User user = userRepository.AsQueryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
+				Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.CMS.User user = userService.Queryable().Where( u => u.ApiKey == apiKey ).FirstOrDefault();
 
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CMS.HtmlContentRepository HtmlContentRepository = new Rock.CMS.HtmlContentRepository();
-					Rock.CMS.HtmlContent HtmlContent = HtmlContentRepository.Get( int.Parse( id ) );
+					Rock.CMS.HtmlContentService HtmlContentService = new Rock.CMS.HtmlContentService();
+					Rock.CMS.HtmlContent HtmlContent = HtmlContentService.Get( int.Parse( id ) );
 					if ( HtmlContent.Authorized( "Edit", user ) )
 					{
-						HtmlContentRepository.Delete( HtmlContent, user.PersonId );
-						HtmlContentRepository.Save( HtmlContent, user.PersonId );
+						HtmlContentService.Delete( HtmlContent, user.PersonId );
+						HtmlContentService.Save( HtmlContent, user.PersonId );
 					}
 					else
 						throw new WebFaultException<string>( "Not Authorized to Edit this HtmlContent", System.Net.HttpStatusCode.Forbidden );

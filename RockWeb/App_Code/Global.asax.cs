@@ -53,13 +53,13 @@ namespace RockWeb
                 sched = sf.GetScheduler();  
 
                 // get list of active jobs
-                JobRepository jobRepository = new JobRepository();
-                foreach ( Job job in jobRepository.GetActiveJobs().ToList() )
+                JobService jobService = new JobService();
+                foreach ( Job job in jobService.GetActiveJobs().ToList() )
                 {
                     try
                     {
-                        IJobDetail jobDetail = jobRepository.BuildQuartzJob( job );
-                        ITrigger jobTrigger = jobRepository.BuildQuartzTrigger( job );
+                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                         sched.ScheduleJob( jobDetail, jobTrigger );
                     }
@@ -70,7 +70,7 @@ namespace RockWeb
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
                         
-                        jobRepository.Save( job, null );
+                        jobService.Save( job, null );
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace RockWeb
                     string errorPage = string.Empty;
 
                     // determine error page based on the site
-                    SiteRepository service = new SiteRepository();
+                    SiteService service = new SiteService();
                     Site site = null;
                     string siteName = string.Empty;
 
@@ -290,10 +290,10 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.CMS.User user = Rock.CMS.UserRepository.GetCurrentUser();
+                Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
 
                 // save the exception info to the db
-                ExceptionLogRepository service = new ExceptionLogRepository();
+                ExceptionLogService service = new ExceptionLogService();
                 ExceptionLog exceptionLog = new ExceptionLog(); ;
 
                 exceptionLog.ParentId = parentException;
@@ -398,10 +398,10 @@ namespace RockWeb
 
         private void RegisterRoutes( RouteCollection routes )
         {
-            PageRouteRepository pageRouteRepository = new PageRouteRepository();
+            PageRouteService pageRouteService = new PageRouteService();
 
             // find each page that has defined a custom routes.
-            foreach ( PageRoute pageRoute in pageRouteRepository.AsQueryable())
+            foreach ( PageRoute pageRoute in pageRouteService.Queryable())
             {
                 // Create the custom route and save the page id in the DataTokens collection
                 Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );

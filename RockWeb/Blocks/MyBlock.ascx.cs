@@ -55,7 +55,7 @@ namespace RockWeb.Blocks
 
             lItemTest.Text = itemTest;
 
-            Rock.Groups.GroupTypeRepository _service = new Rock.Groups.GroupTypeRepository();
+            Rock.Groups.GroupTypeService _service = new Rock.Groups.GroupTypeService();
             Rock.Groups.GroupType groupType = _service.Get( 2 );
 
             foreach ( Rock.Groups.GroupType parentType in groupType.ParentGroupTypes )

@@ -23,14 +23,14 @@ namespace RockWeb.Blocks
                 if ( string.IsNullOrEmpty( personId ) )
                     personId = Request.QueryString["PersonId"];
 
-                PersonRepository personRepository = new PersonRepository();
+                PersonService personService = new PersonService();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personRepository.Get( Convert.ToInt32( personId ) );
+                    person = personService.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personRepository.Add( person, CurrentPersonId );
+                    personService.Add( person, CurrentPersonId );
                 }
 
                 txtFirstName.Text = person.FirstName;
@@ -49,22 +49,22 @@ namespace RockWeb.Blocks
                 if ( string.IsNullOrEmpty( personId ) )
                     personId = Request.QueryString["PersonId"];
 
-                PersonRepository personRepository = new PersonRepository();
+                PersonService personService = new PersonService();
 
                 if ( !string.IsNullOrEmpty( personId ) )
-                    person = personRepository.Get( Convert.ToInt32( personId ) );
+                    person = personService.Get( Convert.ToInt32( personId ) );
                 else
                 {
                     person = new Person();
-                    personRepository.Add( person, CurrentPersonId );
+                    personService.Add( person, CurrentPersonId );
                 }
 
                 person.GivenName = txtFirstName.Text;
                 person.NickName = txtNickName.Text;
                 person.LastName = txtLastName.Text;
                 if ( person.Guid == Guid.Empty )
-                    personRepository.Add( person, CurrentPersonId );
-                personRepository.Save( person, CurrentPersonId );
+                    personService.Add( person, CurrentPersonId );
+                personService.Save( person, CurrentPersonId );
             }
         }
     }

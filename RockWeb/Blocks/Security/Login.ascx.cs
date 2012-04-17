@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Rock.CMS.UserRepository.Validate( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
                     FormsAuthentication.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked );
 
@@ -158,8 +158,8 @@ namespace RockWeb.Blocks.Security
                     string facebookId = "FACEBOOK_" + me.id.ToString();
 
                     // query for matching id in the user table 
-                    UserRepository userRepository = new UserRepository();
-                    var user = userRepository.GetByUserName( facebookId ); 
+                    UserService userService = new UserService();
+                    var user = userService.GetByUserName( facebookId ); 
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -173,8 +173,8 @@ namespace RockWeb.Blocks.Security
                             string firstName = me.first_name.ToString();
                             string email = me.email.ToString();
 
-                            var personRepository = new PersonRepository();
-                            var person = personRepository.AsQueryable().FirstOrDefault( u => u.LastName == lastName && ( u.GivenName == firstName || u.NickName == firstName ) && u.Email == email );
+                            var personService = new PersonService();
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && ( u.GivenName == firstName || u.NickName == firstName ) && u.Email == email );
 
                             if ( person != null )
                             {
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Security
                                 if ( person.BirthDay == null )
                                 {
                                     person.BirthDate = birthdate;
-                                    personRepository.Save( person, person.Id );
+                                    personService.Save( person, person.Id );
                                 }
 
                             }
@@ -202,11 +202,11 @@ namespace RockWeb.Blocks.Security
 
                                 person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
 
-                                personRepository.Add( person, null );
-                                personRepository.Save( person, null );
+                                personService.Add( person, null );
+                                personService.Save( person, null );
                             }
 
-                            user = userRepository.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
+                            user = userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Security
                     // update user record noting the login datetime
                     user.LastLoginDate = DateTime.Now;
                     user.LastActivityDate = DateTime.Now;
-                    userRepository.Save( user, user.PersonId );
+                    userService.Save( user, user.PersonId );
 
                     FormsAuthentication.SetAuthCookie( user.UserName, false );
 

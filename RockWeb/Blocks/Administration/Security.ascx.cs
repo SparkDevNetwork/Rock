@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.CMS.AuthRepository authRepository = new Rock.CMS.AuthRepository();
+        private Rock.CMS.AuthService authService = new Rock.CMS.AuthService();
         private Rock.Security.ISecured iSecured;
 
         protected string CurrentAction
@@ -108,8 +108,8 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            List<Rock.CMS.Auth> rules = authRepository.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
-            authRepository.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
+            List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
+            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
 
             Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
 
@@ -128,11 +128,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Auth auth = authRepository.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.CMS.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
-                authRepository.Delete( auth, CurrentPersonId );
-                authRepository.Save( auth, CurrentPersonId );
+                authService.Delete( auth, CurrentPersonId );
+                authService.Save( auth, CurrentPersonId );
 
                 Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
             }
@@ -172,11 +172,11 @@ namespace RockWeb.Blocks.Administration
             {
                 int id = ( int )rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
-                Rock.CMS.Auth auth = authRepository.Get( id );
+                Rock.CMS.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
-                    authRepository.Save( auth, CurrentPersonId );
+                    authService.Save( auth, CurrentPersonId );
 
                     Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
                 }
@@ -258,8 +258,8 @@ namespace RockWeb.Blocks.Administration
                         auth.SpecialRole = specialRole;
                         auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
-                        authRepository.Add( auth, CurrentPersonId );
-                        authRepository.Save( auth, CurrentPersonId );
+                        authService.Add( auth, CurrentPersonId );
+                        authService.Save( auth, CurrentPersonId );
 
                         actionUpdated = true;
                     }
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Administration
         {
             cbUsers.DataTextField = "FullName";
             cbUsers.DataValueField = "Id";
-            cbUsers.DataSource = new Rock.CRM.PersonRepository().GetByFullName( tbUser.Text ).ToList();
+            cbUsers.DataSource = new Rock.CRM.PersonService().GetByFullName( tbUser.Text ).ToList();
             cbUsers.DataBind();
         }
 
@@ -317,8 +317,8 @@ namespace RockWeb.Blocks.Administration
                         auth.SpecialRole = Rock.CMS.SpecialRole.None;
                         auth.PersonId = personId;
                         auth.Order = ++maxOrder;
-                        authRepository.Add( auth, CurrentPersonId );
-                        authRepository.Save( auth, CurrentPersonId );
+                        authService.Add( auth, CurrentPersonId );
+                        authService.Save( auth, CurrentPersonId );
 
                         actionUpdated = true;
                     }

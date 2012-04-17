@@ -73,8 +73,8 @@ namespace RockWeb.Blocks.Administration
         {
             if (!Page.IsPostBack && _page.Authorized( "Configure", CurrentUser ) )
             {
-                Rock.CMS.PageRepository pageRepository = new Rock.CMS.PageRepository();
-                Rock.CMS.Page page = pageRepository.Get( _page.Id );
+                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                Rock.CMS.Page page = pageService.Get( _page.Id );
                 
                 rptProperties.DataSource = tabs;
                 rptProperties.DataBind();
@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.PageRepository pageRepository = new Rock.CMS.PageRepository();
-                    Rock.CMS.Page page = pageRepository.Get( _page.Id );
-                    Rock.CMS.PageRouteRepository routeRepository = new Rock.CMS.PageRouteRepository();
+                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                    Rock.CMS.Page page = pageService.Get( _page.Id );
+                    Rock.CMS.PageRouteService routeService = new Rock.CMS.PageRouteService();
                     Rock.CMS.PageRoute pr;
 
                     int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Administration
                             Rock.Web.Cache.Page.Flush( parentPage );
 
                         foreach ( var route in page.PageRoutes )
-                            routeRepository.Delete( route, CurrentPersonId );
+                            routeService.Delete( route, CurrentPersonId );
                         page.PageRoutes.Clear();
                     }
 
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Administration
                         page.PageRoutes.Add( pr );
                     }
 
-                    pageRepository.Save( page, CurrentPersonId );
+                    pageService.Save( page, CurrentPersonId );
 
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                     _page.SaveAttributeValues( CurrentPersonId );
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlParentPage.Items.Clear();
             ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach ( var page in new Rock.CMS.PageRepository().GetByParentPageId( null ) )
+            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
                 AddPage( page, 1 );
 
             ddlLayout.Items.Clear();

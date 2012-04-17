@@ -54,12 +54,12 @@ namespace Rock.Attribute
                     existingKeys.Add( blockInstanceProperty.Key );
                 }
 
-                Core.AttributeRepository attributeRepository = new Core.AttributeRepository();
-                foreach( var a in attributeRepository.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
+                Core.AttributeService attributeService = new Core.AttributeService();
+                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
                     if ( !existingKeys.Contains( a.Key ) )
                     {
-                        attributeRepository.Delete( a, currentPersonId );
-                        attributeRepository.Save( a, currentPersonId );
+                        attributeService.Delete( a, currentPersonId );
+                        attributeService.Save( a, currentPersonId );
                     }
             }
 
@@ -79,11 +79,11 @@ namespace Rock.Attribute
         {
             bool updated = false;
 
-            Core.AttributeRepository attributeRepository = new Core.AttributeRepository();
-            Core.FieldTypeRepository fieldTypeRepository = new Core.FieldTypeRepository();
+            Core.AttributeService attributeService = new Core.AttributeService();
+            Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Core.Attribute attribute = attributeRepository.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+            Core.Attribute attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
                 entity, entityQualifierColumn, entityQualifierValue, property.Key );
 
             if ( attribute == null )
@@ -125,18 +125,18 @@ namespace Rock.Attribute
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass )
                 {
-                    attribute.FieldType = fieldTypeRepository.AsQueryable().FirstOrDefault( f =>
+                    attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
                         f.Assembly == property.FieldTypeAssembly &&
                         f.Class == property.FieldTypeClass );
                 }
 
                 // If this is a new attribute, add it, otherwise remove the exiting one from the cache
                 if ( attribute.Id == 0 )
-                    attributeRepository.Add( attribute, currentPersonId );
+                    attributeService.Add( attribute, currentPersonId );
                 else
                     Rock.Web.Cache.Attribute.Flush( attribute.Id );
 
-                attributeRepository.Save( attribute, currentPersonId );
+                attributeService.Save( attribute, currentPersonId );
 
                 return true;
             }
@@ -162,9 +162,9 @@ namespace Rock.Attribute
             foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
-            Rock.Core.AttributeRepository attributeRepository = new Rock.Core.AttributeRepository();
+            Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
 
-            foreach ( Rock.Core.Attribute attribute in attributeRepository.GetByEntity( entityType.FullName ) )
+            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
@@ -201,21 +201,21 @@ namespace Rock.Attribute
         /// <param name="personId">The person id.</param>
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string value, int? personId )
         {
-            Core.AttributeValueRepository attributeValueRepository = new Core.AttributeValueRepository();
+            Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
             // TODO: add support for multivalue
-            Core.AttributeValue attributeValue = attributeValueRepository.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
+            Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
 
             if ( attributeValue == null )
             {
                 attributeValue = new Rock.Core.AttributeValue();
-                attributeValueRepository.Add( attributeValue, personId );
+                attributeValueService.Add( attributeValue, personId );
             }
 
             attributeValue.AttributeId = attribute.Id;
             attributeValue.EntityId = model.Id;
             attributeValue.Value = value;
 
-            attributeValueRepository.Save( attributeValue, personId );
+            attributeValueService.Save( attributeValue, personId );
 
             model.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, value );
         }

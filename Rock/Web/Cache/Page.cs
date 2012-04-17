@@ -257,8 +257,8 @@ namespace Rock.Web.Cache
                 {
                     pageIds = new List<int>();
 
-                    Rock.CMS.PageRepository pageRepository = new Rock.CMS.PageRepository();
-                    foreach ( Rock.CMS.Page page in pageRepository.GetByParentPageId( this.Id ) )
+                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+                    foreach ( Rock.CMS.Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
                         pages.Add( Page.Read( page ) );
@@ -293,8 +293,8 @@ namespace Rock.Web.Cache
                     blockInstanceIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.CMS.BlockInstanceRepository blockInstanceRepository = new Rock.CMS.BlockInstanceRepository();
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceRepository.GetByLayout( this.Layout ) )
+                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
+                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -302,7 +302,7 @@ namespace Rock.Web.Cache
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceRepository.GetByPageId( this.Id ) )
+                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -325,8 +325,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.PageRepository pageRepository = new CMS.PageRepository();
-            Rock.CMS.Page pageModel = pageRepository.Get( this.Id );
+            Rock.CMS.PageService pageService = new CMS.PageService();
+            Rock.CMS.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
@@ -563,8 +563,8 @@ namespace Rock.Web.Cache
                 return page;
             else
             {
-                Rock.CMS.PageRepository pageRepository = new CMS.PageRepository();
-                Rock.CMS.Page pageModel = pageRepository.Get( id );
+                Rock.CMS.PageService pageService = new CMS.PageService();
+                Rock.CMS.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( pageModel );
