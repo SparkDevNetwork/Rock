@@ -315,6 +315,17 @@ namespace Rock.Web.Cache
         }
         private List<int> blockInstanceIds = null;
 
+        /// <summary>
+        /// Gets a dictionary of the current context items (models).
+        /// </summary>
+        internal Dictionary<string, Rock.Data.KeyModel> Context
+        {
+            get { return _context; }
+            set { _context = value; }
+        }
+        private Dictionary<string, Data.KeyModel> _context;
+
+
         #endregion
 
         #region Public Methods

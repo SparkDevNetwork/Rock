@@ -48,12 +48,25 @@ namespace Rock.Data
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]
-        public string PublicKey
+        public string EncryptedKey
         {
             get
             {
                 string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
+            }
+        }
+
+        [NotMapped]
+        public string ContextKey
+        {
+            get
+            {
+                string identifier = 
+                    typeof(T).FullName + "|" +
+                    this.Id.ToString() + ">" + 
+                    this.Guid.ToString();
+                return System.Web.HttpUtility.UrlEncode(Rock.Security.Encryption.EncryptString( identifier ));
             }
         }
 
@@ -301,6 +314,8 @@ namespace Rock.Data
         }
 
         #endregion
+
+
     }
 
     /// <summary>
@@ -360,6 +375,20 @@ namespace Rock.Data
         public ModelUpdatingEventArgs( IModel model, int? personId )
             : base( model, personId )
         {
+        }
+    }
+
+    /// <summary>
+    /// Object used for current model (context) implementation 
+    /// </summary>
+    internal class KeyModel
+    {
+        public string Key { get; set; }
+        public IModel Model { get; set; }
+
+        public KeyModel (string key)
+        {
+            Key = key;
         }
     }
 

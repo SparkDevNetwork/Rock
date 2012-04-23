@@ -307,7 +307,7 @@ namespace Rock.CMS
         {
             get
             {
-                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.PublicKey.ToString(), this.UserName, DateTime.Now.Ticks );
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, DateTime.Now.Ticks );
                 string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
                 return encryptedCode;
             }
