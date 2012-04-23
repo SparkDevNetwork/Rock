@@ -176,7 +176,6 @@ namespace Rock.Web.UI
             }
         }
 
-
         #endregion
 
         #region Protected Methods
@@ -331,6 +330,21 @@ namespace Rock.Web.UI
                 }
                 else
                 {
+                    // Set current models (context)
+                    PageInstance.Context = new Dictionary<string, Data.KeyModel>();
+                    try 
+                    {
+                        char[] delim = new char[1] { ',' };
+                        foreach (string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ))
+                        {
+                            string contextItem = Rock.Security.Encryption.DecryptString( param );
+                            string[] parts = contextItem.Split('|');
+                            if (parts.Length == 2)
+                                PageInstance.Context.Add(parts[0], new Data.KeyModel(parts[1]));
+                        }
+                    }
+                    catch {}
+
                     // set page title
                     if ( PageInstance.Title != null && PageInstance.Title != "" )
                         SetTitle( PageInstance.Title );
