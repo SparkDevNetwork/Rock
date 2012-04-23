@@ -52,12 +52,27 @@ namespace Rock.Extension
         public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their value.
+        /// Dictionary of all attributes and their values.
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets the first value for an Attributes
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string AttributeValue( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+                return this.AttributeValues[key].Value[0];
+
+            return null;
+        }
+
 
         /// <summary>
         /// Gets the order.
@@ -68,7 +83,7 @@ namespace Rock.Extension
             {
                 int order = 0;
                 if ( AttributeValues.ContainsKey( "Order" ) )
-                    if ( !( Int32.TryParse( AttributeValues["Order"].Value, out order ) ) )
+                    if ( !( Int32.TryParse( AttributeValues["Order"].Value[0], out order ) ) )
                         order = 0;
                 return order;
             }

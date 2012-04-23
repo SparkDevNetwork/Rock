@@ -11,7 +11,11 @@ namespace Rock.Web.Cache
 {
     /// <summary>
     /// Information about an attribute that is required by the rendering engine.
-    /// This information will be cached by Rock
+    /// This information will be cached by Rock. 
+    /// 
+    /// NOTE: Because this attribute object is cached and shared by all entities 
+    /// using the attribute, a particlar instance's values are not included as a 
+    /// property of this attribute object.
     /// </summary>
     public class Attribute
     {
