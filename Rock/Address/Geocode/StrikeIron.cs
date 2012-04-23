@@ -34,8 +34,8 @@ namespace Rock.Address.Geocode
             if ( address != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValues["UserID"].Value;
-                registeredUser.Password = AttributeValues["Password"].Value;
+                registeredUser.UserID = AttributeValue("UserID");
+                registeredUser.Password = AttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;

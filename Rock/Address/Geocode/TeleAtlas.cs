@@ -36,10 +36,10 @@ namespace Rock.Address.Geocode
                 var aptc = new Rock.TeleAtlas.Authentication.AuthenticationPortTypeClient();
 
                 int encryptedId;
-                int rc = aptc.requestChallenge( AttributeValues["UserName"].Value, 0, out encryptedId );
+                int rc = aptc.requestChallenge( AttributeValue( "UserID" ), 0, out encryptedId );
                 if ( rc == 0)
                 {
-                    int key = elfHash(AttributeValues["Password"].Value);
+                    int key = elfHash(AttributeValue("Password"));
 				    int unencryptedChallenge = encryptedId ^ key;
 				    int permutedChallenge = permute(unencryptedChallenge);
 				    int response = permutedChallenge ^ key;
@@ -59,7 +59,7 @@ namespace Rock.Address.Geocode
                         var gptc = new Rock.TeleAtlas.Geocoding.GeocodingPortTypeClient();
 
                         Rock.TeleAtlas.Geocoding.Geocode returnedGeocode;
-                        rc = gptc.findAddress( AttributeValues["EZLocateService"].Value, addressParts, cred, out returnedGeocode );
+                        rc = gptc.findAddress( AttributeValue("EZLocateService"), addressParts, cred, out returnedGeocode );
                         if ( rc == 0 )
                         {
                             if ( returnedGeocode.resultCode == 0 )

@@ -150,8 +150,8 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
-            SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
-            Dictionary<string, KeyValuePair<string, string>> attributeValues = new Dictionary<string, KeyValuePair<string, string>>();
+            var attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
+            var attributeValues = new Dictionary<string, KeyValuePair<string, List<string>>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -177,7 +177,7 @@ namespace Rock.Attribute
                         attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
 
                     attributes[cachedAttribute.Category].Add( cachedAttribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, attribute.GetValue( item.Id ) ) );
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<string>>( attribute.Name, attribute.GetValues( item.Id ) ) );
                 }
             }
 
@@ -185,11 +185,16 @@ namespace Rock.Attribute
             item.AttributeValues = attributeValues;
         }
 
+        /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="personId">The person id.</param>
         public static void SaveAttributeValues( IHasAttributes model, int? personId )
         {
             foreach ( var category in model.Attributes )
                 foreach ( var attribute in category.Value )
-                    SaveAttributeValue( model, attribute, model.AttributeValues[attribute.Key].Value, personId );
+                    SaveAttributeValues( model, attribute, model.AttributeValues[attribute.Key].Value, personId );
         }
 
         /// <summary>
@@ -199,25 +204,41 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string value, int? personId )
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<string> newValues, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
-            // TODO: add support for multivalue
-            Core.AttributeValue attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
 
-            if ( attributeValue == null )
+            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).ToList();
+            int i = 0;
+
+            while ( i < attributeValues.Count || i < newValues.Count )
             {
-                attributeValue = new Rock.Core.AttributeValue();
-                attributeValueService.Add( attributeValue, personId );
+                Rock.Core.AttributeValue attributeValue;
+
+                if ( i < attributeValues.Count )
+                {
+                    attributeValue = attributeValues[i];
+                }
+                else 
+                {
+                    attributeValue = new Rock.Core.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = model.Id;
+                    attributeValueService.Add( attributeValue, personId );
+                }
+
+                if ( i >= newValues.Count )
+                    attributeValueService.Delete( attributeValue, personId );
+
+                if ( attributeValue.Value != newValues[i] )
+                    attributeValue.Value = newValues[i];
+
+                attributeValueService.Save( attributeValue, personId );
+
+                i++;
             }
 
-            attributeValue.AttributeId = attribute.Id;
-            attributeValue.EntityId = model.Id;
-            attributeValue.Value = value;
-
-            attributeValueService.Save( attributeValue, personId );
-
-            model.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, value );
+            model.AttributeValues[attribute.Key] = new KeyValuePair<string, List<string>>( attribute.Name, newValues );
         }
 
         /// <summary>
@@ -263,7 +284,7 @@ namespace Rock.Attribute
                         HtmlGenericControl dd = new HtmlGenericControl( "dd" );
                         dl.Controls.Add( dd );
 
-                        Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value, setValue );
+                        Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value[0], setValue );
                         attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
                         attributeControl.ClientIDMode = ClientIDMode.AutoID;
                         dd.Controls.Add( attributeControl );
@@ -332,7 +353,7 @@ namespace Rock.Attribute
                     {
                         Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
                         if ( control != null )
-                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, string>( attribute.Name, attribute.FieldType.Field.ReadValue( control ) );
+                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<string>>( attribute.Name, new List<string> { attribute.FieldType.Field.ReadValue( control ) } );
                     }
         }
     }
