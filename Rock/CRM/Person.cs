@@ -399,7 +399,23 @@ namespace Rock.CRM
         /// Collection of Members.
         /// </value>
 		public virtual ICollection<Groups.Member> Members { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the Pledges.
+        /// </summary>
+        /// <value>
+        /// Collection of Pledges.
+        /// </value>
+        public virtual ICollection<Financial.Pledge> Pledges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAccountLookups.
+        /// </summary>
+        /// <value>
+        /// Collection of PersonAccountLookups.
+        /// </value>
+        public virtual ICollection<Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+
 		/// <summary>
         /// Gets or sets the Marital Status.
         /// </summary>
