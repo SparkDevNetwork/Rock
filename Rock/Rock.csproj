@@ -158,24 +158,30 @@
     <Compile Include="Financial\Batch.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\BatchService.cs" />
     <Compile Include="Financial\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\FundService.cs" />
     <Compile Include="Financial\PersonAccountLookup.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PersonAccountLookupService.cs" />
     <Compile Include="Financial\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PledgeService.cs" />
     <Compile Include="Financial\Transaction.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\TransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\TransactionDetailService.cs" />
     <Compile Include="Financial\TransactionFund.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\TransactionService.cs" />
     <Compile Include="Groups\Group.cs" />
     <Compile Include="Groups\GroupService.cs" />
     <Compile Include="Groups\GroupRole.cs" />
