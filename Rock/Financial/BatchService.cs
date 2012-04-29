@@ -12,5 +12,19 @@ namespace Rock.Financial
     /// </summary>
     public partial class BatchService : Service<Batch>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatchService"/> class.
+        /// </summary>
+        public BatchService() : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatchService"/> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        public BatchService(IRepository<Batch> repository) : base(repository)
+        {
+        }
     }
 }
