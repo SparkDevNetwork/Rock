@@ -22,6 +22,7 @@ namespace Rock.Financial
         /// The transaction id.
         /// </value>
         [Key]
+        [Column(Order = 0)]
         [DataMember]
         public int TransactionId { get; set; }
 
@@ -32,6 +33,7 @@ namespace Rock.Financial
         /// The fund id.
         /// </value>
         [Key]
+        [Column(Order = 1)]
         [DataMember]
         public int FundId { get; set; }
 
@@ -71,6 +73,8 @@ namespace Rock.Financial
         /// </summary>
         public TransactionFundConfiguration()
         {
+            //this.HasKey(t => t.TransactionId);
+            //this.HasKey(t => t.FundId);
             this.HasRequired(t => t.Transaction).WithMany(t => t.TransactionFunds).HasForeignKey(t => t.TransactionId);
             this.HasRequired(t => t.Fund).WithMany(f => f.TransactionFunds).HasForeignKey(t => t.FundId);
         }
