@@ -13,5 +13,19 @@ namespace Rock.Financial
     /// </summary>
     public partial class PledgeService : Service<Pledge>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PledgeService"/> class.
+        /// </summary>
+        public PledgeService() : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PledgeService"/> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        public PledgeService(IRepository<Pledge> repository) : base(repository)
+        {
+        }
     }
 }

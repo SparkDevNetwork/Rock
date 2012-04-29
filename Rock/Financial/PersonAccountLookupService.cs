@@ -13,5 +13,19 @@ namespace Rock.Financial
     /// </summary>
     public partial class PersonAccountLookupService : Service<PersonAccountLookup>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class.
+        /// </summary>
+        public PersonAccountLookupService() : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        public PersonAccountLookupService(IRepository<PersonAccountLookup> repository) : base(repository)
+        {
+        }
     }
 }

@@ -13,5 +13,19 @@ namespace Rock.Financial
     /// </summary>
     public partial class TransactionService : Service<Transaction>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionService"/> class.
+        /// </summary>
+        public TransactionService() : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionService"/> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        public TransactionService(IRepository<Transaction> repository) : base(repository)
+        {
+        }
     }
 }
