@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Administration
                     foreach ( var category in component.Value.Value.Attributes )
                         foreach ( var attribute in category.Value )
                             if ( attribute.Key == "Order" )
-                                Rock.Attribute.Helper.SaveAttributeValue( component.Value.Value, attribute, order.ToString(), CurrentPersonId );
+                                Rock.Attribute.Helper.SaveAttributeValues( component.Value.Value, attribute, new List<string> { order.ToString() }, CurrentPersonId );
                     order++;
                 }
             }

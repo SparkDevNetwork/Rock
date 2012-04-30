@@ -144,7 +144,6 @@ namespace Rock.Core
 		/// <value>
 		/// Default Value.
 		/// </value>
-		[Required]
 		[DataMember]
 		public string DefaultValue { get; set; }
 		
@@ -286,16 +285,32 @@ namespace Rock.Core
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Gets the value of an attribute
+        /// Gets the first value of an attribute for a specific entity
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
         public string GetValue( int entityId )
         {
-            AttributeValue attributeValue = this.AttributeValues.Where( v => v.EntityId == entityId ).FirstOrDefault();
-            if ( attributeValue != null )
-                return attributeValue.Value;
-            return DefaultValue;
+            return GetValues( entityId )[0];
+        }
+
+        /// <summary>
+        /// Gets all the values of an attribute for a specific entity
+        /// </summary>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public List<string> GetValues( int entityId )
+        {
+            List<string> values = this.AttributeValues.
+                Where( v => v.EntityId == entityId ).
+                OrderBy( v=> v.Order).
+                Select( v => v.Value ).
+                ToList();
+
+            if ( values.Count == 0 )
+                values.Add( DefaultValue );
+
+            return values;
         }
 
         /// <summary>

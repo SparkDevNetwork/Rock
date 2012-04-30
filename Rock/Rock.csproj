@@ -155,6 +155,33 @@
     <Compile Include="FieldTypes\Date.cs" />
     <Compile Include="FieldTypes\Image.cs" />
     <Compile Include="FieldTypes\Video.cs" />
+    <Compile Include="Financial\Batch.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\BatchService.cs" />
+    <Compile Include="Financial\Fund.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\FundService.cs" />
+    <Compile Include="Financial\PersonAccountLookup.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\PersonAccountLookupService.cs" />
+    <Compile Include="Financial\Pledge.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\PledgeService.cs" />
+    <Compile Include="Financial\Transaction.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\TransactionDetail.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\TransactionDetailService.cs" />
+    <Compile Include="Financial\TransactionFund.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Financial\TransactionService.cs" />
     <Compile Include="Groups\Group.cs" />
     <Compile Include="Groups\GroupService.cs" />
     <Compile Include="Groups\GroupRole.cs" />
@@ -169,6 +196,14 @@
     <Compile Include="Migrations\201204161500249_CreateDatabase.cs" />
     <Compile Include="Migrations\201204161500249_CreateDatabase.Designer.cs">
       <DependentUpon>201204161500249_CreateDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201204290824356_Financial.cs" />
+    <Compile Include="Migrations\201204290824356_Financial.Designer.cs">
+      <DependentUpon>201204290824356_Financial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.cs" />
+    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.Designer.cs">
+      <DependentUpon>201204302130188_AttributeDefaultValueNotRequired.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
