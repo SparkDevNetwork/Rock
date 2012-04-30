@@ -163,6 +163,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\FundService.cs" />
+    <Compile Include="Financial\Gateway.cs" />
     <Compile Include="Financial\PersonAccountLookup.cs">
       <SubType>Code</SubType>
     </Compile>
