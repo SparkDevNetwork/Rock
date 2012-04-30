@@ -224,7 +224,7 @@ namespace Rock.CMS
                         if ( DateTime.Now.Subtract( dateTime ).Hours > 1 )
                             return null;
 
-                        User user = this.GetByPublicKey( publicKey );
+                        User user = this.GetByEncryptedKey( publicKey );
                         if ( user.UserName == username )
                             return user;
                     }

@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Group
 
                     // Add the url of the video as an attribute on the LI element
                     if (group.AttributeValues.ContainsKey(_videoAttributeKey))
-                        li.Attributes["video"] = group.AttributeValues[_videoAttributeKey].Value;
+                        li.Attributes["video"] = group.AttributeValues[_videoAttributeKey].Value[0];
 
                     // Add the span indicating if person has viewed the video
                     HtmlGenericControl viewedSpan = new HtmlGenericControl( "span" );
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Group
                     HtmlGenericControl durationSpan = new HtmlGenericControl( "span" );
                     durationSpan.AddCssClass( "duration" );
                     if (group.AttributeValues.ContainsKey(_durationAttributeKey))
-                        durationSpan.InnerText = group.AttributeValues[_durationAttributeKey].Value;
+                        durationSpan.InnerText = group.AttributeValues[_durationAttributeKey].Value[0];
                     li.Controls.Add( durationSpan );
 
                     // Render any child groups

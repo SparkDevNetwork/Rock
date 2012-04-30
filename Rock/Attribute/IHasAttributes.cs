@@ -32,7 +32,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <remarks>
         /// The dictionary key stores tha attribute's key, and the dictionary value is a KeyValuePair object that
-        /// stores the attribute name as the key and the attribute's value as it's value. 
+        /// stores the attribute name as the key and a list of the attribute's values as it's value. 
         /// <example>
         /// Example
         /// </example>
@@ -43,6 +43,6 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
     }
 }

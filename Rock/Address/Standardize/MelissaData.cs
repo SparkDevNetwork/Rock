@@ -33,7 +33,7 @@ namespace Rock.Address.Standardize
             if ( address != null )
             {
                 var requestArray = new RequestArray();
-                requestArray.CustomerID = AttributeValues["CustomerId"].Value;
+                requestArray.CustomerID = AttributeValue("CustomerId");
                 requestArray.OptAddressParsed = "True";
 
                 RequestArrayRecord requestAddress = new RequestArrayRecord();

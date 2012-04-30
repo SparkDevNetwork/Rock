@@ -68,7 +68,7 @@ namespace Rock.Extension
             // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
             // otherwise default to true
             if ( service.AttributeValues.ContainsKey( "Active" ) )
-                Active = bool.Parse( service.AttributeValues["Active"].Value );
+                Active = bool.Parse( service.AttributeValues["Active"].Value[0] );
             else
                 Active = true;
         }

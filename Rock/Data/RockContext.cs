@@ -300,6 +300,62 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Util.Job> Jobs { get; set; }
 
+        /// <summary>
+        /// Gets or sets the batches.
+        /// </summary>
+        /// <value>
+        /// The batches.
+        /// </value>
+        public DbSet<Rock.Financial.Batch> Batches { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fund.
+        /// </summary>
+        /// <value>
+        /// The fund.
+        /// </value>
+        public DbSet<Rock.Financial.Fund> Fund { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pledges.
+        /// </summary>
+        /// <value>
+        /// The pledges.
+        /// </value>
+        public DbSet<Rock.Financial.Pledge> Pledges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transactions.
+        /// </summary>
+        /// <value>
+        /// The transactions.
+        /// </value>
+        public DbSet<Rock.Financial.Transaction> Transactions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction details.
+        /// </summary>
+        /// <value>
+        /// The transaction details.
+        /// </value>
+        public DbSet<Rock.Financial.TransactionDetail> TransactionDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person account lookups.
+        /// </summary>
+        /// <value>
+        /// The person account lookups.
+        /// </value>
+        public DbSet<Rock.Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction funds.
+        /// </summary>
+        /// <value>
+        /// The transaction funds.
+        /// </value>
+        public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
+
 
         /// <summary>
         /// This method is called when the context has been initialized, but
@@ -340,6 +396,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.CRM.PersonTrailConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.PhoneNumberConfiguration() );
+            modelBuilder.Configurations.Add(new Rock.Financial.BatchConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.FundConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.PledgeConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.TransactionConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.TransactionDetailConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.PersonAccountLookupConfiguration());
+            modelBuilder.Configurations.Add(new Rock.Financial.TransactionFundConfiguration());
             modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );

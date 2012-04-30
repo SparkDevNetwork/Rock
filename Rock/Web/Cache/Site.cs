@@ -60,7 +60,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets the facebook app id.
@@ -129,7 +129,7 @@ namespace Rock.Web.Cache
                 if ( siteModel.Attributes != null )
                     foreach ( var category in siteModel.Attributes )
                         foreach ( var attribute in category.Value )
-                            Rock.Attribute.Helper.SaveAttributeValue( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                            Rock.Attribute.Helper.SaveAttributeValues( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 

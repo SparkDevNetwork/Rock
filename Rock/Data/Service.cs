@@ -61,17 +61,21 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the model by the public key.
+        /// Gets the model by the public encrypted key.
         /// </summary>
-        /// <param name="publicKey">The public key.</param>
+        /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
-        public virtual T GetByPublicKey( string publicKey )
+        public virtual T GetByEncryptedKey( string encryptedKey )
+        {
+            string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
+            return GetByPublicKey( publicKey );
+        }
+
+        private T GetByPublicKey( string publicKey )
         {
             try
             {
-                string identifier = Rock.Security.Encryption.DecryptString( publicKey );
-
-                string[] idParts = identifier.Split( '>' );
+                string[] idParts = publicKey.Split( '>' );
                 if ( idParts.Length == 2 )
                 {
                     int id = Int32.Parse( idParts[0] );
@@ -91,6 +95,30 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Gets the current model from the page instance context.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public T GetCurrent( Rock.Web.Cache.Page pageInstance )
+        {
+            string key = typeof( T ).FullName;
+            
+            if ( pageInstance.Context.ContainsKey( key ) )
+            {
+                var keyModel = pageInstance.Context[key];
+                if ( keyModel.Model == null )
+                {
+                    keyModel.Model = GetByPublicKey( keyModel.Key );
+                    if ( keyModel.Model is Rock.Attribute.IHasAttributes )
+                        Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
+                }
+
+                return keyModel.Model as T;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Adds the specified item.
