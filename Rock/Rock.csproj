@@ -197,15 +197,13 @@
     <Compile Include="Migrations\201204161500249_CreateDatabase.Designer.cs">
       <DependentUpon>201204161500249_CreateDatabase.cs</DependentUpon>
     </Compile>
-
-    <Compile Include="Migrations\201204212324127_RemoveRequiredValue1.cs" />
-    <Compile Include="Migrations\201204212324127_RemoveRequiredValue1.Designer.cs">
-      <DependentUpon>201204212324127_RemoveRequiredValue1.cs</DependentUpon>
-
     <Compile Include="Migrations\201204290824356_Financial.cs" />
     <Compile Include="Migrations\201204290824356_Financial.Designer.cs">
       <DependentUpon>201204290824356_Financial.cs</DependentUpon>
-
+    </Compile>
+    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.cs" />
+    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.Designer.cs">
+      <DependentUpon>201204302130188_AttributeDefaultValueNotRequired.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">

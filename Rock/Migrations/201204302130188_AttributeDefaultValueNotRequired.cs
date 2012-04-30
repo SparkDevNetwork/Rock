@@ -2,7 +2,7 @@ namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
     
-    public partial class RemoveRequiredValue1 : DbMigration
+    public partial class AttributeDefaultValueNotRequired : DbMigration
     {
         public override void Up()
         {
