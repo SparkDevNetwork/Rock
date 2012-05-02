@@ -1,3 +1,8 @@
+
+DECLARE @AdminGroupId int
+SELECT @AdminGroupId = [Id] from groupsGroup where [Guid] = '628C51A8-4613-43ED-A18D-4A6FB999273E'
+
+
 delete cmsAuth
 where entityType in ('Cms.Page', 'Cms.BlockInstance')
 
@@ -6,17 +11,19 @@ insert into cmsAuth (
 	EntityId,
 	[Order],
 	AllowOrDeny,
-	UserOrRole,
+	SpecialRole,
 	Action,
-	UserOrRoleName )
+	Guid,
+	GroupId)
 select 
 	'CMS.Page',
 	p.id,
 	0,
 	'A',
-	'R',
+	0,
 	'Configure',
-	'628c51a8-4613-43ed-a18d-4a6fb999273e'
+	NEWID(),
+	@AdminGroupId
 from cmsPage p
 
 insert into cmsAuth (
@@ -24,17 +31,19 @@ insert into cmsAuth (
 	EntityId,
 	[Order],
 	AllowOrDeny,
-	UserOrRole,
+	SpecialRole,
 	Action,
-	UserOrRoleName )
+	Guid,
+	GroupId )
 select 
 	'CMS.Page',
 	p.id,
 	0,
 	'A',
-	'R',
+	0,
 	'Edit',
-	'628c51a8-4613-43ed-a18d-4a6fb999273e'
+	NEWID(),
+	@AdminGroupId
 from cmsPage p
 
 insert into cmsAuth (
@@ -42,17 +51,19 @@ insert into cmsAuth (
 	EntityId,
 	[Order],
 	AllowOrDeny,
-	UserOrRole,
+	SpecialRole,
 	Action,
-	UserOrRoleName )
+	Guid,
+	GroupId )
 select 
 	'CMS.BlockInstance',
 	bi.id,
 	0,
 	'A',
-	'R',
+	0,
 	'Configure',
-	'628c51a8-4613-43ed-a18d-4a6fb999273e'
+	NEWID(),
+	@AdminGroupId
 from cmsBlockInstance bi
 
 insert into cmsAuth (
@@ -60,16 +71,18 @@ insert into cmsAuth (
 	EntityId,
 	[Order],
 	AllowOrDeny,
-	UserOrRole,
+	SpecialRole,
 	Action,
-	UserOrRoleName )
+	Guid,
+	GroupId )
 select 
 	'CMS.BlockInstance',
 	bi.id,
 	0,
 	'A',
-	'R',
+	0,
 	'Edit',
-	'628c51a8-4613-43ed-a18d-4a6fb999273e'
+	NEWID(),
+	@AdminGroupId
 from cmsBlockInstance bi
 
