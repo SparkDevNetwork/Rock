@@ -184,12 +184,12 @@ namespace Rock.CRM
         /// <returns>
         /// Person object.
         /// </returns>
-        public Rock.CRM.Person GetByPublicKey( string publicKey, bool followTrail )
+        public Rock.CRM.Person GetByEncryptedKey( string encryptedKey, bool followTrail )
         {
             if ( followTrail )
-                publicKey = new PersonTrailService().Current( publicKey );
+                encryptedKey = new PersonTrailService().Current( encryptedKey );
 
-            return GetByPublicKey( publicKey );
+            return GetByEncryptedKey( encryptedKey );
         }
     }
 }

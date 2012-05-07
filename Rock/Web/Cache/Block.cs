@@ -70,7 +70,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
@@ -86,7 +86,7 @@ namespace Rock.Web.Cache
                 Rock.Attribute.Helper.LoadAttributes( blockModel );
                 foreach ( var category in blockModel.Attributes )
                     foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValue( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 

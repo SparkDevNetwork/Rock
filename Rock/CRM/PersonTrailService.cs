@@ -40,11 +40,11 @@ namespace Rock.CRM
         /// <returns></returns>
         public string Current( string publicKey )
         {
-            PersonTrail personTrail = GetByPublicKey( publicKey );
+            PersonTrail personTrail = GetByEncryptedKey( publicKey );
             while ( personTrail != null )
             {
                 publicKey = personTrail.CurrentPublicKey;
-                personTrail = GetByPublicKey( publicKey );
+                personTrail = GetByEncryptedKey( publicKey );
             }
             return publicKey;
         }
