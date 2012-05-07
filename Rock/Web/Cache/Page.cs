@@ -167,7 +167,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -315,6 +315,17 @@ namespace Rock.Web.Cache
         }
         private List<int> blockInstanceIds = null;
 
+        /// <summary>
+        /// Gets a dictionary of the current context items (models).
+        /// </summary>
+        internal Dictionary<string, Rock.Data.KeyModel> Context
+        {
+            get { return _context; }
+            set { _context = value; }
+        }
+        private Dictionary<string, Data.KeyModel> _context;
+
+
         #endregion
 
         #region Public Methods
@@ -332,7 +343,7 @@ namespace Rock.Web.Cache
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
                 foreach ( var category in pageModel.Attributes )
                     foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValue( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
