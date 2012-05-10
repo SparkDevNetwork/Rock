@@ -34,9 +34,9 @@ namespace Rock.CMS
         }
 		
 		/// <summary>
-		/// Gets Html Contents by Block Id
+		/// Gets Html Contents by Block Instance
 		/// </summary>
-		/// <param name="blockId">Block Id.</param>
+		/// <param name="blockId">a block instance id</param>
 		/// <returns>An enumerable list of HtmlContent objects.</returns>
 	    public IEnumerable<Rock.CMS.HtmlContent> GetByBlockId( int blockId )
         {
@@ -44,9 +44,9 @@ namespace Rock.CMS
         }
 		
 		/// <summary>
-		/// Gets Html Content by Block Id And Entity Value And Version
+		/// Gets Html Content by BlockInstance And Entity Value And Version
 		/// </summary>
-		/// <param name="blockId">Block Id.</param>
+		/// <param name="blockId">a block instance id</param>
 		/// <param name="entityValue">Entity Value.</param>
 		/// <param name="version">Version.</param>
 		/// <returns>HtmlContent object.</returns>
@@ -56,9 +56,9 @@ namespace Rock.CMS
         }
 
         /// <summary>
-        /// Gets the active content for a specific block/context.
+        /// Gets the active content for a specific block-instance/context.
         /// </summary>
-        /// <param name="blockId">The block id.</param>
+        /// <param name="blockId">a block instance id</param>
         /// <param name="entityValue">The entity value.</param>
         /// <returns></returns>
         public Rock.CMS.HtmlContent GetActiveContent( int blockId, string entityValue )
@@ -71,7 +71,7 @@ namespace Rock.CMS
                     ( c.ExpireDateTime ?? DateTime.MaxValue ) >= DateTime.Now );
 
             // If an entity value is specified, then return content specific to that context, 
-            // otherewise return content for the current block
+            // otherewise return content for the current block instance
             if ( !string.IsNullOrEmpty( entityValue ) )
                 content = content.Where( c => c.EntityValue == entityValue );
             else
@@ -82,9 +82,9 @@ namespace Rock.CMS
         }
 
         /// <summary>
-        /// Gets all versions of content for a specific block/context.
+        /// Gets all versions of content for a specific block-instance/context.
         /// </summary>
-        /// <param name="blockId">The block id.</param>
+		/// <param name="blockId">a block instance id</param>
         /// <param name="entityValue">The entity value.</param>
         /// <returns></returns>
         public IEnumerable<Rock.CMS.HtmlContent> GetContent( int blockId, string entityValue )
@@ -92,7 +92,7 @@ namespace Rock.CMS
             var content = Queryable();
 
             // If an entity value is specified, then return content specific to that context, 
-            // otherewise return content for the current block
+            // otherewise return content for the current block instance
             if ( !string.IsNullOrEmpty( entityValue ) )
                 content = content.Where( c => c.EntityValue == entityValue );
             else
