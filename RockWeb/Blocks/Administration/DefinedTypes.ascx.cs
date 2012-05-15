@@ -30,7 +30,6 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         protected string type = string.Empty;
-        
 
         protected string entity = string.Empty;
         protected string entityQualifierColumn = string.Empty;
@@ -139,6 +138,21 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        private void rGridAttribute_Bind( int typeId )
+        {
+                var queryable = attributeService.Queryable().
+                Where( a => a.Entity == entity &&
+                    ( a.EntityQualifierColumn ?? string.Empty ) == "DefinedTypeId" &&
+                    ( a.EntityQualifierValue ?? string.Empty ) == typeId.ToString() );
+
+            rGridAttribute.DataSource = queryable.
+                OrderBy( a => a.Category ).
+                ThenBy( a => a.Key ).
+                ToList();
+
+            rGridAttribute.DataBind();
+        }
+        
         protected void rGridAttribute_Delete( object sender, RowEventArgs e )
         {
             Rock.Core.Attribute attribute = attributeService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
@@ -150,7 +164,7 @@ namespace RockWeb.Blocks.Administration
                 attributeService.Save( attribute, CurrentPersonId );
             }
 
-            BindGrid();
+            rGridAttribute_Bind( (int)rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )

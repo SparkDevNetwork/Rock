@@ -8,18 +8,16 @@
 
     var AttributeEntity = '<%= entity %>';
     var AttributeId = null;
-    var AttributeValueId = null;
-    var AttributeValue = null;
     var attribute = null;
     
     function editType( typeId ) {
-        
-        
+     
         type = null;
 
         $('#<%= tbTypeName.ClientID %>').val('');
         $('#<%= tbTypeCategory.ClientID %>').val('');
         $('#<%= tbTypeDescription.ClientID %>').val('');
+        $('#<%= ddlTypeFieldType.ClientID %>').val('');
         
         if (typeId != 0) {
 
@@ -31,13 +29,11 @@
                 success: function (getData, status, xhr) {
 
                     type = getData;
-
-                    
-
+                       
                     $('#<%= tbTypeName.ClientID %>').val(type.Name);
                     $('#<%= tbTypeCategory.ClientID %>').val(type.Category);
                     $('#<%= tbTypeDescription.ClientID %>').val(type.Description);
-
+                    $('#<%= ddlTypeFieldType.ClientID %>').val(type.FieldTypeId);
                     $('#modal-details').modal('show').bind('shown', function () {
                         $('#modal-details').appendTo('#<%= upSettings.ClientID %>');
                     });
@@ -49,8 +45,6 @@
             });
         }
         else {
-
-        
 
             var category = $('#<%= ddlCategoryFilter.ClientID %>').val();
 
@@ -64,7 +58,16 @@
 
         return false;
     }
-    
+
+    function editAttribute(typeId) {
+
+
+        $('#modal-attributes').modal('show').bind('shown', function () {
+            $('#modal-attributes').appendTo('#<%= upSettings.ClientID %>');
+        });
+
+    }
+
     Sys.Application.add_load(function () {
 
         $('#modal-details a.btn.primary').click(function () {
@@ -133,6 +136,14 @@
             keyboard: true
         });
 
+        $('#modal-attributes a.btn.primary').click(function () {
+            $('#modal-attributes').modal('hide');
+        });
+
+        $('#modal-attributes').modal({
+            backdrop: true,
+            keyboard: true
+        });
 
     });
 
@@ -198,8 +209,33 @@
         </div>
     </div>
 
-
-
+    <div id="modal-attributes" class="modal hide fade">
+        <div class="modal-header">
+            <a href="#" class="close">&times;</a>
+            <h3>Attributes</h3>
+        </div>
+        <div class="modal-body">
+            <asp:ValidationSummary ID="valAttributeSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>   
+            
+            <Rock:Grid ID="rGridAttribute" runat="server" >
+                <Columns>
+                    <asp:BoundField DataField="Category" HeaderText="Category"  />
+                    <asp:BoundField DataField="Name" HeaderText="Name" />
+                    <Rock:BoolField DataField="Description" HeaderText="Description"/>
+                    <asp:TemplateField>
+                        <ItemStyle HorizontalAlign="Center" CssClass="grid-icon-cell edit"/>
+                        <ItemTemplate>
+                            <a href="#" onclick="editValue(<%# Eval("Id") %>);">Edit</a>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <Rock:DeleteField OnClick="rGridAttribute_Delete" />
+                </Columns>
+             </Rock:Grid>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn primary">Done</a>
+        </div>
+    </div>
 
 
 </ContentTemplate>
