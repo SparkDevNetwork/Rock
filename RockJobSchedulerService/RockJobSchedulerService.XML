@@ -4,14 +4,31 @@
         <name>RockJobSchedulerService</name>
     </assembly>
     <members>
-        <member name="M:RockJobSchedulerService.Program.Main">
+        <member name="F:RockJobSchedulerService.JobScheduler.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:RockJobSchedulerService.JobScheduler.Dispose(System.Boolean)">
             <summary>
-            The main entry point for the application.
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:RockJobSchedulerService.JobScheduler.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
             </summary>
         </member>
         <member name="T:RockJobSchedulerService.ProjectInstaller">
             <summary>
             Project Installer 
+            </summary>
+        </member>
+        <member name="M:RockJobSchedulerService.ProjectInstaller.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:RockJobSchedulerService.ProjectInstaller"/> class.
             </summary>
         </member>
         <member name="F:RockJobSchedulerService.ProjectInstaller.components">
@@ -31,26 +48,9 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="M:RockJobSchedulerService.ProjectInstaller.#ctor">
+        <member name="M:RockJobSchedulerService.Program.Main">
             <summary>
-            Initializes a new instance of the <see cref="T:RockJobSchedulerService.ProjectInstaller"/> class.
-            </summary>
-        </member>
-        <member name="F:RockJobSchedulerService.JobScheduler.components">
-            <summary> 
-            Required designer variable.
-            </summary>
-        </member>
-        <member name="M:RockJobSchedulerService.JobScheduler.Dispose(System.Boolean)">
-            <summary>
-            Clean up any resources being used.
-            </summary>
-            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        </member>
-        <member name="M:RockJobSchedulerService.JobScheduler.InitializeComponent">
-            <summary> 
-            Required method for Designer support - do not modify 
-            the contents of this method with the code editor.
+            The main entry point for the application.
             </summary>
         </member>
     </members>
