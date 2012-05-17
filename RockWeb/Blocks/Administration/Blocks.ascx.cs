@@ -40,14 +40,7 @@ namespace RockWeb.Blocks.Administration
                     gBlocks.Actions.AddClick += gBlocks_Add;
                     gBlocks.GridRebind += gBlocks_GridRebind;
 
-                    string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this block?');
-                });
-        });
-    ";
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gBlocks.ClientID ), script, true );
+                    mdDetails.SaveClick += new EventHandler( mdDetails_SaveClick );
                 }
                 else
                 {
@@ -108,13 +101,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            pnlDetails.Visible = false;
-            phList.Visible = true;
-        }
-
-        protected void btnSave_Click( object sender, EventArgs e )
+        void mdDetails_SaveClick( object sender, EventArgs e )
         {
             Rock.CMS.Block block;
 
@@ -139,9 +126,6 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.Block.Flush( block.Id );
 
             BindGrid();
-
-            pnlDetails.Visible = false;
-            phList.Visible = true;
         }
 
         #endregion
@@ -190,7 +174,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( block != null )
             {
-                lAction.Text = "Edit";
+                mdDetails.Title = "Edit Block";
                 hfBlockId.Value = block.Id.ToString();
 
                 tbName.Text = block.Name;
@@ -199,14 +183,13 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lAction.Text = "Add";
+                mdDetails.Title = "Add Block";
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;
                 tbDescription.Text = string.Empty;
             }
 
-            phList.Visible = false;
-            pnlDetails.Visible = true;
+            mdDetails.Show();
         }
 
         private void DisplayError( string message )
@@ -214,9 +197,6 @@ namespace RockWeb.Blocks.Administration
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;
-
-            phList.Visible = false;
-            pnlDetails.Visible = false;
         }
 
         #endregion
