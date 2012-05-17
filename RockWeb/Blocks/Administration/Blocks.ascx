@@ -3,6 +3,20 @@
 <asp:UpdatePanel ID="upBlocks" runat="server">
 <ContentTemplate>
 
+    <script type="text/javascript">
+        Sys.Application.add_load(function () {
+
+            $('td.grid-icon-cell.delete a').click(function () {
+                return confirm('Are you sure you want to delete this block?');
+            });
+
+        });
+    </script>
+
+    <asp:Literal ID="lScript" runat="server">
+
+    </asp:Literal>
+
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
 
     <asp:PlaceHolder ID="phList" runat="server">
@@ -20,25 +34,17 @@
 
     </asp:PlaceHolder>
 
-    <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-    
+    <Rock:ModalDialog ID="mdDetails" runat="server">
+    <Content>
         <asp:HiddenField ID="hfBlockId" runat="server" />
-
-        <asp:ValidationSummary runat="server" CssClass="failureNotification"/>
-
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
         <fieldset>
-            <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Name" />
             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
             <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.CMS.Block, Rock" PropertyName="Path" />
         </fieldset>
-
-        <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
-        </div>
-
-    </asp:Panel>
+    </Content>
+    </Rock:ModalDialog>
 
 </ContentTemplate>
 </asp:UpdatePanel>
