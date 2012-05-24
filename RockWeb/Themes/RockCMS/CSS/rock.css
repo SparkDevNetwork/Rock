@@ -444,7 +444,7 @@ body#dialog
     background-color: #ddd;   
 }
 
-#modal-popup-iframe
+#modal-popup_iframe
 {
     height: 100%;
     width: 100%;

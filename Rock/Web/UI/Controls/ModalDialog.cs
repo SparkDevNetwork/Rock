@@ -10,7 +10,7 @@ using System.ComponentModel;
 using System.Security.Permissions;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Web.UI.WebControls;  
 using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
@@ -19,20 +19,21 @@ namespace Rock.Web.UI.Controls
     /// A Modal Popup Dialog Window
     /// </summary>
     [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
-    public class ModalDialog : ModalPopupExtender
+    public class ModalDialog : ModalPopupExtender, INamingContainer
     {
         private Button _dfltShowButton;
         private Panel _dialogPanel;
 
         private Panel _headerPanel;
+        private HtmlGenericControl _closeLink;
         private HtmlGenericControl _titleH3;
         private LiteralControl _title;
 
         private Panel _contentPanel;
         
         private Panel _footerPanel;
-        private Button _okButton;
-        private Button _cancelButton;
+        private HtmlAnchor _saveLink;
+        private HtmlAnchor _cancelLink;
 
         /// <summary>
         /// Raises the <see cref="E:Init"/> event.
@@ -43,7 +44,6 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
         }
-
 
         /// <summary>
         /// Gets or sets the title.
@@ -67,6 +67,27 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _title.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the default save behavior should be enabled.
+        /// </summary>
+        [
+        Category( "Behavior" ),
+        DefaultValue( false ),
+        Description( "Disable Default Save Behavior" )
+        ]
+        public bool DisableDefaultSave
+        {
+            get
+            {
+                bool? b = ViewState["DisableDefaultSave"] as bool?;
+                return ( b == null ) ? false : b.Value;
+            }
+            set
+            {
+                ViewState["DisableDefaultSave"] = value;
             }
         }
 
@@ -102,13 +123,14 @@ namespace Rock.Web.UI.Controls
 
             _dfltShowButton = new Button();
             base.Controls.Add(_dfltShowButton);
-            _dfltShowButton.ID = "dfltButton";
+            _dfltShowButton.ID = "default";
             _dfltShowButton.Attributes.Add("style","display:none");
 
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
-            _dialogPanel.ID = "dialogPanel";
+            _dialogPanel.ID = "panel";
             _dialogPanel.CssClass = "modal2";
+            _dialogPanel.Attributes.Add("style","display:none");
 
             _headerPanel = new Panel();
             _dialogPanel.Controls.Add( _headerPanel );
@@ -125,27 +147,34 @@ namespace Rock.Web.UI.Controls
             _footerPanel.ID = "footerPanel";
             _footerPanel.CssClass = "modal-footer";
 
+            _closeLink = new HtmlGenericControl( "A" );
+            _headerPanel.Controls.Add( _closeLink );
+            _closeLink.ID = "closeLink";
+            _closeLink.Attributes.Add( "HRef", "#" );
+            _closeLink.Attributes.Add( "class", "close" );
+            _closeLink.InnerHtml = "&times;";
+
             _titleH3 = new HtmlGenericControl( "h3" );
             _headerPanel.Controls.Add( _titleH3 );
 
             _title = new LiteralControl();
             _titleH3.Controls.Add( _title );
 
-            _okButton = new Button();
-            _footerPanel.Controls.Add( _okButton );
-            _okButton.ID = "okButton";
-            _okButton.CssClass = "btn primary";
-            _okButton.Text = "Save";
-            _okButton.Click += new EventHandler( SaveButton_Click );
+            _cancelLink = new HtmlAnchor();
+            _footerPanel.Controls.Add( _cancelLink );
+            _cancelLink.ID = "cancelLink";
+            _cancelLink.Attributes.Add( "class", "btn secondary" );
+            _cancelLink.InnerText = "Cancel";
 
-            _cancelButton = new Button();
-            _footerPanel.Controls.Add( _cancelButton );
-            _cancelButton.ID = "cancelButton";
-            _cancelButton.CssClass = "btn secondary";
-            _cancelButton.Text = "Cancel";
+            _saveLink = new HtmlAnchor();
+            _footerPanel.Controls.Add( _saveLink );
+            _saveLink.ID = "saveLink";
+            _saveLink.Attributes.Add( "class", "btn primary" );
+            _saveLink.InnerText = "Save";
+            _saveLink.ServerClick += SaveLink_ServerClick;
 
             this.PopupControlID = _dialogPanel.ID;
-            this.CancelControlID = _cancelButton.ID;
+            this.CancelControlID = _cancelLink.ID;
         }
 
         /// <summary>
@@ -154,9 +183,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
-            // If no event handler has been defined for the save button, use the default client behavior
-            if ( SaveClick == null )
-                this.OkControlID = _okButton.ID;
+            _closeLink.Attributes["onclick"] = string.Format(
+                "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
+
+            if ( SaveClick == null && !DisableDefaultSave )
+                this.OkControlID = _saveLink.ID;
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )
@@ -166,11 +197,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the SaveButton control.
+        /// Handles the ServerClick event of the SaveLink control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void SaveButton_Click( object sender, EventArgs e )
+        void SaveLink_ServerClick( object sender, EventArgs e )
         {
             if ( SaveClick != null )
                 SaveClick( sender, e );

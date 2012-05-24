@@ -650,51 +650,18 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
-            // Add iFrame popup div.  
-            HtmlGenericControl modalPopup = new HtmlGenericControl( "div" );
-            modalPopup.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            ModalDialog modalPopup = new ModalDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.Attributes.Add( "class", "modal hide fade" );
+            modalPopup.DisableDefaultSave = true;
+            modalPopup.OnCancelScript = "closeModal();";
             this.Form.Controls.Add( modalPopup );
 
-            HtmlGenericControl modalHeader = new HtmlGenericControl( "div" );
-            modalHeader.Attributes.Add( "class", "modal-header" );
-            modalPopup.Controls.Add( modalHeader );
-
-            HtmlGenericControl modalClose = new HtmlGenericControl( "a" );
-            modalClose.Attributes.Add( "href", "#" );
-            modalClose.Attributes.Add( "class", "close" );
-            modalClose.InnerHtml = "&times;";
-            modalHeader.Controls.Add( modalClose );
-
-            HtmlGenericControl modalHeading = new HtmlGenericControl( "h3" );
-            modalHeader.Controls.Add( modalHeading );
-
-            HtmlGenericControl modalBody = new HtmlGenericControl( "div" );
-            modalBody.Attributes.Add( "class", "modal-body iframe" );
-            modalPopup.Controls.Add( modalBody );
-
-            HtmlGenericControl modalFooter = new HtmlGenericControl( "div" );
-            modalFooter.Attributes.Add( "class", "modal-footer" );
-            modalPopup.Controls.Add( modalFooter );
-
-            HtmlGenericControl modalSecondary = new HtmlGenericControl( "a" );
-            modalSecondary.ID = "modal-cancel";
-            modalSecondary.Attributes.Add( "href", "#" );
-            modalSecondary.Attributes.Add( "class", "btn secondary" );
-            modalSecondary.InnerText = "Cancel";
-            modalFooter.Controls.Add( modalSecondary );
-
-            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
-            modalPrimary.Attributes.Add( "href", "#" );
-            modalPrimary.Attributes.Add( "class", "btn primary" );
-            modalPrimary.InnerText = "Save";
-            modalFooter.Controls.Add( modalPrimary );
+            modalPopup.Content.AddCssClass( "iframe" );
 
             HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
-            modalIFrame.ID = "modal-popup-iframe";
+            modalIFrame.ID = "iframe";
             modalIFrame.Attributes.Add( "scrolling", "no" );
-            modalBody.Controls.Add( modalIFrame );
+            modalPopup.Content.Controls.Add( modalIFrame );
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
@@ -794,34 +761,16 @@ namespace Rock.Web.UI
         private void AddBlockMove()
         {
             // Add Zone Selection Popup (for moving blocks to another zone)
-            HtmlGenericControl divBlockMove = new HtmlGenericControl( "div" );
-            divBlockMove.ClientIDMode = ClientIDMode.Static;
-            divBlockMove.Attributes.Add( "id", "modal-block-move" );
-            divBlockMove.Attributes.Add( "class", "modal hide fade" );
-            this.Form.Controls.Add( divBlockMove );
-
-            HtmlGenericControl divBlockMoveHeader = new HtmlGenericControl( "div" );
-            divBlockMoveHeader.Attributes.Add( "class", "modal-header" );
-            divBlockMove.Controls.Add( divBlockMoveHeader );
-
-            HtmlGenericControl aClose = new HtmlGenericControl( "a" );
-            aClose.Attributes.Add( "href", "#" );
-            aClose.Attributes.Add( "class", "close" );
-            aClose.InnerHtml = "&times;";
-            divBlockMoveHeader.Controls.Add( aClose );
-
-            HtmlGenericControl hTitle = new HtmlGenericControl( "h3" );
-            hTitle.InnerText = "Move Block";
-            divBlockMoveHeader.Controls.Add( hTitle );
-
-            HtmlGenericControl divBlockMoveBody = new HtmlGenericControl( "div" );
-            divBlockMoveBody.Attributes.Add( "class", "modal-body" );
-            divBlockMove.Controls.Add( divBlockMoveBody );
+            ModalDialog modalBlockMove = new ModalDialog();
+            modalBlockMove.ID = "modal-block-move";
+            modalBlockMove.Title = "Move Block";
+            modalBlockMove.OnOkScript = "saveBlockMove();";
+            this.Form.Controls.Add( modalBlockMove );
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
             fsZoneSelect.ClientIDMode = ClientIDMode.Static;
             fsZoneSelect.Attributes.Add( "id", "fsZoneSelect" );
-            divBlockMoveBody.Controls.Add( fsZoneSelect );
+            modalBlockMove.Content.Controls.Add( fsZoneSelect );
 
             HtmlGenericControl legend = new HtmlGenericControl( "legend" );
             legend.InnerText = "New Location";
@@ -844,24 +793,6 @@ namespace Rock.Web.UI
             rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", PageInstance.Layout ) ) );
             rblLocation.LabelText = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
-
-            HtmlGenericControl divBlockMoveFooter = new HtmlGenericControl( "div" );
-            divBlockMoveFooter.Attributes.Add( "class", "modal-footer" );
-            divBlockMove.Controls.Add( divBlockMoveFooter );
-
-            HtmlGenericControl modalSecondary = new HtmlGenericControl( "a" );
-            modalSecondary.ID = "block-move-cancel";
-            modalSecondary.Attributes.Add( "href", "#" );
-            modalSecondary.Attributes.Add( "class", "btn secondary" );
-            modalSecondary.InnerText = "Cancel";
-            divBlockMoveFooter.Controls.Add( modalSecondary );
-
-            HtmlGenericControl modalPrimary = new HtmlGenericControl( "a" );
-            modalPrimary.ID = "block-move-save";
-            modalPrimary.Attributes.Add( "href", "#" );
-            modalPrimary.Attributes.Add( "class", "btn primary" );
-            modalPrimary.InnerText = "Save";
-            divBlockMoveFooter.Controls.Add( modalPrimary );
         }
 
         #endregion

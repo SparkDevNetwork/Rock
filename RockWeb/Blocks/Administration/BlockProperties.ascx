@@ -7,8 +7,8 @@
 
     Sys.Application.add_load(function () {
 
-        if ($('#modal-popup', window.parent.document)) {
-            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
+            $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
             $('#non-modal-actions').hide();
@@ -32,7 +32,7 @@
             <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
         </fieldset>
 
-        <placeholder id="phAttributes" runat="server"></placeholder>
+        <asp:placeholder id="phAttributes" runat="server"></asp:placeholder>
 
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 

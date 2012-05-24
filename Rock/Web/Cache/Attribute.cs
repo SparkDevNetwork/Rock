@@ -60,6 +60,11 @@ namespace Rock.Web.Cache
         private string category;
 
         /// <summary>
+        /// Gets if attribute supports multiple values
+        /// </summary>
+        public bool MultiValue { get; private set; }
+
+        /// <summary>
         /// Gets the description.
         /// </summary>
         public string Description { get; private set; }
@@ -189,6 +194,7 @@ namespace Rock.Web.Cache
             attribute.FieldTypeId = attributeModel.FieldTypeId;
             attribute.DefaultValue = attributeModel.DefaultValue;
             attribute.Required = attributeModel.Required;
+            attribute.MultiValue = attributeModel.MultiValue;
 
             attribute.QualifierValues = new Dictionary<string,KeyValuePair<string, string>>();
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )

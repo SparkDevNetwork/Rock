@@ -124,10 +124,30 @@ namespace Rock.FieldTypes
 
 ", functionName, parentElement, uniqueId, targetElement);
 
-            page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
+            ScriptManager.RegisterStartupScript( page, this.GetType(), functionName, script, true );
 
             return functionName;
         }
+
+        /// <summary>
+        /// Registers a client change script that will update a target element with a controls value whenever it is changed.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="targetElement">The target element.</param>
+        public virtual void RegisterClientChangeScript( Control control, string targetElement )
+        {
+            string script = string.Format( @"
+
+    Sys.Application.add_load(function () {{
+        $('#{0}').change(function(){{
+            $('#{1}').val($(this).val());
+        }});
+    }})
+", control.ClientID, targetElement );
+
+            ScriptManager.RegisterStartupScript(control.Page, this.GetType(), "Save_" + control.ClientID, script, true );
+        }
+
     }
 
 }
