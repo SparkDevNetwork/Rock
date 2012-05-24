@@ -62,5 +62,12 @@ namespace Rock.FieldTypes
         /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
         string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement );
+
+        /// <summary>
+        /// Registers a client change script that will update a target element with a controls value whenever it is changed.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="targetElement">The target element.</param>
+        void RegisterClientChangeScript( Control control, string targetElement );
     }
 }

@@ -6,8 +6,8 @@
     // Save button to this form's save click event
 
     Sys.Application.add_load(function () {
-        if ($('#modal-popup', window.parent.document)) {
-            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
+            $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
             $('#non-modal-actions').hide();
