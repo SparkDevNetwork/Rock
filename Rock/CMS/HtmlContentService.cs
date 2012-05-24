@@ -68,7 +68,7 @@ namespace Rock.CMS
             var content = Queryable().
                 Where( c => c.Approved &&
                     ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= DateTime.Now &&
-                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) >= DateTime.Now );
+                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= DateTime.Now );
 
             // If an entity value is specified, then return content specific to that context, 
             // otherewise return content for the current block instance
