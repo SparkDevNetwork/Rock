@@ -187,6 +187,35 @@ namespace Rock
 
         #endregion
 
+        #region Control Extensions
+
+        /// <summary>
+        /// Loads a user control using the constructor with the parameters specified.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="userControlPath">The user control path.</param>
+        /// <param name="constructorParameters">The constructor parameters.</param>
+        /// <returns></returns>
+        public static System.Web.UI.UserControl LoadControl( this System.Web.UI.Control control, string userControlPath, params object[] constructorParameters )
+        {
+            List<Type> constParamTypes = new List<Type>();
+            foreach ( object constParam in constructorParameters )
+                constParamTypes.Add( constParam.GetType() );
+
+            System.Web.UI.UserControl ctl = control.Page.LoadControl( userControlPath ) as System.Web.UI.UserControl;
+
+            ConstructorInfo constructor = ctl.GetType().BaseType.GetConstructor( constParamTypes.ToArray() );
+
+            if ( constructor == null )
+                throw new MemberAccessException( "The requested constructor was not found on " + ctl.GetType().BaseType.ToString() );
+            else
+                constructor.Invoke( ctl, constructorParameters );
+
+            return ctl;
+        }
+
+        #endregion
+
         #region WebControl Extensions
 
         /// <summary>
