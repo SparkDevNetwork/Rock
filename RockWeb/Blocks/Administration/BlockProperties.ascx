@@ -5,15 +5,18 @@
     // If this control is in a modal window, hide this form's save button and bind the modal popup
     // Save button to this form's save click event
 
-    Sys.Application.add_load(function () {
-
+    $(document).ready(function () {
         if ($('#modal-popup_panel', window.parent.document)) {
             $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
+        }
+    });
+
+    Sys.Application.add_load(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
             $('#non-modal-actions').hide();
         }
-
     });
 
 </script>
