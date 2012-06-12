@@ -85,16 +85,31 @@ namespace Rock.Web.UI
         {
             get
             {
+                if ( Context.Items.Contains("CurrentPersonId"))
+                    return (int)Context.Items["CurrentPersonId"];
+
                 Rock.CMS.User user = CurrentUser;
                 if ( user != null )
+                {
+                    Context.Items.Add( "CurrentPersonId", user.PersonId );
                     return user.PersonId;
-                else
-                    return null;
+                }
+                
+                return null;
+            }
+
+            private set
+            {
+                Context.Items.Remove("CurrentPersonId");
+                if (value != null)
+                    Context.Items.Add("CurrentPersonId", value);
             }
         }
 
         /// <summary>
-        /// Returns the currently logged in user.  Returns null if there is not a user logged in
+        /// The personID of the current person.  This is either the currently logged in user, of if the user
+        /// has not logged in, it may also be an impersonated person determined from using the encrypted
+        /// person key
         /// </summary>
         public Rock.CMS.User CurrentUser
         {
@@ -111,17 +126,19 @@ namespace Rock.Web.UI
                     return user;
                 }
             }
+
             private set
             {
+                Context.Items.Remove("CurrentUser");
                 if (value != null)
                     Context.Items.Add("CurrentUser", value);
-                else
-                    Context.Items.Remove("CurrentUser");
             }
         }
 
         /// <summary>
-        /// Returns the currently logged in person.  Returns null if there is not a user logged in
+        /// Returns the current person.  This is either the currently logged in user, or if the user
+        /// has not logged in, it may also be an impersonated person determined from using the encrypted
+        /// person key
         /// </summary>
         public Person CurrentPerson
         {
@@ -147,10 +164,14 @@ namespace Rock.Web.UI
 
             private set
             {
+                Context.Items.Remove("CurrentPerson");
+                Context.Items.Remove("CurrentPersonId");
+
                 if (value != null)
+                {
                     Context.Items.Add( "CurrentPerson", value );
-                else
-                    Context.Items.Remove("CurrentPerson");
+                    CurrentPersonId = value.Id;
+                }
             }
         }
         
@@ -274,9 +295,25 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
+                Session.Remove("UserIsAuthenticated");
                 CurrentPerson = null;
                 CurrentUser = null;
                 Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
+            }
+
+            // If the impersonated query key was included then set the current person
+            string impersonatedPersonKey = PageParameter( "rckipid" );
+            if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
+            {
+                Rock.CRM.PersonService personService = new CRM.PersonService();
+                Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                if ( impersonatedPerson != null )
+                {
+                    FormsAuthentication.SetAuthCookie("rckipid=" + impersonatedPerson.EncryptedKey, false );
+                    Session["UserIsAuthenticated"] = false;
+
+                    CurrentUser =  impersonatedPerson.ImpersonatedUser;
+                }
             }
 
             // Get current user/person info
