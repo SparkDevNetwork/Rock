@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Web;
 
 using Rock.Data;
 
@@ -553,16 +554,28 @@ namespace Rock.CRM
         }
 
         /// <summary>
-        /// Gets the encrypted ID.
+        /// Gets the impersonation parameter.
         /// </summary>
-        public string EncryptedID
+        public string ImpersonationParameter
         {
             get
             {
-                string identifier = this.Guid.ToString() + "|" + this.Id.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
+                return "rckipid=" + HttpUtility.UrlEncode( this.EncryptedKey );
             }
         }
+
+        public Rock.CMS.User ImpersonatedUser
+        {
+            get
+            {
+                Rock.CMS.User user = new CMS.User();
+                user.UserName = this.FullName;
+                user.PersonId = this.Id;
+                user.Person = this;
+                return user;
+            }
+        }
+
     }
     /// <summary>
     /// Person Configuration class.

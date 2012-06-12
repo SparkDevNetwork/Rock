@@ -30,7 +30,8 @@ namespace RockWeb.Blocks.Security
         {
             base.OnLoad( e );
 
-            pnlInvalid.Visible = false;
+            if ( CurrentUser == null || !CurrentUser.IsAuthenticated )
+                DisplayError( "You must login before changing your password" );
 
             if ( !Page.IsPostBack )
             {
@@ -58,16 +59,16 @@ namespace RockWeb.Blocks.Security
                     pnlSuccess.Visible = true;
                 }
                 else
-                {
-                    lInvalid.Text = AttributeValue( "InvalidPasswordCaption" );
-                    pnlInvalid.Visible = true;
-                }
+                    DisplayError( "InvalidPasswordCaption" );
             }
             else
-            {
-                lInvalid.Text = AttributeValue( "InvalidUserNameCaption" );
-                pnlInvalid.Visible = true;
-            }
+                DisplayError( "InvalidUserNameCaption" );
+        }
+
+        private void DisplayError( string message )
+        {
+            lInvalid.Text = AttributeValue( message );
+            pnlInvalid.Visible = true;
         }
 
         #endregion
