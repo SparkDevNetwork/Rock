@@ -382,7 +382,7 @@
                 <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Name" />
                 <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                 <h4>Attribute Category</h4>
-                <Rock:DataTextBox ID="tbValueGridColumn" runat="server" ReadOnly="true" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Attributes" LabelText="First Attribute"/>
+                <Rock:DataTextBox ID="tbValueGridColumn" runat="server" ReadOnly="true" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Attributes" LabelText="Grid Attributes"/>
             </fieldset>
         </div>
         <div class="modal-footer">

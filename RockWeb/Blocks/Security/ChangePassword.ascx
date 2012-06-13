@@ -5,7 +5,7 @@
 
     <asp:Panel ID="pnlEntry" runat="server">
     
-        <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert-message error">
+        <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert-message error" Visible="false">
             <asp:Literal ID="lInvalid" runat="server" ></asp:Literal> 
         </asp:Panel>
 

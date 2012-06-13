@@ -16,7 +16,6 @@
     
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
 

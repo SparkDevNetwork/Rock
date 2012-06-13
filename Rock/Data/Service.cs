@@ -71,7 +71,12 @@ namespace Rock.Data
             return GetByPublicKey( publicKey );
         }
 
-        private T GetByPublicKey( string publicKey )
+        /// <summary>
+        /// Gets the model by the public un-encrypted key.
+        /// </summary>
+        /// <param name="publicKey">The public key.</param>
+        /// <returns></returns>
+        public T GetByPublicKey( string publicKey )
         {
             try
             {
@@ -100,25 +105,25 @@ namespace Rock.Data
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public T GetCurrent( Rock.Web.Cache.Page pageInstance )
-        {
-            string key = typeof( T ).FullName;
+        //public T GetCurrent( Rock.Web.Cache.Page pageInstance )
+        //{
+        //    string key = typeof( T ).FullName;
             
-            if ( pageInstance.Context.ContainsKey( key ) )
-            {
-                var keyModel = pageInstance.Context[key];
-                if ( keyModel.Model == null )
-                {
-                    keyModel.Model = GetByPublicKey( keyModel.Key );
-                    if ( keyModel.Model is Rock.Attribute.IHasAttributes )
-                        Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
-                }
+        //    if ( pageInstance.Context.ContainsKey( key ) )
+        //    {
+        //        var keyModel = pageInstance.Context[key];
+        //        if ( keyModel.Model == null )
+        //        {
+        //            keyModel.Model = GetByPublicKey( keyModel.Key );
+        //            if ( keyModel.Model is Rock.Attribute.IHasAttributes )
+        //                Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
+        //        }
 
-                return keyModel.Model as T;
-            }
+        //        return keyModel.Model as T;
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Adds the specified item.

@@ -80,14 +80,28 @@ namespace Rock.CMS
 		public string Password { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Is Confirmed.
+		/// Gets or sets the is confirmed.
 		/// </summary>
 		/// <value>
-		/// Is Confirmed.
+		/// Is confirmed.
 		/// </value>
 		[DataMember]
 		public bool? IsConfirmed { get; set; }
-		
+
+        /// <summary>
+        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// </summary>
+        [NotMapped]
+        public bool IsAuthenticated 
+        {
+            get
+            {
+                if ( HttpContext.Current.Session["UserIsAuthenticated"] != null )
+                    return ( bool )HttpContext.Current.Session["UserIsAuthenticated"];
+                return false;
+            }
+        }
+
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
 		/// </summary>
@@ -318,6 +332,7 @@ namespace Rock.CMS
         /// </summary>
         public string ConfirmationCodeEncoded
         {
+
             get
             {
                 return HttpUtility.UrlEncode( ConfirmationCode );
