@@ -2229,13 +2229,23 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   -moz-opacity: 0.8;
   opacity: 0.8;
 }
+
+/* 
+Temporarily using .modal2 class for new modal popup until we can convert all
+modals to use new ajaxControlToolkit.  Old and New modals need to have different
+margin value.  Other than that, they share the same css
+*/
+
 .modal {
+  margin: -250px 0 0 -280px;
+}
+
+.modal, .modal2 {
   position: fixed;
   top: 50%;
   left: 50%;
   z-index: 11000;
   width: 750px;
-  margin: -250px 0 0 -280px;
   background-color: #ffffff;
   border: 1px solid #999;
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -2252,10 +2262,10 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   -moz-background-clip: padding-box;
   background-clip: padding-box;
 }
-.modal .close {
+.modal .close, .modal2 .close {
   margin-top: 7px;
 }
-.modal.fade {
+.modal.fade, .modal2.fade {
   -webkit-transition: opacity .3s linear, top .3s ease-out;
   -moz-transition: opacity .3s linear, top .3s ease-out;
   -ms-transition: opacity .3s linear, top .3s ease-out;
@@ -2263,7 +2273,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   transition: opacity .3s linear, top .3s ease-out;
   top: -25%;
 }
-.modal.fade.in {
+.modal.fade.in, .modal2.fade.in {
   top: 50%;
 }
 .modal-header {

@@ -43,6 +43,6 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
+        Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
     }
 }

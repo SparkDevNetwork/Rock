@@ -1,15 +1,81 @@
-﻿$(document).ready(function () {
+﻿function saveBlockMove() {
 
-    // Wire up the iframe div as a popup dialog
-    $('#modal-block-move').modal({
-        backdrop: true,
-        keyboard: true
+    // The current block's id
+    var blockInstanceId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
+
+    // The new zone selected
+    var zoneName = $('#block-move-zone').val();
+
+    // Get the current block instance object
+    $.ajax({
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+        success: function (getData, status, xhr) {
+
+            // Update the new zone
+            getData.Zone = zoneName;
+
+            // Set the appropriate parent value (layout or page)
+            if ($('#block-move-Location_0').attr('checked') == true) {
+                getData.Layout = null;
+                getData.PageId = rock.pageId;
+            }
+            else {
+                getData.Layout = rock.layout;
+                getData.PageId = null;
+            }
+
+            // Save the updated block instance
+            $.ajax({
+                type: 'PUT',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify(getData),
+                url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
+                success: function (data, status, xhr) {
+
+                    // Get a reference to the block instance's container div
+                    var $source = $('#bid_' + blockInstanceId);
+
+                    // Get a reference to the new zone's container
+                    var $target = $('#zone-' + $('#block-move-zone').val());
+
+                    // Update the move anchor with the new zone name
+                    $moveLink.attr('zone', $('#block-move-zone').val());
+
+                    // If the block instance's parent is the page, move it to the new zone as the last
+                    // block in that zone.  If the parent is the layout, insert it as the last layout
+                    // block (prior to any page block's
+                    if ($('#block-move-Location_0').attr('checked') == true) {
+                        $target.append($source);
+                        $moveLink.attr('zoneloc', 'Page');
+                        $source.attr('zoneLoc', 'Page');
+                    }
+                    else {
+                        if ($('#' + $target.attr('id') + '>[zoneLoc="Layout"]').length > 0)
+                            $source.insertAfter($('#' + $target.attr('id') + '>[zoneLoc="Layout"]:last'));
+                        else
+                            $target.append($source);
+                        $moveLink.attr('zoneloc', 'Layout');
+                        $source.attr('zoneLoc', 'Layout');
+                    }
+
+                },
+                error: function (xhr, status, error) {
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                }
+            });
+        },
+        error: function (xhr, status, error) {
+            alert(status + ' [' + error + ']: ' + xhr.responseText);
+        }
     });
 
-    // Bind the click event for the close modal button
-    $('#block-move-cancel').click(function () {
-        $('#modal-block-move').modal('hide');
-    });
+}
+
+$(document).ready(function () {
 
     // Bind the click event of the block move anchor tag
     $('a.blockinstance-move').click(function () {
@@ -18,7 +84,7 @@
         var $moveLink = $(this);
 
         // Add the current block's id as an attribute of the move dialog's save button
-        $('#block-move-save').attr('block-instance', $(this).attr('href'));
+        $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance', $(this).attr('href'));
 
         // Set the dialog's zone selection select box value to the block's current zone 
         $('#block-move-zone').val($(this).attr('zone'));
@@ -34,96 +100,10 @@
         }
 
         // Show the popup block move dialog
-        $('#modal-block-move').modal('show').bind('shown', function () {
-            $('#modal-block-move').appendTo($('form'));
-        });
+        $find('modal-block-move').show();
 
-        // Bind the dialog save button's click event
-        $('#block-move-save').click(function () {
-
-            // Close the popup dialog box
-            $('#modal-block-move').modal('hide');
-
-            // The current block's id
-            var blockInstanceId = $(this).attr('block-instance');
-
-            // The new zone selected
-            var zoneName = $('#block-move-zone').val();
-
-            // Get the current block instance object
-            $.ajax({
-                type: 'GET',
-                contentType: 'application/json',
-                dataType: 'json',
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
-                success: function (getData, status, xhr) {
-
-                    // Update the new zone
-                    getData.Zone = zoneName;
-
-                    // Set the appropriate parent value (layout or page)
-                    if ($('#block-move-Location_0').attr('checked') == true) {
-                        getData.Layout = null;
-                        getData.PageId = rock.pageId;
-                    }
-                    else {
-                        getData.Layout = rock.layout;
-                        getData.PageId = null;
-                    }
-
-                    // Save the updated block instance
-                    $.ajax({
-                        type: 'PUT',
-                        contentType: 'application/json',
-                        dataType: 'json',
-                        data: JSON.stringify(getData),
-                        url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
-                        success: function (data, status, xhr) {
-
-                            // Get a reference to the block instance's container div
-                            var $source = $('#bid_' + blockInstanceId);
-
-                            // Get a reference to the new zone's container
-                            var $target = $('#zone-' + $('#block-move-zone').val());
-
-                            // Update the move anchor with the new zone name
-                            $moveLink.attr('zone', $('#block-move-zone').val());
-
-                            // If the block instance's parent is the page, move it to the new zone as the last
-                            // block in that zone.  If the parent is the layout, insert it as the last layout
-                            // block (prior to any page block's
-                            if ($('#block-move-Location_0').attr('checked') == true) {
-                                $target.append($source);
-                                $moveLink.attr('zoneloc', 'Page');
-                                $source.attr('zoneLoc', 'Page');
-                            }
-                            else {
-                                if ($('#' + $target.attr('id') + '>[zoneLoc="Layout"]').length > 0)
-                                    $source.insertAfter($('#' + $target.attr('id') + '>[zoneLoc="Layout"]:last'));
-                                else
-                                    $target.append($source);
-                                $moveLink.attr('zoneloc', 'Layout');
-                                $source.attr('zoneLoc', 'Layout');
-                            }
-
-                        },
-                        error: function (xhr, status, error) {
-                            alert(status + ' [' + error + ']: ' + xhr.responseText);
-                        }
-                    });
-                },
-                error: function (xhr, status, error) {
-                    alert(status + ' [' + error + ']: ' + xhr.responseText);
-                }
-            });
-
-            // Unbind the dialog save button's click event
-            $(this).unbind('click');
-
-        });
-
-        // Cancel the default action of the save button
         return false;
+
     });
 
 

@@ -341,6 +341,7 @@ namespace RockWeb.Blocks.Security
         {
             FormsAuthentication.SignOut();
             FormsAuthentication.SetAuthCookie( tbUserName.Text, false );
+            Session["UserIsAuthenticated"] = true;
 
             if ( user != null && user.PersonId.HasValue )
             {

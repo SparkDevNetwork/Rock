@@ -144,7 +144,7 @@ namespace Rock.Core
 		/// <value>
 		/// Default Value.
 		/// </value>
-		[DataMember]
+        [DataMember]
 		public string DefaultValue { get; set; }
 		
 		/// <summary>
@@ -289,7 +289,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public string GetValue( int entityId )
+        public Rock.Core.DTO.AttributeValue GetValue( int entityId )
         {
             return GetValues( entityId )[0];
         }
@@ -299,16 +299,22 @@ namespace Rock.Core
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public List<string> GetValues( int entityId )
+        public List<Rock.Core.DTO.AttributeValue> GetValues( int entityId )
         {
-            List<string> values = this.AttributeValues.
+            List<Rock.Core.DTO.AttributeValue> values = new List<DTO.AttributeValue>();
+
+            foreach ( var value in this.AttributeValues.
                 Where( v => v.EntityId == entityId ).
-                OrderBy( v=> v.Order).
-                Select( v => v.Value ).
-                ToList();
+                OrderBy( v => v.Order ) )
+                values.Add( value.DataTransferObject );
 
             if ( values.Count == 0 )
-                values.Add( DefaultValue );
+            {
+                var value = new Rock.Core.DTO.AttributeValue();
+                value.AttributeId = this.Id;
+                value.Value = this.DefaultValue;
+                values.Add( value );
+            }
 
             return values;
         }
