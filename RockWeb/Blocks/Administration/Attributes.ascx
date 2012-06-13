@@ -103,7 +103,7 @@
                     url: restUrl,
                     success: function (data, status, xhr) {
 
-                        if (AttributeEntity == '')
+                        if (AttributeEntity == '') {
                             $.ajax({
                                 type: 'PUT',
                                 contentType: 'application/json',
@@ -113,6 +113,7 @@
                                     alert(status + ' [' + error + ']: ' + xhr.responseText);
                                 }
                             });
+                        }
 
                         $('#modal-details').modal('hide');
                         $('#<%= btnRefresh.ClientID %>').click();
