@@ -15,195 +15,72 @@ using Rock.CMS;
 
 namespace RockWeb.Blocks.Cms
 {
-    #region Properties
-
     [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
     [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
     [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer")]
+    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer" )]
     [Rock.Attribute.Property( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
     [Rock.Attribute.Property( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
     [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
     [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
 
-    #endregion
-
     public partial class HtmlContent : Rock.Web.UI.Block
     {
         #region Private Global Variables
- 
+
         bool _supportVersioning = false;
         bool _requireApproval = false;
 
         #endregion
 
-        #region Overriddend Block Methods
+        #region Events
 
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
+            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
+            PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+
+            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
+            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
+
             _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
-            _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false");
+            _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
+
+            mpeContent.OnOkScript = string.Format("saveHtmlContent_{0}();", BlockInstance.Id);
+
+            rGrid.DataKeyNames = new string[] { "id" };
+            rGrid.ShowActionRow = false;
 
             this.AttributesUpdated += HtmlContent_AttributesUpdated;
 
             ShowView();
-
-            rGrid.DataKeyNames = new string[] { "id" };
-            rGrid.GridRebind += new Rock.Web.UI.Controls.GridRebindEventHandler( rGrid_GridRebind );
-            rGrid.ShowActionRow = false;
         }
 
-        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        protected override void OnLoad( EventArgs e )
         {
-            List<Control> configControls = new List<Control>();
+            base.OnLoad( e );
 
-            // add edit icon to config controls if user has edit permission
-            if ( canConfig || canEdit )
-            {
-                LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit icon-button";
-                lbEdit.ToolTip = "Edit HTML";
-                lbEdit.Click += new EventHandler( lbEdit_Click );
-                configControls.Add( lbEdit );
-            }
-
-            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
-
-            return configControls;
+            hfAction.Value = string.Empty;
         }
-
-        #endregion
-
-        #region Events
 
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            phEditContent.Visible = true;
-
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
-
             HtmlContentService service = new HtmlContentService();
             Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
             if ( content == null )
                 content = new Rock.CMS.HtmlContent();
 
-            string script = string.Format( @"
-
-    $(document).ready(function () {{
-
-        $('#html-content-editor-{0}').modal({{
-            show: true,
-            backdrop: true,
-            keyboard: true
-        }});
-
-        $('#html-content-editor-{0}').bind('shown', function () {{
-            $(this).appendTo($('form'));
-            $('#html-content-editor-{0} textarea.html-content-editor').ckeditor(ckoptionsAdv).end();
-        }});
-
-        $('#html-content-editor-{0}').bind('hide', function () {{
-            $('#html-content-editor-{0}').find('textarea.html-content-editor').ckeditorGet().destroy();
-        }});
-
-    }});
-
-    Sys.Application.add_load(function () {{
-
-        $('#html-content-edit-{0} .btn').click(function () {{
-            $('#html-content-editor-{0}').modal('hide');
-        }});
-
-    }});
-",
-                BlockInstance.Id);
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "edit-html-content-{0}", BlockInstance.Id ), script, true );
-
             if ( _supportVersioning )
             {
-                PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-                PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-                PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-
-                PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-                PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
-
-                PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-                PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
-
-
-                script = string.Format( @"
-
-    $(document).ready(function () {{
-
-        $('#{2}').kendoDatePicker({{ open:function(e){{
-            window.setTimeout(function(){{ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '11000'); }}, 1);
-        }} }});
-
-        $('#{3}').kendoDatePicker({{ open:function(e){{
-            window.setTimeout(function(){{ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '11000'); }}, 1);
-        }} }});
-
-        $('#html-content-version-{0}').click(function () {{
-            $('#html-content-versions-{0}').show();
-            $('#html-content-edit-{0}').hide();
-        }});
-
-        $('#html-content-versions-cancel-{0}').click(function () {{
-            $('#html-content-edit-{0}').show();
-            $('#html-content-versions-{0}').hide();
-            return false;
-        }});
-
-        $('a.html-content-show-version-{0}').click(function () {{
-
-            if (CKEDITOR.instances['{5}'].checkDirty() == false ||
-                confirm('Loading a previous version will cause any changes you\'ve made to the existing text to be lost.  Are you sure you want to continue?'))
-            {{
-                $.ajax({{
-                    type: 'GET',
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    url: rock.baseUrl + 'REST/CMS/HtmlContent/' + $(this).attr('html-id'),
-                    success: function (getData, status, xhr) {{
-
-                        htmlContent = getData;
-                        
-                        $('#html-content-version-{0}').text('Version ' + htmlContent.Version);
-                        $('#{1}').val(htmlContent.Version);
-                        $('#{2}').val(htmlContent.StartDateTime);
-                        $('#{3}').val(htmlContent.ExpireDateTime);
-                        $('#{4}').attr('checked', htmlContent.Approved);
-
-                        CKEDITOR.instances['{5}'].setData(htmlContent.Content, function() {{
-                            CKEDITOR.instances['{5}'].resetDirty();
-                            $('#html-content-edit-{0}').show();
-                            $('#html-content-versions-{0}').hide();
-                        }});
-
-                    }},
-                    error: function (xhr, status, error) {{
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }}
-                }});
-            }}
-        }});
-        
-
-    }});
-",
-                    BlockInstance.Id,
-                    hfVersion.ClientID,
-                    tbStartDate.ClientID,
-                    tbExpireDate.ClientID,
-                    cbApprove.ClientID,
-                    txtHtmlContentEditor.ClientID );
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "edit-html-content-version-{0}", BlockInstance.Id ), script, true );
-
+                phCurrentVersion.Visible = true;
                 pnlVersioningHeader.Visible = true;
                 cbOverwriteVersion.Visible = true;
 
@@ -223,6 +100,7 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
+                phCurrentVersion.Visible = false;
                 pnlVersioningHeader.Visible = false;
                 cbOverwriteVersion.Visible = false;
             }
@@ -230,9 +108,25 @@ namespace RockWeb.Blocks.Cms
             txtHtmlContentEditor.Text = content.Content;
 
             BindGrid();
+
+            hfAction.Value = "Edit";
         }
 
-        protected void btnSaveContent_Click( object sender, EventArgs e )
+        protected override void OnPreRender( EventArgs e )
+        {
+            aClose.Attributes["onclick"] = string.Format(
+                "$find('{0}').hide();return false;", mpeContent.BehaviorID );
+
+            base.OnPreRender( e );
+        }
+
+        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
+        {
+            lPreText.Text = AttributeValue( "PreText" );
+            lPostText.Text = AttributeValue( "PostText" );
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
         {
             if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
             {
@@ -249,9 +143,9 @@ namespace RockWeb.Blocks.Cms
                 content = service.GetByBlockIdAndEntityValueAndVersion( BlockInstance.Id, entityValue, version );
 
                 // if the existing content changed, and the overwrite option was not checked, create a new version
-                if ( content != null && 
-                    _supportVersioning && 
-                    content.Content != txtHtmlContentEditor.Text && 
+                if ( content != null &&
+                    _supportVersioning &&
+                    content.Content != txtHtmlContentEditor.Text &&
                     !cbOverwriteVersion.Checked )
                     content = null;
 
@@ -319,20 +213,30 @@ namespace RockWeb.Blocks.Cms
             ShowView();
         }
 
-        void rGrid_GridRebind( object sender, EventArgs e )
-        {
-            throw new NotImplementedException();
-        }
-
-        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
-        {
-            lPreText.Text = AttributeValue( "PreText" );
-            lPostText.Text = AttributeValue( "PostText" );
-        }
-
         #endregion
 
-        #region Private Methods
+        #region Methods
+
+        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        {
+            List<Control> configControls = new List<Control>();
+
+            // add edit icon to config controls if user has edit permission
+            if ( canConfig || canEdit )
+            {
+                LinkButton lbEdit = new LinkButton();
+                lbEdit.CssClass = "edit icon-button";
+                lbEdit.ToolTip = "Edit HTML";
+                lbEdit.Click += new EventHandler( lbEdit_Click );
+                configControls.Add( lbEdit );
+
+                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
+            }
+
+            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
+
+            return configControls;
+        }
 
         private void ShowView()
         {
@@ -369,8 +273,9 @@ namespace RockWeb.Blocks.Cms
         {
             HtmlContentService service = new HtmlContentService();
 
-            var versions = service.GetContent(BlockInstance.Id, EntityValue()).
-                Select( v => new {
+            var versions = service.GetContent( BlockInstance.Id, EntityValue() ).
+                Select( v => new
+                {
                     v.Id,
                     v.Version,
                     v.Content,
@@ -380,7 +285,7 @@ namespace RockWeb.Blocks.Cms
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,
                     v.ExpireDateTime
-                }).ToList();
+                } ).ToList();
 
             rGrid.DataSource = versions;
             rGrid.DataBind();
@@ -405,10 +310,3 @@ namespace RockWeb.Blocks.Cms
     }
 }
 
-/*
-CKEditor Notes:
- * 
- * Toolbar Options: http://docs.cksource.com/CKEditor_3.x/Developers_Guide/Toolbar
- * Config Settings: http://docs.cksource.com/ckeditor_api/index.html
-
-*/

@@ -60,7 +60,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>

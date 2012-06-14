@@ -253,16 +253,32 @@ namespace Rock.CMS
         /// <returns></returns>
         public static User GetCurrentUser( bool userIsOnline )
         {
-            UserService userService = new UserService();
-            User user = userService.GetByUserName( User.GetCurrentUserName() );
-
-            if ( user != null && userIsOnline )
+            string userName = User.GetCurrentUserName();
+            if ( userName != string.Empty )
             {
-                user.LastActivityDate = DateTime.Now;
-                userService.Save( user, null );
+                if ( userName.StartsWith( "rckipid=" ) )
+                {
+                    Rock.CRM.PersonService personService = new CRM.PersonService();
+                    Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
+                    if ( impersonatedPerson != null )
+                        return impersonatedPerson.ImpersonatedUser;
+                }
+                else
+                {
+                    UserService userService = new UserService();
+                    User user = userService.GetByUserName( userName );
+
+                    if ( user != null && userIsOnline )
+                    {
+                        user.LastActivityDate = DateTime.Now;
+                        userService.Save( user, null );
+                    }
+
+                    return user;
+                }
             }
 
-            return user;
+            return null;
         }
 
         /// <summary>

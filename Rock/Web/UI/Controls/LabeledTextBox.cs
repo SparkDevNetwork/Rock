@@ -157,23 +157,17 @@ namespace Rock.Web.UI.Controls
         {
             bool isValid = !Required || validator.IsValid;
 
-            writer.AddAttribute( "class", isValid ? "" : "error" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Dl );
+            writer.AddAttribute( "class", "control-group" +
+                (isValid ? "" : " error") +
+                (Required ? " required" : ""));
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
-            if ( Required && DisplayRequiredIndicator )
-                writer.AddAttribute( "class", "required" );
             label.RenderControl( writer );
-            writer.RenderEndTag();
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dd );
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             base.Render( writer );
-
-            if ( Required )
-            {
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
-            }
 
             if ( Tip.Trim() != string.Empty )
             {
@@ -190,9 +184,15 @@ namespace Rock.Web.UI.Controls
             if ( Help.Trim() != string.Empty )
             {
                 writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.RenderBeginTag( HtmlTextWriterTag.P );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
+            }
+
+            if ( Required )
+            {
+                validator.ErrorMessage = LabelText + " is Required.";
+                validator.RenderControl( writer );
             }
 
             writer.RenderEndTag();
@@ -216,7 +216,7 @@ namespace Rock.Web.UI.Controls
             validator.ID = this.ID + "_rfv";
             validator.ControlToValidate = this.ID;
             validator.Display = ValidatorDisplay.Dynamic;
-            validator.CssClass = "validation-error";
+            validator.CssClass = "help-inline";
 
             Controls.Add( label );
             Controls.Add( validator );

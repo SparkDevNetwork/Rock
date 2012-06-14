@@ -4,6 +4,11 @@
         <name>RockJobSchedulerService</name>
     </assembly>
     <members>
+        <member name="M:RockJobSchedulerService.Program.Main">
+            <summary>
+            The main entry point for the application.
+            </summary>
+        </member>
         <member name="T:RockJobSchedulerService.ProjectInstaller">
             <summary>
             Project Installer 
@@ -29,11 +34,6 @@
         <member name="M:RockJobSchedulerService.ProjectInstaller.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:RockJobSchedulerService.ProjectInstaller"/> class.
-            </summary>
-        </member>
-        <member name="M:RockJobSchedulerService.Program.Main">
-            <summary>
-            The main entry point for the application.
             </summary>
         </member>
         <member name="F:RockJobSchedulerService.JobScheduler.components">

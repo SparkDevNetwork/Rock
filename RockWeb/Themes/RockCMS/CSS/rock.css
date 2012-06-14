@@ -434,7 +434,7 @@ header.topbar nav ul > li:hover .nav-menu {
 }
 
 /* Modal Styles */
-.modal 
+.modal, .modal2
 {
     background-color: #ddd;   
 }
@@ -444,7 +444,7 @@ body#dialog
     background-color: #ddd;   
 }
 
-#modal-popup-iframe
+#modal-popup_iframe
 {
     height: 100%;
     width: 100%;

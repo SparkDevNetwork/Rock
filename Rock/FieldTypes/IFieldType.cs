@@ -61,6 +61,7 @@ namespace Rock.FieldTypes
         /// <param name="parentElement">The parent element.</param>
         /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
-        string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement );
+        string RegisterUpdateScript( Page page );
+
     }
 }
