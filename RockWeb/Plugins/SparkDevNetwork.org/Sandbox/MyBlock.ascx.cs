@@ -80,6 +80,7 @@ namespace RockWeb.Blocks
              * */
 
             /* test person viewed transaction */
+/*
             PersonViewTransaction transaction = new PersonViewTransaction();
             transaction.DateViewed = DateTime.Now;
             transaction.Source = "Site: " + PageInstance.Site.Id.ToString() + "Page: " + PageInstance.Id.ToString();
@@ -92,7 +93,33 @@ namespace RockWeb.Blocks
             Rock.Communication.SendGridEmailProvider sgp = new Rock.Communication.SendGridEmailProvider();
             List<Rock.Communication.BouncedEmail> bouncedMail = sgp.BouncedEmails(false);
             bool result = sgp.DeleteBouncedEmail( "jon@jonedmiston.com" );
-            
+*/
+
+            btnShowDialog.Click += new EventHandler( btnShowDialog_Click );
+//            mdTest.SaveClick += new EventHandler( mdTest_SaveClick );
+
+            TextBox tb = new TextBox();
+            tb.ID = "tbTest";
+            mdTest.Content.Controls.Add( tb );
+        }
+
+        void btnShowDialog_Click( object sender, EventArgs e )
+        {
+//            mdTest.Show();
+        }
+
+        void mdTest_SaveClick( object sender, EventArgs e )
+        {
+            string testText = tbContent.Text;
+
+            TextBox tb = mdTest.FindControl( "tbTest" ) as TextBox;
+            if ( tb != null )
+            {
+                if ( tb.Text.Trim() == string.Empty )
+                {
+                    //                    mdTest.Show();
+                }
+            }
         }
 
         void MyBlock_AttributesUpdated( object sender, EventArgs e )

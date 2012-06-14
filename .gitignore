@@ -6,3 +6,5 @@
 /*.6.0.ReSharper.user
 /*.shfbproj_dturner
 *.DS_Store
+*.tlog
+/RockWeb/web.ConnectionStrings.config

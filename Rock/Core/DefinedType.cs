@@ -186,6 +186,14 @@ namespace Rock.Core
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
+
     }
     /// <summary>
     /// Defined Type Configuration class.

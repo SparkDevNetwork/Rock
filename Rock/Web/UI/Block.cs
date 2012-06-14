@@ -280,7 +280,7 @@ namespace Rock.Web.UI
             if ( BlockInstance != null  && 
                 BlockInstance.AttributeValues != null &&
                 BlockInstance.AttributeValues.ContainsKey( key ) )
-                return BlockInstance.AttributeValues[key].Value[0];
+                return BlockInstance.AttributeValues[key].Value[0].Value;
 
             return null;
         }

@@ -61,3 +61,22 @@
 <br />
 <a href="#" id="getjson-button">Get JSON Data</a> (must be logged in)<br />
 <a href="#" id="getpagemethod-button">Get PageMethod Data</a> (must be logged in)
+
+<br />
+<br />
+
+<asp:UpdatePanel ID="upDialog" runat="server">
+<ContentTemplate>
+
+<asp:Button ID="btnShowDialog" runat="server" Text="Show Dialog" />
+<asp:Button ID="btnShowDialog2" runat="server" Text="Show Dialog 2" />
+
+<Rock:ModalDialog ID="mdTest" runat="server" TargetControlID="btnShowDialog2" Title="Test Dialog">
+<Content>
+    This will be the content
+    <asp:TextBox ID="tbContent" runat="server"></asp:TextBox>
+</Content>
+</Rock:ModalDialog>
+
+</ContentTemplate>
+</asp:UpdatePanel>

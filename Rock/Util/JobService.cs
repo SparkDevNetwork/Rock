@@ -63,9 +63,9 @@ namespace Rock.Util
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, KeyValuePair<string, List<string>>> attrib in job.AttributeValues )
+            foreach ( KeyValuePair<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> attrib in job.AttributeValues )
             {
-                map.Add( attrib.Key, attrib.Value.Value[0] );
+                map.Add( attrib.Key, attrib.Value.Value[0].Value );
             }
 
             // create the quartz job object
