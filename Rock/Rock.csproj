@@ -175,7 +175,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\FundService.cs" />
-    <Compile Include="Financial\Gateway.cs" />
+    <Compile Include="Financial\Gateway.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Financial\PersonAccountLookup.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -217,6 +219,10 @@
     <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.cs" />
     <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.Designer.cs">
       <DependentUpon>201204302130188_AttributeDefaultValueNotRequired.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201206142140223_PaymentGateway.cs" />
+    <Compile Include="Migrations\201206142140223_PaymentGateway.Designer.cs">
+      <DependentUpon>201206142140223_PaymentGateway.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
