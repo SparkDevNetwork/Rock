@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.CRM;
+using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -159,6 +160,14 @@ namespace Rock.Financial
         public virtual Fund ParentFund { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the fund.
+        /// </summary>
+        /// <value>
+        /// The type of the fund.
+        /// </value>
+        public virtual DefinedValue FundType { get; set; }
+
+        /// <summary>
         /// Gets or sets the child funds.
         /// </summary>
         /// <value>
@@ -252,6 +261,7 @@ namespace Rock.Financial
         public FundConfiguration()
         {
             this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
+            this.HasOptional(f => f.FundType).WithMany().HasForeignKey(f => f.FundTypeId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
