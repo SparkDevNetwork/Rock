@@ -35,7 +35,7 @@ namespace Rock.FieldTypes
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control CreateControl( string value, bool setValue )
+        public override System.Web.UI.Control CreateControl( string value, bool required, bool setValue )
         {
             Rock.Web.UI.Controls.ImageSelector imageSelector = new Web.UI.Controls.ImageSelector();
             imageSelector.ImageId = value;

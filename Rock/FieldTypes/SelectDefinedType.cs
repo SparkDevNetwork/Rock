@@ -4,17 +4,17 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.FieldTypes
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of System.Drawing.Color options
+    /// Field Type used to display a dropdown list of Defined Types
     /// </summary>
-    public class Color : Field
+    public class SelectDefinedType : Field
     {
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
@@ -24,19 +24,16 @@ namespace Rock.FieldTypes
         /// <returns></returns>
         public override Control CreateControl( string value, bool required, bool setValue )
         {
-            DropDownList ddl = new DropDownList();
+            DropDownList list = new DropDownList();
 
-            Type colors = typeof( System.Drawing.Color );
-            PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );
-            foreach ( PropertyInfo info in colorInfo )
-            {
-                ListItem li = new ListItem( info.Name, info.Name );
-                if (setValue)
-                    li.Selected = info.Name == value;
-                ddl.Items.Add( li );
-            }
+            if (!required)
+                list.Items.Add(new ListItem(string.Empty, "0"));
 
-            return ddl;
+            Rock.Core.DefinedTypeService definedTypeService = new Core.DefinedTypeService();
+            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
+                list.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
+
+            return list;
         }
 
         /// <summary>
