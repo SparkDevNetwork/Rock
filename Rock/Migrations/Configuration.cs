@@ -956,6 +956,16 @@ namespace Rock.Migrations
 			};
 			context.Blocks.AddOrUpdate( p => p.Guid, block_ZoneBlocks );
 
+			var block_BlockProperties = new Block
+			{
+				Name = @"Block Properties",
+				System = true,
+				Path = @"~/Blocks/Administration/BlockProperties.ascx",
+				Guid = new Guid( "5EC45388-83D4-4E99-BF25-3FA00327F08B" ),
+				Description = @"~/Blocks/Cms/BlockProperties.ascx"
+			};
+			context.Blocks.AddOrUpdate( p => p.Guid, block_BlockProperties );
+
 			var block_Security = new Block
 			{
 				Name = @"Security",
@@ -1190,6 +1200,19 @@ namespace Rock.Migrations
 				BlockId = block_HTMLContent.Id
 			};
 			context.BlockInstances.AddOrUpdate( p => p.Guid, blockinstance_Html );
+
+			var blockinstance_BlockProperties = new BlockInstance
+			{
+				Guid = new Guid( "3D128AE6-08DE-4108-A888-F97C66B21996" ),
+				Name = @"Block Properties",
+				System = true,
+				OutputCacheDuration = 0,
+				Zone = @"Content",
+				Order = 0,
+				PageId = page23_BlockProperties.Id,
+				BlockId = block_BlockProperties.Id
+			};
+			context.BlockInstances.AddOrUpdate( p => p.Guid, blockinstance_BlockProperties );
 
 			var blockinstance_Security = new BlockInstance
 			{
@@ -1619,6 +1642,7 @@ namespace Rock.Migrations
 
 			var attribute_PrexxText = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Pre-Text",
@@ -1630,6 +1654,7 @@ namespace Rock.Migrations
 				Order = 0,
 				Description = @"HTML text to render before the blocks main content.",
 				Guid = new Guid( "15E874B8-FF76-40FB-8713-6D0C98609734" ),
+				DefaultValue = @"",
 				EntityQualifierValue = block_HTMLContent.Id.ToString(),
 				FieldTypeId = fieldtype_Text.Id
 			};
@@ -1658,6 +1683,7 @@ namespace Rock.Migrations
 
 			var attribute_PostxxText = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Post-Text",
@@ -1669,6 +1695,7 @@ namespace Rock.Migrations
 				Order = 1,
 				Description = @"HTML text to render after the blocks main content.",
 				Guid = new Guid( "2E9AF795-68FE-4BD6-AF8B-8848CD796AF5" ),
+				DefaultValue = @"",
 				EntityQualifierValue = block_HTMLContent.Id.ToString(),
 				FieldTypeId = fieldtype_Text.Id
 			};
@@ -1697,6 +1724,7 @@ namespace Rock.Migrations
 
 			var attribute_PostsPerPage = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Posts Per Page",
@@ -1714,50 +1742,9 @@ namespace Rock.Migrations
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_PostsPerPage );
 
-			var attribute_CacheDuration = new Rock.Core.Attribute
-			{
-				EntityQualifierColumn = @"BlockId",
-				Required = false,
-				Name = @"Cache Duration",
-				GridColumn = true,
-				MultiValue = false,
-				Key = @"CacheDuration",
-				System = true,
-				Entity = @"Rock.CMS.BlockInstance",
-				Order = 2,
-				Description = @"Number of seconds to cache the content.",
-				Guid = new Guid( "DB1C5F09-2010-4842-86F1-3D9B9AD55C1F" ),
-				DefaultValue = @"0",
-				EntityQualifierValue = block_HTMLContent.Id.ToString(),
-				FieldTypeId = fieldtype_Interger.Id
-			};
-			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CacheDuration );
-
-			context.SaveChanges();
-
-			var attributevalue_0 = new AttributeValue
-			{
-				AttributeId = attribute_CacheDuration.Id,
-				System = false,
-				Guid = new Guid( "39356211-427B-4A57-BA9C-1B81B14D4496" ),
-				Value = @"0",
-				EntityId = blockinstance_Html.Id
-			};
-			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_0 );
-
-			var attributevalue_0_99 = new AttributeValue
-			{
-				AttributeId = attribute_CacheDuration.Id,
-				System = false,
-				Guid = new Guid( "C5299A96-20AB-4FF5-ADF6-4AB7A8C78A51" ),
-				Value = @"0",
-				EntityId = blockinstance_Welcome.Id
-			};
-			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_0_99 );
-
-
 			var attribute_Heading = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Heading",
@@ -1777,6 +1764,7 @@ namespace Rock.Migrations
 
 			var attribute_PostDetailPage = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Post Detail Page",
@@ -1796,6 +1784,7 @@ namespace Rock.Migrations
 
 			var attribute_EnableFacebookLogin = new Rock.Core.Attribute
 			{
+				Category = @"",
 				EntityQualifierColumn = @"BlockId",
 				Required = false,
 				Name = @"Enable Facebook Login",
@@ -1827,6 +1816,7 @@ namespace Rock.Migrations
 				Order = 1,
 				Description = @"The root page to use for the page collection. Defaults to the current page instance if not set.",
 				Guid = new Guid( "DD516FA7-966E-4C80-8523-BEAC91C8EEDA" ),
+				DefaultValue = @"",
 				EntityQualifierValue = block_PageXsltTransformation.Id.ToString(),
 				FieldTypeId = fieldtype_Text.Id
 			};
@@ -1901,33 +1891,1970 @@ namespace Rock.Migrations
 			var attribute_JobPulse = new Rock.Core.Attribute
 			{
 				Category = @"Jobs",
+				EntityQualifierColumn = @"",
 				Required = false,
 				Name = @"Job Pulse",
 				GridColumn = true,
 				MultiValue = false,
 				Key = @"JobPulse",
 				System = true,
+				Entity = @"",
 				Order = 1,
 				Description = @"Date and time the last job pulse job ran.  This job allows an administrator to be notified if the jobs stop running.",
 				Guid = new Guid( "254F45EE-071C-4337-A522-DFDC20B7966A" ),
 				DefaultValue = @"1/1/1900",
+				EntityQualifierValue = @"",
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_JobPulse );
 
+			var attribute_Port = new Rock.Core.Attribute
+			{
+				Category = @"Email Server",
+				EntityQualifierColumn = @"Class",
+				Required = true,
+				Name = @"Port",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailServerPort",
+				System = false,
+				Entity = @"Rock.Util.Job",
+				Order = 1,
+				Description = @"Port of the email server",
+				Guid = new Guid( "8D27E44D-A088-496E-B708-75BE93BA6651" ),
+				DefaultValue = @"25",
+				EntityQualifierValue = @"Rock.Jobs.TestJob",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Port );
+
+			var attribute_Domain = new Rock.Core.Attribute
+			{
+				Category = @"Email Server",
+				EntityQualifierColumn = @"Class",
+				Required = true,
+				Name = @"Domain",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailServer",
+				System = false,
+				Entity = @"Rock.Util.Job",
+				Order = 0,
+				Description = @"Domain name of your SMTP server",
+				Guid = new Guid( "9C06AA19-EE09-4ABA-A200-FB15443D3BDC" ),
+				DefaultValue = @"smtp.yourdomain.com",
+				EntityQualifierValue = @"Rock.Jobs.TestJob",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Domain );
+
+			var attribute_LicenseKey = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"License Key",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"LicenseKey",
+				System = false,
+				Entity = @"Rock.Address.Geocode.ServiceObjects",
+				Order = 2,
+				Description = @"The Service Objects License Key",
+				Guid = new Guid( "72CCD974-783D-49F9-AA37-0E609153DB58" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_LicenseKey );
+
+			var attribute_Order = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Address.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "590F48E8-4B53-497A-956C-69D2813BAEE9" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order );
+
+			var attribute_Order_36 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Address.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "5262A57F-B46D-4E69-8570-622FF6A6F0B5" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_36 );
+
+			var attribute_UserID = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.Address.Geocode.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "D9C9259C-5CEE-461A-87B6-2DA1DC0718F5" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID );
+
+			var attribute_Password = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Address.Geocode.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "50517637-8AD0-4EEB-B991-D22734EF7815" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password );
+
+			var attribute_Active = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Address.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "19E4BF22-8094-4766-9253-9408B521B032" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active );
+
+			var attribute_Active_41 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Address.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "D79C10AB-A799-4311-8F23-914BA7C60533" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_41 );
+
+			var attribute_UserID_42 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.Address.Standardize.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "9301064D-87AE-4690-BD27-4BB010567973" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID_42 );
+
+			var attribute_Password_43 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Address.Standardize.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "34EDAF13-628B-4AF9-822C-C32A5A206A12" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_43 );
+
+			var attribute_Active_44 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Address.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "80388551-C6E9-426A-9493-5ABFE80345A6" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_44 );
+
+			var attribute_Order_45 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Address.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "5C6019A9-3D14-400E-B2AD-F512F52BAD96" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_45 );
+
+			var attribute_CustomerId = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Customer Id",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"CustomerId",
+				System = false,
+				Entity = @"Rock.Address.Standardize.MelissaData",
+				Order = 1,
+				Description = @"The Melissa Data Customer ID",
+				Guid = new Guid( "3E8309DF-B3AD-428F-ADBF-2D3BAB03BC7E" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CustomerId );
+
+			var attribute_Order_50 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Address.Standardize.MelissaData",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "FEC235D7-07A9-4FFB-B8F9-49ABC25B6272" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_50 );
+
+			var attribute_Active_51 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Address.Standardize.MelissaData",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "BFB6D110-7B0D-43EA-8B8A-BD4BD54243D0" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_51 );
+
+			var attribute_UserName = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserName",
+				System = false,
+				Entity = @"Rock.Address.Geocode.TelaAtlas",
+				Order = 1,
+				Description = @"The Tele Atlas User Name",
+				Guid = new Guid( "B968F46D-BE79-457A-A763-5CF0891863E6" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserName );
+
+			var attribute_Password_53 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Address.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The Tele Atlas Password",
+				Guid = new Guid( "7485FC34-D23C-4267-B0C7-0097017652F4" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_53 );
+
+			var attribute_Order_54 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Address.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "CD533421-F3E9-480A-B37F-EB19E83E92D2" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_54 );
+
+			var attribute_Active_55 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Address.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "7A9209A2-3071-4327-9D7D-AB466D923BB7" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_55 );
+
+			var attribute_EZxxLocateService = new Rock.Core.Attribute
+			{
+				Category = @"Service",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"EZ-Locate Service",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EZLocateService",
+				System = false,
+				Entity = @"Rock.Address.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The EZ-Locate Service to use (default: USA_Geo_002)",
+				Guid = new Guid( "C72B7EAD-E8A1-4558-B63B-85A8656EF0E3" ),
+				DefaultValue = @"USA_Geo_002",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EZxxLocateService );
+
+			var attribute_EntityQualifierColumn = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity Qualifier Column",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EntityQualifierColumn",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"The entity column to evaluate when determining if this attribute applies to the entity",
+				Guid = new Guid( "ECD5B86C-2B48-4548-9FE9-7AC6F6FA8106" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_Attributes.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EntityQualifierColumn );
+
+			var attribute_EntityQualifierValue = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity Qualifier Value",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EntityQualifierValue",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"The entity column value to evaluate.  Attributes will only apply to entities with this value",
+				Guid = new Guid( "FCE1E87D-F816-4AD5-AE60-1E71942C547C" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_Attributes.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EntityQualifierValue );
+
+			var attribute_Entity = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Entity",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"Entity Name",
+				Guid = new Guid( "5B33FE25-6BF0-4890-91C6-49FB1629221E" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_Attributes.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Entity );
+
+			var attribute_EntityQualifierValue_60 = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity Qualifier Value",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EntityQualifierValue",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"The entity column value to evaluate.  Attributes will only apply to entities with this value",
+				Guid = new Guid( "26280214-AAA0-475D-B3E2-F887085551C5" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_AttributeValues.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EntityQualifierValue_60 );
+
+			var attribute_Entity_61 = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Entity",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"Entity Name",
+				Guid = new Guid( "981D5D1C-504D-4A0B-8DC7-6D01F4E51AF8" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_AttributeValues.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Entity_61 );
+
+			var attribute_EntityId = new Rock.Core.Attribute
+			{
+				Category = @"Entity",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity Id",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EntityId",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"The entity id that values apply to",
+				Guid = new Guid( "680ED2DB-049B-4958-B36A-F4F0CCDF6DAA" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_AttributeValues.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EntityId );
+
+			var attribute_EntityQualifierColumn_63 = new Rock.Core.Attribute
+			{
+				Category = @"Applies To",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Entity Qualifier Column",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EntityQualifierColumn",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"The entity column to evaluate when determining if this attribute applies to the entity",
+				Guid = new Guid( "070A37AB-1F87-4F21-B27E-BCCD83F5DB7E" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_AttributeValues.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EntityQualifierColumn_63 );
+
+			var attribute_SentLogin = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Sent Login",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SentLoginCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 4,
+				Description = @"",
+				Guid = new Guid( "4A2C2A1B-F0CE-483A-82B6-54EC740AE0EE" ),
+				DefaultValue = @"Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SentLogin );
+
+			context.SaveChanges();
+
+			var attributevalue_YourusernamehasbeenemailedtoyouxxIfyouxxveforgotte = new AttributeValue
+			{
+				AttributeId = attribute_SentLogin.Id,
+				System = true,
+				Guid = new Guid( "64A1BD51-C8ED-4CE9-83D6-1B02187EFB7E" ),
+				Value = @"Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_YourusernamehasbeenemailedtoyouxxIfyouxxveforgotte );
+
+
+			var attribute_Confirm = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Confirm",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ConfirmCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 5,
+				Description = @"",
+				Guid = new Guid( "27A35511-8263-41E1-88F8-F284E2339248" ),
+				DefaultValue = @"Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Confirm );
+
+			context.SaveChanges();
+
+			var attributevalue_Becauseyouxxveselectedanexistingpersonxxweneedtoha = new AttributeValue
+			{
+				AttributeId = attribute_Confirm.Id,
+				System = true,
+				Guid = new Guid( "DF12A2E5-E7C1-4D13-95FA-D9A2B6433D3A" ),
+				Value = @"Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_Becauseyouxxveselectedanexistingpersonxxweneedtoha );
+
+
+			var attribute_Success = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Success",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SuccessCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 6,
+				Description = @"",
+				Guid = new Guid( "9C8FF3E7-2B9A-4652-AB7D-BD7D570AC68F" ),
+				DefaultValue = @"{0}, Your account has been created",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Success );
+
+			context.SaveChanges();
+
+			var attributevalue_xx0xxxxYouraccounthasbeencreated = new AttributeValue
+			{
+				AttributeId = attribute_Success.Id,
+				System = true,
+				Guid = new Guid( "603AC593-F9AA-4BB5-9C8E-E6C3DABD72C5" ),
+				Value = @"{0}, Your account has been created",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_xx0xxxxYouraccounthasbeencreated );
+
+
+			var attribute_CheckforDuplicates = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Check for Duplicates",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Duplicates",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
+				Guid = new Guid( "029DA832-10EC-49C9-8A16-B10126759A9A" ),
+				DefaultValue = @"true",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CheckforDuplicates );
+
+			context.SaveChanges();
+
+			var attributevalue_True_60 = new AttributeValue
+			{
+				AttributeId = attribute_CheckforDuplicates.Id,
+				System = false,
+				Guid = new Guid( "C3B3E4CA-577B-4417-BBD1-9302DE921B72" ),
+				Value = @"True",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_True_60 );
+
+
+			var attribute_FoundDuplicate = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Found Duplicate",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"FoundDuplicateCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"",
+				Guid = new Guid( "65FCFD11-9FEE-42F5-9CF5-A6237462D2CB" ),
+				DefaultValue = @"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_FoundDuplicate );
+
+			context.SaveChanges();
+
+			var attributevalue_Therearealreadyoneormorepeopleinoursystemthathavet = new AttributeValue
+			{
+				AttributeId = attribute_FoundDuplicate.Id,
+				System = true,
+				Guid = new Guid( "F2A02D0B-37BE-46D4-AA83-0A767CAB8630" ),
+				Value = @"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_Therearealreadyoneormorepeopleinoursystemthathavet );
+
+
+			var attribute_ExistingAccount = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Existing Account",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ExistingAccountCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 3,
+				Description = @"",
+				Guid = new Guid( "3465DB21-3139-4EAA-933D-FB40CC5B2AB7" ),
+				DefaultValue = @"{0}, you already have an existing account.  Would you like us to email you the username?",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ExistingAccount );
+
+			context.SaveChanges();
+
+			var attributevalue_xx0xxxxyoualreadyhaveanexistingaccountxxWouldyouli = new AttributeValue
+			{
+				AttributeId = attribute_ExistingAccount.Id,
+				System = true,
+				Guid = new Guid( "B788129C-0164-4FAF-9A56-67D1E8D3598A" ),
+				Value = @"{0}, you already have an existing account.  Would you like us to email you the username?",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_xx0xxxxyoualreadyhaveanexistingaccountxxWouldyouli );
+
+
+			var attribute_OrganizationName = new Rock.Core.Attribute
+			{
+				Category = @"Organization",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Organization Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"OrganizationName",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The name of your organization",
+				Guid = new Guid( "410BF494-0714-4E60-AFBD-AD65899A12BE" ),
+				DefaultValue = @"Our Organization Name",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_OrganizationName );
+
+			var attribute_Invalid = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Invalid",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"InvalidCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 5,
+				Description = @"",
+				Guid = new Guid( "ADD1758C-31EA-4E75-8F33-468181D2ECDE" ),
+				DefaultValue = @"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Invalid );
+
+			var attribute_Delete = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Delete",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"DeleteCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 3,
+				Description = @"",
+				Guid = new Guid( "72386CE2-DF26-4FBB-BA42-5C5EAFCAAC94" ),
+				DefaultValue = @"Are you sure you want to delete the '{0}' account?",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Delete );
+
+			var attribute_Deleted = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Deleted",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"DeletedCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 4,
+				Description = @"",
+				Guid = new Guid( "9279A85F-1443-4F42-960C-33CB0F608111" ),
+				DefaultValue = @"The account has been deleted.",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Deleted );
+
+			var attribute_Confirmed = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Confirmed",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ConfirmedCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"",
+				Guid = new Guid( "22FCB059-AA40-45D9-BECB-C22D15A3D41A" ),
+				DefaultValue = @"{0}, Your account has been confirmed.  Thank you for creating the account",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Confirmed );
+
+			var attribute_SMTPServer = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SMTP Server",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SMTPServer",
+				System = false,
+				Entity = @"",
+				Order = 10,
+				Description = @"The server to use for relaying SMTP Messages",
+				Guid = new Guid( "1C4E71DD-ED38-4586-93CF-A847003EC594" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SMTPServer );
+
+			var attribute_SMTPPort = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SMTP Port",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SMTPPort",
+				System = false,
+				Entity = @"",
+				Order = 11,
+				Description = @"The Port to use for SMTP Relaying",
+				Guid = new Guid( "3C5F2BF8-8D8A-46D4-9182-2A25D32851EA" ),
+				DefaultValue = @"25",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Interger.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SMTPPort );
+
+			var attribute_SMTPUserName = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SMTP User Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SMTPUserName",
+				System = false,
+				Entity = @"",
+				Order = 12,
+				Description = @"The Username to use when relaying SMTP Messages",
+				Guid = new Guid( "40690F08-1433-4046-8F22-B4B16075F1CF" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SMTPUserName );
+
+			var attribute_SMTPPassword = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SMTP Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SMTPPassword",
+				System = false,
+				Entity = @"",
+				Order = 13,
+				Description = @"The password to use when relaying SMTP Messages",
+				Guid = new Guid( "996B04C9-45E5-4DC1-A84B-27D14B53DCC6" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SMTPPassword );
+
+			var attribute_SMTPUseSSL = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SMTP Use SSL",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SMTPUseSSL",
+				System = false,
+				Entity = @"",
+				Order = 14,
+				Description = @"Should SSL be used when relaying SMTP Messages",
+				Guid = new Guid( "10DD8248-DC68-4206-ABFD-DA4E8BB849E3" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SMTPUseSSL );
+
+			var attribute_ConfirmRoute = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = true,
+				Name = @"Confirm Route",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ConfirmRoute",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"The URL Route for Confirming an account",
+				Guid = new Guid( "B9E9EE84-7B64-4AC2-9C61-8228700954BA" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_NewAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ConfirmRoute );
+
+			context.SaveChanges();
+
+			var attributevalue_Page_54 = new AttributeValue
+			{
+				AttributeId = attribute_ConfirmRoute.Id,
+				System = false,
+				Guid = new Guid( "334CDE25-6067-44F3-8C03-11DFBDB03EFA" ),
+				Value = @"Page/54",
+				EntityId = blockinstance_NewAccount.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_Page_54 );
+
+
+			var attribute_Success_81 = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Success",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SuccessCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"",
+				Guid = new Guid( "727FE7DA-C624-4590-94E1-C206324725CB" ),
+				DefaultValue = @"Your password has been changed",
+				EntityQualifierValue = block_ChangePassword.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Success_81 );
+
+			var attribute_InvalidUserName = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Invalid UserName",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"InvalidUserNameCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"",
+				Guid = new Guid( "B254930D-9BBD-4BB5-B25F-84088A9DCE28" ),
+				DefaultValue = @"The User Name/Password combination is not valid.",
+				EntityQualifierValue = block_ChangePassword.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_InvalidUserName );
+
+			var attribute_InvalidPassword = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Invalid Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"InvalidPasswordCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"",
+				Guid = new Guid( "979A3DCA-146E-47E7-BF08-DC7025DC8E22" ),
+				DefaultValue = @"The User Name/Password combination is not valid.",
+				EntityQualifierValue = block_ChangePassword.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_InvalidPassword );
+
+			var attribute_ResetPassword = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Reset Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ResetPasswordCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"",
+				Guid = new Guid( "C3FB6A2B-7711-4C52-AF10-0B1511198CDD" ),
+				DefaultValue = @"{0}, Enter a new password for your '{1}' account",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ResetPassword );
+
+			var attribute_PasswordReset = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Password Reset",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"PasswordResetCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"",
+				Guid = new Guid( "040D281F-B535-452E-B59E-7C45985C2937" ),
+				DefaultValue = @"{0}, The password for your '{1}' account has been changed",
+				EntityQualifierValue = block_ConfirmAccount.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_PasswordReset );
+
+			var attribute_Success_86 = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Success",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SuccessCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"",
+				Guid = new Guid( "488E438F-3BA3-4D3B-A1B0-D11D85752E06" ),
+				DefaultValue = @"Your user name has been sent to the email address you entered",
+				EntityQualifierValue = block_ForgotUserName.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Success_86 );
+
+			var attribute_Heading_87 = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Heading",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"HeadingCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"",
+				Guid = new Guid( "6EFAF3CD-327A-4472-AA20-09AF1EF8BC78" ),
+				DefaultValue = @"Enter your email address below and we'll send you your account user name",
+				EntityQualifierValue = block_ForgotUserName.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Heading_87 );
+
+			var attribute_InvalidEmail = new Rock.Core.Attribute
+			{
+				Category = @"Captions",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Invalid Email",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"InvalidEmailCaption",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 1,
+				Description = @"",
+				Guid = new Guid( "87E7485A-FF22-48E7-BB4A-58E66B305D62" ),
+				DefaultValue = @"There are not any accounts for the email address you entered",
+				EntityQualifierValue = block_ForgotUserName.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_InvalidEmail );
+
+			var attribute_Password_89 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The Tele Atlas Password",
+				Guid = new Guid( "90432AF9-F419-412E-87C4-23D0F91AC02A" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_89 );
+
+			var attribute_EZxxLocateService_90 = new Rock.Core.Attribute
+			{
+				Category = @"Service",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"EZ-Locate Service",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EZLocateService",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The EZ-Locate Service to use (default: USA_Geo_002)",
+				Guid = new Guid( "51F322BA-6B8F-43E8-B78D-37AD75640997" ),
+				DefaultValue = @"USA_Geo_002",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EZxxLocateService_90 );
+
+			var attribute_UserName_91 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserName",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.TelaAtlas",
+				Order = 1,
+				Description = @"The Tele Atlas User Name",
+				Guid = new Guid( "D36AE1C2-1A2B-484B-B0A2-50AE37ACC3D6" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserName_91 );
+
+			var attribute_Active_92 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "EDF90832-4F9C-41C4-BDD1-367BF0887D8D" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_92 );
+
+			var attribute_Order_93 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "5DA149E7-1043-40B4-A288-266271F5CC6D" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_93 );
+
+			var attribute_LicenseKey_94 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"License Key",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"LicenseKey",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.ServiceObjects",
+				Order = 2,
+				Description = @"The Service Objects License Key",
+				Guid = new Guid( "44E19CEC-ED1C-4997-A7B0-F30A2C83CB89" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_LicenseKey_94 );
+
+			var attribute_Active_95 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "BC31ED74-D1EF-45F6-809C-CE5F5788DFA3" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_95 );
+
+			var attribute_Order_96 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "6EC59763-50BF-4EEA-8424-ACDA293F01C5" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_96 );
+
+			var attribute_UserID_97 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "82F06C17-F314-4086-8FF8-2E75A5C68A99" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID_97 );
+
+			var attribute_Password_98 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "48CB3154-B2BC-43A2-9F1E-CEA9E81C1C18" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_98 );
+
+			var attribute_Active_99 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "342FB5B8-B551-415D-93F3-1AA89B3E5BC5" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_99 );
+
+			var attribute_Order_100 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.MEF.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "16FA8CC4-FDF8-4E1B-B7BD-BEC602E6C563" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_100 );
+
+			var attribute_Password_101 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "F108D456-5C77-42D0-A7EB-EA1189B6EF2A" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_101 );
+
+			var attribute_UserID_102 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "BEC1B322-09E0-4333-943D-B9170EDBDDBB" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID_102 );
+
+			var attribute_Active_103 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "0B8E0E4B-4A6C-4DA8-BB65-E3D2B38BC44E" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_103 );
+
+			var attribute_Order_104 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "84C1E686-B9A0-41ED-87F4-FF2482103B7E" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_104 );
+
+			var attribute_CustomerId_105 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Customer Id",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"CustomerId",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.MelissaData",
+				Order = 1,
+				Description = @"The Melissa Data Customer ID",
+				Guid = new Guid( "B728AC57-729B-4596-833A-64914D609096" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CustomerId_105 );
+
+			var attribute_Active_106 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.MelissaData",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "BF0424E3-26E2-46F7-B289-D050AD733294" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_106 );
+
+			var attribute_Order_107 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.MEF.Standardize.MelissaData",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "0F607291-E63E-4766-BDF6-C5BB88B57DF9" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_107 );
+
+			var attribute_EZxxLocateService_108 = new Rock.Core.Attribute
+			{
+				Category = @"Service",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"EZ-Locate Service",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EZLocateService",
+				System = false,
+				Entity = @"Rock.Component.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The EZ-Locate Service to use (default: USA_Geo_002)",
+				Guid = new Guid( "A7F71469-5739-460F-9ADB-DC399CD9B1A5" ),
+				DefaultValue = @"USA_Geo_002",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EZxxLocateService_108 );
+
+			var attribute_UserName_109 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserName",
+				System = false,
+				Entity = @"Rock.Component.Geocode.TelaAtlas",
+				Order = 1,
+				Description = @"The Tele Atlas User Name",
+				Guid = new Guid( "AD5FA137-5622-49AF-844E-6A973EC0403A" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserName_109 );
+
+			var attribute_Password_110 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Component.Geocode.TelaAtlas",
+				Order = 2,
+				Description = @"The Tele Atlas Password",
+				Guid = new Guid( "7F251CFF-1FEF-407D-9722-8840B6918C30" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_110 );
+
+			var attribute_Order_111 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Component.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "0B4688A9-37D6-48AC-BEF8-64FF63971CC9" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_111 );
+
+			var attribute_Active_112 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Component.Geocode.TelaAtlas",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "EA32844C-C0D1-456A-B1B9-110A271CE9A8" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_112 );
+
+			var attribute_LicenseKey_113 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"License Key",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"LicenseKey",
+				System = false,
+				Entity = @"Rock.Component.Geocode.ServiceObjects",
+				Order = 2,
+				Description = @"The Service Objects License Key",
+				Guid = new Guid( "0CE7689E-FB9F-4A48-8542-744384290320" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_LicenseKey_113 );
+
+			var attribute_Order_114 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Component.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "0F9D7966-9D0A-420C-A0AE-260C82613A3D" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_114 );
+
+			var attribute_Active_115 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Component.Geocode.ServiceObjects",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "0627AE3B-F2D6-44FA-8B6F-1441F2E46B8D" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_115 );
+
+			var attribute_UserID_116 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.Component.Geocode.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "ECACB606-0F86-41DE-928A-BB995113714D" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID_116 );
+
+			var attribute_Password_117 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Component.Geocode.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "93987B6A-343A-42BF-92C7-EA7C9533B092" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_117 );
+
+			var attribute_Order_118 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Component.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "FF93823D-0ACD-4E45-8B90-3ADD4A20B79C" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_118 );
+
+			var attribute_Active_119 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Component.Geocode.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "04B0C668-5725-4180-9342-26C7862D7577" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_119 );
+
+			var attribute_UserID_120 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"User ID",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"UserID",
+				System = false,
+				Entity = @"Rock.Component.Standardize.StrikeIron",
+				Order = 1,
+				Description = @"The Strike Iron User ID",
+				Guid = new Guid( "01BB9E72-AC57-4D95-922D-2DBC1DEE311E" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_UserID_120 );
+
+			var attribute_Password_121 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Password",
+				System = false,
+				Entity = @"Rock.Component.Standardize.StrikeIron",
+				Order = 2,
+				Description = @"The Strike Iron Password",
+				Guid = new Guid( "DF56D543-9465-4F27-9A42-0F094DB92299" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_121 );
+
+			var attribute_Order_122 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Component.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "E93F399F-EE85-4CCC-85A7-4938E92234EA" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_122 );
+
+			var attribute_Active_123 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Component.Standardize.StrikeIron",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "C0168A17-FA44-45BB-B12A-F6A24230A15E" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_123 );
+
+			var attribute_CustomerId_124 = new Rock.Core.Attribute
+			{
+				Category = @"Security",
+				EntityQualifierColumn = @"",
+				Required = true,
+				Name = @"Customer Id",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"CustomerId",
+				System = false,
+				Entity = @"Rock.Component.Standardize.MelissaData",
+				Order = 1,
+				Description = @"The Melissa Data Customer ID",
+				Guid = new Guid( "8774A579-894C-46FF-83B5-BCC21CB6FF30" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CustomerId_124 );
+
+			var attribute_Order_125 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Order",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Order",
+				System = false,
+				Entity = @"Rock.Component.Standardize.MelissaData",
+				Order = 0,
+				Description = @"The order that this service should be used (priority)",
+				Guid = new Guid( "3DC7BD74-F7E3-4735-A6D2-5921ADAF28E6" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_125 );
+
+			var attribute_Active_126 = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Active",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Active",
+				System = false,
+				Entity = @"Rock.Component.Standardize.MelissaData",
+				Order = 0,
+				Description = @"Should Service be used?",
+				Guid = new Guid( "7137CE8A-85E0-4811-A6DF-699BDA2301CC" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Active_126 );
+
+			var attribute_ComponentContainer = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = true,
+				Name = @"Component Container",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ComponentContainer",
+				System = false,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 0,
+				Description = @"The Rock Extension Component Container to manage",
+				Guid = new Guid( "259AF14D-0214-4BE4-A7BF-40423EA07C99" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_Components.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ComponentContainer );
+
 			var attribute_EmailHeaderLogo = new Rock.Core.Attribute
 			{
 				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
 				Required = false,
 				Name = @"Email Header Logo",
 				GridColumn = false,
 				MultiValue = false,
 				Key = @"EmailHeaderLogo",
 				System = true,
+				Entity = @"",
 				Order = 1,
 				Description = @"Logo image to be used at the top off all emails.",
 				Guid = new Guid( "B95C446D-6A3C-4672-8718-CF988C447D0D" ),
 				DefaultValue = @"assets/images/email-header.jpg",
+				EntityQualifierValue = @"",
 				FieldTypeId = fieldtype_Image.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailHeaderLogo );
@@ -1935,19 +3862,530 @@ namespace Rock.Migrations
 			var attribute_EmailBackgroundColor = new Rock.Core.Attribute
 			{
 				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
 				Required = false,
 				Name = @"Email Background Color",
 				GridColumn = false,
 				MultiValue = false,
 				Key = @"EmailBackgroundColor",
 				System = true,
+				Entity = @"",
 				Order = 2,
 				Description = @"Background color (format #ffffff) that will be used for default emails.",
 				Guid = new Guid( "56C8EC3F-1F7B-410A-A742-42EA217E3302" ),
 				DefaultValue = @"#cccccc",
+				EntityQualifierValue = @"",
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailBackgroundColor );
+
+			var attribute_OrganizationEmail = new Rock.Core.Attribute
+			{
+				Category = @"Organization",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Organization Email",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"OrganizationEmail",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The primary email address for the organization.",
+				Guid = new Guid( "6837554F-93B3-4D46-BA48-A4059FA1766F" ),
+				DefaultValue = @"info@organizationname.com",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_OrganizationEmail );
+
+			var attribute_OrganizationWebsite = new Rock.Core.Attribute
+			{
+				Category = @"Organization",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Organization Website",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"OrganizationWebsite",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The primary website for the organization.",
+				Guid = new Guid( "118A083B-3F28-4D17-8B19-CC6859F89F33" ),
+				DefaultValue = @"www.organization.com",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_OrganizationWebsite );
+
+			var attribute_OrganizationPhone = new Rock.Core.Attribute
+			{
+				Category = @"Organization",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Organization Phone",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"OrganizationPhone",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The primary phone number of the organization.",
+				Guid = new Guid( "85716596-6AEA-4887-830F-744D22E28A0D" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_OrganizationPhone );
+
+			var attribute_EmailBodyTextColor = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Body Text Color",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailBodyTextColor",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The text color (format #000000) to use for the body font of the email.",
+				Guid = new Guid( "724FA692-8E3E-4F43-B3CA-0D6767AAD53A" ),
+				DefaultValue = @"#000000",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailBodyTextColor );
+
+			var attribute_EmailBodyTextLinkColor = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Body Text Link Color",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailBodyTextLinkColor",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The text link color (format #000000) to use for the HTML anchors in the body of the email.",
+				Guid = new Guid( "A910C483-0BE0-400F-B25D-131D78F124A0" ),
+				DefaultValue = @"#006699",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailBodyTextLinkColor );
+
+			var attribute_EmailFooterTextColor = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Footer Text Color",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailFooterTextColor",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The text color (format #000000) to use for the footer font of the email.",
+				Guid = new Guid( "61E60E2A-EA86-4769-9029-F803B06849DE" ),
+				DefaultValue = @"#4f4e4e",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailFooterTextColor );
+
+			var attribute_EmailFooterTextLinkColor = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Footer Text Link Color",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailFooterTextLinkColor",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The text link color (format #000000) to use for the HTML anchors in the footer of the email.",
+				Guid = new Guid( "D64C84BF-972D-4458-A2C5-B8E05002D833" ),
+				DefaultValue = @"#212937",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailFooterTextLinkColor );
+
+			var attribute_HourstoKeepUnconfirmedAccounts = new Rock.Core.Attribute
+			{
+				Category = @"General",
+				EntityQualifierColumn = @"Class",
+				Required = false,
+				Name = @"Hours to Keep Unconfirmed Accounts",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"HoursKeepUnconfirmedAccounts",
+				System = false,
+				Entity = @"Rock.Util.Job",
+				Order = 0,
+				Description = @"The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)",
+				Guid = new Guid( "6C0E84A3-E2F8-480A-AB96-34D24C2ACF40" ),
+				DefaultValue = @"48",
+				EntityQualifierValue = @"Rock.Jobs.RockCleanup",
+				FieldTypeId = fieldtype_Interger.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_HourstoKeepUnconfirmedAccounts );
+
+			var attribute_EmailBodyBackgroundColor = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Body Background Color",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailBodyBackgroundColor",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The background color of the body of the email.",
+				Guid = new Guid( "DC2A8545-D61C-4D45-B593-A7326E3BE3A4" ),
+				DefaultValue = @"#fff",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailBodyBackgroundColor );
+
+			var attribute_EmailHeader = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Header",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailHeader",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"The standard email header that wraps the email text and shows a header image.",
+				Guid = new Guid( "EBC67F76-7305-4108-AD32-E2531EAB1637" ),
+				DefaultValue = @"<style>  	body { 		background-color: {EmailBodyBackgroundColor};           		font-family: Verdana, Arial, Helvetica, sans-serif;           		font-size: 12px;           		line-height: 1.3em;           		margin: 0; 		padding: 0; 	} 	 	a { 		color: {EmailBodyTextLinkColor}; 	}   </style>    <table style=""text-align: center; background-color: {EmailBackgroundColor}; margin: 0pt"" border=0 cellSpacing=0 cellPadding=0 width=""100%"" align=center>           <tbody>               	<tr>                   		<td style=""background-color: {EmailBackgroundColor}; margin: 0pt auto"" valign=top align=middle> 			<!-- Begin Layout -->                    			<table style=""text-align: left; background-color: {EmailBodyBackgroundColor}; margin: 0px auto; width: 550px"" border=0 cellspacing=0 cellpadding=0 width=550> 			<tbody>                           				<tr>                               					<td valign=top align=left> 						<!-- Header Start -->                               						<table style=""width: 100%"" border=0 cellSpacing=0 cellPadding=0 width=""100%"">                                   						<tbody>                                       							<tr>                                           								<td style=""height: 51px""> 									<img style=""border-bottom: medium none; border-left: medium none; padding-bottom: 0pt; margin: 0px; padding-left: 0pt; padding-right: 0pt; border-top: medium none; border-right: medium none; padding-top: 0pt"" src=""{Config:BaseUrl}{EmailHeaderLogo}"">  								</td>                                       							</tr>                                   						</tbody>                               						</table>                               						<!-- Header End -->  						  						                               						<table style=""padding-bottom: 18px; width: 100%; background-color: {EmailBodyBackgroundColor}; "" cellspacing=0 cellpadding=20 >                                   						<tbody>                                       							<tr>                                           								<td>                                          								<!-- Main Text Start -->",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailHeader );
+
+			var attribute_EmailFooter = new Rock.Core.Attribute
+			{
+				Category = @"EmailFormat",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Footer",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailFooter",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"Standard footer text that contains the name of the organization, etc.",
+				Guid = new Guid( "ED326066-4A91-412A-805C-40DEDAE8F61A" ),
+				DefaultValue = @"<!-- Main Text End --> 								</td>                           							</tr>                           							                  						</tbody>                   						</table> 						 						<!-- Footer Start -->                               						<table cellpadding=20 align=center style=""background-color: {EmailBackgroundColor}; width: 100%;"">                                   						<tbody>                                       							<tr>                                           								<td>                                           									<p style=""text-align: center; color: {EmailFooterTextColor}""><span style=""font-size: 16px"">{OrganizationName} | {OrganizationPhone} <br>   									<a href=""mailto:{OrganizationEmail}"">{OrganizationEmail}</A> | <span style=""color: {EmailFooterTextLink Color};""><a style=""color: {EmailFooterTextLinkColor}"" href=""{OrganizationWebsite}"">{OrganizationWebsite}</A></span></span></p>                                           								</td>                                       							</tr>                                   						</tbody>                               						</table>                               									<!-- Footer End --> 				<!-- End Layout --> 				</td>               				</tr>           			</tbody>       			</table>",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailFooter );
+
+			var attribute_DaystoKeepExceptionsinLog = new Rock.Core.Attribute
+			{
+				Category = @"General",
+				EntityQualifierColumn = @"Class",
+				Required = false,
+				Name = @"Days to Keep Exceptions in Log",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"DaysKeepExceptions",
+				System = false,
+				Entity = @"Rock.Util.Job",
+				Order = 0,
+				Description = @"The number of days to keep exceptions in the exception log (default is 14 days.)",
+				Guid = new Guid( "643902EA-2534-4D5D-AC5B-CEFF53D98EA8" ),
+				DefaultValue = @"14",
+				EntityQualifierValue = @"Rock.Jobs.RockCleanup",
+				FieldTypeId = fieldtype_Interger.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_DaystoKeepExceptionsinLog );
+
+			var attribute_Log404sAsExceptions = new Rock.Core.Attribute
+			{
+				Category = @"Config",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Log 404s As Exceptions",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"Log404AsException",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"Add 404 (File Not Found) errors as exceptions in the exception log. Warning this will impact performance.",
+				Guid = new Guid( "B4947CE4-3E1B-4679-8B7D-B44D0D4A7D97" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Log404sAsExceptions );
+
+			var attribute_EmailExceptionsList = new Rock.Core.Attribute
+			{
+				Category = @"Config",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Email Exceptions List",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"EmailExceptionsList",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"Comma separated list of email addresses to send exception notifications to.",
+				Guid = new Guid( "F7D2FE87-537D-4452-B503-3991D15BD242" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailExceptionsList );
+
+			var attribute_SendGridUsername = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SendGrid Username",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SendGridUsername",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"Username of the SendGrid account.",
+				Guid = new Guid( "E49FE2ED-F67A-4E60-B297-A7C5220C056C" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SendGridUsername );
+
+			var attribute_SendGridPassword = new Rock.Core.Attribute
+			{
+				Category = @"EmailConfig",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"SendGrid Password",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SendGridPassword",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"SendGrid account password.",
+				Guid = new Guid( "A96616C8-EFC1-4E7D-A6E1-76FCA2E5AB52" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SendGridPassword );
+
+			var attribute_TestAttribute = new Rock.Core.Attribute
+			{
+				Category = @"[All]",
+				EntityQualifierColumn = @"",
+				Required = false,
+				Name = @"Test Attribute",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"testattr",
+				System = false,
+				Entity = @"",
+				Order = 0,
+				Description = @"this is a test",
+				Guid = new Guid( "EE186365-E21C-447C-B4F9-C0733282780C" ),
+				DefaultValue = @"",
+				EntityQualifierValue = @"",
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_TestAttribute );
+
+			var attribute_CacheDuration = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Cache Duration",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"CacheDuration",
+				System = true,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 2,
+				Description = @"Number of seconds to cache the content.",
+				Guid = new Guid( "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4" ),
+				DefaultValue = @"0",
+				EntityQualifierValue = block_HTMLContent.Id.ToString(),
+				FieldTypeId = fieldtype_Interger.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_CacheDuration );
+
+			context.SaveChanges();
+
+			var attributevalue_0 = new AttributeValue
+			{
+				Order = 0,
+				AttributeId = attribute_CacheDuration.Id,
+				System = false,
+				Guid = new Guid( "D26D86B9-C8E0-4104-B472-B22B6EB85692" ),
+				Value = @"0",
+				EntityId = blockinstance_Welcome.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_0 );
+
+
+			var attribute_RequireApproval = new Rock.Core.Attribute
+			{
+				Category = @"Advanced",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Require Approval",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"RequireApproval",
+				System = true,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 6,
+				Description = @"Require that content be approved?",
+				Guid = new Guid( "EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = block_HTMLContent.Id.ToString(),
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_RequireApproval );
+
+			context.SaveChanges();
+
+			var attributevalue_False = new AttributeValue
+			{
+				Order = 0,
+				AttributeId = attribute_RequireApproval.Id,
+				System = false,
+				Guid = new Guid( "C024B060-C801-49EB-8FDA-DCADDDC42752" ),
+				Value = @"False",
+				EntityId = blockinstance_Welcome.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_False );
+
+
+			var attribute_SupportVersions = new Rock.Core.Attribute
+			{
+				Category = @"Advanced",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Support Versions",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"SupportVersions",
+				System = true,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 5,
+				Description = @"Support content versioning?",
+				Guid = new Guid( "7C1CE199-86CF-4EAE-8AB3-848416A72C58" ),
+				DefaultValue = @"False",
+				EntityQualifierValue = block_HTMLContent.Id.ToString(),
+				FieldTypeId = fieldtype_Boolean.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SupportVersions );
+
+			context.SaveChanges();
+
+			var attributevalue_True_113 = new AttributeValue
+			{
+				Order = 0,
+				AttributeId = attribute_SupportVersions.Id,
+				System = false,
+				Guid = new Guid( "2E894676-CE3B-45A4-B91A-0F2A5595F135" ),
+				Value = @"True",
+				EntityId = blockinstance_Welcome.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_True_113 );
+
+
+			var attribute_ContextParameter = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Context Parameter",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ContextParameter",
+				System = true,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 3,
+				Description = @"Query string parameter to use for 'personalizing' content based on unique values.",
+				Guid = new Guid( "3FFC512D-A576-4289-B648-905FD7A64ABB" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_HTMLContent.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ContextParameter );
+
+			context.SaveChanges();
+
+			var attributevalue_c4529048xx488cxx4480xx8b8exx88a823b500db = new AttributeValue
+			{
+				Order = 0,
+				AttributeId = attribute_ContextParameter.Id,
+				System = false,
+				Guid = new Guid( "C4529048-488C-4480-8B8E-88A823B500DB" ),
+				EntityId = blockinstance_Welcome.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_c4529048xx488cxx4480xx8b8exx88a823b500db );
+
+
+			var attribute_ContextName = new Rock.Core.Attribute
+			{
+				Category = @"",
+				EntityQualifierColumn = @"BlockId",
+				Required = false,
+				Name = @"Context Name",
+				GridColumn = false,
+				MultiValue = false,
+				Key = @"ContextName",
+				System = true,
+				Entity = @"Rock.CMS.BlockInstance",
+				Order = 4,
+				Description = @"Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.",
+				Guid = new Guid( "466993F7-D838-447A-97E7-8BBDA6A57289" ),
+				DefaultValue = @"",
+				EntityQualifierValue = block_HTMLContent.Id.ToString(),
+				FieldTypeId = fieldtype_Text.Id
+			};
+			context.Attributes.AddOrUpdate( p => p.Guid, attribute_ContextName );
+
+			context.SaveChanges();
+
+			var attributevalue_f01dccd9xxbebbxx447fxx956dxxe75840af18d2 = new AttributeValue
+			{
+				Order = 0,
+				AttributeId = attribute_ContextName.Id,
+				System = false,
+				Guid = new Guid( "F01DCCD9-BEBB-447F-956D-E75840AF18D2" ),
+				EntityId = blockinstance_Welcome.Id
+			};
+			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_f01dccd9xxbebbxx447fxx956dxxe75840af18d2 );
+
 
 			context.SaveChanges();
 
@@ -1955,8 +4393,6 @@ namespace Rock.Migrations
 			//**************************************************************************
 			// CoreAttribute Qualifiers		(AUTO GENERATED BY TOOL)
 			//**************************************************************************
-
-			context.SaveChanges();
 
 
 			//**************************************************************************
@@ -2717,6 +5153,19 @@ Thanks.
 			};
 			context.Auths.AddOrUpdate( p => p.Guid, auth_509 );
 
+			var auth_511 = new Auth
+			{
+				Guid = new Guid( "FE461AAB-EBAE-495A-8037-402AE2582DBB" ),
+				Action = @"Configure",
+				SpecialRole = Rock.CMS.SpecialRole.None,
+				AllowOrDeny = @"A",
+				EntityId = blockinstance_BlockProperties.Id,
+				GroupId = adminRoleGroup.Id,
+				Order = 0,
+				EntityType = @"CMS.BlockInstance"
+			};
+			context.Auths.AddOrUpdate( p => p.Guid, auth_511 );
+
 			var auth_512 = new Auth
 			{
 				Guid = new Guid( "F9488ED6-E0D6-43D4-AFDB-92FB1201D465" ),
@@ -2911,6 +5360,19 @@ Thanks.
 				EntityType = @"CMS.BlockInstance"
 			};
 			context.Auths.AddOrUpdate( p => p.Guid, auth_538 );
+
+			var auth_540 = new Auth
+			{
+				Guid = new Guid( "87AE0C9D-6CCD-4477-B7CF-83154FED97A3" ),
+				Action = @"Edit",
+				SpecialRole = Rock.CMS.SpecialRole.None,
+				AllowOrDeny = @"A",
+				EntityId = blockinstance_BlockProperties.Id,
+				GroupId = adminRoleGroup.Id,
+				Order = 0,
+				EntityType = @"CMS.BlockInstance"
+			};
+			context.Auths.AddOrUpdate( p => p.Guid, auth_540 );
 
 			var auth_541 = new Auth
 			{
