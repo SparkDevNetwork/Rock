@@ -35,7 +35,7 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public override bool IsValid( string value, out string message )
+        public override bool IsValid( string value, bool required, out string message )
         {
             bool boolValue = false;
             if ( !bool.TryParse( value, out boolValue ) )
@@ -44,7 +44,7 @@ namespace Rock.FieldTypes
                 return false;
             }
 
-            return base.IsValid( value, out message );
+            return base.IsValid( value, required, out message );
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="setValue"></param>
         /// <returns></returns>
-        public override Control CreateControl( string value, bool setValue )
+        public override Control CreateControl( string value, bool required, bool setValue )
         {
             CheckBox cb = new CheckBox();
             if (setValue)

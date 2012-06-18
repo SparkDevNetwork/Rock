@@ -164,6 +164,13 @@
     <Compile Include="CRM\Person.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="FieldTypes\Document.cs" />
+    <Compile Include="FieldTypes\Person.cs" />
+    <Compile Include="FieldTypes\Url.cs" />
+    <Compile Include="FieldTypes\Currency.cs" />
+    <Compile Include="FieldTypes\Decimal.cs" />
+    <Compile Include="FieldTypes\SelectDefinedValue.cs" />
+    <Compile Include="FieldTypes\SelectDefinedType.cs" />
     <Compile Include="FieldTypes\Date.cs" />
     <Compile Include="FieldTypes\Image.cs" />
     <Compile Include="FieldTypes\Video.cs" />
