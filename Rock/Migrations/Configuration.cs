@@ -106,15 +106,15 @@ namespace Rock.Migrations
 			//
 			var adminUserAccount = new Rock.CMS.User
 			{
-				UserName = "Admin",
-				Password = "Admin",
+				UserName = "admin",
+				Password = "admin",
 				IsConfirmed = true,
 				AuthenticationType = CMS.AuthenticationType.Database,
 				PersonId = adminPerson.Id,
 				Guid = new Guid( "74686520-6164-6d69-6e20-757365720000" )
 			};
 			UserService us = new UserService();
-			us.ChangePassword( adminUserAccount, "Admin" );
+			us.ChangePassword( adminUserAccount, "admin" );
 			context.Users.AddOrUpdate( p => p.Guid, adminUserAccount );
 
 			context.SaveChanges();
@@ -194,7 +194,7 @@ namespace Rock.Migrations
 			var page12_MainPageTest = new Page
 			{
 				SiteId = defaultSite.Id,
-				Name = "Main Page Test",
+				Name = "Main Page",
 				MenuDisplayChildPages = true,
 				DisplayInNavWhen = CMS.DisplayInNavWhen.WhenAllowed,
 				Title = "Rock ChMS",
@@ -207,7 +207,7 @@ namespace Rock.Migrations
 				Order = 8,
 				IncludeAdminFooter = true,
 				Guid = new Guid( "20F97A93-7949-4C2A-8A5E-C756FE8585CA" ),
-				Description = "Main Rock ChMS",
+				Description = "Main starting page for Rock ChMS",
 				MenuDisplayIcon = false
 			};
 			context.Pages.AddOrUpdate( p => p.Guid, page12_MainPageTest );
@@ -1829,7 +1829,7 @@ namespace Rock.Migrations
 				AttributeId = attribute_RootPage.Id,
 				System = false,
 				Guid = new Guid( "A6C3A68F-407A-4F59-A3DE-A8751A0A0858" ),
-				Value = @"12",
+				Value = page12_MainPageTest.ToString(),
 				EntityId = blockinstance_Menu.Id
 			};
 			context.AttributeValues.AddOrUpdate( p => p.Guid, attributevalue_12 );
@@ -4549,14 +4549,12 @@ Thanks.
 				BlockId = blockinstance_Welcome.Id,
 				Version = 1,
 				Content = @"
-<h2>Welcome to Rock ChMS</h2><p>To get started, login as the Administrator (user and password is ""Admin"") and change the password.</p>  <p><small>If you're a developer you may want to <a href=""http://sparkdevnetwork.github.com/Rock-ChMS/"">start over on our developer pages</a>.</small></p>
+<h2>Welcome to Rock ChMS</h2>
 
-<p>
-	This is the default page.&nbsp; The navigation menu is also now active.&nbsp; If you don&#39;t see an Administration option above (and you&#39;re an administrator), make sure to login.</p>
+<p>You must be logged in now because only authenticated users can see this page. The navigation menu is also now working but there is very little in there at the moment. If you don&#39;t see an Administration option above (and you&#39;re an administrator), there must be a problem with your authorization settings.</p>
+<p><small>If you're a developer you may want to <a href=""http://sparkdevnetwork.github.com/Rock-ChMS/"">start over on our developer pages</a>.</small></p>
 <p>
 	v1</p>
-<p>
-	&nbsp;</p>
 <p>
 	&nbsp;</p>
 <p>
@@ -4645,6 +4643,32 @@ Thanks.
 				EntityType = @"CMS.Page"
 			};
 			context.Auths.AddOrUpdate( p => p.Guid, auth_423 );
+
+			// Allow Autheticated users to see the main page
+			var auth_Allow_Authenticated_Users = new Auth
+			{
+				Guid = new Guid( "33fc0743-2d6a-477c-a453-878bb7582504" ),
+				Action = @"View",
+				SpecialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers,
+				AllowOrDeny = @"A",
+				EntityId = page12_MainPageTest.Id,
+				Order = 0,
+				EntityType = @"CMS.Page"
+			};
+			context.Auths.AddOrUpdate( p => p.Guid, auth_Allow_Authenticated_Users );
+
+			// Deny UnAutheticated users from seeing the main page
+			var auth_Deny_UnAuthenticated_Users = new Auth
+			{
+				Guid = new Guid( "6b1ee024-29f4-4c77-bf95-c91411a40f75" ),
+				Action = @"View",
+				SpecialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers,
+				AllowOrDeny = @"D",
+				EntityId = page12_MainPageTest.Id,
+				Order = 1,
+				EntityType = @"CMS.Page"
+			};
+			context.Auths.AddOrUpdate( p => p.Guid, auth_Allow_Authenticated_Users );
 
 			var auth_426 = new Auth
 			{
