@@ -303,7 +303,7 @@ namespace Rock.Attribute
                     foreach ( Rock.Web.Cache.Attribute attribute in category.Value )
                     {
                         HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                        dl.ID = string.Format( "attribute-{0}", attribute.Id );
+                        dl.ID = string.Format( "attribute_{0}", attribute.Id );
                         dl.Attributes.Add( "attribute-key", attribute.Key );
                         dl.ClientIDMode = ClientIDMode.AutoID;
                         fieldSet.Controls.Add( dl );
@@ -314,7 +314,7 @@ namespace Rock.Attribute
                         Label lbl = new Label();
                         lbl.ClientIDMode = ClientIDMode.AutoID;
                         lbl.Text = attribute.Name;
-                        lbl.AssociatedControlID = string.Format( "attribute-field-{0}", attribute.Id );
+                        lbl.AssociatedControlID = string.Format( "attribute_field_{0}", attribute.Id );
                         if ( attribute.Required )
                             lbl.Attributes.Add( "class", "required" );
                         dt.Controls.Add( lbl );
@@ -323,7 +323,7 @@ namespace Rock.Attribute
                         dl.Controls.Add( dd );
 
                         Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value[0].Value, setValue );
-                        attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
+                        attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                         attributeControl.ClientIDMode = ClientIDMode.AutoID;
                         dd.Controls.Add( attributeControl );
 
@@ -332,7 +332,7 @@ namespace Rock.Attribute
                             RequiredFieldValidator rfv = new RequiredFieldValidator();
                             dd.Controls.Add( rfv );
                             rfv.ControlToValidate = attributeControl.ID;
-                            rfv.ID = string.Format( "attribute-rfv-{0}", attribute.Id );
+                            rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
                             rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
                             rfv.Display = ValidatorDisplay.None;
 
@@ -369,8 +369,8 @@ namespace Rock.Attribute
                     {
                         if ( attribute.Required )
                         {
-                            HtmlGenericControl dl = parentControl.FindControl( string.Format( "attribute-{0}", attribute.Id ) ) as HtmlGenericControl;
-                            RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute-rfv-{0}", attribute.Id ) ) as RequiredFieldValidator;
+                            HtmlGenericControl dl = parentControl.FindControl( string.Format( "attribute_{0}", attribute.Id ) ) as HtmlGenericControl;
+                            RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute_rfv_{0}", attribute.Id ) ) as RequiredFieldValidator;
                             if ( dl != null && rfv != null )
                                 dl.Attributes["class"] = rfv.IsValid ? "" : "error";
                         }
@@ -389,7 +389,7 @@ namespace Rock.Attribute
                 foreach ( var category in item.Attributes )
                     foreach ( var attribute in category.Value )
                     {
-                        Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
+                        Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Id.ToString() ) );
                         if ( control != null )
                         {
                             Rock.Core.DTO.AttributeValue value = new Core.DTO.AttributeValue();
