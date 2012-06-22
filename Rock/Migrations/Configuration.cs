@@ -139,11 +139,11 @@ namespace Rock.Migrations
 			//
 			var defaultSite = new Site
 			{
-				Theme = "RockCMS",
+				Theme = "RockChMS",
 				Name = "Default",
-				FaviconUrl = "Themes/RockCMS/Assets/Icons/favicon.ico",
+				FaviconUrl = "Themes/RockChMS/Assets/Icons/favicon.ico",
 				System = true,
-				AppleTouchIconUrl = "Themes/RockCMS/Assets/Icons/apple-touch.png",
+				AppleTouchIconUrl = "Themes/RockChMS/Assets/Icons/apple-touch.png",
 				FacebookAppId = "201981526511937",
 				Description = "Default Site",
 				Guid = new Guid( "C2D29296-6A87-47A9-A753-EE4E9159C4C4" )
@@ -828,12 +828,12 @@ namespace Rock.Migrations
 
 			var site_Default = new Site
 			{
-				Theme = @"RockCMS",
+				Theme = @"RockChMS",
 				DefaultPageId = page12_MainPageTest.Id,
 				Name = @"Default",
-				FaviconUrl = @"Themes/RockCMS/Assets/Icons/favicon.ico",
+				FaviconUrl = @"Themes/RockChMS/Assets/Icons/favicon.ico",
 				System = true,
-				AppleTouchIconUrl = @"Themes/RockCMS/Assets/Icons/apple-touch.png",
+				AppleTouchIconUrl = @"Themes/RockChMS/Assets/Icons/apple-touch.png",
 				Description = @"Default Site",
 				Guid = new Guid( "C2D29296-6A87-47A9-A753-EE4E9159C4C4" )
 			};
