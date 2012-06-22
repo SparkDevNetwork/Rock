@@ -151,7 +151,7 @@ namespace Rock.Attribute
         public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
             var attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
-            var attributeValues = new Dictionary<string, KeyValuePair<string, List<string>>>();
+            var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -177,7 +177,7 @@ namespace Rock.Attribute
                         attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
 
                     attributes[cachedAttribute.Category].Add( cachedAttribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<string>>( attribute.Name, attribute.GetValues( item.Id ) ) );
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, attribute.GetValues( item.Id ) ) );
                 }
             }
 
@@ -204,7 +204,39 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<string> newValues, int? personId )
+        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string newValue, int? personId )
+        {
+            Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
+
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
+            if ( attributeValue == null )
+            {
+                attributeValue = new Rock.Core.AttributeValue();
+                attributeValue.AttributeId = attribute.Id;
+                attributeValue.EntityId = model.Id;
+                attributeValue.Order = 0;
+                attributeValueService.Add( attributeValue, personId );
+            }
+
+            attributeValue.Value = newValue;
+
+            attributeValueService.Save( attributeValue, personId );
+
+            model.AttributeValues[attribute.Key] =
+                new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>(
+                    attribute.Name,
+                    new List<Rock.Core.DTO.AttributeValue>() { attributeValue.DataTransferObject } );
+
+        }
+
+        /// <summary>
+        /// Saves an attribute value.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="personId">The person id.</param>
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<Rock.Core.DTO.AttributeValue> newValues, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
 
@@ -224,21 +256,27 @@ namespace Rock.Attribute
                     attributeValue = new Rock.Core.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
                     attributeValue.EntityId = model.Id;
+                    attributeValue.Order = i;
                     attributeValueService.Add( attributeValue, personId );
                 }
 
                 if ( i >= newValues.Count )
                     attributeValueService.Delete( attributeValue, personId );
-
-                if ( attributeValue.Value != newValues[i] )
-                    attributeValue.Value = newValues[i];
+                else
+                {
+                    if ( attributeValue.Value != newValues[i].Value )
+                        attributeValue.Value = newValues[i].Value;
+                    newValues[i] = attributeValue.DataTransferObject;
+                }
 
                 attributeValueService.Save( attributeValue, personId );
+
 
                 i++;
             }
 
-            model.AttributeValues[attribute.Key] = new KeyValuePair<string, List<string>>( attribute.Name, newValues );
+            model.AttributeValues[attribute.Key] = 
+                new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, newValues );
         }
 
         /// <summary>
@@ -284,7 +322,7 @@ namespace Rock.Attribute
                         HtmlGenericControl dd = new HtmlGenericControl( "dd" );
                         dl.Controls.Add( dd );
 
-                        Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value[0], setValue );
+                        Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value[0].Value, setValue );
                         attributeControl.ID = string.Format( "attribute-field-{0}", attribute.Id );
                         attributeControl.ClientIDMode = ClientIDMode.AutoID;
                         dd.Controls.Add( attributeControl );
@@ -353,7 +391,11 @@ namespace Rock.Attribute
                     {
                         Control control = parentControl.FindControl( string.Format( "attribute-field-{0}", attribute.Id.ToString() ) );
                         if ( control != null )
-                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<string>>( attribute.Name, new List<string> { attribute.FieldType.Field.ReadValue( control ) } );
+                        {
+                            Rock.Core.DTO.AttributeValue value = new Core.DTO.AttributeValue();
+                            value.Value = attribute.FieldType.Field.ReadValue( control );
+                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, new List<Rock.Core.DTO.AttributeValue>() { value } );
+                        }
                     }
         }
     }

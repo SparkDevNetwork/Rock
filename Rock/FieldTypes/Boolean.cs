@@ -35,7 +35,7 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public override bool IsValid( string value, out string message )
+        public override bool IsValid( string value, bool required, out string message )
         {
             bool boolValue = false;
             if ( !bool.TryParse( value, out boolValue ) )
@@ -44,7 +44,7 @@ namespace Rock.FieldTypes
                 return false;
             }
 
-            return base.IsValid( value, out message );
+            return base.IsValid( value, required, out message );
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="setValue"></param>
         /// <returns></returns>
-        public override Control CreateControl( string value, bool setValue )
+        public override Control CreateControl( string value, bool required, bool setValue )
         {
             CheckBox cb = new CheckBox();
             if (setValue)
@@ -74,33 +74,27 @@ namespace Rock.FieldTypes
         }
 
         /// <summary>
-        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// Creates a client-side function that can be called to render the HTML used to update this field and register an event handler
+        /// so that updates to the html are saved to a target element.
         /// </summary>
         /// <param name="page">The page.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="value"></param>
-        /// <param name="parentElement">The parent element.</param>
-        /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
-        public override string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement )
+        public override string RegisterUpdateScript( Page page )
         {
-            string uniqueId = parentElement + ( string.IsNullOrWhiteSpace( id ) ? "" : "_" + id );
-            string functionName = uniqueId + "_Save_" + this.GetType().Name;
+            string functionName = this.GetType().Name + "_update";
 
             string script = string.Format( @"
-
-    function {0}(value){{
-        $('#{1}').html('<input type=""checkbox"" id=""{2}"" name=""{2}""' + ((value.toLowerCase() === 'true') ? ' checked=""checked""' : '') + '>' );
-        $('#{1} #{2}').change(function(){{
-            $('#{3}').val($(this).is(':checked'));
+    function {0}($parent, $target, value){{
+        $parent.html('<input type=""checkbox"" ((value.toLowerCase() === 'true') ? ' checked=""checked""' : '') + ' class=""field-value"">' );
+        $parent.find('input.field-value').change(function(){{
+            $target.val($(this).is(':checked'));
         }});
     }}
-
-", functionName, parentElement, uniqueId, targetElement );
-
-            page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
+", functionName );
+            ScriptManager.RegisterStartupScript( page, this.GetType(), functionName, script, true );
 
             return functionName;
         }
+
     }
 }

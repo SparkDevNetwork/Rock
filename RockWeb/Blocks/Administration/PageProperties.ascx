@@ -5,22 +5,27 @@
     // If this control is in a modal window, hide this form's save button and bind the modal popup
     // Save button to this form's save click event
 
-    Sys.Application.add_load(function () {
-        if ($('#modal-popup', window.parent.document)) {
-            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+    $(document).ready(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
+            $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
+        }
+    });
+
+    Sys.Application.add_load(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
             $('#non-modal-actions').hide();
         }
     });
 
 </script>
 
-<asp:PlaceHolder ID="phContent" runat="server">
-
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
  
+    <asp:PlaceHolder ID="phContent" runat="server">
+
         <ul class="pills" >
             <asp:Repeater ID="rptProperties" runat="server" >
                 <ItemTemplate >
@@ -69,19 +74,19 @@
                 <Rock:DataTextBox ID="tbPageRoute" runat="server" LabelText="Page Routes" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="PageRoutes"  />
             </fieldset>
         </asp:Panel>
-        
 
         <placeholder id="phAttributes" runat="server"></placeholder>
 
+        <div id="non-modal-actions" class="actions">
+            <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
+        </div>
+    
+    </asp:PlaceHolder>
+
+    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    
 </ContentTemplate>
 </asp:UpdatePanel>
 
-    <div id="non-modal-actions" class="actions">
-        <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
-    </div>
-    
-    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
-    
-</asp:PlaceHolder>
 
 

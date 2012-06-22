@@ -44,7 +44,7 @@ namespace Rock.FieldTypes
         /// <param name="value">The value.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <returns></returns>
-        Control CreateControl( string value, bool setValue );
+        Control CreateControl( string value, bool required, bool setValue );
 
         /// <summary>
         /// Reads the value of the control.
@@ -61,6 +61,7 @@ namespace Rock.FieldTypes
         /// <param name="parentElement">The parent element.</param>
         /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
-        string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement );
+        string RegisterUpdateScript( Page page );
+
     }
 }
