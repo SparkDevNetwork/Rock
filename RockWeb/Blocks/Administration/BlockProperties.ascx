@@ -5,15 +5,18 @@
     // If this control is in a modal window, hide this form's save button and bind the modal popup
     // Save button to this form's save click event
 
-    Sys.Application.add_load(function () {
-
-        if ($('#modal-popup', window.parent.document)) {
-            $('#modal-popup a.btn.primary', window.parent.document).click(function () {
+    $(document).ready(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
+            $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
                 $('#<%= btnSave.ClientID %>').click();
             });
+        }
+    });
+
+    Sys.Application.add_load(function () {
+        if ($('#modal-popup_panel', window.parent.document)) {
             $('#non-modal-actions').hide();
         }
-
     });
 
 </script>
@@ -32,7 +35,7 @@
             <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
         </fieldset>
 
-        <placeholder id="phAttributes" runat="server"></placeholder>
+        <asp:placeholder id="phAttributes" runat="server"></asp:placeholder>
 
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 

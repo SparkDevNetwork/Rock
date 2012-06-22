@@ -19,20 +19,19 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public override bool IsValid( string value, out string message )
+        public override bool IsValid( string value, bool required, out string message )
         {
-            int result;
+            if ( !string.IsNullOrWhiteSpace(value) )
+            {
+                int result;
+                if ( !Int32.TryParse( value, out result ) )
+                {
+                    message = "The input provided is not a valid integer.";
+                    return true;
+                }
+            }
 
-            if ( Int32.TryParse( value, out result ) )
-            {
-                message = string.Empty;
-                return true;
-            }
-            else
-            {
-                message = "The input provided is not a valid integer.";
-                return true;
-            }
+            return base.IsValid( value, required, out message );
         }
     }
 }

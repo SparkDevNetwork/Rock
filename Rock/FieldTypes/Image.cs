@@ -35,7 +35,7 @@ namespace Rock.FieldTypes
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control CreateControl( string value, bool setValue )
+        public override System.Web.UI.Control CreateControl( string value, bool required, bool setValue )
         {
             Rock.Web.UI.Controls.ImageSelector imageSelector = new Web.UI.Controls.ImageSelector();
             imageSelector.ImageId = value;
@@ -55,39 +55,35 @@ namespace Rock.FieldTypes
         }
 
         /// <summary>
-        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// Creates a client-side function that can be called to render the HTML used to update this field and register an event handler
+        /// so that updates to the html are saved to a target element.
         /// </summary>
         /// <param name="page">The page.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="id">The current value.</param>
-        /// <param name="parentElement">The parent element.</param>
-        /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
-        public override string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement )
+        public override string RegisterUpdateScript( Page page )
         {
             Rock.Web.UI.Page.AddScriptLink( page, "~/scripts/Kendo/kendo.core.min.js" );
             Rock.Web.UI.Page.AddScriptLink( page, "~/scripts/Kendo/kendo.upload.min.js" );
             Rock.Web.UI.Page.AddCSSLink( page, "~/CSS/Kendo/kendo.common.min.css" );
             Rock.Web.UI.Page.AddCSSLink( page, "~/CSS/Kendo/kendo.rock.min.css" );
 
-            string uniqueId = parentElement + ( string.IsNullOrWhiteSpace( id ) ? "" : "_" + id );
-            string functionName = uniqueId + "_Save_" + this.GetType().Name;
+            string functionName = this.GetType().Name + "_update";
 
             string script = string.Format( @"
 
-    function {0}(value){{
+    function {0}($parent, $target, value){{
 
         var hasValue = value != '';
         var html = '';
 
         if (value != '' && value != '0')
-            html = '<div class=""rock-image""><img id=""{1}_img"" src=""' + rock.baseUrl + 'image.ashx?' + value + '&width=50&height=50"" style=""display:inline""><a id=""{1}_rmv"" class=""remove-image"" style=""display:inline"">Remove</a><input id=""{1}_fu"" type=""file""></div>';
+            html = '<div class=""rock-image""><img src=""' + rock.baseUrl + 'image.ashx?' + value + '&width=50&height=50"" style=""display:inline""><a class=""remove-image"" style=""display:inline"">Remove</a><input type=""file""></div>';
         else
-            html = '<div class=""rock-image""><img id=""{1}_img"" src="""" style=""display:none""><a id=""{1}_rmv"" class=""remove-image"" style=""display:none"">Remove</a><input id=""{1}_fu"" type=""file""></div>';
+            html = '<div class=""rock-image""><img src="""" style=""display:none""><a class=""remove-image"" style=""display:none"">Remove</a><input type=""file""></div>';
 
-        $('#{2}').html( html );
+        $parent.html( html );
 
-        $('#{1}_fu').kendoUpload({{
+        $parent.find('input[type=""file""]').kendoUpload({{
             multiple: false,
             showFileList: false,
             async: {{
@@ -97,24 +93,24 @@ namespace Rock.FieldTypes
             success: function(e) {{
 
                 if (e.operation == 'upload' && e.response != '0') {{
-                    $('#{3}').val(e.response);
-                    $('#{1}_img').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
-                    $('#{1}_img').show('fast');
-                    $('#{1}_rmv').show('fast');
+                    $target.val(e.response);
+                    $parent.find('img').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
+                    $parent.find('img').show('fast');
+                    $parent.find('a').show('fast');
                 }}
 
             }}
         }});
 
-        $('#{1}_rmv').click( function(){{
+        $parentSelector.find('img').click( function(){{
             $(this).hide('fast');
-            $('#{3}').val('0');
-            $('#{1}_img').attr('src','')
-            $('#{1}_img').hide('fast');
+            $target.val('0');
+            $parent.find('img').attr('src','')
+            $parent.find('img').hide('fast');
         }});
     }}
 
-", functionName, uniqueId, parentElement, targetElement );
+", functionName);
 
             page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
 

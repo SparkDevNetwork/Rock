@@ -87,6 +87,11 @@
     background: url("../Assets/Images/Grid/edit.png") ;
 }
 
+.grid-icon-cell.tick a
+{
+    background: url("../Assets/Images/Grid/tick.png") ;
+}
+
 .grid-icon-cell.security a
 {
     background: url("../Assets/Images/Grid/security.png") ;

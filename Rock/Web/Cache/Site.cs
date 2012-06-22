@@ -60,7 +60,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets the facebook app id.

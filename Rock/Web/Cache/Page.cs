@@ -4,7 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
@@ -167,7 +169,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -325,7 +327,6 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyModel> _context;
 
-
         #endregion
 
         #region Public Methods
@@ -364,6 +365,36 @@ namespace Rock.Web.Cache
                 default:
                     return false;
             }
+        }
+
+        /// <summary>
+        /// Gets the current context object for a given entity type.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        public Rock.Data.IModel GetCurrentContext( string entity )
+        {
+            if ( this.Context.ContainsKey( entity ) )
+            {
+                var keyModel = this.Context[entity];
+
+                if ( keyModel.Model == null )
+                {
+                    Type serviceType = typeof( Rock.Data.Service<> );
+                    Type[] modelType = { Type.GetType( entity ) };
+                    Type service = serviceType.MakeGenericType( modelType );
+                    var serviceInstance = Activator.CreateInstance( service );
+
+                    MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                    keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    if ( keyModel.Model is Rock.Attribute.IHasAttributes )
+                        Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
+                }
+
+                return keyModel.Model;
+            }
+
+            return null;
         }
 
         /// <summary>

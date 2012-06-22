@@ -67,8 +67,14 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public virtual bool IsValid( string value, out string message )
+        public virtual bool IsValid( string value, bool required, out string message )
         {
+            if ( required && string.IsNullOrWhiteSpace( value ) )
+            {
+                message = "value is required.";
+                return false;
+            }
+
             message = string.Empty;
             return true;
         }
@@ -79,7 +85,7 @@ namespace Rock.FieldTypes
         /// <param name="value">The current value</param>
         /// <param name="setValue">Should the control's value be set</param>
         /// <returns>The control</returns>
-        public virtual Control CreateControl(string value, bool setValue)
+        public virtual Control CreateControl( string value, bool required, bool setValue )
         {
             TextBox textBox = new TextBox();
             if (setValue)
@@ -100,31 +106,24 @@ namespace Rock.FieldTypes
         }
 
         /// <summary>
-        /// Creates a client-side function that can be called to display appropriate html and event handler to update the target element.
+        /// Creates a client-side function that can be called to render the HTML used to update this field and register an event handler
+        /// so that updates to the html are saved to a target element.
         /// </summary>
         /// <param name="page">The page.</param>
-        /// <param name="id">The id.</param>
-        /// <param name="id">The current value.</param>
-        /// <param name="parentElement">The parent element.</param>
-        /// <param name="targetElement">The target element.</param>
         /// <returns></returns>
-        public virtual string ClientUpdateScript( Page page, string id, string value, string parentElement, string targetElement )
+        public virtual string RegisterUpdateScript( Page page )
         {
-            string uniqueId = parentElement + (string.IsNullOrWhiteSpace( id ) ? "" : "_" + id);
-            string functionName = uniqueId + "_Save_" + this.GetType().Name;
+            string functionName = this.GetType().Name + "_update";
 
             string script = string.Format( @"
-
-    function {0}(value){{
-        $('#{1}').html('<input type=""text"" id=""{2}"" value=""' + value + '"">' );
-        $('#{1} #{2}').change(function(){{
-            $('#{3}').val($(this).val());
+    function {0}($parent, $target, value){{
+        $parent.html('<input type=""text"" value=""' + value + '"" class=""field-value"">' );
+        $parent.find('input.field-value').change(function(){{
+            $target.val($(this).val());
         }});
     }}
-
-", functionName, parentElement, uniqueId, targetElement);
-
-            page.ClientScript.RegisterStartupScript( this.GetType(), functionName, script, true );
+", functionName);
+            ScriptManager.RegisterStartupScript( page, this.GetType(), functionName, script, true );
 
             return functionName;
         }

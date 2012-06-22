@@ -57,7 +57,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, List<string>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes
@@ -68,7 +68,7 @@ namespace Rock.Extension
         {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
-                return this.AttributeValues[key].Value[0];
+                return this.AttributeValues[key].Value[0].Value;
 
             return null;
         }
@@ -83,7 +83,7 @@ namespace Rock.Extension
             {
                 int order = 0;
                 if ( AttributeValues.ContainsKey( "Order" ) )
-                    if ( !( Int32.TryParse( AttributeValues["Order"].Value[0], out order ) ) )
+                    if ( !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
                         order = 0;
                 return order;
             }
