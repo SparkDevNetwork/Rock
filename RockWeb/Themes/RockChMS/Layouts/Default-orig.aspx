@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCMS/Layouts/Site.Master" 
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -10,6 +10,19 @@
         });
 
     </script>
+
+
+    <div id="page-frame">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class='brand'>Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
     <div id="page-frame">
         <header class="topbar topbar-inner">
@@ -104,28 +117,25 @@
     <script>
         /* script to manage header lock */
         $(document).ready(function () {
-            /*var headerIsLocked = localStorage.getItem("rock-header-lock");
+            var headerIsLocked = localStorage.getItem("rock-header-lock");
 
             if (headerIsLocked == "false") {
-                $('#content, #header-lock, header.topbar').toggleClass('unlock');
-            }*/
-            alert('ok its a start');
-            $('#header-lock').click(function (e) {
-                $('#content, #header-lock, header.topbar').toggleClass('unlock');
-
-                if ($('#header-lock').hasClass('unlock')) {
-                    localStorage.setItem('rock-header-lock', 'false');
-                }
-                else {
-                    localStorage.setItem('rock-header-lock', 'true');
-                }
-                alert('oh my goodness');
-                e.preventDefault();
-            });
-
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');                
+            }
         });
 
-        
+        $('#header-lock').click(function () {
+            $('#content, #header-lock, header.topbar').toggleClass('unlock');
+
+            if ($('#header-lock').hasClass('unlock')) {
+                localStorage.setItem('rock-header-lock', 'false');
+            }
+            else {
+                localStorage.setItem('rock-header-lock', 'true');
+            }
+
+            e.preventDefault();
+        });
 	</script>
             
 </asp:Content>
