@@ -415,7 +415,7 @@ article.blog-post header ul li:last-child:after {
     background-color: #bbb;
 }
 
-.modal-body.iframe
+.modal-body.iframe 
 {
     background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
     overflow: hidden;
