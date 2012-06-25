@@ -71,13 +71,13 @@ This is the Git workflow we're currently using:
     
         git pull 
     
-2.  __Create a topic branch to do your work.__
-    Working in a topic branch isolates your work and makes it easy to bring in updates from
+2.  __Create a feature branch to do your work.__
+    Working in a feature (aka topic) branch isolates your work and makes it easy to bring in updates from
     other developers without cluttering the history with merge commits. You should generally
-    be working in topic branches. If you do make changes in the master branch, just run this
+    be working in feature branches. If you do make changes in the "develop" branch, just run this
     command before commiting them, creating the branch just in time.
 
-        git checkout -b <topic branch>
+        git checkout -b <myfeature branch> develop
     
 3.  __Do your work.__
     Follow this loop while making small changes and committing often.    
@@ -101,50 +101,30 @@ This is the Git workflow we're currently using:
 
     __PRO TIP: CLOSE VISUAL STUDIO__
     
-    There are a few steps to follow to make sure you keep the history clean as you integrate.
     
-    1.  __Fetch changes from origin.__
-        Use `git fetch` instead of `git pull`, because `git pull` automatically tries to merge the 
-        new changes with your local commits, creating an ugly (and useless) merge commit.
+    1.  __Switch to 'develop' branch.__
+        You're switching over to the develop branch in order to merge the changes from your
+		feature branch.
         
-            git fetch origin
+            git checkout develop
         
-    2.  __Rebase your topic branch against origin/master.__
-        You want to reolcated your changes on top of any changes that were pulled in the
-        in the fetch, above. You need to do this against origin/master instead of 
-        master, because master isn't yet up to date (remember, you're still in your
-        topic branch).
+    2.  __Merge your feature branch into the develop branch.__
+        The --no-ff flag causes the merge to always create a new commit object, even if the
+		merge could be performed with a fast-forward. This avoids losing information about
+		the historical existence of a feature branch and groups together all commits that
+		together added the feature.
 
-        You might have rebase conflicts, in which case you'll need to resolve them before
-        continuing with `git rebase --continue`. You might want to use `git mergetool` to help.
+        You might have merge conflicts, in which case you'll need to resolve them before
+        continuing. You might want to use `git mergetool` to help.
         
-            git rebase origin/master
+            git merge --no-ff <myfeature branch>
         
-    3.  __Test your changes with the new code integrated.__
+	3.  __Push the develop branch to orgin and delete your feature branch__
+		
+			git push origin develop
+			git branch -d <myfeature branch>
+			
+
+    4.  __Test your changes with the new code integrated.__
         This would be a good time to run your full suite of unit and integration tests.
-        
-            git clean -xdf
-            .\Build-Solution.ps1
-            
-        The first command cleans any untracked files that could get in the way of a good commit.
-
-5.  __Integrate your changes into the master branch.__
-    Now that your topic branch has a clean history, it's easy to use `git rebase` to integrate
-    your changes into the master branch with the following three commands. Note that the 
-    `git pull` will not create a merge commit, provided you haven't made any changes on master
-    (e.g., that you followed the advice of making all changes in your topic branch).
-    
-        git checkout master
-        git pull
-        git rebase <topic branch>
-    
-6.  __Push changes.__
-    Now that you're master branch's history is correct and clean, you can push to origin.
-    
-        git push origin
-
-7.  __Delete the topic branch__
-    The topic branch you created in Step #2 is no longer needed so it's best to delete it and 
-    start with a new clean branch when you're ready to start your next unit of work.
-    
-        git branch -d <topic branch>
+		
