@@ -2,40 +2,42 @@
 
     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-    <fieldset class="stacked">
+    <fieldset>
 	    <legend>Login</legend> 
         <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
         <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:LabeledTextBox>
-        <dl>
-            <dt></dt>
-            <dd>
-                <ul class="inputs-list">
-				    <li>
-				        <label>
-				            <asp:CheckBox ID="cbRememberMe" runat="server"/>
-				            <span>Remember me on this computer</span>
-				        </label>
-				    </li>
-                </ul>
-            </dd>
-        </dl>
+        
+        <div class="control-group">
+        	<div class="controls">
+        		<label class="checkbox">
+        			<asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
+        		</label>
+        	</div>
+        </div>
+        
     </fieldset>
+
+    <div class="alt-authentication">
+        
+        <asp:PlaceHolder ID="phFacebookLogin" runat="server">
+            <!-- Facebook -->
+            <div class="facebook-login">
+                <asp:LinkButton ID="lbFacebookLogin" runat="server" OnClick="lbFacebookLogin_Click" CausesValidation="false"><img src="<%= Page.ResolveUrl("~/Assets/Images/facebook-login.png") %>" style="border:none" /></asp:LinkButton>
+            </div>
+        </asp:PlaceHolder>
+
+    </div>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage warning"/>
 
-    <div class="actions">
-        <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn primary" OnClick="btnLogin_Click" />
-        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn secondary" OnClick="btnNewAccount_Click" CausesValidation="false" />
-        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click" CausesValidation="false" />
+    <div class="form-actions">
+        <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn" OnClick="btnNewAccount_Click" CausesValidation="false" />
+        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false" />
     </div>
 
-    <span class="forgot">
-        Help: <a href='<%= Page.ResolveUrl("~") + "ForgotUserName" %>'>I forgot my username/password</a>
-    </span>
+    <Rock:NotificationBox ID="nbForgotPassword" Heading="Help!" Text="" runat="server"></Rock:NotificationBox>
 
-    <asp:PlaceHolder ID="phFacebookLogin" runat="server">
-        <div class="facebook-login">
-            <asp:LinkButton ID="lbFacebookLogin" runat="server" OnClick="lbFacebookLogin_Click" CausesValidation="false"><img src="<%= Page.ResolveUrl("~/Assets/Images/facebook-login.png") %>" style="border:none" /></asp:LinkButton>
-        </div>
-    </asp:PlaceHolder>
+
+   
 

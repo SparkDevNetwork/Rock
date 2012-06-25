@@ -175,6 +175,22 @@ namespace Rock.Financial
         public virtual DefinedValue CreditCardType { get; set; }
 
         /// <summary>
+        /// Gets or sets the gateway.
+        /// </summary>
+        /// <value>
+        /// The gateway.
+        /// </value>
+        public virtual Gateway Gateway { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the source.
+        /// </summary>
+        /// <value>
+        /// The type of the source.
+        /// </value>
+        public virtual DefinedValue SourceType { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
@@ -263,6 +279,8 @@ namespace Rock.Financial
             this.HasOptional(b => b.Batch).WithMany(t => t.Transactions).HasForeignKey(t => t.BatchId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.CurrencyType).WithMany().HasForeignKey(t => t.CurrencyTypeId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.CreditCardType).WithMany().HasForeignKey(t => t.CreditCardTypeId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.Gateway).WithMany(g => g.Transactions).HasForeignKey(t => t.GatewayId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.SourceType).WithMany().HasForeignKey(t => t.SourceTypeId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }

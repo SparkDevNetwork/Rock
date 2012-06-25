@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/base.css") %>">
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/cms-core.css") %>">
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
 
     <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
 
