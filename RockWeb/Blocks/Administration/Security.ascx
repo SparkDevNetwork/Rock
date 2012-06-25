@@ -35,7 +35,7 @@
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
  
-    <ul class="pills">
+    <ul class="nav nav-pills">
         <asp:Repeater ID="rptActions" runat="server">
             <ItemTemplate>
                 <li class='<%# GetTabClass(Container.DataItem) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Container.DataItem %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
