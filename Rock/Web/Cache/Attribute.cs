@@ -118,7 +118,7 @@ namespace Rock.Web.Cache
         public System.Web.UI.Control CreateControl( string value, bool setValue)
         {
             this.FieldType.Field.QualifierValues = this.QualifierValues;
-            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value, setValue );
+            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value, Required, setValue );
         }
 
         #region Static Methods

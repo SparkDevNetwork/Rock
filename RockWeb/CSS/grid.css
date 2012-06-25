@@ -6,6 +6,7 @@
     border-style: solid;
     border-width: 1px;
     margin-top: 24px;
+    width: 100%;
 }
 
 .grid-table caption 
@@ -84,6 +85,11 @@
 .grid-icon-cell.edit a
 {
     background: url("../Assets/Images/Grid/edit.png") ;
+}
+
+.grid-icon-cell.tick a
+{
+    background: url("../Assets/Images/Grid/tick.png") ;
 }
 
 .grid-icon-cell.security a

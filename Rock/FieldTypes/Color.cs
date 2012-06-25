@@ -22,7 +22,7 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="setValue"></param>
         /// <returns></returns>
-        public override Control CreateControl(string value, bool setValue)
+        public override Control CreateControl( string value, bool required, bool setValue )
         {
             DropDownList ddl = new DropDownList();
 

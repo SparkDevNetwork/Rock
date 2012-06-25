@@ -250,7 +250,7 @@ namespace RockWeb.Blocks.Administration
             var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
 
             phEditControl.Controls.Clear();
-            phEditControl.Controls.Add(fieldType.Field.CreateControl((attributeValue != null ? attributeValue.Value : string.Empty), setValues));
+            phEditControl.Controls.Add(fieldType.Field.CreateControl((attributeValue != null ? attributeValue.Value : string.Empty), attribute.Required, setValues));
 
             modalDetails.Show();
         }

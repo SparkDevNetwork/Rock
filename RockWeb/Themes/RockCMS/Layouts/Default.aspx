@@ -104,25 +104,28 @@
     <script>
         /* script to manage header lock */
         $(document).ready(function () {
-            var headerIsLocked = localStorage.getItem("rock-header-lock");
+            /*var headerIsLocked = localStorage.getItem("rock-header-lock");
 
             if (headerIsLocked == "false") {
-                $('#content, #header-lock, header.topbar').toggleClass('unlock');                
-            }
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');
+            }*/
+            alert('ok its a start');
+            $('#header-lock').click(function (e) {
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');
+
+                if ($('#header-lock').hasClass('unlock')) {
+                    localStorage.setItem('rock-header-lock', 'false');
+                }
+                else {
+                    localStorage.setItem('rock-header-lock', 'true');
+                }
+                alert('oh my goodness');
+                e.preventDefault();
+            });
+
         });
 
-        $('#header-lock').click(function () {
-            $('#content, #header-lock, header.topbar').toggleClass('unlock');
-
-            if ($('#header-lock').hasClass('unlock')) {
-                localStorage.setItem('rock-header-lock', 'false');
-            }
-            else {
-                localStorage.setItem('rock-header-lock', 'true');
-            }
-
-            e.preventDefault();
-        });
+        
 	</script>
             
 </asp:Content>

@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Core
             {
                 PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
                 if ( phInsertValue != null )
-                    phInsertValue.Controls.Add( _attribute.FieldType.Field.CreateControl( string.Empty, true ) );
+                    phInsertValue.Controls.Add( _attribute.FieldType.Field.CreateControl( string.Empty, _attribute.Required, true ) );
             }
 
         }
@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Core
                     {
                         PlaceHolder phEditValue = e.Item.FindControl( "phEditValue" ) as PlaceHolder;
                         if ( phEditValue != null  )
-                            phEditValue.Controls.Add( _attribute.FieldType.Field.CreateControl( attributeValue.Value, true ) );
+                            phEditValue.Controls.Add( _attribute.FieldType.Field.CreateControl( attributeValue.Value, _attribute.Required, true ) );
                     }
                 }
             }

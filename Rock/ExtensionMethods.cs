@@ -271,7 +271,7 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
         {
-            string match = @"\s*\b" + className + "\b";
+            string match = @"\s*\b" + className + @"\b";
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
             if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )

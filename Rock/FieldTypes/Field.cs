@@ -67,8 +67,14 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public virtual bool IsValid( string value, out string message )
+        public virtual bool IsValid( string value, bool required, out string message )
         {
+            if ( required && string.IsNullOrWhiteSpace( value ) )
+            {
+                message = "value is required.";
+                return false;
+            }
+
             message = string.Empty;
             return true;
         }
@@ -79,7 +85,7 @@ namespace Rock.FieldTypes
         /// <param name="value">The current value</param>
         /// <param name="setValue">Should the control's value be set</param>
         /// <returns>The control</returns>
-        public virtual Control CreateControl(string value, bool setValue)
+        public virtual Control CreateControl( string value, bool required, bool setValue )
         {
             TextBox textBox = new TextBox();
             if (setValue)
