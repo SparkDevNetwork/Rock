@@ -14,7 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.IO;
 using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
 
 using Rock.Data;
 
@@ -24,7 +27,8 @@ namespace Rock.CMS
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
-    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered
+    [Serializable]
+    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Name.
@@ -389,6 +393,20 @@ namespace Rock.CMS
         public override string ToString()
         {
             return Name;
+        }
+
+        public string Export()
+        {
+            var serializer = new XmlSerializer(this.GetType());
+            var stringWriter = new StringWriter();
+            var xmlWriter = XmlWriter.Create(stringWriter);
+            serializer.Serialize(xmlWriter, this);
+            return stringWriter.ToString();
+        }
+
+        public void Import( string data )
+        {
+            
         }
     }
     /// <summary>

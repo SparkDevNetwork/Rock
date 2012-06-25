@@ -121,6 +121,7 @@
     <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
     <Compile Include="Data\IRepository.cs" />
+    <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
