@@ -13,7 +13,12 @@ public partial class Blocks_Cms_TestPageFlusher : System.Web.UI.UserControl
 		int id = -1;
 		if ( ! string.IsNullOrEmpty(TextBox1.Text) && int.TryParse( TextBox1.Text, out id ) )
 		{
+			// Flush the page's block instances
+			Rock.Web.Cache.Page.Read( id ).FlushBlockInstances();
+
+			// Flush the page
 			Rock.Web.Cache.Page.Flush( id );
+
 		}
     }
 }

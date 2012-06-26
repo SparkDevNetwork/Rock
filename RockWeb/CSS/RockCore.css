@@ -415,7 +415,7 @@ article.blog-post header ul li:last-child:after {
     background-color: #bbb;
 }
 
-.modal-body.iframe
+.modal-body.iframe 
 {
     background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
     overflow: hidden;
@@ -512,6 +512,25 @@ article.blog-post header ul li:last-child:after {
     height: 100%;
     width: 100%;
     border: 0;
+}
+
+#splash #content #content-box
+{
+    overflow: hidden;
+    padding: 6px;   
+}
+
+#splash #content #content-box .label.exception-type 
+{
+    display: block;
+    margin-top: 12px;
+}
+
+#splash #content #content-box .stack-trace 
+{
+    font-size: 9px;
+    color: #515151;
+    word-wrap:break-word;   
 }
 
 /* user registration styles */
