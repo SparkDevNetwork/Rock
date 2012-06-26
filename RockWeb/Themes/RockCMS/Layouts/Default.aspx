@@ -109,7 +109,7 @@
             if (headerIsLocked == "false") {
                 $('#content, #header-lock, header.topbar').toggleClass('unlock');
             }*/
-            alert('ok its a start');
+
             $('#header-lock').click(function (e) {
                 $('#content, #header-lock, header.topbar').toggleClass('unlock');
 
