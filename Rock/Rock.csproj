@@ -104,6 +104,10 @@
     <Compile Include="Core\AttributeQualifierService.cs" />
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\Metric.cs" />
+    <Compile Include="Core\MetricService.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
     <Compile Include="Core\EntityChange.cs" />
@@ -224,6 +228,10 @@
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
+    <Compile Include="REST\Core\MetricValueService.cs" />
+    <Compile Include="REST\Core\IMetricValueService.cs" />
+    <Compile Include="REST\Core\IMetricService.cs" />
+    <Compile Include="REST\Core\MetricService.cs" />
     <Compile Include="REST\Core\ExceptionLogService.cs" />
     <Compile Include="REST\Core\IAttributeService.Partial.cs" />
     <Compile Include="REST\Core\IExceptionLogService.cs" />

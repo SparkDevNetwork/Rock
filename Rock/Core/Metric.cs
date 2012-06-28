@@ -21,10 +21,10 @@ using Rock.Data;
 namespace Rock.Core
 {
     /// <summary>
-    /// Field Type POCO Entity.
+    /// Metric POCO Entity.
     /// </summary>
-    [Table( "coreFieldType" )]
-    public partial class FieldType : Model<FieldType>, IAuditable
+    [Table( "coreMetric" )]
+    public partial class Metric : ModelWithAttributes<Metric>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -37,16 +37,45 @@ namespace Rock.Core
 		public bool System { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Name.
+		/// Gets or sets the Type.
 		/// </summary>
 		/// <value>
-		/// Name.
+		/// Type.
+		/// </value>
+		[DataMember]
+		public bool Type { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Category.
+		/// </summary>
+		/// <value>
+		/// Category.
+		/// </value>
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Category { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Title.
+		/// </summary>
+		/// <value>
+		/// Title.
 		/// </value>
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
-		
+		public string Title { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Subtitle.
+		/// </summary>
+		/// <value>
+		/// Subtitle.
+		/// </value>
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Subtitle { get; set; }
+	
 		/// <summary>
 		/// Gets or sets the Description.
 		/// </summary>
@@ -55,28 +84,71 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public string Description { get; set; }
-		
+
 		/// <summary>
-		/// Gets or sets the Assembly.
+		/// Gets or sets the MinValue.
 		/// </summary>
 		/// <value>
-		/// Assembly.
+		/// MinValue.
 		/// </value>
-		[Required]
-		[MaxLength( 100 )]
 		[DataMember]
-		public string Assembly { get; set; }
-		
+		public int MinValue { get; set; }
+
 		/// <summary>
-		/// Gets or sets the Class.
+		/// Gets or sets the MaxValue.
 		/// </summary>
 		/// <value>
-		/// Class.
+		/// MaxValue.
 		/// </value>
-		[Required]
+		[DataMember]
+		public int MaxValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the CollectionFrequency.
+		/// </summary>
+		/// <value>
+		/// CollectionFrequency.
+		/// </value>
+		[DataMember]
+		public int CollectionFrequencyId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the LastCollected Date Time.
+		/// </summary>
+		/// <value>
+		/// LastCollected Date Time.
+		/// </value>
+		[DataMember]
+		public DateTime LastCollected { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Source.
+		/// </summary>
+		/// <value>
+		/// Source.
+		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Class { get; set; }
+		public string Source { get; set; }
+
+		/// <summary>
+		/// Gets or sets the SourceSQL.
+		/// </summary>
+		/// <value>
+		/// SourceSQL.
+		/// </value>
+		[DataMember]
+		public string SourceSQL { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		[Required]
+		[DataMember]
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -118,24 +190,32 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Core.DTO.FieldType"/> object.
+        /// A <see cref="Rock.Core.DTO.Metric"/> object.
         /// </value>
-		public Rock.Core.DTO.FieldType DataTransferObject
+		public Rock.Core.DTO.Metric DataTransferObject
 		{
 			get 
 			{ 
-				Rock.Core.DTO.FieldType dto = new Rock.Core.DTO.FieldType();
+				Rock.Core.DTO.Metric dto = new Rock.Core.DTO.Metric();
 				dto.Id = this.Id;
-				dto.Guid = this.Guid;
 				dto.System = this.System;
-				dto.Name = this.Name;
+				dto.Type = this.Type;				
+				dto.Category = this.Category;
+				dto.Title = this.Title;
+				dto.Subtitle = this.Subtitle;
 				dto.Description = this.Description;
-				dto.Assembly = this.Assembly;
-				dto.Class = this.Class;
+				dto.MinValue = this.MinValue;
+				dto.MaxValue = this.MaxValue;
+				dto.CollectionFrequencyId = this.CollectionFrequencyId;
+				dto.LastCollected = this.LastCollected;
+				dto.Source = this.Source;
+				dto.SourceSQL = this.SourceSQL;
+				dto.Order = this.Order;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				dto.Guid = this.Guid;
 				return dto; 
 			}
 		}
@@ -144,32 +224,24 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.FieldType"; } }
+		public override string AuthEntity { get { return "Core.Metric"; } }
         
 		/// <summary>
-        /// Gets or sets the Attributes.
+        /// Gets or sets the Metric Values.
         /// </summary>
         /// <value>
-        /// Collection of Attributes.
+        /// Collection of Metric Values.
         /// </value>
-		public virtual ICollection<Attribute> Attributes { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Defined Types.
-        /// </summary>
-        /// <value>
-        /// Collection of Defined Types.
-        /// </value>
-		public virtual ICollection<DefinedType> DefinedTypes { get; set; }
+		public virtual ICollection<MetricValue> MetricValues { get; set; }
 
 		/// <summary>
-		/// Gets or sets the Metrics.
+		/// Gets or sets the CollectionFrequency.
 		/// </summary>
 		/// <value>
-		/// Collection of Metrics.
+		/// A <see cref="Core.DefinedValue"/> object.
 		/// </value>
-		public virtual ICollection<Metric> Metrics { get; set; }
-        
+		public virtual Core.DefinedValue CollectionFrequency { get; set; }
+
 		/// <summary>
         /// Gets or sets the Created By Person.
         /// </summary>
@@ -186,19 +258,28 @@ namespace Rock.Core
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
+
     }
     /// <summary>
-    /// Field Type Configuration class.
+    /// Metric Configuration class.
     /// </summary>
-    public partial class FieldTypeConfiguration : EntityTypeConfiguration<FieldType>
+    public partial class MetricConfiguration : EntityTypeConfiguration<Metric>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FieldTypeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="MetricConfiguration"/> class.
         /// </summary>
-        public FieldTypeConfiguration()
+        public MetricConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
 		}
     }
 }
