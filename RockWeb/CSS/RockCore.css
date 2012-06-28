@@ -514,6 +514,25 @@ article.blog-post header ul li:last-child:after {
     border: 0;
 }
 
+#splash #content #content-box
+{
+    overflow: hidden;
+    padding: 6px;   
+}
+
+#splash #content #content-box .label.exception-type 
+{
+    display: block;
+    margin-top: 12px;
+}
+
+#splash #content #content-box .stack-trace 
+{
+    font-size: 9px;
+    color: #515151;
+    word-wrap:break-word;   
+}
+
 /* user registration styles */
 .not-me 
 {
