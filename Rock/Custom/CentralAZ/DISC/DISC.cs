@@ -15,8 +15,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Rock.Custom.CentralAZ.DISC_Assessment
+namespace Rock.Custom.CentralAZ
 {
+	/// <summary>
+	/// DISC Class for administering and scoring a DISC Assessment
+	/// </summary>
 	public class DISC
 	{
 		/// <summary>
@@ -120,7 +123,7 @@ namespace Rock.Custom.CentralAZ.DISC_Assessment
 		static public AssessmentResults Score( List<string> selectedResponseIDs )
 		{
 			List<DISC.ResponseItem> responseList = DISC.GetResponses();
-			
+
 			// Holds the most and least totals for each Letter attribute
 			Dictionary<string, int[]> results = new Dictionary<string, int[]>();
 			results["S"] = new int[] { 0, 0 };

@@ -1,5 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DISC_Assessment.ascx.cs"
-	Inherits="Plugins_CentralAZcom_DISC_Assessment_DISC_Assessment" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DISC.ascx.cs" Inherits="Plugins.CentralAZ.DISC" %>
 <div id="tabs">
 	<ul>
 		<li><a href="#instructions">Instructions</a></li>
@@ -42,7 +41,7 @@
 		<p />
 	</div>
 	<div id="results" class="tabContent">
-		<table border="1" cellpadding="5" cellspacing="3">
+		<table border="1" cellpadding="5" cellspacing="3" class="center">
 			<tr>
 				<td>
 					<asp:Label ID="Label1" Text="Adaptive Behavior" runat="server" />
