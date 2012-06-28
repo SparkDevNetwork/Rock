@@ -23,6 +23,7 @@ namespace Plugins.CentralAZ
 			string rbGroupName = "q" + questionNumber + MorL.ToLower();
 			RadioButton radioButton = new RadioButton();
 			radioButton.ID = rbID;
+			radioButton.Attributes.Add( "onClick", "moveOn('" + questionNumber + "');" );
 			radioButton.GroupName = rbGroupName;
 
 			return radioButton;

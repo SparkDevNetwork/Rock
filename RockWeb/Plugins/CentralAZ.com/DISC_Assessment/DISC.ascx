@@ -35,10 +35,11 @@
 		</p>
 	</div>
 	<div id="questions" class="tabContent">
+		<p>
+			The questions will auto-advance as you answer them.</p>
 		<asp:Table ID="tblQuestions" runat="server">
 		</asp:Table>
 		<asp:Button ID="btnScoreTest" Text="Score Test" runat="server" OnClick="btnScoreTest_Click" />
-		<p />
 	</div>
 	<div id="results" class="tabContent">
 		<table border="1" cellpadding="5" cellspacing="3" class="center">
