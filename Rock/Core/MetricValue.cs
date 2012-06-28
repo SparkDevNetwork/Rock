@@ -21,10 +21,10 @@ using Rock.Data;
 namespace Rock.Core
 {
     /// <summary>
-    /// Field Type POCO Entity.
+    /// Metric Value POCO Entity.
     /// </summary>
-    [Table( "coreFieldType" )]
-    public partial class FieldType : Model<FieldType>, IAuditable
+    [Table( "coreMetricValue" )]
+    public partial class MetricValue : ModelWithAttributes<MetricValue>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -37,15 +37,25 @@ namespace Rock.Core
 		public bool System { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Name.
+		/// Gets or sets the Metric Id.
 		/// </summary>
 		/// <value>
-		/// Name.
+		/// Metric Id.
+		/// </value>
+		[Required]
+		[DataMember]
+		public int MetricId { get; set; }
+				
+		/// <summary>
+		/// Gets or sets the Value.
+		/// </summary>
+		/// <value>
+		/// Value.
 		/// </value>
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Value { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -55,28 +65,43 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public string Description { get; set; }
-		
+
 		/// <summary>
-		/// Gets or sets the Assembly.
+		/// Gets or sets the x Value.
 		/// </summary>
 		/// <value>
-		/// Assembly.
+		/// xValue.
 		/// </value>
-		[Required]
-		[MaxLength( 100 )]
 		[DataMember]
-		public string Assembly { get; set; }
-		
+		public int xValue { get; set; }
+
 		/// <summary>
-		/// Gets or sets the Class.
+		/// Gets or sets isDateBased for the associated xValue.
 		/// </summary>
 		/// <value>
-		/// Class.
+		/// isDateBased.
+		/// </value>
+		[DataMember]
+		public bool isDateBased { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Label.
+		/// </summary>
+		/// <value>
+		/// Label.
+		/// </value>
+		[DataMember]
+		public string Label { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
 		/// </value>
 		[Required]
-		[MaxLength( 100 )]
 		[DataMember]
-		public string Class { get; set; }
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -118,24 +143,27 @@ namespace Rock.Core
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Core.DTO.FieldType"/> object.
+        /// A <see cref="Rock.Core.DTO.MetricValue"/> object.
         /// </value>
-		public Rock.Core.DTO.FieldType DataTransferObject
+		public Rock.Core.DTO.MetricValue DataTransferObject
 		{
 			get 
 			{ 
-				Rock.Core.DTO.FieldType dto = new Rock.Core.DTO.FieldType();
+				Rock.Core.DTO.MetricValue dto = new Rock.Core.DTO.MetricValue();
 				dto.Id = this.Id;
-				dto.Guid = this.Guid;
 				dto.System = this.System;
-				dto.Name = this.Name;
+				dto.MetricId = this.MetricId;
+				dto.Value = this.Value;
 				dto.Description = this.Description;
-				dto.Assembly = this.Assembly;
-				dto.Class = this.Class;
+				dto.xValue = this.xValue;
+				dto.isDateBased = this.isDateBased;
+				dto.Label = this.Label;
+				dto.Order = this.Order;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
 				dto.ModifiedByPersonId = this.ModifiedByPersonId;
+				dto.Guid = this.Guid;
 				return dto; 
 			}
 		}
@@ -144,31 +172,15 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.FieldType"; } }
+		public override string AuthEntity { get { return "Core.MetricValue"; } }
         
 		/// <summary>
-        /// Gets or sets the Attributes.
+        /// Gets or sets the Metric .
         /// </summary>
         /// <value>
-        /// Collection of Attributes.
+        /// A <see cref="Metric"/> object.
         /// </value>
-		public virtual ICollection<Attribute> Attributes { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Defined Types.
-        /// </summary>
-        /// <value>
-        /// Collection of Defined Types.
-        /// </value>
-		public virtual ICollection<DefinedType> DefinedTypes { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Metrics.
-		/// </summary>
-		/// <value>
-		/// Collection of Metrics.
-		/// </value>
-		public virtual ICollection<Metric> Metrics { get; set; }
+		public virtual Metric Metric { get; set; }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
@@ -186,17 +198,26 @@ namespace Rock.Core
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+		/// <summary>
+		/// Gets the parent authority.
+		/// </summary>
+		public override Security.ISecured ParentAuthority
+		{
+			get { return new Security.GenericEntity( "Global" ); }
+		}
+
     }
     /// <summary>
-    /// Field Type Configuration class.
+    /// Metric Value Configuration class.
     /// </summary>
-    public partial class FieldTypeConfiguration : EntityTypeConfiguration<FieldType>
+    public partial class MetricValueConfiguration : EntityTypeConfiguration<MetricValue>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FieldTypeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="MetricValueConfiguration"/> class.
         /// </summary>
-        public FieldTypeConfiguration()
+        public MetricValueConfiguration()
         {
+			this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

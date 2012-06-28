@@ -58,6 +58,8 @@
     <Compile Include="Core\Attribute.cs" />
     <Compile Include="Core\AttributeQualifier.cs" />
     <Compile Include="Core\AttributeValue.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedType.cs" />
     <Compile Include="Core\DefinedValue.cs" />
     <Compile Include="Core\EntityChange.cs" />
