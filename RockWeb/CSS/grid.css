@@ -15,6 +15,16 @@
     padding: 0 0 12px 0;   
 }
 
+.table-bordered th, .table-bordered td 
+{
+    border-color: #ccc;
+}
+
+.table-bordered thead th, .table-bordered thead td 
+{
+    border-color: #777;
+}
+
 .grid-table thead th 
 {
     background-color: #7c7c7c;
