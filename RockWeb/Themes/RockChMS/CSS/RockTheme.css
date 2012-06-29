@@ -233,15 +233,20 @@ header.navbar nav ul > li:hover .nav-menu {
 	top: 27px;
 }
 
+header.navbar nav ul li .nav-menu section
+{
+    clear: both;
+}
+
 header.navbar nav ul li .nav-menu {
 	left: -999em;
 	position: absolute;
-	background: -moz-linear-gradient(top, rgba(97,97,97,0.9) 0%, rgba(97,97,97,0.98) 30%, rgba(81,81,81,0.9) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,97,97,0.9)), color-stop(30%,rgba(97,97,97,0.9)), color-stop(100%,rgba(81,81,81,0.8)));
-    background: -webkit-linear-gradient(top, rgba(97,97,97,0.9) 0%,rgba(97,97,97,0.9) 30%,rgba(81,81,81,0.9) 100%);
-    background: -o-linear-gradient(top, rgba(97,97,97,0.9) 0%,rgba(97,97,97,0.9) 30%,rgba(81,81,81,0.9) 100%);
-    background: -ms-linear-gradient(top, rgba(97,97,97,0.9) 0%,rgba(97,97,97,0.9) 30%,rgba(81,81,81,0.9) 100%);
-    background: linear-gradient(top, rgba(97,97,97,0.9) 0%,rgba(97,97,97,0.9) 30%,rgba(81,81,81,0.9) 100%);
+	background: -moz-linear-gradient(top, rgba(97,97,97,1) 0%, rgba(97,97,97,1) 30%, rgba(81,81,81,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,97,97,1)), color-stop(30%,rgba(97,97,97,1)), color-stop(100%,rgba(81,81,81,1)));
+    background: -webkit-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
+    background: -o-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
+    background: -ms-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
+    background: linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
     border-radius: 0 0 4px 4px;
 	margin-top: -2px;
 	padding: 0 24px 24px 24px;
@@ -255,7 +260,12 @@ header.navbar nav ul li .nav-menu {
 }
 
 header.navbar nav ul li .nav-menu .width-1column {
-	width: 350px;
+	width: 400px;
+}
+
+header.navbar nav ul li .nav-menu header 
+{
+   color: #CBCBCB; 
 }
 
 header.navbar nav ul li .nav-menu header > strong {
@@ -277,12 +287,14 @@ header.navbar nav ul li .nav-menu ul {
 	list-style-type: square;
 	width: 100%;
 	margin-top: 6px;
+	color: #CBCBCB;
 }
 
 header.navbar nav ul li .nav-menu ul	li {
-	width: 140px;
+	width: 160px;
 	float: left;
 	margin-right: 10px;
+	
 }
 								
 header.navbar nav ul li .nav-menu ul li a {
@@ -314,9 +326,16 @@ header.navbar nav ul li .nav-menu ul li a:hover {
 
 /* page title bar */
 #page-title {
-    --margin-top: 90px;
     background-color: #ebeaea;
     border-bottom: 1px solid #d2d1d2;
+    height: 48px;
+}
+
+#page-title h1
+{
+    color: #595959;
+    font-size: 28px;
+    margin-top: 6px;
 }
 
 /* footer bar */
@@ -324,6 +343,7 @@ header.navbar nav ul li .nav-menu ul li a:hover {
     margin-top: 25px;
     min-height: 250px;
     background-color: #2f2f2f; 
+    padding-top: 25px;
 }
 
 /*
