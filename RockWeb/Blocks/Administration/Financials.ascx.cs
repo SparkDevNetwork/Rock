@@ -13,10 +13,21 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
     private TransactionService transactionService = new TransactionService();
     private FundService fundService = new FundService();
     private DefinedValueService definedValueService = new DefinedValueService();
+    private bool _canConfigure = false;
+
+    protected override void OnInit(EventArgs e)
+    {
+        base.OnInit(e);
+        _canConfigure = PageInstance.Authorized("Configure", CurrentUser);
+        if (!_canConfigure)
+        {
+            DisplayError("You are not authorized to configure this page");
+        }
+    }
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!Page.IsPostBack)
+        if (!Page.IsPostBack && _canConfigure)
         {
             Rock.Web.UI.Page.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
             LoadDropDowns();
@@ -115,5 +126,13 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
         searchValue.TransactionCode = txtTransactionCode.Text;
         searchValue.SourceType = definedValueService.Get(int.Parse(ddlSourceType.SelectedValue));
         return searchValue;
+    }
+
+    private void DisplayError(string message)
+    {
+        pnlCanConfigure.Controls.Clear();
+        pnlCanConfigure.Controls.Add(new LiteralControl(message));
+        pnlCanConfigure.Visible = true;
+        pnlFinancialContent.Visible = false;
     }
 }
