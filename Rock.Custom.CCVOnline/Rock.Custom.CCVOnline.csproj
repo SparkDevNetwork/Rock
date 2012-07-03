@@ -49,11 +49,11 @@
     <Compile Include="CommandCenter\RecordingService.cs" />
     <Compile Include="CommandCenter\Recording.cs" />
     <Compile Include="Data\CCVContext.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.config" />
-    <None Include="ConnectionStrings.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

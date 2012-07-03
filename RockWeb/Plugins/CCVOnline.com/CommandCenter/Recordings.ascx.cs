@@ -11,6 +11,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Web.UI.Controls;
+using Rock.Custom.CCVOnline.CommandCenter;
 
 namespace RockWeb.Plugins.CCVOnline.CommandCenter
 {
@@ -18,7 +19,7 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
     {
         #region Fields
 
-        Rock.Custom.CCVOnline.CommandCenter.RecordingService recordingService = new Rock.Custom.CCVOnline.CommandCenter.RecordingService();
+        RecordingService recordingService = new RecordingService();
         
         #endregion
 
@@ -79,7 +80,7 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
 
         protected void gRecordings_Delete( object sender, RowEventArgs e )
         {
-            Rock.Custom.CCVOnline.CommandCenter.Recording recording = recordingService.Get( ( int )gRecordings.DataKeys[e.RowIndex]["id"] );
+            Recording recording = recordingService.Get( ( int )gRecordings.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 recordingService.Delete( recording, CurrentPersonId );
@@ -111,12 +112,12 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Custom.CCVOnline.CommandCenter.Recording recording;
+            Recording recording;
             bool newRecording = false;
                         
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                recordingService = new Rock.Custom.CCVOnline.CommandCenter.RecordingService();
+                recordingService = new RecordingService();
 
                 int recordingId = 0;
                 if ( !Int32.TryParse( hfRecordingId.Value, out recordingId ) )
@@ -125,7 +126,7 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
                 if ( recordingId == 0 )
                 {
                     newRecording = true;
-                    recording = new Rock.Custom.CCVOnline.CommandCenter.Recording();
+                    recording = new Recording();
                     recordingService.Add( recording, CurrentPersonId );
                 }
                 else
@@ -157,7 +158,7 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
 
         protected void ShowEdit( int recordingId )
         {
-            Rock.Custom.CCVOnline.CommandCenter.Recording recording = recordingService.Get( recordingId );
+            Recording recording = recordingService.Get( recordingId );
 
             if ( recording != null )
             {
