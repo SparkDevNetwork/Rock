@@ -27,6 +27,8 @@
 function moveOn(curQ) {
 	var qmTxt = curQ + "m";
 	var qlTxt = curQ + "l";
+	var mResponse = "";
+	var lResponse = "";
 	var qm = $('input[name$="' + qmTxt + '"]:radio');
 	var ql = $('input[name$="' + qlTxt + '"]:radio');
 
@@ -36,6 +38,7 @@ function moveOn(curQ) {
 	for (var x = 0; x < qm.length; x++) {
 		if (qm[x].checked) {
 			mDone = 1;
+			mResponse = qm[x].id.substr(-4, 3);
 			break;
 		}
 	}
@@ -43,11 +46,12 @@ function moveOn(curQ) {
 	for (var x = 0; x < ql.length; x++) {
 		if (ql[x].checked) {
 			lDone = 1;
+			lResponse = ql[x].id.substr(-4, 3);
 			break;
 		}
 	}
 
-	if (mDone && lDone) {
+	if (mDone && lDone && (mResponse !== lResponse)) {
 		if (curQ != 30) {
 			curQ++;
 			var hdr = $('#page-header');
