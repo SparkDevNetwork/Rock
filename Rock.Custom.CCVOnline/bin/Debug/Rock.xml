@@ -17489,5 +17489,17 @@
             The name of the component.
             </value>
         </member>
+        <member name="T:Rock.Data.RockPluginContext">
+            <summary>
+            Entity Framework Context
+            </summary>
+        </member>
+        <member name="M:Rock.Data.RockPluginContext.OnModelCreating(System.Data.Entity.DbModelBuilder)">
+            <summary>
+            This method is called when the context has been initialized, but
+            before the model has been locked down and used to initialize the context. 
+            </summary>
+            <param name="modelBuilder">The builder that defines the model for the context being created.</param>
+        </member>
     </members>
 </doc>

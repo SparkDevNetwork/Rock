@@ -115,35 +115,36 @@ namespace RockWeb.Plugins.CCVOnline.CommandCenter
             Recording recording;
             bool newRecording = false;
                         
-            using ( new Rock.Data.UnitOfWorkScope() )
+            recordingService = new RecordingService();
+
+            int recordingId = 0;
+            if ( !Int32.TryParse( hfRecordingId.Value, out recordingId ) )
+                recordingId = 0;
+
+            if ( recordingId == 0 )
             {
-                recordingService = new RecordingService();
-
-                int recordingId = 0;
-                if ( !Int32.TryParse( hfRecordingId.Value, out recordingId ) )
-                    recordingId = 0;
-
-                if ( recordingId == 0 )
-                {
-                    newRecording = true;
-                    recording = new Recording();
-                    recordingService.Add( recording, CurrentPersonId );
-                }
-                else
-                {
-                    recording = recordingService.Get( recordingId );
-                }
-
-                recording.Date = Convert.ToDateTime( tbDate.Text );
-                recording.Label = tbLabel.Text;
-
-                recordingService.Save( recording, CurrentPersonId );
-
-                BindGrid();
-
-                pnlDetails.Visible = false;
-                pnlList.Visible = true;
+                newRecording = true;
+                recording = new Recording();
+                recordingService.Add( recording, CurrentPersonId );
             }
+            else
+            {
+                recording = recordingService.Get( recordingId );
+            }
+
+            recording.Date = Convert.ToDateTime( tbDate.Text );
+            recording.System = false;
+            recording.Label = tbLabel.Text;
+            recording.Application = "";
+            recording.Stream = "";
+            recording.RecordingText = "";
+
+            recordingService.Save( recording, CurrentPersonId );
+
+            BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
         }
 
         #endregion
