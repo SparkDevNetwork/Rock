@@ -13,6 +13,10 @@ namespace Rock.Custom.CCVOnline.CommandCenter
     [Table( "ccvonlineRecording" )]
     public partial class Recording : ModelWithAttributes<Recording>, IAuditable
     {
+        [Required]
+        [DataMember]
+        public bool System { get; set; }
+
         [DataMember]
         public DateTime? Date { get; set; }
 
