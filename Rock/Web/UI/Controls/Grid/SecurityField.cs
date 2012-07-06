@@ -100,9 +100,9 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 aSecure.Attributes.Add( "class", "show-modal-iframe" );
-                aSecure.Attributes.Add( "href", container.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}",
-                    Security.Authorization.EncodeEntityTypeName( EntityType ), "1" ) ) );
-                aSecure.Attributes.Add( "title", Title );
+                aSecure.Attributes.Add( "height", "500px" );
+                aSecure.Attributes.Add( "href", container.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}",
+                    Security.Authorization.EncodeEntityTypeName( EntityType ), "1", Title ) ) );
                 cell.Controls.Add( aSecure );
             }
         }
