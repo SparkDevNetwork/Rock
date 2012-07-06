@@ -178,6 +178,17 @@ namespace Rock.Core
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
     }
     /// <summary>
     /// Field Type Configuration class.

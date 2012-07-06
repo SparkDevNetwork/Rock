@@ -14,8 +14,8 @@ using Rock.CMS;
 
 namespace RockWeb.Blocks.Blog
 {
-    [Rock.Attribute.Property( 0, "Posts Per Page", "", "The number of posts to display on a single page.", true, "5", "Rock", "Rock.FieldTypes.Integer" )]
-    [Rock.Attribute.Property( 1, "Post Detail Page", "", "Page reference to the post details page", true, "-1,-1", "Rock", "Rock.FieldTypes.PageReference" )]
+    [Rock.Attribute.Property( 0, "Posts Per Page", "", "The number of posts to display on a single page.", true, "5", "Rock", "Rock.Field.Types.Integer" )]
+    [Rock.Attribute.Property( 1, "Post Detail Page", "", "Page reference to the post details page", true, "-1,-1", "Rock", "Rock.Field.Types.PageReference" )]
     public partial class Posts : Rock.Web.UI.Block
     {
         protected int skipCount = 0;

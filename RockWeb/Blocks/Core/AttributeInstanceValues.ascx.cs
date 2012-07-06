@@ -16,7 +16,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Core;
-using Rock.FieldTypes;
+using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Core
             {
                 PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
                 if ( phInsertValue != null )
-                    phInsertValue.Controls.Add( _attribute.FieldType.Field.CreateControl( string.Empty, _attribute.Required, true ) );
+                    phInsertValue.Controls.Add(_attribute.FieldType.Field.EditControl(_attribute.QualifierValues) );
             }
 
         }
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
             PlaceHolder phEditValue = lvAttributeValues.EditItem.FindControl( "phEditValue" ) as PlaceHolder;
             if ( phEditValue != null && phEditValue.Controls.Count == 1 )
             {
-                string value = _attribute.FieldType.Field.ReadValue( phEditValue.Controls[0] );
+                string value = _attribute.FieldType.Field.GetEditValue( phEditValue.Controls[0], _attribute.QualifierValues );
 
                 var attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.Get( ( int )e.Keys["Id"] );
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
             PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
             if ( phInsertValue != null && phInsertValue.Controls.Count == 1 )
             {
-                string value = _attribute.FieldType.Field.ReadValue( phInsertValue.Controls[0] );
+                string value = _attribute.FieldType.Field.GetEditValue( phInsertValue.Controls[0], _attribute.QualifierValues );
 
                 var attributeValueService = new AttributeValueService();
                 var attributeValue = new AttributeValue();
@@ -191,8 +191,12 @@ namespace RockWeb.Blocks.Core
                     else
                     {
                         PlaceHolder phEditValue = e.Item.FindControl( "phEditValue" ) as PlaceHolder;
-                        if ( phEditValue != null  )
-                            phEditValue.Controls.Add( _attribute.FieldType.Field.CreateControl( attributeValue.Value, _attribute.Required, true ) );
+                        if ( phEditValue != null )
+                        {
+                            Control editControl = _attribute.FieldType.Field.EditControl( _attribute.QualifierValues );
+                            _attribute.FieldType.Field.SetEditValue( editControl, _attribute.QualifierValues, attributeValue.Value );
+                            phEditValue.Controls.Add( editControl );
+                        }
                     }
                 }
             }

@@ -16,7 +16,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Core;
-using Rock.FieldTypes;
+using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core

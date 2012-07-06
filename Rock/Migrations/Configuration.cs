@@ -1383,7 +1383,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "9C204CD0-1233-41C5-818A-C5DA439445AA" ),
-				Class = @"Rock.FieldTypes.Text",
+				Class = @"Rock.Field.Types.Text",
 				Description = @"A Text Field"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Text );
@@ -1394,7 +1394,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "BD0D9B57-2A41-4490-89FF-F01DAB7D4904" ),
-				Class = @"Rock.FieldTypes.SelectMulti",
+				Class = @"Rock.Field.Types.SelectMulti",
 				Description = @"Renders a list of checkboxes for user to select one or more values from"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_MultixxSelect );
@@ -1405,7 +1405,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A" ),
-				Class = @"Rock.FieldTypes.Boolean",
+				Class = @"Rock.Field.Types.Boolean",
 				Description = @"True / False"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Boolean );
@@ -1416,7 +1416,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "D747E6AE-C383-4E22-8846-71518E3DD06F" ),
-				Class = @"Rock.FieldTypes.Color",
+				Class = @"Rock.Field.Types.Color",
 				Description = @"List of colors to choose from"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Color );
@@ -1427,7 +1427,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0" ),
-				Class = @"Rock.FieldTypes.SelectSingle",
+				Class = @"Rock.Field.Types.SelectSingle",
 				Description = @"Renders either a drop down list, or a list of radio-buttons for user to select one value from"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_SinglexxSelect );
@@ -1438,7 +1438,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "A75DFC58-7A1B-4799-BF31-451B2BBE38FF" ),
-				Class = @"Rock.FieldTypes.Integer",
+				Class = @"Rock.Field.Types.Integer",
 				Description = @"An integer value (whole number)."
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Interger );
@@ -1449,7 +1449,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108" ),
-				Class = @"Rock.FieldTypes.PageReference",
+				Class = @"Rock.Field.Types.PageReference",
 				Description = @"A reference to a specific page and route"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_PageReference );
@@ -1460,7 +1460,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "97F8157D-A8C8-4AB3-96A2-9CB2A9049E6D" ),
-				Class = @"Rock.FieldTypes.Image",
+				Class = @"Rock.Field.Types.Image",
 				Description = @"An image stored in the database."
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Image );
@@ -1471,7 +1471,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "6B6AA175-4758-453F-8D83-FCD8044B5F36" ),
-				Class = @"Rock.FieldTypes.Date",
+				Class = @"Rock.Field.Types.Date",
 				Description = @"A date field"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Date );
@@ -1482,7 +1482,7 @@ namespace Rock.Migrations
 				System = true,
 				Assembly = @"Rock",
 				Guid = new Guid( "FA398F9D-5B01-41EA-9A93-112F910A277D" ),
-				Class = @"Rock.FieldTypes.Video",
+				Class = @"Rock.Field.Types.Video",
 				Description = @"A Video field"
 			};
 			context.FieldTypes.AddOrUpdate( p => p.Guid, fieldtype_Video );

@@ -6,12 +6,12 @@
 
 using System;
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a decimal numeric value
+    /// Field used to save and dispaly a numeric value
     /// </summary>
-    public class Decimal : Field
+    public class Integer : FieldType
     {
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
@@ -21,12 +21,12 @@ namespace Rock.FieldTypes
         /// <returns></returns>
         public override bool IsValid( string value, bool required, out string message )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace(value) )
             {
-                decimal result;
-                if ( !decimal.TryParse( value, out result ) )
+                int result;
+                if ( !Int32.TryParse( value, out result ) )
                 {
-                    message = "The input provided is not a valid decimal value.";
+                    message = "The input provided is not a valid integer.";
                     return true;
                 }
             }
