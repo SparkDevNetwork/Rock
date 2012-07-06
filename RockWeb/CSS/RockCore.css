@@ -732,3 +732,27 @@ div.filter-search .dropdown dd ul li
 { 
     display: none; 
 }
+
+/* admin page nav */
+.admin-page-list h1 
+{
+    font-size: 16px;   
+}
+
+.admin-page-list ul 
+{
+    list-style: none;
+}
+
+.admin-page-list li 
+{
+    margin: 0 0 12px 0;
+    float: left;
+    width: 330px;
+}
+
+.admin-page-list li a 
+{
+    display: block;
+    --margin-bottom: 4px;
+}

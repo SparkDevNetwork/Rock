@@ -80,6 +80,33 @@ input, button, select, textarea {
 	font-family: 'OpenSans','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 
+/* bootstrap overrides */
+.btn-primary {
+  background-color: #0074cc;
+  background-image: -ms-linear-gradient(top, #9c9c9c, #7e7e7e);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#9c9c9c), to(#7e7e7e));
+  background-image: -webkit-linear-gradient(top, #9c9c9c, #7e7e7e);
+  background-image: -o-linear-gradient(top, #9c9c9c, #7e7e7e);
+  background-image: -moz-linear-gradient(top, #9c9c9c, #7e7e7e);
+  background-image: linear-gradient(top, #9c9c9c, #7e7e7e);
+  border-color: #7e7e7e #c4c4c4 #c4c4c4;
+  --border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#0088cc', endColorstr='#0055cc', GradientType=0);
+  filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-primary:hover 
+{
+  background-color: #878787;
+  background-image: -ms-linear-gradient(top, #6f6f6f, #87878);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#6f6f6f), to(#87878));
+  background-image: -webkit-linear-gradient(top, #6f6f6f, #87878);
+  background-image: -o-linear-gradient(top, #6f6f6f, #87878);
+  background-image: -moz-linear-gradient(top, #6f6f6f, #87878);
+  background-image: linear-gradient(top, #6f6f6f, #87878);
+  border-color: #7e7e7e #c4c4c4 #c4c4c4;
+}
+
 /* rock control overrides */
 #cms-admin-footer {
     border-radius: 6px 6px 0 0;
@@ -336,6 +363,8 @@ header.navbar nav ul li .nav-menu ul li a:hover {
     color: #595959;
     font-size: 28px;
     margin-top: 6px;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 /* footer bar */
