@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="Themes_Rock_Layouts_Dialog" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Dialog" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -44,14 +44,32 @@
 <body id="dialog">
     <form id="form1" runat="server">
         
-        <div id="modal-scroll-container" class="scroll-container">
-	        <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-	        <div class="viewport">
-		        <div class="overview">
-                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-			    </div>
-	        </div>
-        </div>		
+        <div id="headerPanel" class="modal-header">
+            <a id="closeLink" href="#" class="close" onclick="window.parent.closeModal();">&times;</a>
+            <h3><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+        </div>
+
+        <div id="mdlbody">
+        <div class="modal-body">
+            <div id="modal-scroll-container" class="scroll-container">
+	            <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+	            <div class="viewport">
+		            <div class="overview">
+                        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+			        </div>
+	            </div>
+            </div>		
+        </div>
+        </div>
+        <div id="pnl1"></div>
+
+        <div id="footerPanel" class="modal-footer">
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
+        </div>
+
+        <div id="pnl2"></div>
+
     </form>
 
     <script type="text/javascript">
