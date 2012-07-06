@@ -552,19 +552,15 @@ namespace Rock.Web.UI
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
-                        aAttributes.Attributes.Add( "height", "400px" );
-                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
-                        aAttributes.Attributes.Add( "title", "Page Properties" );
+                        aAttributes.Attributes.Add( "height", "500px" );
+                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", PageInstance.Id ) ) );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-modal-iframe" );
-                        aChildPages.Attributes.Add( "height", "400px" );
-                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
-                        aChildPages.Attributes.Add( "Title", "Child Pages" );
-                        aChildPages.Attributes.Add( "primary-button", "" );
-                        aChildPages.Attributes.Add( "secondary-button", "Done" );
+                        aChildPages.Attributes.Add( "height", "500px" );
+                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", PageInstance.Id ) ) );
 
                         // Page Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -577,12 +573,9 @@ namespace Rock.Web.UI
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "page-security icon-button show-modal-iframe" );
-                        aPageSecurity.Attributes.Add( "height", "400px" );
-                        aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
+                        aPageSecurity.Attributes.Add( "height", "500px" );
+                        aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
-                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
-                        aPageSecurity.Attributes.Add( "primary-button", "" );
-                        aPageSecurity.Attributes.Add( "secondary-button", "Done" );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -687,18 +680,10 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
-            ModalDialog modalPopup = new ModalDialog();
+            ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.DisableDefaultSave = true;
             modalPopup.OnCancelScript = "closeModal();";
             this.Form.Controls.Add( modalPopup );
-
-            modalPopup.Content.AddCssClass( "iframe" );
-
-            HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
-            modalIFrame.ID = "iframe";
-            modalIFrame.Attributes.Add( "scrolling", "no" );
-            modalPopup.Content.Controls.Add( modalIFrame );
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
@@ -742,12 +727,10 @@ namespace Rock.Web.UI
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
-                aBlockConfig.Attributes.Add( "height", "400px" );
-                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
+                aBlockConfig.Attributes.Add( "height", "500px" );
+                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
-                aBlockConfig.Attributes.Add( "primary-button", "" );
-                aBlockConfig.Attributes.Add( "secondary-button", "Done" );
                 aBlockConfig.InnerText = "Blocks";
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
