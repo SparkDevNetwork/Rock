@@ -37,10 +37,14 @@ $(document).ready(function () {
         $('#modal-popup_iframe').attr('src', $(this).attr('href'));
 
         // If the anchor tag specifies a modal height, set the dialog's height
-        if ($(this).attr('height') != undefined)
+        if ($(this).attr('height') != undefined) {
             $('#modal-popup_panel div.modal-body').css('height', $(this).attr('height'));
-        else
+            $('#modal-popup_contentPanel.iframe').css('height', $(this).attr('height'));
+        }
+        else {
             $('#modal-popup_panel div.modal-body').css('height', '');
+            $('#modal-popup_contentPanel.iframe').css('height', $(this).attr('height'));
+        }
 
         // Use the anchor tag's title attribute as the title of the dialog box
         if ($(this).attr('title') != undefined)

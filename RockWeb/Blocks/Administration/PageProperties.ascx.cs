@@ -44,6 +44,10 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
+            Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
+            if ( masterPage != null )
+                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
@@ -122,7 +126,7 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
-        protected void btnSave_Click(object sender, EventArgs e)
+        void masterPage_OnSave( object sender, EventArgs e )
         {
             if ( Page.IsValid )
             {
@@ -181,7 +185,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 string script = "window.parent.closeModal()";
-                ScriptManager.RegisterStartupScript( this.Page, btnSave.GetType(), "close-modal", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 
