@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and dispaly a url
     /// </summary>
-    public class Text : Field
+    public class Url : FieldType
     {
     }
 }

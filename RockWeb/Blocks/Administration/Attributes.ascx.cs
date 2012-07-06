@@ -63,6 +63,8 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+
+                    ddlFieldType.SelectedIndexChanged += new EventHandler<EventArgs>( ddlFieldType_SelectedIndexChanged );
                     modalDetails.SaveClick += modalDetails_SaveClick;
 
                     string script = string.Format( @"
@@ -132,6 +134,11 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            modalDetails.Show();
+        }
+
         void modalDetails_SaveClick( object sender, EventArgs e )
         {
             Rock.Core.Attribute attribute;
@@ -159,7 +166,17 @@ namespace RockWeb.Blocks.Administration
             attribute.Name = tbName.Text;
             attribute.Category = tbCategory.Text;
             attribute.Description = tbDescription.Text;
-            attribute.FieldTypeId = Int32.Parse( ddlFieldType.SelectedValue );
+            attribute.FieldTypeId = ddlFieldType.FieldType.Id;
+
+            attribute.AttributeQualifiers.Clear();
+            foreach(var configValue in ddlFieldType.ConfigurationValues)
+            {
+                AttributeQualifier qualifier = new AttributeQualifier();
+                qualifier.Key = configValue.Key;
+                qualifier.Value = configValue.Value.Value;
+                attribute.AttributeQualifiers.Add(qualifier);
+            }
+
             attribute.DefaultValue = tbDefaultValue.Text;
             attribute.MultiValue = cbMultiValue.Checked;
             attribute.Required = cbRequired.Checked;
@@ -213,10 +230,12 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int attributeId )
         {
-            var attribute = _attributeService.Get( attributeId );
+            var attributeModel = _attributeService.Get( attributeId );
 
-            if ( attribute != null )
+            if ( attributeModel != null )
             {
+                var attribute = Rock.Web.Cache.Attribute.Read(attributeModel);
+
                 modalDetails.Title = "Edit Attribute";
                 hfId.Value = attribute.Id.ToString();
 
@@ -224,7 +243,9 @@ namespace RockWeb.Blocks.Administration
                 tbName.Text = attribute.Name;
                 tbCategory.Text = attribute.Category;
                 tbDescription.Text = attribute.Description;
-                ddlFieldType.SelectedValue = attribute.FieldTypeId.ToString();
+                ddlFieldType.FieldType = attribute.FieldType;
+                ddlFieldType.LabelText = "Field Type";
+                ddlFieldType.ConfigurationValues = attribute.QualifierValues;
                 tbDefaultValue.Text = attribute.DefaultValue;
                 cbMultiValue.Checked = attribute.MultiValue;
                 cbRequired.Checked = attribute.Required;
@@ -239,11 +260,12 @@ namespace RockWeb.Blocks.Administration
                 tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
                 tbDescription.Text = string.Empty;
 
-                try {
-                    ddlFieldType.SelectedValue = ddlFieldType.Items.FindByText("Text").Value;
-                }
-                catch {
-                    ddlFieldType.SelectedIndex = 0;
+                FieldTypeService fieldTypeService = new FieldTypeService();
+                var fieldTypeModel = fieldTypeService.GetByName("Text").FirstOrDefault();
+                if (fieldTypeModel != null)
+                {
+                    ddlFieldType.FieldType = Rock.Web.Cache.FieldType.Read( fieldTypeModel.Id);
+                    ddlFieldType.ConfigurationValues = ddlFieldType.FieldType.Field.GetConfigurationValues(null);
                 }
 
                 tbDefaultValue.Text = string.Empty;

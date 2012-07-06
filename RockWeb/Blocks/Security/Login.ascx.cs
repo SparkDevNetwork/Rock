@@ -19,7 +19,7 @@ using Rock.CRM;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
     public partial class Login : Rock.Web.UI.Block
     {
         /// <summary>

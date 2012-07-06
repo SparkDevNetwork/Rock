@@ -4,15 +4,16 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
-    public class Boolean : Field
+    public class Boolean : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -53,12 +54,9 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="setValue"></param>
         /// <returns></returns>
-        public override Control CreateControl( string value, bool required, bool setValue )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            CheckBox cb = new CheckBox();
-            if (setValue)
-                cb.Checked = string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value );
-            return cb;
+            return new CheckBox();
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace Rock.FieldTypes
         /// </summary>
         /// <param name="control"></param>
         /// <returns></returns>
-        public override string ReadValue( Control control )
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is CheckBox )
                 return ( ( CheckBox )control ).Checked.ToString();
@@ -74,27 +72,14 @@ namespace Rock.FieldTypes
         }
 
         /// <summary>
-        /// Creates a client-side function that can be called to render the HTML used to update this field and register an event handler
-        /// so that updates to the html are saved to a target element.
+        /// Sets the value.
         /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        public override string RegisterUpdateScript( Page page )
+        /// <param name="control">The control.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            string functionName = this.GetType().Name + "_update";
-
-            string script = string.Format( @"
-    function {0}($parent, $target, value){{
-        $parent.html('<input type=""checkbox"" ((value.toLowerCase() === 'true') ? ' checked=""checked""' : '') + ' class=""field-value"">' );
-        $parent.find('input.field-value').change(function(){{
-            $target.val($(this).is(':checked'));
-        }});
-    }}
-", functionName );
-            ScriptManager.RegisterStartupScript( page, this.GetType(), functionName, script, true );
-
-            return functionName;
+            if ( control != null && control is CheckBox )
+                ( ( CheckBox )control ).Checked = string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value );
         }
-
     }
 }

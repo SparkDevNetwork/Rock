@@ -164,16 +164,18 @@
     <Compile Include="CRM\Person.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />
-    <Compile Include="FieldTypes\Document.cs" />
-    <Compile Include="FieldTypes\Person.cs" />
-    <Compile Include="FieldTypes\Url.cs" />
-    <Compile Include="FieldTypes\Currency.cs" />
-    <Compile Include="FieldTypes\Decimal.cs" />
-    <Compile Include="FieldTypes\SelectDefinedValue.cs" />
-    <Compile Include="FieldTypes\SelectDefinedType.cs" />
-    <Compile Include="FieldTypes\Date.cs" />
-    <Compile Include="FieldTypes\Image.cs" />
-    <Compile Include="FieldTypes\Video.cs" />
+    <Compile Include="Field\ConfigurationValue.cs" />
+    <Compile Include="Field\Types\SelectMulti.cs" />
+    <Compile Include="Field\Types\Document.cs" />
+    <Compile Include="Field\Types\Person.cs" />
+    <Compile Include="Field\Types\Url.cs" />
+    <Compile Include="Field\Types\Currency.cs" />
+    <Compile Include="Field\Types\Decimal.cs" />
+    <Compile Include="Field\Types\DefinedValue.cs" />
+    <Compile Include="Field\Types\DefinedType.cs" />
+    <Compile Include="Field\Types\Date.cs" />
+    <Compile Include="Field\Types\Image.cs" />
+    <Compile Include="Field\Types\Video.cs" />
     <Compile Include="Financial\Batch.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -231,6 +233,10 @@
     <Compile Include="Migrations\201206142140223_PaymentGateway.Designer.cs">
       <DependentUpon>201206142140223_PaymentGateway.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207061807346_test.cs" />
+    <Compile Include="Migrations\201207061807346_test.Designer.cs">
+      <DependentUpon>201207061807346_test.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
       <SubType>Code</SubType>
@@ -268,6 +274,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledFieldType.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageSelector.cs" />
     <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
@@ -306,17 +313,15 @@
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\RowEventArgs.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FieldTypes\Boolean.cs" />
-    <Compile Include="FieldTypes\PageReference.cs" />
-    <Compile Include="FieldTypes\Integer.cs" />
-    <Compile Include="FieldTypes\SelectMulti.cs" />
-    <Compile Include="FieldTypes\Color.cs" />
-    <Compile Include="FieldTypes\SelectSingle.cs" />
-    <Compile Include="FieldTypes\Field.cs" />
-    <Compile Include="FieldTypes\FieldHelper.cs" />
-    <Compile Include="FieldTypes\FieldQualifier.cs" />
-    <Compile Include="FieldTypes\IFieldType.cs" />
-    <Compile Include="FieldTypes\Text.cs" />
+    <Compile Include="Field\Types\Boolean.cs" />
+    <Compile Include="Field\Types\PageReference.cs" />
+    <Compile Include="Field\Types\Integer.cs" />
+    <Compile Include="Field\Types\SelectSingle.cs" />
+    <Compile Include="Field\Types\Color.cs" />
+    <Compile Include="Field\FieldType.cs" />
+    <Compile Include="Field\Helper.cs" />
+    <Compile Include="Field\IFieldType.cs" />
+    <Compile Include="Field\Types\Text.cs" />
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />

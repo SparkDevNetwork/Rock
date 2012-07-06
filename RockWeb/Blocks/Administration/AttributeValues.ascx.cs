@@ -129,8 +129,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
             {
-                AttributeService attributeService = new AttributeService();
-                var attribute = attributeService.Get( attributeId );
+                var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
 
                 AttributeValueService attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
@@ -142,8 +141,8 @@ namespace RockWeb.Blocks.Administration
                     attributeValueService.Add( attributeValue, CurrentPersonId );
                 }
 
-                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
-                attributeValue.Value = fieldType.Field.ReadValue( phEditControl.Controls[0] );
+                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+                attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
 
                 attributeValueService.Save(attributeValue, CurrentPersonId);
 
@@ -238,8 +237,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int attributeId, bool setValues )
         {
-            AttributeService attributeService = new AttributeService();
-            var attribute = attributeService.Get( attributeId );
+            var attribute = Rock.Web.Cache.Attribute.Read(attributeId);
 
             hfId.Value = attribute.Id.ToString();
             lCaption.Text = attribute.Name;
@@ -247,10 +245,14 @@ namespace RockWeb.Blocks.Administration
             AttributeValueService attributeValueService = new AttributeValueService();
             var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
 
-            var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
+            var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+
+            Control editControl = fieldType.Field.EditControl( attribute.QualifierValues );
+            if ( setValues && attributeValue != null )
+                fieldType.Field.SetEditValue( editControl, attribute.QualifierValues, attributeValue.Value );
 
             phEditControl.Controls.Clear();
-            phEditControl.Controls.Add(fieldType.Field.CreateControl((attributeValue != null ? attributeValue.Value : string.Empty), attribute.Required, setValues));
+            phEditControl.Controls.Add( editControl );
 
             modalDetails.Show();
         }

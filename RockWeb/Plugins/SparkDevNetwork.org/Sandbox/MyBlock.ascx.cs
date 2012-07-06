@@ -17,11 +17,11 @@ using Rock.Transactions;
 
 namespace RockWeb.Blocks
 {
-    [Rock.Attribute.Property( 0, "ShowColor", "ShowColor", "Display", "Show Color Div", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 1, "Color", "Color", "Display", "A Color, Any color", false, "Khaki", "Rock", "Rock.FieldTypes.Color" )]
-    [Rock.Attribute.Property( 2, "Border", "Border", "Display", "Border Style", false, "none", "Rock", "Rock.FieldTypes.SelectSingle" )]
-    [Rock.Attribute.Property( 3, "Border Width", "BorderWidth", "width of border", false, "1", "Rock", "Rock.FieldTypes.SelectSingle" )]
-    [Rock.Attribute.Property( 4, "Movie", "Movie", "Misc", "Favorite Sci-Fi Movie", false, "Star Wars", "Rock", "Rock.FieldTypes.SelectSingle" )]
+    [Rock.Attribute.Property( 0, "ShowColor", "ShowColor", "Display", "Show Color Div", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
+    [Rock.Attribute.Property( 1, "Color", "Color", "Display", "A Color, Any color", false, "Khaki", "Rock", "Rock.Field.Types.Color" )]
+    [Rock.Attribute.Property( 2, "Border", "Border", "Display", "Border Style", false, "none", "Rock", "Rock.Field.Types.SelectSingle" )]
+    [Rock.Attribute.Property( 3, "Border Width", "BorderWidth", "width of border", false, "1", "Rock", "Rock.Field.Types.SelectSingle" )]
+    [Rock.Attribute.Property( 4, "Movie", "Movie", "Misc", "Favorite Sci-Fi Movie", false, "Star Wars", "Rock", "Rock.Field.Types.SelectSingle" )]
     public partial class MyBlock : Rock.Web.UI.Block
     {
         protected override void OnInit( EventArgs e )

@@ -58,17 +58,6 @@ namespace Rock.Core
 		public string Key { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
 		/// Gets or sets the Value.
 		/// </summary>
 		/// <value>
@@ -130,7 +119,6 @@ namespace Rock.Core
 				dto.System = this.System;
 				dto.AttributeId = this.AttributeId;
 				dto.Key = this.Key;
-				dto.Name = this.Name;
 				dto.Value = this.Value;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;

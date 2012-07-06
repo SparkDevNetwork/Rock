@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and dispaly a document
     /// </summary>
-    public class Document : Field
+    public class Document : FieldType
     {
     }
 }

@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a url
+    /// Field used to save and display a person
     /// </summary>
-    public class Url : Field
+    public class Person : FieldType
     {
     }
 }

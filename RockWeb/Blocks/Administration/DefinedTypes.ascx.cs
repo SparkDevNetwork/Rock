@@ -13,7 +13,7 @@ using System.Web.UI.WebControls;
 using System.Web.Services;
 
 using Rock.Core;
-using Rock.FieldTypes;
+using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
