@@ -10,7 +10,6 @@ namespace Rock.Data
     {
         public void InitializeDatabase( T context )
         {
-            context.
             throw new NotImplementedException();
         }
     }

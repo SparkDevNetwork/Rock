@@ -337,12 +337,25 @@ namespace Rock
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
-        public static String AsDelimited<T>( this List<T> items, string delimiter)
+        public static string AsDelimited<T>( this List<T> items, string delimiter)
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
                 strings.Add( item.ToString() );
             return String.Join( delimiter, strings.ToArray() );
+        }
+
+        /// <summary>
+        /// Joins a dictionary of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static string Join( this Dictionary<string, string> items, string delimter )
+        {
+            List<string> parms = new List<string>();
+            foreach ( var item in items )
+                parms.Add( string.Join( "=", new string[] { item.Key, item.Value } ) );
+            return string.Join( delimter, parms.ToArray() );
         }
 
         #endregion
