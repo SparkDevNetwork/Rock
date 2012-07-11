@@ -181,6 +181,9 @@ namespace Rock.Communication
 
         private string Resolve( string content, List<object> objects )
         {
+            if (content == null)
+                return string.Empty;
+
             // If there's no merge codes, just return the content
             if ( !Regex.IsMatch( content, @".*\{.+}.*" ) )
                 return content;
