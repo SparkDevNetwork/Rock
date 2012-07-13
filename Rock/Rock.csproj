@@ -114,6 +114,8 @@
     <Compile Include="Core\RangeValue.cs" />
     <Compile Include="Core\ServiceLogService.cs" />
     <Compile Include="CRM\AddressService.cs" />
+    <Compile Include="CRM\Campus.cs" />
+    <Compile Include="CRM\CampusService.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\PersonService.cs" />
     <Compile Include="CRM\PersonTrailService.cs" />
@@ -234,6 +236,10 @@
     <Compile Include="Migrations\201206142140223_PaymentGateway.Designer.cs">
       <DependentUpon>201206142140223_PaymentGateway.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207111854239_AddCampus.cs" />
+    <Compile Include="Migrations\201207111854239_AddCampus.Designer.cs">
+      <DependentUpon>201207111854239_AddCampus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
       <SubType>Code</SubType>
@@ -272,6 +278,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageSelector.cs" />

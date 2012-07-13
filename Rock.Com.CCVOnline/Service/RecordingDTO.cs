@@ -16,8 +16,9 @@ namespace Rock.Com.CCVOnline.Service
         public string StreamName { get; set; }
         public string RecordingName { get; set; }
         public DateTime? StartTime { get; set; }
+        public string StartResponse { get; set; }
         public DateTime? StopTime { get; set; }
-        public string RecordingPath { get; set; }
+        public string StopResponse { get; set; }
         public DateTime? CreatedDateTime { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
         public int? CreatedByPersonId { get; set; }
