@@ -21,7 +21,7 @@ namespace Rock.CRM.DTO
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    public partial class PersonTrail
+    public partial class PersonMerged
     {
         /// <summary>
         /// The Id
@@ -69,9 +69,9 @@ namespace Rock.CRM.DTO
 		public int? CreatedByPersonId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonTrailDTO"/> class.
+        /// Initializes a new instance of the <see cref="PersonMergedDTO"/> class.
         /// </summary>
-		public PersonTrail()
+		public PersonMerged()
 		{
 		}
 	}
