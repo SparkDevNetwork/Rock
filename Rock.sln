@@ -6,7 +6,7 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}|Rock.Com.CCVOnline.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -33,8 +33,6 @@ EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RockJobSchedulerServiceInstaller", "RockJobSchedulerServiceInstaller\RockJobSchedulerServiceInstaller.vdproj", "{377EC182-2CD5-48D8-84D1-40D0BB289F26}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DataTransferObjects", "Rock.DataTransferObjects\Rock.DataTransferObjects.csproj", "{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Com.CCVOnline", "Rock.Com.CCVOnline\Rock.Com.CCVOnline.csproj", "{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -102,16 +100,6 @@ Global
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|x86.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

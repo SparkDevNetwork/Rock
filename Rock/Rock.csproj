@@ -118,8 +118,8 @@
     <Compile Include="CRM\CampusService.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\PersonService.cs" />
-    <Compile Include="CRM\PersonTrailService.cs" />
-    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonMergedService.cs" />
+    <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
@@ -239,6 +239,10 @@
     <Compile Include="Migrations\201207111854239_AddCampus.cs" />
     <Compile Include="Migrations\201207111854239_AddCampus.Designer.cs">
       <DependentUpon>201207111854239_AddCampus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201207131713374_PersonMerged.cs" />
+    <Compile Include="Migrations\201207131713374_PersonMerged.Designer.cs">
+      <DependentUpon>201207131713374_PersonMerged.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
