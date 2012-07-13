@@ -32,6 +32,8 @@ namespace RockWeb.Plugins.CCVOnline.Service
                 gRecordings.DataKeyNames = new string[] { "id" };
                 gRecordings.Actions.EnableAdd = true;
                 gRecordings.Actions.AddClick += gRecordings_Add;
+                gRecordings.RowDataBound += gRecordings_RowDataBound;
+                gRecordings.RowCommand += gRecordings_RowCommand;
                 gRecordings.GridRebind += gRecordings_GridRebind;
             }
 
@@ -57,6 +59,10 @@ namespace RockWeb.Plugins.CCVOnline.Service
                 if ( !Page.IsPostBack )
                 {
                     BindGrid();
+
+                    ddlCampus.Items.Clear();
+                    foreach ( var campus in new Rock.CRM.CampusService().Queryable().OrderBy( c => c.Name ) )
+                        ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
                 }
             }
             else
@@ -73,6 +79,19 @@ namespace RockWeb.Plugins.CCVOnline.Service
 
         #region Grid Events
 
+        void gRecordings_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Recording recording = e.Row.DataItem as Recording;
+            LinkButton lbStart = ( LinkButton )e.Row.FindControl( "lbStart" );
+            LinkButton lbStop = (LinkButton)e.Row.FindControl("lbStop");
+
+            if (recording != null && lbStart != null && lbStop != null)
+            {
+                lbStart.Visible = !recording.StartTime.HasValue && !recording.StopTime.HasValue;
+                lbStop.Visible = recording.StartTime.HasValue && !recording.StopTime.HasValue;
+            }
+        }
+
         protected void gRecordings_Edit( object sender, RowEventArgs e )
         {
             ShowEdit( ( int )gRecordings.DataKeys[e.RowIndex]["id"] );
@@ -81,7 +100,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
         protected void gRecordings_Delete( object sender, RowEventArgs e )
         {
             Recording recording = recordingService.Get( ( int )gRecordings.DataKeys[e.RowIndex]["id"] );
-            if ( BlockInstance != null )
+            if ( recording != null )
             {
                 recordingService.Delete( recording, CurrentPersonId );
                 recordingService.Save( recording, CurrentPersonId );
@@ -93,6 +112,18 @@ namespace RockWeb.Plugins.CCVOnline.Service
         void gRecordings_Add( object sender, EventArgs e )
         {
             ShowEdit( 0 );
+        }
+
+        void gRecordings_RowCommand( object sender, GridViewCommandEventArgs e )
+        {
+            if ( e.CommandName == "START" || e.CommandName == "STOP" )
+            {
+                Recording recording = recordingService.Get( Int32.Parse( e.CommandArgument.ToString() ) );
+                if ( recording != null && recording.SendRequest(e.CommandName.ToString().ToLower() ) )
+                    recordingService.Save( recording, CurrentPersonId );
+            }
+
+            BindGrid();
         }
 
         void gRecordings_GridRebind( object sender, EventArgs e )
@@ -120,31 +151,30 @@ namespace RockWeb.Plugins.CCVOnline.Service
             if ( !Int32.TryParse( hfRecordingId.Value, out recordingId ) )
                 recordingId = 0;
 
-            if ( recordingId == 0 && cbStartRecording.Visible && cbStartRecording.Checked )
-                recording = recordingService.StartRecording(1, tbLabel.Text, tbApp.Text, tbStream.Text, tbRecording.Text, CurrentPersonId);
-
-            if (recording == null)
+            if ( recordingId == 0 )
             {
-                if ( recordingId == 0 )
-                {
-                    recording = new Recording();
-                    recordingService.Add( recording, CurrentPersonId );
-                }
-                else
-                {
-                    recording = recordingService.Get( recordingId );
-                }
-
-                recording.App = tbApp.Text;
-                recording.Date = Convert.ToDateTime( tbDate.Text );
-                recording.StreamName = tbStream.Text;
-                recording.Label = tbLabel.Text;
-                recording.RecordingName = tbRecording.Text;
-                recording.StartTime = Convert.ToDateTime( tbStarted.Text );
-                recording.StopTime = Convert.ToDateTime( tbStopped.Text );
-
-                recordingService.Save( recording, CurrentPersonId );
+                recording = new Recording();
+                recordingService.Add( recording, CurrentPersonId );
             }
+            else
+            {
+                recording = recordingService.Get( recordingId );
+            }
+
+            int campusId = 0;
+            Int32.TryParse( ddlCampus.SelectedValue, out campusId );
+
+            recording.CampusId = campusId;
+            recording.App = tbApp.Text;
+            recording.Date = Convert.ToDateTime( tbDate.Text );
+            recording.StreamName = tbStream.Text;
+            recording.Label = tbLabel.Text;
+            recording.RecordingName = tbRecording.Text;
+
+            if ( recordingId == 0 && cbStartRecording.Visible && cbStartRecording.Checked )
+                recording.SendRequest( "start" );
+
+            recordingService.Save( recording, CurrentPersonId );
 
             BindGrid();
 
@@ -171,18 +201,22 @@ namespace RockWeb.Plugins.CCVOnline.Service
                 lAction.Text = "Edit";
                 hfRecordingId.Value = recording.Id.ToString();
 
+                ddlCampus.SelectedValue = recording.CampusId.ToString();
                 tbApp.Text = recording.App ?? string.Empty;
                 tbDate.Text = recording.Date.HasValue ? recording.Date.Value.ToShortDateString() : string.Empty;
                 tbStream.Text = recording.StreamName ?? string.Empty;
                 tbLabel.Text = recording.Label ?? string.Empty;
                 tbRecording.Text = recording.RecordingName ?? string.Empty;
-                tbStarted.Text = recording.StartTime.HasValue ? recording.StartTime.Value.ToShortDateString() : string.Empty;
-                tbStopped.Text = recording.StopTime.HasValue ? recording.StopTime.Value.ToShortDateString() : string.Empty;
-                tbRecordingPath.Text = recording.RecordingPath ?? string.Empty;
+                lStarted.Text = recording.StartTime.HasValue ? recording.StartTime.Value.ToString() : string.Empty;
+                lStartResponse.Text = recording.StartResponse ?? string.Empty;
+                lStopped.Text = recording.StopTime.HasValue ? recording.StopTime.Value.ToString() : string.Empty;
+                lStopResponse.Text = recording.StopResponse ?? string.Empty;
 
-                tbStarted.Visible = recording.StartTime.HasValue;
-                tbStopped.Visible = recording.StopTime.HasValue;
-                tbRecordingPath.Visible = !string.IsNullOrEmpty( recording.RecordingPath );
+                lStarted.Visible = recording.StartTime.HasValue;
+                lStartResponse.Visible = !string.IsNullOrEmpty( recording.StartResponse );
+                lStopped.Visible = recording.StopTime.HasValue;
+                lStopResponse.Visible = !string.IsNullOrEmpty( recording.StopResponse );
+
                 cbStartRecording.Visible = false;
             }
             else
@@ -195,9 +229,11 @@ namespace RockWeb.Plugins.CCVOnline.Service
                 tbLabel.Text = string.Empty;
                 tbRecording.Text = string.Empty;
 
-                tbStarted.Visible = false;
-                tbStopped.Visible = false;
-                tbRecordingPath.Visible = false;
+                lStarted.Visible = false;
+                lStartResponse.Visible = false;
+                lStopped.Visible = false;
+                lStopResponse.Visible = false;
+
                 cbStartRecording.Visible = true;
             }
 
@@ -206,6 +242,5 @@ namespace RockWeb.Plugins.CCVOnline.Service
         }
 
         #endregion
-
     }
 }

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 
@@ -29,7 +30,7 @@ namespace Rock.Com.CCVOnline.Service
         {
         }
 
-        private Rock.Net.WebResponse SendRecordingRequest( string app, string streamName, string recordingName, string action )
+        static internal Rock.Net.WebResponse SendRecordingRequest( string app, string streamName, string recordingName, string action )
         {
             var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
 
@@ -49,34 +50,20 @@ namespace Rock.Com.CCVOnline.Service
                 throw new ApplicationException( "missing 'ccvonlineWowzaServer' Global Attribute value" );
         }
 
+        static internal string ParseResponse(string message)
+        {
+            Match match = Regex.Match( message, @"((?<=(\<h1\>)).*(?=(\<\/h1\>)))", RegexOptions.IgnoreCase );
+            if ( match.Success )
+                return match.Value;
+            return string.Empty;
+        }
+
         public Recording StartRecording( int? campusId, string label, string app, string streamName, string recordingName, int? personId )
         {
             Rock.Net.WebResponse response = SendRecordingRequest( app, streamName, recordingName, "start" );
 
             if (response != null && response.HttpStatusCode == System.Net.HttpStatusCode.OK)
             {
-                IQueryable<Recording> recordings = Queryable().
-                    Where( r =>
-                        r.CampusId == campusId &&
-                        r.Label == label &&
-                        r.App == app &&
-                        r.StreamName == streamName &&
-                        r.RecordingName == recordingName &&
-                        r.StopTime == null );
-
-                bool restart = false;
-
-                DateTime startTime = DateTime.Now;
-                foreach ( var existingRecording in recordings )
-                {
-                    existingRecording.StartTime = startTime;
-                    this.Save( existingRecording, personId );
-                    restart = true;
-                }
-
-                if ( restart )
-                    return recordings.OrderByDescending( r => r.CreatedDateTime ).FirstOrDefault();
-
                 Recording recording = new Recording();
                 this.Add( recording, personId );
 
@@ -86,7 +73,8 @@ namespace Rock.Com.CCVOnline.Service
                 recording.App = app;
                 recording.StreamName = streamName;
                 recording.RecordingName = recordingName;
-                recording.StartTime = startTime;
+                recording.StartTime = DateTime.Now;
+                recording.StartResponse = ParseResponse( response.Message );
                 this.Save( recording, personId );
 
                 return recording;
@@ -108,16 +96,23 @@ namespace Rock.Com.CCVOnline.Service
                         r.App == app &&
                         r.StreamName == streamName &&
                         r.RecordingName == recordingName &&
+                        r.StartTime != null &&
                         r.StopTime == null );
 
+                Recording stoppedRecording = new Recording();
                 DateTime stopTime = DateTime.Now;
-                foreach ( var recording in recordings )
+                string responseMessage = ParseResponse( response.Message );
+
+                foreach ( var recording in recordings.OrderBy( r => r.CreatedDateTime ).ToList() )
                 {
                     recording.StopTime = stopTime;
+                    recording.StartResponse = responseMessage;
                     this.Save( recording, personId );
+
+                    stoppedRecording = recording;
                 }
 
-                return recordings.OrderByDescending( r => r.CreatedDateTime ).FirstOrDefault();
+                return stoppedRecording;
             }
 
             return null;
