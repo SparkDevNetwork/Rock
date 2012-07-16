@@ -14,11 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
-using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
-using System.Xml;
-using System.Xml.Serialization;
-
+using System.Xml.Linq;
 using Rock.Data;
 
 namespace Rock.CMS
@@ -53,14 +51,14 @@ namespace Rock.CMS
 		public string Title { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the System.
+		/// Gets or sets the IsSystem.
 		/// </summary>
 		/// <value>
-		/// System.
+		/// IsSystem.
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Parent Page Id.
@@ -283,7 +281,7 @@ namespace Rock.CMS
 				dto.Guid = this.Guid;
 				dto.Name = this.Name;
 				dto.Title = this.Title;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.ParentPageId = this.ParentPageId;
 				dto.SiteId = this.SiteId;
 				dto.Layout = this.Layout;
@@ -397,11 +395,14 @@ namespace Rock.CMS
 
         public string Export()
         {
-            var serializer = new XmlSerializer(this.GetType());
-            var stringWriter = new StringWriter();
-            var xmlWriter = XmlWriter.Create(stringWriter);
-            serializer.Serialize(xmlWriter, this);
-            return stringWriter.ToString();
+            var type = this.GetType();
+            var properties = type.GetProperties();
+            var elements = new XElement(type.ToString(),
+                                        from p in properties
+                                        where !p.GetCustomAttributes(true).Any(a => a is NotMappedAttribute)
+                                        select new XElement(p.Name, p.GetValue(this, null)));
+
+            return elements.ToString();
         }
 
         public void Import( string data )
