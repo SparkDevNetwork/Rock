@@ -15,7 +15,7 @@ namespace Rock.Migrations
 	{
 		public Configuration()
 		{
-			AutomaticMigrationsEnabled = true;
+			AutomaticMigrationsEnabled = false;
 		}
 
 		protected override void Seed( Rock.Data.RockContext context )

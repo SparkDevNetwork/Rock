@@ -68,7 +68,7 @@
     <Compile Include="CRM\Campus.cs" />
     <Compile Include="CRM\EmailTemplate.cs" />
     <Compile Include="CRM\Person.cs" />
-    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Groups\Group.cs" />

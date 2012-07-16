@@ -149,12 +149,12 @@ namespace Rock.CRM
                     return person;
 
                 // Check to see if the record was merged
-                PersonTrailService personTrailService = new PersonTrailService();
-                PersonTrail personTrail = personTrailService.Queryable().
+                PersonMergedService personMergedService = new PersonMergedService();
+                PersonMerged personMerged = personMergedService.Queryable().
                     Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
 
-                if ( personTrail != null )
-                    return Get( personTrail.Id, true );
+                if ( personMerged != null )
+                    return Get( personMerged.Id, true );
             }
 
             return null;
@@ -171,7 +171,7 @@ namespace Rock.CRM
         public Rock.CRM.Person Get( int id, bool followTrail )
         {
             if ( followTrail )
-                id = new PersonTrailService().Current( id );
+                id = new PersonMergedService().Current( id );
 
             return Get( id );
         }
@@ -187,7 +187,7 @@ namespace Rock.CRM
         public Rock.CRM.Person GetByEncryptedKey( string encryptedKey, bool followTrail )
         {
             if ( followTrail )
-                encryptedKey = new PersonTrailService().Current( encryptedKey );
+                encryptedKey = new PersonMergedService().Current( encryptedKey );
 
             return GetByEncryptedKey( encryptedKey );
         }
