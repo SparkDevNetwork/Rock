@@ -21,14 +21,14 @@ namespace Rock.CRM
 	/// <summary>
 	/// Person Trail POCO Service class
 	/// </summary>
-    public partial class PersonTrailService : Service<Rock.CRM.PersonTrail>
+    public partial class PersonMergedService : Service<Rock.CRM.PersonMerged>
     {
 		/// <summary>
 		/// Gets Person Trails by Current Id
 		/// </summary>
 		/// <param name="currentId">Current Id.</param>
-		/// <returns>An enumerable list of PersonTrail objects.</returns>
-	    public IEnumerable<Rock.CRM.PersonTrail> GetByCurrentId( int currentId )
+		/// <returns>An enumerable list of PersonMerged objects.</returns>
+	    public IEnumerable<Rock.CRM.PersonMerged> GetByCurrentId( int currentId )
         {
             return Repository.Find( t => t.CurrentId == currentId );
         }
@@ -40,11 +40,11 @@ namespace Rock.CRM
         /// <returns></returns>
         public string Current( string publicKey )
         {
-            PersonTrail personTrail = GetByEncryptedKey( publicKey );
-            while ( personTrail != null )
+            PersonMerged personMerged = GetByEncryptedKey( publicKey );
+            while ( personMerged != null )
             {
-                publicKey = personTrail.CurrentPublicKey;
-                personTrail = GetByEncryptedKey( publicKey );
+                publicKey = personMerged.CurrentPublicKey;
+                personMerged = GetByEncryptedKey( publicKey );
             }
             return publicKey;
         }
@@ -56,11 +56,11 @@ namespace Rock.CRM
         /// <returns></returns>
         public int Current( int id )
         {
-            PersonTrail personTrail = Get( id );
-            while ( personTrail != null )
+            PersonMerged personMerged = Get( id );
+            while ( personMerged != null )
             {
-                id = personTrail.CurrentId;
-                personTrail = Get( id );
+                id = personMerged.CurrentId;
+                personMerged = Get( id );
             }
             return id;
         }

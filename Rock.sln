@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
 		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;"
