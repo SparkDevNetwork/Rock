@@ -118,13 +118,14 @@
     <Compile Include="CRM\CampusService.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\PersonService.cs" />
-    <Compile Include="CRM\PersonTrailService.cs" />
-    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonMergedService.cs" />
+    <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\IExportable.cs" />
+    <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
@@ -240,10 +241,15 @@
     <Compile Include="Migrations\201207111854239_AddCampus.Designer.cs">
       <DependentUpon>201207111854239_AddCampus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207131713374_PersonMerged.cs" />
+    <Compile Include="Migrations\201207131713374_PersonMerged.Designer.cs">
+      <DependentUpon>201207131713374_PersonMerged.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Net\WebRequest.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
@@ -277,6 +283,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageSelector.cs" />
@@ -549,7 +556,9 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <Content Include="web.config" />
+    <Content Include="web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </Content>

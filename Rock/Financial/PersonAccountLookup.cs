@@ -14,7 +14,7 @@ namespace Rock.Financial
     /// <summary>
     /// PersonAccountLookup POCO class.
     /// </summary>
-    [Table("fiancialPersonAccountLookup")]
+    [Table("financialPersonAccountLookup")]
     public partial class PersonAccountLookup : ModelWithAttributes<PersonAccountLookup>
     {
         /// <summary>
