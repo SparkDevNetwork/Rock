@@ -813,49 +813,49 @@
             Represents a Transaction class
             </summary>
         </member>
-        <member name="T:Rock.REST.CRM.IPersonTrailService">
+        <member name="T:Rock.REST.CRM.IPersonMergedService">
             <summary>
-            Represents a REST WCF service for PersonTrails
+            Represents a REST WCF service for PersonMerged
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.Get(System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.Get(System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiGet(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiGet(System.String,System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.UpdatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.UpdatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiUpdatePersonTrail(System.String,System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiUpdatePersonMerged(System.String,System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.CreatePersonTrail(Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.CreatePersonMerged(Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiCreatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiCreatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.DeletePersonTrail(System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.DeletePersonMerged(System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiDeletePersonTrail(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiDeletePersonMerged(System.String,System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
         <member name="T:Rock.Financial.Gateway">
@@ -2928,32 +2928,6 @@
             <param name="personId">Person Id.</param>
             <returns>An enumerable list of PhoneNumber objects.</returns>
         </member>
-        <member name="T:Rock.CRM.PersonTrailService">
-            <summary>
-            Person Trail POCO Service class
-            </summary>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.GetByCurrentId(System.Int32)">
-            <summary>
-            Gets Person Trails by Current Id
-            </summary>
-            <param name="currentId">Current Id.</param>
-            <returns>An enumerable list of PersonTrail objects.</returns>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.Current(System.String)">
-            <summary>
-            Get's the current person Guid
-            </summary>
-            <param name="guid">The GUID.</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.Current(System.Int32)">
-            <summary>
-            Get's the current person id
-            </summary>
-            <param name="id">The id.</param>
-            <returns></returns>
-        </member>
         <member name="T:Rock.CMS.UserService">
             <summary>
             User POCO Service class
@@ -4483,6 +4457,71 @@
             Authorize all un-authenticated users
             </summary>
         </member>
+        <member name="T:Rock.CRM.PersonMerged">
+            <summary>
+            Person Trail POCO Entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentId">
+            <summary>
+            Gets or sets the Current Id.
+            </summary>
+            <value>
+            Current Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentGuid">
+            <summary>
+            Gets or sets the Current Guid.
+            </summary>
+            <value>
+            Current Guid.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CreatedDateTime">
+            <summary>
+            Gets or sets the Created Date Time.
+            </summary>
+            <value>
+            Created Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CreatedByPersonId">
+            <summary>
+            Gets or sets the Created By Person Id.
+            </summary>
+            <value>
+            Created By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.DataTransferObject">
+            <summary>
+            Gets a Data Transfer Object (lightweight) version of this object.
+            </summary>
+            <value>
+            A <see cref="T:Rock.CRM.DTO.PersonMerged"/> object.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.AuthEntity">
+            <summary>
+            Gets the auth entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentPublicKey">
+            <summary>
+            Gets a publicly viewable unique key for the model.
+            </summary>
+        </member>
+        <member name="T:Rock.CRM.PersonMergedConfiguration">
+            <summary>
+            Person Trail Configuration class.
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.CRM.PersonMergedConfiguration"/> class.
+            </summary>
+        </member>
         <member name="T:Rock.Core.ExceptionLog">
             <summary>
             Exception Log POCO Entity.
@@ -5869,6 +5908,14 @@
             <summary>
             Campus POCO Entity.
             </summary>
+        </member>
+        <member name="M:Rock.CRM.Campus.ToString">
+            <summary>
+            Returns a <see cref="!:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="!:System.String"/> that represents this instance.
+            </returns>
         </member>
         <member name="P:Rock.CRM.Campus.System">
             <summary>
@@ -7608,7 +7655,7 @@
             the People.
             </value>
         </member>
-        <member name="P:Rock.Data.RockContext.PersonTrails">
+        <member name="P:Rock.Data.RockContext.PersonMerges">
             <summary>
             Gets or sets the Person Trails.
             </summary>
@@ -8728,71 +8775,6 @@
             A blog post that has not yet been published
             </summary>
         </member>
-        <member name="T:Rock.CRM.PersonTrail">
-            <summary>
-            Person Trail POCO Entity.
-            </summary>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentId">
-            <summary>
-            Gets or sets the Current Id.
-            </summary>
-            <value>
-            Current Id.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentGuid">
-            <summary>
-            Gets or sets the Current Guid.
-            </summary>
-            <value>
-            Current Guid.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CreatedDateTime">
-            <summary>
-            Gets or sets the Created Date Time.
-            </summary>
-            <value>
-            Created Date Time.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CreatedByPersonId">
-            <summary>
-            Gets or sets the Created By Person Id.
-            </summary>
-            <value>
-            Created By Person Id.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.DataTransferObject">
-            <summary>
-            Gets a Data Transfer Object (lightweight) version of this object.
-            </summary>
-            <value>
-            A <see cref="T:Rock.CRM.DTO.PersonTrail"/> object.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.AuthEntity">
-            <summary>
-            Gets the auth entity.
-            </summary>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentPublicKey">
-            <summary>
-            Gets a publicly viewable unique key for the model.
-            </summary>
-        </member>
-        <member name="T:Rock.CRM.PersonTrailConfiguration">
-            <summary>
-            Person Trail Configuration class.
-            </summary>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailConfiguration.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.CRM.PersonTrailConfiguration"/> class.
-            </summary>
-        </member>
         <member name="T:Rock.Core.EntityChange">
             <summary>
             Entity Change POCO Entity.
@@ -9645,49 +9627,49 @@
             The Actions.
             </value>
         </member>
-        <member name="T:Rock.REST.CRM.PersonTrailService">
+        <member name="T:Rock.REST.CRM.PersonMergedService">
             <summary>
-            REST WCF service for PersonTrails
+            REST WCF service for PersonMerged
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.Get(System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.Get(System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiGet(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiGet(System.String,System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.UpdatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.UpdatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiUpdatePersonTrail(System.String,System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiUpdatePersonMerged(System.String,System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.CreatePersonTrail(Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.CreatePersonMerged(Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiCreatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiCreatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.DeletePersonTrail(System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.DeletePersonMerged(System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiDeletePersonTrail(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiDeletePersonMerged(System.String,System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
         <member name="M:Rock.FieldTypes.Video.FormatValue(System.Web.UI.Control,System.String,System.Boolean)">
@@ -13868,6 +13850,13 @@
             <param name="delimiter">The delimiter.</param>
             <returns></returns>
         </member>
+        <member name="M:Rock.ExtensionMethods.Join(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Joins a dictionary of items
+            </summary>
+            <param name="items">The items.</param>
+            <returns></returns>
+        </member>
         <member name="M:Rock.ExtensionMethods.OrderBy``1(System.Linq.IQueryable{``0},System.String)">
             <summary>
             Orders the list by the name of a property.
@@ -15912,6 +15901,32 @@
             Initializes a new instance of the <see cref="T:Rock.CMS.SiteDomainConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.CRM.PersonMergedService">
+            <summary>
+            Person Trail POCO Service class
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.GetByCurrentId(System.Int32)">
+            <summary>
+            Gets Person Trails by Current Id
+            </summary>
+            <param name="currentId">Current Id.</param>
+            <returns>An enumerable list of PersonMerged objects.</returns>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.Current(System.String)">
+            <summary>
+            Get's the current person Guid
+            </summary>
+            <param name="guid">The GUID.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.Current(System.Int32)">
+            <summary>
+            Get's the current person id
+            </summary>
+            <param name="id">The id.</param>
+            <returns></returns>
+        </member>
         <member name="T:Rock.CRM.PersonService">
             <summary>
             Person POCO Service class
@@ -16412,6 +16427,38 @@
             </summary>
             <param name="control"></param>
             <returns></returns>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledText">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledText.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledText.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledText.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledText.Text">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
         </member>
         <member name="T:Rock.Web.Cache.FieldType">
             <summary>

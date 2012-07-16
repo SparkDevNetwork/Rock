@@ -11,12 +11,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.CMS
@@ -395,14 +398,52 @@ namespace Rock.CMS
 
         public string Export()
         {
-            var type = this.GetType();
-            var properties = type.GetProperties();
-            var elements = new XElement(type.ToString(),
-                                        from p in properties
-                                        where !p.GetCustomAttributes(true).Any(a => a is NotMappedAttribute)
-                                        select new XElement(p.Name, p.GetValue(this, null)));
+            var rootPage = this;
+            var elements = ExportRecursive(rootPage);
+            var doc = new XDocument(elements);
+            return doc.ToString();
+        }
 
-            return elements.ToString();
+        private static XElement ExportRecursive(Page rootPage)
+        {
+            var rootType = rootPage.GetType();
+            var properties = rootType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // Grab properties that aren't collections and do not have a `[NotMapped]` attribute
+            var element = new XElement(rootType.ToString(),
+                                       from prop in properties
+                                       let propType = prop.GetType()
+                                       where !prop.GetCustomAttributes(true).Any(a => a is NotMappedAttribute)
+                                           || propType != typeof (IList<>)
+                                           //&& prop.IsDefined(propType, true)
+                                       select new XElement(prop.Name, prop.GetValue(rootPage, null)));
+
+
+            element.Add(new XElement("Pages",
+                                     from p in rootPage.Pages
+                                     select ExportRecursive(p)));
+            //element.Add(new XElement("BlockInstances",
+            //                         from b in rootPage.BlockInstances
+            //                         select b.Export()));
+            //foreach (var prop in properties)
+            //{
+            //    var obj = prop.GetValue(rootPage, null);
+            //    var type = obj.GetType();
+
+            //    // If the current property has a [NotMapped] attribute, skip it
+            //    if (prop.GetCustomAttributes(type, true).Any(a => a is NotMappedAttribute))
+            //    {
+            //        continue;
+            //    }
+
+            //    // If the current property is a collection
+            //    if (typeof(IList).IsAssignableFrom(type) || type.IsArray)
+            //    {
+                    
+            //    }
+            //}
+
+            return element;
         }
 
         public void Import( string data )
