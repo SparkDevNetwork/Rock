@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                 rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.RowDataBound += new GridViewRowEventHandler(rGrid_RowDataBound);
                 rGrid.ShowHeaderWhenEmpty = false;
                 rGrid.EmptyDataText = string.Empty;
                 rGrid.ShowActionRow = false;
@@ -121,8 +122,20 @@ namespace RockWeb.Blocks.Administration
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 Rock.Security.AuthRule authRule = ( Rock.Security.AuthRule )e.Row.DataItem;
+                Literal lAllowDeny = ( Literal )e.Row.FindControl( "lAllowDeny" );
+                lAllowDeny.Text = authRule.AllowOrDeny == "A" ? "Allow" : "Deny";
                 RadioButtonList rbl = ( RadioButtonList )e.Row.FindControl( "rblAllowDeny" );
                 rbl.SelectedValue = authRule.AllowOrDeny;
+                if ( authRule.EntityId == iSecured.Id )
+                {
+                    lAllowDeny.Visible = false;
+                    rbl.Visible = true;
+                }
+                else
+                {
+                    lAllowDeny.Visible = true;
+                    rbl.Visible = false;
+                }
             }
         }
 
@@ -341,10 +354,25 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            List<Rock.Security.AuthRule> rules = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
+            AddParentRules(rules, iSecured.ParentAuthority, CurrentAction);
+
+            rGrid.DataSource = rules;
+            rGrid.DataBind();
+        }
+
+        private void AddParentRules(List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action)
+        {
+            if ( parent != null )
             {
-                rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-                rGrid.DataBind();
+                foreach ( Rock.Security.AuthRule rule in Rock.Security.Authorization.AuthRules( parent.AuthEntity, parent.Id, action ) )
+                    if ( !rules.Exists( r =>
+                        r.SpecialRole == rule.SpecialRole &&
+                        r.PersonId == rule.PersonId &&
+                        r.GroupId == rule.GroupId ) )
+                        rules.Add( rule );
+
+                AddParentRules( rules, parent.ParentAuthority, action );
             }
         }
 
