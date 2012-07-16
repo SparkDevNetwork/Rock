@@ -23,8 +23,8 @@ namespace Rock.CRM
     /// <summary>
     /// Person Trail POCO Entity.
     /// </summary>
-    [Table( "crmPersonTrail" )]
-    public partial class PersonTrail : ModelWithAttributes<PersonTrail>
+    [Table( "crmPersonMerged" )]
+    public partial class PersonMerged : ModelWithAttributes<PersonMerged>
     {
 		/// <summary>
 		/// Gets or sets the Current Id.
@@ -68,13 +68,13 @@ namespace Rock.CRM
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.CRM.DTO.PersonTrail"/> object.
+        /// A <see cref="Rock.CRM.DTO.PersonMerged"/> object.
         /// </value>
-		public Rock.CRM.DTO.PersonTrail DataTransferObject
+		public Rock.CRM.DTO.PersonMerged DataTransferObject
 		{
 			get 
 			{ 
-				Rock.CRM.DTO.PersonTrail dto = new Rock.CRM.DTO.PersonTrail();
+				Rock.CRM.DTO.PersonMerged dto = new Rock.CRM.DTO.PersonMerged();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.CurrentId = this.CurrentId;
@@ -89,7 +89,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.PersonTrail"; } }
+		public override string AuthEntity { get { return "CRM.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
@@ -107,12 +107,12 @@ namespace Rock.CRM
     /// <summary>
     /// Person Trail Configuration class.
     /// </summary>
-    public partial class PersonTrailConfiguration : EntityTypeConfiguration<PersonTrail>
+    public partial class PersonMergedConfiguration : EntityTypeConfiguration<PersonMerged>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonTrailConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="PersonMergedConfiguration"/> class.
         /// </summary>
-        public PersonTrailConfiguration()
+        public PersonMergedConfiguration()
         {
 		}
     }
