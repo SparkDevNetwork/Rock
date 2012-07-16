@@ -24,6 +24,19 @@ table th, table td
     color: #515151;
 }
 
+/* forms formating */
+ul.inputs-list 
+{
+    list-style: none;
+    margin-left: 0;
+}
+
+ul.inputs-list li label 
+{
+    display: inline;
+    margin-left: 6px;
+}
+
 /* Zone Config */
 .zone-instance.outline 
 {
@@ -279,58 +292,6 @@ span.cke_skin_kama {
     padding: 0 !important;   
 }
 
-/* Blog Posts */
-article.blog-post {
-   display: block;
-   margin-bottom: 24px;
-}
-
-article.blog-post header {
-    display: block;
-    margin-bottom: 12px;   
-}
-
-article.blog-post header ul {
-    display: inline;
-}
-
-article.blog-post header ul li {
-    display: inline;
-}
-
-article.blog-post header ul li:after {
-    content: ", ";
-}
-
-article.blog-post header ul li:last-child:after {
-    content: "";
-}
-
-.post-comments h1 {
-    margin-bottom: 24px;   
-}
-
-.post-comments article {
-    display: block; 
-    margin-bottom: 24px;  
-}
-
-.post-comments article header {
-    font-size: 10px;
-    display: block;
-    margin-bottom: 6px;
-}
-
-.post-comments article header img {
-    float: left;
-    margin-right: 12px;
-}
-
-.post-comments article header strong {
-    display: block; 
-    font-weight: bold;
-    font-size: 16px; 
-}
 
 /* Login Block Style */
 .login .classic-login {
