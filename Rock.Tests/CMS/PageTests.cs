@@ -30,6 +30,18 @@ namespace Rock.Tests.CMS
                 var result = page.Export();
                 Assert.Contains("<Title>FooPage</Title>", result);
             }
+
+            [Fact]
+            public void ShouldExportChildPages()
+            {
+                var page = new Page()
+                {
+                    Title = "FooPage",
+                    Pages = new List<Page> { new Page { Title = "BarPage" } }
+                };
+                var result = page.Export();
+                Assert.Contains("<Pages></Pages>", result);
+            }
         }
 
         public class TheImportMethod

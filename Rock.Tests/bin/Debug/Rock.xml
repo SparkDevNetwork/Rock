@@ -4987,6 +4987,28 @@
             The help tip.
             </value>
         </member>
+        <member name="T:Rock.Web.UI.Controls.ModalIFrameDialog">
+            <summary>
+            A Modal Popup Dialog Window
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.OnInit(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:Init"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.OnPreRender(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:PreRender"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
         <member name="T:Rock.SystemGuid.DefinedType">
             <summary>
             Static Guids used by the Rock ChMS application
@@ -5843,6 +5865,82 @@
             Initializes a new instance of the <see cref="T:Rock.CRM.PersonViewedConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.CRM.Campus">
+            <summary>
+            Campus POCO Entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.Campus.System">
+            <summary>
+            Gets or sets the System.
+            </summary>
+            <value>
+            System.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.Name">
+            <summary>
+            Gets or sets the Name.
+            </summary>
+            <value>
+            Given Name.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.CreatedDateTime">
+            <summary>
+            Gets or sets the Created Date Time.
+            </summary>
+            <value>
+            Created Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.ModifiedDateTime">
+            <summary>
+            Gets or sets the Modified Date Time.
+            </summary>
+            <value>
+            Modified Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.CreatedByPersonId">
+            <summary>
+            Gets or sets the Created By Person Id.
+            </summary>
+            <value>
+            Created By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.ModifiedByPersonId">
+            <summary>
+            Gets or sets the Modified By Person Id.
+            </summary>
+            <value>
+            Modified By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.AuthEntity">
+            <summary>
+            Gets the auth entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.Campus.DataTransferObject">
+            <summary>
+            Gets a Data Transfer Object (lightweight) version of this object.
+            </summary>
+            <value>
+            A <see cref="T:Rock.CRM.DTO.Campus"/> object.
+            </value>
+        </member>
+        <member name="T:Rock.CRM.CampusConfiguration">
+            <summary>
+            Campus Configuration class.
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.CampusConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.CRM.CampusConfiguration"/> class.
+            </summary>
+        </member>
         <member name="T:Rock.Core.ExceptionLogService">
             <summary>
             Exception Log POCO Service class
@@ -6632,12 +6730,12 @@
             Title.
             </value>
         </member>
-        <member name="P:Rock.CMS.Page.System">
+        <member name="P:Rock.CMS.Page.IsSystem">
             <summary>
-            Gets or sets the System.
+            Gets or sets the IsSystem.
             </summary>
             <value>
-            System.
+            IsSystem.
             </value>
         </member>
         <member name="P:Rock.CMS.Page.ParentPageId">
@@ -7484,6 +7582,14 @@
             </summary>
             <value>
             the Addresses.
+            </value>
+        </member>
+        <member name="P:Rock.Data.RockContext.Campuses">
+            <summary>
+            Gets or sets the Campuses.
+            </summary>
+            <value>
+            the Campuses.
             </value>
         </member>
         <member name="P:Rock.Data.RockContext.EmailTemplates">
@@ -10156,10 +10262,26 @@
         </member>
         <member name="P:Rock.Web.UI.Controls.NotificationBox.Title">
             <summary>
-            Gets or sets the title.
+            Gets or sets the title (title is inline with the message text but is bold).
             </summary>
             <value>
             The title.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.Heading">
+            <summary>
+            Gets or sets the heading (heading is on it's own line at the top)
+            </summary>
+            <value>
+            The heading.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.Padded">
+            <summary>
+            Gets or sets extra padding around the inner text
+            </summary>
+            <value>
+            Enable extra padding.
             </value>
         </member>
         <member name="P:Rock.Web.UI.Controls.NotificationBox.NotificationBoxType">
@@ -10175,7 +10297,7 @@
             The type of notification box to display
             </summary>
         </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Information">
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Info">
             <summary>
             Display an information box
             </summary>
@@ -10188,11 +10310,6 @@
         <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Error">
             <summary>
             Display an error box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Tip">
-            <summary>
-            Display a tip box
             </summary>
         </member>
         <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Success">
@@ -14191,6 +14308,11 @@
             <returns>
             True/False value of whether the address was standardized succesfully
             </returns>
+        </member>
+        <member name="T:Rock.CRM.CampusService">
+            <summary>
+            Campus POCO Service class
+            </summary>
         </member>
         <member name="T:Rock.Core.AttributeValueService">
             <summary>
