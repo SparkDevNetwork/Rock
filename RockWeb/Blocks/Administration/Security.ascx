@@ -58,6 +58,7 @@
                         <HeaderStyle HorizontalAlign="Left" />
                         <ItemStyle Wrap="false" HorizontalAlign="Left" />
                         <ItemTemplate>
+                            <asp:Literal id="lAllowDeny" runat="server"></asp:Literal>
                             <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
                                 OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
                                 <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
