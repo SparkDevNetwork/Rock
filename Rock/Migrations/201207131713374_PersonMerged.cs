@@ -20,7 +20,10 @@ namespace Rock.Migrations
                     })
                 .PrimaryKey(t => t.Id);
             
-            DropTable("crmPersonTrail");
+            CreateIndex( "crmPersonMerged", "CurrentId" );
+
+            DropIndex( "crmPersonTrail", new[] { "CurrentId" } );
+            DropTable( "crmPersonTrail" );
         }
         
         public override void Down()
@@ -37,8 +40,12 @@ namespace Rock.Migrations
                         Guid = c.Guid(nullable: false),
                     })
                 .PrimaryKey(t => t.Id);
-            
-            DropTable("crmPersonMerged");
+
+            CreateIndex( "crmPersonTrail", "CurrentId" );
+
+            DropIndex( "crmPersonMerged", new[] { "CurrentId" } );
+            DropTable( "crmPersonMerged" );
+
             RenameTable(name: "financialPersonAccountLookup", newName: "fiancialPersonAccountLookup");
         }
     }

@@ -37,7 +37,7 @@ namespace Rock.Migrations
             CreateIndex( "crmAddress", "Raw", true );
             CreateIndex( "crmEmailTemplate", "Guid", true );
             CreateIndex( "crmPerson", "Email" );
-            CreateIndex( "crmPersonMerged", "CurrentId" );
+            CreateIndex( "crmPersonTrail", "CurrentId" );
             CreateIndex( "groupsGroup", "Guid", true );
             CreateIndex( "groupsGroup", "IsSecurityRole" );
             CreateIndex( "groupsGroup", new string[] { "ParentGroupId", "Name" } );
@@ -56,7 +56,7 @@ namespace Rock.Migrations
             DropIndex( "groupsGroup", new[] { "ParentGroupId", "Name" } );
             DropIndex( "groupsGroup", new[] { "IsSecurityRole" } );
             DropIndex( "groupsGroup", new[] { "Guid" } );
-            DropIndex( "crmPersonMerged", new[] { "CurrentId" } );
+            DropIndex( "crmPersonTrail", new[] { "CurrentId" } );
             DropIndex( "crmPerson", new[] { "Email" } );
             DropIndex( "crmEmailTemplate", new[] { "Guid" } );
             DropIndex( "crmAddress", new[] { "Raw" } );
