@@ -346,12 +346,11 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            List<Rock.Security.AuthRule> rules = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-            rGrid.DataSource = rules;
+            rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction ); ;
             rGrid.DataBind();
             
             List<Rock.Security.AuthRule> parentRules = new List<Rock.Security.AuthRule>();
-            AddParentRules(rules, iSecured.ParentAuthority, CurrentAction);
+            AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();
         }
