@@ -47,7 +47,7 @@
 
         <asp:PlaceHolder ID="phList" runat="server">
 
-            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
@@ -67,24 +67,24 @@
                 </Columns>
             </Rock:Grid>
 
-            <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
+            <asp:panel id="pnlActions" runat="server" CssClass="actions">
+                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
+            </asp:panel>
+
+            <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" >
                 <Columns>
-                    <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                    <asp:BoundField DataField="DisplayName" HeaderText="Inherited Security" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                     <asp:TemplateField>
                         <HeaderTemplate>Allow or Deny</HeaderTemplate>
                         <HeaderStyle HorizontalAlign="Left" />
                         <ItemStyle Wrap="false" HorizontalAlign="Left" />
                         <ItemTemplate>
-                            <%# (bool)Eval("AllowOrDeny") ? "Allow" : "Deny" %>
+                            <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
             </Rock:Grid>
-
-            <asp:panel id="pnlActions" runat="server" CssClass="actions">
-                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
-            </asp:panel>
 
         </asp:PlaceHolder>
 
