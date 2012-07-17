@@ -91,119 +91,6 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsBlogPost",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        BlogId = c.Int(nullable: false),
-                        Title = c.String(nullable: false, maxLength: 250),
-                        Content = c.String(),
-                        AuthorId = c.Int(),
-                        State = c.Int(nullable: false),
-                        PublishDate = c.DateTime(),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonId = c.Int(),
-                        ModifiedByPersonId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("cmsBlog", t => t.BlogId, cascadeDelete: true)
-                .ForeignKey("crmPerson", t => t.AuthorId)
-                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
-                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
-                .Index(t => t.BlogId)
-                .Index(t => t.AuthorId)
-                .Index(t => t.CreatedByPersonId)
-                .Index(t => t.ModifiedByPersonId);
-            
-            CreateTable(
-                "cmsBlogCategory",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        BlogId = c.Int(nullable: false),
-                        Name = c.String(nullable: false, maxLength: 50),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonId = c.Int(),
-                        ModifiedByPersonId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("cmsBlog", t => t.BlogId)
-                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
-                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
-                .Index(t => t.BlogId)
-                .Index(t => t.CreatedByPersonId)
-                .Index(t => t.ModifiedByPersonId);
-            
-            CreateTable(
-                "cmsBlog",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 75),
-                        Subtitle = c.String(maxLength: 200),
-                        Description = c.String(maxLength: 2000),
-                        ModerateComments = c.Boolean(nullable: false),
-                        PublicPublishingPoint = c.String(maxLength: 250),
-                        PublicFeedAddress = c.String(maxLength: 250),
-                        CopyrightStatement = c.String(maxLength: 250),
-                        AllowComments = c.Boolean(nullable: false),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonId = c.Int(),
-                        ModifiedByPersonId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
-                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
-                .Index(t => t.CreatedByPersonId)
-                .Index(t => t.ModifiedByPersonId);
-            
-            CreateTable(
-                "cmsBlogTag",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        BlogId = c.Int(nullable: false),
-                        Name = c.String(maxLength: 50),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("cmsBlog", t => t.BlogId)
-                .Index(t => t.BlogId);
-            
-            CreateTable(
-                "cmsBlogPostComment",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        PostId = c.Int(nullable: false),
-                        PersonId = c.Int(),
-                        PersonName = c.String(nullable: false, maxLength: 250),
-                        CommentDate = c.DateTime(),
-                        EmailAddress = c.String(nullable: false, maxLength: 150),
-                        Comment = c.String(nullable: false),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonId = c.Int(),
-                        ModifiedByPersonId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("cmsBlogPost", t => t.PostId, cascadeDelete: true)
-                .ForeignKey("crmPerson", t => t.PersonId)
-                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
-                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
-                .Index(t => t.PostId)
-                .Index(t => t.PersonId)
-                .Index(t => t.CreatedByPersonId)
-                .Index(t => t.ModifiedByPersonId);
-            
-            CreateTable(
                 "cmsUser",
                 c => new
                     {
@@ -916,32 +803,6 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsBlogPostCategory",
-                c => new
-                    {
-                        BlogCategoryId = c.Int(nullable: false),
-                        BlogPostId = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => new { t.BlogCategoryId, t.BlogPostId })
-                .ForeignKey("cmsBlogCategory", t => t.BlogCategoryId, cascadeDelete: true)
-                .ForeignKey("cmsBlogPost", t => t.BlogPostId, cascadeDelete: true)
-                .Index(t => t.BlogCategoryId)
-                .Index(t => t.BlogPostId);
-            
-            CreateTable(
-                "cmsBlogPostTag",
-                c => new
-                    {
-                        BlogPostId = c.Int(nullable: false),
-                        BlogTagId = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => new { t.BlogPostId, t.BlogTagId })
-                .ForeignKey("cmsBlogPost", t => t.BlogPostId, cascadeDelete: true)
-                .ForeignKey("cmsBlogTag", t => t.BlogTagId, cascadeDelete: true)
-                .Index(t => t.BlogPostId)
-                .Index(t => t.BlogTagId);
-            
-            CreateTable(
                 "groupsGroupTypeAssociation",
                 c => new
                     {
@@ -978,10 +839,6 @@ namespace Rock.Migrations
             DropIndex("groupsGroupTypeRole", new[] { "GroupTypeId" });
             DropIndex("groupsGroupTypeAssociation", new[] { "ParentGroupTypeId" });
             DropIndex("groupsGroupTypeAssociation", new[] { "ChildGroupTypeId" });
-            DropIndex("cmsBlogPostTag", new[] { "BlogTagId" });
-            DropIndex("cmsBlogPostTag", new[] { "BlogPostId" });
-            DropIndex("cmsBlogPostCategory", new[] { "BlogPostId" });
-            DropIndex("cmsBlogPostCategory", new[] { "BlogCategoryId" });
             DropIndex("utilJob", new[] { "ModifiedByPersonId" });
             DropIndex("utilJob", new[] { "CreatedByPersonId" });
             DropIndex("crmPersonViewed", new[] { "TargetPersonId" });
@@ -1055,20 +912,6 @@ namespace Rock.Migrations
             DropIndex("cmsUser", new[] { "ModifiedByPersonId" });
             DropIndex("cmsUser", new[] { "CreatedByPersonId" });
             DropIndex("cmsUser", new[] { "PersonId" });
-            DropIndex("cmsBlogPostComment", new[] { "ModifiedByPersonId" });
-            DropIndex("cmsBlogPostComment", new[] { "CreatedByPersonId" });
-            DropIndex("cmsBlogPostComment", new[] { "PersonId" });
-            DropIndex("cmsBlogPostComment", new[] { "PostId" });
-            DropIndex("cmsBlogTag", new[] { "BlogId" });
-            DropIndex("cmsBlog", new[] { "ModifiedByPersonId" });
-            DropIndex("cmsBlog", new[] { "CreatedByPersonId" });
-            DropIndex("cmsBlogCategory", new[] { "ModifiedByPersonId" });
-            DropIndex("cmsBlogCategory", new[] { "CreatedByPersonId" });
-            DropIndex("cmsBlogCategory", new[] { "BlogId" });
-            DropIndex("cmsBlogPost", new[] { "ModifiedByPersonId" });
-            DropIndex("cmsBlogPost", new[] { "CreatedByPersonId" });
-            DropIndex("cmsBlogPost", new[] { "AuthorId" });
-            DropIndex("cmsBlogPost", new[] { "BlogId" });
             DropIndex("crmPerson", new[] { "ModifiedByPersonId" });
             DropIndex("crmPerson", new[] { "CreatedByPersonId" });
             DropIndex("crmPerson", new[] { "TitleId" });
@@ -1086,10 +929,6 @@ namespace Rock.Migrations
             DropForeignKey("groupsGroupTypeRole", "GroupTypeId", "groupsGroupRole");
             DropForeignKey("groupsGroupTypeAssociation", "ParentGroupTypeId", "groupsGroupType");
             DropForeignKey("groupsGroupTypeAssociation", "ChildGroupTypeId", "groupsGroupType");
-            DropForeignKey("cmsBlogPostTag", "BlogTagId", "cmsBlogTag");
-            DropForeignKey("cmsBlogPostTag", "BlogPostId", "cmsBlogPost");
-            DropForeignKey("cmsBlogPostCategory", "BlogPostId", "cmsBlogPost");
-            DropForeignKey("cmsBlogPostCategory", "BlogCategoryId", "cmsBlogCategory");
             DropForeignKey("utilJob", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("utilJob", "CreatedByPersonId", "crmPerson");
             DropForeignKey("crmPersonViewed", "TargetPersonId", "crmPerson");
@@ -1163,20 +1002,6 @@ namespace Rock.Migrations
             DropForeignKey("cmsUser", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("cmsUser", "CreatedByPersonId", "crmPerson");
             DropForeignKey("cmsUser", "PersonId", "crmPerson");
-            DropForeignKey("cmsBlogPostComment", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogPostComment", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogPostComment", "PersonId", "crmPerson");
-            DropForeignKey("cmsBlogPostComment", "PostId", "cmsBlogPost");
-            DropForeignKey("cmsBlogTag", "BlogId", "cmsBlog");
-            DropForeignKey("cmsBlog", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlog", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogCategory", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogCategory", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogCategory", "BlogId", "cmsBlog");
-            DropForeignKey("cmsBlogPost", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogPost", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlogPost", "AuthorId", "crmPerson");
-            DropForeignKey("cmsBlogPost", "BlogId", "cmsBlog");
             DropForeignKey("crmPerson", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("crmPerson", "CreatedByPersonId", "crmPerson");
             DropForeignKey("crmPerson", "TitleId", "coreDefinedValue");
@@ -1192,8 +1017,6 @@ namespace Rock.Migrations
             DropForeignKey("cmsAuth", "CreatedByPersonId", "crmPerson");
             DropTable("groupsGroupTypeRole");
             DropTable("groupsGroupTypeAssociation");
-            DropTable("cmsBlogPostTag");
-            DropTable("cmsBlogPostCategory");
             DropTable("utilJob");
             DropTable("crmPersonViewed");
             DropTable("crmPersonTrail");
@@ -1222,11 +1045,6 @@ namespace Rock.Migrations
             DropTable("crmPhoneNumber");
             DropTable("crmEmailTemplate");
             DropTable("cmsUser");
-            DropTable("cmsBlogPostComment");
-            DropTable("cmsBlogTag");
-            DropTable("cmsBlog");
-            DropTable("cmsBlogCategory");
-            DropTable("cmsBlogPost");
             DropTable("crmPerson");
             DropTable("cmsAuth");
         }

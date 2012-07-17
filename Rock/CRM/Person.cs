@@ -354,22 +354,6 @@ namespace Rock.CRM
 		public override string AuthEntity { get { return "CRM.Person"; } }
         
 		/// <summary>
-        /// Gets or sets the Blog Posts.
-        /// </summary>
-        /// <value>
-        /// Collection of Blog Posts.
-        /// </value>
-		public virtual ICollection<CMS.BlogPost> BlogPosts { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Blog Post Comments.
-        /// </summary>
-        /// <value>
-        /// Collection of Blog Post Comments.
-        /// </value>
-		public virtual ICollection<CMS.BlogPostComment> BlogPostComments { get; set; }
-        
-		/// <summary>
         /// Gets or sets the Users.
         /// </summary>
         /// <value>
