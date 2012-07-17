@@ -36,3 +36,7 @@ C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\ru\AjaxControlToolkit.resources.d
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\tr-TR\AjaxControlToolkit.resources.dll
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\zh-CHS\AjaxControlToolkit.resources.dll
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\zh-CHT\AjaxControlToolkit.resources.dll
+C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\AutoMapper.dll
+C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\Newtonsoft.Json.dll
+C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\AutoMapper.xml
+C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\Newtonsoft.Json.xml

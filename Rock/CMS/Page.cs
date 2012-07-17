@@ -11,14 +11,13 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Xml.Linq;
+using AutoMapper;
 using Newtonsoft.Json;
 using Rock.Data;
 
@@ -398,52 +397,26 @@ namespace Rock.CMS
 
         public string Export()
         {
-            var rootPage = this;
-            var elements = ExportRecursive(rootPage);
-            var doc = new XDocument(elements);
-            return doc.ToString();
+            dynamic exportPage = Mapper.DynamicMap<DynamicObject>( DataTransferObject );
+            MapPagesRecursive( this, exportPage );
+            return JsonConvert.SerializeObject( exportPage );
         }
 
-        private static XElement ExportRecursive(Page rootPage)
+        public static void MapPagesRecursive( Page rootPage, dynamic exportPage )
         {
-            var rootType = rootPage.GetType();
-            var properties = rootType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            exportPage.Pages = new List<DynamicObject>();
 
-            // Grab properties that aren't collections and do not have a `[NotMapped]` attribute
-            var element = new XElement(rootType.ToString(),
-                                       from prop in properties
-                                       let propType = prop.GetType()
-                                       where !prop.GetCustomAttributes(true).Any(a => a is NotMappedAttribute)
-                                           || propType != typeof (IList<>)
-                                           //&& prop.IsDefined(propType, true)
-                                       select new XElement(prop.Name, prop.GetValue(rootPage, null)));
+            foreach ( var page in rootPage.Pages )
+            {
+                dynamic childPage = Mapper.DynamicMap<DynamicObject>( page.DataTransferObject );
 
+                if (page.Pages.Any())
+                {
+                    MapPagesRecursive( page, childPage );
+                }
 
-            element.Add(new XElement("Pages",
-                                     from p in rootPage.Pages
-                                     select ExportRecursive(p)));
-            //element.Add(new XElement("BlockInstances",
-            //                         from b in rootPage.BlockInstances
-            //                         select b.Export()));
-            //foreach (var prop in properties)
-            //{
-            //    var obj = prop.GetValue(rootPage, null);
-            //    var type = obj.GetType();
-
-            //    // If the current property has a [NotMapped] attribute, skip it
-            //    if (prop.GetCustomAttributes(type, true).Any(a => a is NotMappedAttribute))
-            //    {
-            //        continue;
-            //    }
-
-            //    // If the current property is a collection
-            //    if (typeof(IList).IsAssignableFrom(type) || type.IsArray)
-            //    {
-                    
-            //    }
-            //}
-
-            return element;
+                exportPage.Pages.Add( childPage );
+            }
         }
 
         public void Import( string data )
