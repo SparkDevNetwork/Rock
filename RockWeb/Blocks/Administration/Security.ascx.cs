@@ -54,7 +54,6 @@ namespace RockWeb.Blocks.Administration
             {
                 rptActions.DataSource = iSecured.SupportedActions;
                 rptActions.DataBind();
-                ShowActionNote();
 
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
@@ -63,6 +62,11 @@ namespace RockWeb.Blocks.Administration
                 rGrid.ShowHeaderWhenEmpty = false;
                 rGrid.EmptyDataText = string.Empty;
                 rGrid.ShowActionRow = false;
+
+                rGridParentRules.DataKeyNames = new string[] { "id" };
+                rGridParentRules.ShowHeaderWhenEmpty = false;
+                rGridParentRules.EmptyDataText = string.Empty;
+                rGridParentRules.ShowActionRow = false;
 
                 BindRoles();
 
@@ -93,6 +97,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 rGrid.Visible = false;
+                rGridParentRules.Visible = false;
                 nbMessage.Text = "You are not authorized to edit security for this entity";
                 nbMessage.Visible = true;
             }
@@ -122,20 +127,8 @@ namespace RockWeb.Blocks.Administration
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 Rock.Security.AuthRule authRule = ( Rock.Security.AuthRule )e.Row.DataItem;
-                Literal lAllowDeny = ( Literal )e.Row.FindControl( "lAllowDeny" );
-                lAllowDeny.Text = authRule.AllowOrDeny == "A" ? "Allow" : "Deny";
                 RadioButtonList rbl = ( RadioButtonList )e.Row.FindControl( "rblAllowDeny" );
                 rbl.SelectedValue = authRule.AllowOrDeny;
-                if ( authRule.EntityId == iSecured.Id )
-                {
-                    lAllowDeny.Visible = false;
-                    rbl.Visible = true;
-                }
-                else
-                {
-                    lAllowDeny.Visible = true;
-                    rbl.Visible = false;
-                }
             }
         }
 
@@ -170,7 +163,6 @@ namespace RockWeb.Blocks.Administration
                 rptActions.DataSource = iSecured.SupportedActions;
                 rptActions.DataBind();
 
-                ShowActionNote();
                 SetRoleActions();
             }
 
@@ -355,10 +347,13 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             List<Rock.Security.AuthRule> rules = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-            AddParentRules(rules, iSecured.ParentAuthority, CurrentAction);
-
             rGrid.DataSource = rules;
             rGrid.DataBind();
+            
+            List<Rock.Security.AuthRule> parentRules = new List<Rock.Security.AuthRule>();
+            AddParentRules(rules, iSecured.ParentAuthority, CurrentAction);
+            rGridParentRules.DataSource = parentRules;
+            rGridParentRules.DataBind();
         }
 
         private void AddParentRules(List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action)
@@ -394,14 +389,6 @@ namespace RockWeb.Blocks.Administration
                 return "active";
             else
                 return "";
-        }
-
-        private void ShowActionNote()
-        {
-            bool defaultAction = iSecured.DefaultAuthorization( CurrentAction );
-            lActionNote.Text = string.Format( "By default, all users <span class='label {0}'>{1}</span> be authorized to {2}.",
-                ( defaultAction ? "success" : "important" ), ( defaultAction ? "WILL" : "WILL NOT" ), CurrentAction );
-            
         }
 
         private void SetRoleActions()

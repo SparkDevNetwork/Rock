@@ -45,8 +45,6 @@
 
     <div class="tabContent">
 
-        <p><asp:Literal ID="lActionNote" runat="server"></asp:Literal></p>
-
         <asp:PlaceHolder ID="phList" runat="server">
 
             <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
@@ -58,7 +56,6 @@
                         <HeaderStyle HorizontalAlign="Left" />
                         <ItemStyle Wrap="false" HorizontalAlign="Left" />
                         <ItemTemplate>
-                            <asp:Literal id="lAllowDeny" runat="server"></asp:Literal>
                             <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
                                 OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
                                 <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
@@ -67,6 +64,20 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:DeleteField OnClick="rGrid_Delete" />
+                </Columns>
+            </Rock:Grid>
+
+            <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" onrowdatabound="rGrid_RowDataBound">
+                <Columns>
+                    <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                        <HeaderStyle HorizontalAlign="Left" />
+                        <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                        <ItemTemplate>
+                            <%# (bool)Eval("AllowOrDeny") ? "Allow" : "Deny" %>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                 </Columns>
             </Rock:Grid>
 
