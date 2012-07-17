@@ -460,6 +460,7 @@ namespace Rock.Security
         {
             Id = auth.Id;
             EntityId = auth.EntityId;
+            AllowOrDeny = auth.AllowOrDeny;
             SpecialRole = auth.SpecialRole;
             PersonId = auth.PersonId;
             GroupId = auth.GroupId;
