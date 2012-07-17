@@ -5734,7 +5734,19 @@ Thanks.
 			};
 			context.Auths.AddOrUpdate( p => p.Guid, auth_654 );
 
-			context.SaveChanges();
+            var auth_655 = new Auth
+            {
+                Guid = new Guid( "c9694751-3bdf-428c-b3d2-db94204583e7" ),
+                Action = @"View",
+                SpecialRole = Rock.CMS.SpecialRole.AllUsers,
+                AllowOrDeny = @"A",
+                EntityId = site_Default.Id,
+                Order = 0,
+                EntityType = @"CMS.Site"
+            };
+            context.Auths.AddOrUpdate( p => p.Guid, auth_654 );
+
+            context.SaveChanges();
 
 
 			//**************************************************************************
