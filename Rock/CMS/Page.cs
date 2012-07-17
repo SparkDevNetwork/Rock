@@ -402,20 +402,20 @@ namespace Rock.CMS
             return JsonConvert.SerializeObject( exportPage );
         }
 
-        public static void MapPagesRecursive( Page rootPage, dynamic exportPage )
+        public static void MapPagesRecursive( Page page, dynamic exportPage )
         {
             exportPage.Pages = new List<DynamicObject>();
 
-            foreach ( var page in rootPage.Pages )
+            foreach ( var childPage in page.Pages )
             {
-                dynamic childPage = Mapper.DynamicMap<DynamicObject>( page.DataTransferObject );
+                dynamic exportChildPage = Mapper.DynamicMap<DynamicObject>( childPage.DataTransferObject );
 
-                if (page.Pages.Any())
+                if ( childPage.Pages.Any() )
                 {
-                    MapPagesRecursive( page, childPage );
+                    MapPagesRecursive( childPage, exportChildPage );
                 }
 
-                exportPage.Pages.Add( childPage );
+                exportPage.Pages.Add( exportChildPage );
             }
         }
 
