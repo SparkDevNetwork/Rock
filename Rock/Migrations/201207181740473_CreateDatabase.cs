@@ -275,6 +275,71 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
+                "financialPledge",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        PersonId = c.Int(),
+                        FundId = c.Int(),
+                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        StartDate = c.DateTime(nullable: false),
+                        EndDate = c.DateTime(nullable: false),
+                        FrequencyTypeId = c.Int(),
+                        FrequencyAmount = c.Decimal(precision: 18, scale: 2),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("crmPerson", t => t.PersonId)
+                .ForeignKey("financialFund", t => t.FundId)
+                .ForeignKey("coreDefinedValue", t => t.FrequencyTypeId)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.PersonId)
+                .Index(t => t.FundId)
+                .Index(t => t.FrequencyTypeId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "financialFund",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(maxLength: 50),
+                        PublicName = c.String(maxLength: 50),
+                        Description = c.String(maxLength: 250),
+                        ParentFundId = c.Int(),
+                        TaxDeductible = c.Boolean(nullable: false),
+                        Order = c.Int(nullable: false),
+                        Active = c.Boolean(nullable: false),
+                        StartDate = c.DateTime(),
+                        EndDate = c.DateTime(),
+                        Pledgable = c.Boolean(nullable: false),
+                        GlCode = c.String(maxLength: 50),
+                        FundTypeId = c.Int(),
+                        Entity = c.String(maxLength: 50),
+                        EntityId = c.Int(),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("financialFund", t => t.ParentFundId)
+                .ForeignKey("coreDefinedValue", t => t.FundTypeId)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.ParentFundId)
+                .Index(t => t.FundTypeId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
                 "coreDefinedValue",
                 c => new
                     {
@@ -361,7 +426,7 @@ namespace Rock.Migrations
                         Description = c.String(),
                         Order = c.Int(nullable: false),
                         GridColumn = c.Boolean(nullable: false),
-                        DefaultValue = c.String(nullable: false),
+                        DefaultValue = c.String(),
                         MultiValue = c.Boolean(nullable: false),
                         Required = c.Boolean(nullable: false),
                         CreatedDateTime = c.DateTime(),
@@ -425,6 +490,144 @@ namespace Rock.Migrations
                 .Index(t => t.AttributeId)
                 .Index(t => t.CreatedByPersonId)
                 .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "financialTransactionFund",
+                c => new
+                    {
+                        TransactionId = c.Int(nullable: false),
+                        FundId = c.Int(nullable: false),
+                        Amount = c.Decimal(precision: 18, scale: 2),
+                    })
+                .PrimaryKey(t => new { t.TransactionId, t.FundId })
+                .ForeignKey("financialTransaction", t => t.TransactionId, cascadeDelete: true)
+                .ForeignKey("financialFund", t => t.FundId, cascadeDelete: true)
+                .Index(t => t.TransactionId)
+                .Index(t => t.FundId);
+            
+            CreateTable(
+                "financialTransaction",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Description = c.String(maxLength: 250),
+                        TransactionDate = c.DateTime(),
+                        Entity = c.String(maxLength: 50),
+                        EntityId = c.Int(),
+                        BatchId = c.Int(),
+                        CurrencyTypeId = c.Int(),
+                        CreditCardTypeId = c.Int(),
+                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        RefundTransactionId = c.Int(),
+                        TransactionImageId = c.Int(),
+                        TransactionCode = c.String(maxLength: 50),
+                        GatewayId = c.Int(),
+                        SourceTypeId = c.Int(),
+                        Summary = c.String(maxLength: 500),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("financialBatch", t => t.BatchId)
+                .ForeignKey("coreDefinedValue", t => t.CurrencyTypeId)
+                .ForeignKey("coreDefinedValue", t => t.CreditCardTypeId)
+                .ForeignKey("financialGateway", t => t.GatewayId)
+                .ForeignKey("coreDefinedValue", t => t.SourceTypeId)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.BatchId)
+                .Index(t => t.CurrencyTypeId)
+                .Index(t => t.CreditCardTypeId)
+                .Index(t => t.GatewayId)
+                .Index(t => t.SourceTypeId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "financialBatch",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(maxLength: 50),
+                        BatchDate = c.DateTime(),
+                        Closed = c.Boolean(nullable: false),
+                        CampusId = c.Int(),
+                        Entity = c.String(maxLength: 50),
+                        EntityId = c.Int(),
+                        ForeignReference = c.String(maxLength: 50),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "financialGateway",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(maxLength: 50),
+                        Description = c.String(maxLength: 500),
+                        ApiUrl = c.String(maxLength: 100),
+                        ApiKey = c.String(maxLength: 100),
+                        ApiSecret = c.String(maxLength: 100),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "financialTransactionDetail",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        TransactionId = c.Int(),
+                        Entity = c.String(maxLength: 50),
+                        EntityId = c.String(),
+                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        Summary = c.String(maxLength: 500),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedDateTime = c.DateTime(),
+                        CreatedByPersonId = c.Int(),
+                        ModifiedByPersonId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("financialTransaction", t => t.TransactionId)
+                .ForeignKey("crmPerson", t => t.CreatedByPersonId)
+                .ForeignKey("crmPerson", t => t.ModifiedByPersonId)
+                .Index(t => t.TransactionId)
+                .Index(t => t.CreatedByPersonId)
+                .Index(t => t.ModifiedByPersonId);
+            
+            CreateTable(
+                "fiancialPersonAccountLookup",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        PersonId = c.Int(),
+                        Account = c.String(maxLength: 50),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("crmPerson", t => t.PersonId)
+                .Index(t => t.PersonId);
             
             CreateTable(
                 "cmsBlock",
@@ -828,13 +1031,12 @@ namespace Rock.Migrations
                 .Index(t => t.GroupTypeId)
                 .Index(t => t.GroupRoleId);
 
-            CreateIndexes();
+            AddData();
+            
         }
         
         public override void Down()
         {
-            DropIndexes();
-
             DropIndex("groupsGroupTypeRole", new[] { "GroupRoleId" });
             DropIndex("groupsGroupTypeRole", new[] { "GroupTypeId" });
             DropIndex("groupsGroupTypeAssociation", new[] { "ParentGroupTypeId" });
@@ -872,6 +1074,23 @@ namespace Rock.Migrations
             DropIndex("cmsBlockInstance", new[] { "BlockId" });
             DropIndex("cmsBlock", new[] { "ModifiedByPersonId" });
             DropIndex("cmsBlock", new[] { "CreatedByPersonId" });
+            DropIndex("fiancialPersonAccountLookup", new[] { "PersonId" });
+            DropIndex("financialTransactionDetail", new[] { "ModifiedByPersonId" });
+            DropIndex("financialTransactionDetail", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransactionDetail", new[] { "TransactionId" });
+            DropIndex("financialGateway", new[] { "ModifiedByPersonId" });
+            DropIndex("financialGateway", new[] { "CreatedByPersonId" });
+            DropIndex("financialBatch", new[] { "ModifiedByPersonId" });
+            DropIndex("financialBatch", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransaction", new[] { "ModifiedByPersonId" });
+            DropIndex("financialTransaction", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransaction", new[] { "SourceTypeId" });
+            DropIndex("financialTransaction", new[] { "GatewayId" });
+            DropIndex("financialTransaction", new[] { "CreditCardTypeId" });
+            DropIndex("financialTransaction", new[] { "CurrencyTypeId" });
+            DropIndex("financialTransaction", new[] { "BatchId" });
+            DropIndex("financialTransactionFund", new[] { "FundId" });
+            DropIndex("financialTransactionFund", new[] { "TransactionId" });
             DropIndex("coreAttributeValue", new[] { "ModifiedByPersonId" });
             DropIndex("coreAttributeValue", new[] { "CreatedByPersonId" });
             DropIndex("coreAttributeValue", new[] { "AttributeId" });
@@ -889,6 +1108,15 @@ namespace Rock.Migrations
             DropIndex("coreDefinedValue", new[] { "ModifiedByPersonId" });
             DropIndex("coreDefinedValue", new[] { "CreatedByPersonId" });
             DropIndex("coreDefinedValue", new[] { "DefinedTypeId" });
+            DropIndex("financialFund", new[] { "ModifiedByPersonId" });
+            DropIndex("financialFund", new[] { "CreatedByPersonId" });
+            DropIndex("financialFund", new[] { "FundTypeId" });
+            DropIndex("financialFund", new[] { "ParentFundId" });
+            DropIndex("financialPledge", new[] { "ModifiedByPersonId" });
+            DropIndex("financialPledge", new[] { "CreatedByPersonId" });
+            DropIndex("financialPledge", new[] { "FrequencyTypeId" });
+            DropIndex("financialPledge", new[] { "FundId" });
+            DropIndex("financialPledge", new[] { "PersonId" });
             DropIndex("groupsGroupRole", new[] { "ModifiedByPersonId" });
             DropIndex("groupsGroupRole", new[] { "CreatedByPersonId" });
             DropIndex("groupsGroupType", new[] { "DefaultGroupRoleId" });
@@ -962,6 +1190,23 @@ namespace Rock.Migrations
             DropForeignKey("cmsBlockInstance", "BlockId", "cmsBlock");
             DropForeignKey("cmsBlock", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("cmsBlock", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("fiancialPersonAccountLookup", "PersonId", "crmPerson");
+            DropForeignKey("financialTransactionDetail", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialTransactionDetail", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialTransactionDetail", "TransactionId", "financialTransaction");
+            DropForeignKey("financialGateway", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialGateway", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialBatch", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialBatch", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialTransaction", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialTransaction", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialTransaction", "SourceTypeId", "coreDefinedValue");
+            DropForeignKey("financialTransaction", "GatewayId", "financialGateway");
+            DropForeignKey("financialTransaction", "CreditCardTypeId", "coreDefinedValue");
+            DropForeignKey("financialTransaction", "CurrencyTypeId", "coreDefinedValue");
+            DropForeignKey("financialTransaction", "BatchId", "financialBatch");
+            DropForeignKey("financialTransactionFund", "FundId", "financialFund");
+            DropForeignKey("financialTransactionFund", "TransactionId", "financialTransaction");
             DropForeignKey("coreAttributeValue", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("coreAttributeValue", "CreatedByPersonId", "crmPerson");
             DropForeignKey("coreAttributeValue", "AttributeId", "coreAttribute");
@@ -979,6 +1224,15 @@ namespace Rock.Migrations
             DropForeignKey("coreDefinedValue", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("coreDefinedValue", "CreatedByPersonId", "crmPerson");
             DropForeignKey("coreDefinedValue", "DefinedTypeId", "coreDefinedType");
+            DropForeignKey("financialFund", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialFund", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialFund", "FundTypeId", "coreDefinedValue");
+            DropForeignKey("financialFund", "ParentFundId", "financialFund");
+            DropForeignKey("financialPledge", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey("financialPledge", "CreatedByPersonId", "crmPerson");
+            DropForeignKey("financialPledge", "FrequencyTypeId", "coreDefinedValue");
+            DropForeignKey("financialPledge", "FundId", "financialFund");
+            DropForeignKey("financialPledge", "PersonId", "crmPerson");
             DropForeignKey("groupsGroupRole", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("groupsGroupRole", "CreatedByPersonId", "crmPerson");
             DropForeignKey("groupsGroupType", "DefaultGroupRoleId", "groupsGroupRole");
@@ -1032,12 +1286,20 @@ namespace Rock.Migrations
             DropTable("cmsHtmlContent");
             DropTable("cmsBlockInstance");
             DropTable("cmsBlock");
+            DropTable("fiancialPersonAccountLookup");
+            DropTable("financialTransactionDetail");
+            DropTable("financialGateway");
+            DropTable("financialBatch");
+            DropTable("financialTransaction");
+            DropTable("financialTransactionFund");
             DropTable("coreAttributeValue");
             DropTable("coreAttributeQualifier");
             DropTable("coreAttribute");
             DropTable("coreFieldType");
             DropTable("coreDefinedType");
             DropTable("coreDefinedValue");
+            DropTable("financialFund");
+            DropTable("financialPledge");
             DropTable("groupsGroupRole");
             DropTable("groupsGroupType");
             DropTable("groupsGroup");
