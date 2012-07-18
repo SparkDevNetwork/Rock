@@ -1031,12 +1031,16 @@ namespace Rock.Migrations
                 .Index(t => t.GroupTypeId)
                 .Index(t => t.GroupRoleId);
 
+            CreateIndexes();
             AddData();
             
         }
         
         public override void Down()
         {
+            DeleteData();
+            DropIndexes();
+
             DropIndex("groupsGroupTypeRole", new[] { "GroupRoleId" });
             DropIndex("groupsGroupTypeRole", new[] { "GroupTypeId" });
             DropIndex("groupsGroupTypeAssociation", new[] { "ParentGroupTypeId" });
