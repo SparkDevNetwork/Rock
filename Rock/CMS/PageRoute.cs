@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "cmsPageRoute" )]
-    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
+    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -146,6 +146,21 @@ namespace Rock.CMS
         /// A <see cref="CRM.Person"/> object.
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
+
+        public object ExportObject()
+        {
+            return null;
+        }
+
+        public string ExportJson()
+        {
+            return null;
+        }
+
+        public void ImportJson(string data)
+        {
+            
+        }
 
     }
     /// <summary>

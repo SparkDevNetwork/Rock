@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Block Instance POCO Entity.
     /// </summary>
     [Table( "cmsBlockInstance" )]
-    public partial class BlockInstance : ModelWithAttributes<BlockInstance>, IAuditable, IOrdered
+    public partial class BlockInstance : ModelWithAttributes<BlockInstance>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -236,6 +236,21 @@ namespace Rock.CMS
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public string ExportJson()
+        {
+            return null;
+        }
+
+        public object ExportObject()
+        {
+            return null;
+        }
+
+        public void ImportJson(string data)
+        {
+            
         }
     }
     /// <summary>
