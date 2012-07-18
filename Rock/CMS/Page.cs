@@ -14,11 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
-using System.Dynamic;
-using System.Linq;
 using System.Runtime.Serialization;
-using AutoMapper;
-using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.CMS
@@ -27,7 +23,6 @@ namespace Rock.CMS
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
-    [Serializable]
     public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
@@ -395,31 +390,91 @@ namespace Rock.CMS
             return Name;
         }
 
-        public string Export()
+        /// <summary>
+        /// Exports the Page as JSON.
+        /// </summary>
+        /// <returns></returns>
+        public string ExportJson()
         {
-            dynamic exportPage = Mapper.DynamicMap<DynamicObject>( DataTransferObject );
-            MapPagesRecursive( this, exportPage );
-            return JsonConvert.SerializeObject( exportPage );
+            return ExportObject().ToJSON();
         }
 
-        public static void MapPagesRecursive( Page page, dynamic exportPage )
+        /// <summary>
+        /// Exports the Page.
+        /// </summary>
+        /// <returns></returns>
+        public object ExportObject()
         {
-            exportPage.Pages = new List<DynamicObject>();
+            return MapPagesRecursive( this );
+        }
+
+        /// <summary>
+        /// Recursivly adds collections of child pages to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public static dynamic MapPagesRecursive( Page page )
+        {
+            dynamic exportPage = page.DataTransferObject.ToDynamic();
+            MapBlockInstances(page, exportPage);
+            MapPageRoutes(page, exportPage);
+
+            if ( page.Pages == null )
+            {
+                return exportPage;
+            }
+
+            exportPage.Pages = new List<dynamic>();
 
             foreach ( var childPage in page.Pages )
             {
-                dynamic exportChildPage = Mapper.DynamicMap<DynamicObject>( childPage.DataTransferObject );
+                exportPage.Pages.Add( MapPagesRecursive( childPage ) );
+            }
 
-                if ( childPage.Pages.Any() )
-                {
-                    MapPagesRecursive( childPage, exportChildPage );
-                }
+            return exportPage;
+        }
 
-                exportPage.Pages.Add( exportChildPage );
+        /// <summary>
+        /// Maps the block instances to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="exportPage">The export page.</param>
+        private static void MapBlockInstances( Page page, dynamic exportPage )
+        {
+            if ( page.BlockInstances == null )
+            {
+                return;
+            }
+
+            exportPage.BlockInstances = new List<dynamic>();
+
+            foreach ( var blockInstance in page.BlockInstances )
+            {
+                exportPage.BlockInstances.Add( blockInstance.ExportObject() );
             }
         }
 
-        public void Import( string data )
+        /// <summary>
+        /// Maps the page routes to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="exportPage">The export page.</param>
+        private static void MapPageRoutes( Page page, dynamic exportPage )
+        {
+            if ( page.PageRoutes == null )
+            {
+                return;
+            }
+
+            exportPage.PageRoutes = new List<dynamic>();
+
+            foreach (var pageRoute in page.PageRoutes)
+            {
+                exportPage.PageRoutes.Add( pageRoute.ExportObject() );
+            }
+        }
+
+        public void ImportJson( string data )
         {
             
         }
