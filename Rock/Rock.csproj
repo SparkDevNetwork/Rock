@@ -214,8 +214,12 @@
     <Compile Include="Migrations\201207181740473_CreateDatabase.Designer.cs">
       <DependentUpon>201207181740473_CreateDatabase.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207182025570_AddCampus.cs" />
+    <Compile Include="Migrations\201207182025570_AddCampus.Designer.cs">
+      <DependentUpon>201207182025570_AddCampus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\CreateDatabase.cs" />
+    <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
