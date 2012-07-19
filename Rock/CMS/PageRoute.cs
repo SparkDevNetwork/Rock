@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -106,7 +106,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.PageRoute dto = new Rock.CMS.DTO.PageRoute();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.PageId = this.PageId;
 				dto.Route = this.Route;
 				dto.CreatedDateTime = this.CreatedDateTime;
@@ -149,12 +149,12 @@ namespace Rock.CMS
 
         public object ExportObject()
         {
-            return null;
+            return DataTransferObject.ToDynamic();
         }
 
         public string ExportJson()
         {
-            return null;
+            return ExportObject().ToJSON();
         }
 
         public void ImportJson(string data)

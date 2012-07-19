@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Block POCO Entity.
     /// </summary>
     [Table( "cmsBlock" )]
-    public partial class Block : ModelWithAttributes<Block>, IAuditable
+    public partial class Block : ModelWithAttributes<Block>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -157,6 +157,33 @@ namespace Rock.CMS
         /// A <see cref="CRM.Person"/> object.
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
+
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
+        public string ExportJson()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
+        public object ExportObject()
+        {
+            return DataTransferObject.ToDynamic();
+        }
+
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        public void ImportJson(string data)
+        {
+            
+        }
 
     }
     /// <summary>
