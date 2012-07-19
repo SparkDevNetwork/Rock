@@ -43,7 +43,7 @@ namespace Rock.Extension
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ComponentDescription"/> class.
@@ -68,9 +68,9 @@ namespace Rock.Extension
             // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
             // otherwise default to true
             if ( service.AttributeValues.ContainsKey( "Active" ) )
-                Active = bool.Parse( service.AttributeValues["Active"].Value[0].Value );
+                IsActive = bool.Parse( service.AttributeValues["Active"].Value[0].Value );
             else
-                Active = true;
+                IsActive = true;
         }
     }
 }

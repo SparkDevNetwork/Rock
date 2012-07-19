@@ -18,8 +18,8 @@
             <asp:BoundField DataField="Category" HeaderText="Category"  />
             <asp:BoundField DataField="Name" HeaderText="Name" />
             <asp:BoundField DataField="FieldType" HeaderText="Type" />
-            <Rock:BoolField DataField="MultiValue" HeaderText="Multi-Value"/>
-            <Rock:BoolField DataField="Required" HeaderText="Required"/>
+            <Rock:BoolField DataField="IsMultiValue" HeaderText="Multi-Value"/>
+            <Rock:BoolField DataField="IsRequired" HeaderText="Required"/>
             <Rock:EditField OnClick="rGrid_Edit" />
             <Rock:DeleteField OnClick="rGrid_Delete" />
         </Columns>

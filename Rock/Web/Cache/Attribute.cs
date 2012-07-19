@@ -65,7 +65,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets if attribute supports multiple values
         /// </summary>
-        public bool MultiValue { get; private set; }
+        public bool IsMultiValue { get; private set; }
 
         /// <summary>
         /// Gets the description.
@@ -79,7 +79,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if it should be added as a column; otherwise, <c>false</c>.
         /// </value>
-        public bool GridColumn { get; private set; }
+        public bool IsGridColumn { get; private set; }
 
         /// <summary>
         /// Gets the default value for the attribute
@@ -110,7 +110,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        public bool Required { get; private set; }
+        public bool IsRequired { get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -195,11 +195,11 @@ namespace Rock.Web.Cache
             attribute.Name = attributeModel.Name;
             attribute.Category = attributeModel.Category;
             attribute.Description = attributeModel.Description;
-            attribute.GridColumn = attributeModel.GridColumn;
+            attribute.IsGridColumn = attributeModel.IsGridColumn;
             attribute.FieldTypeId = attributeModel.FieldTypeId;
             attribute.DefaultValue = attributeModel.DefaultValue;
-            attribute.Required = attributeModel.Required;
-            attribute.MultiValue = attributeModel.MultiValue;
+            attribute.IsRequired = attributeModel.IsRequired;
+            attribute.IsMultiValue = attributeModel.IsMultiValue;
 
             attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )

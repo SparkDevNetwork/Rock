@@ -42,7 +42,7 @@ namespace Rock.CMS.DTO
 		/// <value>
 		/// Temporary.
 		/// </value>
-		public bool Temporary { get; set; }
+		public bool IsTemporary { get; set; }
 
 		/// <summary>
 		/// Gets or sets the System.
@@ -50,7 +50,7 @@ namespace Rock.CMS.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Data.

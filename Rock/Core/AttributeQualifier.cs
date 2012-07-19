@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Attribute Id.
@@ -116,7 +116,7 @@ namespace Rock.Core
 				Rock.Core.DTO.AttributeQualifier dto = new Rock.Core.DTO.AttributeQualifier();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.AttributeId = this.AttributeId;
 				dto.Key = this.Key;
 				dto.Value = this.Value;
