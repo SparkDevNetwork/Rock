@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _fieldType = value;
+                configurationControls = null;
                 ChildControlsCreated = false;
             }
         }
@@ -44,13 +45,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return label.Text;
+                string s = ViewState["LabelText"] as string;
+                return s == null ? string.Empty : s;
             }
             set
             {
-                EnsureChildControls();
-                label.Text = value;
+                ViewState["LabelText"] = value;
             }
         }
 
@@ -91,6 +91,20 @@ namespace Rock.Web.UI.Controls
             return _fieldType != null ? _fieldType.Id : 0;
         }
 
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+        }
+
+        protected override void TrackViewState()
+        {
+            base.TrackViewState();
+        }
+
+        protected override object SaveViewState()
+        {
+            return base.SaveViewState();
+        }
 
         protected override void CreateChildControls()
         {
@@ -98,8 +112,6 @@ namespace Rock.Web.UI.Controls
 
             // Create the field type's label
             label = new Label();
-            label.ID = "lbl";
-            label.EnableViewState = true;
             Controls.Add( label );
 
             // Create the dropdown list for listing the available field types
@@ -159,6 +171,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            label.Text = LabelText;
             label.RenderControl( writer );
 
             writer.AddAttribute( "class", "controls" );
@@ -170,13 +183,14 @@ namespace Rock.Web.UI.Controls
                 fieldTypeSelect.RenderControl( writer );
             }
 
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
             if (configurationControls != null)
                 for (int i = 0; i < configurationControls.Count(); i++)
                     RenderControlGroup(writer, configurationLabels[i], configurationControls[0]);
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+
         }
 
         private void RenderControlGroup( HtmlTextWriter writer, Label label, Control control )
