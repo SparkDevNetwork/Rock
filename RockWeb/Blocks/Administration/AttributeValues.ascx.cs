@@ -147,6 +147,8 @@ namespace RockWeb.Blocks.Administration
                 attributeValueService.Save(attributeValue, CurrentPersonId);
 
                 Rock.Web.Cache.Attribute.Flush( attributeId );
+                if ( _entity == string.Empty && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    Rock.Web.Cache.GlobalAttributes.Flush();
 
             }
 

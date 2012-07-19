@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Administration
                     if ( control is Rock.Web.UI.Block )
                     {
                         block.Name = Path.GetFileNameWithoutExtension( block.Path );
-                        block.Description = block.Path;
+                        block.Description = string.Empty;
 
                         _blockService.Add( block, CurrentPersonId );
                         _blockService.Save( block, CurrentPersonId );

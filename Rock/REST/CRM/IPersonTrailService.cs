@@ -15,57 +15,57 @@ using System.ServiceModel;
 namespace Rock.REST.CRM
 {
 	/// <summary>
-	/// Represents a REST WCF service for PersonTrails
+	/// Represents a REST WCF service for PersonMerged
 	/// </summary>
 	[ServiceContract]
-    public partial interface IPersonTrailService
+    public partial interface IPersonMergedService
     {
 		/// <summary>
-		/// Gets a PersonTrail object
+		/// Gets a PersonMerged object
 		/// </summary>
 		[OperationContract]
-        Rock.CRM.DTO.PersonTrail Get( string id );
+        Rock.CRM.DTO.PersonMerged Get( string id );
 
 		/// <summary>
-		/// Gets a PersonTrail object
+		/// Gets a PersonMerged object
 		/// </summary>
 		[OperationContract]
-        Rock.CRM.DTO.PersonTrail ApiGet( string id, string apiKey );
+        Rock.CRM.DTO.PersonMerged ApiGet( string id, string apiKey );
 
 		/// <summary>
-		/// Updates a PersonTrail object
+		/// Updates a PersonMerged object
 		/// </summary>
         [OperationContract]
-        void UpdatePersonTrail( string id, Rock.CRM.DTO.PersonTrail PersonTrail );
+        void UpdatePersonMerged( string id, Rock.CRM.DTO.PersonMerged PersonMerged );
 
 		/// <summary>
-		/// Updates a PersonTrail object
+		/// Updates a PersonMerged object
 		/// </summary>
         [OperationContract]
-        void ApiUpdatePersonTrail( string id, string apiKey, Rock.CRM.DTO.PersonTrail PersonTrail );
+        void ApiUpdatePersonMerged( string id, string apiKey, Rock.CRM.DTO.PersonMerged PersonMerged );
 
 		/// <summary>
-		/// Creates a new PersonTrail object
+		/// Creates a new PersonMerged object
 		/// </summary>
         [OperationContract]
-        void CreatePersonTrail( Rock.CRM.DTO.PersonTrail PersonTrail );
+        void CreatePersonMerged( Rock.CRM.DTO.PersonMerged PersonMerged );
 
 		/// <summary>
-		/// Creates a new PersonTrail object
+		/// Creates a new PersonMerged object
 		/// </summary>
         [OperationContract]
-        void ApiCreatePersonTrail( string apiKey, Rock.CRM.DTO.PersonTrail PersonTrail );
+        void ApiCreatePersonMerged( string apiKey, Rock.CRM.DTO.PersonMerged PersonMerged );
 
 		/// <summary>
-		/// Deletes a PersonTrail object
+		/// Deletes a PersonMerged object
 		/// </summary>
         [OperationContract]
-        void DeletePersonTrail( string id );
+        void DeletePersonMerged( string id );
 
 		/// <summary>
-		/// Deletes a PersonTrail object
+		/// Deletes a PersonMerged object
 		/// </summary>
         [OperationContract]
-        void ApiDeletePersonTrail( string id, string apiKey );
+        void ApiDeletePersonMerged( string id, string apiKey );
     }
 }
