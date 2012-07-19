@@ -5,16 +5,17 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
-    public class Color : Field
+    public class Color : FieldType
     {
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
@@ -22,19 +23,14 @@ namespace Rock.FieldTypes
         /// <param name="value"></param>
         /// <param name="setValue"></param>
         /// <returns></returns>
-        public override Control CreateControl( string value, bool required, bool setValue )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             DropDownList ddl = new DropDownList();
 
             Type colors = typeof( System.Drawing.Color );
             PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );
             foreach ( PropertyInfo info in colorInfo )
-            {
-                ListItem li = new ListItem( info.Name, info.Name );
-                if (setValue)
-                    li.Selected = info.Name == value;
-                ddl.Items.Add( li );
-            }
+                ddl.Items.Add( new ListItem( info.Name, info.Name ) );
 
             return ddl;
         }
@@ -44,11 +40,17 @@ namespace Rock.FieldTypes
         /// </summary>
         /// <param name="control"></param>
         /// <returns></returns>
-        public override string ReadValue( Control control )
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is DropDownList )
                 return ( ( DropDownList )control ).SelectedValue;
             return null;
+        }
+
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is DropDownList )
+                ( ( DropDownList )control ).SelectedValue = value;
         }
     }
 }

@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and dispaly a currency value

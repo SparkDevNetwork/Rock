@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Security
 {
     [Rock.Attribute.Property( 0, "Check for Duplicates", "Duplicates", "", 
         "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
-        false, "true", "Rock", "Rock.FieldTypes.Boolean" )]
+        false, "true", "Rock", "Rock.Field.Types.Boolean" )]
     [Rock.Attribute.Property( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
     [Rock.Attribute.Property( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
         "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]

@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and dispaly a text value
     /// </summary>
-    public class Date : Field
+    public class Date : FieldType
     {
     }
 }

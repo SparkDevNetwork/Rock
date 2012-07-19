@@ -16,8 +16,8 @@
         <Columns>
             <asp:BoundField DataField="Id" HeaderText="Id" />
             <asp:BoundField DataField="Category" HeaderText="Category"  />
-            <asp:BoundField DataField="Key" HeaderText="Key" />
             <asp:BoundField DataField="Name" HeaderText="Name" />
+            <asp:BoundField DataField="FieldType" HeaderText="Type" />
             <Rock:BoolField DataField="MultiValue" HeaderText="Multi-Value"/>
             <Rock:BoolField DataField="Required" HeaderText="Required"/>
             <Rock:EditField OnClick="rGrid_Edit" />
@@ -34,7 +34,7 @@
             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
             <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-            <Rock:FieldTypeList ID="ddlFieldType" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="FieldTypeId" LabelText="Field Type" />
+            <Rock:LabeledFieldType ID="ddlFieldType" runat="server" LabelText="Field Type" />
             <Rock:DataTextBox ID="tbDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
             <Rock:LabeledCheckBox ID="cbMultiValue" runat="server" LabelText="Allow Multiple Values" />
             <Rock:LabeledCheckBox ID="cbRequired" runat="server" LabelText="Required" />
