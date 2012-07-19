@@ -34,5 +34,16 @@ namespace Rock.Tests.CMS
                 Assert.NotNull( result.Block );
             }
         }
+
+        public class TheExportJsonMethod
+        {
+            [Fact]
+            public void ShouldNotBeEmpty()
+            {
+                var blockIntance = new BlockInstance() { Name = "Foo" };
+                var result = blockIntance.ExportJson();
+                Assert.NotEmpty( result );
+            }
+        }
     }
 }
