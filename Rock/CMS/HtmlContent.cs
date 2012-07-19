@@ -233,7 +233,7 @@ namespace Rock.CMS
         /// <returns></returns>
         public string ExportJson()
         {
-            return null;
+            return ExportObject().ToJSON();
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Rock.CMS
         /// <returns></returns>
         public object ExportObject()
         {
-            return null;
+            return DataTransferObject.ToDynamic();
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace Rock.CMS
         /// <param name="data">The data.</param>
         public void ImportJson(string data)
         {
-            
+            throw new NotImplementedException();
         }
     }
     /// <summary>

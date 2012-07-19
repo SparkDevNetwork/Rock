@@ -149,6 +149,7 @@ namespace Rock.CMS
 
         public object ExportObject()
         {
+            // TODO: Export Attributes collection
             return DataTransferObject.ToDynamic();
         }
 
@@ -159,7 +160,7 @@ namespace Rock.CMS
 
         public void ImportJson(string data)
         {
-            
+            throw new NotImplementedException();
         }
 
     }
