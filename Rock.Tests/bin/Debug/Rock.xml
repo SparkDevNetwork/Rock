@@ -16925,6 +16925,24 @@
             Block POCO Entity.
             </summary>
         </member>
+        <member name="M:Rock.CMS.Block.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Block.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Block.ImportJson(System.String)">
+            <summary>
+            Imports the object from JSON.
+            </summary>
+            <param name="data">The data.</param>
+        </member>
         <member name="P:Rock.CMS.Block.System">
             <summary>
             Gets or sets the System.

@@ -240,13 +240,17 @@ namespace Rock.CMS
 
         public string ExportJson()
         {
-            return null;
+            return ExportObject().ToJSON();
         }
 
         public object ExportObject()
         {
             dynamic exportObject = DataTransferObject.ToDynamic();
-            exportObject.Block = Block.ExportObject();
+
+            if (Block != null)
+            {
+                exportObject.Block = Block.ExportObject();
+            }
 
             if (HtmlContents == null)
             {
