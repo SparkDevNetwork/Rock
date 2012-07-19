@@ -3,16 +3,16 @@ using Xunit;
 
 namespace Rock.Tests.CMS
 {
-    public class BlockTests
+    public class HtmlContentTests
     {
         public class TheExportObjectMethod
         {
             [Fact]
             public void ShouldCopyDTO()
             {
-                var block = new Block() {Name = "some block"};
-                dynamic result = block.ExportObject();
-                Assert.Equal( result.Name, block.Name );
+                var html = new HtmlContent() { Content = "Foo" };
+                dynamic result = html.ExportObject();
+                Assert.Equal( result.Content, html.Content );
             }
         }
 
@@ -21,8 +21,8 @@ namespace Rock.Tests.CMS
             [Fact]
             public void ShouldNotBeEmpty()
             {
-                var block = new Block() { Name = "some block" };
-                var result = block.ExportJson();
+                var html = new HtmlContent() { Content = "Foo" };
+                var result = html.ExportJson();
                 Assert.NotEmpty( result );
             }
         }
