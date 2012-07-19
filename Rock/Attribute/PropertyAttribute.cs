@@ -94,7 +94,7 @@ namespace Rock.Attribute
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        public bool Required { get; set; }
+        public bool IsRequired { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.
@@ -196,7 +196,7 @@ namespace Rock.Attribute
             Name = name;
             Category = category;
             Description = description;
-            Required = required;
+            IsRequired = required;
             DefaultValue = defaultValue;
             Order = order;
             FieldTypeAssembly = fieldTypeAssembly;

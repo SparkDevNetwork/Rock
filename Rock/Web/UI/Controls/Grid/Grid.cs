@@ -170,7 +170,7 @@ namespace Rock.Web.UI.Controls
             this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
             this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
 
-            this.Actions.EnableExcelExport = this.ShowActionExcelExport;
+            this.Actions.IsExcelExportEnabled = this.ShowActionExcelExport;
 
             base.OnInit( e );
         }

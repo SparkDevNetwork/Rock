@@ -35,7 +35,7 @@ namespace Rock.CRM
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Record Type Id.
@@ -225,7 +225,7 @@ namespace Rock.CRM
 		/// Email Is Active.
 		/// </value>
 		[DataMember]
-		public bool? EmailIsActive { get; set; }
+		public bool? IsEmailActive { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Email Note.
@@ -315,7 +315,7 @@ namespace Rock.CRM
 				Rock.CRM.DTO.Person dto = new Rock.CRM.DTO.Person();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.RecordTypeId = this.RecordTypeId;
 				dto.RecordStatusId = this.RecordStatusId;
 				dto.RecordStatusReasonId = this.RecordStatusReasonId;
@@ -334,7 +334,7 @@ namespace Rock.CRM
 				dto.AnniversaryDate = this.AnniversaryDate;
 				dto.GraduationDate = this.GraduationDate;
 				dto.Email = this.Email;
-				dto.EmailIsActive = this.EmailIsActive;
+				dto.IsEmailActive = this.IsEmailActive;
 				dto.EmailNote = this.EmailNote;
 				dto.DoNotEmail = this.DoNotEmail;
 				dto.SystemNote = this.SystemNote;

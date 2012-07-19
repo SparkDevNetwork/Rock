@@ -42,7 +42,7 @@ namespace Rock.CRM.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Person Id.

@@ -41,7 +41,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 				Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-				if ( Site.Authorized( "View", currentUser ) )
+				if ( Site.IsAuthorized( "View", currentUser ) )
 					return Site.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Site", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-					if ( Site.Authorized( "View", user ) )
+					if ( Site.IsAuthorized( "View", user ) )
 						return Site.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Site", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 				Rock.CMS.Site existingSite = SiteService.Get( int.Parse( id ) );
-				if ( existingSite.Authorized( "Edit", currentUser ) )
+				if ( existingSite.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site existingSite = SiteService.Get( int.Parse( id ) );
-					if ( existingSite.Authorized( "Edit", user ) )
+					if ( existingSite.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingSite).CurrentValues.SetValues(Site);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 				Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-				if ( Site.Authorized( "Edit", currentUser ) )
+				if ( Site.IsAuthorized( "Edit", currentUser ) )
 				{
 					SiteService.Delete( Site, currentUser.PersonId );
 					SiteService.Save( Site, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteService SiteService = new Rock.CMS.SiteService();
 					Rock.CMS.Site Site = SiteService.Get( int.Parse( id ) );
-					if ( Site.Authorized( "Edit", user ) )
+					if ( Site.IsAuthorized( "Edit", user ) )
 					{
 						SiteService.Delete( Site, user.PersonId );
 						SiteService.Save( Site, user.PersonId );

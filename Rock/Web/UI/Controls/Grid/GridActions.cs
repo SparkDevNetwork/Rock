@@ -29,16 +29,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableAdd
+        public bool IsAddEnabled
         {
             get 
             {
-                bool? b = ViewState["EnableAdd"] as bool?;
+                bool? b = ViewState["IsAddEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
             {
-                ViewState["EnableAdd"] = value;
+                ViewState["IsAddEnabled"] = value;
             }
         }
 
@@ -48,16 +48,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableExcelExport
+        public bool IsExcelExportEnabled
         {
             get
             {
-                bool? b = ViewState["EnableExcelExport"] as bool?;
+                bool? b = ViewState["IsExcelExportEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
             {
-                ViewState["EnableExcelExport"] = value;
+                ViewState["IsExcelExportEnabled"] = value;
             }
         }
 
@@ -109,11 +109,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            aAdd.Visible = EnableAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
-            lbAdd.Visible = EnableAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+            aAdd.Visible = IsAddEnabled && !String.IsNullOrWhiteSpace( ClientAddScript );
+            lbAdd.Visible = IsAddEnabled && String.IsNullOrWhiteSpace( ClientAddScript );
 
-            aExcelExport.Visible = EnableExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            lbExcelExport.Visible = EnableExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            aExcelExport.Visible = IsExcelExportEnabled && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            lbExcelExport.Visible = IsExcelExportEnabled && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
             base.Render( writer );
         }

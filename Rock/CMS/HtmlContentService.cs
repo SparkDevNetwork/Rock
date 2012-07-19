@@ -66,7 +66,7 @@ namespace Rock.CMS
             // Only consider approved content and content that is not prior to the start date 
             // or past the expire date
             var content = Queryable().
-                Where( c => c.Approved &&
+                Where( c => c.IsApproved &&
                     ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= DateTime.Now &&
                     ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= DateTime.Now );
 

@@ -12,7 +12,7 @@
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
-                <Rock:BoolField DataField="Active" HeaderText="Active" />
+                <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                 <Rock:EditField OnClick="rGrid_Edit" />
             </Columns>
         </Rock:Grid>
