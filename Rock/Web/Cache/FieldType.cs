@@ -42,7 +42,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the field 
         /// </summary>
-        public Rock.FieldTypes.IFieldType Field { get; private set; }
+        public Rock.Field.IFieldType Field { get; private set; }
 
         #region Static Methods
 
@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
                     fieldType.Id = fieldTypeModel.Id;
                     fieldType.Name = fieldTypeModel.Name;
                     fieldType.Description = fieldTypeModel.Description;
-                    fieldType.Field = Rock.FieldTypes.FieldHelper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
+                    fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
 
                     cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 

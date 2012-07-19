@@ -6,6 +6,9 @@
 
 using System.Collections.Generic;
 using System.Runtime.Caching;
+using System.Web.UI;
+
+using Rock.Field;
 
 namespace Rock.Web.Cache
 {
@@ -86,7 +89,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the qualifier values if any have been defined for the attribute
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; private set; }
+        public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         private int FieldTypeId { get; set; }
 
@@ -115,10 +118,12 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         /// <param name="setValue">if set to <c>true</c> set the control's value</param>
         /// <returns></returns>
-        public System.Web.UI.Control CreateControl( string value, bool setValue)
+        public Control CreateControl( string value, bool setValue)
         {
-            this.FieldType.Field.QualifierValues = this.QualifierValues;
-            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value, Required, setValue );
+            Control editControl = this.FieldType.Field.EditControl( this.QualifierValues);
+            if ( setValue )
+                this.FieldType.Field.SetEditValue( editControl, this.QualifierValues, value );
+            return editControl;
         }
 
         #region Static Methods
@@ -196,9 +201,9 @@ namespace Rock.Web.Cache
             attribute.Required = attributeModel.Required;
             attribute.MultiValue = attributeModel.MultiValue;
 
-            attribute.QualifierValues = new Dictionary<string,KeyValuePair<string, string>>();
+            attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
-                attribute.QualifierValues.Add( qualifier.Key, new KeyValuePair<string, string>( qualifier.Name, qualifier.Value ) );
+                attribute.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
 
             return attribute;
         }

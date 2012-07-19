@@ -28,7 +28,6 @@ namespace RockWeb.Blocks.Administration
         protected string _entityQualifierValue = string.Empty;
 
         private bool _canConfigure = false;
-        private Rock.Core.AttributeService _attributeService = new Rock.Core.AttributeService();
 
         #endregion
 
@@ -63,6 +62,8 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+
+                    ddlFieldType.SelectedIndexChanged += new EventHandler<EventArgs>( ddlFieldType_SelectedIndexChanged );
                     modalDetails.SaveClick += modalDetails_SaveClick;
 
                     string script = string.Format( @"
@@ -110,13 +111,15 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.Attribute attribute = _attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            var attributeService = new Rock.Core.AttributeService();
+
+            Rock.Core.Attribute attribute = attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.Attribute.Flush( attribute.Id );
 
-                _attributeService.Delete( attribute, CurrentPersonId );
-                _attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonId );
+                attributeService.Save( attribute, CurrentPersonId );
             }
 
             BindGrid();
@@ -132,39 +135,67 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
+        void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            modalDetails.Show();
+        }
+
         void modalDetails_SaveClick( object sender, EventArgs e )
         {
-            Rock.Core.Attribute attribute;
-
-            int attributeId = 0;
-            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId) )
-                attributeId = 0;
-
-            if ( attributeId == 0 )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                attribute = new Rock.Core.Attribute();
-                attribute.System = false;
-                attribute.Entity = _entity;
-                attribute.EntityQualifierColumn = _entityQualifierColumn;
-                attribute.EntityQualifierValue = _entityQualifierValue;
-                _attributeService.Add( attribute, CurrentPersonId );
-            }
-            else
-            {
-                Rock.Web.Cache.Attribute.Flush( attributeId );
-                attribute = _attributeService.Get( attributeId );
-            }
+                var attributeService = new Rock.Core.AttributeService();
+                var attributeQualifierService = new Rock.Core.AttributeQualifierService();
 
-            attribute.Key = tbKey.Text;
-            attribute.Name = tbName.Text;
-            attribute.Category = tbCategory.Text;
-            attribute.Description = tbDescription.Text;
-            attribute.FieldTypeId = Int32.Parse( ddlFieldType.SelectedValue );
-            attribute.DefaultValue = tbDefaultValue.Text;
-            attribute.MultiValue = cbMultiValue.Checked;
-            attribute.Required = cbRequired.Checked;
+                Rock.Core.Attribute attribute;
 
-            _attributeService.Save( attribute, CurrentPersonId );
+                int attributeId = 0;
+                if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId ) )
+                    attributeId = 0;
+
+                if ( attributeId == 0 )
+                {
+                    attribute = new Rock.Core.Attribute();
+                    attribute.System = false;
+                    attribute.Entity = _entity;
+                    attribute.EntityQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityQualifierValue = _entityQualifierValue;
+                    attributeService.Add( attribute, CurrentPersonId );
+                }
+                else
+                {
+                    Rock.Web.Cache.Attribute.Flush( attributeId );
+                    attribute = attributeService.Get( attributeId );
+                }
+
+                attribute.Key = tbKey.Text;
+                attribute.Name = tbName.Text;
+                attribute.Category = tbCategory.Text;
+                attribute.Description = tbDescription.Text;
+                attribute.FieldTypeId = ddlFieldType.FieldType.Id;
+
+                foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
+                    attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                attribute.AttributeQualifiers.Clear();
+
+                if ( ddlFieldType.ConfigurationValues != null )
+                {
+                    foreach ( var configValue in ddlFieldType.ConfigurationValues )
+                    {
+                        AttributeQualifier qualifier = new AttributeQualifier();
+                        qualifier.Key = configValue.Key;
+                        qualifier.Value = configValue.Value.Value;
+                        attribute.AttributeQualifiers.Add( qualifier );
+                    }
+                }
+
+                attribute.DefaultValue = tbDefaultValue.Text;
+                attribute.MultiValue = cbMultiValue.Checked;
+                attribute.Required = cbRequired.Checked;
+
+                attributeService.Save( attribute, CurrentPersonId );
+
+            }
 
             BindGrid();
         }
@@ -194,7 +225,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = _attributeService.Queryable().
+            var queryable = new Rock.Core.AttributeService().Queryable().
                 Where( a => a.Entity == _entity &&
                     ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
                     ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
@@ -213,10 +244,12 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int attributeId )
         {
-            var attribute = _attributeService.Get( attributeId );
+            var attributeModel =  new Rock.Core.AttributeService().Get( attributeId );
 
-            if ( attribute != null )
+            if ( attributeModel != null )
             {
+                var attribute = Rock.Web.Cache.Attribute.Read(attributeModel);
+
                 modalDetails.Title = "Edit Attribute";
                 hfId.Value = attribute.Id.ToString();
 
@@ -224,7 +257,9 @@ namespace RockWeb.Blocks.Administration
                 tbName.Text = attribute.Name;
                 tbCategory.Text = attribute.Category;
                 tbDescription.Text = attribute.Description;
-                ddlFieldType.SelectedValue = attribute.FieldTypeId.ToString();
+                ddlFieldType.FieldType = attribute.FieldType;
+                ddlFieldType.LabelText = "Field Type";
+                ddlFieldType.ConfigurationValues = attribute.QualifierValues;
                 tbDefaultValue.Text = attribute.DefaultValue;
                 cbMultiValue.Checked = attribute.MultiValue;
                 cbRequired.Checked = attribute.Required;
@@ -239,11 +274,12 @@ namespace RockWeb.Blocks.Administration
                 tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
                 tbDescription.Text = string.Empty;
 
-                try {
-                    ddlFieldType.SelectedValue = ddlFieldType.Items.FindByText("Text").Value;
-                }
-                catch {
-                    ddlFieldType.SelectedIndex = 0;
+                FieldTypeService fieldTypeService = new FieldTypeService();
+                var fieldTypeModel = fieldTypeService.GetByName("Text").FirstOrDefault();
+                if (fieldTypeModel != null)
+                {
+                    ddlFieldType.FieldType = Rock.Web.Cache.FieldType.Read( fieldTypeModel.Id);
+                    ddlFieldType.ConfigurationValues = ddlFieldType.FieldType.Field.GetConfigurationValues(null);
                 }
 
                 tbDefaultValue.Text = string.Empty;

@@ -281,7 +281,7 @@ namespace Rock.Attribute
 
         /// <summary>
         /// Helper method to generate a list of <![CDATA[<li>]]> tags that contain the appropriate html edit
-        /// control returned by each attribute's <see cref="Rock.FieldTypes.IFieldType"/>
+        /// control returned by each attribute's <see cref="Rock.Field.IFieldType"/>
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="setValue">if set to <c>true</c> set the edit control's value based on the attribute value.</param>
@@ -393,7 +393,7 @@ namespace Rock.Attribute
                         if ( control != null )
                         {
                             Rock.Core.DTO.AttributeValue value = new Core.DTO.AttributeValue();
-                            value.Value = attribute.FieldType.Field.ReadValue( control );
+                            value.Value = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
                             item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, new List<Rock.Core.DTO.AttributeValue>() { value } );
                         }
                     }

@@ -7,9 +7,9 @@
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.FieldTypes
+namespace Rock.Field.Types
 {
-    public class Video : Field
+    public class Video : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -22,8 +22,6 @@ namespace Rock.FieldTypes
         {
             if ( value.Trim() != string.Empty )
             {
-
-
                 string poster = string.Empty;
                 string video = value;
 
