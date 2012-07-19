@@ -51,14 +51,14 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
 
                 BindFilter();
 
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Administration
                 if ( attributeId == 0 )
                 {
                     attribute = new Rock.Core.Attribute();
-                    attribute.System = false;
+                    attribute.IsSystem = false;
                     attribute.Entity = _entity;
                     attribute.EntityQualifierColumn = _entityQualifierColumn;
                     attribute.EntityQualifierValue = _entityQualifierValue;
@@ -190,8 +190,8 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 attribute.DefaultValue = tbDefaultValue.Text;
-                attribute.MultiValue = cbMultiValue.Checked;
-                attribute.Required = cbRequired.Checked;
+                attribute.IsMultiValue = cbMultiValue.Checked;
+                attribute.IsRequired = cbRequired.Checked;
 
                 attributeService.Save( attribute, CurrentPersonId );
 
@@ -261,8 +261,8 @@ namespace RockWeb.Blocks.Administration
                 ddlFieldType.LabelText = "Field Type";
                 ddlFieldType.ConfigurationValues = attribute.QualifierValues;
                 tbDefaultValue.Text = attribute.DefaultValue;
-                cbMultiValue.Checked = attribute.MultiValue;
-                cbRequired.Checked = attribute.Required;
+                cbMultiValue.Checked = attribute.IsMultiValue;
+                cbRequired.Checked = attribute.IsRequired;
             }
             else
             {

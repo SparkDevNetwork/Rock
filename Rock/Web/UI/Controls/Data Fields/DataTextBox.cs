@@ -161,7 +161,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Dl );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Dt );
-            if ( validator.Required )
+            if ( validator.IsRequired )
                 writer.AddAttribute( "class", "required" );
             label.RenderControl( writer );
             writer.RenderEndTag();

@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Core
             {
                 lAttributeName.Text = _attribute.Name;
 
-                if ( _attribute.MultiValue )
+                if ( _attribute.IsMultiValue )
                     lvAttributeValues.InsertItemPosition = InsertItemPosition.LastItem;
                 else
                     lvAttributeValues.InsertItemPosition = InsertItemPosition.None;
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
                 lvAttributeValues.DataSource = new List<Rock.Core.DTO.AttributeValue>();
             lvAttributeValues.DataBind();
 
-            if ( _attribute.MultiValue && lvAttributeValues.InsertItem != null )
+            if ( _attribute.IsMultiValue && lvAttributeValues.InsertItem != null )
             {
                 PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
                 if ( phInsertValue != null )

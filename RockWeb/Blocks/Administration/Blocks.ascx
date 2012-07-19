@@ -10,7 +10,7 @@
             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
             <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
             <asp:BoundField HeaderText="Description" DataField="Description" />
-            <Rock:BoolField DataField="System" HeaderText="System" />
+            <Rock:BoolField DataField="IsSystem" HeaderText="System" />
             <Rock:EditField OnClick="rGrid_Edit" />
             <Rock:DeleteField OnClick="rGrid_Delete" />
         </Columns>

@@ -132,7 +132,7 @@ namespace Rock.Security
             if ( entity.ParentAuthority != null )
                 return Authorized( entity.ParentAuthority, action, specialRole );
             else
-                return entity.DefaultAuthorization( action );
+                return entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Rock.Security
                         if (authRule.GroupId.HasValue)
                         {
                             Role role = Role.Read( authRule.GroupId.Value );
-                            if ( role != null && role.UserInRole( userName ) )
+                            if ( role != null && role.IsUserInRole( userName ) )
                                 return authRule.AllowOrDeny == "A";
                         }
                     }
@@ -198,7 +198,7 @@ namespace Rock.Security
             if ( entity.ParentAuthority != null )
                 return Authorized( entity.ParentAuthority, action, user );
             else
-                return entity.DefaultAuthorization( action );
+                return entity.IsAllowedByDefault( action );
 
         }
 

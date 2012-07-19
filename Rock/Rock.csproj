@@ -224,6 +224,14 @@
     <Compile Include="Migrations\201207191232155_UpdateFieldTypes.Designer.cs">
       <DependentUpon>201207191232155_UpdateFieldTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207192033371_UpdateBooleanPropertyNames.cs" />
+    <Compile Include="Migrations\201207192033371_UpdateBooleanPropertyNames.Designer.cs">
+      <DependentUpon>201207192033371_UpdateBooleanPropertyNames.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201207192106568_AddDefinedValuesPage.cs" />
+    <Compile Include="Migrations\201207192106568_AddDefinedValuesPage.Designer.cs">
+      <DependentUpon>201207192106568_AddDefinedValuesPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />

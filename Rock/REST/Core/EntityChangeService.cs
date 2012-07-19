@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 				Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
-				if ( EntityChange.Authorized( "View", currentUser ) )
+				if ( EntityChange.IsAuthorized( "View", currentUser ) )
 					return EntityChange.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this EntityChange", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 					Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
-					if ( EntityChange.Authorized( "View", user ) )
+					if ( EntityChange.IsAuthorized( "View", user ) )
 						return EntityChange.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this EntityChange", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 				Rock.Core.EntityChange existingEntityChange = EntityChangeService.Get( int.Parse( id ) );
-				if ( existingEntityChange.Authorized( "Edit", currentUser ) )
+				if ( existingEntityChange.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 					Rock.Core.EntityChange existingEntityChange = EntityChangeService.Get( int.Parse( id ) );
-					if ( existingEntityChange.Authorized( "Edit", user ) )
+					if ( existingEntityChange.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingEntityChange).CurrentValues.SetValues(EntityChange);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 				Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
-				if ( EntityChange.Authorized( "Edit", currentUser ) )
+				if ( EntityChange.IsAuthorized( "Edit", currentUser ) )
 				{
 					EntityChangeService.Delete( EntityChange, currentUser.PersonId );
 					EntityChangeService.Save( EntityChange, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.EntityChangeService EntityChangeService = new Rock.Core.EntityChangeService();
 					Rock.Core.EntityChange EntityChange = EntityChangeService.Get( int.Parse( id ) );
-					if ( EntityChange.Authorized( "Edit", user ) )
+					if ( EntityChange.IsAuthorized( "Edit", user ) )
 					{
 						EntityChangeService.Delete( EntityChange, user.PersonId );
 						EntityChangeService.Save( EntityChange, user.PersonId );

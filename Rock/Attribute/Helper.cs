@@ -95,7 +95,7 @@ namespace Rock.Attribute
                 attribute.EntityQualifierColumn = entityQualifierColumn;
                 attribute.EntityQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
-                attribute.GridColumn = false;
+                attribute.IsGridColumn = false;
             }
             else
             {
@@ -107,7 +107,7 @@ namespace Rock.Attribute
                     attribute.Order != property.Order ||
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
-                    attribute.Required != property.Required )
+                    attribute.IsRequired != property.IsRequired )
                     updated = true;
             }
 
@@ -119,7 +119,7 @@ namespace Rock.Attribute
                 attribute.Description = property.Description;
                 attribute.DefaultValue = property.DefaultValue;
                 attribute.Order = property.Order;
-                attribute.Required = property.Required;
+                attribute.IsRequired = property.IsRequired;
 
                 // Try to set the field type by searching for an existing field type with the same assembly and class name
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
@@ -315,7 +315,7 @@ namespace Rock.Attribute
                         lbl.ClientIDMode = ClientIDMode.AutoID;
                         lbl.Text = attribute.Name;
                         lbl.AssociatedControlID = string.Format( "attribute_field_{0}", attribute.Id );
-                        if ( attribute.Required )
+                        if ( attribute.IsRequired )
                             lbl.Attributes.Add( "class", "required" );
                         dt.Controls.Add( lbl );
 
@@ -327,7 +327,7 @@ namespace Rock.Attribute
                         attributeControl.ClientIDMode = ClientIDMode.AutoID;
                         dd.Controls.Add( attributeControl );
 
-                        if ( attribute.Required )
+                        if ( attribute.IsRequired )
                         {
                             RequiredFieldValidator rfv = new RequiredFieldValidator();
                             dd.Controls.Add( rfv );
@@ -367,7 +367,7 @@ namespace Rock.Attribute
                 foreach ( var category in item.Attributes )
                     foreach ( var attribute in category.Value )
                     {
-                        if ( attribute.Required )
+                        if ( attribute.IsRequired )
                         {
                             HtmlGenericControl dl = parentControl.FindControl( string.Format( "attribute_{0}", attribute.Id ) ) as HtmlGenericControl;
                             RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute_rfv_{0}", attribute.Id ) ) as RequiredFieldValidator;

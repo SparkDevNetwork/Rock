@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool Temporary { get; set; }
+		public bool IsTemporary { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the System.
@@ -44,7 +44,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Data.
@@ -145,8 +145,8 @@ namespace Rock.CMS
 				Rock.CMS.DTO.File dto = new Rock.CMS.DTO.File();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.Temporary = this.Temporary;
-				dto.System = this.System;
+				dto.IsTemporary = this.IsTemporary;
+				dto.IsSystem = this.IsSystem;
 				dto.Data = this.Data;
 				dto.Url = this.Url;
 				dto.FileName = this.FileName;

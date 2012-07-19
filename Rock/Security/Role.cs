@@ -42,7 +42,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public bool UserInRole( string user )
+        public bool IsUserInRole( string user )
         {
             return Users.Contains( user );
         }

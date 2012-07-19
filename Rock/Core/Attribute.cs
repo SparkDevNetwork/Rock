@@ -35,7 +35,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Field Type Id.
@@ -136,7 +136,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool GridColumn { get; set; }
+		public bool IsGridColumn { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Default Value.
@@ -155,7 +155,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool MultiValue { get; set; }
+		public bool IsMultiValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Required.
@@ -165,7 +165,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool Required { get; set; }
+		public bool IsRequired { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -216,7 +216,7 @@ namespace Rock.Core
 				Rock.Core.DTO.Attribute dto = new Rock.Core.DTO.Attribute();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Entity = this.Entity;
 				dto.EntityQualifierColumn = this.EntityQualifierColumn;
@@ -226,10 +226,10 @@ namespace Rock.Core
 				dto.Category = this.Category;
 				dto.Description = this.Description;
 				dto.Order = this.Order;
-				dto.GridColumn = this.GridColumn;
+				dto.IsGridColumn = this.IsGridColumn;
 				dto.DefaultValue = this.DefaultValue;
-				dto.MultiValue = this.MultiValue;
-				dto.Required = this.Required;
+				dto.IsMultiValue = this.IsMultiValue;
+				dto.IsRequired = this.IsRequired;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;

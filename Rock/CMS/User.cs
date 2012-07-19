@@ -309,7 +309,7 @@ namespace Rock.CMS
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public override bool DefaultAuthorization( string action )
+        public override bool IsAllowedByDefault( string action )
         {
             return false;
         }
