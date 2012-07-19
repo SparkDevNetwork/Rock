@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -127,7 +127,7 @@ namespace Rock.Core
 				Rock.Core.DTO.FieldType dto = new Rock.Core.DTO.FieldType();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
 				dto.Assembly = this.Assembly;

@@ -91,8 +91,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( _requireApproval )
                 {
-                    cbApprove.Checked = content.Approved;
-                    cbApprove.Enabled = UserAuthorized( "Approve" );
+                    cbApprove.Checked = content.IsApproved;
+                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
                     cbApprove.Visible = true;
                 }
                 else
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
                 Rock.CMS.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
@@ -191,10 +191,10 @@ namespace RockWeb.Blocks.Cms
                     content.ExpireDateTime = null;
                 }
 
-                if ( !_requireApproval || UserAuthorized( "Approve" ) )
+                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
                 {
-                    content.Approved = !_requireApproval || cbApprove.Checked;
-                    if ( content.Approved )
+                    content.IsApproved = !_requireApproval || cbApprove.Checked;
+                    if ( content.IsApproved )
                     {
                         content.ApprovedByPersonId = CurrentPersonId;
                         content.ApprovedDateTime = DateTime.Now;
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Cms
                     v.Content,
                     ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
                     ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
-                    v.Approved,
+                    Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,
                     v.ExpireDateTime

@@ -34,7 +34,7 @@ namespace Rock.CRM
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -173,7 +173,7 @@ namespace Rock.CRM
 				Rock.CRM.DTO.EmailTemplate dto = new Rock.CRM.DTO.EmailTemplate();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.PersonId = this.PersonId;
 				dto.Category = this.Category;
 				dto.Title = this.Title;

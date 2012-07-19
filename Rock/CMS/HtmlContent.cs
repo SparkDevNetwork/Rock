@@ -74,7 +74,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool Approved { get; set; }
+		public bool IsApproved { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Approved By Person Id.
@@ -165,7 +165,7 @@ namespace Rock.CMS
 				dto.EntityValue = this.EntityValue;
 				dto.Version = this.Version;
 				dto.Content = this.Content;
-				dto.Approved = this.Approved;
+				dto.IsApproved = this.IsApproved;
 				dto.ApprovedByPersonId = this.ApprovedByPersonId;
 				dto.ApprovedDateTime = this.ApprovedDateTime;
 				dto.CreatedDateTime = this.CreatedDateTime;

@@ -62,7 +62,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public bool Authorized( string action, Rock.CMS.User user )
+        public bool IsAuthorized( string action, Rock.CMS.User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }
@@ -73,7 +73,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }

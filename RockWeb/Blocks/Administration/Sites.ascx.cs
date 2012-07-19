@@ -27,10 +27,10 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
             {
                 gSites.DataKeyNames = new string[] { "id" };
-                gSites.Actions.EnableAdd = true;
+                gSites.Actions.IsAddEnabled = true;
                 gSites.Actions.AddClick += gSites_Add;
                 gSites.GridRebind += gSites_GridRebind;
             }
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
             {
                 if ( !Page.IsPostBack )
                 {

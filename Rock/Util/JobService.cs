@@ -32,7 +32,7 @@ namespace Rock.Util
         /// <returns></returns>
         public IEnumerable<Job> GetActiveJobs()
         {
-            return Repository.Find( t => t.Active == true );
+            return Repository.Find( t => t.IsActive == true );
         }
 
         /// <summary>
