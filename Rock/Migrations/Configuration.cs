@@ -849,7 +849,7 @@ namespace Rock.Migrations
 			var block_Sites = new Block
 			{
 				Name = @"Sites",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Sites.ascx",
 				Guid = new Guid( "3E0AFD6E-3E3D-4FF9-9BC6-387AFBF9ACB6" ),
 				Description = @"Site Administration"
@@ -859,7 +859,7 @@ namespace Rock.Migrations
 			var block_Login = new Block
 			{
 				Name = @"Login",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/Login.ascx",
 				Guid = new Guid( "7B83D513-1178-429E-93FF-E76430E038E4" ),
 				Description = @"Provides ability to login to site."
@@ -869,7 +869,7 @@ namespace Rock.Migrations
 			var block_CreateAccount = new Block
 			{
 				Name = @"Create Account",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/CreateAccount.ascx",
 				Guid = new Guid( "292D3578-BC27-4DAB-BFC3-6D249E0905E0" ),
 				Description = @"Create new user accounts"
@@ -879,7 +879,7 @@ namespace Rock.Migrations
 			var block_HTMLContent = new Block
 			{
 				Name = @"HTML Content",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Cms/HtmlContent.ascx",
 				Guid = new Guid( "19B61D65-37E3-459F-A44F-DEF0089118A3" ),
 				Description = @"A block that displays HTML"
@@ -889,7 +889,7 @@ namespace Rock.Migrations
 			var block_Roles = new Block
 			{
 				Name = @"Roles",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Roles.ascx",
 				Guid = new Guid( "EA5F81B5-9086-4D34-8339-46D26B5F775E" ),
 				Description = @"Role Administration"
@@ -899,7 +899,7 @@ namespace Rock.Migrations
 			var block_Blocks = new Block
 			{
 				Name = @"Blocks",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Blocks.ascx",
 				Guid = new Guid( "0244A072-6216-49F4-92EC-E6B5FFFF03B5" ),
 				Description = @"Block Administration"
@@ -909,7 +909,7 @@ namespace Rock.Migrations
 			var block_BlogPosts = new Block
 			{
 				Name = @"Blog Posts",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Blog/Posts.ascx",
 				Guid = new Guid( "E9918B7E-C108-4813-AE2B-9D5091644AAE" ),
 				Description = @"Blog Posts"
@@ -919,7 +919,7 @@ namespace Rock.Migrations
 			var block_BlogCategories = new Block
 			{
 				Name = @"Blog Categories",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Blog/Categories.ascx",
 				Guid = new Guid( "B13D3564-72D8-45F5-AE1D-20D0F600C93F" ),
 				Description = @"Used to list categories for a specific blog."
@@ -929,7 +929,7 @@ namespace Rock.Migrations
 			var block_BlogPostDisplay = new Block
 			{
 				Name = @"Blog Post Display",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Blog/PostDisplay.ascx",
 				Guid = new Guid( "52FC470C-474C-495C-9620-E74A29AE846E" ),
 				Description = @"Used to show a post on a public site and allow for commenting."
@@ -939,7 +939,7 @@ namespace Rock.Migrations
 			var block_PageXsltTransformation = new Block
 			{
 				Name = @"Page Xslt Transformation",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Cms/PageXslt.ascx",
 				Guid = new Guid( "F49AD5F8-1E45-41E7-A88E-8CD285815BD9" ),
 				Description = @"Used for page navigation controls"
@@ -949,7 +949,7 @@ namespace Rock.Migrations
 			var block_ZoneBlocks = new Block
 			{
 				Name = @"Zone Blocks",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/ZoneBlocks.ascx",
 				Guid = new Guid( "72CAAF77-A015-45F0-A549-F941B9AB4D75" ),
 				Description = @"~/Blocks/Cms/ZoneBlocks.ascx"
@@ -959,7 +959,7 @@ namespace Rock.Migrations
 			var block_BlockProperties = new Block
 			{
 				Name = @"Block Properties",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/BlockProperties.ascx",
 				Guid = new Guid( "5EC45388-83D4-4E99-BF25-3FA00327F08B" ),
 				Description = @"~/Blocks/Cms/BlockProperties.ascx"
@@ -969,7 +969,7 @@ namespace Rock.Migrations
 			var block_Security = new Block
 			{
 				Name = @"Security",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Security.ascx",
 				Guid = new Guid( "20474B3D-0DE7-4B63-B7B9-E042DBEF788C" ),
 				Description = @"~/Blocks/Cms/Security.ascx"
@@ -979,7 +979,7 @@ namespace Rock.Migrations
 			var block_Pages = new Block
 			{
 				Name = @"Pages",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Pages.ascx",
 				Guid = new Guid( "AEFC2DBE-37B6-4CAB-882C-B214F587BF2E" ),
 				Description = @"~/Blocks/Cms/Pages.ascx"
@@ -989,7 +989,7 @@ namespace Rock.Migrations
 			var block_PageProperties = new Block
 			{
 				Name = @"Page Properties",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/PageProperties.ascx",
 				Guid = new Guid( "C7988C3E-822D-4E73-882E-9B7684398BAA" ),
 				Description = @"Gives the user the ability to edit the properties for a page."
@@ -999,7 +999,7 @@ namespace Rock.Migrations
 			var block_Geocoding = new Block
 			{
 				Name = @"Geocoding",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Address/Geocoding.ascx",
 				Guid = new Guid( "340F1474-3403-4426-A8F0-2E33C1B4BF2F" ),
 				Description = @"~/Blocks/Administration/Address/Geocoding.ascx"
@@ -1009,7 +1009,7 @@ namespace Rock.Migrations
 			var block_Standardization = new Block
 			{
 				Name = @"Standardization",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Address/Standardization.ascx",
 				Guid = new Guid( "363C3382-5148-4097-82B2-C85A4910A837" ),
 				Description = @"~/Blocks/Administration/Address/Standardization.ascx"
@@ -1019,7 +1019,7 @@ namespace Rock.Migrations
 			var block_Redirect = new Block
 			{
 				Name = @"Redirect",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Cms/Redirect.ascx",
 				Guid = new Guid( "B97FB779-5D3E-4663-B3B5-3C2C227AE14A" ),
 				Description = @"Redirects the user to a provided URL."
@@ -1029,7 +1029,7 @@ namespace Rock.Migrations
 			var block_LoginStatus = new Block
 			{
 				Name = @"Login Status",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/LoginStatus.ascx",
 				Guid = new Guid( "04712F3D-9667-4901-A49D-4507573EF7AD" ),
 				Description = @"~/Blocks/Security/LoginStatus.ascx"
@@ -1039,7 +1039,7 @@ namespace Rock.Migrations
 			var block_Attributes = new Block
 			{
 				Name = @"Attributes",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Attributes.ascx",
 				Guid = new Guid( "E5EA2F6D-43A2-48E0-B59C-4409B78AC830" ),
 				Description = @"~/Blocks/Administration/Attributes.ascx"
@@ -1049,7 +1049,7 @@ namespace Rock.Migrations
 			var block_AttributeValues = new Block
 			{
 				Name = @"Attribute Values",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/AttributeValues.ascx",
 				Guid = new Guid( "B084F060-ECE4-462A-B6D0-35B2A30AF3DF" ),
 				Description = @"~/Blocks/Administration/AttributeValues.ascx"
@@ -1059,7 +1059,7 @@ namespace Rock.Migrations
 			var block_ConfirmAccount = new Block
 			{
 				Name = @"Confirm Account",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/ConfirmAccount.ascx",
 				Guid = new Guid( "734DFF21-7465-4E02-BFC3-D40F7A65FB60" ),
 				Description = @"~/Blocks/Security/ConfirmAccount.ascx"
@@ -1069,7 +1069,7 @@ namespace Rock.Migrations
 			var block_NewAccount = new Block
 			{
 				Name = @"New Account",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/NewAccount.ascx",
 				Guid = new Guid( "99362B60-71A5-44C6-BCFE-DDA9B00CC7F3" ),
 				Description = @"~/Blocks/Security/NewAccount.ascx"
@@ -1079,7 +1079,7 @@ namespace Rock.Migrations
 			var block_ChangePassword = new Block
 			{
 				Name = @"Change Password",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/ChangePassword.ascx",
 				Guid = new Guid( "3C12DE99-2D1B-40F2-A9B8-6FE7C2524B37" ),
 				Description = @"~/Blocks/Security/ChangePassword.ascx"
@@ -1089,7 +1089,7 @@ namespace Rock.Migrations
 			var block_ForgotUserName = new Block
 			{
 				Name = @"Forgot UserName",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Security/ForgotUserName.ascx",
 				Guid = new Guid( "02B3D7D1-23CE-4154-B602-F4A15B321757" ),
 				Description = @"~/Blocks/Security/ForgotUserName.ascx"
@@ -1099,7 +1099,7 @@ namespace Rock.Migrations
 			var block_Components = new Block
 			{
 				Name = @"Components",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/Components.ascx",
 				Guid = new Guid( "21F5F466-59BC-40B2-8D73-7314D936C3CB" ),
 				Description = @"~/Blocks/Administration/Components.ascx"
@@ -1109,7 +1109,7 @@ namespace Rock.Migrations
 			var block_EmailTemplates = new Block
 			{
 				Name = @"Email Templates",
-				System = true,
+                IsSystem = true,
 				Path = @"~/Blocks/Administration/EmailTemplates.ascx",
 				Guid = new Guid( "10DC44E9-ECC1-4679-8A07-C098A0DCD82E" ),
 				Description = @"~/Blocks/Administration/EmailTemplates.ascx"
@@ -1127,7 +1127,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "B31AE932-F065-4500-8524-2182431CD18C" ),
 				Name = @"a",
-				System = true,
+				IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1140,7 +1140,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "3D325BB3-E1C9-4194-8E9B-11BFFC347DC3" ),
 				Name = @"b",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1153,7 +1153,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "74B3B85E-33B6-4ACF-8338-CBC12888BC74" ),
 				Name = @"d",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1166,7 +1166,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "CC8F4186-870D-4CF3-8226-D49F1A0D0DDF" ),
 				Name = @"Menu",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Layout = @"Default",
 				Zone = @"Menu",
@@ -1179,7 +1179,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "A5E0DD78-BB67-41E5-BDDA-73E2277482DA" ),
 				Name = @"l",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1192,7 +1192,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "53E8E3A7-5CE8-493A-96AC-C1A7ECFCA5C7" ),
 				Name = @"Html",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"ContentRight",
 				Order = 0,
@@ -1205,7 +1205,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "3D128AE6-08DE-4108-A888-F97C66B21996" ),
 				Name = @"Block Properties",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1218,7 +1218,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "2CA65E58-5ED1-4BBB-B5E1-82F3EBA8EE0C" ),
 				Name = @"Security",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1231,7 +1231,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "7B13773C-7477-42B6-B6B9-C69A19FB64EA" ),
 				Name = @"Child Pages",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1244,7 +1244,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "46376422-C33D-4FFF-8005-E7116781B466" ),
 				Name = @"Page Properties",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1257,7 +1257,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "5F0DBB84-BFEF-43ED-9E51-E245DC85B7B5" ),
 				Name = @"Welcome",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1270,7 +1270,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "C62E5EE6-104E-4741-86DF-B9484F597C2C" ),
 				Name = @"Login Status",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Layout = @"Default",
 				Zone = @"zHeader",
@@ -1283,7 +1283,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "3CBB177B-DBFB-4FB2-A1A7-957DC6C350EB" ),
 				Name = @"Org Settings",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1296,7 +1296,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "89FE9265-3087-4334-B990-CE06E91925EE" ),
 				Name = @"Org Values",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1309,7 +1309,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "3FCA7657-A18C-400A-8A5A-29A8680C15E6" ),
 				Name = @"Footer Content",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Layout = @"Default",
 				Zone = @"Footer",
@@ -1322,7 +1322,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "0D192BF7-584A-4229-84A6-A02C7CACEEBF" ),
 				Name = @"New Account",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1335,7 +1335,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "3137BF4E-5735-4DB7-B708-3B6F80DA5505" ),
 				Name = @"Confirm",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1348,7 +1348,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "150496F4-4798-4BB5-B796-405DE11B5ED1" ),
 				Name = @"Rest Password",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
@@ -1361,7 +1361,7 @@ namespace Rock.Migrations
 			{
 				Guid = new Guid( "33C61662-B42A-483B-91F1-C10955C5E5A9" ),
 				Name = @"Forgot User Name",
-				System = true,
+                IsSystem = true,
 				OutputCacheDuration = 0,
 				Zone = @"Content",
 				Order = 0,
