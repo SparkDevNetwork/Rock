@@ -10719,7 +10719,7 @@
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
         </member>
-        <member name="P:Rock.CMS.BlockInstance.System">
+        <member name="P:Rock.CMS.BlockInstance.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>
@@ -16943,7 +16943,7 @@
             </summary>
             <param name="data">The data.</param>
         </member>
-        <member name="P:Rock.CMS.Block.System">
+        <member name="P:Rock.CMS.Block.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>
