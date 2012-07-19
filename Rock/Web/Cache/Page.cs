@@ -711,7 +711,13 @@ namespace Rock.Web.Cache
         /// </summary>
         public Security.ISecured ParentAuthority
         {
-            get { return this.ParentPage; }
+            get
+            {
+                if ( this.ParentPage != null )
+                    return this.ParentPage;
+                else
+                    return this.Site;
+            }
         }
 
         /// <summary>
