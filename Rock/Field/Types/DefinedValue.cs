@@ -62,7 +62,7 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Length == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey("definedtype") )
-                    ( ( DropDownList )controls[1] ).SelectedValue = configurationValues["definedtype"].Value;
+                    ( ( DropDownList )controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
         }
 
         /// <summary>

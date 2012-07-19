@@ -220,8 +220,13 @@
     <Compile Include="Migrations\201207182025570_AddCampus.Designer.cs">
       <DependentUpon>201207182025570_AddCampus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207191232155_UpdateFieldTypes.cs" />
+    <Compile Include="Migrations\201207191232155_UpdateFieldTypes.Designer.cs">
+      <DependentUpon>201207191232155_UpdateFieldTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
+    <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
@@ -256,6 +261,7 @@
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
     <Compile Include="Web\UI\Controls\LabeledFieldType.cs" />
+    <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageSelector.cs" />
