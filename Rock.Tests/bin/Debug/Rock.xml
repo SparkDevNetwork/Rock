@@ -3712,7 +3712,30 @@
             Page Route POCO Entity.
             </summary>
         </member>
-        <member name="P:Rock.CMS.PageRoute.System">
+        <member name="T:Rock.Data.IExportable">
+            <summary>
+            Interface to compose ability to Export an object's data
+            </summary>
+        </member>
+        <member name="M:Rock.Data.IExportable.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Data.IExportable.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Data.IExportable.ImportJson(System.String)">
+            <summary>
+            Imports the object from JSON.
+            </summary>
+            <param name="data">The data.</param>
+        </member>
+        <member name="P:Rock.CMS.PageRoute.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>
@@ -6760,6 +6783,39 @@
             <returns>
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
+        </member>
+        <member name="M:Rock.CMS.Page.ExportJson">
+            <summary>
+            Exports the Page as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.ExportObject">
+            <summary>
+            Exports the Page.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.MapPagesRecursive(Rock.CMS.Page)">
+            <summary>
+            Recursivly adds collections of child pages to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.MapBlockInstances(Rock.CMS.Page,System.Object)">
+            <summary>
+            Maps the block instances to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <param name="exportPage">The export page.</param>
+        </member>
+        <member name="M:Rock.CMS.Page.MapPageRoutes(Rock.CMS.Page,System.Object)">
+            <summary>
+            Maps the page routes to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <param name="exportPage">The export page.</param>
         </member>
         <member name="P:Rock.CMS.Page.Name">
             <summary>
@@ -13736,6 +13792,13 @@
             <param name="recursionDepth">constrains the number of object levels to process.</param>
             <returns></returns>
         </member>
+        <member name="M:Rock.ExtensionMethods.ToDynamic(System.Object)">
+            <summary>
+            Creates a copy of the object's property as a DynamicObject.
+            </summary>
+            <param name="obj">The object to copy.</param>
+            <returns></returns>
+        </member>
         <member name="M:Rock.ExtensionMethods.SplitCase(System.String)">
             <summary>
             Splits a Camel or Pascal cased identifier into seperate words.
@@ -15045,6 +15108,24 @@
             <returns>
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ImportJson(System.String)">
+            <summary>
+            Imports the data.
+            </summary>
+            <param name="data">The data.</param>
         </member>
         <member name="P:Rock.CMS.HtmlContent.BlockId">
             <summary>

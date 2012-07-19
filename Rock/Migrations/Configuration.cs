@@ -671,7 +671,7 @@ namespace Rock.Migrations
 				Route = @"Site/{Action}",
 				PageId = page2_Sites.Id,
 				Guid = new Guid( "6695D509-5EE5-4498-81A1-D0875AECC223" ),
-				System = true
+				IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Site_xxActionxx );
 
@@ -680,7 +680,7 @@ namespace Rock.Migrations
 				Route = @"Site/{Action}/{SiteId}",
 				PageId = page2_Sites.Id,
 				Guid = new Guid( "1580C995-BA49-4612-B291-C7D3EA35D180" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Site_xxActionxx_xxSiteIdxx );
 
@@ -689,7 +689,7 @@ namespace Rock.Migrations
 				Route = @"Sites",
 				PageId = page2_Sites.Id,
 				Guid = new Guid( "2444F430-A4BD-4B1F-B9BC-0C872814F77C" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Sites );
 
@@ -698,7 +698,7 @@ namespace Rock.Migrations
 				Route = @"Login",
 				PageId = page3_Login.Id,
 				Guid = new Guid( "4257A25E-8F4B-4E6C-9E09-822804C01891" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Login );
 
@@ -707,7 +707,7 @@ namespace Rock.Migrations
 				Route = @"NewAccount",
 				PageId = page4_NewAccount.Id,
 				Guid = new Guid( "6B940C77-21C7-4F25-BEAC-C05152D30033" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_NewAccount );
 
@@ -716,7 +716,7 @@ namespace Rock.Migrations
 				Route = @"Bloc/{Action}",
 				PageId = page7_Blocks.Id,
 				Guid = new Guid( "9C5F6CD4-E3BA-49B9-8065-129E486F682D" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Bloc_xxActionxx );
 
@@ -725,7 +725,7 @@ namespace Rock.Migrations
 				Route = @"Bloc/{Action}/{BlockId}",
 				PageId = page7_Blocks.Id,
 				Guid = new Guid( "D079CEBC-D820-46DB-8572-F36CE47D35BD" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Bloc_xxActionxx_xxBlockIdxx );
 
@@ -734,7 +734,7 @@ namespace Rock.Migrations
 				Route = @"Blocs",
 				PageId = page7_Blocks.Id,
 				Guid = new Guid( "5DCF79F0-CBC3-40E9-BA21-51043BDF8573" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Blocs );
 
@@ -743,7 +743,7 @@ namespace Rock.Migrations
 				Route = @"ZoneBlocks/{EditPage}/{ZoneName}",
 				PageId = page16_ZoneBlocks.Id,
 				Guid = new Guid( "1F1A13E4-823C-43F7-B05F-AEBC012B7DDD" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_ZoneBlocks_xxEditPagexx_xxZoneNamexx );
 
@@ -752,7 +752,7 @@ namespace Rock.Migrations
 				Route = @"BlockProperties/{BlockInstance}",
 				PageId = page23_BlockProperties.Id,
 				Guid = new Guid( "6438C940-96F7-4A7E-9DA5-A30FD4FF143A" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_BlockProperties_xxBlockInstancexx );
 
@@ -761,7 +761,7 @@ namespace Rock.Migrations
 				Route = @"Secure/{EntityType}/{EntityId}",
 				PageId = page28_Security.Id,
 				Guid = new Guid( "45BD998E-68F8-4AAF-A094-12E4AEE217A3" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Secure_xxEntityTypexx_xxEntityIdxx );
 
@@ -770,7 +770,7 @@ namespace Rock.Migrations
 				Route = @"Pages/{EditPage}",
 				PageId = page29_ChildPages.Id,
 				Guid = new Guid( "926DF96E-55DA-467A-864F-6740C04BA400" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_Pages_xxEditPagexx );
 
@@ -779,7 +779,7 @@ namespace Rock.Migrations
 				Route = @"PageProperties/{Page}",
 				PageId = page37_PageProperties.Id,
 				Guid = new Guid( "3676BB9B-C96F-4A8D-A418-FBE223020D8D" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_PageProperties_xxPagexx );
 
@@ -788,7 +788,7 @@ namespace Rock.Migrations
 				Route = @"ChangePassword",
 				PageId = page55_ChangePassword.Id,
 				Guid = new Guid( "5230092F-126D-4169-A060-3B65211DCB71" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_ChangePassword );
 
@@ -797,7 +797,7 @@ namespace Rock.Migrations
 				Route = @"ConfirmAccount",
 				PageId = page54_Confirm.Id,
 				Guid = new Guid( "3C084922-DF00-40E6-971B-72FF4234A54F" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_ConfirmAccount );
 
@@ -806,7 +806,7 @@ namespace Rock.Migrations
 				Route = @"ForgotUserName",
 				PageId = page56_ForgotUserName.Id,
 				Guid = new Guid( "A56CF405-CA08-4991-A8D4-E90584E3ADAB" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_ForgotUserName );
 
@@ -815,7 +815,7 @@ namespace Rock.Migrations
 				Route = @"MyAccount",
 				PageId = page57_MyAccount.Id,
 				Guid = new Guid( "8F2692BE-FE9A-4715-AA9F-B7412B2FE69A" ),
-				System = true
+                IsSystem = true
 			};
 			context.PageRoutes.AddOrUpdate( p => p.Guid, pageroute_MyAccount );
 

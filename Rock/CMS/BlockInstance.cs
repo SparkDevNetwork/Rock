@@ -245,7 +245,22 @@ namespace Rock.CMS
 
         public object ExportObject()
         {
-            return null;
+            dynamic exportObject = DataTransferObject.ToDynamic();
+            exportObject.Block = Block.ExportObject();
+
+            if (HtmlContents == null)
+            {
+                return exportObject;
+            }
+
+            exportObject.HtmlContents = new List<dynamic>();
+
+            foreach (var content in HtmlContents)
+            {
+                exportObject.HtmlContents.Add( content.ExportObject() );
+            }
+
+            return exportObject;
         }
 
         public void ImportJson(string data)

@@ -43,6 +43,11 @@ namespace Rock
             return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
         }
 
+        /// <summary>
+        /// Creates a copy of the object's property as a DynamicObject.
+        /// </summary>
+        /// <param name="obj">The object to copy.</param>
+        /// <returns></returns>
         public static ExpandoObject ToDynamic( this object obj )
         {
             dynamic expando = new ExpandoObject();
