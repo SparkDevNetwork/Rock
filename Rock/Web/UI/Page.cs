@@ -544,38 +544,53 @@ namespace Rock.Web.UI
                         // Block Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
-                        aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
+                        aBlockConfig.Attributes.Add( "class", "btn block-config" );
                         aBlockConfig.Attributes.Add( "href", "#" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                        HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                        aBlockConfig.Controls.Add( iBlockConfig );
+                        iBlockConfig.Attributes.Add( "class", "icon-th-large" );
 
                         // Page Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
-                        aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
+                        aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
                         aAttributes.Attributes.Add( "height", "500px" );
                         aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", PageInstance.Id ) ) );
+                        HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                        aAttributes.Controls.Add( iAttributes );
+                        iAttributes.Attributes.Add( "class", "icon-cog" );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
-                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-modal-iframe" );
+                        aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
                         aChildPages.Attributes.Add( "height", "500px" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", PageInstance.Id ) ) );
+                        HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
+                        aChildPages.Controls.Add( iChildPages );
+                        iChildPages.Attributes.Add( "class", "icon-sitemap" );
 
                         // Page Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
-                        aPageZones.Attributes.Add( "class", "page-zones icon-button" );
+                        aPageZones.Attributes.Add( "class", "btn page-zones" );
                         aPageZones.Attributes.Add( "href", "#" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
+                        HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
+                        aPageZones.Controls.Add( iPageZones );
+                        iPageZones.Attributes.Add( "class", "icon-columns" );
 
                         // Page Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-modal-iframe" );
+                        aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
+                        HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
+                        aPageSecurity.Controls.Add( iPageSecurity );
+                        iPageSecurity.Attributes.Add( "class", "icon-lock" );
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -708,12 +723,15 @@ namespace Rock.Web.UI
                 // Zone content configuration widget
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "class", "zone-configuration" );
+                zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
 
                 HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
-                zoneConfigLink.Attributes.Add( "class", "icon-button zoneinstance-config" );
+                zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
                 zoneConfigLink.Attributes.Add( "href", "#" );
                 zoneConfig.Controls.Add( zoneConfigLink );
+                HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
+                iZoneConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                zoneConfigLink.Controls.Add( iZoneConfig );
 
                 HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
                 zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
@@ -726,12 +744,15 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
                 aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
-                aBlockConfig.InnerText = "Blocks";
+                //aBlockConfig.InnerText = "Blocks";
+                HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
+                iZoneBlocks.Attributes.Add( "class", "icon-th-large" );
+                aBlockConfig.Controls.Add( iZoneBlocks );
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
                 zoneContent.Attributes.Add( "class", "zone-content" );
@@ -751,16 +772,20 @@ namespace Rock.Web.UI
                 // Add the config buttons
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
                 blockConfig.ClientIDMode = ClientIDMode.AutoID;
-                blockConfig.Attributes.Add( "class", "block-configuration" );
+                blockConfig.Attributes.Add( "class", "block-configuration config-bar" );
                 blockWrapper.Controls.Add( blockConfig );
 
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
-                blockConfigLink.Attributes.Add( "class", "icon-button blockinstance-config" );
+                blockConfigLink.Attributes.Add( "class", "blockinstance-config" );
                 blockConfigLink.Attributes.Add( "href", "#" );
+                HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                iBlockConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                blockConfigLink.Controls.Add( iBlockConfig );
+
                 blockConfig.Controls.Add( blockConfigLink );
 
                 HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
-                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar config-bar" );
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
