@@ -1,3 +1,13 @@
+/* Font Awesome */
+@font-face {
+  font-family: "FontAwesome";
+  src: url('../Assets/Fonts/fontawesome-webfont.eot');
+  src: url('../Assets/Fonts/fontawesome-webfont.eot?#iefix') format('eot'), url('../Assets/Fonts/fontawesome-webfont.woff') format('woff'), url('../Assets/Fonts/fontawesome-webfont.ttf') format('truetype'), url('../Assets/Fonts/fontawesome-webfont.svg#FontAwesome') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 /* Bootstrap Overrides */
 fieldset legend 
 {
@@ -65,12 +75,6 @@ ul.inputs-list li label
     right:auto;
 }
 
-.zone-configuration > a.icon-button {
-    float: left;
-    margin-left: 4px;
-    margin-top: 4px;
-}
-
 .zone-configuration-bar {
     color: #7F7F7F;
     display: inline-block;
@@ -119,10 +123,15 @@ ul.inputs-list li label
     position: relative;
 }
 
-.block-configuration > a.icon-button {
+.config-bar > a 
+{
+    text-decoration: none;
+}
+
+.config-bar  a i[class^="icon-"] {
     float: left;
-    margin-left: 4px;
-    margin-top: 4px;
+    margin-left: 5px;
+    margin-top: 7px;
 }
 
 .block-configuration-bar {
@@ -132,9 +141,13 @@ ul.inputs-list li label
     left: 24px;
     margin-left: 6px;
     margin-right: -999em;
-    margin-top: 4px;
     overflow: hidden;
     position: absolute;
+}
+
+.block-configuration-bar a i
+{
+    margin-right: 12px;   
 }
 
 .block-configuration-bar span {
@@ -142,6 +155,7 @@ ul.inputs-list li label
     float: left;
     font-size: 10px;
     padding-right: 20px;
+    margin-top: 4px;
 }
 
 /* context help */
@@ -188,75 +202,67 @@ a.tooltip:hover span {
 }
 
 #cms-admin-footer .button-bar {
+    margin-top: -4px;
     margin-left: 12px;
     float: right;
 }
 
-/* Icon Buttons */
+#cms-admin-footer .button-bar a 
+{
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+}
 
+/* Icon Buttons */
+a i[class^="icon-"] 
+{
+    font-size: 18px;
+    color: #747474;
+}
+
+
+/* delete start */
 .icon-button {
     margin-left: 12px;
     float: left;
     height: 16px;
     width: 16px;
     display: block;
-	text-indent: -9999px;
-	padding-left: -9999px;
 	cursor: pointer;
 	background-position: center top;
+	font-size: 18px;
+	color: #747474;
+	
+}
+
+.icon-button i 
+{
+    line-height: 18px;
+}
+
+.icon-button:hover 
+{
+    text-decoration: none;
 }
 
 .icon-button:first-child {
     margin-left: 0;
 }
 
-a.icon-button.block-config {
-	background-image: url('../Assets/Icons/module-config.png');
-}
-
-a.icon-button.properties {
-    background-image: url('../Assets/Icons/properties.png');
-}
-
-a.icon-button.page-child-pages {
-	background-image: url('../Assets/Icons/subpages.png');
-}
-
-a.icon-button.page-zones {  
-	background-image: url('../Assets/Icons/page-zones.png');
-}
-
 a.icon-button.edit {
 	background-image: url('../Assets/Icons/edit.png');
 }
 
-a.icon-button.zone-blocks {
-	background-image: url('../Assets/Icons/zone-blocks.png');
-}
-
 a.icon-button.security {
-	background-image: url('../Assets/Icons/security.png');
-}
-
-a.icon-button.page-security {
-	background-image: url('../Assets/Icons/page-security.png');
+	--background-image: url('../Assets/Icons/security.png');
 }
 
 a.icon-button.delete {
-	background-image: url('../Assets/Icons/delete.png');
+	--background-image: url('../Assets/Icons/delete.png');
 }
 
-a.icon-button.block-move {
-	background-image: url('../Assets/Icons/block-move.png');
-}
-
-a.blockinstance-config {
-    background-image: url("../Assets/Icons/block-config.png");
-}
-
-a.zoneinstance-config {
-    background-image: url("../Assets/Icons/zone-config.png");
-}
+/* delete end */
 
 /* HTML Content */
 .html-content, .html-content-block, .html-content-block > div {

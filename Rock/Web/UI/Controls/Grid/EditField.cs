@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 LinkButton lbEdit = new LinkButton();
-                lbEdit.Text = "Edit";
+                lbEdit.ToolTip = "Edit";
                 lbEdit.Click += lbEdit_Click;
 
                 cell.Controls.Add( lbEdit );
