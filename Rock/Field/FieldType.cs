@@ -53,15 +53,24 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public virtual List<string> ConfigurationKeys()
+        {
+            return new List<string>();
+        }
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <param name="values">The values.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <returns></returns>
-        public virtual Control[] ConfigurationControls()
+        public virtual List<Control> ConfigurationControls()
         {
-            return null;
+            return new List<Control>();
         }
 
         /// <summary>
@@ -69,9 +78,9 @@ namespace Rock.Field
         /// </summary>
         /// <param name="control">The controls.</param>
         /// <returns></returns>
-        public virtual Dictionary<string, ConfigurationValue> GetConfigurationValues( Control[] controls )
+        public virtual Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            return null;
+            return new Dictionary<string, ConfigurationValue>();
         }
 
         /// <summary>
@@ -79,7 +88,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="control">The controls.</param>
         /// <param name="values">The values.</param>
-        public virtual void SetConfigurationValues( Control[] controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public virtual void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
         }
 
