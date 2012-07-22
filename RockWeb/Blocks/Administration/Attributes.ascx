@@ -14,14 +14,14 @@
         </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" >
+        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" >
             <Columns>
-                <asp:BoundField DataField="Id" HeaderText="Id" />
-                <asp:BoundField DataField="Category" HeaderText="Category"  />
-                <asp:BoundField DataField="Name" HeaderText="Name" />
+                <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
+                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="FieldType" HeaderText="Type" />
-                <Rock:BoolField DataField="IsMultiValue" HeaderText="Multi-Value"/>
-                <Rock:BoolField DataField="IsRequired" HeaderText="Required"/>
+                <Rock:BoolField DataField="IsMultiValue" HeaderText="Multi-Value" SortExpression="IsMultiValue"/>
+                <Rock:BoolField DataField="IsRequired" HeaderText="Required" SortExpression="IsRequired"/>
                 <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
