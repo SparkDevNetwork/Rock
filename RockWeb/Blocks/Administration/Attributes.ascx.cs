@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Core;
 using Rock.Web.UI.Controls;
 
@@ -270,11 +271,16 @@ namespace RockWeb.Blocks.Administration
                 queryable = queryable.
                     Where( a => a.Category == ddlCategoryFilter.SelectedValue );
 
-            rGrid.DataSource = queryable.
-                OrderBy( a => a.Category ).
-                ThenBy( a => a.Key ).
-                ToList();
+            SortProperty sortProperty = rGrid.SortProperty;
+            if ( sortProperty != null )
+                queryable = queryable.
+                    Sort( sortProperty );
+            else
+                queryable = queryable.
+                    OrderBy( a => a.Category ).
+                    ThenBy( a => a.Key );
 
+            rGrid.DataSource = queryable.ToList();
             rGrid.DataBind();
         }
 
