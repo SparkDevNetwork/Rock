@@ -5,8 +5,10 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock.Core;
 using Rock.Web.UI.Controls;
@@ -63,9 +65,6 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
 
-                    ddlFieldType.SelectedIndexChanged += new EventHandler<EventArgs>( ddlFieldType_SelectedIndexChanged );
-                    modalDetails.SaveClick += modalDetails_SaveClick;
-
                     string script = string.Format( @"
         Sys.Application.add_load(function () {{
             $('#{0} td.grid-icon-cell.delete a').click(function(){{
@@ -75,6 +74,18 @@ namespace RockWeb.Blocks.Administration
     ", rGrid.ClientID );
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
 
+                    // Create the dropdown list for listing the available field types
+                    var fieldTypeService = new Rock.Core.FieldTypeService();
+                    var items = fieldTypeService.
+                        Queryable().
+                        Select( f => new { f.Id, f.Name } ).
+                        OrderBy( f => f.Name );
+
+                    ddlFieldType.AutoPostBack = true;
+                    ddlFieldType.SelectedIndexChanged += new EventHandler( ddlFieldType_SelectedIndexChanged );
+                    ddlFieldType.Items.Clear();
+                    foreach ( var item in items )
+                        ddlFieldType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
                 }
                 else
                 {
@@ -91,6 +102,9 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
+
+            if ( Page.IsPostBack && hfId.Value != string.Empty )
+                BuildConfigControls();
 
             base.OnLoad( e );
         }
@@ -137,10 +151,20 @@ namespace RockWeb.Blocks.Administration
 
         void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            modalDetails.Show();
+            int attributeId = 0;
+            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId ) )
+                attributeId = 0;
+
+            if ( attributeId != 0 )
+            {
+                var attribute = Rock.Web.Cache.Attribute.Read ( attributeId );
+                BuildConfigControls( attribute.QualifierValues );
+            }
+            else
+                BuildConfigControls();
         }
 
-        void modalDetails_SaveClick( object sender, EventArgs e )
+        protected void btnSave_Click( object sender, EventArgs e )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -172,21 +196,24 @@ namespace RockWeb.Blocks.Administration
                 attribute.Name = tbName.Text;
                 attribute.Category = tbCategory.Text;
                 attribute.Description = tbDescription.Text;
-                attribute.FieldTypeId = ddlFieldType.FieldType.Id;
+                attribute.FieldTypeId = Int32.Parse(ddlFieldType.SelectedValue);
+
+                var fieldType = Rock.Web.Cache.FieldType.Read(attribute.FieldTypeId);
 
                 foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
                     attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
                 attribute.AttributeQualifiers.Clear();
 
-                if ( ddlFieldType.ConfigurationValues != null )
+                List<Control> configControls = new List<Control>();
+                foreach ( var key in fieldType.Field.ConfigurationKeys() )
+                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+
+                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
                 {
-                    foreach ( var configValue in ddlFieldType.ConfigurationValues )
-                    {
-                        AttributeQualifier qualifier = new AttributeQualifier();
-                        qualifier.Key = configValue.Key;
-                        qualifier.Value = configValue.Value.Value;
-                        attribute.AttributeQualifiers.Add( qualifier );
-                    }
+                    AttributeQualifier qualifier = new AttributeQualifier();
+                    qualifier.Key = configValue.Key;
+                    qualifier.Value = configValue.Value.Value;
+                    attribute.AttributeQualifiers.Add( qualifier );
                 }
 
                 attribute.DefaultValue = tbDefaultValue.Text;
@@ -198,6 +225,15 @@ namespace RockWeb.Blocks.Administration
             }
 
             BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
         }
 
         #endregion
@@ -250,23 +286,22 @@ namespace RockWeb.Blocks.Administration
             {
                 var attribute = Rock.Web.Cache.Attribute.Read(attributeModel);
 
-                modalDetails.Title = "Edit Attribute";
+                lAction.Text = "Edit";
                 hfId.Value = attribute.Id.ToString();
 
                 tbKey.Text = attribute.Key;
                 tbName.Text = attribute.Name;
                 tbCategory.Text = attribute.Category;
                 tbDescription.Text = attribute.Description;
-                ddlFieldType.FieldType = attribute.FieldType;
-                ddlFieldType.LabelText = "Field Type";
-                ddlFieldType.ConfigurationValues = attribute.QualifierValues;
+                ddlFieldType.SelectedValue = attribute.FieldType.Id.ToString();
+                BuildConfigControls( attribute.QualifierValues );
                 tbDefaultValue.Text = attribute.DefaultValue;
                 cbMultiValue.Checked = attribute.IsMultiValue;
                 cbRequired.Checked = attribute.IsRequired;
             }
             else
             {
-                modalDetails.Title = "Add Attribute";
+                lAction.Text = "Add";
                 hfId.Value = string.Empty;
 
                 tbKey.Text = string.Empty;
@@ -277,17 +312,50 @@ namespace RockWeb.Blocks.Administration
                 FieldTypeService fieldTypeService = new FieldTypeService();
                 var fieldTypeModel = fieldTypeService.GetByName("Text").FirstOrDefault();
                 if (fieldTypeModel != null)
-                {
-                    ddlFieldType.FieldType = Rock.Web.Cache.FieldType.Read( fieldTypeModel.Id);
-                    ddlFieldType.ConfigurationValues = ddlFieldType.FieldType.Field.GetConfigurationValues(null);
-                }
+                    ddlFieldType.SelectedValue = fieldTypeModel.Id.ToString();
+                BuildConfigControls( );
 
                 tbDefaultValue.Text = string.Empty;
                 cbMultiValue.Checked = false;
                 cbRequired.Checked = false;
             }
 
-            modalDetails.Show();
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        private void BuildConfigControls()
+        {
+            BuildConfigControls( null );
+        }
+
+        private void BuildConfigControls(Dictionary<string, Rock.Field.ConfigurationValue> qualifierValues)
+        {
+            var fieldType = Rock.Web.Cache.FieldType.Read( Int32.Parse( ddlFieldType.SelectedValue ) );
+            if ( fieldType != null )
+            {
+                phFieldTypeQualifiers.Controls.Clear();
+                var configControls = fieldType.Field.ConfigurationControls();
+
+                int i = 0;
+                foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
+                {
+                    Label lbl = new Label();
+                    phFieldTypeQualifiers.Controls.Add( lbl );
+                    lbl.Text = configValue.Value.Name;
+
+                    Control control = configControls[i];
+                    phFieldTypeQualifiers.Controls.Add( control );
+                    control.ID = "configControl_" + configValue.Key;
+
+                    phFieldTypeQualifiers.Controls.Add( new LiteralControl( "<br/>" ) );
+
+                    i++;
+                }
+
+                if ( qualifierValues != null )
+                    fieldType.Field.SetConfigurationValues( configControls, qualifierValues );
+            }
         }
 
         private void DisplayError( string message )
