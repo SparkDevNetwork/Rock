@@ -17,22 +17,34 @@ namespace Rock.Field.Types
     public class SelectSingle : FieldType
     {
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "values" );
+            configKeys.Add( "fieldtype" );
+            return configKeys;
+        }
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <returns></returns>
-        public override Control[] ConfigurationControls()
+        public override List<Control> ConfigurationControls()
         {
-            Control[] controls = new Control[2];
+            List<Control> controls = new List<Control>();
 
             TextBox tb = new TextBox();
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
-            controls[0] = tb;
+            controls.Add( tb );
 
             DropDownList ddl = new DropDownList();
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
-            controls[1] = ddl;
+            controls.Add( ddl );
 
             return controls;
         }
@@ -42,13 +54,13 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> GetConfigurationValues( Control[] controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values", "Comma-delimited list of values to display", "" ) );
             configurationValues.Add( "fieldtype", new ConfigurationValue( "Field Type", "Field type to use for selection", "ddl" ) );
 
-            if ( controls != null && controls.Length == 2 )
+            if ( controls != null && controls.Count == 2 )
             {
                 if ( controls[0] != null && controls[0] is TextBox )
                     configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
@@ -66,9 +78,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( Control[] controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Length == 2 && configurationValues != null)
+            if ( controls != null && controls.Count == 2 && configurationValues != null)
             {
                 if ( controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
