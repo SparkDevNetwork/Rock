@@ -72,27 +72,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            writer.AddAttribute( "class", "control-group");
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            literal.RenderControl( writer );
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -107,5 +86,28 @@ namespace Rock.Web.UI.Controls
             Controls.Add( label );
             Controls.Add( literal );
         }
+
+        /// <summary>
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "class", "control-group");
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.AddCssClass( "control-label" );
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            literal.RenderControl( writer );
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
     }
 }
