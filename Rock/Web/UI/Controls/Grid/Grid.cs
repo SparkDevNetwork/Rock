@@ -177,6 +177,8 @@ namespace Rock.Web.UI.Controls
 
         void Actions_ExcelExportClick( object sender, EventArgs e )
         {
+            OnGridRebind( e );
+
             // create default settings
             string filename = "export.xlsx";
             string workSheetName = "Export";
@@ -356,8 +358,6 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
-            
-            throw new NotImplementedException();
         }
 
         /// <summary>

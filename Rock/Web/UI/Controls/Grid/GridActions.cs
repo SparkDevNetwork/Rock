@@ -154,35 +154,36 @@ namespace Rock.Web.UI.Controls
 
             // controls for add
             aAdd = new HtmlGenericControl( "a" );
+            Controls.Add( aAdd );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
             aAdd.Attributes.Add( "class", "add" );
             aAdd.InnerText = "Add";
-            Controls.Add( aAdd );
 
             lbAdd = new LinkButton();
+            Controls.Add( lbAdd );
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
-            Controls.Add( lbAdd );
 
             // controls for excel export
             aExcelExport = new HtmlGenericControl( "a" );
+            Controls.Add( aExcelExport );
             aExcelExport.ID = "aExcelExport";
             aExcelExport.Attributes.Add( "href", "#" );
             aExcelExport.Attributes.Add( "class", "excel-export" );
             aExcelExport.InnerText = "Export To Excel";
-            Controls.Add( aExcelExport );
 
             lbExcelExport = new LinkButton();
+            Controls.Add( lbExcelExport );
             lbExcelExport.ID = "lbExcelExport";
             lbExcelExport.CssClass = "excel-export";
             lbExcelExport.Text = "Export to Excel";
             lbExcelExport.Click += lbExcelExport_Click;
+            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
             lbExcelExport.CausesValidation = false;
-            Controls.Add( lbExcelExport );
         }
 
         void lbAdd_Click( object sender, EventArgs e )
