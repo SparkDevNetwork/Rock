@@ -302,53 +302,52 @@ namespace Rock.Attribute
 
                     foreach ( Rock.Web.Cache.Attribute attribute in category.Value )
                     {
-                        HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                        dl.ID = string.Format( "attribute_{0}", attribute.Id );
-                        dl.Attributes.Add( "attribute-key", attribute.Key );
-                        dl.ClientIDMode = ClientIDMode.AutoID;
-                        fieldSet.Controls.Add( dl );
-
-                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                        dl.Controls.Add( dt );
+                        HtmlGenericControl div = new HtmlGenericControl( "div" );
+                        fieldSet.Controls.Add( div );
+                        div.ID = string.Format( "attribute_{0}", attribute.Id );
+                        div.AddCssClass( "control-group" );
+                        if ( attribute.IsRequired )
+                            div.AddCssClass( "required" );
+                        div.Attributes.Add( "attribute-key", attribute.Key );
+                        div.ClientIDMode = ClientIDMode.AutoID;
 
                         Label lbl = new Label();
+                        div.Controls.Add( lbl );
                         lbl.ClientIDMode = ClientIDMode.AutoID;
+                        lbl.AddCssClass( "control-label" );
                         lbl.Text = attribute.Name;
                         lbl.AssociatedControlID = string.Format( "attribute_field_{0}", attribute.Id );
-                        if ( attribute.IsRequired )
-                            lbl.Attributes.Add( "class", "required" );
-                        dt.Controls.Add( lbl );
 
-                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-                        dl.Controls.Add( dd );
+                        HtmlGenericControl divControls = new HtmlGenericControl( "div" );
+                        div.Controls.Add( divControls );
+                        divControls.AddCssClass( "controls" );
 
                         Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key].Value[0].Value, setValue );
+                        divControls.Controls.Add( attributeControl );
                         attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                         attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                        dd.Controls.Add( attributeControl );
 
                         if ( attribute.IsRequired )
                         {
                             RequiredFieldValidator rfv = new RequiredFieldValidator();
-                            dd.Controls.Add( rfv );
+                            divControls.Controls.Add( rfv );
+                            rfv.CssClass = "help-inline";
                             rfv.ControlToValidate = attributeControl.ID;
                             rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
                             rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
                             rfv.Display = ValidatorDisplay.None;
 
                             if (!setValue && !rfv.IsValid)
-                                dl.Attributes.Add( "class", "error" );
+                                div.Attributes.Add( "class", "error" );
                         }
 
                         if ( !string.IsNullOrEmpty( attribute.Description ) )
                         {
-                            HtmlAnchor a = new HtmlAnchor();
-                            a.ClientIDMode = ClientIDMode.AutoID;
-                            a.Attributes.Add( "class", "help-tip" );
-                            a.HRef = "#";
-                            a.InnerHtml = "help<span>" + attribute.Description + "</span>";
-
-                            dd.Controls.Add( a );
+                            HtmlGenericControl helpBlock = new HtmlGenericControl( "p" );
+                            divControls.Controls.Add( helpBlock );
+                            helpBlock.ClientIDMode = ClientIDMode.AutoID;
+                            helpBlock.AddCssClass( "help-block" );
+                            helpBlock.InnerHtml = attribute.Description;
                         }
                     }
                 }
@@ -369,10 +368,15 @@ namespace Rock.Attribute
                     {
                         if ( attribute.IsRequired )
                         {
-                            HtmlGenericControl dl = parentControl.FindControl( string.Format( "attribute_{0}", attribute.Id ) ) as HtmlGenericControl;
+                            HtmlGenericControl div = parentControl.FindControl( string.Format( "attribute_{0}", attribute.Id ) ) as HtmlGenericControl;
                             RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute_rfv_{0}", attribute.Id ) ) as RequiredFieldValidator;
-                            if ( dl != null && rfv != null )
-                                dl.Attributes["class"] = rfv.IsValid ? "" : "error";
+                            if ( div != null && rfv != null )
+                            {
+                                if ( rfv.IsValid )
+                                    div.RemoveCssClass( "error" );
+                                else
+                                    div.AddCssClass( "error" );
+                            }
                         }
                     }
         }
