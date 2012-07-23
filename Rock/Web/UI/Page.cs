@@ -295,7 +295,6 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
-                Session.Remove("UserIsAuthenticated");
                 CurrentPerson = null;
                 CurrentUser = null;
                 Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
@@ -309,9 +308,7 @@ namespace Rock.Web.UI
                 Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
-                    FormsAuthentication.SetAuthCookie("rckipid=" + impersonatedPerson.EncryptedKey, false );
-                    Session["UserIsAuthenticated"] = false;
-
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
                     CurrentUser =  impersonatedPerson.ImpersonatedUser;
                 }
             }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 using Rock.CMS;
 
 namespace Rock.Security
@@ -18,6 +19,33 @@ namespace Rock.Security
     /// </summary>
     public static class Authorization
     {
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
+        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        {
+            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1, userName, DateTime.Now,
+                DateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ), isPersisted,
+                IsImpersonated.ToString(), System.Web.Security.FormsAuthentication.FormsCookiePath );
+
+            var encryptedTicket = System.Web.Security.FormsAuthentication.Encrypt( ticket );
+
+            var httpCookie = new System.Web.HttpCookie( System.Web.Security.FormsAuthentication.FormsCookieName, encryptedTicket );
+            httpCookie.HttpOnly = true;
+            httpCookie.Path = System.Web.Security.FormsAuthentication.FormsCookiePath;
+            httpCookie.Secure = System.Web.Security.FormsAuthentication.RequireSSL;
+            if ( System.Web.Security.FormsAuthentication.CookieDomain != null )
+                httpCookie.Domain = System.Web.Security.FormsAuthentication.CookieDomain;
+            if ( ticket.IsPersistent )
+                httpCookie.Expires = ticket.Expiration;
+
+            System.Web.HttpContext.Current.Response.Cookies.Add( httpCookie );
+        }
+
+
         /// <summary>
         /// Authorizations is a static variable for storing all authorizations.  It uses multiple Dictionary objects similiar 
         /// to a multi-dimensional array to store information.  The first dimension is the entity type, second is the entity
