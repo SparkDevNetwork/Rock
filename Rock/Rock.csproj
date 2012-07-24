@@ -232,6 +232,10 @@
     <Compile Include="Migrations\201207192106568_AddDefinedValuesPage.Designer.cs">
       <DependentUpon>201207192106568_AddDefinedValuesPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207231351256_AddCampusPage.cs" />
+    <Compile Include="Migrations\201207231351256_AddCampusPage.Designer.cs">
+      <DependentUpon>201207231351256_AddCampusPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -268,7 +272,6 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
-    <Compile Include="Web\UI\Controls\LabeledFieldType.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />

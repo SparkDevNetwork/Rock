@@ -35,6 +35,9 @@ namespace RockWeb.Blocks.Administration
                 gSites.GridRebind += gSites_GridRebind;
             }
 
+            SecurityField securityField = gSites.Columns[3] as SecurityField;
+            securityField.EntityType = typeof(Rock.CMS.Site);
+
             string script = @"
         Sys.Application.add_load(function () {
             $('td.grid-icon-cell.delete a').click(function(){
@@ -146,7 +149,7 @@ namespace RockWeb.Blocks.Administration
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
-                
+
                 foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
                 {
                     sd = new Rock.CMS.SiteDomain();
@@ -187,7 +190,6 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             ddlDefaultPage.Items.Clear();
-            ddlDefaultPage.Items.Add( new ListItem( "Root", "0" ) );
             foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
                 AddPage( page, 1 );
 
@@ -217,7 +219,9 @@ namespace RockWeb.Blocks.Administration
                 tbSiteName.Text = site.Name;
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
-                ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
+                if ( site.DefaultPageId.HasValue )
+                    ddlDefaultPage.SelectedValue = site.DefaultPageId.Value.ToString();
+
                 tbSiteDomains.Text = string.Join("\n", site.SiteDomains.Select(dom => dom.Domain).ToArray());
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
@@ -229,7 +233,6 @@ namespace RockWeb.Blocks.Administration
                 lAction.Text = "Add";
                 tbSiteName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
-                ddlDefaultPage.SelectedValue = "0";
                 ddlTheme.Text = PageInstance.Site.Theme;
                 tbSiteDomains.Text = string.Empty;
                 tbFaviconUrl.Text = string.Empty;

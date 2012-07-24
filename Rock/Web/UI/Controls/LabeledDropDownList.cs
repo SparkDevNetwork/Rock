@@ -16,6 +16,36 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
     public class LabeledDropDownList : DropDownList
     {
+        protected Label label;
+        protected RequiredFieldValidator validator;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get
+            {
+                if ( ViewState["Required"] != null )
+                    return ( bool )ViewState["Required"];
+                else
+                    return false;
+            }
+            set
+            {
+                ViewState["Required"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the help tip.
         /// </summary>
@@ -82,13 +112,36 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["LabelText"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return label.Text;
             }
             set
             {
-                ViewState["LabelText"] = value;
+                EnsureChildControls();
+                label.Text = value;
             }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            Controls.Clear();
+
+            label = new Label();
+            label.AssociatedControlID = this.ID;
+
+            validator = new RequiredFieldValidator();
+            validator.ID = this.ID + "_rfv";
+            validator.ControlToValidate = this.ID;
+            validator.Display = ValidatorDisplay.Dynamic;
+            validator.CssClass = "help-inline";
+
+            Controls.Add( label );
+            Controls.Add( validator );
         }
 
         /// <summary>
@@ -97,16 +150,72 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( string.Format( @"<dl><dt><label for=""{0}"">{1}</label></dt><dd>", this.ClientID, LabelText ) );
+            bool isValid = !Required || validator.IsValid;
+
+            writer.AddAttribute( "class", "control-group" +
+                ( isValid ? "" : " error" ) +
+                ( Required ? " required" : "" ) );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.AddCssClass( "control-label" );
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             base.Render( writer );
 
+            if ( Required )
+            {
+                validator.ErrorMessage = LabelText + " is Required.";
+                validator.RenderControl( writer );
+            }
+
             if ( Tip.Trim() != string.Empty )
-                writer.Write( string.Format( @"<a class=""help-tip"" href=""#"">help<span>{0}</span></a>", Tip.Trim() ) );
+            {
+                writer.AddAttribute( "class", "help-tip" );
+                writer.AddAttribute( "href", "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( "help" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( Tip.Trim() );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
 
             if ( Help.Trim() != string.Empty )
-                writer.Write( string.Format( @"<span class=""help-block"">{0}</span>", Help.Trim() ) );
+            {
+                writer.AddAttribute( "class", "help-block" );
+                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.Write( Help.Trim() );
+                writer.RenderEndTag();
+            }
 
-            writer.Write( @"</dd></dl>" );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Method for inheriting classes to use to render just the base control
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        protected void RenderBase( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
+        /// <summary>
+        /// Creates a collection to store child controls.
+        /// </summary>
+        /// <returns>
+        /// Always returns an <see cref="T:System.Web.UI.EmptyControlCollection"/>.
+        /// </returns>
+        protected override ControlCollection CreateControlCollection()
+        {
+            // By default a DropDownList control does not allow adding of child controls.
+            // This method needs to be overridden to allow this
+            return new ControlCollection( this );
         }
 
     }

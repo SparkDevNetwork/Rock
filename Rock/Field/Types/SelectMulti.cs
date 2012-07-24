@@ -17,17 +17,28 @@ namespace Rock.Field.Types
     public class SelectMulti : FieldType
     {
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "values" );
+            return configKeys;
+        }
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <returns></returns>
-        public override Control[] ConfigurationControls()
+        public override List<Control> ConfigurationControls()
         {
-            Control[] controls = new Control[1];
+            List<Control> controls = new List<Control>();
 
             TextBox tb = new TextBox();
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
-            controls[0] = tb;
+            controls.Add( tb );
 
             return controls;
         }
@@ -37,12 +48,12 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> GetConfigurationValues( Control[] controls )
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values", "Comma-delimited list of values to display", "" ) );
 
-            if ( controls != null && controls.Length == 1 )
+            if ( controls != null && controls.Count == 1 )
             {
                 if ( controls[0] != null && controls[0] is TextBox )
                     configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
@@ -56,9 +67,9 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( Control[] controls, Dictionary<string, ConfigurationValue> configurationValues )
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Length == 1 && configurationValues != null &&
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
         }

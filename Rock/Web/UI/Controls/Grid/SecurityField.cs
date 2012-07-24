@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -22,7 +23,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the entity.
         /// </value>
-        public string EntityType { get; set; }
+        public Type EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the title.
@@ -50,7 +51,7 @@ namespace Rock.Web.UI.Controls
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.ItemStyle.CssClass = "grid-icon-cell security";
 
-            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(EntityType, Title);
+            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityType.AssemblyQualifiedName, Title);
             this.ItemTemplate = editFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
@@ -62,6 +63,8 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SecurityFieldTemplate : ITemplate
     {
+        private System.Web.UI.Page page;
+
         /// <summary>
         /// Gets or sets the title.
         /// </summary>
@@ -83,8 +86,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="title">The title.</param>
-        public SecurityFieldTemplate( string entityType, string title )
+        public SecurityFieldTemplate(System.Web.UI.Page page, string entityType, string title )
         {
+            this.page = page;
             this.EntityType = entityType;
             this.Title = title;
         }
@@ -99,11 +103,22 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
+                cell.Controls.Add( aSecure );
                 aSecure.Attributes.Add( "class", "show-modal-iframe" );
                 aSecure.Attributes.Add( "height", "500px" );
-                aSecure.Attributes.Add( "href", container.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}",
-                    Security.Authorization.EncodeEntityTypeName( EntityType ), "1", Title ) ) );
-                cell.Controls.Add( aSecure );
+                aSecure.DataBinding += new EventHandler( aSecure_DataBinding );
+            }
+        }
+
+        void aSecure_DataBinding( object sender, EventArgs e )
+        {
+            HtmlGenericControl lnk = ( HtmlGenericControl )sender;
+            GridViewRow container = ( GridViewRow )lnk.NamingContainer;
+            object dataValue = DataBinder.Eval( container.DataItem, "id" );
+            if ( dataValue != DBNull.Value )
+            {
+                lnk.Attributes.Add( "href", page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
+                    Security.Authorization.EncodeEntityTypeName( EntityType ), dataValue.ToString(), Title ) ) );
             }
         }
     }

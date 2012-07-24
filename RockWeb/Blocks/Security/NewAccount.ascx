@@ -52,7 +52,7 @@
 
         <div class="row">
 
-            <div class="6 columns">
+            <div class="span6">
 
                <fieldset>
                     <legend>New Account</legend>
@@ -69,7 +69,7 @@
 
             </div>
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
 	                <legend>Your Information</legend> 

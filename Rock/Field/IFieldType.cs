@@ -33,27 +33,33 @@ namespace Rock.Field
         bool IsValid( string value, bool required, out string message );
 
         /// <summary>
+        /// Gets a list of the configuration keys.
+        /// </summary>
+        /// <returns></returns>
+        List<string> ConfigurationKeys();
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <param name="values">The values.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <returns></returns>
-        Control[] ConfigurationControls();
+        List<Control> ConfigurationControls();
 
         /// <summary>
         /// Gets the configuration values
         /// </summary>
         /// <param name="control">The controls.</param>
         /// <returns></returns>
-        Dictionary<string, ConfigurationValue> GetConfigurationValues( Control[] controls );
+        Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls );
 
         /// <summary>
         /// Sets the configuration values.
         /// </summary>
         /// <param name="control">The controls.</param>
         /// <param name="values">The values.</param>
-        void SetConfigurationValues( Control[] controls, Dictionary<string, ConfigurationValue> configurationValues );
+        void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
         /// Creates an HTML control.

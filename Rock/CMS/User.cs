@@ -96,9 +96,15 @@ namespace Rock.CMS
         {
             get
             {
-                if ( HttpContext.Current.Session["UserIsAuthenticated"] != null )
-                    return ( bool )HttpContext.Current.Session["UserIsAuthenticated"];
-                return false;
+                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
+                if ( identity == null)
+                    return false;
+
+                if (identity.Ticket != null &&
+                    identity.Ticket.UserData.ToLower() == "true" )
+                    return false;
+
+                return true;
             }
         }
 
