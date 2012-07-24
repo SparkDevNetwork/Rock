@@ -294,58 +294,55 @@ namespace Rock.Security
         /// <param name="personId">The person id.</param>
         public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, int? personId )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                // If there's no Authorizations object, create it
-                if ( Authorizations == null )
-                    Load();
+            // If there's no Authorizations object, create it
+            if ( Authorizations == null )
+                Load();
 
-                AuthService authService = new AuthService();
+            AuthService authService = new AuthService();
 
-                // Delete the current authorizations for the target entity
-                foreach ( Auth auth in authService.GetByEntityTypeAndEntityId( targetEntity.AuthEntity, targetEntity.Id ) )
-                    authService.Delete( auth, personId );
+            // Delete the current authorizations for the target entity
+            foreach ( Auth auth in authService.GetByEntityTypeAndEntityId( targetEntity.AuthEntity, targetEntity.Id ) )
+                authService.Delete( auth, personId );
 
-                Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
+            Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
 
-                int order = 0;
-                if ( Authorizations.ContainsKey( sourceEntity.AuthEntity ) && Authorizations[sourceEntity.AuthEntity].ContainsKey( sourceEntity.Id ) )
-                    foreach ( KeyValuePair<string, List<AuthRule>> action in Authorizations[sourceEntity.AuthEntity][sourceEntity.Id] )
-                        if ( targetEntity.SupportedActions.Contains( action.Key ) )
+            int order = 0;
+            if ( Authorizations.ContainsKey( sourceEntity.AuthEntity ) && Authorizations[sourceEntity.AuthEntity].ContainsKey( sourceEntity.Id ) )
+                foreach ( KeyValuePair<string, List<AuthRule>> action in Authorizations[sourceEntity.AuthEntity][sourceEntity.Id] )
+                    if ( targetEntity.SupportedActions.Contains( action.Key ) )
+                    {
+                        newActions.Add( action.Key, new List<AuthRule>() );
+
+                        foreach ( AuthRule rule in action.Value )
                         {
-                            newActions.Add( action.Key, new List<AuthRule>() );
+                            Auth auth = new Auth();
+                            auth.EntityType = targetEntity.AuthEntity;
+                            auth.EntityId = targetEntity.Id;
+                            auth.Order = order;
+                            auth.Action = action.Key;
+                            auth.AllowOrDeny = rule.AllowOrDeny;
+                            auth.SpecialRole = rule.SpecialRole;
+                            auth.PersonId = rule.PersonId;
+                            auth.GroupId = rule.GroupId;
 
-                            foreach ( AuthRule rule in action.Value )
-                            {
-                                Auth auth = new Auth();
-                                auth.EntityType = targetEntity.AuthEntity;
-                                auth.EntityId = targetEntity.Id;
-                                auth.Order = order;
-                                auth.Action = action.Key;
-                                auth.AllowOrDeny = rule.AllowOrDeny;
-                                auth.SpecialRole = rule.SpecialRole;
-                                auth.PersonId = rule.PersonId;
-                                auth.GroupId = rule.GroupId;
+                            authService.Add( auth, personId );
+                            authService.Save( auth, personId );
 
-                                authService.Add( auth, personId );
-                                authService.Save( auth, personId );
+                            newActions[action.Key].Add( new AuthRule( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
 
-                                newActions[action.Key].Add( new AuthRule( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
-
-                                order++;
-                            }
+                            order++;
                         }
+                    }
 
-                if ( !Authorizations.ContainsKey( targetEntity.AuthEntity ) )
-                    Authorizations.Add( targetEntity.AuthEntity, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+            if ( !Authorizations.ContainsKey( targetEntity.AuthEntity ) )
+                Authorizations.Add( targetEntity.AuthEntity, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
 
-                Dictionary<int, Dictionary<string, List<AuthRule>>> entityType = Authorizations[targetEntity.AuthEntity];
+            Dictionary<int, Dictionary<string, List<AuthRule>>> entityType = Authorizations[targetEntity.AuthEntity];
 
-                if ( !entityType.ContainsKey( targetEntity.Id ) )
-                    entityType.Add( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
+            if ( !entityType.ContainsKey( targetEntity.Id ) )
+                entityType.Add( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
 
-                entityType[targetEntity.Id] = newActions;
-            }
+            entityType[targetEntity.Id] = newActions;
         }
     }
 

@@ -9,7 +9,8 @@ using System.Collections.Generic;
 namespace Rock.Security
 {
     /// <summary>
-    /// Represents a securable object 
+    /// Represents a securable object.  Note each ISecured object must also expose a static Read(int id) method if the object
+    /// types will be used in a grid with a SecureField column
     /// </summary>
     public interface ISecured
     {

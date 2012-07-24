@@ -260,7 +260,22 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        public Site()
+        {
+            SiteDomains = new System.Collections.ObjectModel.Collection<SiteDomain>();
+        }
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Site Read( int id )
+        {
+            return Read<Site>( id );
+        }
     }
+
     /// <summary>
     /// Site Configuration class.
     /// </summary>
