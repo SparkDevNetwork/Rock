@@ -17,34 +17,6 @@ namespace Rock.Field.Types
     public class DefinedType : SelectSingle
     {
         /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override Control[] ConfigurationControls()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> GetConfigurationValues( Control[] controls )
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( Control[] controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-        }
-
-        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues"></param>

@@ -56,8 +56,7 @@ namespace RockWeb.Blocks.Security
             {
                 if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
-                    FormsAuthentication.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked );
-                    Session["UserIsAuthenticated"] = true;
+                    Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked, false);
 
                     string returnUrl = Request.QueryString["returnurl"];
                     if ( returnUrl != null )
@@ -223,8 +222,7 @@ namespace RockWeb.Blocks.Security
                     user.LastActivityDate = DateTime.Now;
                     userService.Save( user, user.PersonId );
 
-                    FormsAuthentication.SetAuthCookie( user.UserName, false );
-                    Session["UserIsAuthenticated"] = true;
+                    Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
                     if ( state != null )
                         Response.Redirect( state );

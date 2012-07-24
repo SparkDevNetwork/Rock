@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Administration
         {
             Rock.Attribute.IHasAttributes component = _container.Dictionary[Int32.Parse( hfComponentId.Value )].Value;
 
-            Rock.Attribute.Helper.GetEditValues( dlProperties, component );
+            Rock.Attribute.Helper.GetEditValues( phProperties, component );
             Rock.Attribute.Helper.SaveAttributeValues( component, CurrentPersonId );
 
             hfComponentId.Value = string.Empty;
@@ -201,10 +201,10 @@ namespace RockWeb.Blocks.Administration
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
             hfComponentId.Value = serviceId.ToString();
 
-            dlProperties.Controls.Clear();
+            phProperties.Controls.Clear();
             foreach ( HtmlGenericControl li in Rock.Attribute.Helper.GetEditControls( component, setValues ) )
                 if (li.Attributes["attribute-key"] != "Order")
-                    dlProperties.Controls.Add( li );
+                    phProperties.Controls.Add( li );
 
             lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
 

@@ -10,6 +10,7 @@
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField HeaderText="Description" DataField="Description" />
                 <asp:BoundField HeaderText="Theme" DataField="Theme" />
+                <Rock:SecurityField/>
                 <Rock:EditField OnClick="gSites_Edit" />
                 <Rock:DeleteField OnClick="gSites_Delete" />
             </Columns>
@@ -25,7 +26,7 @@
 
         <div class="row">
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Site</legend>
@@ -37,7 +38,7 @@
 
             </div>
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend>&nbsp;</legend>

@@ -97,6 +97,17 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Static method to return an object based on the id
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static T Read<T>( int id ) where T : Model<T>
+        {
+            return new Service<T>().Get( id );
+        }
+
         #region ISecured implementation
 
         /// <summary>
@@ -120,7 +131,7 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit"  }; }
+            get { return new List<string>() { "View", "Edit", "Configure"  }; }
         }
 
         /// <summary>
@@ -314,8 +325,6 @@ namespace Rock.Data
         }
 
         #endregion
-
-
     }
 
     /// <summary>

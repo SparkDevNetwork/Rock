@@ -14,86 +14,9 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataDropDownList runat=server></{0}:DataDropDownList>" )]
-    public class DataDropDownList : DropDownList
+    public class DataDropDownList : LabeledDropDownList
     {
-        private Label label;
-        private Validation.DataAnnotationValidator validator;
-
-        /// <summary>
-        /// Gets or sets the help tip.
-        /// </summary>
-        /// <value>
-        /// The help tip.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help tip." )
-        ]
-        public string Tip
-        {
-            get
-            {
-                string s = ViewState["Tip"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["Tip"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the help block.
-        /// </summary>
-        /// <value>
-        /// The help block.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help block." )
-        ]
-        public string Help
-        {
-            get
-            {
-                string s = ViewState["Help"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["Help"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the label." )
-        ]
-        public string LabelText
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-            }
-        }
+        private Validation.DataAnnotationValidator dataValidator;
 
         /// <summary>
         /// Gets or sets the name of the assembly qualified name of the entity that is being validated
@@ -112,12 +35,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return validator.SourceTypeName;
+                return dataValidator.SourceTypeName;
             }
             set
             {
                 EnsureChildControls();
-                validator.SourceTypeName = value;
+                dataValidator.SourceTypeName = value;
             }
         }
 
@@ -138,15 +61,31 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return validator.PropertyName;
+                return dataValidator.PropertyName;
             }
             set
             {
                 EnsureChildControls();
-                validator.PropertyName = value;
+                dataValidator.PropertyName = value;
                 if ( this.LabelText == string.Empty )
                     this.LabelText = value.SplitCase();
             }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            dataValidator = new Validation.DataAnnotationValidator();
+            dataValidator.ID = this.ID + "_dav";
+            dataValidator.ControlToValidate = this.ID;
+            dataValidator.Display = ValidatorDisplay.None;
+            dataValidator.ForeColor = System.Drawing.Color.Red;
+
+            Controls.Add( validator );
         }
 
         /// <summary>
@@ -155,19 +94,26 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool isValid = validator.IsValid;
+            bool isValid = ( !Required || validator.IsValid ) && dataValidator.IsValid;
 
-            writer.AddAttribute( "class", isValid ? "" : "error" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Dl );
+            writer.AddAttribute( "class", "control-group" +
+                ( isValid ? "" : " error" ) +
+                ( Required ? " required" : "" ) );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
-            if ( validator.IsRequired )
-                writer.AddAttribute( "class", "required" );
+            label.AddCssClass( "control-label" );
             label.RenderControl( writer );
-            writer.RenderEndTag();
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dd );
-            base.Render( writer );
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            RenderBase( writer );
+
+            if ( Required )
+            {
+                validator.ErrorMessage = LabelText + " is Required.";
+                validator.RenderControl( writer );
+            }
 
             validator.RenderControl( writer );
 
@@ -186,47 +132,14 @@ namespace Rock.Web.UI.Controls
             if ( Help.Trim() != string.Empty )
             {
                 writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
+                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.Write( Help.Trim() );
                 writer.RenderEndTag();
             }
 
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-
-            Controls.Clear();
-
-            label = new Label();
-            label.AssociatedControlID = this.ID;
-
-            validator = new Validation.DataAnnotationValidator();
-            validator.ID = this.ID + "_dav";
-            validator.ControlToValidate = this.ID;
-            validator.Display = ValidatorDisplay.None;
-            validator.ForeColor = System.Drawing.Color.Red;
-
-            Controls.Add( label );
-            Controls.Add( validator );
-        }
-
-        /// <summary>
-        /// Creates a collection to store child controls.
-        /// </summary>
-        /// <returns>
-        /// Always returns an <see cref="T:System.Web.UI.EmptyControlCollection"/>.
-        /// </returns>
-        protected override ControlCollection CreateControlCollection()
-        {
-            return new ControlCollection( this );
         }
     }
 }

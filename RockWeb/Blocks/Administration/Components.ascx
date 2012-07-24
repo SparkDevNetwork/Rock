@@ -27,8 +27,7 @@
 
         <fieldset>
             <legend><asp:Literal ID="lProperties" runat="server"></asp:Literal></legend>
-            <dl id="dlProperties" runat="server">
-            </dl>
+            <asp:PlaceHolder ID="phProperties" runat="server"></asp:PlaceHolder>
         </fieldset>
 
         <div class="actions">

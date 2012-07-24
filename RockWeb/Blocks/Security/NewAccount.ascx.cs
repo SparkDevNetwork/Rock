@@ -340,8 +340,7 @@ namespace RockWeb.Blocks.Security
         private void DisplaySuccess( Rock.CMS.User user )
         {
             FormsAuthentication.SignOut();
-            FormsAuthentication.SetAuthCookie( tbUserName.Text, false );
-            Session["UserIsAuthenticated"] = true;
+            Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
             {
