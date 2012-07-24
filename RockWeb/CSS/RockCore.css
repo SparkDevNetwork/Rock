@@ -82,7 +82,6 @@ ul.inputs-list li label
     left: 24px;
     margin-left: 6px;
     margin-right: -999em;
-    margin-top: 4px;
     overflow: hidden;
     position: absolute;
 }
@@ -92,6 +91,7 @@ ul.inputs-list li label
     float: left;
     font-size: 10px;
     padding-right: 20px;
+    margin-top: 4px;
 }
 
 .zone-configuration p {
