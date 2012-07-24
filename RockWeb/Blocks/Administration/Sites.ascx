@@ -10,6 +10,7 @@
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField HeaderText="Description" DataField="Description" />
                 <asp:BoundField HeaderText="Theme" DataField="Theme" />
+                <Rock:SecurityField/>
                 <Rock:EditField OnClick="gSites_Edit" />
                 <Rock:DeleteField OnClick="gSites_Delete" />
             </Columns>
