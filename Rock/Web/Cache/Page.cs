@@ -361,7 +361,7 @@ namespace Rock.Web.Cache
                 case CMS.DisplayInNavWhen.Always:
                     return true;
                 case CMS.DisplayInNavWhen.WhenAllowed:
-                    return this.Authorized( "View", user );
+                    return this.IsAuthorized( "View", user );
                 default:
                     return false;
             }
@@ -711,7 +711,13 @@ namespace Rock.Web.Cache
         /// </summary>
         public Security.ISecured ParentAuthority
         {
-            get { return this.ParentPage; }
+            get
+            {
+                if ( this.ParentPage != null )
+                    return this.ParentPage;
+                else
+                    return this.Site;
+            }
         }
 
         /// <summary>
@@ -725,7 +731,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, User user )
+        public virtual bool IsAuthorized( string action, User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }
@@ -736,7 +742,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }

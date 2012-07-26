@@ -73,7 +73,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
-      <Name>Rock</Name>
+      <Name>Rock.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

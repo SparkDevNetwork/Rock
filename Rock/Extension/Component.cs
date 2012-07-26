@@ -34,7 +34,7 @@ namespace Rock.Extension
     /// </code>
     /// </summary>
     [Rock.Attribute.Property( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
-    [Rock.Attribute.Property( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public abstract class Component : Rock.Attribute.IHasAttributes
     {
         /// <summary>

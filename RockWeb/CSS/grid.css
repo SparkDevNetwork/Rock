@@ -2,7 +2,6 @@
 {
     border-collapse: separate;
     border-color: #CCCCCC;
-    border-radius: 4px 4px 4px 4px;
     border-style: solid;
     border-width: 1px;
     margin-top: 24px;
@@ -16,14 +15,26 @@
     padding: 0 0 12px 0;   
 }
 
+.table-bordered th, .table-bordered td 
+{
+    border-color: #ccc;
+}
+
+.table-bordered thead th, .table-bordered thead td 
+{
+    border-color: #777;
+}
+
 .grid-table thead th 
 {
-    background-color: #d6d6d6;
+    background-color: #7c7c7c;
+    color: #e3e3e3;
+    font-weight: normal;
 }
 
 .grid-table thead th.ascending, .grid-table thead th.descending
 {
-    background-color: #cdcbcb;
+    background-color: #8b8b8b;
 }
 
 .grid-table thead th.ascending a:before
@@ -38,10 +49,11 @@
 	content: url(../Assets/Images/Grid/desc.png);
 }
 
-.grid-table thead th a 
+.grid-table thead th a
 {
-    color: #456a95;
+    color: #fff;
     display: block;
+    font-weight: bold;
 }
 
 .grid-table thead th a:hover
@@ -109,16 +121,21 @@
     background: url("../Assets/Images/Grid/tick.png") ;
 }
 
+/* grid footer classes */
+
 .grid-table tfoot  
 {
-    height: 48px;  
+    height: 48px;
 }
 
 .grid-table tfoot td 
 {
-    padding: 5px 9px;  
-    background-color: #d6d6d6;
-    border-color: #d1d1d1;
+    background-color: #bbbbbb;
+}
+
+.grid-table tfoot tr:last-child td 
+{
+    border-radius: 0 0 4px 4px;
 }
 
 .grid-table tfoot .grid-actions
@@ -155,6 +172,18 @@
     margin: 2px 0;
 }
 
+.grid-table tfoot .pagination .page-navigation 
+{
+    float: left;
+    width: 45%;
+}
+
+.grid-table tfoot .pagination .page-size 
+{
+    float: right;
+    width: 45%;
+}
+
 .grid-table tfoot .pagination .page-size
 {
     float: right;
@@ -167,6 +196,7 @@
 {
     float: left;
     font-size: 10px;
+    color: #fff;
 }
 
 .grid-table tfoot .pagination .page-size .page-size-options
@@ -174,15 +204,18 @@
     float: right;
 }
 
-.grid-table .pagination a 
+.grid-table tfoot .pagination a 
 {
     line-height: 20px;  
     font-size: 11px; 
     padding: 0 6px;
+    border-color: #A3A3A3;
+    background-color: #bbb;
+    color: #fff;
 }
 
-.grid-table .pagination a:hover, .grid-table .pagination .active a {
-    background-color: #aab2c2;
+.grid-table tfoot .pagination a:hover, .grid-table .pagination .active a {
+    background-color: #8e8e8e;
     color: #fff;
 }
 

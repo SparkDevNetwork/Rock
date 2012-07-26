@@ -73,9 +73,10 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span3">
-                        <Rock:Zone ID="PageTitleBar" runat="server" />
+                        <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
                     </div>
                     <div class="span9">
+                        <Rock:Zone ID="PageTitleBar" runat="server" />
                     </div>
                 </div>
             </div>

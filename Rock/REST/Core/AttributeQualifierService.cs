@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 				Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-				if ( AttributeQualifier.Authorized( "View", currentUser ) )
+				if ( AttributeQualifier.IsAuthorized( "View", currentUser ) )
 					return AttributeQualifier.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "View", user ) )
+					if ( AttributeQualifier.IsAuthorized( "View", user ) )
 						return AttributeQualifier.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this AttributeQualifier", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 				Rock.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-				if ( existingAttributeQualifier.Authorized( "Edit", currentUser ) )
+				if ( existingAttributeQualifier.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier existingAttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( existingAttributeQualifier.Authorized( "Edit", user ) )
+					if ( existingAttributeQualifier.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAttributeQualifier).CurrentValues.SetValues(AttributeQualifier);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 				Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-				if ( AttributeQualifier.Authorized( "Edit", currentUser ) )
+				if ( AttributeQualifier.IsAuthorized( "Edit", currentUser ) )
 				{
 					AttributeQualifierService.Delete( AttributeQualifier, currentUser.PersonId );
 					AttributeQualifierService.Save( AttributeQualifier, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeQualifierService AttributeQualifierService = new Rock.Core.AttributeQualifierService();
 					Rock.Core.AttributeQualifier AttributeQualifier = AttributeQualifierService.Get( int.Parse( id ) );
-					if ( AttributeQualifier.Authorized( "Edit", user ) )
+					if ( AttributeQualifier.IsAuthorized( "Edit", user ) )
 					{
 						AttributeQualifierService.Delete( AttributeQualifier, user.PersonId );
 						AttributeQualifierService.Save( AttributeQualifier, user.PersonId );

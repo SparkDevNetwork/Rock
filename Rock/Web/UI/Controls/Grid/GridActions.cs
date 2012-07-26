@@ -29,16 +29,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableAdd
+        public bool IsAddEnabled
         {
             get 
             {
-                bool? b = ViewState["EnableAdd"] as bool?;
+                bool? b = ViewState["IsAddEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
             {
-                ViewState["EnableAdd"] = value;
+                ViewState["IsAddEnabled"] = value;
             }
         }
 
@@ -48,16 +48,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableExcelExport
+        public bool IsExcelExportEnabled
         {
             get
             {
-                bool? b = ViewState["EnableExcelExport"] as bool?;
+                bool? b = ViewState["IsExcelExportEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
             {
-                ViewState["EnableExcelExport"] = value;
+                ViewState["IsExcelExportEnabled"] = value;
             }
         }
 
@@ -109,11 +109,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            aAdd.Visible = EnableAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
-            lbAdd.Visible = EnableAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+            aAdd.Visible = IsAddEnabled && !String.IsNullOrWhiteSpace( ClientAddScript );
+            lbAdd.Visible = IsAddEnabled && String.IsNullOrWhiteSpace( ClientAddScript );
 
-            aExcelExport.Visible = EnableExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            lbExcelExport.Visible = EnableExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            aExcelExport.Visible = IsExcelExportEnabled && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            lbExcelExport.Visible = IsExcelExportEnabled && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
             base.Render( writer );
         }
@@ -154,35 +154,36 @@ namespace Rock.Web.UI.Controls
 
             // controls for add
             aAdd = new HtmlGenericControl( "a" );
+            Controls.Add( aAdd );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
             aAdd.Attributes.Add( "class", "add" );
             aAdd.InnerText = "Add";
-            Controls.Add( aAdd );
 
             lbAdd = new LinkButton();
+            Controls.Add( lbAdd );
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add";
             lbAdd.Text = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
-            Controls.Add( lbAdd );
 
             // controls for excel export
             aExcelExport = new HtmlGenericControl( "a" );
+            Controls.Add( aExcelExport );
             aExcelExport.ID = "aExcelExport";
             aExcelExport.Attributes.Add( "href", "#" );
             aExcelExport.Attributes.Add( "class", "excel-export" );
             aExcelExport.InnerText = "Export To Excel";
-            Controls.Add( aExcelExport );
 
             lbExcelExport = new LinkButton();
+            Controls.Add( lbExcelExport );
             lbExcelExport.ID = "lbExcelExport";
             lbExcelExport.CssClass = "excel-export";
             lbExcelExport.Text = "Export to Excel";
             lbExcelExport.Click += lbExcelExport_Click;
+            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
             lbExcelExport.CausesValidation = false;
-            Controls.Add( lbExcelExport );
         }
 
         void lbAdd_Click( object sender, EventArgs e )
