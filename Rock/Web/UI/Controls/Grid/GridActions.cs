@@ -164,7 +164,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( lbAdd );
             lbAdd.ID = "lbAdd";
             lbAdd.CssClass = "add btn";
-            lbAdd.Text = "Add";
+            lbAdd.ToolTip = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
             Controls.Add( lbAdd );

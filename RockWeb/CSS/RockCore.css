@@ -34,6 +34,11 @@ table th, table td
     color: #515151;
 }
 
+.controls .alert 
+{
+    display: table-cell;
+}
+
 /* forms formating */
 ul.inputs-list 
 {
@@ -159,24 +164,37 @@ ul.inputs-list li label
 }
 
 /* context help */
-a.tooltip {
-	background-image: url('../Assets/Icons/help.png');
+a.help-tip {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
 	cursor: pointer;
 	margin-left: 6px;
+	font-size: 18px;
+    color: #747474;
 }
 
-a.tooltip span {
-    display:none; 
-    padding:2px 3px; 
-    margin-left:8px; 
-    width:130px;
-    margin: -10px 0 0 20px;
+a.help-tip:hover 
+{
+    text-decoration: none;
 }
 
-a.tooltip:hover span {
+a.help-tip::before 
+{
+    font-family: "FontAwesome";
+    content: "\f059";
+}
+
+a.help-tip span {
+    display: none; 
+    padding: 2px 3px; 
+    margin-left: 8px; 
+    width: 130px;
+    margin: -4px 0 0 10px;
+    font-size: 14px;
+}
+
+a.help-tip:hover span {
     display:inline; 
     position:absolute; 
     background:#ffffff; 
@@ -222,47 +240,7 @@ a i[class^="icon-"]
 }
 
 
-/* delete start */
-.icon-button {
-    margin-left: 12px;
-    float: left;
-    height: 16px;
-    width: 16px;
-    display: block;
-	cursor: pointer;
-	background-position: center top;
-	font-size: 18px;
-	color: #747474;
-	
-}
 
-.icon-button i 
-{
-    line-height: 18px;
-}
-
-.icon-button:hover 
-{
-    text-decoration: none;
-}
-
-.icon-button:first-child {
-    margin-left: 0;
-}
-
-a.icon-button.edit {
-	background-image: url('../Assets/Icons/edit.png');
-}
-
-a.icon-button.security {
-	--background-image: url('../Assets/Icons/security.png');
-}
-
-a.icon-button.delete {
-	--background-image: url('../Assets/Icons/delete.png');
-}
-
-/* delete end */
 
 /* HTML Content */
 .html-content, .html-content-block, .html-content-block > div {
