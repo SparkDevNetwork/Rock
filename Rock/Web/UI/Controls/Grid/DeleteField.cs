@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 LinkButton lbDelete = new LinkButton();
-                lbDelete.Text = "Delete";
+                lbDelete.ToolTip = "Delete";
                 lbDelete.Click += lbDelete_Click;
 
                 cell.Controls.Add( lbDelete );
