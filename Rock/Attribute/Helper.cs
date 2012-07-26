@@ -343,10 +343,10 @@ namespace Rock.Attribute
 
                         if ( !string.IsNullOrEmpty( attribute.Description ) )
                         {
-                            HtmlGenericControl helpBlock = new HtmlGenericControl( "p" );
+                            HtmlGenericControl helpBlock = new HtmlGenericControl( "div" );
                             divControls.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
-                            helpBlock.AddCssClass( "help-block" );
+                            helpBlock.AddCssClass( "alert alert-info" );
                             helpBlock.InnerHtml = attribute.Description;
                         }
                     }
