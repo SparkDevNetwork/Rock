@@ -136,7 +136,6 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.Write( "help" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
