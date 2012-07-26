@@ -4,11 +4,14 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
+
 namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to save and dispaly a url
     /// </summary>
+    [Serializable]
     public class Url : FieldType
     {
     }

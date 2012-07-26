@@ -21,6 +21,7 @@ namespace Rock.Core.DTO
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
+    [Serializable]
     public partial class AttributeValue
     {
         /// <summary>
