@@ -122,7 +122,6 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.Write( "help" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
@@ -131,8 +130,8 @@ namespace Rock.Web.UI.Controls
 
             if ( Help.Trim() != string.Empty )
             {
-                writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.AddAttribute( "class", "alert alert-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( Help.Trim() );
                 writer.RenderEndTag();
             }

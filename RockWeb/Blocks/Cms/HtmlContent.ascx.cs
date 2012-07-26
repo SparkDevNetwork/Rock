@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.CMS;
@@ -225,10 +226,13 @@ namespace RockWeb.Blocks.Cms
             if ( canConfig || canEdit )
             {
                 LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit icon-button";
+                lbEdit.CssClass = "edit";
                 lbEdit.ToolTip = "Edit HTML";
                 lbEdit.Click += new EventHandler( lbEdit_Click );
                 configControls.Add( lbEdit );
+                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
+                lbEdit.Controls.Add( iEdit );
+                iEdit.Attributes.Add( "class", "icon-edit" );
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
