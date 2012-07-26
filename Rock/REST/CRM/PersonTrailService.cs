@@ -19,18 +19,18 @@ using System.ServiceModel.Web;
 namespace Rock.REST.CRM
 {
 	/// <summary>
-	/// REST WCF service for PersonTrails
+	/// REST WCF service for PersonMerged
 	/// </summary>
     [Export(typeof(IService))]
-    [ExportMetadata("RouteName", "CRM/PersonTrail")]
+    [ExportMetadata("RouteName", "CRM/PersonMerged")]
 	[AspNetCompatibilityRequirements( RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed )]
-    public partial class PersonTrailService : IPersonTrailService, IService
+    public partial class PersonMergedService : IPersonMergedService, IService
     {
 		/// <summary>
-		/// Gets a PersonTrail object
+		/// Gets a PersonMerged object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}" )]
-        public Rock.CRM.DTO.PersonTrail Get( string id )
+        public Rock.CRM.DTO.PersonMerged Get( string id )
         {
             var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
@@ -39,20 +39,20 @@ namespace Rock.REST.CRM
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-				Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-				if ( PersonTrail.Authorized( "View", currentUser ) )
-					return PersonTrail.DataTransferObject;
+				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+				Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
+				if ( PersonMerged.IsAuthorized( "View", currentUser ) )
+					return PersonMerged.DataTransferObject;
 				else
-					throw new WebFaultException<string>( "Not Authorized to View this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+					throw new WebFaultException<string>( "Not Authorized to View this PersonMerged", System.Net.HttpStatusCode.Forbidden );
             }
         }
 		
 		/// <summary>
-		/// Gets a PersonTrail object
+		/// Gets a PersonMerged object
 		/// </summary>
 		[WebGet( UriTemplate = "{id}/{apiKey}" )]
-        public Rock.CRM.DTO.PersonTrail ApiGet( string id, string apiKey )
+        public Rock.CRM.DTO.PersonMerged ApiGet( string id, string apiKey )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {
@@ -62,12 +62,12 @@ namespace Rock.REST.CRM
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( PersonTrail.Authorized( "View", user ) )
-						return PersonTrail.DataTransferObject;
+					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+					Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
+					if ( PersonMerged.IsAuthorized( "View", user ) )
+						return PersonMerged.DataTransferObject;
 					else
-						throw new WebFaultException<string>( "Not Authorized to View this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+						throw new WebFaultException<string>( "Not Authorized to View this PersonMerged", System.Net.HttpStatusCode.Forbidden );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
@@ -75,10 +75,10 @@ namespace Rock.REST.CRM
         }
 		
 		/// <summary>
-		/// Updates a PersonTrail object
+		/// Updates a PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}" )]
-        public void UpdatePersonTrail( string id, Rock.CRM.DTO.PersonTrail PersonTrail )
+        public void UpdatePersonMerged( string id, Rock.CRM.DTO.PersonMerged PersonMerged )
         {
             var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
@@ -87,27 +87,27 @@ namespace Rock.REST.CRM
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-				Rock.CRM.PersonTrail existingPersonTrail = PersonTrailService.Get( int.Parse( id ) );
-				if ( existingPersonTrail.Authorized( "Edit", currentUser ) )
+				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+				Rock.CRM.PersonMerged existingPersonMerged = PersonMergedService.Get( int.Parse( id ) );
+				if ( existingPersonMerged.IsAuthorized( "Edit", currentUser ) )
 				{
-					uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
+					uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 					
-					if (existingPersonTrail.IsValid)
-						PersonTrailService.Save( existingPersonTrail, currentUser.PersonId );
+					if (existingPersonMerged.IsValid)
+						PersonMergedService.Save( existingPersonMerged, currentUser.PersonId );
 					else
-						throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
+						throw new WebFaultException<string>( existingPersonMerged.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
-					throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+					throw new WebFaultException<string>( "Not Authorized to Edit this PersonMerged", System.Net.HttpStatusCode.Forbidden );
             }
         }
 
 		/// <summary>
-		/// Updates a PersonTrail object
+		/// Updates a PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "PUT", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiUpdatePersonTrail( string id, string apiKey, Rock.CRM.DTO.PersonTrail PersonTrail )
+        public void ApiUpdatePersonMerged( string id, string apiKey, Rock.CRM.DTO.PersonMerged PersonMerged )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -117,19 +117,19 @@ namespace Rock.REST.CRM
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-					Rock.CRM.PersonTrail existingPersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( existingPersonTrail.Authorized( "Edit", user ) )
+					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+					Rock.CRM.PersonMerged existingPersonMerged = PersonMergedService.Get( int.Parse( id ) );
+					if ( existingPersonMerged.IsAuthorized( "Edit", user ) )
 					{
-						uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
+						uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 					
-						if (existingPersonTrail.IsValid)
-							PersonTrailService.Save( existingPersonTrail, user.PersonId );
+						if (existingPersonMerged.IsValid)
+							PersonMergedService.Save( existingPersonMerged, user.PersonId );
 						else
-							throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
+							throw new WebFaultException<string>( existingPersonMerged.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 					}
 					else
-						throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+						throw new WebFaultException<string>( "Not Authorized to Edit this PersonMerged", System.Net.HttpStatusCode.Forbidden );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
@@ -137,10 +137,10 @@ namespace Rock.REST.CRM
         }
 
 		/// <summary>
-		/// Creates a new PersonTrail object
+		/// Creates a new PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "" )]
-        public void CreatePersonTrail( Rock.CRM.DTO.PersonTrail PersonTrail )
+        public void CreatePersonMerged( Rock.CRM.DTO.PersonMerged PersonMerged )
         {
             var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
@@ -149,23 +149,23 @@ namespace Rock.REST.CRM
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-				Rock.CRM.PersonTrail existingPersonTrail = new Rock.CRM.PersonTrail();
-				PersonTrailService.Add( existingPersonTrail, currentUser.PersonId );
-				uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
+				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+				Rock.CRM.PersonMerged existingPersonMerged = new Rock.CRM.PersonMerged();
+				PersonMergedService.Add( existingPersonMerged, currentUser.PersonId );
+				uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 
-				if (existingPersonTrail.IsValid)
-					PersonTrailService.Save( existingPersonTrail, currentUser.PersonId );
+				if (existingPersonMerged.IsValid)
+					PersonMergedService.Save( existingPersonMerged, currentUser.PersonId );
 				else
-					throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
+					throw new WebFaultException<string>( existingPersonMerged.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
             }
         }
 
 		/// <summary>
-		/// Creates a new PersonTrail object
+		/// Creates a new PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "POST", UriTemplate = "{apiKey}" )]
-        public void ApiCreatePersonTrail( string apiKey, Rock.CRM.DTO.PersonTrail PersonTrail )
+        public void ApiCreatePersonMerged( string apiKey, Rock.CRM.DTO.PersonMerged PersonMerged )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -175,15 +175,15 @@ namespace Rock.REST.CRM
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-					Rock.CRM.PersonTrail existingPersonTrail = new Rock.CRM.PersonTrail();
-					PersonTrailService.Add( existingPersonTrail, user.PersonId );
-					uow.objectContext.Entry(existingPersonTrail).CurrentValues.SetValues(PersonTrail);
+					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+					Rock.CRM.PersonMerged existingPersonMerged = new Rock.CRM.PersonMerged();
+					PersonMergedService.Add( existingPersonMerged, user.PersonId );
+					uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 
-					if (existingPersonTrail.IsValid)
-						PersonTrailService.Save( existingPersonTrail, user.PersonId );
+					if (existingPersonMerged.IsValid)
+						PersonMergedService.Save( existingPersonMerged, user.PersonId );
 					else
-						throw new WebFaultException<string>( existingPersonTrail.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
+						throw new WebFaultException<string>( existingPersonMerged.ValidationResults.AsDelimited(", "), System.Net.HttpStatusCode.BadRequest );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );
@@ -191,10 +191,10 @@ namespace Rock.REST.CRM
         }
 
 		/// <summary>
-		/// Deletes a PersonTrail object
+		/// Deletes a PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}" )]
-        public void DeletePersonTrail( string id )
+        public void DeletePersonMerged( string id )
         {
             var currentUser = Rock.CMS.UserService.GetCurrentUser();
             if ( currentUser == null )
@@ -203,23 +203,23 @@ namespace Rock.REST.CRM
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
-				Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-				Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-				if ( PersonTrail.Authorized( "Edit", currentUser ) )
+				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+				Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
+				if ( PersonMerged.IsAuthorized( "Edit", currentUser ) )
 				{
-					PersonTrailService.Delete( PersonTrail, currentUser.PersonId );
-					PersonTrailService.Save( PersonTrail, currentUser.PersonId );
+					PersonMergedService.Delete( PersonMerged, currentUser.PersonId );
+					PersonMergedService.Save( PersonMerged, currentUser.PersonId );
 				}
 				else
-					throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+					throw new WebFaultException<string>( "Not Authorized to Edit this PersonMerged", System.Net.HttpStatusCode.Forbidden );
             }
         }
 
 		/// <summary>
-		/// Deletes a PersonTrail object
+		/// Deletes a PersonMerged object
 		/// </summary>
 		[WebInvoke( Method = "DELETE", UriTemplate = "{id}/{apiKey}" )]
-        public void ApiDeletePersonTrail( string id, string apiKey )
+        public void ApiDeletePersonMerged( string id, string apiKey )
         {
             using ( Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope() )
             {
@@ -229,15 +229,15 @@ namespace Rock.REST.CRM
 				if (user != null)
 				{
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
-					Rock.CRM.PersonTrailService PersonTrailService = new Rock.CRM.PersonTrailService();
-					Rock.CRM.PersonTrail PersonTrail = PersonTrailService.Get( int.Parse( id ) );
-					if ( PersonTrail.Authorized( "Edit", user ) )
+					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
+					Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
+					if ( PersonMerged.IsAuthorized( "Edit", user ) )
 					{
-						PersonTrailService.Delete( PersonTrail, user.PersonId );
-						PersonTrailService.Save( PersonTrail, user.PersonId );
+						PersonMergedService.Delete( PersonMerged, user.PersonId );
+						PersonMergedService.Save( PersonMerged, user.PersonId );
 					}
 					else
-						throw new WebFaultException<string>( "Not Authorized to Edit this PersonTrail", System.Net.HttpStatusCode.Forbidden );
+						throw new WebFaultException<string>( "Not Authorized to Edit this PersonMerged", System.Net.HttpStatusCode.Forbidden );
 				}
 				else
 					throw new WebFaultException<string>( "Invalid API Key", System.Net.HttpStatusCode.Forbidden );

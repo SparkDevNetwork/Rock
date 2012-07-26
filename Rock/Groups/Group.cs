@@ -34,7 +34,7 @@ namespace Rock.Groups
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Parent Group Id.
@@ -134,7 +134,7 @@ namespace Rock.Groups
 				Rock.Groups.DTO.Group dto = new Rock.Groups.DTO.Group();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.ParentGroupId = this.ParentGroupId;
 				dto.GroupTypeId = this.GroupTypeId;
 				dto.Name = this.Name;

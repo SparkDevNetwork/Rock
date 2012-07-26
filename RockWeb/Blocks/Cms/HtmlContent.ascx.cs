@@ -18,11 +18,11 @@ namespace RockWeb.Blocks.Cms
     [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
     [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
     [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer" )]
+    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
     [Rock.Attribute.Property( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
     [Rock.Attribute.Property( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
 
     public partial class HtmlContent : Rock.Web.UI.Block
     {
@@ -91,8 +91,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( _requireApproval )
                 {
-                    cbApprove.Checked = content.Approved;
-                    cbApprove.Enabled = UserAuthorized( "Approve" );
+                    cbApprove.Checked = content.IsApproved;
+                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
                     cbApprove.Visible = true;
                 }
                 else
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
                 Rock.CMS.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
@@ -191,10 +191,10 @@ namespace RockWeb.Blocks.Cms
                     content.ExpireDateTime = null;
                 }
 
-                if ( !_requireApproval || UserAuthorized( "Approve" ) )
+                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
                 {
-                    content.Approved = !_requireApproval || cbApprove.Checked;
-                    if ( content.Approved )
+                    content.IsApproved = !_requireApproval || cbApprove.Checked;
+                    if ( content.IsApproved )
                     {
                         content.ApprovedByPersonId = CurrentPersonId;
                         content.ApprovedDateTime = DateTime.Now;
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Cms
                     v.Content,
                     ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
                     ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
-                    v.Approved,
+                    Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,
                     v.ExpireDateTime

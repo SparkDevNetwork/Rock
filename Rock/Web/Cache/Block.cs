@@ -47,7 +47,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// 	<c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
-        public bool InstancePropertiesVerified { get; internal set; }
+        public bool IsInstancePropertiesVerified { get; internal set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -123,7 +123,7 @@ namespace Rock.Web.Cache
                     block.Path = blockModel.Path;
                     block.Name = blockModel.Name;
                     block.Description = blockModel.Description;
-                    block.InstancePropertiesVerified = false;
+                    block.IsInstancePropertiesVerified = false;
 
                     Rock.Attribute.Helper.LoadAttributes( blockModel );
 

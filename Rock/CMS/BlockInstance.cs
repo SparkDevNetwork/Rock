@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -157,7 +157,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.BlockInstance dto = new Rock.CMS.DTO.BlockInstance();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.PageId = this.PageId;
 				dto.Layout = this.Layout;
 				dto.BlockId = this.BlockId;

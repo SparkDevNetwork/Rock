@@ -41,7 +41,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 				Rock.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
-				if ( GroupType.Authorized( "View", currentUser ) )
+				if ( GroupType.IsAuthorized( "View", currentUser ) )
 					return GroupType.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this GroupType", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 					Rock.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
-					if ( GroupType.Authorized( "View", user ) )
+					if ( GroupType.IsAuthorized( "View", user ) )
 						return GroupType.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this GroupType", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 				Rock.Groups.GroupType existingGroupType = GroupTypeService.Get( int.Parse( id ) );
-				if ( existingGroupType.Authorized( "Edit", currentUser ) )
+				if ( existingGroupType.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 					Rock.Groups.GroupType existingGroupType = GroupTypeService.Get( int.Parse( id ) );
-					if ( existingGroupType.Authorized( "Edit", user ) )
+					if ( existingGroupType.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingGroupType).CurrentValues.SetValues(GroupType);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 				Rock.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
-				if ( GroupType.Authorized( "Edit", currentUser ) )
+				if ( GroupType.IsAuthorized( "Edit", currentUser ) )
 				{
 					GroupTypeService.Delete( GroupType, currentUser.PersonId );
 					GroupTypeService.Save( GroupType, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupTypeService GroupTypeService = new Rock.Groups.GroupTypeService();
 					Rock.Groups.GroupType GroupType = GroupTypeService.Get( int.Parse( id ) );
-					if ( GroupType.Authorized( "Edit", user ) )
+					if ( GroupType.IsAuthorized( "Edit", user ) )
 					{
 						GroupTypeService.Delete( GroupType, user.PersonId );
 						GroupTypeService.Save( GroupType, user.PersonId );

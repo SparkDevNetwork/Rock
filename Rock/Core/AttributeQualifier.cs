@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Attribute Id.
@@ -56,17 +56,6 @@ namespace Rock.Core
 		[MaxLength( 50 )]
 		[DataMember]
 		public string Key { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Value.
@@ -127,10 +116,9 @@ namespace Rock.Core
 				Rock.Core.DTO.AttributeQualifier dto = new Rock.Core.DTO.AttributeQualifier();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.AttributeId = this.AttributeId;
 				dto.Key = this.Key;
-				dto.Name = this.Name;
 				dto.Value = this.Value;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;

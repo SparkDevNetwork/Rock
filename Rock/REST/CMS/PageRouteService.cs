@@ -41,7 +41,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 				Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
-				if ( PageRoute.Authorized( "View", currentUser ) )
+				if ( PageRoute.IsAuthorized( "View", currentUser ) )
 					return PageRoute.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this PageRoute", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 					Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
-					if ( PageRoute.Authorized( "View", user ) )
+					if ( PageRoute.IsAuthorized( "View", user ) )
 						return PageRoute.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this PageRoute", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 				Rock.CMS.PageRoute existingPageRoute = PageRouteService.Get( int.Parse( id ) );
-				if ( existingPageRoute.Authorized( "Edit", currentUser ) )
+				if ( existingPageRoute.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 					Rock.CMS.PageRoute existingPageRoute = PageRouteService.Get( int.Parse( id ) );
-					if ( existingPageRoute.Authorized( "Edit", user ) )
+					if ( existingPageRoute.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingPageRoute).CurrentValues.SetValues(PageRoute);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 				Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
-				if ( PageRoute.Authorized( "Edit", currentUser ) )
+				if ( PageRoute.IsAuthorized( "Edit", currentUser ) )
 				{
 					PageRouteService.Delete( PageRoute, currentUser.PersonId );
 					PageRouteService.Save( PageRoute, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageRouteService PageRouteService = new Rock.CMS.PageRouteService();
 					Rock.CMS.PageRoute PageRoute = PageRouteService.Get( int.Parse( id ) );
-					if ( PageRoute.Authorized( "Edit", user ) )
+					if ( PageRoute.IsAuthorized( "Edit", user ) )
 					{
 						PageRouteService.Delete( PageRoute, user.PersonId );
 						PageRouteService.Save( PageRoute, user.PersonId );

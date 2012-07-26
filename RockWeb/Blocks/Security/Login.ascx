@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Blocks.Security.Login" %>
 
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+    
 
     <fieldset>
 	    <legend>Login</legend> 
@@ -36,7 +36,7 @@
         <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false" />
     </div>
 
-    <Rock:NotificationBox ID="nbForgotPassword" Heading="Help!" Text="" runat="server"></Rock:NotificationBox>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-info"/>
 
 
    

@@ -295,7 +295,6 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
-                Session.Remove("UserIsAuthenticated");
                 CurrentPerson = null;
                 CurrentUser = null;
                 Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
@@ -309,9 +308,7 @@ namespace Rock.Web.UI
                 Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
-                    FormsAuthentication.SetAuthCookie("rckipid=" + impersonatedPerson.EncryptedKey, false );
-                    Session["UserIsAuthenticated"] = false;
-
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
                     CurrentUser =  impersonatedPerson.ImpersonatedUser;
                 }
             }
@@ -360,7 +357,7 @@ namespace Rock.Web.UI
                 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
-                if ( !PageInstance.Authorized( "View", user ) )
+                if ( !PageInstance.IsAuthorized( "View", user ) )
                 {
                     if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
@@ -394,7 +391,7 @@ namespace Rock.Web.UI
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = PageInstance.Authorized( "Configure", user );
+                    bool canConfigPage = PageInstance.IsAuthorized( "Configure", user );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -419,9 +416,9 @@ namespace Rock.Web.UI
                     foreach ( Rock.Web.Cache.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = blockInstance.Authorized( "Configure", user );
-                        bool canEdit = blockInstance.Authorized( "Edit", user );
-                        bool canView = blockInstance.Authorized( "View", user );
+                        bool canConfig = blockInstance.IsAuthorized( "Configure", user );
+                        bool canEdit = blockInstance.IsAuthorized( "Edit", user );
+                        bool canView = blockInstance.IsAuthorized( "View", user );
 
                         // Make sure user has access to view block instance
                         if ( canConfig || canEdit || canView )
@@ -484,10 +481,10 @@ namespace Rock.Web.UI
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
-                                    if ( !blockInstance.Block.InstancePropertiesVerified )
+                                    if ( !blockInstance.Block.IsInstancePropertiesVerified )
                                     {
                                         block.CreateAttributes();
-                                        blockInstance.Block.InstancePropertiesVerified = true;
+                                        blockInstance.Block.IsInstancePropertiesVerified = true;
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized

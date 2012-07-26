@@ -42,7 +42,7 @@ namespace Rock.Util.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool? System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Active.
@@ -50,7 +50,7 @@ namespace Rock.Util.DTO
 		/// <value>
 		/// Active.
 		/// </value>
-		public bool? Active { get; set; }
+		public bool? IsActive { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Name.

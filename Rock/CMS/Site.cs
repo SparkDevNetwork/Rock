@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -194,7 +194,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.Site dto = new Rock.CMS.DTO.Site();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
 				dto.Theme = this.Theme;
@@ -260,7 +260,22 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        public Site()
+        {
+            SiteDomains = new System.Collections.ObjectModel.Collection<SiteDomain>();
+        }
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Site Read( int id )
+        {
+            return Read<Site>( id );
+        }
     }
+
     /// <summary>
     /// Site Configuration class.
     /// </summary>
