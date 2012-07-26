@@ -6,7 +6,7 @@
     <script type="text/javascript">
 
         Sys.Application.add_load(function () {
-            $('a.logo').attr('href', rock.baseUrl);
+            $('a.brand').attr('href', rock.baseUrl);
         });
 
     </script>
