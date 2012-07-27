@@ -8,3 +8,4 @@
 *.DS_Store
 *.tlog
 /RockWeb/web.ConnectionStrings.config
+/RockWeb/web.ConnectionString.config

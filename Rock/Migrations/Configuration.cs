@@ -3258,6 +3258,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Password_98 );
+			context.SaveChanges();
 
 			var attribute_Active_99 = new Rock.Core.Attribute
 			{
@@ -3738,6 +3739,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Order_122 );
+			context.SaveChanges();
 
 			var attribute_Active_123 = new Rock.Core.Attribute
 			{
@@ -4018,6 +4020,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailFooterTextLinkColor );
+			context.SaveChanges();
 
 			var attribute_HourstoKeepUnconfirmedAccounts = new Rock.Core.Attribute
 			{
@@ -4038,6 +4041,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Interger.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_HourstoKeepUnconfirmedAccounts );
+			context.SaveChanges();
 
 			var attribute_EmailBodyBackgroundColor = new Rock.Core.Attribute
 			{
@@ -4058,6 +4062,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailBodyBackgroundColor );
+			context.SaveChanges();
 
 			var attribute_EmailHeader = new Rock.Core.Attribute
 			{
@@ -4078,6 +4083,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailHeader );
+			context.SaveChanges();
 
 			var attribute_EmailFooter = new Rock.Core.Attribute
 			{
@@ -4098,6 +4104,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailFooter );
+			context.SaveChanges();
 
 			var attribute_DaystoKeepExceptionsinLog = new Rock.Core.Attribute
 			{
@@ -4118,6 +4125,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Interger.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_DaystoKeepExceptionsinLog );
+			context.SaveChanges();
 
 			var attribute_Log404sAsExceptions = new Rock.Core.Attribute
 			{
@@ -4138,6 +4146,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Boolean.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_Log404sAsExceptions );
+			context.SaveChanges();
 
 			var attribute_EmailExceptionsList = new Rock.Core.Attribute
 			{
@@ -4158,6 +4167,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_EmailExceptionsList );
+			context.SaveChanges();
 
 			var attribute_SendGridUsername = new Rock.Core.Attribute
 			{
@@ -4178,6 +4188,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SendGridUsername );
+			context.SaveChanges();
 
 			var attribute_SendGridPassword = new Rock.Core.Attribute
 			{
@@ -4198,6 +4209,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_SendGridPassword );
+			context.SaveChanges();
 
 			var attribute_TestAttribute = new Rock.Core.Attribute
 			{
@@ -4218,6 +4230,7 @@ namespace Rock.Migrations
 				FieldTypeId = fieldtype_Text.Id
 			};
 			context.Attributes.AddOrUpdate( p => p.Guid, attribute_TestAttribute );
+			context.SaveChanges();
 
 			var attribute_CacheDuration = new Rock.Core.Attribute
 			{
