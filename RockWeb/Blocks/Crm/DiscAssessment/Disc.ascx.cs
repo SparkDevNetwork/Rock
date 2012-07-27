@@ -4,11 +4,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using rccd = Rock.Custom.CentralAZ.DISC;
+using Rock.CRM;
 
-namespace Plugins.CentralAZ
+namespace Rockweb.Blocks.Crm
 {
-	public partial class DISC : Rock.Web.UI.Block
+	public partial class Disc : Rock.Web.UI.Block
 	{
 		/// <summary>
 		/// Creates a RadioButton for display on the test form.
@@ -55,7 +55,7 @@ namespace Plugins.CentralAZ
 		/// Inserts a TableRow into the Question Table.
 		/// </summary>
 		/// <param name="response">The question response to add.</param>
-		private void buildRadioButtonTableRow( rccd.ResponseItem response )
+		private void buildRadioButtonTableRow( DiscService.ResponseItem response )
 		{
 			TableRow tr = new TableRow();
 			TableCell tc = new TableCell();
@@ -77,12 +77,12 @@ namespace Plugins.CentralAZ
 		/// </summary>
 		private void buildQuestionTable()
 		{
-			List<rccd.ResponseItem> responses = rccd.GetResponses();
+			List<DiscService.ResponseItem> responses = DiscService.GetResponses();
 
 			TableRow tr = new TableRow();
 			TableCell tc = new TableCell();
 
-			foreach ( rccd.ResponseItem response in responses )
+			foreach ( DiscService.ResponseItem response in responses )
 			{
 				// If we are processing the first response in each question, build a question header
 				if ( response.ResponseNumber == "1" )
@@ -124,9 +124,9 @@ namespace Plugins.CentralAZ
 
 			//Adding references to my CSS and JS files
 			//The second 'AddCSSLink' line below bypasses a page load error on postback. 
-			PageInstance.AddCSSLink( this.Page, "~/Plugins/CentralAZ.com/DISC_Assessment/CSS/disc.css" );
-			PageInstance.AddCSSLink( this.Page, "~/Plugins/CentralAZ.com/DISC_Assessment/CSS/disc2.css" );
-			PageInstance.AddScriptLink( this.Page, "~/Plugins/CentralAZ.com/DISC_Assessment/scripts/disc.js" );
+			PageInstance.AddCSSLink( this.Page, "~/Blocks/Crm/DiscAssessment/CSS/disc.css" );
+			PageInstance.AddCSSLink( this.Page, "~/Blocks/Crm/DiscAssessment/CSS/disc2.css" );
+			PageInstance.AddScriptLink( this.Page, "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
 
 			//Yup, build question table
 			buildQuestionTable();
@@ -139,14 +139,14 @@ namespace Plugins.CentralAZ
 		/// <param name="e"></param>
 		protected void btnScoreTest_Click( object sender, EventArgs e )
 		{
-			List<rccd.ResponseItem> responses = rccd.GetResponses();
+			List<DiscService.ResponseItem> responses = DiscService.GetResponses();
 			List<string> selectedResponseIDs = new List<string>();
 
 			// Collect selected responses into a string array.
 			// All we need is the selected RadioButton's ID (which we set to the ResponseID + ("l" or "m") for each responses record).
 			//   Examples: "012m", "130l"
 			// We now know the selected response and whether it was 'm'ost or 'l'east.
-			foreach ( rccd.ResponseItem response in responses )
+			foreach ( DiscService.ResponseItem response in responses )
 			{
 				string rbID = response.ResponseID + "m";
 				RadioButton rb = findRadioButton( this, rbID );
@@ -160,7 +160,7 @@ namespace Plugins.CentralAZ
 			}
 
 			// Score the responses and return the results
-			rccd.AssessmentResults results = rccd.Score( selectedResponseIDs );
+			DiscService.AssessmentResults results = DiscService.Score( selectedResponseIDs );
 
 			//Display results out to user
 			lblABd.Text = "D: " + results.AdaptiveBehaviorD;
