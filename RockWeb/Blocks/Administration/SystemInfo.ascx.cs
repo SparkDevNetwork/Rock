@@ -24,6 +24,11 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
+            BuildMemoryCacheDetails();
+        }
+
+        private void BuildMemoryCacheDetails()
+        {
             var cache = MemoryCache.Default;
 
             StringBuilder sbItems = new StringBuilder();
@@ -44,22 +49,22 @@ namespace RockWeb.Blocks.Administration
                         memStream.Close();
                     }
 
-                    sbItems.AppendFormat( "{0} ({1:N0} bytes)<br/>", cachItem.Key, size );
+                    sbItems.AppendFormat( "<p>{0} ({1:N0} bytes)</p>", cachItem.Key, size );
                     totalSize += size;
 
                 }
                 catch (SystemException ex)
                 {
-                    sbItems.AppendFormat( "{0} (Could Not Determine Size: {1})<br/>", cachItem.Key, ex.Message );
+                    sbItems.AppendFormat( "<p>{0} (Could Not Determine Size: {1})</p>", cachItem.Key, ex.Message );
                 }
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "Cache Items: {0}<br/>", cache.Count() );
-            sb.AppendFormat( "Approximate Current Size: {0:N0} (bytes)<br/><br/>", totalSize );
-            sb.AppendFormat( "Cache Memory Limit: {0:N0} (bytes)<br/>", cache.CacheMemoryLimit );
-            sb.AppendFormat( "Physical Memory Limit: {0} %<br/>", cache.PhysicalMemoryLimit );
-            sb.AppendFormat( "Polling Interval: {0}<br/>", cache.PollingInterval );
+            sb.AppendFormat( "<p>Cache Items: {0}</p>", cache.Count() );
+            sb.AppendFormat( "<p>Approximate Current Size: {0:N0} (bytes)</p>", totalSize );
+            sb.AppendFormat( "<p>Cache Memory Limit: {0:N0} (bytes)</p>", cache.CacheMemoryLimit );
+            sb.AppendFormat( "<p>Physical Memory Limit: {0} %</p>", cache.PhysicalMemoryLimit );
+            sb.AppendFormat( "<p>Polling Interval: {0}</p>", cache.PollingInterval );
 
             //Type type = cache.GetType();
 
