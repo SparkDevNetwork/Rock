@@ -170,7 +170,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.

@@ -289,7 +289,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public Rock.Core.DTO.AttributeValue GetValue( int entityId )
+        public Rock.Web.Cache.AttributeValue GetValue( int entityId )
         {
             return GetValues( entityId )[0];
         }
@@ -299,18 +299,18 @@ namespace Rock.Core
         /// </summary>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public List<Rock.Core.DTO.AttributeValue> GetValues( int entityId )
+        public List<Rock.Web.Cache.AttributeValue> GetValues( int entityId )
         {
-            List<Rock.Core.DTO.AttributeValue> values = new List<DTO.AttributeValue>();
+            var values = new List<Rock.Web.Cache.AttributeValue>();
 
             foreach ( var value in this.AttributeValues.
                 Where( v => v.EntityId == entityId ).
                 OrderBy( v => v.Order ) )
-                values.Add( value.DataTransferObject );
+                values.Add( new Rock.Web.Cache.AttributeValue(value) );
 
             if ( values.Count == 0 )
             {
-                var value = new Rock.Core.DTO.AttributeValue();
+                var value = new Rock.Web.Cache.AttributeValue();
                 value.AttributeId = this.Id;
                 value.Value = this.DefaultValue;
                 values.Add( value );
