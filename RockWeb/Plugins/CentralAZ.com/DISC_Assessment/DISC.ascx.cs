@@ -52,7 +52,7 @@ namespace Plugins.CentralAZ
 
 
 		/// <summary>
-		/// Inserts a TabelRow into the Question Table.
+		/// Inserts a TableRow into the Question Table.
 		/// </summary>
 		/// <param name="response">The question response to add.</param>
 		private void buildRadioButtonTableRow( rccd.ResponseItem response )
