@@ -85,7 +85,7 @@ namespace Rock.Web.UI.Controls
             dataValidator.Display = ValidatorDisplay.None;
             dataValidator.ForeColor = System.Drawing.Color.Red;
 
-            Controls.Add( validator );
+            Controls.Add( dataValidator );
         }
 
         /// <summary>
@@ -115,14 +115,13 @@ namespace Rock.Web.UI.Controls
                 validator.RenderControl( writer );
             }
 
-            validator.RenderControl( writer );
+            dataValidator.RenderControl( writer );
 
             if ( Tip.Trim() != string.Empty )
             {
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.Write( "help" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
