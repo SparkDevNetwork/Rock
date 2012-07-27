@@ -163,10 +163,14 @@ namespace Rock.Web.UI.Controls
             lbAdd = new LinkButton();
             Controls.Add( lbAdd );
             lbAdd.ID = "lbAdd";
-            lbAdd.CssClass = "add";
-            lbAdd.Text = "Add";
+            lbAdd.CssClass = "add btn";
+            lbAdd.ToolTip = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
+            Controls.Add( lbAdd );
+            HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
+            iAdd.Attributes.Add( "class", "icon-plus-sign" );
+            lbAdd.Controls.Add( iAdd );
 
             // controls for excel export
             aExcelExport = new HtmlGenericControl( "a" );
@@ -179,11 +183,15 @@ namespace Rock.Web.UI.Controls
             lbExcelExport = new LinkButton();
             Controls.Add( lbExcelExport );
             lbExcelExport.ID = "lbExcelExport";
-            lbExcelExport.CssClass = "excel-export";
-            lbExcelExport.Text = "Export to Excel";
+            lbExcelExport.CssClass = "excel-export btn";
+            lbExcelExport.ToolTip = "Export to Excel";
             lbExcelExport.Click += lbExcelExport_Click;
             ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
             lbExcelExport.CausesValidation = false;
+            Controls.Add( lbExcelExport );
+            HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
+            iExcelExport.Attributes.Add( "class", "icon-table" );
+            lbExcelExport.Controls.Add( iExcelExport );
         }
 
         void lbAdd_Click( object sender, EventArgs e )
