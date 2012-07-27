@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// Enable extra padding.
         /// </value>
-        public bool Padded
+        public bool IsPadded
         {
             get { return _Padded; }
             set { _Padded = value; }

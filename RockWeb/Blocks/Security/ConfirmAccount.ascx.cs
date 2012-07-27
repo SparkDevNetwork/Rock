@@ -180,8 +180,7 @@ namespace RockWeb.Blocks.Security
                 user.IsConfirmed = true;
                 userService.Save( user, user.PersonId );
 
-                FormsAuthentication.SetAuthCookie( user.UserName, false );
-                Session["UserIsAuthenticated"] = true;
+                Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
                 string caption = AttributeValue( "ConfirmedCaption" );
                 if ( caption.Contains( "{0}" ) )
@@ -254,7 +253,6 @@ namespace RockWeb.Blocks.Security
                 if ( CurrentUser != null && CurrentUser.UserName == user.UserName )
                 {
                     FormsAuthentication.SignOut();
-                    Session.Remove( "UserIsAuthenticated" );
                 }
 
                 userService.Delete( user, user.PersonId );

@@ -16,8 +16,8 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
     public class LabeledTextBox : TextBox
     {
-        private Label label;
-        private RequiredFieldValidator validator;
+        protected Label label;
+        protected RequiredFieldValidator validator;
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
@@ -43,33 +43,6 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["Required"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [display required indicator].
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if [display required indicator]; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "true" ),
-        Description( "Should the required indicator be displayed?" )
-        ]
-        public bool DisplayRequiredIndicator
-        {
-            get
-            {
-                if ( ViewState["DisplayRequiredIndicator"] != null )
-                    return ( bool )ViewState["DisplayRequiredIndicator"];
-                else
-                    return true;
-            }
-            set
-            {
-                ViewState["DisplayRequiredIndicator"] = value;
             }
         }
 
@@ -150,57 +123,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            bool isValid = !Required || validator.IsValid;
-
-            writer.AddAttribute( "class", "control-group" +
-                (isValid ? "" : " error") +
-                (Required ? " required" : ""));
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            base.Render( writer );
-
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.Write( "help" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
-
-            if ( Help.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-            }
-
-            if ( Required )
-            {
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
-            }
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -217,9 +139,72 @@ namespace Rock.Web.UI.Controls
             validator.ControlToValidate = this.ID;
             validator.Display = ValidatorDisplay.Dynamic;
             validator.CssClass = "help-inline";
+            validator.Enabled = false;
 
             Controls.Add( label );
             Controls.Add( validator );
         }
+
+        /// <summary>
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            bool isValid = !Required || validator.IsValid;
+
+            writer.AddAttribute( "class", "control-group" +
+                (isValid ? "" : " error") +
+                (Required ? " required" : ""));
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.AddCssClass( "control-label" );
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            base.Render( writer );
+
+            if ( Required )
+            {
+                validator.Enabled = true;
+                validator.ErrorMessage = LabelText + " is Required.";
+                validator.RenderControl( writer );
+            }
+
+            if ( Tip.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "help-tip" );
+                writer.AddAttribute( "href", "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( Tip.Trim() );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
+
+            if ( Help.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "alert alert-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( Help.Trim() );
+                writer.RenderEndTag();
+            }
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Method for inheriting classes to use to render just the base control
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        protected void RenderBase( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
     }
 }

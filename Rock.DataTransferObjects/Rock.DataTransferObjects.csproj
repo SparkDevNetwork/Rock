@@ -43,11 +43,6 @@
     <Compile Include="CMS\Auth.cs" />
     <Compile Include="CMS\Block.cs" />
     <Compile Include="CMS\BlockInstance.cs" />
-    <Compile Include="CMS\Blog.cs" />
-    <Compile Include="CMS\BlogCategory.cs" />
-    <Compile Include="CMS\BlogPost.cs" />
-    <Compile Include="CMS\BlogPostComment.cs" />
-    <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\File.cs" />
     <Compile Include="CMS\HtmlContent.cs" />
     <Compile Include="CMS\Page.cs" />
@@ -65,9 +60,10 @@
     <Compile Include="Core\FieldType.cs" />
     <Compile Include="Core\ServiceLog.cs" />
     <Compile Include="CRM\Address.cs" />
+    <Compile Include="CRM\Campus.cs" />
     <Compile Include="CRM\EmailTemplate.cs" />
     <Compile Include="CRM\Person.cs" />
-    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Groups\Group.cs" />

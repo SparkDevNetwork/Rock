@@ -15,7 +15,7 @@ namespace Rock.REST.CMS
 		/// Gets a User object
 		/// </summary>
 		[WebGet( UriTemplate = "Available/{username}" )]
-        public bool Available( string username )
+        public bool IsAvailable( string username )
         {
             using (Rock.Data.UnitOfWorkScope uow = new Rock.Data.UnitOfWorkScope())
             {

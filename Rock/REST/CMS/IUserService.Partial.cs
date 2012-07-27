@@ -14,6 +14,6 @@ namespace Rock.REST.CMS
 		/// Determines if the given username is available
 		/// </summary>
 		[OperationContract]
-        bool Available( string username );
+        bool IsAvailable( string username );
     }
 }

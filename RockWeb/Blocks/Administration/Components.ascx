@@ -12,7 +12,7 @@
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
-                <Rock:BoolField DataField="Active" HeaderText="Active" />
+                <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                 <Rock:EditField OnClick="rGrid_Edit" />
             </Columns>
         </Rock:Grid>
@@ -27,8 +27,7 @@
 
         <fieldset>
             <legend><asp:Literal ID="lProperties" runat="server"></asp:Literal></legend>
-            <dl id="dlProperties" runat="server">
-            </dl>
+            <asp:PlaceHolder ID="phProperties" runat="server"></asp:PlaceHolder>
         </fieldset>
 
         <div class="actions">

@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Path.
@@ -116,7 +116,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.Block dto = new Rock.CMS.DTO.Block();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.Path = this.Path;
 				dto.Name = this.Name;
 				dto.Description = this.Description;

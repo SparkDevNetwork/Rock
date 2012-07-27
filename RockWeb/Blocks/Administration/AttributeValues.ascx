@@ -31,11 +31,12 @@
         <asp:HiddenField ID="hfId" runat="server" />
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
         <fieldset>
-            <dl>
-                <dt><label><asp:Literal ID="lCaption" runat="server"></asp:Literal></label></dt>
-                <dd><asp:PlaceHolder ID="phEditControl" runat="server"></asp:PlaceHolder></dd>
-            </dl>
-            <dt></dt>
+            <div class="control-group">
+                <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
+                <div class="controls">
+                    <asp:PlaceHolder ID="phEditControl" runat="server"></asp:PlaceHolder>
+                </div>
+            </div>
         </fieldset>
     </Content>
     </Rock:ModalDialog>

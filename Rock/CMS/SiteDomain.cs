@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Site Id.
@@ -106,7 +106,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.SiteDomain dto = new Rock.CMS.DTO.SiteDomain();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.SiteId = this.SiteId;
 				dto.Domain = this.Domain;
 				dto.CreatedDateTime = this.CreatedDateTime;
