@@ -4,8 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
+using System.Web.UI;
+
+using Rock.Field;
 
 namespace Rock.Web.Cache
 {
@@ -17,6 +21,7 @@ namespace Rock.Web.Cache
     /// using the attribute, a particlar instance's values are not included as a 
     /// property of this attribute object.
     /// </summary>
+    [Serializable]
     public class Attribute
     {
         /// <summary>
@@ -62,7 +67,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets if attribute supports multiple values
         /// </summary>
-        public bool MultiValue { get; private set; }
+        public bool IsMultiValue { get; private set; }
 
         /// <summary>
         /// Gets the description.
@@ -76,7 +81,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if it should be added as a column; otherwise, <c>false</c>.
         /// </value>
-        public bool GridColumn { get; private set; }
+        public bool IsGridColumn { get; private set; }
 
         /// <summary>
         /// Gets the default value for the attribute
@@ -86,7 +91,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the qualifier values if any have been defined for the attribute
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, string>> QualifierValues { get; private set; }
+        public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         private int FieldTypeId { get; set; }
 
@@ -107,7 +112,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        public bool Required { get; private set; }
+        public bool IsRequired { get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -115,10 +120,12 @@ namespace Rock.Web.Cache
         /// <param name="value">The value.</param>
         /// <param name="setValue">if set to <c>true</c> set the control's value</param>
         /// <returns></returns>
-        public System.Web.UI.Control CreateControl( string value, bool setValue)
+        public Control CreateControl( string value, bool setValue)
         {
-            this.FieldType.Field.QualifierValues = this.QualifierValues;
-            return this.FieldType.Field.CreateControl( string.IsNullOrEmpty( value ) ? DefaultValue : value, Required, setValue );
+            Control editControl = this.FieldType.Field.EditControl( this.QualifierValues);
+            if ( setValue )
+                this.FieldType.Field.SetEditValue( editControl, this.QualifierValues, value );
+            return editControl;
         }
 
         #region Static Methods
@@ -190,15 +197,15 @@ namespace Rock.Web.Cache
             attribute.Name = attributeModel.Name;
             attribute.Category = attributeModel.Category;
             attribute.Description = attributeModel.Description;
-            attribute.GridColumn = attributeModel.GridColumn;
+            attribute.IsGridColumn = attributeModel.IsGridColumn;
             attribute.FieldTypeId = attributeModel.FieldTypeId;
             attribute.DefaultValue = attributeModel.DefaultValue;
-            attribute.Required = attributeModel.Required;
-            attribute.MultiValue = attributeModel.MultiValue;
+            attribute.IsRequired = attributeModel.IsRequired;
+            attribute.IsMultiValue = attributeModel.IsMultiValue;
 
-            attribute.QualifierValues = new Dictionary<string,KeyValuePair<string, string>>();
+            attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
-                attribute.QualifierValues.Add( qualifier.Key, new KeyValuePair<string, string>( qualifier.Name, qualifier.Value ) );
+                attribute.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
 
             return attribute;
         }

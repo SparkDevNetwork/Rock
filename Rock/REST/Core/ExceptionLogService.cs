@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 				Rock.Core.ExceptionLog ExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-				if ( ExceptionLog.Authorized( "View", currentUser ) )
+				if ( ExceptionLog.IsAuthorized( "View", currentUser ) )
 					return ExceptionLog.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this ExceptionLog", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 					Rock.Core.ExceptionLog ExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-					if ( ExceptionLog.Authorized( "View", user ) )
+					if ( ExceptionLog.IsAuthorized( "View", user ) )
 						return ExceptionLog.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this ExceptionLog", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 				Rock.Core.ExceptionLog existingExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-				if ( existingExceptionLog.Authorized( "Edit", currentUser ) )
+				if ( existingExceptionLog.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingExceptionLog).CurrentValues.SetValues(ExceptionLog);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 					Rock.Core.ExceptionLog existingExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-					if ( existingExceptionLog.Authorized( "Edit", user ) )
+					if ( existingExceptionLog.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingExceptionLog).CurrentValues.SetValues(ExceptionLog);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 				Rock.Core.ExceptionLog ExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-				if ( ExceptionLog.Authorized( "Edit", currentUser ) )
+				if ( ExceptionLog.IsAuthorized( "Edit", currentUser ) )
 				{
 					ExceptionLogService.Delete( ExceptionLog, currentUser.PersonId );
 					ExceptionLogService.Save( ExceptionLog, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ExceptionLogService ExceptionLogService = new Rock.Core.ExceptionLogService();
 					Rock.Core.ExceptionLog ExceptionLog = ExceptionLogService.Get( int.Parse( id ) );
-					if ( ExceptionLog.Authorized( "Edit", user ) )
+					if ( ExceptionLog.IsAuthorized( "Edit", user ) )
 					{
 						ExceptionLogService.Delete( ExceptionLog, user.PersonId );
 						ExceptionLogService.Save( ExceptionLog, user.PersonId );

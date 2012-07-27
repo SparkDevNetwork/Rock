@@ -1,4 +1,6 @@
-﻿function saveBlockMove() {
+﻿var $moveLink;
+
+function saveBlockMove() {
 
     // The current block's id
     var blockInstanceId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
@@ -33,7 +35,7 @@
                 contentType: 'application/json',
                 dataType: 'json',
                 data: JSON.stringify(getData),
-                url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/CMS/BlockInstance/Move/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Get a reference to the block instance's container div
@@ -81,7 +83,7 @@ $(document).ready(function () {
     $('a.blockinstance-move').click(function () {
 
         // Get a reference to the anchor tag for use in the dialog success function
-        var $moveLink = $(this);
+        $moveLink = $(this);
 
         // Add the current block's id as an attribute of the move dialog's save button
         $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance', $(this).attr('href'));

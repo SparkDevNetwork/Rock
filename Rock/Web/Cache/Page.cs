@@ -20,6 +20,7 @@ namespace Rock.Web.Cache
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -169,7 +170,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -361,7 +362,7 @@ namespace Rock.Web.Cache
                 case CMS.DisplayInNavWhen.Always:
                     return true;
                 case CMS.DisplayInNavWhen.WhenAllowed:
-                    return this.Authorized( "View", user );
+                    return this.IsAuthorized( "View", user );
                 default:
                     return false;
             }
@@ -711,7 +712,13 @@ namespace Rock.Web.Cache
         /// </summary>
         public Security.ISecured ParentAuthority
         {
-            get { return this.ParentPage; }
+            get
+            {
+                if ( this.ParentPage != null )
+                    return this.ParentPage;
+                else
+                    return this.Site;
+            }
         }
 
         /// <summary>
@@ -725,7 +732,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, User user )
+        public virtual bool IsAuthorized( string action, User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }
@@ -736,7 +743,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }

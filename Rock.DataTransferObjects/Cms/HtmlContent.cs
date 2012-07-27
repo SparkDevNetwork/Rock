@@ -74,7 +74,7 @@ namespace Rock.CMS.DTO
 		/// <value>
 		/// Approved.
 		/// </value>
-		public bool Approved { get; set; }
+		public bool IsApproved { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Approved By Person Id.

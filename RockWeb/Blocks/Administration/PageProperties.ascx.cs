@@ -44,12 +44,16 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
+            Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
+            if ( masterPage != null )
+                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Web.Cache.Page.Read( pageId );
 
-                if ( _page.Authorized( "Configure", CurrentUser ) )
+                if ( _page.IsAuthorized( "Configure", CurrentUser ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
                     foreach ( HtmlGenericControl fs in attributeControls )
@@ -71,7 +75,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.Authorized( "Configure", CurrentUser ) )
+            if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentUser ) )
             {
                 Rock.CMS.PageService pageService = new Rock.CMS.PageService();
                 Rock.CMS.Page page = pageService.Get( _page.Id );
@@ -122,7 +126,7 @@ namespace RockWeb.Blocks.Administration
             ShowSelectedPane();
         }
 
-        protected void btnSave_Click(object sender, EventArgs e)
+        void masterPage_OnSave( object sender, EventArgs e )
         {
             if ( Page.IsValid )
             {
@@ -181,7 +185,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 string script = "window.parent.closeModal()";
-                ScriptManager.RegisterStartupScript( this.Page, btnSave.GetType(), "close-modal", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 

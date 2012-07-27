@@ -64,7 +64,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			{
 				// ...otherwise create a new CMS File
 				cmsFile = new Rock.CMS.File();
-                cmsFile.Temporary = true;
+                cmsFile.IsTemporary = true;
                 fileService.Add( cmsFile, null );
 			}
 

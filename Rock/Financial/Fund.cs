@@ -66,7 +66,7 @@ namespace Rock.Financial
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool TaxDeductible { get; set; }
+        public bool IsTaxDeductible { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -84,7 +84,7 @@ namespace Rock.Financial
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -111,7 +111,7 @@ namespace Rock.Financial
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Pledgable { get; set; }
+        public bool IsPledgable { get; set; }
 
         /// <summary>
         /// Gets or sets the gl code.

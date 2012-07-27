@@ -13,7 +13,7 @@ using System.Web.UI.WebControls;
 using System.Web.Services;
 
 using Rock.Core;
-using Rock.FieldTypes;
+using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
 
                 entity = "Rock.Core.DefinedValue";
                 entityQualifierColumn = "DefinedTypeId";
-                canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
 
                 BindFilter();
 
@@ -54,19 +54,19 @@ namespace RockWeb.Blocks.Administration
                     //assign types grid actions
                     rGridType.DataKeyNames = new string[] { "id" };
                     rGridType.GridRebind += new GridRebindEventHandler( rGridType_GridRebind );
-                    rGridType.Actions.EnableAdd = true;
+                    rGridType.Actions.IsAddEnabled = true;
                     rGridType.Actions.ClientAddScript = "editType(0)";
 
 					//assign type values grid actions
 					rGridValue.DataKeyNames = new string[] { "id" };
 					rGridValue.GridRebind += new GridRebindEventHandler( rGridValue_GridRebind );
-					rGridValue.Actions.EnableAdd = true;
+					rGridValue.Actions.IsAddEnabled = true;
 					rGridValue.Actions.ClientAddScript = "editValue(0)";
 
                     //assign attributes grid actions
                     rGridAttribute.DataKeyNames = new string[] { "id" };
                     rGridAttribute.GridRebind += new GridRebindEventHandler( rGridAttribute_GridRebind );
-                    rGridAttribute.Actions.EnableAdd = true;
+                    rGridAttribute.Actions.IsAddEnabled = true;
                     rGridAttribute.Actions.ClientAddScript = "editAttribute(0)";
 
 					string script = string.Format( @"
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Administration
 						
 			var gridAttributes = attributeService
 				.GetAttributesByEntityQualifier( entity, entityQualifierColumn, typeId )
-				.Where( attr => attr.GridColumn );
+				.Where( attr => attr.IsGridColumn );
 
 			tbValueGridColumn.Text = string.Join(",",
 				gridAttributes.AsEnumerable()

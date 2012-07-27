@@ -1,26 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.PageProperties" %>
 
-<script type="text/javascript">
-
-    // If this control is in a modal window, hide this form's save button and bind the modal popup
-    // Save button to this form's save click event
-
-    $(document).ready(function () {
-        if ($('#modal-popup_panel', window.parent.document)) {
-            $('#modal-popup_panel a.btn.primary', window.parent.document).click(function () {
-                $('#<%= btnSave.ClientID %>').click();
-            });
-        }
-    });
-
-    Sys.Application.add_load(function () {
-        if ($('#modal-popup_panel', window.parent.document)) {
-            $('#non-modal-actions').hide();
-        }
-    });
-
-</script>
-
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
  
@@ -39,7 +18,7 @@
 
         <div class="tabContent" >
 
-        <p><asp:Literal ID="lPropertyNote" runat="server"></asp:Literal></p>
+        <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-message error"/>
             
         <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
             <fieldset>
@@ -77,13 +56,9 @@
 
         <placeholder id="phAttributes" runat="server"></placeholder>
 
-        <div id="non-modal-actions" class="actions">
-            <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
         </div>
-    
-    </asp:PlaceHolder>
 
-    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    </asp:PlaceHolder>
     
 </ContentTemplate>
 </asp:UpdatePanel>

@@ -11,9 +11,9 @@ using Rock.Groups;
 
 namespace RockWeb.Blocks.Group
 {
-    [Rock.Attribute.Property( 0, "Group Id", "Behavior", "The Group Id of the parent group", false, "", "Rock", "Rock.FieldTypes.Integer" )]
-    [Rock.Attribute.Property( 1, "Group Levels", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.FieldTypes.Integer" )]
-    [Rock.Attribute.Property( 2, "Group Role", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.FieldTypes.Integer" )]
+    [Rock.Attribute.Property( 0, "Group Id", "Behavior", "The Group Id of the parent group", false, "", "Rock", "Rock.Field.Types.Integer" )]
+    [Rock.Attribute.Property( 1, "Group Levels", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.Field.Types.Integer" )]
+    [Rock.Attribute.Property( 2, "Group Role", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.Field.Types.Integer" )]
     [Rock.Attribute.Property( 3, "Duration Attribute Key", "Behavior", "The key of the duration attribute", false, "Duration" )]
     [Rock.Attribute.Property( 3, "Video Attribute Key", "Behavior", "The key of the video attribute", false, "Video" )]
     public partial class ClassVideo : Rock.Web.UI.Block
@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Group
             base.OnInit( e );
 
             // Add the neccessary CSS and Scripts required for video field types
-            Rock.FieldTypes.Video.AddLinks( this.Page );
+            Rock.Field.Types.Video.AddLinks( this.Page );
 
             if ( !Int32.TryParse( AttributeValue( "GroupLevels" ), out _levels ) )
                 _levels = int.MaxValue;
