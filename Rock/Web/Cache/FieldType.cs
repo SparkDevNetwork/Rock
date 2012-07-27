@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
@@ -12,6 +13,7 @@ namespace Rock.Web.Cache
     /// Information about a fieldType that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class FieldType
     {
         /// <summary>
