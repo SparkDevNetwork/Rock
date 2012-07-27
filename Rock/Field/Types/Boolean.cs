@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -13,6 +14,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
+    [Serializable]
     public class Boolean : FieldType
     {
         /// <summary>

@@ -13,6 +13,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and dispaly a text value
     /// </summary>
+    [Serializable]
     public class Image : FieldType
     {
         /// <summary>

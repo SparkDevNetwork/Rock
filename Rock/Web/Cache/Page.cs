@@ -20,6 +20,7 @@ namespace Rock.Web.Cache
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>

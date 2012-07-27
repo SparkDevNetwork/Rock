@@ -11,6 +11,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and dispaly a numeric value
     /// </summary>
+    [Serializable]
     public class Integer : FieldType
     {
         /// <summary>
