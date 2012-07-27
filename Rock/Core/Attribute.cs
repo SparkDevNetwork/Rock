@@ -326,6 +326,14 @@ namespace Rock.Core
         {
             get { return new Security.GenericEntity( "Global" ); }
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Attribute"/> class.
+        /// </summary>
+        public Attribute()
+        {
+            AttributeQualifiers = new System.Collections.ObjectModel.Collection<AttributeQualifier>();
+        }
     }
     /// <summary>
     /// Attribute Configuration class.
