@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DISC.ascx.cs" Inherits="Plugins.CentralAZ.DISC" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Disc.ascx.cs" Inherits="Rockweb.Blocks.Crm.Disc" %>
 <div id="tabs">
 	<ul>
 		<li><a href="#instructions">Instructions</a></li>

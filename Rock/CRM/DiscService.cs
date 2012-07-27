@@ -15,12 +15,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Rock.Custom.CentralAZ
+namespace Rock.CRM
 {
 	/// <summary>
 	/// DISC Class for administering and scoring a DISC Assessment
 	/// </summary>
-	public class DISC
+	public class DiscService
 	{
 		/// <summary>
 		/// Raw question data. This data format comes from source disc.js file from Greg Wiens.
@@ -122,7 +122,7 @@ namespace Rock.Custom.CentralAZ
 		/// <returns>a struct TestResults object with final scores.</returns>
 		static public AssessmentResults Score( List<string> selectedResponseIDs )
 		{
-			List<DISC.ResponseItem> responseList = DISC.GetResponses();
+			List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
 
 			// Holds the most and least totals for each Letter attribute
 			Dictionary<string, int[]> results = new Dictionary<string, int[]>();
@@ -137,8 +137,8 @@ namespace Rock.Custom.CentralAZ
 				string responseID = selectedResponseID.Substring( 0, 3 );
 				string MorL = selectedResponseID.Substring( 3, 1 );
 
-				DISC.ResponseItem selectedResponse = responseList.Find(
-					delegate( DISC.ResponseItem responseItem )
+				DiscService.ResponseItem selectedResponse = responseList.Find(
+					delegate( DiscService.ResponseItem responseItem )
 					{
 						return responseItem.ResponseID == responseID;
 					}
