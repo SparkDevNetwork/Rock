@@ -84,7 +84,6 @@ namespace Rock.Web.UI.Controls
             dataValidator.ControlToValidate = this.ID;
             dataValidator.Display = ValidatorDisplay.Dynamic;
             dataValidator.CssClass = "validation-error";
-
             Controls.Add( dataValidator );
         }
 
