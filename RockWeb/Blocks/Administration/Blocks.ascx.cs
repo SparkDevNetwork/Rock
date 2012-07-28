@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
                     Control control = LoadControl( block.Path );
                     if ( control is Rock.Web.UI.Block )
                     {
-                        block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                        block.Name = Path.GetFileNameWithoutExtension( block.Path ).SplitCase();
                         block.Description = string.Empty;
 
                         _blockService.Add( block, CurrentPersonId );
