@@ -187,7 +187,15 @@ namespace RockWeb.Plugins.CCVOnline.Service
 
         private void BindGrid()
         {
-            gRecordings.DataSource = recordingService.Queryable().OrderByDescending( s => s.Date ).ToList();
+            var queryable = recordingService.Queryable();
+
+            var sortProperty = gRecordings.SortProperty;
+            if ( sortProperty != null )
+                queryable = queryable.Sort( sortProperty );
+            else
+                queryable = queryable.OrderByDescending( s => s.Date );
+
+            gRecordings.DataSource = queryable.ToList();
             gRecordings.DataBind();
         }
 

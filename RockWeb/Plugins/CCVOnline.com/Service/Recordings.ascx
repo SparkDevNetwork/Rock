@@ -5,16 +5,16 @@
 
     <asp:Panel ID="pnlList" runat="server">
         
-        <Rock:Grid ID="gRecordings" runat="server" EmptyDataText="No Recordings Found">
+        <Rock:Grid ID="gRecordings" runat="server" EmptyDataText="No Recordings Found" AllowSorting="true">
             <Columns>
-                <asp:BoundField HeaderText="Campus" DataField="Campus" />
-                <asp:BoundField HeaderText="Date" DataField="Date" DataFormatString="{0:MM/dd/yy}" />
-                <asp:BoundField HeaderText="Stream" DataField="StreamName" />
-                <asp:BoundField HeaderText="Label" DataField="Label" />
-                <asp:BoundField HeaderText="Recording" DataField="RecordingName" />
-                <asp:BoundField HeaderText="Started" DataField="StartTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />
-                <asp:BoundField HeaderText="Stopped" DataField="StopTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}"  />
-                <asp:BoundField HeaderText="Length" DataField="Length" />
+                <asp:BoundField HeaderText="Campus" DataField="Campus" SortExpression="Campus" />
+                <asp:BoundField HeaderText="Date" DataField="Date" SortExpression="Date" DataFormatString="{0:MM/dd/yy}" />
+                <asp:BoundField HeaderText="Stream" DataField="StreamName" SortExpression="StreamName" />
+                <asp:BoundField HeaderText="Label" DataField="Label" SortExpression="Label" />
+                <asp:BoundField HeaderText="Recording" DataField="RecordingName" SortExpression="RecordingName" />
+                <asp:BoundField HeaderText="Started" DataField="StartTime" SortExpression="StartTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />
+                <asp:BoundField HeaderText="Stopped" DataField="StopTime" SortExpression="StopTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}"  />
+                <asp:BoundField HeaderText="Length" DataField="Length"/>
                 <asp:TemplateField><ItemTemplate><asp:LinkButton ID="lbStart" runat="server" Text="Start" CssClass="start-recording" CommandName="START" CommandArgument='<%# Eval("Id") %>'></asp:LinkButton></ItemTemplate></asp:TemplateField>
                 <asp:TemplateField><ItemTemplate><asp:LinkButton ID="lbStop" runat="server" Text="Stop" CssClass="stop-recording" CommandName="STOP" CommandArgument='<%# Eval("Id") %>'></asp:LinkButton></ItemTemplate></asp:TemplateField>
                 <Rock:EditField OnClick="gRecordings_Edit" />
