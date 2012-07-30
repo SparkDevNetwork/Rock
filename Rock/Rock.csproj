@@ -240,6 +240,10 @@
     <Compile Include="Migrations\201207251243568_AddSystemInfoPage.Designer.cs">
       <DependentUpon>201207251243568_AddSystemInfoPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207301824251_PersonMerge.cs" />
+    <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
+      <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
