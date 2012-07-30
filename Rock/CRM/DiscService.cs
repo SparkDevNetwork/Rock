@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 ﻿//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+=======
+﻿//********************************************************************************************
+>>>>>>> origin/feature-dm-DiscAssessment
 // DISC Personality Profile Assessment - This is basically a javascript to C# port 
 //  with a few changes to make it more readable.
 //
@@ -10,8 +14,14 @@
 // Used By Permission
 //
 // Written By: Derek Mangrum
+<<<<<<< HEAD
 // Date: 2012-04-25
 //
+=======
+//       Date: 2012-04-25
+//
+//********************************************************************************************
+>>>>>>> origin/feature-dm-DiscAssessment
 
 using System;
 using System.Collections.Generic;
