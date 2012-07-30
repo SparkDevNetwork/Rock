@@ -588,6 +588,17 @@ namespace Rock.Web.UI
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
                         iPageSecurity.Attributes.Add( "class", "icon-lock" );
+
+                        // System Info
+                        HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
+                        buttonBar.Controls.Add( aSystemInfo );
+                        aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
+                        aSystemInfo.Attributes.Add( "height", "500px" );
+                        aSystemInfo.Attributes.Add( "href", ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) );
+                        HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
+                        aSystemInfo.Controls.Add( iSystemInfo );
+                        iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
+
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler

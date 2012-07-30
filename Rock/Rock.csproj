@@ -236,6 +236,10 @@
     <Compile Include="Migrations\201207231351256_AddCampusPage.Designer.cs">
       <DependentUpon>201207231351256_AddCampusPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201207251243568_AddSystemInfoPage.cs" />
+    <Compile Include="Migrations\201207251243568_AddSystemInfoPage.Designer.cs">
+      <DependentUpon>201207251243568_AddSystemInfoPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -269,6 +273,7 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
+    <Compile Include="Web\Cache\AttributeValue.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />

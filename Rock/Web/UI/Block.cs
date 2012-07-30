@@ -349,6 +349,9 @@ namespace Rock.Web.UI
                 aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockInstance.Id ) ) );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
+                HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                aAttributes.Controls.Add( iAttributes );
+                iAttributes.Attributes.Add( "class", "icon-cog" );
             }
 
             if ( canConfig )
