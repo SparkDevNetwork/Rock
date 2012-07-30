@@ -15,6 +15,7 @@ namespace Rock.Security
     /// Information about a Role that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Role
     {
         /// <summary>

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace Rock.Web.Cache
     /// Information about a blockInstance that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class BlockInstance : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -60,7 +62,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -323,6 +325,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// The location of the block instance
     /// </summary>
+    [Serializable]
     public enum BlockInstanceLocation
     {
         /// <summary>

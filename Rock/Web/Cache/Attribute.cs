@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web.UI;
@@ -20,6 +21,7 @@ namespace Rock.Web.Cache
     /// using the attribute, a particlar instance's values are not included as a 
     /// property of this attribute object.
     /// </summary>
+    [Serializable]
     public class Attribute
     {
         /// <summary>

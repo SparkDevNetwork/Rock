@@ -84,8 +84,7 @@ namespace Rock.Web.UI.Controls
             dataValidator.ControlToValidate = this.ID;
             dataValidator.Display = ValidatorDisplay.Dynamic;
             dataValidator.CssClass = "validation-error";
-
-            Controls.Add( validator );
+            Controls.Add( dataValidator );
         }
 
         /// <summary>
@@ -115,7 +114,7 @@ namespace Rock.Web.UI.Controls
                 validator.RenderControl( writer );
             }
 
-            validator.RenderControl( writer );
+            dataValidator.RenderControl( writer );
 
             if ( Tip.Trim() != string.Empty )
             {
