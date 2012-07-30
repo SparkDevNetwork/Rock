@@ -111,6 +111,7 @@
     <Compile Include="CRM\AddressService.cs" />
     <Compile Include="CRM\Campus.cs" />
     <Compile Include="CRM\CampusService.cs" />
+    <Compile Include="CRM\DiscService.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\PersonService.cs" />
     <Compile Include="CRM\PersonMergedService.cs" />
