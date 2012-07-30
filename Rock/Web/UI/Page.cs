@@ -589,7 +589,7 @@ namespace Rock.Web.UI
                         aPageSecurity.Controls.Add( iPageSecurity );
                         iPageSecurity.Attributes.Add( "class", "icon-lock" );
 
-                        // Page Security
+                        // System Info
                         HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aSystemInfo );
                         aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
