@@ -106,7 +106,7 @@ namespace Rock.Com.CCVOnline.Service
                 foreach ( var recording in recordings.OrderBy( r => r.CreatedDateTime ).ToList() )
                 {
                     recording.StopTime = stopTime;
-                    recording.StartResponse = responseMessage;
+                    recording.StopResponse = responseMessage;
                     this.Save( recording, personId );
 
                     stoppedRecording = recording;
