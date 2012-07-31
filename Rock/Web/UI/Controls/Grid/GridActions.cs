@@ -103,6 +103,14 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            EnsureChildControls();
+            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
+        }
+
         /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl"/> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object, for display on the client.
         /// </summary>
@@ -186,7 +194,6 @@ namespace Rock.Web.UI.Controls
             lbExcelExport.CssClass = "excel-export btn";
             lbExcelExport.ToolTip = "Export to Excel";
             lbExcelExport.Click += lbExcelExport_Click;
-            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
             lbExcelExport.CausesValidation = false;
             Controls.Add( lbExcelExport );
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
