@@ -123,6 +123,7 @@
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
+    <Compile Include="CRM\DiscService.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\Service.cs" />
