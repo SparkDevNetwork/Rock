@@ -43,6 +43,7 @@
     <Compile Include="CMS\Auth.cs" />
     <Compile Include="CMS\Block.cs" />
     <Compile Include="CMS\BlockInstance.cs" />
+    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\File.cs" />
     <Compile Include="CMS\HtmlContent.cs" />
     <Compile Include="CMS\Page.cs" />
