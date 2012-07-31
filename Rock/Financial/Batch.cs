@@ -45,7 +45,7 @@ namespace Rock.Financial
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Closed { get; set; }
+        public bool IsClosed { get; set; }
 
         /// <summary>
         /// Gets or sets the campus id.

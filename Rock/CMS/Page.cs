@@ -56,7 +56,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Parent Page Id.
@@ -279,7 +279,7 @@ namespace Rock.CMS
 				dto.Guid = this.Guid;
 				dto.Name = this.Name;
 				dto.Title = this.Title;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.ParentPageId = this.ParentPageId;
 				dto.SiteId = this.SiteId;
 				dto.Layout = this.Layout;

@@ -86,11 +86,6 @@
     <Compile Include="CMS\AuthService.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
     <Compile Include="CMS\BlockService.cs" />
-    <Compile Include="CMS\BlogCategoryService.cs" />
-    <Compile Include="CMS\BlogPostCommentService.cs" />
-    <Compile Include="CMS\BlogPostService.cs" />
-    <Compile Include="CMS\BlogService.cs" />
-    <Compile Include="CMS\BlogTagService.cs" />
     <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
     <Compile Include="CMS\PageService.cs" />
@@ -118,8 +113,8 @@
     <Compile Include="CRM\CampusService.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
     <Compile Include="CRM\PersonService.cs" />
-    <Compile Include="CRM\PersonTrailService.cs" />
-    <Compile Include="CRM\PersonTrail.cs" />
+    <Compile Include="CRM\PersonMergedService.cs" />
+    <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
@@ -144,11 +139,6 @@
     <Compile Include="CMS\Auth.cs" />
     <Compile Include="CMS\Block.cs" />
     <Compile Include="CMS\BlockInstance.cs" />
-    <Compile Include="CMS\Blog.cs" />
-    <Compile Include="CMS\BlogCategory.cs" />
-    <Compile Include="CMS\BlogPost.cs" />
-    <Compile Include="CMS\BlogPostComment.cs" />
-    <Compile Include="CMS\BlogTag.cs" />
     <Compile Include="CMS\File.cs" />
     <Compile Include="CMS\HtmlContent.cs" />
     <Compile Include="CMS\Page.cs" />
@@ -169,16 +159,18 @@
     <Compile Include="CRM\Person.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
     <Compile Include="Extension\IContainer.cs" />
-    <Compile Include="FieldTypes\Document.cs" />
-    <Compile Include="FieldTypes\Person.cs" />
-    <Compile Include="FieldTypes\Url.cs" />
-    <Compile Include="FieldTypes\Currency.cs" />
-    <Compile Include="FieldTypes\Decimal.cs" />
-    <Compile Include="FieldTypes\SelectDefinedValue.cs" />
-    <Compile Include="FieldTypes\SelectDefinedType.cs" />
-    <Compile Include="FieldTypes\Date.cs" />
-    <Compile Include="FieldTypes\Image.cs" />
-    <Compile Include="FieldTypes\Video.cs" />
+    <Compile Include="Field\ConfigurationValue.cs" />
+    <Compile Include="Field\Types\SelectMulti.cs" />
+    <Compile Include="Field\Types\Document.cs" />
+    <Compile Include="Field\Types\Person.cs" />
+    <Compile Include="Field\Types\Url.cs" />
+    <Compile Include="Field\Types\Currency.cs" />
+    <Compile Include="Field\Types\Decimal.cs" />
+    <Compile Include="Field\Types\DefinedValue.cs" />
+    <Compile Include="Field\Types\DefinedType.cs" />
+    <Compile Include="Field\Types\Date.cs" />
+    <Compile Include="Field\Types\Image.cs" />
+    <Compile Include="Field\Types\Video.cs" />
     <Compile Include="Financial\Batch.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -221,30 +213,41 @@
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
-    <Compile Include="Migrations\201204161500249_CreateDatabase.cs" />
-    <Compile Include="Migrations\201204161500249_CreateDatabase.Designer.cs">
-      <DependentUpon>201204161500249_CreateDatabase.cs</DependentUpon>
+    <Compile Include="Migrations\201207181740473_CreateDatabase.cs" />
+    <Compile Include="Migrations\201207181740473_CreateDatabase.Designer.cs">
+      <DependentUpon>201207181740473_CreateDatabase.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201204290824356_Financial.cs" />
-    <Compile Include="Migrations\201204290824356_Financial.Designer.cs">
-      <DependentUpon>201204290824356_Financial.cs</DependentUpon>
+    <Compile Include="Migrations\201207182025570_AddCampus.cs" />
+    <Compile Include="Migrations\201207182025570_AddCampus.Designer.cs">
+      <DependentUpon>201207182025570_AddCampus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.cs" />
-    <Compile Include="Migrations\201204302130188_AttributeDefaultValueNotRequired.Designer.cs">
-      <DependentUpon>201204302130188_AttributeDefaultValueNotRequired.cs</DependentUpon>
+    <Compile Include="Migrations\201207191232155_UpdateFieldTypes.cs" />
+    <Compile Include="Migrations\201207191232155_UpdateFieldTypes.Designer.cs">
+      <DependentUpon>201207191232155_UpdateFieldTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201206142140223_PaymentGateway.cs" />
-    <Compile Include="Migrations\201206142140223_PaymentGateway.Designer.cs">
-      <DependentUpon>201206142140223_PaymentGateway.cs</DependentUpon>
+    <Compile Include="Migrations\201207192033371_UpdateBooleanPropertyNames.cs" />
+    <Compile Include="Migrations\201207192033371_UpdateBooleanPropertyNames.Designer.cs">
+      <DependentUpon>201207192033371_UpdateBooleanPropertyNames.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201207111854239_AddCampus.cs" />
-    <Compile Include="Migrations\201207111854239_AddCampus.Designer.cs">
-      <DependentUpon>201207111854239_AddCampus.cs</DependentUpon>
+    <Compile Include="Migrations\201207192106568_AddDefinedValuesPage.cs" />
+    <Compile Include="Migrations\201207192106568_AddDefinedValuesPage.Designer.cs">
+      <DependentUpon>201207192106568_AddDefinedValuesPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201207231351256_AddCampusPage.cs" />
+    <Compile Include="Migrations\201207231351256_AddCampusPage.Designer.cs">
+      <DependentUpon>201207231351256_AddCampusPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201207251243568_AddSystemInfoPage.cs" />
+    <Compile Include="Migrations\201207251243568_AddSystemInfoPage.Designer.cs">
+      <DependentUpon>201207251243568_AddSystemInfoPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201207301824251_PersonMerge.cs" />
+    <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
+      <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\CreateDatabase.Partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Migrations\CreateDatabase.Partial.cs" />
+    <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
@@ -275,6 +278,7 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
+    <Compile Include="Web\Cache\AttributeValue.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
@@ -322,17 +326,15 @@
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\RowEventArgs.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FieldTypes\Boolean.cs" />
-    <Compile Include="FieldTypes\PageReference.cs" />
-    <Compile Include="FieldTypes\Integer.cs" />
-    <Compile Include="FieldTypes\SelectMulti.cs" />
-    <Compile Include="FieldTypes\Color.cs" />
-    <Compile Include="FieldTypes\SelectSingle.cs" />
-    <Compile Include="FieldTypes\Field.cs" />
-    <Compile Include="FieldTypes\FieldHelper.cs" />
-    <Compile Include="FieldTypes\FieldQualifier.cs" />
-    <Compile Include="FieldTypes\IFieldType.cs" />
-    <Compile Include="FieldTypes\Text.cs" />
+    <Compile Include="Field\Types\Boolean.cs" />
+    <Compile Include="Field\Types\PageReference.cs" />
+    <Compile Include="Field\Types\Integer.cs" />
+    <Compile Include="Field\Types\SelectSingle.cs" />
+    <Compile Include="Field\Types\Color.cs" />
+    <Compile Include="Field\FieldType.cs" />
+    <Compile Include="Field\Helper.cs" />
+    <Compile Include="Field\IFieldType.cs" />
+    <Compile Include="Field\Types\Text.cs" />
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />
@@ -360,22 +362,12 @@
     <Compile Include="REST\CMS\BlockInstanceService.cs" />
     <Compile Include="REST\CMS\BlockInstanceService.Partial.cs" />
     <Compile Include="REST\CMS\BlockService.cs" />
-    <Compile Include="REST\CMS\BlogCategoryService.cs" />
-    <Compile Include="REST\CMS\BlogPostCommentService.cs" />
-    <Compile Include="REST\CMS\BlogPostService.cs" />
-    <Compile Include="REST\CMS\BlogService.cs" />
-    <Compile Include="REST\CMS\BlogTagService.cs" />
     <Compile Include="REST\CMS\IBlockInstanceService.Partial.cs" />
     <Compile Include="REST\CMS\FileService.cs" />
     <Compile Include="REST\CMS\HtmlContentService.cs" />
     <Compile Include="REST\CMS\IAuthService.cs" />
     <Compile Include="REST\CMS\IBlockInstanceService.cs" />
     <Compile Include="REST\CMS\IBlockService.cs" />
-    <Compile Include="REST\CMS\IBlogCategoryService.cs" />
-    <Compile Include="REST\CMS\IBlogPostCommentService.cs" />
-    <Compile Include="REST\CMS\IBlogPostService.cs" />
-    <Compile Include="REST\CMS\IBlogService.cs" />
-    <Compile Include="REST\CMS\IBlogTagService.cs" />
     <Compile Include="REST\CMS\IFileService.cs" />
     <Compile Include="REST\CMS\IHtmlContentService.cs" />
     <Compile Include="REST\CMS\IPageRouteService.cs" />
@@ -552,9 +544,7 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <Content Include="web.config">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="web.config" />
     <Content Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </Content>

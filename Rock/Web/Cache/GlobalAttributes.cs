@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Caching;
@@ -14,6 +15,7 @@ namespace Rock.Web.Cache
     /// Global Attributes
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class GlobalAttributes
     {
         /// <summary>

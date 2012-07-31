@@ -51,7 +51,7 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues
         {
             get 
             {
@@ -64,6 +64,6 @@ namespace Rock.Data
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> _attributeValues;
+        private Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> _attributeValues;
     }
 }

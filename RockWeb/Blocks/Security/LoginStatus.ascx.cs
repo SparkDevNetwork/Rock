@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Security
             else
             {
                 FormsAuthentication.SignOut();
-                Session.Remove( "UserIsAuthenticated" );
 
                 Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference (PageInstance.Id, PageInstance.RouteId );
                 Response.Redirect( PageInstance.BuildUrl( pageRef, null ) );

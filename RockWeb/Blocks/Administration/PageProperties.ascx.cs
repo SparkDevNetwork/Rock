@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Administration
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Web.Cache.Page.Read( pageId );
 
-                if ( _page.Authorized( "Configure", CurrentUser ) )
+                if ( _page.IsAuthorized( "Configure", CurrentUser ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
                     foreach ( HtmlGenericControl fs in attributeControls )
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.Authorized( "Configure", CurrentUser ) )
+            if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentUser ) )
             {
                 Rock.CMS.PageService pageService = new Rock.CMS.PageService();
                 Rock.CMS.Page page = pageService.Get( _page.Id );

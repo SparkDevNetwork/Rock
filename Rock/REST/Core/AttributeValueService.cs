@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 				Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-				if ( AttributeValue.Authorized( "View", currentUser ) )
+				if ( AttributeValue.IsAuthorized( "View", currentUser ) )
 					return AttributeValue.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( AttributeValue.Authorized( "View", user ) )
+					if ( AttributeValue.IsAuthorized( "View", user ) )
 						return AttributeValue.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this AttributeValue", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 				Rock.Core.AttributeValue existingAttributeValue = AttributeValueService.Get( int.Parse( id ) );
-				if ( existingAttributeValue.Authorized( "Edit", currentUser ) )
+				if ( existingAttributeValue.IsAuthorized( "Edit", currentUser ) )
 				{
 					uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue existingAttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( existingAttributeValue.Authorized( "Edit", user ) )
+					if ( existingAttributeValue.IsAuthorized( "Edit", user ) )
 					{
 						uow.objectContext.Entry(existingAttributeValue).CurrentValues.SetValues(AttributeValue);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 				Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-				if ( AttributeValue.Authorized( "Edit", currentUser ) )
+				if ( AttributeValue.IsAuthorized( "Edit", currentUser ) )
 				{
 					AttributeValueService.Delete( AttributeValue, currentUser.PersonId );
 					AttributeValueService.Save( AttributeValue, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.AttributeValueService AttributeValueService = new Rock.Core.AttributeValueService();
 					Rock.Core.AttributeValue AttributeValue = AttributeValueService.Get( int.Parse( id ) );
-					if ( AttributeValue.Authorized( "Edit", user ) )
+					if ( AttributeValue.IsAuthorized( "Edit", user ) )
 					{
 						AttributeValueService.Delete( AttributeValue, user.PersonId );
 						AttributeValueService.Save( AttributeValue, user.PersonId );
