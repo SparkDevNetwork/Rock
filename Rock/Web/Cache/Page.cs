@@ -319,6 +319,14 @@ namespace Rock.Web.Cache
         private List<int> blockInstanceIds = null;
 
         /// <summary>
+        /// Gets or sets the page contexts that have been defined for the page
+        /// </summary>
+        /// <value>
+        /// The page contexts.
+        /// </value>
+        public Dictionary<string, string> PageContexts { get; set; }
+
+        /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
         internal Dictionary<string, Rock.Data.KeyModel> Context
@@ -386,8 +394,17 @@ namespace Rock.Web.Cache
                     Type service = serviceType.MakeGenericType( modelType );
                     var serviceInstance = Activator.CreateInstance( service );
 
-                    MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                    keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                    {
+                        MethodInfo getMethod = service.GetMethod( "Get" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IModel;
+                    }
+                    else
+                    {
+                        MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    }
+
                     if ( keyModel.Model is Rock.Attribute.IHasAttributes )
                         Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
                 }
@@ -651,6 +668,11 @@ namespace Rock.Web.Cache
                 foreach ( var category in pageModel.Attributes )
                     foreach ( var attribute in category.Value )
                         page.AttributeIds.Add( attribute.Id );
+
+            page.PageContexts = new Dictionary<string,string>();
+            if ( pageModel.PageContexts != null )
+                foreach ( var pageContext in pageModel.PageContexts )
+                    page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;
