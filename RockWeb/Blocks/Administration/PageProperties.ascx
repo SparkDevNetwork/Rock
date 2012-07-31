@@ -18,7 +18,7 @@
 
         <div class="tabContent" >
 
-        <p><asp:Literal ID="lPropertyNote" runat="server"></asp:Literal></p>
+        <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-message error"/>
             
         <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
             <fieldset>
@@ -56,9 +56,9 @@
 
         <placeholder id="phAttributes" runat="server"></placeholder>
 
-    </asp:PlaceHolder>
+        </div>
 
-    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    </asp:PlaceHolder>
     
 </ContentTemplate>
 </asp:UpdatePanel>

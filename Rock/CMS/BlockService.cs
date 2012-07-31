@@ -72,14 +72,18 @@ namespace Rock.CMS
             string virtualPath = string.Format( "~/{0}/", folder );
 
             // search for all blocks under the physical path 
-            string[] allBlockNames = Directory.GetFiles( physicalPath, "*.ascx", SearchOption.AllDirectories );
-            string fileName = string.Empty;
-
-            // Convert them to virtual file/path: ~/<folder>/foo/bar.ascx
-            for ( int i = 0; i < allBlockNames.Length; i++ )
+            DirectoryInfo di = new DirectoryInfo( physicalPath );
+            if ( di.Exists )
             {
-                fileName = allBlockNames[i].Replace( physicalPath, virtualPath );
-                list.Add( fileName.Replace( @"\", "/" ) );
+                var allBlockNames = di.GetFiles( "*.ascx", SearchOption.AllDirectories );
+                string fileName = string.Empty;
+
+                // Convert them to virtual file/path: ~/<folder>/foo/bar.ascx
+                for ( int i = 0; i < allBlockNames.Length; i++ )
+                {
+                    fileName = allBlockNames[i].FullName.Replace( physicalPath, virtualPath );
+                    list.Add( fileName.Replace( @"\", "/" ) );
+                }
             }
         }
     }

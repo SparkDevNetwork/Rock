@@ -31,12 +31,12 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
 
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
@@ -148,8 +148,8 @@ namespace RockWeb.Blocks.Administration
                     Control control = LoadControl( block.Path );
                     if ( control is Rock.Web.UI.Block )
                     {
-                        block.Name = Path.GetFileNameWithoutExtension( block.Path );
-                        block.Description = block.Path;
+                        block.Name = Path.GetFileNameWithoutExtension( block.Path ).SplitCase();
+                        block.Description = string.Empty;
 
                         _blockService.Add( block, CurrentPersonId );
                         _blockService.Save( block, CurrentPersonId );

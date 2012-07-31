@@ -34,7 +34,7 @@ namespace Rock.Groups
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -114,7 +114,7 @@ namespace Rock.Groups
 				Rock.Groups.DTO.GroupType dto = new Rock.Groups.DTO.GroupType();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
 				dto.DefaultGroupRoleId = this.DefaultGroupRoleId;

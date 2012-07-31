@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Field Type Id.
@@ -134,7 +134,7 @@ namespace Rock.Core
 				Rock.Core.DTO.DefinedType dto = new Rock.Core.DTO.DefinedType();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Order = this.Order;
 				dto.Category = this.Category;

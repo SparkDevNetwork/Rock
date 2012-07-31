@@ -97,6 +97,17 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Static method to return an object based on the id
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static T Read<T>( int id ) where T : Model<T>
+        {
+            return new Service<T>().Get( id );
+        }
+
         #region ISecured implementation
 
         /// <summary>
@@ -120,7 +131,7 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit"  }; }
+            get { return new List<string>() { "View", "Edit", "Configure"  }; }
         }
 
         /// <summary>
@@ -129,7 +140,7 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public virtual bool Authorized( string action, Rock.CMS.User user )
+        public virtual bool IsAuthorized( string action, Rock.CMS.User user )
         {
             return Security.Authorization.Authorized( this, action, user );
         }
@@ -151,7 +162,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public virtual bool DefaultAuthorization (string action)
+        public virtual bool IsAllowedByDefault (string action)
         {
             return action == "View";
         }
@@ -314,8 +325,6 @@ namespace Rock.Data
         }
 
         #endregion
-
-
     }
 
     /// <summary>
