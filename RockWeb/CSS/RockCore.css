@@ -7,6 +7,14 @@
   font-style: normal;
 }
 
+/* group class */
+.group:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
 
 /* Bootstrap Overrides */
 fieldset legend 
@@ -174,11 +182,6 @@ a.help-tip {
     color: #747474;
 }
 
-a.help-tip:hover 
-{
-    text-decoration: none;
-}
-
 a.help-tip::before 
 {
     font-family: "FontAwesome";
@@ -233,7 +236,7 @@ a.help-tip:hover span {
 }
 
 /* Icon Buttons */
-a i[class^="icon-"] 
+i[class^="icon-"] 
 {
     font-size: 18px;
     color: #747474;
@@ -313,47 +316,22 @@ span.cke_skin_kama {
     overflow: hidden;    
 }
 
-#dialog #modal-scroll-container 
+#dialog .scroll-container 
 {
     width: 720px;
 }
 
-#dialog #modal-scroll-container .viewport 
-{
-    height: 380px;
-    width: 690px; 
-}
 
-#dialog #modal-scroll-container .overview 
+#dialog .scroll-container .overview 
 {
     width: 520px; 
 }
 
-#dialog #modal-scroll-container .thumb 
+#dialog .scroll-container .viewport 
 {
-    margin-left: -6px;
-    background-color: #ccc;
+    width: 690px; 
 }
 
-#dialog #modal-scroll-container .track
-{
-    width: 0;
-    background-color: #ddd;
-    border-radius: 4px;  
-    border-left: 1px solid #aaa;
-    border-right: 1px solid #fff;
-    padding: 0; 
-}
-
-#dialog #modal-scroll-container .end
-{
-    background-color: transparent; 
-}
-
-#dialog #modal-scroll-container .thumb:hover
-{
-    background-color: #bbb;
-}
 
 .modal-body.iframe 
 {
@@ -617,12 +595,24 @@ div.filter-search .dropdown dd ul li
     clear: both; 
 }
 
+.scroll-container .thumb 
+{
+    margin-left: -6px;
+    background-color: #ccc;
+}
+
+.scroll-container .thumb:hover
+{
+    background-color: #bbb;
+}
+
+
 .scroll-container .viewport 
 { 
-    width: 500px; 
-    height: 200px; 
+    width: 500px;  
     overflow: hidden; 
     position: relative; 
+    height: 380px;
 }
 
 .scroll-container .overview 
@@ -633,11 +623,6 @@ div.filter-search .dropdown dd ul li
     top: 0; 
 }
 
-.scroll-container .thumb .end,
-.scroll-container .thumb 
-{ 
-    background-color: #003D5D; 
-}
 
 .scroll-container .scrollbar 
 { 
@@ -648,11 +633,14 @@ div.filter-search .dropdown dd ul li
 
 .scroll-container .track 
 { 
-    background-color: #D8EEFD; 
     height: 100%; 
-    width:2px; 
-    position: relative; 
-    padding: 0 1px; 
+    position: relative;  
+    width: 0;
+    background-color: #ddd;
+    border-radius: 4px;  
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #fff;
+    padding: 0; 
 }
 
 .scroll-container .thumb 
@@ -671,6 +659,7 @@ div.filter-search .dropdown dd ul li
     overflow: hidden; 
     height: 5px; 
     width: 13px; 
+    background-color: transparent; 
 }
 
 .scroll-container .disable
