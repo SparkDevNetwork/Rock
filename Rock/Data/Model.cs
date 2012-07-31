@@ -393,12 +393,17 @@ namespace Rock.Data
     internal class KeyModel
     {
         public string Key { get; set; }
+        public int Id { get; set; }
         public IModel Model { get; set; }
 
-        public KeyModel (string key)
+        public KeyModel( int id ) 
+        {
+            Id = id;
+        }
+
+        public KeyModel( string key )
         {
             Key = key;
         }
     }
-
 }
