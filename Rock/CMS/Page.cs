@@ -331,8 +331,16 @@ namespace Rock.CMS
         /// Collection of Page Routes.
         /// </value>
 		public virtual ICollection<PageRoute> PageRoutes { get; set; }
-        
-		/// <summary>
+
+        /// <summary>
+        /// Gets or sets the Page Contexts.
+        /// </summary>
+        /// <value>
+        /// Collection of Page Contexts.
+        /// </value>
+        public virtual ICollection<PageContext> PageContexts { get; set; }
+
+        /// <summary>
         /// Gets or sets the Sites.
         /// </summary>
         /// <value>
