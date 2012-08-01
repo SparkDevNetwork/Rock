@@ -62,10 +62,12 @@ namespace Rockweb.Blocks.Crm
 			tc.Text = response.ResponseText;
 			tr.Cells.Add( tc );
 			tc = new TableCell();
+			tc.CssClass = "centerText";
 			RadioButton rb = createRadioButton( response.QuestionNumber, response.ResponseNumber, "m" );
 			tc.Controls.Add( rb );
 			tr.Cells.Add( tc );
 			tc = new TableCell();
+			tc.CssClass = "centerText";
 			rb = createRadioButton( response.QuestionNumber, response.ResponseNumber, "l" );
 			tc.Controls.Add( rb );
 			tr.Cells.Add( tc );
@@ -102,9 +104,11 @@ namespace Rockweb.Blocks.Crm
 					tr.Cells.Add( tc );
 					tc = new TableCell();
 					tc.Text = "MOST";
+					tc.CssClass = "centerText";
 					tr.Cells.Add( tc );
 					tc = new TableCell();
 					tc.Text = "LEAST";
+					tc.CssClass = "centerText";
 					tr.Cells.Add( tc );
 					tblQuestions.Rows.Add( tr );
 				}
@@ -119,7 +123,8 @@ namespace Rockweb.Blocks.Crm
 			//  'Score Test' button was clicked.
 			//Tell Javascript that the page is posted back or not.
 			// See:  http://stackoverflow.com/questions/59719/how-can-i-check-for-ispostback-in-javascript
-			string script = IsPostBack ? "var isScored = true;" : "var isScored = false;";
+			//string script = IsPostBack ? "var isScored = true;" : "var isScored = false;";
+			string script = IsPostBack ? "isScored = true;" : "isScored = false;";
 			Page.ClientScript.RegisterStartupScript( GetType(), "IsScored", script, true );
 
 			//Adding references to my CSS and JS files
@@ -163,15 +168,15 @@ namespace Rockweb.Blocks.Crm
 			DiscService.AssessmentResults results = DiscService.Score( selectedResponseIDs );
 
 			//Display results out to user
-			lblABd.Text = "D: " + results.AdaptiveBehaviorD;
-			lblABi.Text = "I: " + results.AdaptiveBehaviorI;
-			lblABs.Text = "S: " + results.AdaptiveBehaviorS;
-			lblABc.Text = "C: " + results.AdaptiveBehaviorC;
+			lblABd.Text = results.AdaptiveBehaviorD.ToString();
+			lblABi.Text = results.AdaptiveBehaviorI.ToString();
+			lblABs.Text = results.AdaptiveBehaviorS.ToString();
+			lblABc.Text = results.AdaptiveBehaviorC.ToString();
 
-			lblNBd.Text = "D: " + results.NaturalBehaviorD;
-			lblNBi.Text = "I: " + results.NaturalBehaviorI;
-			lblNBs.Text = "S: " + results.NaturalBehaviorS;
-			lblNBc.Text = "C: " + results.NaturalBehaviorC;
+			lblNBd.Text = results.NaturalBehaviorD.ToString();
+			lblNBi.Text = results.NaturalBehaviorI.ToString();
+			lblNBs.Text = results.NaturalBehaviorS.ToString();
+			lblNBc.Text = results.NaturalBehaviorC.ToString();
 		}
 	}
 }

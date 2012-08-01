@@ -67,3 +67,22 @@
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.centerText
+{
+	text-align: center;
+}
+
+.scoreLabel
+{
+	text-align: right;
+	padding: 1px;
+	font-family: Monospace;
+}
+
+.scoreResult
+{
+	text-align: left;
+	padding: 1px;
+	font-family: Monospace;
+}

@@ -40,30 +40,74 @@
 		<asp:Table ID="tblQuestions" runat="server">
 		</asp:Table>
 		<asp:Button ID="btnScoreTest" Text="Score Test" runat="server" OnClick="btnScoreTest_Click" />
+		<br />
+		<asp:Label Text="Please answer every question beforeattempting to score test." runat="server" />
 	</div>
 	<div id="results" class="tabContent">
-		<table border="1" cellpadding="5" cellspacing="3" class="center">
+		<h2 class="centerText">
+			Your DISC Assessment Scores</h2>
+		<table border="0" cellpadding="1" cellspacing="1" class="center">
 			<tr>
-				<td>
-					<asp:Label ID="Label1" Text="Adaptive Behavior" runat="server" />
-					<br />
+				<th colspan="2" class="centerText">
+					Adaptive Behavior
+				</th>
+				<th colspan="2" class="centerText">
+					Natural Behavior
+				</th>
+			</tr>
+			<tr>
+				<td class="scoreLabel">
+					D:
+				</td>
+				<td class="scoreResult">
 					<asp:Label ID="lblABd" Text="" runat="server" />
-					<br />
+				</td>
+				<td class="scoreLabel">
+					D:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblNBd" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					I:
+				</td>
+				<td class="scoreResult">
 					<asp:Label ID="lblABi" Text="" runat="server" />
-					<br />
+				</td>
+				<td class="scoreLabel">
+					I:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblNBi" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					S:
+				</td>
+				<td class="scoreResult">
 					<asp:Label ID="lblABs" Text="" runat="server" />
-					<br />
+				</td>
+				<td class="scoreLabel">
+					S:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblNBs" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					C:
+				</td>
+				<td class="scoreResult">
 					<asp:Label ID="lblABc" Text="" runat="server" />
 				</td>
-				<td>
-					<asp:Label ID="Label2" Text="Natural Behavior" runat="server" />
-					<br />
-					<asp:Label ID="lblNBd" Text="" runat="server" />
-					<br />
-					<asp:Label ID="lblNBi" Text="" runat="server" />
-					<br />
-					<asp:Label ID="lblNBs" Text="" runat="server" />
-					<br />
+				<td class="scoreLabel">
+					C:
+				</td>
+				<td class="scoreResult">
 					<asp:Label ID="lblNBc" Text="" runat="server" />
 				</td>
 			</tr>
