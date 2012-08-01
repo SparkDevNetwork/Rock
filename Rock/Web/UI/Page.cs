@@ -368,6 +368,13 @@ namespace Rock.Web.UI
                     PageInstance.Context = new Dictionary<string, Data.KeyModel>();
                     try 
                     {
+                        foreach ( var pageContext in PageInstance.PageContexts )
+                        {
+                            int contextId = 0;
+                            if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
+                                PageInstance.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                        }
+
                         char[] delim = new char[1] { ',' };
                         foreach (string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ))
                         {
@@ -376,6 +383,7 @@ namespace Rock.Web.UI
                             if (parts.Length == 2)
                                 PageInstance.Context.Add(parts[0], new Data.KeyModel(parts[1]));
                         }
+
                     }
                     catch {}
 
