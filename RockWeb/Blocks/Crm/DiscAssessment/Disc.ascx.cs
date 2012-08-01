@@ -119,6 +119,15 @@ namespace Rockweb.Blocks.Crm
 
 		protected void Page_Load( object sender, EventArgs e )
 		{
+			//int xx = 40;
+			//foreach ( Rock.Web.Cache.Attribute attrib in CurrentPerson.Attributes["DISC"] )
+			//{
+			//    if ( attrib.FieldType.Id == 7 )
+			//        Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, xx++.ToString(), CurrentPersonId );
+			//    else
+			//        Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, DateTime.Today.ToString(), CurrentPersonId );
+			//}
+
 			//Checks if Page IsPostBack (making the assumption that the PostBack is because the
 			//  'Score Test' button was clicked.
 			//Tell Javascript that the page is posted back or not.
@@ -135,6 +144,71 @@ namespace Rockweb.Blocks.Crm
 
 			//Yup, build question table
 			buildQuestionTable();
+
+			int attributeValueLookupResult;
+			bool attributeValueLookupSuccessful = false;
+			DateTime lastAssessmentDate = DateTime.MinValue;
+			DiscService.AssessmentResults savedScores = new DiscService.AssessmentResults();
+			var discAttributes = CurrentPerson.Attributes["DISC"];
+
+			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
+			{
+				attributeValueLookupResult = 0;
+				switch ( attrib.Key )
+				{
+					case "DISCAdaptiveD":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveI":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveS":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveC":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
+						break;
+					case "DISCNaturalD":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorD = attributeValueLookupResult;
+						break;
+					case "DISCNaturalI":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorI = attributeValueLookupResult;
+						break;
+					case "DISCNaturalS":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorS = attributeValueLookupResult;
+						break;
+					case "DISCNaturalC":
+						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorC = attributeValueLookupResult;
+						break;
+					case "DISCLastSaveDate":
+						attributeValueLookupSuccessful = DateTime.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate );
+						break;
+				}
+			}
+
+			if ( lastAssessmentDate > DateTime.MinValue )
+			{
+				//build last results table
+				lblLastAssessmentDate.Text = lastAssessmentDate.ToString( "MM/dd/yyyy" );
+
+				lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
+				lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
+				lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
+				lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
+
+				lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
+				lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
+				lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
+				lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
+			}
 		}
 
 		/// <summary>

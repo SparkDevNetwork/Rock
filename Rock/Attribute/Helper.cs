@@ -203,7 +203,7 @@ namespace Rock.Attribute
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="personId">The person id. Used to set the CreatedByPersonId and ModifiedByPersonId fields on the AttributeValue record.</param>
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string newValue, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();

@@ -41,7 +41,7 @@
 		</asp:Table>
 		<asp:Button ID="btnScoreTest" Text="Score Test" runat="server" OnClick="btnScoreTest_Click" />
 		<br />
-		<asp:Label Text="Please answer every question beforeattempting to score test." runat="server" />
+		<asp:Label Text="Please answer every question before attempting to score test." runat="server" />
 	</div>
 	<div id="results" class="tabContent">
 		<h2 class="centerText">
@@ -109,6 +109,79 @@
 				</td>
 				<td class="scoreResult">
 					<asp:Label ID="lblNBc" Text="" runat="server" />
+				</td>
+			</tr>
+		</table>
+		<hr />
+		<h2 class="centerText">
+			Your Saved DISC Assessment Scores
+		</h2>
+		<div class="centerText">
+			Saved on:
+			<asp:Label ID="lblLastAssessmentDate" Text="" runat="server" /></div>
+		<table border="0" cellpadding="1" cellspacing="1" class="center">
+			<tr>
+				<th colspan="2" class="centerText">
+					Adaptive Behavior
+				</th>
+				<th colspan="2" class="centerText">
+					Natural Behavior
+				</th>
+			</tr>
+			<tr>
+				<td class="scoreLabel">
+					D:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevABd" Text="" runat="server" />
+				</td>
+				<td class="scoreLabel">
+					D:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevNBd" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					I:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevABi" Text="" runat="server" />
+				</td>
+				<td class="scoreLabel">
+					I:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevNBi" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					S:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevABs" Text="" runat="server" />
+				</td>
+				<td class="scoreLabel">
+					S:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevNBs" Text="" runat="server" />
+				</td>
+			</tr>
+			<tr class="centerText">
+				<td class="scoreLabel">
+					C:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevABc" Text="" runat="server" />
+				</td>
+				<td class="scoreLabel">
+					C:
+				</td>
+				<td class="scoreResult">
+					<asp:Label ID="lblPrevNBc" Text="" runat="server" />
 				</td>
 			</tr>
 		</table>
