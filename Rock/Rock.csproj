@@ -99,6 +99,10 @@
     <Compile Include="Core\AttributeQualifierService.cs" />
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
     <Compile Include="Core\EntityChange.cs" />
@@ -244,6 +248,10 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208012042296_Metric.cs" />
+    <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
+      <DependentUpon>201208012042296_Metric.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -251,6 +259,10 @@
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
+    <Compile Include="REST\Core\IMetricValueService.cs" />
+    <Compile Include="REST\Core\MetricValueService.cs" />
+    <Compile Include="REST\Core\IMetricService.cs" />
+    <Compile Include="REST\Core\MetricService.cs" />
     <Compile Include="REST\Core\ExceptionLogService.cs" />
     <Compile Include="REST\Core\IAttributeService.Partial.cs" />
     <Compile Include="REST\Core\IExceptionLogService.cs" />
@@ -278,6 +290,8 @@
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="Web\Cache\AttributeValue.cs" />
+    <Compile Include="Web\Cache\MetricValue.cs" />
+    <Compile Include="Web\Cache\Metric.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
