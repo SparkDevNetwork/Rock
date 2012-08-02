@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
 			metric.Description = tbDescription.Text;
 			metric.MinValue = Int32.Parse( tbMinValue.Text );
 			metric.MaxValue = Int32.Parse( tbMaxValue.Text );
-			metric.CollectionFrequency = ddlCollectionFrequency.SelectedIndex;
+			//metric.CollectionFrequency = ddlCollectionFrequency.SelectedIndex;
 			metric.Source = tbSource.Text;
 			metric.Source = tbSourceSQL.Text;
 
