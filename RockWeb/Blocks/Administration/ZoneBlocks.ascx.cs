@@ -28,7 +28,8 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            PageInstance.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
+			//PageInstance.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
+			PageInstance.AddScriptLink( Page, "~/Scripts/bootstrap-tab.js" );
 
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Web.Cache.Page.Read( pageId );

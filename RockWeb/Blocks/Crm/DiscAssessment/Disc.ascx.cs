@@ -50,7 +50,6 @@ namespace Rockweb.Blocks.Crm
 			return null;
 		}
 
-
 		/// <summary>
 		/// Inserts a TableRow into the Question Table.
 		/// </summary>
@@ -62,12 +61,12 @@ namespace Rockweb.Blocks.Crm
 			tc.Text = response.ResponseText;
 			tr.Cells.Add( tc );
 			tc = new TableCell();
-			tc.CssClass = "centerText";
+			tc.CssClass = "";
 			RadioButton rb = createRadioButton( response.QuestionNumber, response.ResponseNumber, "m" );
 			tc.Controls.Add( rb );
 			tr.Cells.Add( tc );
 			tc = new TableCell();
-			tc.CssClass = "centerText";
+			tc.CssClass = "";
 			rb = createRadioButton( response.QuestionNumber, response.ResponseNumber, "l" );
 			tc.Controls.Add( rb );
 			tr.Cells.Add( tc );
@@ -104,11 +103,11 @@ namespace Rockweb.Blocks.Crm
 					tr.Cells.Add( tc );
 					tc = new TableCell();
 					tc.Text = "MOST";
-					tc.CssClass = "centerText";
+					tc.CssClass = "";
 					tr.Cells.Add( tc );
 					tc = new TableCell();
 					tc.Text = "LEAST";
-					tc.CssClass = "centerText";
+					tc.CssClass = "";
 					tr.Cells.Add( tc );
 					tblQuestions.Rows.Add( tr );
 				}
@@ -119,15 +118,6 @@ namespace Rockweb.Blocks.Crm
 
 		protected void Page_Load( object sender, EventArgs e )
 		{
-			//int xx = 40;
-			//foreach ( Rock.Web.Cache.Attribute attrib in CurrentPerson.Attributes["DISC"] )
-			//{
-			//    if ( attrib.FieldType.Id == 7 )
-			//        Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, xx++.ToString(), CurrentPersonId );
-			//    else
-			//        Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, DateTime.Today.ToString(), CurrentPersonId );
-			//}
-
 			//Checks if Page IsPostBack (making the assumption that the PostBack is because the
 			//  'Score Test' button was clicked.
 			//Tell Javascript that the page is posted back or not.
@@ -136,10 +126,6 @@ namespace Rockweb.Blocks.Crm
 			string script = IsPostBack ? "isScored = true;" : "isScored = false;";
 			Page.ClientScript.RegisterStartupScript( GetType(), "IsScored", script, true );
 
-			//Adding references to my CSS and JS files
-			//The second 'AddCSSLink' line below bypasses a page load error on postback. 
-			PageInstance.AddCSSLink( this.Page, "~/Blocks/Crm/DiscAssessment/CSS/disc.css" );
-			PageInstance.AddCSSLink( this.Page, "~/Blocks/Crm/DiscAssessment/CSS/disc2.css" );
 			PageInstance.AddScriptLink( this.Page, "~/Blocks/Crm/DiscAssessment/scripts/disc.js" );
 
 			//Yup, build question table
@@ -209,6 +195,11 @@ namespace Rockweb.Blocks.Crm
 				lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
 				lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
 			}
+
+			if ( IsPostBack )
+				btnSaveResults.Enabled = true;
+			else
+				btnSaveResults.Enabled = false;
 		}
 
 		/// <summary>
@@ -251,6 +242,45 @@ namespace Rockweb.Blocks.Crm
 			lblNBi.Text = results.NaturalBehaviorI.ToString();
 			lblNBs.Text = results.NaturalBehaviorS.ToString();
 			lblNBc.Text = results.NaturalBehaviorC.ToString();
+		}
+
+		protected void btnSaveResults_Click( object sender, EventArgs e )
+		{
+			var discAttributes = CurrentPerson.Attributes["DISC"];
+
+			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
+			{
+				switch ( attrib.Key )
+				{
+					case "DISCAdaptiveD":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABd.Text, CurrentPersonId );
+						break;
+					case "DISCAdaptiveI":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABi.Text, CurrentPersonId );
+						break;
+					case "DISCAdaptiveS":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABs.Text, CurrentPersonId );
+						break;
+					case "DISCAdaptiveC":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABc.Text, CurrentPersonId );
+						break;
+					case "DISCNaturalD":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBd.Text, CurrentPersonId );
+						break;
+					case "DISCNaturalI":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBi.Text, CurrentPersonId );
+						break;
+					case "DISCNaturalS":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBs.Text, CurrentPersonId );
+						break;
+					case "DISCNaturalC":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBc.Text, CurrentPersonId );
+						break;
+					case "DISCLastSaveDate":
+						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, DateTime.Today.ToString(), CurrentPersonId );
+						break;
+				}
+			}
 		}
 	}
 }
