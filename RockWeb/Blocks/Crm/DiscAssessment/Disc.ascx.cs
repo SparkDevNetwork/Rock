@@ -131,59 +131,12 @@ namespace Rockweb.Blocks.Crm
 			//Yup, build question table
 			buildQuestionTable();
 
-			int attributeValueLookupResult;
-			bool attributeValueLookupSuccessful = false;
-			DateTime lastAssessmentDate = DateTime.MinValue;
-			DiscService.AssessmentResults savedScores = new DiscService.AssessmentResults();
-			var discAttributes = CurrentPerson.Attributes["DISC"];
+			DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults( CurrentPerson );
 
-			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
-			{
-				attributeValueLookupResult = 0;
-				switch ( attrib.Key )
-				{
-					case "DISCAdaptiveD":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
-						break;
-					case "DISCAdaptiveI":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
-						break;
-					case "DISCAdaptiveS":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
-						break;
-					case "DISCAdaptiveC":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
-						break;
-					case "DISCNaturalD":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.NaturalBehaviorD = attributeValueLookupResult;
-						break;
-					case "DISCNaturalI":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.NaturalBehaviorI = attributeValueLookupResult;
-						break;
-					case "DISCNaturalS":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.NaturalBehaviorS = attributeValueLookupResult;
-						break;
-					case "DISCNaturalC":
-						attributeValueLookupSuccessful = int.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
-						savedScores.NaturalBehaviorC = attributeValueLookupResult;
-						break;
-					case "DISCLastSaveDate":
-						attributeValueLookupSuccessful = DateTime.TryParse( CurrentPerson.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate );
-						break;
-				}
-			}
-
-			if ( lastAssessmentDate > DateTime.MinValue )
+			if ( savedScores.LastSaveDate > DateTime.MinValue )
 			{
 				//build last results table
-				lblLastAssessmentDate.Text = lastAssessmentDate.ToString( "MM/dd/yyyy" );
+				lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString( "MM/dd/yyyy" );
 
 				lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
 				lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
@@ -246,41 +199,17 @@ namespace Rockweb.Blocks.Crm
 
 		protected void btnSaveResults_Click( object sender, EventArgs e )
 		{
-			var discAttributes = CurrentPerson.Attributes["DISC"];
-
-			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
-			{
-				switch ( attrib.Key )
-				{
-					case "DISCAdaptiveD":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABd.Text, CurrentPersonId );
-						break;
-					case "DISCAdaptiveI":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABi.Text, CurrentPersonId );
-						break;
-					case "DISCAdaptiveS":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABs.Text, CurrentPersonId );
-						break;
-					case "DISCAdaptiveC":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblABc.Text, CurrentPersonId );
-						break;
-					case "DISCNaturalD":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBd.Text, CurrentPersonId );
-						break;
-					case "DISCNaturalI":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBi.Text, CurrentPersonId );
-						break;
-					case "DISCNaturalS":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBs.Text, CurrentPersonId );
-						break;
-					case "DISCNaturalC":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, lblNBc.Text, CurrentPersonId );
-						break;
-					case "DISCLastSaveDate":
-						Rock.Attribute.Helper.SaveAttributeValue( CurrentPerson, attrib, DateTime.Today.ToString(), CurrentPersonId );
-						break;
-				}
-			}
+			DiscService.SaveAssessmentResults(
+				CurrentPerson,
+				lblABd.Text,
+				lblABi.Text,
+				lblABs.Text,
+				lblABc.Text,
+				lblNBd.Text,
+				lblNBi.Text,
+				lblNBs.Text,
+				lblNBc.Text
+			);
 		}
 	}
 }

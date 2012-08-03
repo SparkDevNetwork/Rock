@@ -75,6 +75,8 @@ namespace Rock.CRM
 			public int NaturalBehaviorC;
 			public int NaturalBehaviorI;
 			public int NaturalBehaviorD;
+
+			public DateTime LastSaveDate;
 		}
 
 		/// <summary>
@@ -176,6 +178,127 @@ namespace Rock.CRM
 			}
 
 			return testResults;
+		}
+
+		/// <summary>
+		/// Loads and returns saved Assessment scores for the Person.
+		/// </summary>
+		/// <param name="person">The Person to get the scores for.</param>
+		/// <returns>AssessmentResults</returns>
+		static public AssessmentResults LoadSavedAssessmentResults( Person person )
+		{
+			AssessmentResults savedScores = new AssessmentResults();
+			int attributeValueLookupResult;
+			bool attributeValueLookupSuccessful = false;
+			DateTime lastAssessmentDate = DateTime.MinValue;
+
+			var discAttributes = person.Attributes["DISC"];
+
+			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
+			{
+				attributeValueLookupResult = 0;
+				switch ( attrib.Key )
+				{
+					case "DISCAdaptiveD":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveI":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveS":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
+						break;
+					case "DISCAdaptiveC":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
+						break;
+					case "DISCNaturalD":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorD = attributeValueLookupResult;
+						break;
+					case "DISCNaturalI":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorI = attributeValueLookupResult;
+						break;
+					case "DISCNaturalS":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorS = attributeValueLookupResult;
+						break;
+					case "DISCNaturalC":
+						attributeValueLookupSuccessful = int.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult );
+						savedScores.NaturalBehaviorC = attributeValueLookupResult;
+						break;
+					case "DISCLastSaveDate":
+						attributeValueLookupSuccessful = DateTime.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate );
+						savedScores.LastSaveDate = lastAssessmentDate;
+						break;
+				}
+			}
+
+			return savedScores;
+		}
+
+		/// <summary>
+		/// Saves Assessment results to a Person's PersonProperties
+		/// </summary>
+		/// <param name="person"></param>
+		/// <param name="ABd">Adaptive Behavior D</param>
+		/// <param name="ABi">Adaptive Behavior I</param>
+		/// <param name="ABs">Adaptive Behavior S</param>
+		/// <param name="ABc">Adaptive Behavior C</param>
+		/// <param name="NBd">Natural Behavior D</param>
+		/// <param name="NBi">Natural Behavior I</param>
+		/// <param name="NBs">Natural Behavior S</param>
+		/// <param name="NBc">Natural Behavior C</param>
+		static public void SaveAssessmentResults(
+			Person person,
+			String ABd,
+			String ABi,
+			String ABs,
+			String ABc,
+			String NBd,
+			String NBi,
+			String NBs,
+			String NBc )
+		{
+			var discAttributes = person.Attributes["DISC"];
+
+			foreach ( Rock.Web.Cache.Attribute attrib in discAttributes )
+			{
+				switch ( attrib.Key )
+				{
+					case "DISCAdaptiveD":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, ABd, person.Id );
+						break;
+					case "DISCAdaptiveI":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, ABi, person.Id );
+						break;
+					case "DISCAdaptiveS":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, ABs, person.Id );
+						break;
+					case "DISCAdaptiveC":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, ABc, person.Id );
+						break;
+					case "DISCNaturalD":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, NBd, person.Id );
+						break;
+					case "DISCNaturalI":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, NBi, person.Id );
+						break;
+					case "DISCNaturalS":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, NBs, person.Id );
+						break;
+					case "DISCNaturalC":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, NBc, person.Id );
+						break;
+					case "DISCLastSaveDate":
+						Rock.Attribute.Helper.SaveAttributeValue( person, attrib, DateTime.Now.ToString(), person.Id );
+						break;
+				}
+			}
 		}
 	}
 }
