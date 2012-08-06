@@ -54,6 +54,10 @@
       <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NuGet.Core, Version=2.0.30619.9119, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NuGet.Core.2.0.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
     <Reference Include="SanitizerProviders">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
     </Reference>
@@ -244,6 +248,10 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
+    <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
+      <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -263,8 +271,13 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
+    <Compile Include="Services\NuGet\WebProjectManager.cs" />
+    <Compile Include="Services\NuGet\WebProjectSystem.cs" />
+    <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
