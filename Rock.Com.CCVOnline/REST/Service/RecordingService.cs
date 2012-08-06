@@ -62,7 +62,7 @@ namespace Rock.Com.CCVOnline.REST.Service
 
                 catch ( SystemException ex )
                 {
-                    throw new WebFaultException<string>( ex.Message, System.Net.HttpStatusCode.BadRequest );
+                    throw new WebFaultException<string>( "Recording Error Occurred (action = '" + action + "'): " + ex.Message, System.Net.HttpStatusCode.BadRequest );
                 }
 
             }
