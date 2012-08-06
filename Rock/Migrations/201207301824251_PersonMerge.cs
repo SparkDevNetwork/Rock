@@ -71,6 +71,14 @@ BEGIN
 	DELETE crmPerson
 	WHERE [Id] = @OldId
 	
+	-- Delete any remaining Attribute Values
+	DELETE AV
+	FROM [coreAttribute] A
+	INNER JOIN [coreAttributeValue] AV
+		ON AV.[AttributeId] = A.[Id]
+		AND AV.[EntityId] = @OldId
+	WHERE A.[Entity] = 'Rock.CRM.Person'
+	
 	COMMIT TRANSACTION
 
 END
