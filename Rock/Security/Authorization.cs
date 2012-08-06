@@ -310,6 +310,13 @@ namespace Rock.Security
                 entityType[targetEntity.Id] = newActions;
             }
         }
+
+        public static IQueryable<AuthRule> FindAuthRules(ISecured securableObject)
+        {
+            return ( from action in securableObject.SupportedActions
+                     from rule in AuthRules( securableObject.AuthEntity, securableObject.Id, action )
+                     select rule ).AsQueryable();
+        }
     }
 
     /// <summary>

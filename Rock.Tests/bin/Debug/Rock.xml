@@ -484,6 +484,12 @@
             <param name="action">The action.</param>
             <returns></returns>
         </member>
+        <member name="M:Rock.Security.ISecured.FindAuthRules">
+            <summary>
+            Finds the AuthRule records associated with the current object.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:Rock.Security.ISecured.AuthEntity">
             <summary>
             The auth entity. Classes that implement the <see cref="T:Rock.Security.ISecured"/> interface should return

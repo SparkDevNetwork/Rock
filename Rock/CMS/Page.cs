@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 
@@ -417,8 +418,11 @@ namespace Rock.CMS
         public static dynamic MapPagesRecursive( Page page )
         {
             dynamic exportPage = page.DataTransferObject.ToDynamic();
-            MapBlockInstances(page, exportPage);
-            MapPageRoutes(page, exportPage);
+            exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
+            exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
+            exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
+            MapBlockInstances( page, exportPage );
+            MapPageRoutes( page, exportPage );
 
             if ( page.Pages == null )
             {

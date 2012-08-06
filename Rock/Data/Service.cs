@@ -30,7 +30,8 @@ namespace Rock.Data
         /// </summary>
         public Service()
             : this( new EFRepository<T>() )
-        { }
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.

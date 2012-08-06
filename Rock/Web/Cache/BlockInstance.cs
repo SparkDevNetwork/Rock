@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Linq;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -315,6 +316,11 @@ namespace Rock.Web.Cache
         public bool DefaultAuthorization( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion
