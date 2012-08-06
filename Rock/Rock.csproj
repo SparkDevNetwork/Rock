@@ -92,6 +92,7 @@
     <Compile Include="CMS\BlockService.cs" />
     <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
+    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\PageService.cs" />
     <Compile Include="CMS\PageRouteService.cs" />
     <Compile Include="CMS\SiteDomainService.cs" />
@@ -260,6 +261,10 @@
     <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
       <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208062116447_PageContext.cs" />
+    <Compile Include="Migrations\201208062116447_PageContext.Designer.cs">
+      <DependentUpon>201208062116447_PageContext.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -303,6 +308,8 @@
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="Web\Cache\AttributeValue.cs" />
+    <Compile Include="Web\Cache\DefinedType.cs" />
+    <Compile Include="Web\Cache\DefinedValue.cs" />
     <Compile Include="Web\Cache\MetricValue.cs" />
     <Compile Include="Web\Cache\Metric.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
