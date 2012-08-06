@@ -70,10 +70,10 @@ DELETE [cmsPage] WHERE [Guid] = '{0}'
 DELETE [cmsBlock] WHERE [Guid] = '{1}'
 
 -- coreAttribute --
-DELETE [cmsAttribute] WHERE [Guid] = '306E7E7C-9416-4098-9C25-488380B940A5'
+DELETE [coreAttribute] WHERE [Guid] = '306E7E7C-9416-4098-9C25-488380B940A5'
 
 -- coreAttributeValue --
-DELETE [cmsAttributeValue] WHERE [Guid] = '5CB48974-6BB6-435B-A04A-2BF9B7CD778E'
+DELETE [coreAttributeValue] WHERE [Guid] = '5CB48974-6BB6-435B-A04A-2BF9B7CD778E'
 
 
 ", Rock.SystemGuid.Page.PLUGIN_MANAGER, Rock.SystemGuid.Block.PLUGIN_MANAGER ));
