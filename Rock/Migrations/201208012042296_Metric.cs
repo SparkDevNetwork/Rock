@@ -6,22 +6,6 @@ namespace Rock.Migrations
     {
 		public override void Up()
 		{
-			DropForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson" );
-			DropForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson" );
-			DropForeignKey( "coreMetricValue", "MetricId", "coreMetric" );
-			DropForeignKey( "coreMetricValue", "CreatedByPersonId", "crmPerson" );
-			DropForeignKey( "coreMetricValue", "ModifiedByPersonId", "crmPerson" );
-			DropIndex( "coreMetric", new[] { "CreatedByPersonId" } );
-			DropIndex( "coreMetric", new[] { "ModifiedByPersonId" } );
-			DropIndex( "coreMetricValue", new[] { "MetricId" } );
-			DropIndex( "coreMetricValue", new[] { "CreatedByPersonId" } );
-			DropIndex( "coreMetricValue", new[] { "ModifiedByPersonId" } );
-			DropTable( "coreMetric" );
-			DropTable( "coreMetricValue" );
-		}
-
-		public override void Down()
-		{
 			CreateTable(
 				"coreMetricValue",
 				c => new
@@ -79,6 +63,22 @@ namespace Rock.Migrations
 			AddForeignKey( "coreMetricValue", "MetricId", "coreMetric", "Id", cascadeDelete: true );
 			AddForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson", "Id" );
 			AddForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson", "Id" );
+		}
+
+		public override void Down()
+        {
+			DropForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson" );
+			DropForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson" );
+			DropForeignKey( "coreMetricValue", "MetricId", "coreMetric" );
+			DropForeignKey( "coreMetricValue", "CreatedByPersonId", "crmPerson" );
+			DropForeignKey( "coreMetricValue", "ModifiedByPersonId", "crmPerson" );
+			DropIndex( "coreMetric", new[] { "CreatedByPersonId" } );
+			DropIndex( "coreMetric", new[] { "ModifiedByPersonId" } );
+			DropIndex( "coreMetricValue", new[] { "MetricId" } );
+			DropIndex( "coreMetricValue", new[] { "CreatedByPersonId" } );
+			DropIndex( "coreMetricValue", new[] { "ModifiedByPersonId" } );
+			DropTable( "coreMetric" );
+			DropTable( "coreMetricValue" );
 		}
     }
 }
