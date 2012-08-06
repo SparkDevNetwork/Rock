@@ -77,5 +77,10 @@ namespace Rock.Security
         {
             return action == "View";
         }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
+        }
     }
 }

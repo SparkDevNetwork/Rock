@@ -5,6 +5,7 @@
 //
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.Security
 {
@@ -51,5 +52,11 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <returns></returns>
         bool DefaultAuthorization( string action );
+
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<AuthRule> FindAuthRules();
     }
 }
