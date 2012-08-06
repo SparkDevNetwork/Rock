@@ -37,17 +37,19 @@ namespace Rock.Com.CCVOnline.Service
             if ( globalAttributes.AttributeValues.ContainsKey( "ccvonlineWowzaServer" ) )
             {
                 string wowzaServerUrl = globalAttributes.AttributeValues["ccvonlineWowzaServer"].Value;
+                if ( !string.IsNullOrWhiteSpace( wowzaServerUrl ) )
+                {
+                    Dictionary<string, string> parms = new Dictionary<string, string>();
+                    parms.Add( "app", HttpUtility.UrlEncode( app ) );
+                    parms.Add( "streamname", HttpUtility.UrlEncode( streamName ) );
+                    parms.Add( "recordingname", HttpUtility.UrlEncode( recordingName ) );
+                    parms.Add( "action", HttpUtility.UrlEncode( action ) );
 
-                Dictionary<string, string> parms = new Dictionary<string, string>();
-                parms.Add( "app", HttpUtility.UrlEncode( app ) );
-                parms.Add( "streamname", HttpUtility.UrlEncode( streamName ) );
-                parms.Add( "recordingname", HttpUtility.UrlEncode( recordingName ) );
-                parms.Add( "action", HttpUtility.UrlEncode( action ) );
-
-                return Rock.Net.WebRequest.Send( wowzaServerUrl, "GET", parms, null );
+                    return Rock.Net.WebRequest.Send( wowzaServerUrl, "GET", parms, null );
+                }
             }
-            else
-                throw new ApplicationException( "missing 'ccvonlineWowzaServer' Global Attribute value" );
+
+            throw new ApplicationException( "missing 'ccvonlineWowzaServer' Global Attribute value" );
         }
 
         static internal string ParseResponse(string message)
