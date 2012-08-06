@@ -255,6 +255,7 @@
     <Compile Include="Migrations\201208012042296_Metric.cs" />
     <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
       <DependentUpon>201208012042296_Metric.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
     <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
       <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
