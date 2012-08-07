@@ -6,7 +6,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Core;
 using Rock.Financial;
-using System.Linq;
+
 
 public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
 {

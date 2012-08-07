@@ -14,17 +14,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Core
 {
     /// <summary>
-    /// Page Route POCO Entity.
+    /// MetricValue POCO Entity.
     /// </summary>
-    [Table( "cmsPageRoute" )]
-    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
+    [Table( "coreMetricValue" )]
+    public partial class MetricValue : Model<MetricValue>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -35,27 +36,75 @@ namespace Rock.CMS
 		[Required]
 		[DataMember]
 		public bool IsSystem { get; set; }
-		
+
 		/// <summary>
-		/// Gets or sets the Page Id.
+		/// Gets or sets the MetricId.
 		/// </summary>
 		/// <value>
-		/// Page Id.
+		/// MetricId.
 		/// </value>
 		[Required]
 		[DataMember]
-		public int PageId { get; set; }
-		
+		public int MetricId { get; set; }
+
 		/// <summary>
-		/// Gets or sets the Route.
+		/// Gets or sets the Value.
 		/// </summary>
 		/// <value>
-		/// Route.
+		/// Value.
 		/// </value>
 		[Required]
-		[MaxLength( 200 )]
+		[MaxLength( 100 )]
 		[DataMember]
-		public string Route { get; set; }
+		public string Value { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Description.
+		/// </summary>
+		/// <value>
+		/// Description.
+		/// </value>
+		[DataMember]
+		public string Description { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the xValue.
+		/// </summary>
+		/// <value>
+		/// xValue.
+		/// </value>
+		[Required]
+		[DataMember]
+		public int xValue { get; set; }
+				
+		/// <summary>
+		/// Gets or sets the isDateBased flag.
+		/// </summary>
+		/// <value>
+		/// isDateBased.
+		/// </value>
+		[Required]
+		[DataMember]
+		public bool isDateBased { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Label.
+		/// </summary>
+		/// <value>
+		/// Label.
+		/// </value>
+		[DataMember]
+		public string Label { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		[Required]
+		[DataMember]
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -97,18 +146,23 @@ namespace Rock.CMS
         /// Gets a Data Transfer Object (lightweight) version of this object.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.CMS.DTO.PageRoute"/> object.
+        /// A <see cref="Rock.Core.DTO.MetricValue"/> object.
         /// </value>
-		public Rock.CMS.DTO.PageRoute DataTransferObject
+		public Rock.Core.DTO.MetricValue DataTransferObject
 		{
 			get 
 			{ 
-				Rock.CMS.DTO.PageRoute dto = new Rock.CMS.DTO.PageRoute();
+				Rock.Core.DTO.MetricValue dto = new Rock.Core.DTO.MetricValue();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Route = this.Route;
+				dto.MetricId = this.MetricId;
+				dto.Value = this.Value;
+				dto.Description = this.Description;
+				dto.xValue = this.xValue;
+				dto.isDateBased = this.isDateBased;
+				dto.Label = this.Label;
+				dto.Order = this.Order;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -121,15 +175,7 @@ namespace Rock.CMS
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CMS.PageRoute"; } }
-        
-		/// <summary>
-        /// Gets or sets the Page.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Page"/> object.
-        /// </value>
-		public virtual Page Page { get; set; }
+		public override string AuthEntity { get { return "Core.MetricValue"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
@@ -147,18 +193,32 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricValue"/> class.
+        /// </summary>
+        public MetricValue()
+        {
+            
+        }
     }
     /// <summary>
-    /// Page Route Configuration class.
+    /// MetricValue Configuration class.
     /// </summary>
-    public partial class PageRouteConfiguration : EntityTypeConfiguration<PageRoute>
+    public partial class MetricValueConfiguration : EntityTypeConfiguration<MetricValue>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="MetricValueConfiguration"/> class.
         /// </summary>
-        public PageRouteConfiguration()
+        public MetricValueConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
