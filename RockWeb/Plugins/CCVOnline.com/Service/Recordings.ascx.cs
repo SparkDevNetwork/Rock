@@ -27,7 +27,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gRecordings.DataKeyNames = new string[] { "id" };
                 gRecordings.Actions.IsAddEnabled = true;
@@ -53,7 +53,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
