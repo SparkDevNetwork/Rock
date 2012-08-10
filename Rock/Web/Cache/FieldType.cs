@@ -74,11 +74,7 @@ namespace Rock.Web.Cache
                 Rock.Core.FieldType fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
-                    fieldType = new FieldType();
-                    fieldType.Id = fieldTypeModel.Id;
-                    fieldType.Name = fieldTypeModel.Name;
-                    fieldType.Description = fieldTypeModel.Description;
-                    fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
+                    fieldType = CopyModel( fieldTypeModel );
 
                     cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 
@@ -87,6 +83,38 @@ namespace Rock.Web.Cache
                 else
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Reads the specified field type model.
+        /// </summary>
+        /// <param name="fieldTypeModel">The field type model.</param>
+        /// <returns></returns>
+        public static FieldType Read( Rock.Core.FieldType fieldTypeModel )
+        {
+            FieldType fieldType = FieldType.CopyModel( fieldTypeModel );
+
+            string cacheKey = FieldType.CacheKey( fieldTypeModel.Id );
+            ObjectCache cache = MemoryCache.Default;
+            cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
+
+            return fieldType;
+        }
+
+        /// <summary>
+        /// Copies the model.
+        /// </summary>
+        /// <param name="fieldTypeModel">The field type model.</param>
+        /// <returns></returns>
+        public static FieldType CopyModel( Rock.Core.FieldType fieldTypeModel )
+        {
+            FieldType fieldType = new FieldType();
+            fieldType.Id = fieldTypeModel.Id;
+            fieldType.Name = fieldTypeModel.Name;
+            fieldType.Description = fieldTypeModel.Description;
+            fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
+
+            return fieldType;
         }
 
         /// <summary>

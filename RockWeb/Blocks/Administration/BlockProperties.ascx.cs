@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
                 int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
                 _blockInstance = Rock.Web.Cache.BlockInstance.Read( blockInstanceId );
 
-                if ( _blockInstance.IsAuthorized( "Configure", CurrentUser ) )
+                if ( _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
                     foreach ( HtmlGenericControl fs in attributeControls )
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _blockInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( !Page.IsPostBack && _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 tbBlockName.Text = _blockInstance.Name;
                 tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();

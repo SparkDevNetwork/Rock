@@ -54,6 +54,10 @@
       <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\HtmlSanitizationLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NuGet.Core, Version=2.0.30619.9119, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NuGet.Core.2.0.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
     <Reference Include="SanitizerProviders">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
     </Reference>
@@ -86,9 +90,9 @@
     <Compile Include="CMS\AuthService.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
     <Compile Include="CMS\BlockService.cs" />
-    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
+    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\PageService.cs" />
     <Compile Include="CMS\PageRouteService.cs" />
     <Compile Include="CMS\SiteDomainService.cs" />
@@ -100,6 +104,10 @@
     <Compile Include="Core\AttributeQualifierService.cs" />
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
     <Compile Include="Core\EntityChange.cs" />
@@ -245,9 +253,17 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201207311215464_PageContext.cs" />
-    <Compile Include="Migrations\201207311215464_PageContext.Designer.cs">
-      <DependentUpon>201207311215464_PageContext.cs</DependentUpon>
+    <Compile Include="Migrations\201208012042296_Metric.cs" />
+    <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
+      <DependentUpon>201208012042296_Metric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
+    <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
+      <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208062116447_PageContext.cs" />
+    <Compile Include="Migrations\201208062116447_PageContext.Designer.cs">
+      <DependentUpon>201208062116447_PageContext.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -256,6 +272,10 @@
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
+    <Compile Include="REST\Core\IMetricValueService.cs" />
+    <Compile Include="REST\Core\MetricValueService.cs" />
+    <Compile Include="REST\Core\IMetricService.cs" />
+    <Compile Include="REST\Core\MetricService.cs" />
     <Compile Include="REST\Core\ExceptionLogService.cs" />
     <Compile Include="REST\Core\IAttributeService.Partial.cs" />
     <Compile Include="REST\Core\IExceptionLogService.cs" />
@@ -268,8 +288,14 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
+    <Compile Include="Services\NuGet\WebProjectManager.cs" />
+    <Compile Include="Services\NuGet\WebProjectSystem.cs" />
+    <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\Page.cs" />
+    <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
@@ -283,6 +309,10 @@
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="Web\Cache\AttributeValue.cs" />
+    <Compile Include="Web\Cache\DefinedType.cs" />
+    <Compile Include="Web\Cache\DefinedValue.cs" />
+    <Compile Include="Web\Cache\MetricValue.cs" />
+    <Compile Include="Web\Cache\Metric.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
