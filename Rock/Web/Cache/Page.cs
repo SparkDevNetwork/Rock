@@ -363,14 +363,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The current user.</param>
         /// <returns></returns>
-        public bool DisplayInNav( User user )
+        public bool DisplayInNav( Rock.CRM.Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
                 case CMS.DisplayInNavWhen.Always:
                     return true;
                 case CMS.DisplayInNavWhen.WhenAllowed:
-                    return this.IsAuthorized( "View", user );
+                    return this.IsAuthorized( "View", person );
                 default:
                     return false;
             }
@@ -752,11 +752,13 @@ namespace Rock.Web.Cache
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool IsAuthorized( string action, User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -777,28 +779,28 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns XML for a page menu.  XML will be 1 level deep
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( User user )
+        public XDocument MenuXml( Rock.CRM.Person person )
         {
-            return MenuXml( 1, user );
+            return MenuXml( 1, person );
         }
 
         /// <summary>
         /// Returns XML for a page menu.
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, User user )
+        public XDocument MenuXml( int levelsDeep, Rock.CRM.Person person )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, user );
+            XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  User user )
+        private XElement MenuXmlElement( int levelsDeep,  Rock.CRM.Person person )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
 				XElement pageElement = new XElement( "page",
 					new XAttribute( "id", this.Id ),
@@ -817,7 +819,7 @@ namespace Rock.Web.Cache
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages)
                 foreach ( Page page in Pages )
                 {
-                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, user );
+                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
                     if ( childPageElement != null )
                         childPagesElement.Add( childPageElement );
                 }

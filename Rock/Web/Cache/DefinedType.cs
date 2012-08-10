@@ -5,21 +5,13 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
-using System.Web.UI;
-
-using Rock.Field;
 
 namespace Rock.Web.Cache
 {
     /// <summary>
-	/// Information about an defined type that is required by the rendering engine.
-    /// This information will be cached by Rock. 
-    /// 
-	/// NOTE: Because this defined type object is cached and shared by all entities 
-	/// using the defined type, a particlar instance's values are not included as a 
-	/// property of this defined type object.
+    /// Information about a definedType that is required by the rendering engine.
+    /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class DefinedType
@@ -34,46 +26,44 @@ namespace Rock.Web.Cache
         /// </summary>
         public int Id { get; private set; }
 
+        private int? FieldTypeId { get; set; }
+
         /// <summary>
-        /// Gets the FieldTypeId.
+        /// Gets the type of the field.
         /// </summary>
-        public int? FieldTypeId { get; private set; }
-		
+        /// <value>
+        /// The type of the field.
+        /// </value>
+        public FieldType FieldType
+        {
+            get 
+            { 
+                if (FieldTypeId.HasValue)
+                    return FieldType.Read( FieldTypeId.Value );
+                return null;
+            }
+        }
+
         /// <summary>
-        /// Gets the Order.
+        /// Gets the order.
         /// </summary>
         public int Order { get; private set; }
 
         /// <summary>
         /// Gets the category.
         /// </summary>
-        public string Category 
-        { 
-            get
-            {
-                return string.IsNullOrEmpty( category ) ? "DefinedType" : category;
-            }
+        public string Category { get; private set; }
 
-            private set
-            {
-				if ( value == "DefinedType" )
-                    category = null;
-                else
-                    category = value;
-            }
-        }
-        private string category;
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        public string Name { get; private set; }
 
-		/// <summary>
-		/// Gets the name.
-		/// </summary>
-		public string Name { get; private set; }
+        /// <summary>
+        /// Gets the description.
+        /// </summary>
+        public string Description { get; private set; }
 
-		/// <summary>
-		/// Gets the description.
-		/// </summary>
-		public string Description { get; private set; }
-		  
         #region Static Methods
 
         private static string CacheKey( int id )
@@ -82,80 +72,79 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Adds DefinedType model to cache, and returns cached object
-        /// </summary>
-        /// <param name="DefinedTypeModel">The DefinedTypeModel to cache</param>
-        /// <returns></returns>
-		public static DefinedType Read( Rock.Core.DefinedType dtModel )
-        {
-			DefinedType definedType = DefinedType.CopyModel( dtModel );
-
-			string cacheKey = DefinedType.CacheKey( dtModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-			cache.Set( cacheKey, definedType, new CacheItemPolicy() );
-
-			return definedType;
-        }
-
-        /// <summary>
-		/// Returns DefinedType object from cache.  If the definedType does not already exist in cache, it
+        /// Returns DefinedType object from cache.  If definedType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-		/// <param name="id">The id of the DefinedType to read</param>
+        /// <param name="id"></param>
         /// <returns></returns>
-		public static DefinedType Read( int id )
+        public static DefinedType Read( int id )
         {
-			string cacheKey = DefinedType.CacheKey( id );
+            string cacheKey = DefinedType.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-			DefinedType definedType = cache[cacheKey] as DefinedType;
+            DefinedType definedType = cache[cacheKey] as DefinedType;
 
-			if ( definedType != null )
-				return definedType;
+            if ( definedType != null )
+                return definedType;
             else
             {
-				Rock.Core.DefinedTypeService dtService = new Rock.Core.DefinedTypeService();
-				Rock.Core.DefinedType dtModel = dtService.Get( id );
-                if ( dtModel != null )
+                Rock.Core.DefinedTypeService definedTypeService = new Rock.Core.DefinedTypeService();
+                Rock.Core.DefinedType definedTypeModel = definedTypeService.Get( id );
+                if ( definedTypeModel != null )
                 {
-					definedType = DefinedType.CopyModel( dtModel );
+                    definedType = CopyModel( definedTypeModel );
 
-					cache.Set( cacheKey, definedType, new CacheItemPolicy() );
+                    cache.Set( cacheKey, definedType, new CacheItemPolicy() );
 
-					return definedType;
+                    return definedType;
                 }
                 else
                     return null;
-
             }
         }
 
         /// <summary>
-		/// Copies the properties of a <see cref="Rock.Core.DefinedType"/> object to a <see cref="DefinedType"/> object/>
+        /// Reads the specified defined type model.
         /// </summary>
-        /// <param name="dtModel">The definedType model.</param>
+        /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-		public static DefinedType CopyModel( Rock.Core.DefinedType dtModel )
+        public static DefinedType Read( Rock.Core.DefinedType definedTypeModel )
         {
-			DefinedType definedType = new DefinedType();
-			definedType.Id = dtModel.Id;
-			definedType.FieldTypeId = dtModel.FieldTypeId;
-			definedType.Order = dtModel.Order;
-			definedType.Category = dtModel.Category;
-			definedType.Name = dtModel.Name;
-			definedType.Description = dtModel.Description;
-						
-			return definedType;
+            DefinedType definedType = DefinedType.CopyModel( definedTypeModel );
+
+            string cacheKey = DefinedType.CacheKey( definedTypeModel.Id );
+            ObjectCache cache = MemoryCache.Default;
+            cache.Set( cacheKey, definedType, new CacheItemPolicy() );
+
+            return definedType;
         }
 
         /// <summary>
-        /// Removes defined type from cache
+        /// Copies the model.
         /// </summary>
-        /// <param name="id">The id of the defined type to remove from cache</param>
+        /// <param name="definedTypeModel">The defined type model.</param>
+        /// <returns></returns>
+        public static DefinedType CopyModel( Rock.Core.DefinedType definedTypeModel )
+        {
+            DefinedType definedType = new DefinedType();
+            definedType.Id = definedTypeModel.Id;
+            definedType.Order = definedTypeModel.Order;
+            definedType.Category = definedTypeModel.Category;
+            definedType.Name = definedTypeModel.Name;
+            definedType.Description = definedTypeModel.Description;
+            definedType.FieldTypeId = definedTypeModel.FieldTypeId;
+
+            return definedType;
+        }
+
+        /// <summary>
+        /// Removes definedType from cache
+        /// </summary>
+        /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-			cache.Remove( DefinedType.CacheKey( id ) );
+            cache.Remove( DefinedType.CacheKey( id ) );
         }
 
         #endregion

@@ -41,7 +41,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 				Rock.Groups.Group Group = GroupService.Get( int.Parse( id ) );
-				if ( Group.IsAuthorized( "View", currentUser ) )
+				if ( Group.IsAuthorized( "View", currentUser.Person ) )
 					return Group.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Group", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 					Rock.Groups.Group Group = GroupService.Get( int.Parse( id ) );
-					if ( Group.IsAuthorized( "View", user ) )
+					if ( Group.IsAuthorized( "View", user.Person ) )
 						return Group.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Group", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 				Rock.Groups.Group existingGroup = GroupService.Get( int.Parse( id ) );
-				if ( existingGroup.IsAuthorized( "Edit", currentUser ) )
+				if ( existingGroup.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 					Rock.Groups.Group existingGroup = GroupService.Get( int.Parse( id ) );
-					if ( existingGroup.IsAuthorized( "Edit", user ) )
+					if ( existingGroup.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingGroup).CurrentValues.SetValues(Group);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 				Rock.Groups.Group Group = GroupService.Get( int.Parse( id ) );
-				if ( Group.IsAuthorized( "Edit", currentUser ) )
+				if ( Group.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					GroupService.Delete( Group, currentUser.PersonId );
 					GroupService.Save( Group, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.GroupService GroupService = new Rock.Groups.GroupService();
 					Rock.Groups.Group Group = GroupService.Get( int.Parse( id ) );
-					if ( Group.IsAuthorized( "Edit", user ) )
+					if ( Group.IsAuthorized( "Edit", user.Person ) )
 					{
 						GroupService.Delete( Group, user.PersonId );
 						GroupService.Save( Group, user.PersonId );

@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 				Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-				if ( ServiceLog.IsAuthorized( "View", currentUser ) )
+				if ( ServiceLog.IsAuthorized( "View", currentUser.Person ) )
 					return ServiceLog.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( ServiceLog.IsAuthorized( "View", user ) )
+					if ( ServiceLog.IsAuthorized( "View", user.Person ) )
 						return ServiceLog.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this ServiceLog", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 				Rock.Core.ServiceLog existingServiceLog = ServiceLogService.Get( int.Parse( id ) );
-				if ( existingServiceLog.IsAuthorized( "Edit", currentUser ) )
+				if ( existingServiceLog.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog existingServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( existingServiceLog.IsAuthorized( "Edit", user ) )
+					if ( existingServiceLog.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingServiceLog).CurrentValues.SetValues(ServiceLog);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 				Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-				if ( ServiceLog.IsAuthorized( "Edit", currentUser ) )
+				if ( ServiceLog.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					ServiceLogService.Delete( ServiceLog, currentUser.PersonId );
 					ServiceLogService.Save( ServiceLog, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.ServiceLogService ServiceLogService = new Rock.Core.ServiceLogService();
 					Rock.Core.ServiceLog ServiceLog = ServiceLogService.Get( int.Parse( id ) );
-					if ( ServiceLog.IsAuthorized( "Edit", user ) )
+					if ( ServiceLog.IsAuthorized( "Edit", user.Person ) )
 					{
 						ServiceLogService.Delete( ServiceLog, user.PersonId );
 						ServiceLogService.Save( ServiceLog, user.PersonId );
