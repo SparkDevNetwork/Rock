@@ -48,12 +48,12 @@ INSERT INTO [cmsPageContext] ([IsSystem],[PageId],[Entity],[IdParameter],[Create
         
         public override void Down()
         {
-            Sql( @"
+             Sql( @"
 DELETE [cmsPageContext] WHERE [Guid] = '09CCA802-EE6E-48FB-AD1B-AA603BA13B99'
 DELETE [cmsPageRoute] WHERE [Guid] = '7E97823A-78A8-4E8E-A337-7A20F2DA9E52'
 " );
 
-            DropIndex("cmsSiteDomain", new[] { "SiteId" });
+           DropIndex("cmsSiteDomain", new[] { "SiteId" });
             DropIndex("cmsPageContext", new[] { "ModifiedByPersonId" });
             DropIndex("cmsPageContext", new[] { "CreatedByPersonId" });
             DropIndex("cmsPageContext", new[] { "PageId" });

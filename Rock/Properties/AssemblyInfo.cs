@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Rock")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Spark Development Network")]
 [assembly: AssemblyProduct("Rock")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
+[assembly: AssemblyCopyright("Copyright © Spark Development Network 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,7 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion( "0.1.0.0" )]
-[assembly: AssemblyFileVersion( "0.1.0.0" )]
+//[assembly: AssemblyVersion( "0.0.0.*" )]	// I've read some things that make me think we should not do this... comments?
+[assembly: AssemblyVersion( "0.0.0.0" )]
+[assembly: AssemblyFileVersion( "0.0.0.1" )]
+[assembly: AssemblyInformationalVersion( "0.0.0" )]

@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( _canConfigure )
                 {

@@ -41,7 +41,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 				Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-				if ( Address.IsAuthorized( "View", currentUser ) )
+				if ( Address.IsAuthorized( "View", currentUser.Person ) )
 					return Address.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Address", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-					if ( Address.IsAuthorized( "View", user ) )
+					if ( Address.IsAuthorized( "View", user.Person ) )
 						return Address.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Address", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 				Rock.CRM.Address existingAddress = AddressService.Get( int.Parse( id ) );
-				if ( existingAddress.IsAuthorized( "Edit", currentUser ) )
+				if ( existingAddress.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address existingAddress = AddressService.Get( int.Parse( id ) );
-					if ( existingAddress.IsAuthorized( "Edit", user ) )
+					if ( existingAddress.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingAddress).CurrentValues.SetValues(Address);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 				Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-				if ( Address.IsAuthorized( "Edit", currentUser ) )
+				if ( Address.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					AddressService.Delete( Address, currentUser.PersonId );
 					AddressService.Save( Address, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.AddressService AddressService = new Rock.CRM.AddressService();
 					Rock.CRM.Address Address = AddressService.Get( int.Parse( id ) );
-					if ( Address.IsAuthorized( "Edit", user ) )
+					if ( Address.IsAuthorized( "Edit", user.Person ) )
 					{
 						AddressService.Delete( Address, user.PersonId );
 						AddressService.Save( Address, user.PersonId );

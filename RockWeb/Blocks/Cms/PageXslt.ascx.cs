@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Cms
 
 			int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
 
-			XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentUser );
+			XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );

@@ -40,7 +40,10 @@ namespace RockWeb
         #region Asp.Net Events
 
         protected void Application_Start( object sender, EventArgs e )
-        {            
+        {
+            // Preload the commonly used objects
+            LoadCacheObjects();
+
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
@@ -428,6 +431,45 @@ namespace RockWeb
             Rock.CMS.BlockInstance.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( BlockInstance_Deleting );
             Rock.CMS.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
             Rock.CMS.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
+        }
+
+        private void LoadCacheObjects()
+        {
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                // Cache all the Field Types
+                var fieldTypeService = new Rock.Core.FieldTypeService();
+                foreach ( var fieldType in fieldTypeService.Queryable() )
+                    Rock.Web.Cache.FieldType.Read( fieldType );
+
+                // Cache all tha Defined Types
+                var definedTypeService = new Rock.Core.DefinedTypeService();
+                foreach ( var definedType in definedTypeService.Queryable() )
+                    Rock.Web.Cache.DefinedType.Read( definedType );
+
+                // Cache all the Defined Values
+                var definedValueService = new Rock.Core.DefinedValueService();
+                foreach ( var definedValue in definedValueService.Queryable() )
+                    Rock.Web.Cache.DefinedValue.Read( definedValue );
+
+                // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
+                var qualifiers = new Dictionary<int, Dictionary<string, string>>();
+                foreach ( var attributeQualifier in new Rock.Core.AttributeQualifierService().Queryable() )
+                {
+                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                }
+
+                // Cache all the attributes.
+                foreach ( var attribute in new Rock.Core.AttributeService().Queryable() )
+                {
+                    if ( qualifiers.ContainsKey( attribute.Id ) )
+                        Rock.Web.Cache.Attribute.Read( attribute, qualifiers[attribute.Id] );
+                    else
+                        Rock.Web.Cache.Attribute.Read( attribute, new Dictionary<string, string>() );
+                }
+            }
         }
 
         #endregion
