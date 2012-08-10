@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 

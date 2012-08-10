@@ -179,7 +179,7 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( BlockInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( BlockInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
@@ -292,7 +292,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public bool IsUserAuthorized( string action )
         {
-            return BlockInstance.IsAuthorized( action, CurrentUser );
+            return BlockInstance.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>

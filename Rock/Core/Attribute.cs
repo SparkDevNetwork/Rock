@@ -285,41 +285,6 @@ namespace Rock.Core
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Gets the first value of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public Rock.Web.Cache.AttributeValue GetValue( int entityId )
-        {
-            return GetValues( entityId )[0];
-        }
-
-        /// <summary>
-        /// Gets all the values of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public List<Rock.Web.Cache.AttributeValue> GetValues( int entityId )
-        {
-            var values = new List<Rock.Web.Cache.AttributeValue>();
-
-            foreach ( var value in this.AttributeValues.
-                Where( v => v.EntityId == entityId ).
-                OrderBy( v => v.Order ) )
-                values.Add( new Rock.Web.Cache.AttributeValue(value) );
-
-            if ( values.Count == 0 )
-            {
-                var value = new Rock.Web.Cache.AttributeValue();
-                value.AttributeId = this.Id;
-                value.Value = this.DefaultValue;
-                values.Add( value );
-            }
-
-            return values;
-        }
-
-        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority

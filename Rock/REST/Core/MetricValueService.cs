@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 				Rock.Core.MetricValue metricValue = metricValueService.Get( int.Parse( id ) );
-				if ( metricValue.IsAuthorized( "View", currentUser ) )
+				if ( metricValue.IsAuthorized( "View", currentUser.Person ) )
 					return metricValue.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this MetricValue", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 					Rock.Core.MetricValue metricValue = metricValueService.Get( int.Parse( id ) );
-					if ( metricValue.IsAuthorized( "View", user ) )
+					if ( metricValue.IsAuthorized( "View", user.Person ) )
 						return metricValue.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this MetricValue", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 				Rock.Core.MetricValue existingMetricValue = metricValueService.Get( int.Parse( id ) );
-				if ( existingMetricValue.IsAuthorized( "Edit", currentUser ) )
+				if ( existingMetricValue.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingMetricValue).CurrentValues.SetValues(metricValue);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 					Rock.Core.MetricValue existingMetricValue = metricValueService.Get( int.Parse( id ) );
-					if ( existingMetricValue.IsAuthorized( "Edit", user ) )
+					if ( existingMetricValue.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingMetricValue).CurrentValues.SetValues(metricValue);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 				Rock.Core.MetricValue metricValue = metricValueService.Get( int.Parse( id ) );
-				if ( metricValue.IsAuthorized( "Edit", currentUser ) )
+				if ( metricValue.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					metricValueService.Delete( metricValue, currentUser.PersonId );
 					metricValueService.Save( metricValue, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.MetricValueService metricValueService = new Rock.Core.MetricValueService();
 					Rock.Core.MetricValue metricValue = metricValueService.Get( int.Parse( id ) );
-					if ( metricValue.IsAuthorized( "Edit", user ) )
+					if ( metricValue.IsAuthorized( "Edit", user.Person ) )
 					{
 						metricValueService.Delete( metricValue, user.PersonId );
 						metricValueService.Save( metricValue, user.PersonId );
