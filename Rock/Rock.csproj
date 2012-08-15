@@ -296,6 +296,7 @@
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
+    <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
