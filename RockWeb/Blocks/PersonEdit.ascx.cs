@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Web.UI;
 
 using Rock.CRM;
@@ -14,6 +15,14 @@ namespace RockWeb.Blocks
     public partial class PersonEdit : Rock.Web.UI.Block
     {
         private Person person;
+
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public override List<string> RequiredContext
+        {
+            get { return new List<string>() { "Rock.CRM.Person" }; }
+        }
 
         protected void Page_Load( object sender, EventArgs e )
         {

@@ -96,6 +96,17 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public virtual List<string> RequiredContext
+        {
+            get
+            {
+                return new List<string>();
+            }
+        }
+
         #endregion
 
         #region Protected Caching Methods

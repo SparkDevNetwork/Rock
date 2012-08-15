@@ -90,6 +90,7 @@
     <Compile Include="CMS\AuthService.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
     <Compile Include="CMS\BlockService.cs" />
+    <Compile Include="CMS\PageContextService.cs" />
     <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
     <Compile Include="CMS\PageContext.cs" />
