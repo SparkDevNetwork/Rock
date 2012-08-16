@@ -83,22 +83,13 @@
         </div>
 
         <div class="container-fluid">
-            <section class="test">
-                <div class="row-fluid">
-                    <div class="span12">
-   
-    
-                            <Rock:Zone ID="ContentLeft" runat="server" />                       
-                                        <Rock:Zone ID="ContentRight" runat="server" />
-                                        <Rock:Zone ID="Content" runat="server" />
-                                        <Rock:Zone ID="UpperBand" runat="server" />
-                                        <Rock:Zone ID="LowerBand" runat="server" />
-                                        <Rock:Zone ID="LowerContentLeft" runat="server" />
-                                        <Rock:Zone ID="LowerContentRight" runat="server" />
-                                        <Rock:Zone ID="LowerContent" runat="server" />
-                    </div>    
-                </div>
-            </section>
+            <div class="row-fluid">
+                <div class="span12">
+
+                        <Rock:Zone ID="Content" runat="server" />
+
+                </div>    
+            </div>
         </div>
 
         <div id="page-footer" class="navbar">
