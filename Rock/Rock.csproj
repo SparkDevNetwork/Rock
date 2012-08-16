@@ -264,6 +264,10 @@
     <Compile Include="Migrations\201208062116447_PageContext.Designer.cs">
       <DependentUpon>201208062116447_PageContext.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208161837259_RemoveGlobalValuesPage.cs" />
+    <Compile Include="Migrations\201208161837259_RemoveGlobalValuesPage.Designer.cs">
+      <DependentUpon>201208161837259_RemoveGlobalValuesPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -317,6 +321,7 @@
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
