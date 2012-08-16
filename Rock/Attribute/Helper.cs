@@ -151,7 +151,7 @@ namespace Rock.Attribute
         public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
         {
             var attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
-            var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>>();
+            var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>>();
 
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -163,6 +163,7 @@ namespace Rock.Attribute
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
             Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
+            Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
             foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
@@ -177,12 +178,36 @@ namespace Rock.Attribute
                         attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
 
                     attributes[cachedAttribute.Category].Add( cachedAttribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, attribute.GetValues( item.Id ) ) );
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, GetValues( attributeValueService, attribute, item.Id ) ) );
                 }
             }
 
             item.Attributes = attributes;
             item.AttributeValues = attributeValues;
+        }
+
+        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.Attribute attribute, int entityId )
+        {
+            Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
+            return GetValues( attributeValueService, attribute, entityId );
+        }
+
+        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.AttributeValueService attributeValueService, Rock.Core.Attribute attribute, int entityId )
+        {
+            var values = new List<Rock.Web.Cache.AttributeValue>();
+
+            foreach ( var value in attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId ) )
+                values.Add( new Rock.Web.Cache.AttributeValue( value ) );
+
+            if ( values.Count == 0 )
+            {
+                var value = new Rock.Web.Cache.AttributeValue();
+                value.AttributeId = attribute.Id;
+                value.Value = attribute.DefaultValue;
+                values.Add( value );
+            }
+
+            return values;
         }
 
         /// <summary>
@@ -223,9 +248,9 @@ namespace Rock.Attribute
             attributeValueService.Save( attributeValue, personId );
 
             model.AttributeValues[attribute.Key] =
-                new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>(
+                new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>(
                     attribute.Name,
-                    new List<Rock.Core.DTO.AttributeValue>() { attributeValue.DataTransferObject } );
+                    new List<Rock.Web.Cache.AttributeValue>() { new Rock.Web.Cache.AttributeValue( attributeValue ) } );
 
         }
 
@@ -236,7 +261,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<Rock.Core.DTO.AttributeValue> newValues, int? personId )
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<Rock.Web.Cache.AttributeValue> newValues, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
 
@@ -266,7 +291,7 @@ namespace Rock.Attribute
                 {
                     if ( attributeValue.Value != newValues[i].Value )
                         attributeValue.Value = newValues[i].Value;
-                    newValues[i] = attributeValue.DataTransferObject;
+                    newValues[i] = new Web.Cache.AttributeValue( attributeValue );
                 }
 
                 attributeValueService.Save( attributeValue, personId );
@@ -276,7 +301,7 @@ namespace Rock.Attribute
             }
 
             model.AttributeValues[attribute.Key] = 
-                new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, newValues );
+                new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, newValues );
         }
 
         /// <summary>
@@ -396,9 +421,9 @@ namespace Rock.Attribute
                         Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Id.ToString() ) );
                         if ( control != null )
                         {
-                            Rock.Core.DTO.AttributeValue value = new Core.DTO.AttributeValue();
+                            var value = new Rock.Web.Cache.AttributeValue();
                             value.Value = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
-                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>( attribute.Name, new List<Rock.Core.DTO.AttributeValue>() { value } );
+                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, new List<Rock.Web.Cache.AttributeValue>() { value } );
                         }
                     }
         }

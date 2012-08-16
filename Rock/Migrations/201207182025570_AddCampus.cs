@@ -26,7 +26,7 @@ namespace Rock.Migrations
                 "crmPersonMerged",
                 c => new
                     {
-                        Id = c.Int(nullable: false, identity: true),
+                        Id = c.Int(nullable: false, identity: false),
                         CurrentId = c.Int(nullable: false),
                         CurrentGuid = c.Guid(nullable: false),
                         CreatedDateTime = c.DateTime(),

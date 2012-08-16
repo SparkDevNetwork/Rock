@@ -53,6 +53,19 @@ namespace Rock.Core
         {
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
-		
+
+        /// <summary>
+        /// Gets the by attribute id and entity id.
+        /// </summary>
+        /// <param name="attributeId">The attribute id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public IEnumerable<Rock.Core.AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int entityId )
+        {
+            return Repository.AsQueryable().
+                Where( v => v.AttributeId == attributeId && v.EntityId == entityId ).
+                OrderBy( v => v.Order );
+        }
+
     }
 }

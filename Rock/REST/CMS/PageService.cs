@@ -41,7 +41,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 				Rock.CMS.Page Page = PageService.Get( int.Parse( id ) );
-				if ( Page.IsAuthorized( "View", currentUser ) )
+				if ( Page.IsAuthorized( "View", currentUser.Person ) )
 					return Page.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Page", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 					Rock.CMS.Page Page = PageService.Get( int.Parse( id ) );
-					if ( Page.IsAuthorized( "View", user ) )
+					if ( Page.IsAuthorized( "View", user.Person ) )
 						return Page.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Page", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 				Rock.CMS.Page existingPage = PageService.Get( int.Parse( id ) );
-				if ( existingPage.IsAuthorized( "Edit", currentUser ) )
+				if ( existingPage.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 					Rock.CMS.Page existingPage = PageService.Get( int.Parse( id ) );
-					if ( existingPage.IsAuthorized( "Edit", user ) )
+					if ( existingPage.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingPage).CurrentValues.SetValues(Page);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 				Rock.CMS.Page Page = PageService.Get( int.Parse( id ) );
-				if ( Page.IsAuthorized( "Edit", currentUser ) )
+				if ( Page.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					PageService.Delete( Page, currentUser.PersonId );
 					PageService.Save( Page, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.PageService PageService = new Rock.CMS.PageService();
 					Rock.CMS.Page Page = PageService.Get( int.Parse( id ) );
-					if ( Page.IsAuthorized( "Edit", user ) )
+					if ( Page.IsAuthorized( "Edit", user.Person ) )
 					{
 						PageService.Delete( Page, user.PersonId );
 						PageService.Save( Page, user.PersonId );

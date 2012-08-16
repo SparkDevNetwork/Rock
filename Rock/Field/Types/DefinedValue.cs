@@ -15,8 +15,34 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
     /// </summary>
+    [Serializable]
     public class DefinedValue : FieldType
     {
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, bool condensed )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                try
+                {
+                    var definedValue = Rock.Web.Cache.DefinedValue.Read( Int32.Parse( value ) );
+                    if ( definedValue != null )
+                        return definedValue.Name;
+                }
+                catch { }
+
+                return "Unknown Defined Value: " + value;
+            }
+            else
+                return string.Empty;
+        }
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>

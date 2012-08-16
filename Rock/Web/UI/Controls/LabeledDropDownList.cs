@@ -139,6 +139,7 @@ namespace Rock.Web.UI.Controls
             validator.ControlToValidate = this.ID;
             validator.Display = ValidatorDisplay.Dynamic;
             validator.CssClass = "help-inline";
+            validator.Enabled = false;
 
             Controls.Add( label );
             Controls.Add( validator );
@@ -167,6 +168,7 @@ namespace Rock.Web.UI.Controls
 
             if ( Required )
             {
+                validator.Enabled = true;
                 validator.ErrorMessage = LabelText + " is Required.";
                 validator.RenderControl( writer );
             }

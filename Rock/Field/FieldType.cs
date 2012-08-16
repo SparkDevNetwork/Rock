@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -13,7 +14,8 @@ namespace Rock.Field
     /// <summary>
     /// Abstract class that all custom field types should inherit from
     /// </summary>
-    public abstract class FieldType : IFieldType
+   [Serializable]
+   public abstract class FieldType : IFieldType
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Field"/> class.

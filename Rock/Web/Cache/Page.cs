@@ -20,6 +20,7 @@ namespace Rock.Web.Cache
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -169,7 +170,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -318,6 +319,14 @@ namespace Rock.Web.Cache
         private List<int> blockInstanceIds = null;
 
         /// <summary>
+        /// Gets or sets the page contexts that have been defined for the page
+        /// </summary>
+        /// <value>
+        /// The page contexts.
+        /// </value>
+        public Dictionary<string, string> PageContexts { get; set; }
+
+        /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
         internal Dictionary<string, Rock.Data.KeyModel> Context
@@ -354,14 +363,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The current user.</param>
         /// <returns></returns>
-        public bool DisplayInNav( User user )
+        public bool DisplayInNav( Rock.CRM.Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
                 case CMS.DisplayInNavWhen.Always:
                     return true;
                 case CMS.DisplayInNavWhen.WhenAllowed:
-                    return this.IsAuthorized( "View", user );
+                    return this.IsAuthorized( "View", person );
                 default:
                     return false;
             }
@@ -385,8 +394,17 @@ namespace Rock.Web.Cache
                     Type service = serviceType.MakeGenericType( modelType );
                     var serviceInstance = Activator.CreateInstance( service );
 
-                    MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                    keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                    {
+                        MethodInfo getMethod = service.GetMethod( "Get" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IModel;
+                    }
+                    else
+                    {
+                        MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    }
+
                     if ( keyModel.Model is Rock.Attribute.IHasAttributes )
                         Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
                 }
@@ -651,6 +669,11 @@ namespace Rock.Web.Cache
                     foreach ( var attribute in category.Value )
                         page.AttributeIds.Add( attribute.Id );
 
+            page.PageContexts = new Dictionary<string,string>();
+            if ( pageModel.PageContexts != null )
+                foreach ( var pageContext in pageModel.PageContexts )
+                    page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
+
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;
 
@@ -729,11 +752,13 @@ namespace Rock.Web.Cache
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool IsAuthorized( string action, User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -754,28 +779,28 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns XML for a page menu.  XML will be 1 level deep
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( User user )
+        public XDocument MenuXml( Rock.CRM.Person person )
         {
-            return MenuXml( 1, user );
+            return MenuXml( 1, person );
         }
 
         /// <summary>
         /// Returns XML for a page menu.
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, User user )
+        public XDocument MenuXml( int levelsDeep, Rock.CRM.Person person )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, user );
+            XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  User user )
+        private XElement MenuXmlElement( int levelsDeep,  Rock.CRM.Person person )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
 				XElement pageElement = new XElement( "page",
 					new XAttribute( "id", this.Id ),
@@ -794,7 +819,7 @@ namespace Rock.Web.Cache
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages)
                 foreach ( Page page in Pages )
                 {
-                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, user );
+                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
                     if ( childPageElement != null )
                         childPagesElement.Add( childPageElement );
                 }

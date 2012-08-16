@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web.UI;
@@ -20,6 +21,7 @@ namespace Rock.Web.Cache
     /// using the attribute, a particlar instance's values are not included as a 
     /// property of this attribute object.
     /// </summary>
+    [Serializable]
     public class Attribute
     {
         /// <summary>
@@ -150,6 +152,23 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Adds Attribute model to cache, and returns cached object.  
+        /// </summary>
+        /// <param name="attributeModel">The attribute model.</param>
+        /// <param name="qualifiers">The qualifiers.</param>
+        /// <returns></returns>
+        public static Attribute Read( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        {
+            Attribute attribute = Attribute.CopyModel( attributeModel, qualifiers );
+
+            string cacheKey = Attribute.CacheKey( attributeModel.Id );
+            ObjectCache cache = MemoryCache.Default;
+            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+            return attribute;
+        }
+
+        /// <summary>
         /// Returns Attribute object from cache.  If attribute does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
@@ -189,6 +208,16 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Attribute CopyModel( Rock.Core.Attribute attributeModel )
         {
+            var qualifiers = new Dictionary<string, string>();
+
+            foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
+                qualifiers.Add( qualifier.Key, qualifier.Value );
+
+            return CopyModel( attributeModel, qualifiers );
+        }
+
+        private static Attribute CopyModel( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        {
             Attribute attribute = new Attribute();
             attribute.Id = attributeModel.Id;
             attribute.Key = attributeModel.Key;
@@ -202,7 +231,7 @@ namespace Rock.Web.Cache
             attribute.IsMultiValue = attributeModel.IsMultiValue;
 
             attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
-            foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
+            foreach ( var qualifier in qualifiers )
                 attribute.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
 
             return attribute;
