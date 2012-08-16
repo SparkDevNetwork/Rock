@@ -285,46 +285,19 @@ namespace Rock.Core
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Gets the first value of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public Rock.Core.DTO.AttributeValue GetValue( int entityId )
-        {
-            return GetValues( entityId )[0];
-        }
-
-        /// <summary>
-        /// Gets all the values of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public List<Rock.Core.DTO.AttributeValue> GetValues( int entityId )
-        {
-            List<Rock.Core.DTO.AttributeValue> values = new List<DTO.AttributeValue>();
-
-            foreach ( var value in this.AttributeValues.
-                Where( v => v.EntityId == entityId ).
-                OrderBy( v => v.Order ) )
-                values.Add( value.DataTransferObject );
-
-            if ( values.Count == 0 )
-            {
-                var value = new Rock.Core.DTO.AttributeValue();
-                value.AttributeId = this.Id;
-                value.Value = this.DefaultValue;
-                values.Add( value );
-            }
-
-            return values;
-        }
-
-        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
             get { return new Security.GenericEntity( "Global" ); }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Attribute"/> class.
+        /// </summary>
+        public Attribute()
+        {
+            AttributeQualifiers = new System.Collections.ObjectModel.Collection<AttributeQualifier>();
         }
     }
     /// <summary>

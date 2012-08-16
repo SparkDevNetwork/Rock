@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -14,6 +15,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Types
     /// </summary>
+    [Serializable]
     public class DefinedType : SelectSingle
     {
         /// <summary>

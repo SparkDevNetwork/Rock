@@ -54,6 +54,18 @@ namespace Rock.CMS
 		/// <returns>User object.</returns>
 	    public Rock.CMS.User GetByUserName( string userName )
         {
+            // Because this query is run on every page request, and the associated person is always needed, 
+            // we're loading the Person property immediately, rather than defering to a lazy-load
+            var efRepository = Repository as EFRepository<User>;
+            if ( efRepository != null )
+            {
+                var rockContext = efRepository.Context as RockContext;
+                if (rockContext != null)
+                {
+                    return rockContext.Users.Include( "Person" ).FirstOrDefault( t => t.UserName == userName );
+                }
+            }
+
             return Repository.FirstOrDefault( t => t.UserName == userName );
         }
 
@@ -270,8 +282,11 @@ namespace Rock.CMS
 
                     if ( user != null && userIsOnline )
                     {
-                        user.LastActivityDate = DateTime.Now;
-                        userService.Save( user, null );
+                        // Save last activity date
+                        var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                        transaction.UserId = user.Id;
+                        transaction.LastActivityDate = DateTime.Now;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 
                     return user;

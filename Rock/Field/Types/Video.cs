@@ -3,12 +3,16 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
 {
+    /// <summary>
+    /// Video field type
+    /// </summary>
+    [Serializable]
     public class Video : FieldType
     {
         /// <summary>

@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gSites.DataKeyNames = new string[] { "id" };
                 gSites.Actions.IsAddEnabled = true;
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

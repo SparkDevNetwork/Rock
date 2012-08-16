@@ -15,6 +15,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
+    [Serializable]
     public class Color : FieldType
     {
         /// <summary>

@@ -41,7 +41,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 				Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-				if ( Member.IsAuthorized( "View", currentUser ) )
+				if ( Member.IsAuthorized( "View", currentUser.Person ) )
 					return Member.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Member", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-					if ( Member.IsAuthorized( "View", user ) )
+					if ( Member.IsAuthorized( "View", user.Person ) )
 						return Member.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Member", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 				Rock.Groups.Member existingMember = MemberService.Get( int.Parse( id ) );
-				if ( existingMember.IsAuthorized( "Edit", currentUser ) )
+				if ( existingMember.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member existingMember = MemberService.Get( int.Parse( id ) );
-					if ( existingMember.IsAuthorized( "Edit", user ) )
+					if ( existingMember.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingMember).CurrentValues.SetValues(Member);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Groups
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 				Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-				if ( Member.IsAuthorized( "Edit", currentUser ) )
+				if ( Member.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					MemberService.Delete( Member, currentUser.PersonId );
 					MemberService.Save( Member, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Groups
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Groups.MemberService MemberService = new Rock.Groups.MemberService();
 					Rock.Groups.Member Member = MemberService.Get( int.Parse( id ) );
-					if ( Member.IsAuthorized( "Edit", user ) )
+					if ( Member.IsAuthorized( "Edit", user.Person ) )
 					{
 						MemberService.Delete( Member, user.PersonId );
 						MemberService.Save( Member, user.PersonId );

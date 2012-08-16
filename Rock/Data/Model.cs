@@ -138,11 +138,13 @@ namespace Rock.Data
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool IsAuthorized( string action, Rock.CMS.User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -393,12 +395,17 @@ namespace Rock.Data
     internal class KeyModel
     {
         public string Key { get; set; }
+        public int Id { get; set; }
         public IModel Model { get; set; }
 
-        public KeyModel (string key)
+        public KeyModel( int id ) 
+        {
+            Id = id;
+        }
+
+        public KeyModel( string key )
         {
             Key = key;
         }
     }
-
 }
