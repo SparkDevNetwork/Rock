@@ -155,26 +155,8 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		internal int DisplayInNavWhenInternal { get; set; }
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Display In Nav When.
-		/// </summary>
-		/// <value>
-		/// Determines when to display in a navigation 
-		/// 0 = When Security Allows
-		/// 1 = Always
-		/// 3 = Never   
-		/// 
-		/// Enum[DisplayInNavWhen].
-		/// </value>
-		[NotMapped]
-		public DisplayInNavWhen DisplayInNavWhen
-		{
-			get { return (DisplayInNavWhen)this.DisplayInNavWhenInternal; }
-			set { this.DisplayInNavWhenInternal = (int)value; }
-		}
-		
 		/// <summary>
 		/// Gets or sets the Order.
 		/// </summary>
@@ -289,7 +271,7 @@ namespace Rock.CMS
 				dto.MenuDisplayDescription = this.MenuDisplayDescription;
 				dto.MenuDisplayIcon = this.MenuDisplayIcon;
 				dto.MenuDisplayChildPages = this.MenuDisplayChildPages;
-				dto.DisplayInNavWhen = this.DisplayInNavWhenInternal;
+				dto.DisplayInNavWhen = (int)this.DisplayInNavWhen;
 				dto.Order = this.Order;
 				dto.OutputCacheDuration = this.OutputCacheDuration;
 				dto.Description = this.Description;
@@ -410,7 +392,6 @@ namespace Rock.CMS
         /// </summary>
         public PageConfiguration()
         {
-			this.Property( p => p.DisplayInNavWhenInternal ).HasColumnName( "DisplayInNavWhen" );
 			this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);

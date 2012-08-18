@@ -166,22 +166,10 @@ namespace Rock.CRM
 		/// <value>
 		/// Enum[Gender].
 		/// </value>
+        [Required]
 		[DataMember]
-		internal int? GenderInternal { get; set; }
+        public Gender Gender { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Gender.
-		/// </summary>
-		/// <value>
-		/// Enum[Gender].
-		/// </value>
-		[NotMapped]
-		public Gender Gender
-		{
-			get { return (Gender)this.GenderInternal; }
-			set { this.GenderInternal = (int)value; }
-		}
-		
 		/// <summary>
 		/// Gets or sets the Marital Status Id.
 		/// </summary>
@@ -330,7 +318,7 @@ namespace Rock.CRM
 				dto.BirthDay = this.BirthDay;
 				dto.BirthMonth = this.BirthMonth;
 				dto.BirthYear = this.BirthYear;
-				dto.Gender = this.GenderInternal;
+				dto.Gender = (int)this.Gender;
 				dto.MaritalStatusId = this.MaritalStatusId;
 				dto.AnniversaryDate = this.AnniversaryDate;
 				dto.GraduationDate = this.GraduationDate;
@@ -572,7 +560,6 @@ namespace Rock.CRM
         /// </summary>
         public PersonConfiguration()
         {
-			this.Property( p => p.GenderInternal ).HasColumnName( "Gender" );
 			this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId ).WillCascadeOnDelete(false);

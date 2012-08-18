@@ -168,25 +168,12 @@ namespace Rock.Util
 		/// Gets or sets the Notification Status.
 		/// </summary>
 		/// <value>
-		/// States that should be used to determine when to notify (valid values = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
+		/// Enum[JobNotificationStatus].
 		/// </value>
 		[Required]
 		[DataMember]
-		internal int NotificationStatusInternal { get; set; }
+        public JobNotificationStatus NotificationStatus { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Notification Status.
-		/// </summary>
-		/// <value>
-		/// States that should be used to determine when to notify (valid values = All = 1, Success = 2, Error = 3, None = 4  Enum[JobNotificationStatus].
-		/// </value>
-		[NotMapped]
-		public JobNotificationStatus NotificationStatus
-		{
-			get { return (JobNotificationStatus)this.NotificationStatusInternal; }
-			set { this.NotificationStatusInternal = (int)value; }
-		}
-		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
 		/// </summary>
@@ -250,7 +237,7 @@ namespace Rock.Util
 				dto.LastStatusMessage = this.LastStatusMessage;
 				dto.LastRunSchedulerName = this.LastRunSchedulerName;
 				dto.NotificationEmails = this.NotificationEmails;
-				dto.NotificationStatus = this.NotificationStatusInternal;
+				dto.NotificationStatus = (int)this.NotificationStatus;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -292,7 +279,6 @@ namespace Rock.Util
         /// </summary>
         public JobConfiguration()
         {
-			this.Property( p => p.NotificationStatusInternal ).HasColumnName( "NotificationStatus" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

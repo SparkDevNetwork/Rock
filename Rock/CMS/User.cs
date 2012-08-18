@@ -49,26 +49,13 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-        public int AuthenticationTypeInternal
+        public AuthenticationType AuthenticationType
         {
-            get { return _authenticationTypeInternal; }
-            set { _authenticationTypeInternal = value; }
+            get { return _AuthenticationType; }
+            set { _AuthenticationType = value; }
         }
-        private int _authenticationTypeInternal = 1;
+        private AuthenticationType _AuthenticationType = AuthenticationType.Database;
 
-		/// <summary>
-		/// Gets or sets the Authentication Type.
-		/// </summary>
-		/// <value>
-		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
-		/// </value>
-		[NotMapped]
-		public AuthenticationType AuthenticationType
-		{
-			get { return (AuthenticationType)this.AuthenticationTypeInternal; }
-			set { this.AuthenticationTypeInternal = (int)value; }
-		}
-		
 		/// <summary>
 		/// Gets or sets the Password.
 		/// </summary>
@@ -259,7 +246,7 @@ namespace Rock.CMS
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
 				dto.UserName = this.UserName;
-				dto.AuthenticationType = this.AuthenticationTypeInternal;
+				dto.AuthenticationType = (int)this.AuthenticationType;
 				dto.Password = this.Password;
 				dto.IsConfirmed = this.IsConfirmed;
 				dto.LastActivityDate = this.LastActivityDate;
@@ -380,7 +367,6 @@ namespace Rock.CMS
         /// </summary>
         public UserConfiguration()
         {
-			this.Property( p => p.AuthenticationTypeInternal ).HasColumnName( "AuthenticationType" );
 			this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
