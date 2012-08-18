@@ -61,6 +61,18 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Trys to get the model with the id value
+        /// </summary>
+        /// <returns></returns>
+        public bool TryGet( int id, out T item )
+        {
+            item = Get(id);
+            if (item == null)
+                return false;
+            return true;
+        }
+
+        /// <summary>
         /// Gets the model by the public encrypted key.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>

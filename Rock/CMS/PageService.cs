@@ -42,6 +42,41 @@ namespace Rock.CMS
         {
             return Repository.Find( t => ( t.SiteId == siteId || ( siteId == null && t.SiteId == null ) ) ).OrderBy( t => t.Order );
         }
+
+        /// <summary>
+        /// Gets Pages
+        /// </summary>
+        /// <returns>A queryable list of Page DTO objects.</returns>
+        public IQueryable<Rock.CMS.DTO.Page> QueryableDTO()
+        {
+            return this.Queryable().Select( i => new Rock.CMS.DTO.Page
+            {
+                Id = i.Id,
+                Guid = i.Guid,
+				Name = i.Name,
+				Title = i.Title,
+				IsSystem = i.IsSystem,
+				ParentPageId = i.ParentPageId,
+				SiteId = i.SiteId,
+				Layout = i.Layout,
+				RequiresEncryption = i.RequiresEncryption,
+				EnableViewState = i.EnableViewState,
+				MenuDisplayDescription = i.MenuDisplayDescription,
+				MenuDisplayIcon = i.MenuDisplayIcon,
+				MenuDisplayChildPages = i.MenuDisplayChildPages,
+				DisplayInNavWhen = (int)i.DisplayInNavWhen,
+				Order = i.Order,
+				OutputCacheDuration = i.OutputCacheDuration,
+				Description = i.Description,
+				IncludeAdminFooter = i.IncludeAdminFooter,
+				CreatedDateTime = i.CreatedDateTime,
+				ModifiedDateTime = i.ModifiedDateTime,
+				CreatedByPersonId = i.CreatedByPersonId,
+				ModifiedByPersonId = i.ModifiedByPersonId,
+				IconUrl = i.IconUrl
+            }
+            );
+        }
 		
     }
 }
