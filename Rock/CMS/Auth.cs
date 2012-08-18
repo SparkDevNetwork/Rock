@@ -87,21 +87,8 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		internal int SpecialRoleInternal { get; set; }
+		public SpecialRole SpecialRole { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Special Role.
-		/// </summary>
-		/// <value>
-		/// Enum[SpecialRole].
-		/// </value>
-		[NotMapped]
-		public SpecialRole SpecialRole
-		{
-			get { return (SpecialRole)this.SpecialRoleInternal; }
-			set { this.SpecialRoleInternal = (int)value; }
-		}
-		
 		/// <summary>
 		/// Gets or sets the Person Id.
 		/// </summary>
@@ -174,7 +161,7 @@ namespace Rock.CMS
 				dto.Order = this.Order;
 				dto.Action = this.Action;
 				dto.AllowOrDeny = this.AllowOrDeny;
-				dto.SpecialRole = this.SpecialRoleInternal;
+				dto.SpecialRole = (int)this.SpecialRole;
 				dto.PersonId = this.PersonId;
 				dto.GroupId = this.GroupId;
 				dto.CreatedDateTime = this.CreatedDateTime;
@@ -244,7 +231,6 @@ namespace Rock.CMS
         /// </summary>
         public AuthConfiguration()
         {
-			this.Property( p => p.SpecialRoleInternal ).HasColumnName( "SpecialRole" );
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
