@@ -3,18 +3,18 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
-using Rock.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+
+using Rock.Data;
 
 namespace Rock.Financial
 {
     /// <summary>
     /// Service class for Transaction objects.
     /// </summary>
-    public partial class TransactionService : Service<Transaction>
+    public partial class TransactionService : Service<Transaction, DTO.Transaction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionService"/> class.
@@ -76,6 +76,15 @@ namespace Rock.Financial
         /// <param name="repository">The repository.</param>
         public TransactionService(IRepository<Transaction> repository) : base(repository)
         {
+        }
+
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of related DTO objects.</returns>
+        public override IQueryable<DTO.Transaction> QueryableDTO()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

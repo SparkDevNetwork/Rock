@@ -14,17 +14,25 @@ namespace Rock.CMS
 	/// <summary>
 	/// Page Context POCO Service class
 	/// </summary>
-    public partial class PageContextService : Service<Rock.CMS.PageContext>
+    public partial class PageContextService : Service<PageContext, DTO.PageContext>
     {
 		/// <summary>
 		/// Gets Page Contexts by Page Id
 		/// </summary>
 		/// <param name="pageId">Page Id.</param>
 		/// <returns>An enumerable list of PageContext objects.</returns>
-	    public IEnumerable<Rock.CMS.PageContext> GetByPageId( int pageId )
+	    public IEnumerable<PageContext> GetByPageId( int pageId )
         {
             return Repository.Find( t => t.PageId == pageId );
         }
-		
+
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of related DTO objects.</returns>
+        public override IQueryable<DTO.PageContext> QueryableDTO()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
