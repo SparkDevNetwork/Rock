@@ -72,6 +72,14 @@
     <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
     <Compile Include="CRM\PhoneNumber.cs" />
+    <Compile Include="DTO.cs" />
+    <Compile Include="Financial\Batch.cs" />
+    <Compile Include="Financial\TransactionDetail.cs" />
+    <Compile Include="Financial\Transaction.cs" />
+    <Compile Include="Financial\Pledge.cs" />
+    <Compile Include="Financial\PersonAccountLookup.cs" />
+    <Compile Include="Financial\Gateway.cs" />
+    <Compile Include="Financial\Fund.cs" />
     <Compile Include="Groups\Group.cs" />
     <Compile Include="Groups\GroupRole.cs" />
     <Compile Include="Groups\GroupType.cs" />

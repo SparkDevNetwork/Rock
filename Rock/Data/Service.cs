@@ -236,4 +236,21 @@ namespace Rock.Data
             }
         }
     }
+
+    public class Service<T, D> : Service<T>
+        where T : Rock.Data.Model<T>
+        where D : Rock.DTO<D>
+    {
+        public Service() : base() { }
+        public Service( IRepository<T> repository ) : base( repository ) { }
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<D> QueryableDTO()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }

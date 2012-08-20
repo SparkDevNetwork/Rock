@@ -14,21 +14,8 @@ namespace Rock.CRM.DTO
 	/// Data Transfer Objects are a lightweight version of the Entity object that are used
 	/// in situations like serializing the object in the REST api
 	/// </remarks>
-    public partial class Campus
+    public partial class Campus : Rock.DTO<Campus>
     {
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public Guid Guid { get; set; }
-
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -44,12 +31,5 @@ namespace Rock.CRM.DTO
 		/// Given Name.
 		/// </value>
 		public string Name { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CampusDTO"/> class.
-        /// </summary>
-		public Campus()
-		{
-		}
 	}
 }

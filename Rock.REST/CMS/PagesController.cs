@@ -6,7 +6,6 @@ using System.Web.Http;
 
 using Rock.CMS;
 using Rock.Data;
-using Rock.Rest.Filters;
 
 namespace Rock.Rest.CMS
 {
