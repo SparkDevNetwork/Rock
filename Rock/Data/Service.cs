@@ -29,8 +29,9 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
         /// </summary>
         public Service()
-            : this( new EFRepository<T>() )
         {
+            var factory = new RepositoryFactory<T>();
+            _repository = factory.FindRepository();
         }
 
         /// <summary>
