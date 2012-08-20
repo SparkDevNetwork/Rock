@@ -17752,5 +17752,17 @@
             <param name="guid">Guid.</param>
             <returns>DefinedValue object.</returns>
         </member>
+        <member name="T:Rock.Data.RepositoryFactory`1">
+            <summary>
+            Static class to support factory method implementation.
+            </summary>
+        </member>
+        <member name="M:Rock.Data.RepositoryFactory`1.FindRepository">
+            <summary>
+            Finds a repository object based on app settings in web/app.config file.
+            </summary>
+            <typeparam name="T">Model of type T</typeparam>
+            <returns>IRepository of type T</returns>
+        </member>
     </members>
 </doc>

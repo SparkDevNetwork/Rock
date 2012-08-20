@@ -56,9 +56,11 @@
     <Compile Include="CMS\HtmlContentTests.cs" />
     <Compile Include="CMS\PageRouteTests.cs" />
     <Compile Include="CMS\PageTests.cs" />
+    <Compile Include="Fakes\FakeRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

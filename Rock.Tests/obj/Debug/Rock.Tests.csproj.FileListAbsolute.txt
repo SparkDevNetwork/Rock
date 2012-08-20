@@ -38,3 +38,4 @@ C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\zh-CHS\AjaxControlToolkit.resourc
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\zh-CHT\AjaxControlToolkit.resources.dll
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\Newtonsoft.Json.dll
 C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\Newtonsoft.Json.xml
+C:\Dev\Projects\Rock-ChMS\Rock.Tests\bin\Debug\Rock.Tests.dll.config
