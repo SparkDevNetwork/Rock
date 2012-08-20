@@ -6,7 +6,7 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockJobSchedulerService", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DataTransferObjects", "Rock.DataTransferObjects\Rock.DataTransferObjects.csproj", "{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.REST", "Rock.REST\Rock.REST.csproj", "{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,16 +94,16 @@ Global
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|x86.ActiveCfg = Release|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4981FA2A-A0D7-48E3-B03E-C4BEDAC85EEE}.Release|x86.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

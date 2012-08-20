@@ -13,6 +13,7 @@ using System.Web.Caching;
 using System.Web.Routing;
 using System.Collections.Generic;
 using System.Text;
+using System.Web.Http;
 
 using Quartz;
 using Quartz.Impl;
@@ -86,7 +87,7 @@ namespace RockWeb
 
             // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
             AddCallBack();
-            
+
             RegisterRoutes( RouteTable.Routes );
 
             Rock.Security.Authorization.Load();
@@ -417,9 +418,16 @@ namespace RockWeb
                 routes.Add( route );
             }
 
+            
             // Add API Service routes
-            routes.MapPageRoute( "", "REST/help", "~/RESTHelp.aspx" );
-            new Rock.REST.ServiceHelper( this.Server.MapPath("~/Extensions") ).AddRoutes( routes, "REST/" );
+            routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = System.Web.Http.RouteParameter.Optional }
+            );
+
+            //routes.MapPageRoute( "", "REST/help", "~/RESTHelp.aspx" );
+            //new Rock.REST.ServiceHelper( this.Server.MapPath("~/Extensions") ).AddRoutes( routes, "REST/" );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
