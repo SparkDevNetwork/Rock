@@ -88,6 +88,8 @@ namespace RockWeb
             // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
             AddCallBack();
 
+            RegisterFilters( GlobalConfiguration.Configuration.Filters );
+
             RegisterRoutes( RouteTable.Routes );
 
             Rock.Security.Authorization.Load();
@@ -401,6 +403,11 @@ namespace RockWeb
             HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
                 DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
                 CacheItemPriority.NotRemovable, OnCacheRemove );
+        }
+
+        private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
+        {
+            filters.Add( new System.Web.Http.AuthorizeAttribute() );
         }
 
         private void RegisterRoutes( RouteCollection routes )
