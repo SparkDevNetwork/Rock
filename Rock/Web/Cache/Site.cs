@@ -6,9 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
 
 using Rock.CMS;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -253,6 +255,11 @@ namespace Rock.Web.Cache
         public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion

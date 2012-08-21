@@ -484,6 +484,12 @@
             <param name="action">The action.</param>
             <returns></returns>
         </member>
+        <member name="M:Rock.Security.ISecured.FindAuthRules">
+            <summary>
+            Finds the AuthRule records associated with the current object.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:Rock.Security.ISecured.AuthEntity">
             <summary>
             The auth entity. Classes that implement the <see cref="T:Rock.Security.ISecured"/> interface should return
@@ -813,49 +819,49 @@
             Represents a Transaction class
             </summary>
         </member>
-        <member name="T:Rock.REST.CRM.IPersonTrailService">
+        <member name="T:Rock.REST.CRM.IPersonMergedService">
             <summary>
-            Represents a REST WCF service for PersonTrails
+            Represents a REST WCF service for PersonMerged
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.Get(System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.Get(System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiGet(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiGet(System.String,System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.UpdatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.UpdatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiUpdatePersonTrail(System.String,System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiUpdatePersonMerged(System.String,System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.CreatePersonTrail(Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.CreatePersonMerged(Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiCreatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiCreatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.DeletePersonTrail(System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.DeletePersonMerged(System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.IPersonTrailService.ApiDeletePersonTrail(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.IPersonMergedService.ApiDeletePersonMerged(System.String,System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
         <member name="T:Rock.Financial.Gateway">
@@ -2928,32 +2934,6 @@
             <param name="personId">Person Id.</param>
             <returns>An enumerable list of PhoneNumber objects.</returns>
         </member>
-        <member name="T:Rock.CRM.PersonTrailService">
-            <summary>
-            Person Trail POCO Service class
-            </summary>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.GetByCurrentId(System.Int32)">
-            <summary>
-            Gets Person Trails by Current Id
-            </summary>
-            <param name="currentId">Current Id.</param>
-            <returns>An enumerable list of PersonTrail objects.</returns>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.Current(System.String)">
-            <summary>
-            Get's the current person Guid
-            </summary>
-            <param name="guid">The GUID.</param>
-            <returns></returns>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailService.Current(System.Int32)">
-            <summary>
-            Get's the current person id
-            </summary>
-            <param name="id">The id.</param>
-            <returns></returns>
-        </member>
         <member name="T:Rock.CMS.UserService">
             <summary>
             User POCO Service class
@@ -3738,7 +3718,30 @@
             Page Route POCO Entity.
             </summary>
         </member>
-        <member name="P:Rock.CMS.PageRoute.System">
+        <member name="T:Rock.Data.IExportable">
+            <summary>
+            Interface to compose ability to Export an object's data
+            </summary>
+        </member>
+        <member name="M:Rock.Data.IExportable.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Data.IExportable.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Data.IExportable.ImportJson(System.String)">
+            <summary>
+            Imports the object from JSON.
+            </summary>
+            <param name="data">The data.</param>
+        </member>
+        <member name="P:Rock.CMS.PageRoute.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>
@@ -4483,6 +4486,83 @@
             Authorize all un-authenticated users
             </summary>
         </member>
+        <member name="T:Rock.Data.RepositoryFactory`1">
+            <summary>
+            Static class to support factory method implementation.
+            </summary>
+        </member>
+        <member name="M:Rock.Data.RepositoryFactory`1.FindRepository">
+            <summary>
+            Finds a repository object based on app settings in web/app.config file.
+            </summary>
+            <typeparam name="T">Model of type T</typeparam>
+            <returns>IRepository of type T</returns>
+        </member>
+        <member name="T:Rock.CRM.PersonMerged">
+            <summary>
+            Person Trail POCO Entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentId">
+            <summary>
+            Gets or sets the Current Id.
+            </summary>
+            <value>
+            Current Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentGuid">
+            <summary>
+            Gets or sets the Current Guid.
+            </summary>
+            <value>
+            Current Guid.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CreatedDateTime">
+            <summary>
+            Gets or sets the Created Date Time.
+            </summary>
+            <value>
+            Created Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CreatedByPersonId">
+            <summary>
+            Gets or sets the Created By Person Id.
+            </summary>
+            <value>
+            Created By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.DataTransferObject">
+            <summary>
+            Gets a Data Transfer Object (lightweight) version of this object.
+            </summary>
+            <value>
+            A <see cref="T:Rock.CRM.DTO.PersonMerged"/> object.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.AuthEntity">
+            <summary>
+            Gets the auth entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.PersonMerged.CurrentPublicKey">
+            <summary>
+            Gets a publicly viewable unique key for the model.
+            </summary>
+        </member>
+        <member name="T:Rock.CRM.PersonMergedConfiguration">
+            <summary>
+            Person Trail Configuration class.
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.CRM.PersonMergedConfiguration"/> class.
+            </summary>
+        </member>
         <member name="T:Rock.Core.ExceptionLog">
             <summary>
             Exception Log POCO Entity.
@@ -4986,6 +5066,28 @@
             <value>
             The help tip.
             </value>
+        </member>
+        <member name="T:Rock.Web.UI.Controls.ModalIFrameDialog">
+            <summary>
+            A Modal Popup Dialog Window
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.OnInit(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:Init"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ModalIFrameDialog.OnPreRender(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:PreRender"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
         </member>
         <member name="T:Rock.SystemGuid.DefinedType">
             <summary>
@@ -5843,6 +5945,90 @@
             Initializes a new instance of the <see cref="T:Rock.CRM.PersonViewedConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.CRM.Campus">
+            <summary>
+            Campus POCO Entity.
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.Campus.ToString">
+            <summary>
+            Returns a <see cref="!:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="!:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="P:Rock.CRM.Campus.System">
+            <summary>
+            Gets or sets the System.
+            </summary>
+            <value>
+            System.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.Name">
+            <summary>
+            Gets or sets the Name.
+            </summary>
+            <value>
+            Given Name.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.CreatedDateTime">
+            <summary>
+            Gets or sets the Created Date Time.
+            </summary>
+            <value>
+            Created Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.ModifiedDateTime">
+            <summary>
+            Gets or sets the Modified Date Time.
+            </summary>
+            <value>
+            Modified Date Time.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.CreatedByPersonId">
+            <summary>
+            Gets or sets the Created By Person Id.
+            </summary>
+            <value>
+            Created By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.ModifiedByPersonId">
+            <summary>
+            Gets or sets the Modified By Person Id.
+            </summary>
+            <value>
+            Modified By Person Id.
+            </value>
+        </member>
+        <member name="P:Rock.CRM.Campus.AuthEntity">
+            <summary>
+            Gets the auth entity.
+            </summary>
+        </member>
+        <member name="P:Rock.CRM.Campus.DataTransferObject">
+            <summary>
+            Gets a Data Transfer Object (lightweight) version of this object.
+            </summary>
+            <value>
+            A <see cref="T:Rock.CRM.DTO.Campus"/> object.
+            </value>
+        </member>
+        <member name="T:Rock.CRM.CampusConfiguration">
+            <summary>
+            Campus Configuration class.
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.CampusConfiguration.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.CRM.CampusConfiguration"/> class.
+            </summary>
+        </member>
         <member name="T:Rock.Core.ExceptionLogService">
             <summary>
             Exception Log POCO Service class
@@ -6616,6 +6802,39 @@
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
         </member>
+        <member name="M:Rock.CMS.Page.ExportJson">
+            <summary>
+            Exports the Page as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.ExportObject">
+            <summary>
+            Exports the Page.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.MapPagesRecursive(Rock.CMS.Page)">
+            <summary>
+            Recursivly adds collections of child pages to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Page.MapBlockInstances(Rock.CMS.Page,System.Object)">
+            <summary>
+            Maps the block instances to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <param name="exportPage">The export page.</param>
+        </member>
+        <member name="M:Rock.CMS.Page.MapPageRoutes(Rock.CMS.Page,System.Object)">
+            <summary>
+            Maps the page routes to object graph for export.
+            </summary>
+            <param name="page">The page.</param>
+            <param name="exportPage">The export page.</param>
+        </member>
         <member name="P:Rock.CMS.Page.Name">
             <summary>
             Gets or sets the Name.
@@ -6632,12 +6851,12 @@
             Title.
             </value>
         </member>
-        <member name="P:Rock.CMS.Page.System">
+        <member name="P:Rock.CMS.Page.IsSystem">
             <summary>
-            Gets or sets the System.
+            Gets or sets the IsSystem.
             </summary>
             <value>
-            System.
+            IsSystem.
             </value>
         </member>
         <member name="P:Rock.CMS.Page.ParentPageId">
@@ -7486,6 +7705,14 @@
             the Addresses.
             </value>
         </member>
+        <member name="P:Rock.Data.RockContext.Campuses">
+            <summary>
+            Gets or sets the Campuses.
+            </summary>
+            <value>
+            the Campuses.
+            </value>
+        </member>
         <member name="P:Rock.Data.RockContext.EmailTemplates">
             <summary>
             Gets or sets the Email Templates.
@@ -7502,7 +7729,7 @@
             the People.
             </value>
         </member>
-        <member name="P:Rock.Data.RockContext.PersonTrails">
+        <member name="P:Rock.Data.RockContext.PersonMerges">
             <summary>
             Gets or sets the Person Trails.
             </summary>
@@ -8622,71 +8849,6 @@
             A blog post that has not yet been published
             </summary>
         </member>
-        <member name="T:Rock.CRM.PersonTrail">
-            <summary>
-            Person Trail POCO Entity.
-            </summary>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentId">
-            <summary>
-            Gets or sets the Current Id.
-            </summary>
-            <value>
-            Current Id.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentGuid">
-            <summary>
-            Gets or sets the Current Guid.
-            </summary>
-            <value>
-            Current Guid.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CreatedDateTime">
-            <summary>
-            Gets or sets the Created Date Time.
-            </summary>
-            <value>
-            Created Date Time.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CreatedByPersonId">
-            <summary>
-            Gets or sets the Created By Person Id.
-            </summary>
-            <value>
-            Created By Person Id.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.DataTransferObject">
-            <summary>
-            Gets a Data Transfer Object (lightweight) version of this object.
-            </summary>
-            <value>
-            A <see cref="T:Rock.CRM.DTO.PersonTrail"/> object.
-            </value>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.AuthEntity">
-            <summary>
-            Gets the auth entity.
-            </summary>
-        </member>
-        <member name="P:Rock.CRM.PersonTrail.CurrentPublicKey">
-            <summary>
-            Gets a publicly viewable unique key for the model.
-            </summary>
-        </member>
-        <member name="T:Rock.CRM.PersonTrailConfiguration">
-            <summary>
-            Person Trail Configuration class.
-            </summary>
-        </member>
-        <member name="M:Rock.CRM.PersonTrailConfiguration.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.CRM.PersonTrailConfiguration"/> class.
-            </summary>
-        </member>
         <member name="T:Rock.Core.EntityChange">
             <summary>
             Entity Change POCO Entity.
@@ -9539,49 +9701,49 @@
             The Actions.
             </value>
         </member>
-        <member name="T:Rock.REST.CRM.PersonTrailService">
+        <member name="T:Rock.REST.CRM.PersonMergedService">
             <summary>
-            REST WCF service for PersonTrails
+            REST WCF service for PersonMerged
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.Get(System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.Get(System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiGet(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiGet(System.String,System.String)">
             <summary>
-            Gets a PersonTrail object
+            Gets a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.UpdatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.UpdatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiUpdatePersonTrail(System.String,System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiUpdatePersonMerged(System.String,System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Updates a PersonTrail object
+            Updates a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.CreatePersonTrail(Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.CreatePersonMerged(Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiCreatePersonTrail(System.String,Rock.CRM.DTO.PersonTrail)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiCreatePersonMerged(System.String,Rock.CRM.DTO.PersonMerged)">
             <summary>
-            Creates a new PersonTrail object
+            Creates a new PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.DeletePersonTrail(System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.DeletePersonMerged(System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
-        <member name="M:Rock.REST.CRM.PersonTrailService.ApiDeletePersonTrail(System.String,System.String)">
+        <member name="M:Rock.REST.CRM.PersonMergedService.ApiDeletePersonMerged(System.String,System.String)">
             <summary>
-            Deletes a PersonTrail object
+            Deletes a PersonMerged object
             </summary>
         </member>
         <member name="M:Rock.FieldTypes.Video.FormatValue(System.Web.UI.Control,System.String,System.Boolean)">
@@ -10156,10 +10318,26 @@
         </member>
         <member name="P:Rock.Web.UI.Controls.NotificationBox.Title">
             <summary>
-            Gets or sets the title.
+            Gets or sets the title (title is inline with the message text but is bold).
             </summary>
             <value>
             The title.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.Heading">
+            <summary>
+            Gets or sets the heading (heading is on it's own line at the top)
+            </summary>
+            <value>
+            The heading.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.NotificationBox.Padded">
+            <summary>
+            Gets or sets extra padding around the inner text
+            </summary>
+            <value>
+            Enable extra padding.
             </value>
         </member>
         <member name="P:Rock.Web.UI.Controls.NotificationBox.NotificationBoxType">
@@ -10175,7 +10353,7 @@
             The type of notification box to display
             </summary>
         </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Information">
+        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Info">
             <summary>
             Display an information box
             </summary>
@@ -10188,11 +10366,6 @@
         <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Error">
             <summary>
             Display an error box
-            </summary>
-        </member>
-        <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Tip">
-            <summary>
-            Display a tip box
             </summary>
         </member>
         <member name="F:Rock.Web.UI.Controls.NotificationBoxType.Success">
@@ -10564,7 +10737,7 @@
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
         </member>
-        <member name="P:Rock.CMS.BlockInstance.System">
+        <member name="P:Rock.CMS.BlockInstance.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>
@@ -13637,6 +13810,13 @@
             <param name="recursionDepth">constrains the number of object levels to process.</param>
             <returns></returns>
         </member>
+        <member name="M:Rock.ExtensionMethods.ToDynamic(System.Object)">
+            <summary>
+            Creates a copy of the object's property as a DynamicObject.
+            </summary>
+            <param name="obj">The object to copy.</param>
+            <returns></returns>
+        </member>
         <member name="M:Rock.ExtensionMethods.SplitCase(System.String)">
             <summary>
             Splits a Camel or Pascal cased identifier into seperate words.
@@ -13749,6 +13929,13 @@
             <typeparam name="T"></typeparam>
             <param name="items">The items.</param>
             <param name="delimiter">The delimiter.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.ExtensionMethods.Join(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Joins a dictionary of items
+            </summary>
+            <param name="items">The items.</param>
             <returns></returns>
         </member>
         <member name="M:Rock.ExtensionMethods.OrderBy``1(System.Linq.IQueryable{``0},System.String)">
@@ -14191,6 +14378,11 @@
             <returns>
             True/False value of whether the address was standardized succesfully
             </returns>
+        </member>
+        <member name="T:Rock.CRM.CampusService">
+            <summary>
+            Campus POCO Service class
+            </summary>
         </member>
         <member name="T:Rock.Core.AttributeValueService">
             <summary>
@@ -14934,6 +15126,24 @@
             <returns>
             A <see cref="T:System.String"/> that represents this instance.
             </returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.HtmlContent.ImportJson(System.String)">
+            <summary>
+            Imports the data.
+            </summary>
+            <param name="data">The data.</param>
         </member>
         <member name="P:Rock.CMS.HtmlContent.BlockId">
             <summary>
@@ -15790,6 +16000,32 @@
             Initializes a new instance of the <see cref="T:Rock.CMS.SiteDomainConfiguration"/> class.
             </summary>
         </member>
+        <member name="T:Rock.CRM.PersonMergedService">
+            <summary>
+            Person Trail POCO Service class
+            </summary>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.GetByCurrentId(System.Int32)">
+            <summary>
+            Gets Person Trails by Current Id
+            </summary>
+            <param name="currentId">Current Id.</param>
+            <returns>An enumerable list of PersonMerged objects.</returns>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.Current(System.String)">
+            <summary>
+            Get's the current person Guid
+            </summary>
+            <param name="guid">The GUID.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CRM.PersonMergedService.Current(System.Int32)">
+            <summary>
+            Get's the current person id
+            </summary>
+            <param name="id">The id.</param>
+            <returns></returns>
+        </member>
         <member name="T:Rock.CRM.PersonService">
             <summary>
             Person POCO Service class
@@ -16291,6 +16527,38 @@
             <param name="control"></param>
             <returns></returns>
         </member>
+        <member name="T:Rock.Web.UI.Controls.LabeledText">
+            <summary>
+            A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledText.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.LabeledText.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledText.LabelText">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.LabeledText.Text">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
         <member name="T:Rock.Web.Cache.FieldType">
             <summary>
             Information about a fieldType that is required by the rendering engine.
@@ -16675,7 +16943,25 @@
             Block POCO Entity.
             </summary>
         </member>
-        <member name="P:Rock.CMS.Block.System">
+        <member name="M:Rock.CMS.Block.ExportJson">
+            <summary>
+            Exports the object as JSON.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Block.ExportObject">
+            <summary>
+            Exports the object.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.CMS.Block.ImportJson(System.String)">
+            <summary>
+            Imports the object from JSON.
+            </summary>
+            <param name="data">The data.</param>
+        </member>
+        <member name="P:Rock.CMS.Block.IsSystem">
             <summary>
             Gets or sets the System.
             </summary>

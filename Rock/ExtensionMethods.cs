@@ -6,11 +6,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 
 namespace Rock
 {
@@ -28,8 +29,7 @@ namespace Rock
         /// <returns></returns>
         public static string ToJSON( this object obj )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            return serializer.Serialize( obj );
+            return JsonConvert.SerializeObject( obj );
         }
 
         /// <summary>
@@ -40,9 +40,26 @@ namespace Rock
         /// <returns></returns>
         public static string ToJSON( this object obj, int recursionDepth )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer.RecursionLimit = recursionDepth;
-            return serializer.Serialize( obj );
+            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
+        }
+
+        /// <summary>
+        /// Creates a copy of the object's property as a DynamicObject.
+        /// </summary>
+        /// <param name="obj">The object to copy.</param>
+        /// <returns></returns>
+        public static ExpandoObject ToDynamic( this object obj )
+        {
+            dynamic expando = new ExpandoObject();
+            var dict = expando as IDictionary<string, object>;
+            var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+
+            foreach (var prop in properties)
+            {
+                dict[prop.Name] = prop.GetValue( obj, null );
+            }
+
+            return expando;
         }
 
         #endregion
