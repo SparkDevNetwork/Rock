@@ -239,7 +239,7 @@ namespace Rock.Data
 
     public class Service<T, D> : Service<T>
         where T : Rock.Data.Model<T>
-        where D : Rock.DTO<D>
+        where D : Rock.Data.DTO<T>
     {
         public Service() : base() { }
         public Service( IRepository<T> repository ) : base( repository ) { }
@@ -252,5 +252,11 @@ namespace Rock.Data
         {
             throw new System.NotImplementedException();
         }
+
+        public virtual T CreateNew()
+        {
+            throw new System.NotImplementedException();
+        }
     }
+
 }

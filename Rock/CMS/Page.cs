@@ -240,44 +240,6 @@ namespace Rock.CMS
 		[DataMember]
 		public string IconUrl { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.Page"/> object.
-        /// </value>
-		public Rock.CMS.DTO.Page DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.Page dto = new Rock.CMS.DTO.Page();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.Name = this.Name;
-				dto.Title = this.Title;
-				dto.IsSystem = this.IsSystem;
-				dto.ParentPageId = this.ParentPageId;
-				dto.SiteId = this.SiteId;
-				dto.Layout = this.Layout;
-				dto.RequiresEncryption = this.RequiresEncryption;
-				dto.EnableViewState = this.EnableViewState;
-				dto.MenuDisplayDescription = this.MenuDisplayDescription;
-				dto.MenuDisplayIcon = this.MenuDisplayIcon;
-				dto.MenuDisplayChildPages = this.MenuDisplayChildPages;
-				dto.DisplayInNavWhen = (int)this.DisplayInNavWhen;
-				dto.Order = this.Order;
-				dto.OutputCacheDuration = this.OutputCacheDuration;
-				dto.Description = this.Description;
-				dto.IncludeAdminFooter = this.IncludeAdminFooter;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.IconUrl = this.IconUrl;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -390,6 +352,207 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public class PageDTO : DTO<Page>
+    {
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent Page Id.
+        /// </summary>
+        /// <value>
+        /// Parent Page Id.
+        /// </value>
+        public int? ParentPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Id.
+        /// </summary>
+        /// <value>
+        /// Site Id.
+        /// </value>
+        public int? SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Layout.
+        /// </summary>
+        /// <value>
+        /// Layout.
+        /// </value>
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Requires Encryption.
+        /// </summary>
+        /// <value>
+        /// Requires Encryption.
+        /// </value>
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Enable View State.
+        /// </summary>
+        /// <value>
+        /// Enable View State.
+        /// </value>
+        public bool EnableViewState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Menu Display Description.
+        /// </summary>
+        /// <value>
+        /// Menu Display Description.
+        /// </value>
+        public bool MenuDisplayDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Menu Display Icon.
+        /// </summary>
+        /// <value>
+        /// Menu Display Icon.
+        /// </value>
+        public bool MenuDisplayIcon { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Menu Display Child Pages.
+        /// </summary>
+        /// <value>
+        /// Menu Display Child Pages.
+        /// </value>
+        public bool MenuDisplayChildPages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Display In Nav When.
+        /// </summary>
+        /// <value>
+        /// Display In Nav When.
+        /// </value>
+        public int DisplayInNavWhen { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Output Cache Duration.
+        /// </summary>
+        /// <value>
+        /// Output Cache Duration.
+        /// </value>
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Include Admin Footer.
+        /// </summary>
+        /// <value>
+        /// Include Admin Footer.
+        /// </value>
+        public bool IncludeAdminFooter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Icon Url.
+        /// </summary>
+        /// <value>
+        /// Icon Url.
+        /// </value>
+        public string IconUrl { get; set; }
+
+        public PageDTO( Page page )
+        {
+            CopyFromModel( page );
+        }
+
+        public void CopyFromModel( Page page )
+        {
+            this.Id = page.Id;
+            this.Guid = page.Guid;
+            this.Name = page.Name;
+            this.Title = page.Title;
+            this.IsSystem = page.IsSystem;
+            this.ParentPageId = page.ParentPageId;
+            this.SiteId = page.SiteId;
+            this.Layout = page.Layout;
+            this.RequiresEncryption = page.RequiresEncryption;
+            this.EnableViewState = page.EnableViewState;
+            this.MenuDisplayDescription = page.MenuDisplayDescription;
+            this.MenuDisplayIcon = page.MenuDisplayIcon;
+            this.MenuDisplayChildPages = page.MenuDisplayChildPages;
+            this.DisplayInNavWhen = ( int )page.DisplayInNavWhen;
+            this.Order = page.Order;
+            this.OutputCacheDuration = page.OutputCacheDuration;
+            this.Description = page.Description;
+            this.IncludeAdminFooter = page.IncludeAdminFooter;
+            this.CreatedDateTime = page.CreatedDateTime;
+            this.ModifiedDateTime = page.ModifiedDateTime;
+            this.CreatedByPersonId = page.CreatedByPersonId;
+            this.ModifiedByPersonId = page.ModifiedByPersonId;
+            this.IconUrl = page.IconUrl;
+        }
+
+        public void CopyToModel( Page page )
+        {
+            page.Id = this.Id;
+            page.Guid = this.Guid;
+            page.Name = this.Name;
+            page.Title = this.Title;
+            page.IsSystem = this.IsSystem;
+            page.ParentPageId = this.ParentPageId;
+            page.SiteId = this.SiteId;
+            page.Layout = this.Layout;
+            page.RequiresEncryption = this.RequiresEncryption;
+            page.EnableViewState = this.EnableViewState;
+            page.MenuDisplayDescription = this.MenuDisplayDescription;
+            page.MenuDisplayIcon = this.MenuDisplayIcon;
+            page.MenuDisplayChildPages = this.MenuDisplayChildPages;
+            page.DisplayInNavWhen = ( DisplayInNavWhen )this.DisplayInNavWhen;
+            page.Order = this.Order;
+            page.OutputCacheDuration = this.OutputCacheDuration;
+            page.Description = this.Description;
+            page.IncludeAdminFooter = this.IncludeAdminFooter;
+            page.CreatedDateTime = this.CreatedDateTime;
+            page.ModifiedDateTime = this.ModifiedDateTime;
+            page.CreatedByPersonId = this.CreatedByPersonId;
+            page.ModifiedByPersonId = this.ModifiedByPersonId;
+            page.IconUrl = this.IconUrl;
+        }
     }
 
     /// <summary>

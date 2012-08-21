@@ -13,7 +13,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Page POCO Service class
 	/// </summary>
-    public partial class PageService : Service<Page, DTO.Page>
+    public partial class PageService : Service<Page, PageDTO>
     {
 		/// <summary>
 		/// Gets Pages by Parent Page Id
@@ -36,39 +36,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Page CreateNew()
+        {
+            return new Page();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Page> QueryableDTO()
+        public override IQueryable<PageDTO> QueryableDTO()
         {
-            return this.Queryable().Select( i => new DTO.Page
-            {
-                Id = i.Id,
-                Guid = i.Guid,
-				Name = i.Name,
-				Title = i.Title,
-				IsSystem = i.IsSystem,
-				ParentPageId = i.ParentPageId,
-				SiteId = i.SiteId,
-				Layout = i.Layout,
-				RequiresEncryption = i.RequiresEncryption,
-				EnableViewState = i.EnableViewState,
-				MenuDisplayDescription = i.MenuDisplayDescription,
-				MenuDisplayIcon = i.MenuDisplayIcon,
-				MenuDisplayChildPages = i.MenuDisplayChildPages,
-				DisplayInNavWhen = (int)i.DisplayInNavWhen,
-				Order = i.Order,
-				OutputCacheDuration = i.OutputCacheDuration,
-				Description = i.Description,
-				IncludeAdminFooter = i.IncludeAdminFooter,
-				CreatedDateTime = i.CreatedDateTime,
-				ModifiedDateTime = i.ModifiedDateTime,
-				CreatedByPersonId = i.CreatedByPersonId,
-				ModifiedByPersonId = i.ModifiedByPersonId,
-				IconUrl = i.IconUrl
-            }
-            );
+            return this.Queryable().Select( i => new PageDTO(i));
         }
-		
     }
 }
