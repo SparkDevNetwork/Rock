@@ -17,7 +17,7 @@ namespace Rock.Rest.Filters
         public override void OnAuthorization( HttpActionContext actionContext )
         {
             // See if user is logged in
-            IPrincipal principal = actionContext.ControllerContext.Request.GetUserPrincipal();
+            var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null )
                 return;
 
