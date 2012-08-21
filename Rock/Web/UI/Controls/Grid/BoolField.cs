@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
             }
 
             return string.Format( "<span class=\"{0}\">{1}</span>", 
-                boolValue.ToString().ToLower(), ( boolValue ? "X" : "" ) );
+                boolValue.ToString().ToLower(), ( boolValue ? " " : "" ) );
         }
     }
 }

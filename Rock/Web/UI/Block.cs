@@ -96,6 +96,17 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public virtual List<string> RequiredContext
+        {
+            get
+            {
+                return new List<string>();
+            }
+        }
+
         #endregion
 
         #region Protected Caching Methods
@@ -179,7 +190,7 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( BlockInstance.Authorized( "Configure", CurrentUser ) )
+            if ( BlockInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
@@ -290,9 +301,9 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public bool UserAuthorized( string action )
+        public bool IsUserAuthorized( string action )
         {
-            return BlockInstance.Authorized( action, CurrentUser );
+            return BlockInstance.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -344,38 +355,50 @@ namespace Rock.Web.UI
 
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
+                aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
                 aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockInstance.Id ) ) );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
+                HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                aAttributes.Controls.Add( iAttributes );
+                iAttributes.Attributes.Add( "class", "icon-cog" );
             }
 
             if ( canConfig )
             {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
-                aSecureBlock.Attributes.Add( "class", "security icon-button show-modal-iframe" );
+                aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
                     Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
                 configControls.Add( aSecureBlock );
+                HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
+                aSecureBlock.Controls.Add( iSecureBlock );
+                iSecureBlock.Attributes.Add( "class", "icon-lock" );
                 
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                aMoveBlock.Attributes.Add( "class", "block-move icon-button blockinstance-move" );
+                aMoveBlock.Attributes.Add( "class", "block-move blockinstance-move" );
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aMoveBlock.Attributes.Add( "zone", BlockInstance.Zone );
                 aMoveBlock.Attributes.Add( "zoneloc", BlockInstance.BlockInstanceLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move" );
                 configControls.Add( aMoveBlock );
+                HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
+                aMoveBlock.Controls.Add( iMoveBlock );
+                iMoveBlock.Attributes.Add( "class", "icon-external-link" );
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
-                aDeleteBlock.Attributes.Add( "class", "delete icon-button blockinstance-delete" );
+                aDeleteBlock.Attributes.Add( "class", "delete blockinstance-delete" );
                 aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aDeleteBlock.Attributes.Add( "title", "Delete" );
                 configControls.Add( aDeleteBlock );
+                HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
+                aDeleteBlock.Controls.Add( iDeleteBlock );
+                iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
             }
 
             return configControls;

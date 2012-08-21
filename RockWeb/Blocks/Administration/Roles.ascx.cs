@@ -5,71 +5,210 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Core;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
     public partial class Roles : Rock.Web.UI.Block
     {
-        private string _action = string.Empty;
-        private string _roleName = string.Empty;
+        private bool _canConfigure = false;
 
-        protected void Page_Init( object sender, EventArgs e )
+        protected override void OnInit( EventArgs e )
         {
-            _action = PageParameter( "action" ).ToLower();
-            switch ( _action )
+            base.OnInit( e );
+
+            try
             {
-                case "":
-                case "list":
-                    DisplayList();
-                    break;
-                case "add":
-                    _roleName = string.Empty;
-                    DisplayEdit( _roleName );
-                    break;
-                case "edit":
-                    if ( !String.IsNullOrEmpty( PageParameter( "RoleName" )))
-                        DisplayEdit( _roleName );
-                    else
-                        throw new System.Exception( "Missing RoleName" );
-                    break;
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+
+                if ( _canConfigure )
+                {
+                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.Actions.IsAddEnabled = true;
+
+                    rGrid.Actions.AddClick += rGrid_Add;
+                    rGrid.GridRebind += rGrid_GridRebind;
+
+                    string script = string.Format( @"
+        Sys.Application.add_load(function () {{
+            $('#{0} td.grid-icon-cell.delete a').click(function(){{
+                return confirm('Are you sure you want to delete this role?');
+                }});
+        }});
+    ", rGrid.ClientID );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+                }
+                else
+                {
+                    DisplayError( "You are not authorized to configure this page" );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                DisplayError( ex.Message );
             }
         }
 
-        protected void Page_Load( object sender, EventArgs e )
+        protected void tbNameFilter_TextChanged( object sender, EventArgs e )
         {
+            BindGrid();
         }
 
-        private void DisplayList()
+        protected override void OnLoad( EventArgs e )
         {
-            phList.Visible = true;
-            phDetails.Visible = false;
-            phRoles.Controls.Clear();
+            if ( !Page.IsPostBack && _canConfigure )
+                BindGrid();
 
-            foreach ( string roleName in System.Web.Security.Roles.GetAllRoles() )
+            base.OnLoad( e );
+        }
+
+        protected void rGrid_Edit( object sender, RowEventArgs e )
+        {
+            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+        }
+
+        protected void rGrid_Delete( object sender, RowEventArgs e )
+        {
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                System.Web.UI.HtmlControls.HtmlAnchor a = new System.Web.UI.HtmlControls.HtmlAnchor();
-                a.HRef = "Role/Edit/" + roleName;
-                a.InnerText = roleName;
-                phRoles.Controls.Add( a );
-                phRoles.Controls.Add( new LiteralControl( "<br/>" ) );
+                var authService = new Rock.CMS.AuthService();
+                var groupService = new Rock.Groups.GroupService();
+
+                Rock.Groups.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+                if ( group != null )
+                {
+                    foreach(var auth in authService.Queryable().Where( a => a.GroupId == group.Id).ToList())
+                    {
+                        authService.Delete(auth, CurrentPersonId);
+                        authService.Save(auth, CurrentPersonId);
+                    }
+
+                    groupService.Delete( group, CurrentPersonId );
+                    groupService.Save( group, CurrentPersonId );
+
+                    Rock.Security.Authorization.Flush();
+                    Rock.Security.Role.Flush( group.Id );
+                }
             }
+
+            BindGrid();
         }
 
-        private void DisplayEdit( string roleName )
+        protected void rGrid_Add( object sender, EventArgs e )
         {
-            phList.Visible = false;
-            phDetails.Visible = true;
-
-            tbName.Text = roleName;
+            ShowEdit( 0 );
         }
 
-        protected void lbSave_Click( object sender, EventArgs e )
+        void rGrid_GridRebind( object sender, EventArgs e )
         {
-            if ( !System.Web.Security.Roles.RoleExists( tbName.Text ) )
-                System.Web.Security.Roles.CreateRole( tbName.Text );
-
-            Response.Redirect( "~/site/list" );
+            BindGrid();
         }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                var groupService = new Rock.Groups.GroupService();
+
+                Rock.Groups.Group group;
+
+                int groupId = 0;
+                if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out groupId ) )
+                    groupId = 0;
+
+                if ( groupId == 0 )
+                {
+                    group = new Rock.Groups.Group();
+                    group.IsSystem = false;
+                    group.IsSecurityRole = true;
+                    // TODO: Need to figure out how to set/configure the "Role" group type
+                    group.GroupTypeId = 1;
+                    groupService.Add( group, CurrentPersonId );
+                }
+                else
+                {
+                    Rock.Security.Role.Flush( groupId );
+                    group = groupService.Get( groupId );
+                }
+
+                group.Name = tbName.Text;
+                group.Description = tbDescription.Text;
+                groupService.Save( group, CurrentPersonId );
+
+            }
+
+            Rock.Security.Authorization.Flush();
+
+            BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        private void BindGrid()
+        {
+            var queryable = new Rock.Groups.GroupService().Queryable().
+                Where( r => r.IsSecurityRole == true);
+
+            if ( !string.IsNullOrWhiteSpace( tbNameFilter.Text ) )
+                queryable = queryable.Where( r => r.Name.StartsWith( tbNameFilter.Text.Trim() ) );
+
+            SortProperty sortProperty = rGrid.SortProperty;
+            if ( sortProperty != null )
+                queryable = queryable.
+                    Sort( sortProperty );
+            else
+                queryable = queryable.
+                    OrderBy( r => r.Name );
+
+            rGrid.DataSource = queryable.ToList();
+            rGrid.DataBind();
+        }
+
+        protected void ShowEdit( int groupId )
+        {
+            var groupModel = new Rock.Groups.GroupService().Get( groupId );
+
+            if ( groupModel != null )
+            {
+                lAction.Text = "Edit";
+                hfId.Value = groupModel.Id.ToString();
+
+                tbName.Text = groupModel.Name;
+                tbDescription.Text = groupModel.Description;
+            }
+            else
+            {
+                lAction.Text = "Add";
+                hfId.Value = string.Empty;
+
+                tbName.Text = string.Empty;
+                tbDescription.Text = string.Empty;
+            }
+
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        private void DisplayError( string message )
+        {
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
+        }
+
     }
 }

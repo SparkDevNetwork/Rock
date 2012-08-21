@@ -41,7 +41,7 @@ namespace Rock.REST.Util
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Util.JobService JobService = new Rock.Util.JobService();
 				Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-				if ( Job.Authorized( "View", currentUser ) )
+				if ( Job.IsAuthorized( "View", currentUser.Person ) )
 					return Job.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Job", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-					if ( Job.Authorized( "View", user ) )
+					if ( Job.IsAuthorized( "View", user.Person ) )
 						return Job.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Job", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Util
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Util.JobService JobService = new Rock.Util.JobService();
 				Rock.Util.Job existingJob = JobService.Get( int.Parse( id ) );
-				if ( existingJob.Authorized( "Edit", currentUser ) )
+				if ( existingJob.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job existingJob = JobService.Get( int.Parse( id ) );
-					if ( existingJob.Authorized( "Edit", user ) )
+					if ( existingJob.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingJob).CurrentValues.SetValues(Job);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Util
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Util.JobService JobService = new Rock.Util.JobService();
 				Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-				if ( Job.Authorized( "Edit", currentUser ) )
+				if ( Job.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					JobService.Delete( Job, currentUser.PersonId );
 					JobService.Save( Job, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Util
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Util.JobService JobService = new Rock.Util.JobService();
 					Rock.Util.Job Job = JobService.Get( int.Parse( id ) );
-					if ( Job.Authorized( "Edit", user ) )
+					if ( Job.IsAuthorized( "Edit", user.Person ) )
 					{
 						JobService.Delete( Job, user.PersonId );
 						JobService.Save( Job, user.PersonId );

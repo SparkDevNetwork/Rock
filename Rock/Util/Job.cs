@@ -33,7 +33,7 @@ namespace Rock.Util
 		/// Determines whether the job is a system job..
 		/// </value>
 		[DataMember]
-		public bool? System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Active.
@@ -42,7 +42,7 @@ namespace Rock.Util
 		/// Determines is the job is currently active..
 		/// </value>
 		[DataMember]
-		public bool? Active { get; set; }
+		public bool? IsActive { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -235,8 +235,8 @@ namespace Rock.Util
 				Rock.Util.DTO.Job dto = new Rock.Util.DTO.Job();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
-				dto.Active = this.Active;
+				dto.IsSystem = this.IsSystem;
+				dto.IsActive = this.IsActive;
 				dto.Name = this.Name;
 				dto.Description = this.Description;
 				dto.Assemby = this.Assemby;

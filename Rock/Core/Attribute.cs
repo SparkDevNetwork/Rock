@@ -35,7 +35,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Field Type Id.
@@ -136,7 +136,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool GridColumn { get; set; }
+		public bool IsGridColumn { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Default Value.
@@ -155,7 +155,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool MultiValue { get; set; }
+		public bool IsMultiValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Required.
@@ -165,7 +165,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool Required { get; set; }
+		public bool IsRequired { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -216,7 +216,7 @@ namespace Rock.Core
 				Rock.Core.DTO.Attribute dto = new Rock.Core.DTO.Attribute();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.FieldTypeId = this.FieldTypeId;
 				dto.Entity = this.Entity;
 				dto.EntityQualifierColumn = this.EntityQualifierColumn;
@@ -226,10 +226,10 @@ namespace Rock.Core
 				dto.Category = this.Category;
 				dto.Description = this.Description;
 				dto.Order = this.Order;
-				dto.GridColumn = this.GridColumn;
+				dto.IsGridColumn = this.IsGridColumn;
 				dto.DefaultValue = this.DefaultValue;
-				dto.MultiValue = this.MultiValue;
-				dto.Required = this.Required;
+				dto.IsMultiValue = this.IsMultiValue;
+				dto.IsRequired = this.IsRequired;
 				dto.CreatedDateTime = this.CreatedDateTime;
 				dto.ModifiedDateTime = this.ModifiedDateTime;
 				dto.CreatedByPersonId = this.CreatedByPersonId;
@@ -285,46 +285,19 @@ namespace Rock.Core
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
         /// <summary>
-        /// Gets the first value of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public Rock.Core.DTO.AttributeValue GetValue( int entityId )
-        {
-            return GetValues( entityId )[0];
-        }
-
-        /// <summary>
-        /// Gets all the values of an attribute for a specific entity
-        /// </summary>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
-        public List<Rock.Core.DTO.AttributeValue> GetValues( int entityId )
-        {
-            List<Rock.Core.DTO.AttributeValue> values = new List<DTO.AttributeValue>();
-
-            foreach ( var value in this.AttributeValues.
-                Where( v => v.EntityId == entityId ).
-                OrderBy( v => v.Order ) )
-                values.Add( value.DataTransferObject );
-
-            if ( values.Count == 0 )
-            {
-                var value = new Rock.Core.DTO.AttributeValue();
-                value.AttributeId = this.Id;
-                value.Value = this.DefaultValue;
-                values.Add( value );
-            }
-
-            return values;
-        }
-
-        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
             get { return new Security.GenericEntity( "Global" ); }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Attribute"/> class.
+        /// </summary>
+        public Attribute()
+        {
+            AttributeQualifiers = new System.Collections.ObjectModel.Collection<AttributeQualifier>();
         }
     }
     /// <summary>

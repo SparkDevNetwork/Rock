@@ -42,7 +42,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Field Type Id.
@@ -122,7 +122,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// Grid Column.
 		/// </value>
-		public bool GridColumn { get; set; }
+		public bool IsGridColumn { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Default Value.
@@ -138,7 +138,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// Multi Value.
 		/// </value>
-		public bool MultiValue { get; set; }
+		public bool IsMultiValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Required.
@@ -146,7 +146,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// Required.
 		/// </value>
-		public bool Required { get; set; }
+		public bool IsRequired { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created Date Time.

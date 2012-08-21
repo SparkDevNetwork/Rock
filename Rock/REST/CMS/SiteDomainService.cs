@@ -41,7 +41,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 				Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-				if ( SiteDomain.Authorized( "View", currentUser ) )
+				if ( SiteDomain.IsAuthorized( "View", currentUser.Person ) )
 					return SiteDomain.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this SiteDomain", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( SiteDomain.Authorized( "View", user ) )
+					if ( SiteDomain.IsAuthorized( "View", user.Person ) )
 						return SiteDomain.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this SiteDomain", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 				Rock.CMS.SiteDomain existingSiteDomain = SiteDomainService.Get( int.Parse( id ) );
-				if ( existingSiteDomain.Authorized( "Edit", currentUser ) )
+				if ( existingSiteDomain.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain existingSiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( existingSiteDomain.Authorized( "Edit", user ) )
+					if ( existingSiteDomain.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingSiteDomain).CurrentValues.SetValues(SiteDomain);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 				Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-				if ( SiteDomain.Authorized( "Edit", currentUser ) )
+				if ( SiteDomain.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					SiteDomainService.Delete( SiteDomain, currentUser.PersonId );
 					SiteDomainService.Save( SiteDomain, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.SiteDomainService SiteDomainService = new Rock.CMS.SiteDomainService();
 					Rock.CMS.SiteDomain SiteDomain = SiteDomainService.Get( int.Parse( id ) );
-					if ( SiteDomain.Authorized( "Edit", user ) )
+					if ( SiteDomain.IsAuthorized( "Edit", user.Person ) )
 					{
 						SiteDomainService.Delete( SiteDomain, user.PersonId );
 						SiteDomainService.Save( SiteDomain, user.PersonId );

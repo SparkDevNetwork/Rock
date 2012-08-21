@@ -43,11 +43,7 @@
     <Compile Include="CMS\Auth.cs" />
     <Compile Include="CMS\Block.cs" />
     <Compile Include="CMS\BlockInstance.cs" />
-    <Compile Include="CMS\Blog.cs" />
-    <Compile Include="CMS\BlogCategory.cs" />
-    <Compile Include="CMS\BlogPost.cs" />
-    <Compile Include="CMS\BlogPostComment.cs" />
-    <Compile Include="CMS\BlogTag.cs" />
+    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\File.cs" />
     <Compile Include="CMS\HtmlContent.cs" />
     <Compile Include="CMS\Page.cs" />
@@ -58,6 +54,8 @@
     <Compile Include="Core\Attribute.cs" />
     <Compile Include="Core\AttributeQualifier.cs" />
     <Compile Include="Core\AttributeValue.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedType.cs" />
     <Compile Include="Core\DefinedValue.cs" />
     <Compile Include="Core\EntityChange.cs" />

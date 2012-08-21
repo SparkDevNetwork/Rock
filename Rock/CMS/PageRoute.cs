@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -106,7 +106,7 @@ namespace Rock.CMS
 				Rock.CMS.DTO.PageRoute dto = new Rock.CMS.DTO.PageRoute();
 				dto.Id = this.Id;
 				dto.Guid = this.Guid;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.PageId = this.PageId;
 				dto.Route = this.Route;
 				dto.CreatedDateTime = this.CreatedDateTime;
@@ -158,7 +158,7 @@ namespace Rock.CMS
         /// </summary>
         public PageRouteConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

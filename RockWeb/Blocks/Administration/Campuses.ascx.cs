@@ -26,10 +26,10 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gCampuses.DataKeyNames = new string[] { "id" };
-                gCampuses.Actions.EnableAdd = true;
+                gCampuses.Actions.IsAddEnabled = true;
                 gCampuses.Actions.AddClick += gCampuses_Add;
                 gCampuses.GridRebind += gCampuses_GridRebind;
             }
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                     BindGrid();
