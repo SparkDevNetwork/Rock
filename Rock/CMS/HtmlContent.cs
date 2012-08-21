@@ -242,7 +242,7 @@ namespace Rock.CMS
         /// <returns></returns>
         public object ExportObject()
         {
-            return DataTransferObject.ToDynamic();
+            return this.ToDynamic();
         }
 
         /// <summary>

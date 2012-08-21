@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Rock.CMS;
@@ -10,7 +16,7 @@ namespace Rock.Tests.CMS
         public class TheExportObjectMethod
         {
             [Fact]
-            public void ShouldCopyPropertiesOfDTO()
+            public void ShouldCopyEntity()
             {
                 var page = new Page() { Name = "SomePage" };
                 dynamic result = page.ExportObject();

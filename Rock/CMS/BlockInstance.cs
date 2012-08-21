@@ -245,8 +245,7 @@ namespace Rock.CMS
 
         public object ExportObject()
         {
-            // TODO: Map Attributes to export object
-            dynamic exportObject = DataTransferObject.ToDynamic();
+            dynamic exportObject = this.ToDynamic();
 
             if (Block != null)
             {

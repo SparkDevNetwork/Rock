@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using Rock.CMS;
 using Xunit;
 
@@ -9,7 +15,7 @@ namespace Rock.Tests.CMS
         public class TheExportObjectMethod
         {
             [Fact]
-            public void ShouldCopyDTO()
+            public void ShouldCopyEntity()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
                 dynamic result = pageRoute.ExportObject();

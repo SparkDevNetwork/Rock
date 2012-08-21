@@ -1,68 +1,81 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Rock.CMS;
 using Rock.Core;
 using Rock.Data;
+
 
 namespace Rock.Tests.Fakes
 {
     public class FakeRepository<T> : IRepository<T> where T : Model<T>
     {
+        private static IQueryable<T> db; 
+
+        public static void Reset()
+        {
+            db = new List<T>().AsQueryable();
+        }
+
         public FakeRepository()
         {
-
+            Reset();
         }
 
-        public IQueryable<T> AsQueryable()
+        public virtual IQueryable<T> AsQueryable()
         {
-            throw new NotImplementedException();
+            return db.AsQueryable();
         }
 
-        public IEnumerable<T> GetAll()
+        public virtual IEnumerable<T> GetAll()
         {
-            throw new NotImplementedException();
+            return db;
         }
 
-        public IEnumerable<T> Find( Expression<Func<T, bool>> @where )
+        public virtual IEnumerable<T> Find( Expression<Func<T, bool>> where )
         {
-            throw new NotImplementedException();
+            return db.Where( where );
         }
 
-        public T Single( Expression<Func<T, bool>> @where )
+        public virtual T Single( Expression<Func<T, bool>> where )
         {
-            throw new NotImplementedException();
+            return db.Single( where );
         }
 
-        public T First( Expression<Func<T, bool>> @where )
+        public virtual T First( Expression<Func<T, bool>> where )
         {
-            throw new NotImplementedException();
+            return db.First( where );
         }
 
-        public T FirstOrDefault( Expression<Func<T, bool>> @where )
+        public virtual T FirstOrDefault( Expression<Func<T, bool>> where )
         {
-            throw new NotImplementedException();
+            return FirstOrDefault( where );
         }
 
-        public void Add( T entity )
+        public virtual void Add( T entity )
         {
-            throw new NotImplementedException();
+            db.ToList().Add( entity );
         }
 
-        public void Attach( T entity )
+        public virtual void Attach( T entity )
         {
-            throw new NotImplementedException();
+            
         }
 
-        public void Delete( T entity )
+        public virtual void Delete( T entity )
         {
-            throw new NotImplementedException();
+            db.ToList().Remove( entity );
         }
 
-        public List<EntityChange> Save( int? personId )
+        public virtual List<EntityChange> Save( int? personId )
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }
