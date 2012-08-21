@@ -149,8 +149,7 @@ namespace Rock.CMS
 
         public object ExportObject()
         {
-            // TODO: Export Attributes collection
-            return DataTransferObject.ToDynamic();
+            return this.ToDynamic();
         }
 
         public string ExportJson()

@@ -173,8 +173,7 @@ namespace Rock.CMS
         /// <returns></returns>
         public object ExportObject()
         {
-            // TODO: Map Attributes to export object
-            return DataTransferObject.ToDynamic();
+            return this.ToDynamic();
         }
 
         /// <summary>
