@@ -97,6 +97,17 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Static method to return an object based on the id
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static T Read<T>( int id ) where T : Model<T>
+        {
+            return new Service<T>().Get( id );
+        }
+
         #region ISecured implementation
 
         /// <summary>
@@ -120,18 +131,20 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit"  }; }
+            get { return new List<string>() { "View", "Edit", "Configure"  }; }
         }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool Authorized( string action, Rock.CMS.User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -151,7 +164,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public virtual bool DefaultAuthorization (string action)
+        public virtual bool IsAllowedByDefault (string action)
         {
             return action == "View";
         }
@@ -314,8 +327,6 @@ namespace Rock.Data
         }
 
         #endregion
-
-
     }
 
     /// <summary>
@@ -384,12 +395,17 @@ namespace Rock.Data
     internal class KeyModel
     {
         public string Key { get; set; }
+        public int Id { get; set; }
         public IModel Model { get; set; }
 
-        public KeyModel (string key)
+        public KeyModel( int id ) 
+        {
+            Id = id;
+        }
+
+        public KeyModel( string key )
         {
             Key = key;
         }
     }
-
 }

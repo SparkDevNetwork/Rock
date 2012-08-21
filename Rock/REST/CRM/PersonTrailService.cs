@@ -41,7 +41,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 				Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
-				if ( PersonMerged.Authorized( "View", currentUser ) )
+				if ( PersonMerged.IsAuthorized( "View", currentUser.Person ) )
 					return PersonMerged.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this PersonMerged", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 					Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
-					if ( PersonMerged.Authorized( "View", user ) )
+					if ( PersonMerged.IsAuthorized( "View", user.Person ) )
 						return PersonMerged.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this PersonMerged", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 				Rock.CRM.PersonMerged existingPersonMerged = PersonMergedService.Get( int.Parse( id ) );
-				if ( existingPersonMerged.Authorized( "Edit", currentUser ) )
+				if ( existingPersonMerged.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 					Rock.CRM.PersonMerged existingPersonMerged = PersonMergedService.Get( int.Parse( id ) );
-					if ( existingPersonMerged.Authorized( "Edit", user ) )
+					if ( existingPersonMerged.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingPersonMerged).CurrentValues.SetValues(PersonMerged);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CRM
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 				Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
-				if ( PersonMerged.Authorized( "Edit", currentUser ) )
+				if ( PersonMerged.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					PersonMergedService.Delete( PersonMerged, currentUser.PersonId );
 					PersonMergedService.Save( PersonMerged, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CRM
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CRM.PersonMergedService PersonMergedService = new Rock.CRM.PersonMergedService();
 					Rock.CRM.PersonMerged PersonMerged = PersonMergedService.Get( int.Parse( id ) );
-					if ( PersonMerged.Authorized( "Edit", user ) )
+					if ( PersonMerged.IsAuthorized( "Edit", user.Person ) )
 					{
 						PersonMergedService.Delete( PersonMerged, user.PersonId );
 						PersonMergedService.Save( PersonMerged, user.PersonId );

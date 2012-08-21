@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
@@ -15,6 +16,7 @@ namespace Rock.Web.Cache
     /// Information about a site that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Site : Security.ISecured
     {
         /// <summary>
@@ -60,7 +62,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets the facebook app id.
@@ -233,11 +235,13 @@ namespace Rock.Web.Cache
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool Authorized( string action, User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -246,7 +250,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }

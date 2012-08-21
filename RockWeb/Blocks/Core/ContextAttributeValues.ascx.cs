@@ -16,7 +16,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Core;
-using Rock.FieldTypes;
+using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -31,6 +31,14 @@ namespace RockWeb.Blocks.Core
     public partial class ContextAttributeValues : Rock.Web.UI.Block
     {
         protected string _category = string.Empty;
+
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public override List<string> RequiredContext
+        {
+            get { return new List<string>() { AttributeValue( "Entity" ) }; }
+        }
 
         protected override void OnInit( EventArgs e )
         {

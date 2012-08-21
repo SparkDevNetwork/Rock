@@ -41,7 +41,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 				Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-				if ( FieldType.Authorized( "View", currentUser ) )
+				if ( FieldType.IsAuthorized( "View", currentUser.Person ) )
 					return FieldType.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( FieldType.Authorized( "View", user ) )
+					if ( FieldType.IsAuthorized( "View", user.Person ) )
 						return FieldType.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this FieldType", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 				Rock.Core.FieldType existingFieldType = FieldTypeService.Get( int.Parse( id ) );
-				if ( existingFieldType.Authorized( "Edit", currentUser ) )
+				if ( existingFieldType.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType existingFieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( existingFieldType.Authorized( "Edit", user ) )
+					if ( existingFieldType.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingFieldType).CurrentValues.SetValues(FieldType);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.Core
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 				Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-				if ( FieldType.Authorized( "Edit", currentUser ) )
+				if ( FieldType.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					FieldTypeService.Delete( FieldType, currentUser.PersonId );
 					FieldTypeService.Save( FieldType, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.Core
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.Core.FieldTypeService FieldTypeService = new Rock.Core.FieldTypeService();
 					Rock.Core.FieldType FieldType = FieldTypeService.Get( int.Parse( id ) );
-					if ( FieldType.Authorized( "Edit", user ) )
+					if ( FieldType.IsAuthorized( "Edit", user.Person ) )
 					{
 						FieldTypeService.Delete( FieldType, user.PersonId );
 						FieldTypeService.Save( FieldType, user.PersonId );

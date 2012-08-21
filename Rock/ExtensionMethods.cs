@@ -106,6 +106,20 @@ namespace Rock
             return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
         }
 
+        public static string Ellipsis( this string str, int maxLength )
+        {
+            if (str.Length <= maxLength)
+                return str;
+
+            maxLength -= 3;
+            var truncatedString = str.Substring(0, maxLength);
+            var lastSpace = truncatedString.LastIndexOf( ' ' );
+            if ( lastSpace > 0 )
+                truncatedString = truncatedString.Substring( 0, lastSpace );
+
+            return truncatedString + "...";
+        }
+
         #endregion
 
         #region DateTime Extensions

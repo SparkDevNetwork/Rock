@@ -38,46 +38,6 @@ namespace Rock.Data
         public DbSet<Rock.CMS.BlockInstance> BlockInstances { get; set; }
 
         /// <summary>
-        /// Gets or sets the Blogs.
-        /// </summary>
-        /// <value>
-        /// the Blogs.
-        /// </value>
-        public DbSet<Rock.CMS.Blog> Blogs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Blog Categories.
-        /// </summary>
-        /// <value>
-        /// the Blog Categories.
-        /// </value>
-        public DbSet<Rock.CMS.BlogCategory> BlogCategories { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Blog Posts.
-        /// </summary>
-        /// <value>
-        /// the Blog Posts.
-        /// </value>
-        public DbSet<Rock.CMS.BlogPost> BlogPosts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Blog Post Comments.
-        /// </summary>
-        /// <value>
-        /// the Blog Post Comments.
-        /// </value>
-        public DbSet<Rock.CMS.BlogPostComment> BlogPostComments { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Blog Tags.
-        /// </summary>
-        /// <value>
-        /// the Blog Tags.
-        /// </value>
-        public DbSet<Rock.CMS.BlogTag> BlogTags { get; set; }
-
-        /// <summary>
         /// Gets or sets the Files.
         /// </summary>
         /// <value>
@@ -357,6 +317,26 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        public RockContext()
+            : base()
+        {
+            // Do no let EF create the database, it should be created through migrations
+            Database.SetInitializer<RockContext>( null );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        public RockContext( string connectionString )
+            : base( connectionString )
+        {
+            // Do no let EF create the database, it should be created through migrations
+            Database.SetInitializer<RockContext>( null );
+        }
 
         /// <summary>
         /// This method is called when the context has been initialized, but
@@ -370,11 +350,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.CMS.AuthConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.BlockInstanceConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlogCategoryConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlogPostConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlogPostCommentConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlogTagConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.FileConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.HtmlContentConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CMS.PageConfiguration() );

@@ -41,7 +41,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 				Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-				if ( Auth.Authorized( "View", currentUser ) )
+                if ( Auth.IsAuthorized( "View", currentUser.Person ) )
 					return Auth.DataTransferObject;
 				else
 					throw new WebFaultException<string>( "Not Authorized to View this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -64,7 +64,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-					if ( Auth.Authorized( "View", user ) )
+                    if ( Auth.IsAuthorized( "View", user.Person ) )
 						return Auth.DataTransferObject;
 					else
 						throw new WebFaultException<string>( "Not Authorized to View this Auth", System.Net.HttpStatusCode.Forbidden );
@@ -89,7 +89,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 				Rock.CMS.Auth existingAuth = AuthService.Get( int.Parse( id ) );
-				if ( existingAuth.Authorized( "Edit", currentUser ) )
+                if ( existingAuth.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
@@ -119,7 +119,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth existingAuth = AuthService.Get( int.Parse( id ) );
-					if ( existingAuth.Authorized( "Edit", user ) )
+                    if ( existingAuth.IsAuthorized( "Edit", user.Person ) )
 					{
 						uow.objectContext.Entry(existingAuth).CurrentValues.SetValues(Auth);
 					
@@ -205,7 +205,7 @@ namespace Rock.REST.CMS
 				uow.objectContext.Configuration.ProxyCreationEnabled = false;
 				Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 				Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-				if ( Auth.Authorized( "Edit", currentUser ) )
+                if ( Auth.IsAuthorized( "Edit", currentUser.Person ) )
 				{
 					AuthService.Delete( Auth, currentUser.PersonId );
 					AuthService.Save( Auth, currentUser.PersonId );
@@ -231,7 +231,7 @@ namespace Rock.REST.CMS
 					uow.objectContext.Configuration.ProxyCreationEnabled = false;
 					Rock.CMS.AuthService AuthService = new Rock.CMS.AuthService();
 					Rock.CMS.Auth Auth = AuthService.Get( int.Parse( id ) );
-					if ( Auth.Authorized( "Edit", user ) )
+                    if ( Auth.IsAuthorized( "Edit", user.Person ) )
 					{
 						AuthService.Delete( Auth, user.PersonId );
 						AuthService.Save( Auth, user.PersonId );

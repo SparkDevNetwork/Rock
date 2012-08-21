@@ -42,7 +42,7 @@ namespace Rock.CRM.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Record Type Id.
@@ -194,7 +194,7 @@ namespace Rock.CRM.DTO
 		/// <value>
 		/// Email Is Active.
 		/// </value>
-		public bool? EmailIsActive { get; set; }
+		public bool? IsEmailActive { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Email Note.

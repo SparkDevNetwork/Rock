@@ -32,7 +32,7 @@ namespace Rock.Util
         /// <returns></returns>
         public IEnumerable<Job> GetActiveJobs()
         {
-            return Repository.Find( t => t.Active == true );
+            return Repository.Find( t => t.IsActive == true );
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Rock.Util
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> attrib in job.AttributeValues )
+            foreach ( KeyValuePair<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> attrib in job.AttributeValues )
             {
                 map.Add( attrib.Key, attrib.Value.Value[0].Value );
             }

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
@@ -13,6 +14,7 @@ namespace Rock.Web.Cache
     /// Information about a block that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Block
     {
         /// <summary>
@@ -47,7 +49,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// 	<c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
-        public bool InstancePropertiesVerified { get; internal set; }
+        public bool IsInstancePropertiesVerified { get; internal set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -70,7 +72,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
@@ -123,7 +125,7 @@ namespace Rock.Web.Cache
                     block.Path = blockModel.Path;
                     block.Name = blockModel.Name;
                     block.Description = blockModel.Description;
-                    block.InstancePropertiesVerified = false;
+                    block.IsInstancePropertiesVerified = false;
 
                     Rock.Attribute.Helper.LoadAttributes( blockModel );
 

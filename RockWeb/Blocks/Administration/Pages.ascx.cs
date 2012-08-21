@@ -34,14 +34,14 @@ namespace RockWeb.Blocks.Administration
                 _page = Rock.Web.Cache.Page.Read( pageId );
 
                 if ( _page != null )
-                    canConfigure = _page.Authorized( "Configure", CurrentUser );
+                    canConfigure = _page.IsAuthorized( "Configure", CurrentPerson );
                 else
-                    canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                    canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );

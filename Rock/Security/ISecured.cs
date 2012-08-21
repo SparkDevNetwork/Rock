@@ -9,7 +9,8 @@ using System.Collections.Generic;
 namespace Rock.Security
 {
     /// <summary>
-    /// Represents a securable object 
+    /// Represents a securable object.  Note each ISecured object must also expose a static Read(int id) method if the object
+    /// types will be used in a grid with a SecureField column
     /// </summary>
     public interface ISecured
     {
@@ -40,9 +41,11 @@ namespace Rock.Security
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        bool Authorized( string action, Rock.CMS.User user );
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsAuthorized( string action, Rock.CRM.Person person );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -50,6 +53,6 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        bool DefaultAuthorization( string action );
+        bool IsAllowedByDefault( string action );
     }
 }
