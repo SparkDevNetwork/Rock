@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Services;
 using System.Data.Services.Common;
+using System.Linq;
 using System.Runtime.Serialization;
+using Rock.Security;
 
 namespace Rock.Data
 {
@@ -167,6 +169,13 @@ namespace Rock.Data
         public virtual bool IsAllowedByDefault (string action)
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return ( from action in SupportedActions
+                     from rule in Authorization.AuthRules( this.AuthEntity, this.Id, action )
+                     select rule ).AsQueryable();
         }
 
         #endregion

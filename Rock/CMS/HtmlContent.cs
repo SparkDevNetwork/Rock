@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "cmsHtmlContent" )]
-    public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable
+    public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Block Id.
@@ -225,6 +225,33 @@ namespace Rock.CMS
         public override string ToString()
         {
             return Content;
+        }
+
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
+        public string ExportJson()
+        {
+            return ExportObject().ToJSON();
+        }
+
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
+        public object ExportObject()
+        {
+            return this.ToDynamic();
+        }
+
+        /// <summary>
+        /// Imports the data.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        public void ImportJson(string data)
+        {
+            throw new NotImplementedException();
         }
     }
     /// <summary>
