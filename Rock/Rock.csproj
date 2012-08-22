@@ -98,47 +98,102 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CMS\AuthDTO.cs" />
     <Compile Include="CMS\AuthService.cs" />
+    <Compile Include="CMS\AuthService.Partial.cs" />
+    <Compile Include="CMS\BlockDTO.cs" />
+    <Compile Include="CMS\BlockInstanceDTO.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
+    <Compile Include="CMS\BlockInstanceService.Partial.cs" />
+    <Compile Include="CMS\BlockService.Partial.cs" />
     <Compile Include="CMS\BlockService.cs" />
-    <Compile Include="CMS\PageContextService.cs" />
+    <Compile Include="CMS\FileDTO.cs" />
     <Compile Include="CMS\FileService.cs" />
+    <Compile Include="CMS\HtmlContentDTO.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
+    <Compile Include="CMS\PageContextDTO.cs" />
+    <Compile Include="CMS\PageContextService.cs" />
+    <Compile Include="CMS\PageContextService.Partial.cs" />
+    <Compile Include="CMS\HtmlContentService.Partial.cs" />
     <Compile Include="CMS\PageContext.cs" />
-    <Compile Include="CMS\PageService.cs" />
+    <Compile Include="CMS\PageDTO.cs" />
+    <Compile Include="CMS\PageRouteDTO.cs" />
     <Compile Include="CMS\PageRouteService.cs" />
+    <Compile Include="CMS\PageService.cs" />
+    <Compile Include="CMS\PageService.Partial.cs" />
+    <Compile Include="CMS\PageRouteService.Partial.cs" />
+    <Compile Include="CMS\SiteDomainDTO.cs" />
     <Compile Include="CMS\SiteDomainService.cs" />
+    <Compile Include="CMS\SiteDomainService.Partial.cs" />
+    <Compile Include="CMS\SiteDTO.cs" />
     <Compile Include="CMS\SiteService.cs" />
+    <Compile Include="CMS\SiteService.Partial.cs" />
+    <Compile Include="CMS\UserDTO.cs" />
     <Compile Include="CMS\UserService.cs" />
+    <Compile Include="CMS\UserService.Partial.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
+    <Compile Include="Core\AttributeDTO.cs" />
+    <Compile Include="Core\AttributeQualifierDTO.cs" />
     <Compile Include="Core\AttributeQualifierService.cs" />
+    <Compile Include="Core\AttributeQualifierService.Partial.cs" />
     <Compile Include="Core\AttributeService.cs" />
+    <Compile Include="Core\AttributeService.Partial.cs" />
+    <Compile Include="Core\AttributeValueDTO.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
-    <Compile Include="Core\MetricValue.cs" />
-    <Compile Include="Core\MetricValueService.cs" />
-    <Compile Include="Core\MetricService.cs" />
-    <Compile Include="Core\Metric.cs" />
+    <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\DefinedTypeDTO.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
+    <Compile Include="Core\DefinedValueDTO.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
-    <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\EntityChangeDTO.cs" />
     <Compile Include="Core\EntityChangeService.cs" />
-    <Compile Include="Core\ExceptionLog.cs" />
+    <Compile Include="Core\ExceptionLogDTO.cs" />
     <Compile Include="Core\ExceptionLogService.cs" />
+    <Compile Include="Core\FieldTypeDTO.cs" />
     <Compile Include="Core\FieldTypeService.cs" />
+    <Compile Include="Core\MetricDTO.cs" />
+    <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\MetricValueDTO.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricValueService.Partial.cs" />
+    <Compile Include="Core\MetricService.Partial.cs" />
+    <Compile Include="Core\Metric.cs" />
+    <Compile Include="Core\DefinedTypeService.Partial.cs" />
+    <Compile Include="Core\DefinedValueService.Partial.cs" />
+    <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\EntityChangeService.Partial.cs" />
+    <Compile Include="Core\ExceptionLog.cs" />
+    <Compile Include="Core\ExceptionLogService.Partial.cs" />
+    <Compile Include="Core\FieldTypeService.Partial.cs" />
     <Compile Include="Core\RangeValue.cs" />
+    <Compile Include="Core\ServiceLogDTO.cs" />
     <Compile Include="Core\ServiceLogService.cs" />
+    <Compile Include="CRM\AddressDTO.cs" />
     <Compile Include="CRM\AddressService.cs" />
+    <Compile Include="CRM\AddressService.Partial.cs" />
     <Compile Include="CRM\Campus.cs" />
+    <Compile Include="CRM\CampusDTO.cs" />
     <Compile Include="CRM\CampusService.cs" />
+    <Compile Include="CRM\EmailTemplateDTO.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
-    <Compile Include="CRM\PersonService.cs" />
+    <Compile Include="CRM\EmailTemplateService.Partial.cs" />
+    <Compile Include="CRM\PersonDTO.cs" />
+    <Compile Include="CRM\PersonMergedDTO.cs" />
     <Compile Include="CRM\PersonMergedService.cs" />
+    <Compile Include="CRM\PersonService.cs" />
+    <Compile Include="CRM\PersonService.Partial.cs" />
+    <Compile Include="CRM\PersonMergedService.Partial.cs" />
     <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
+    <Compile Include="CRM\PersonViewedDTO.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
+    <Compile Include="CRM\PersonViewedService.Partial.cs" />
+    <Compile Include="CRM\PhoneNumberDTO.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
+    <Compile Include="CRM\PhoneNumberService.Partial.cs" />
     <Compile Include="Data\DTO.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
@@ -195,42 +250,64 @@
     <Compile Include="Financial\Batch.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\BatchDTO.cs" />
     <Compile Include="Financial\BatchService.cs" />
+    <Compile Include="Financial\BatchService.Partial.cs" />
     <Compile Include="Financial\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\FundDTO.cs" />
     <Compile Include="Financial\FundService.cs" />
+    <Compile Include="Financial\FundService.Partial.cs" />
     <Compile Include="Financial\Gateway.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\GatewayDTO.cs" />
+    <Compile Include="Financial\GatewayService.cs" />
     <Compile Include="Financial\PersonAccountLookup.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PersonAccountLookupDTO.cs" />
     <Compile Include="Financial\PersonAccountLookupService.cs" />
+    <Compile Include="Financial\PersonAccountLookupService.Partial.cs" />
     <Compile Include="Financial\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PledgeDTO.cs" />
     <Compile Include="Financial\PledgeService.cs" />
+    <Compile Include="Financial\PledgeService.Partial.cs" />
     <Compile Include="Financial\Transaction.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\TransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\TransactionDetailDTO.cs" />
     <Compile Include="Financial\TransactionDetailService.cs" />
+    <Compile Include="Financial\TransactionDetailService.Partial.cs" />
+    <Compile Include="Financial\TransactionDTO.cs" />
     <Compile Include="Financial\TransactionFund.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\TransactionSearchValue.cs" />
     <Compile Include="Financial\TransactionService.cs" />
+    <Compile Include="Financial\TransactionService.Partial.cs" />
     <Compile Include="Groups\Group.cs" />
-    <Compile Include="Groups\GroupService.cs" />
-    <Compile Include="Groups\GroupRole.cs" />
+    <Compile Include="Groups\GroupDTO.cs" />
+    <Compile Include="Groups\GroupRoleDTO.cs" />
     <Compile Include="Groups\GroupRoleService.cs" />
+    <Compile Include="Groups\GroupService.cs" />
+    <Compile Include="Groups\GroupService.Partial.cs" />
+    <Compile Include="Groups\GroupRole.cs" />
+    <Compile Include="Groups\GroupRoleService.Partial.cs" />
     <Compile Include="Groups\GroupType.cs" />
+    <Compile Include="Groups\GroupTypeDTO.cs" />
     <Compile Include="Groups\GroupTypeService.cs" />
+    <Compile Include="Groups\GroupTypeService.Partial.cs" />
     <Compile Include="Groups\Member.cs" />
+    <Compile Include="Groups\MemberDTO.cs" />
     <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="Groups\MemberService.Partial.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
@@ -308,7 +385,9 @@
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
     <Compile Include="Util\Job.cs" />
+    <Compile Include="Util\JobDTO.cs" />
     <Compile Include="Util\JobService.cs" />
+    <Compile Include="Util\JobService.Partial.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\Attribute.cs" />
     <Compile Include="Web\Cache\Block.cs" />
@@ -572,7 +651,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51120</DevelopmentServerPort>
+          <DevelopmentServerPort>65463</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

@@ -64,42 +64,4 @@ namespace Rock.Financial
             this.HasOptional(p => p.Person).WithMany(p => p.PersonAccountLookups).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
         }
     }
-
-    /// <summary>
-    /// Data Transformation Object
-    /// </summary>
-    public partial class PersonAccountLookupDTO : DTO<PersonAccountLookup>
-    {
-        /// <summary>
-        /// Instantiate new DTO object
-        /// </summary>
-        public PersonAccountLookupDTO()
-        {
-        }
-
-        /// <summary>
-        /// Instantiate new DTO object from Model
-        /// </summary>
-        /// <param name="auth"></param>
-        public PersonAccountLookupDTO( PersonAccountLookup personAccountLookup )
-        {
-            CopyFromModel( personAccountLookup );
-        }
-
-        /// <summary>
-        /// Copy DTO to Model
-        /// </summary>
-        /// <param name="personAccountLookup"></param>
-        public override void CopyFromModel( PersonAccountLookup personAccountLookup )
-        {
-        }
-
-        /// <summary>
-        /// Copy Model to DTO
-        /// </summary>
-        /// <param name="personAccountLookup"></param>
-        public override void CopyToModel( PersonAccountLookup personAccountLookup )
-        {
-        }
-    }
 }
