@@ -286,42 +286,4 @@ namespace Rock.Financial
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
-
-    /// <summary>
-    /// Data Transformation Object
-    /// </summary>
-    public partial class TransactionDTO : DTO<Transaction>
-    {
-        /// <summary>
-        /// Instantiate new DTO object
-        /// </summary>
-        public TransactionDTO()
-        {
-        }
-
-        /// <summary>
-        /// Instantiate new DTO object from Model
-        /// </summary>
-        /// <param name="auth"></param>
-        public TransactionDTO( Transaction transaction )
-        {
-            CopyFromModel( transaction );
-        }
-
-        /// <summary>
-        /// Copy DTO to Model
-        /// </summary>
-        /// <param name="transaction"></param>
-        public override void CopyFromModel( Transaction transaction )
-        {
-        }
-
-        /// <summary>
-        /// Copy Model to DTO
-        /// </summary>
-        /// <param name="transaction"></param>
-        public override void CopyToModel( Transaction transaction )
-        {
-        }
-    }
 }

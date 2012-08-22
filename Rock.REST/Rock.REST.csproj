@@ -51,10 +51,40 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="CMS\BlocksController.cs" />
+    <Compile Include="CMS\PageContextsController.cs" />
     <Compile Include="CMS\PagesController.cs" />
+    <Compile Include="Core\AttributeQualifiersController.cs" />
+    <Compile Include="Core\AttributesController.cs" />
+    <Compile Include="Core\AttributeValuesController.cs" />
+    <Compile Include="Core\DefinedTypesController.cs" />
+    <Compile Include="Core\DefinedValuesController.cs" />
+    <Compile Include="Core\EntityChangesController.cs" />
+    <Compile Include="Core\ExceptionLogsController.cs" />
+    <Compile Include="Core\FieldTypesController.cs" />
+    <Compile Include="Core\MetricsController.cs" />
+    <Compile Include="Core\MetricValuesController.cs" />
+    <Compile Include="Core\ServiceLogsController.cs" />
+    <Compile Include="CRM\AddressesController.cs" />
+    <Compile Include="CRM\CampusController.cs" />
+    <Compile Include="CRM\EmailTemplatesController.cs" />
+    <Compile Include="CRM\PeopleController.cs" />
+    <Compile Include="CRM\PersonMergedsController.cs" />
+    <Compile Include="CRM\PersonViewedsController.cs" />
+    <Compile Include="CRM\PhoneNumbersController.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
+    <Compile Include="Financial\BatchesController.cs" />
+    <Compile Include="Financial\FundsController.cs" />
+    <Compile Include="Financial\GatewaysController.cs" />
+    <Compile Include="Financial\PersonAccountLookupsController.cs" />
+    <Compile Include="Financial\PledgesController.cs" />
+    <Compile Include="Financial\TransactionDetailsController.cs" />
+    <Compile Include="Financial\TransactionsController.cs" />
+    <Compile Include="Groups\GroupRolesController.cs" />
+    <Compile Include="Groups\GroupsController.cs" />
+    <Compile Include="Groups\GroupTypesController.cs" />
+    <Compile Include="Groups\MembersController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

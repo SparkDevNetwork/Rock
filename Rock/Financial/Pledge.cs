@@ -182,42 +182,4 @@ namespace Rock.Financial
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
-
-    /// <summary>
-    /// Data Transformation Object
-    /// </summary>
-    public partial class PledgeDTO : DTO<Pledge>
-    {
-        /// <summary>
-        /// Instantiate new DTO object
-        /// </summary>
-        public PledgeDTO()
-        {
-        }
-
-        /// <summary>
-        /// Instantiate new DTO object from Model
-        /// </summary>
-        /// <param name="auth"></param>
-        public PledgeDTO( Pledge pledge )
-        {
-            CopyFromModel( pledge );
-        }
-
-        /// <summary>
-        /// Copy DTO to Model
-        /// </summary>
-        /// <param name="pledge"></param>
-        public override void CopyFromModel( Pledge pledge )
-        {
-        }
-
-        /// <summary>
-        /// Copy Model to DTO
-        /// </summary>
-        /// <param name="pledge"></param>
-        public override void CopyToModel( Pledge pledge )
-        {
-        }
-    }
 }
