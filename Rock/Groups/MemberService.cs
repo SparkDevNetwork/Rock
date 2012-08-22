@@ -14,7 +14,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Member POCO Service class
 	/// </summary>
-    public partial class MemberService : Service<Member, DTO.Member>
+    public partial class MemberService : Service<Member, MemberDTO>
     {
 		/// <summary>
 		/// Gets Members by Group Id
@@ -59,12 +59,21 @@ namespace Rock.Groups
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Member CreateNew()
+        {
+            return new Member();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Member> QueryableDTO()
+        public override IQueryable<MemberDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new MemberDTO( m ) );
         }
     }
 }

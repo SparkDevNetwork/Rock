@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Html Content POCO Service class
 	/// </summary>
-    public partial class HtmlContentService : Service<HtmlContent, DTO.HtmlContent>
+    public partial class HtmlContentService : Service<HtmlContent, HtmlContentDTO>
     {
 		/// <summary>
 		/// Gets Html Contents by Approved By Person Id
@@ -96,12 +96,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override HtmlContent CreateNew()
+        {
+            return new HtmlContent();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.HtmlContent> QueryableDTO()
+        public override IQueryable<HtmlContentDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new HtmlContentDTO( m ) );
         }
     }
 }

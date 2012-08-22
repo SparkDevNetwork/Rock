@@ -14,7 +14,7 @@ namespace Rock.CRM
 	/// <summary>
 	/// Person Trail POCO Service class
 	/// </summary>
-    public partial class PersonMergedService : Service<PersonMerged, DTO.PersonMerged>
+    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDTO>
     {
 		/// <summary>
 		/// Gets Person Trails by Current Id
@@ -59,12 +59,21 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override PersonMerged CreateNew()
+        {
+            return new PersonMerged();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.PersonMerged> QueryableDTO()
+        public override IQueryable<PersonMergedDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PersonMergedDTO( m ) );
         }
     }
 }

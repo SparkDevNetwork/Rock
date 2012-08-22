@@ -98,31 +98,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.PageContext"/> object.
-        /// </value>
-		public Rock.CMS.DTO.PageContext DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.PageContext dto = new Rock.CMS.DTO.PageContext();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Entity = this.Entity;
-                dto.IdParameter = this.IdParameter;
-                dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -154,6 +129,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>
@@ -168,5 +144,95 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class PageContextDTO : DTO<PageContext>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        public int PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        public string Entity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page parameter that contains the entity's id.
+        /// </summary>
+        /// <value>
+        /// Id Parameter.
+        /// </value>
+        public string IdParameter { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PageContextDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public PageContextDTO( PageContext pageContext )
+        {
+            CopyFromModel( pageContext );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="pageContext"></param>
+        public override void CopyFromModel( PageContext pageContext )
+        {
+            this.Id = pageContext.Id;
+            this.Guid = pageContext.Guid;
+            this.IsSystem = pageContext.IsSystem;
+            this.PageId = pageContext.PageId;
+            this.Entity = pageContext.Entity;
+            this.IdParameter = pageContext.IdParameter;
+            this.CreatedDateTime = pageContext.CreatedDateTime;
+            this.ModifiedDateTime = pageContext.ModifiedDateTime;
+            this.CreatedByPersonId = pageContext.CreatedByPersonId;
+            this.ModifiedByPersonId = pageContext.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="pageContext"></param>
+        public override void CopyToModel( PageContext pageContext )
+        {
+            pageContext.Id = this.Id;
+            pageContext.Guid = this.Guid;
+            pageContext.IsSystem = this.IsSystem;
+            pageContext.PageId = this.PageId;
+            pageContext.Entity = this.Entity;
+            pageContext.IdParameter = this.IdParameter;
+            pageContext.CreatedDateTime = this.CreatedDateTime;
+            pageContext.ModifiedDateTime = this.ModifiedDateTime;
+            pageContext.CreatedByPersonId = this.CreatedByPersonId;
+            pageContext.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

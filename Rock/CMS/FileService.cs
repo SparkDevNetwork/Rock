@@ -14,15 +14,24 @@ namespace Rock.CMS
 	/// <summary>
 	/// File POCO Service class
 	/// </summary>
-    public partial class FileService : Service<File, DTO.File>
+    public partial class FileService : Service<File, FileDTO>
     {
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override File CreateNew()
+        {
+            return new File();
+        }
+
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.File> QueryableDTO()
+        public override IQueryable<FileDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new FileDTO( m ) );
         }
     }
 }

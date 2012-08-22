@@ -86,30 +86,6 @@ namespace Rock.CMS
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.PageRoute"/> object.
-        /// </value>
-		public Rock.CMS.DTO.PageRoute DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.PageRoute dto = new Rock.CMS.DTO.PageRoute();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Route = this.Route;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -142,6 +118,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>
@@ -156,5 +133,85 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class PageRouteDTO : DTO<PageRoute>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        public int PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Route.
+        /// </summary>
+        /// <value>
+        /// Route.
+        /// </value>
+        public string Route { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PageRouteDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public PageRouteDTO( PageRoute pageRoute )
+        {
+            CopyFromModel( pageRoute );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="pageRoute"></param>
+        public override void CopyFromModel( PageRoute pageRoute )
+        {
+            this.Id = pageRoute.Id;
+            this.Guid = pageRoute.Guid;
+            this.IsSystem = pageRoute.IsSystem;
+            this.PageId = pageRoute.PageId;
+            this.Route = pageRoute.Route;
+            this.CreatedDateTime = pageRoute.CreatedDateTime;
+            this.ModifiedDateTime = pageRoute.ModifiedDateTime;
+            this.CreatedByPersonId = pageRoute.CreatedByPersonId;
+            this.ModifiedByPersonId = pageRoute.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="pageRoute"></param>
+        public override void CopyToModel( PageRoute pageRoute )
+        {
+            pageRoute.Id = this.Id;
+            pageRoute.Guid = this.Guid;
+            pageRoute.IsSystem = this.IsSystem;
+            pageRoute.PageId = this.PageId;
+            pageRoute.Route = this.Route;
+            pageRoute.CreatedDateTime = this.CreatedDateTime;
+            pageRoute.ModifiedDateTime = this.ModifiedDateTime;
+            pageRoute.CreatedByPersonId = this.CreatedByPersonId;
+            pageRoute.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

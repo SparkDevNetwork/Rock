@@ -94,31 +94,6 @@ namespace Rock.Groups
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Groups.DTO.GroupRole"/> object.
-        /// </value>
-		public Rock.Groups.DTO.GroupRole DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Groups.DTO.GroupRole dto = new Rock.Groups.DTO.GroupRole();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.Order = this.Order;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -159,6 +134,7 @@ namespace Rock.Groups
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Group Role Configuration class.
     /// </summary>
@@ -173,5 +149,95 @@ namespace Rock.Groups
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class GroupRoleDTO : DTO<GroupRole>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int? Order { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public GroupRoleDTO( GroupRole groupRole )
+        {
+            CopyFromModel( groupRole );
+        }
+
+         /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public GroupRoleDTO()
+        {
+        }
+
+       /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="groupRole"></param>
+        public override void CopyFromModel( GroupRole groupRole )
+        {
+            this.Id = groupRole.Id;
+            this.Guid = groupRole.Guid;
+            this.IsSystem = groupRole.IsSystem;
+            this.Name = groupRole.Name;
+            this.Description = groupRole.Description;
+            this.Order = groupRole.Order;
+            this.CreatedDateTime = groupRole.CreatedDateTime;
+            this.ModifiedDateTime = groupRole.ModifiedDateTime;
+            this.CreatedByPersonId = groupRole.CreatedByPersonId;
+            this.ModifiedByPersonId = groupRole.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="groupRole"></param>
+        public override void CopyToModel( GroupRole groupRole )
+        {
+            groupRole.Id = this.Id;
+            groupRole.Guid = this.Guid;
+            groupRole.IsSystem = this.IsSystem;
+            groupRole.Name = this.Name;
+            groupRole.Description = this.Description;
+            groupRole.Order = this.Order;
+            groupRole.CreatedDateTime = this.CreatedDateTime;
+            groupRole.ModifiedDateTime = this.ModifiedDateTime;
+            groupRole.CreatedByPersonId = this.CreatedByPersonId;
+            groupRole.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

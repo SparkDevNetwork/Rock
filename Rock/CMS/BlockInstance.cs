@@ -137,35 +137,6 @@ namespace Rock.CMS
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.BlockInstance"/> object.
-        /// </value>
-		public Rock.CMS.DTO.BlockInstance DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.BlockInstance dto = new Rock.CMS.DTO.BlockInstance();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Layout = this.Layout;
-				dto.BlockId = this.BlockId;
-				dto.Zone = this.Zone;
-				dto.Order = this.Order;
-				dto.Name = this.Name;
-				dto.OutputCacheDuration = this.OutputCacheDuration;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -232,6 +203,7 @@ namespace Rock.CMS
             return this.Name;
         }
     }
+
     /// <summary>
     /// Block Instance Configuration class.
     /// </summary>
@@ -247,5 +219,135 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class BlockInstanceDTO : DTO<BlockInstance>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        public int? PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Layout.
+        /// </summary>
+        /// <value>
+        /// Layout.
+        /// </value>
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Block Id.
+        /// </summary>
+        /// <value>
+        /// Block Id.
+        /// </value>
+        public int BlockId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Zone.
+        /// </summary>
+        /// <value>
+        /// Zone.
+        /// </value>
+        public string Zone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Output Cache Duration.
+        /// </summary>
+        /// <value>
+        /// Output Cache Duration.
+        /// </value>
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public BlockInstanceDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public BlockInstanceDTO( BlockInstance blockInstance )
+        {
+            CopyFromModel( blockInstance );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="blockInstance"></param>
+        public override void CopyFromModel( BlockInstance blockInstance )
+        {
+            this.Id = blockInstance.Id;
+            this.Guid = blockInstance.Guid;
+            this.IsSystem = blockInstance.IsSystem;
+            this.PageId = blockInstance.PageId;
+            this.Layout = blockInstance.Layout;
+            this.BlockId = blockInstance.BlockId;
+            this.Zone = blockInstance.Zone;
+            this.Order = blockInstance.Order;
+            this.Name = blockInstance.Name;
+            this.OutputCacheDuration = blockInstance.OutputCacheDuration;
+            this.CreatedDateTime = blockInstance.CreatedDateTime;
+            this.ModifiedDateTime = blockInstance.ModifiedDateTime;
+            this.CreatedByPersonId = blockInstance.CreatedByPersonId;
+            this.ModifiedByPersonId = blockInstance.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="blockInstance"></param>
+        public override void CopyToModel( BlockInstance blockInstance )
+        {
+            blockInstance.Id = this.Id;
+            blockInstance.Guid = this.Guid;
+            blockInstance.IsSystem = this.IsSystem;
+            blockInstance.PageId = this.PageId;
+            blockInstance.Layout = this.Layout;
+            blockInstance.BlockId = this.BlockId;
+            blockInstance.Zone = this.Zone;
+            blockInstance.Order = this.Order;
+            blockInstance.Name = this.Name;
+            blockInstance.OutputCacheDuration = this.OutputCacheDuration;
+            blockInstance.CreatedDateTime = this.CreatedDateTime;
+            blockInstance.ModifiedDateTime = this.ModifiedDateTime;
+            blockInstance.CreatedByPersonId = this.CreatedByPersonId;
+            blockInstance.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

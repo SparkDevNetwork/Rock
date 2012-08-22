@@ -13,7 +13,7 @@ namespace Rock.Financial
     /// <summary>
     /// Service class for Fund objects.
     /// </summary>
-    public partial class FundService : Service<Fund, DTO.Fund>
+    public partial class FundService : Service<Fund, FundDTO>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FundService"/> class.
@@ -31,12 +31,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Fund CreateNew()
+        {
+            return new Fund();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Fund> QueryableDTO()
+        public override IQueryable<FundDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new FundDTO( m ) );
         }
     }
 }

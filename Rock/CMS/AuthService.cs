@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Auth POCO Service class
 	/// </summary>
-    public partial class AuthService : Service<Auth, DTO.Auth>
+    public partial class AuthService : Service<Auth, AuthDTO>
     {
 		/// <summary>
 		/// Gets Auths by Entity Type And Entity Id
@@ -64,12 +64,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Auth CreateNew()
+        {
+            return new Auth();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Auth> QueryableDTO()
+        public override IQueryable<AuthDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new AuthDTO( m ) );
         }
     }
 }

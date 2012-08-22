@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Defined Type POCO Service class
 	/// </summary>
-    public partial class DefinedTypeService : Service<DefinedType, DTO.DefinedType>
+    public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDTO>
     {
 		/// <summary>
 		/// Gets Defined Types by Field Type Id
@@ -37,12 +37,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override DefinedType CreateNew()
+        {
+            return new DefinedType();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.DefinedType> QueryableDTO()
+        public override IQueryable<DefinedTypeDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new DefinedTypeDTO( m ) );
         }
     }
 }

@@ -136,35 +136,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.MetricValue"/> object.
-        /// </value>
-		public Rock.Core.DTO.MetricValue DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.MetricValue dto = new Rock.Core.DTO.MetricValue();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.MetricId = this.MetricId;
-				dto.Value = this.Value;
-				dto.Description = this.Description;
-				dto.xValue = this.xValue;
-				dto.isDateBased = this.isDateBased;
-				dto.Label = this.Label;
-				dto.Order = this.Order;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -203,6 +174,7 @@ namespace Rock.Core
             
         }
     }
+    
     /// <summary>
     /// MetricValue Configuration class.
     /// </summary>
@@ -216,5 +188,135 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class MetricValueDTO : DTO<MetricValue>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MetricIc.
+        /// </summary>
+        /// <value>
+        /// MetricIc.
+        /// </value>
+        public int MetricId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        /// <value>
+        /// Value.
+        /// </value>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the xValue.
+        /// </summary>
+        /// <value>
+        /// xValue.
+        /// </value>
+        public int xValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the isDateBased flag.
+        /// </summary>
+        /// <value>
+        /// isDateBased.
+        /// </value>
+        public bool isDateBased { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Label.
+        /// </summary>
+        /// <value>
+        /// Label.
+        /// </value>
+        public string Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public MetricValueDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public MetricValueDTO( MetricValue metricValue )
+        {
+            CopyFromModel( metricValue );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="metricValue"></param>
+        public override void CopyFromModel( MetricValue metricValue )
+        {
+            this.Id = metricValue.Id;
+            this.Guid = metricValue.Guid;
+            this.IsSystem = metricValue.IsSystem;
+            this.MetricId = metricValue.MetricId;
+            this.Value = metricValue.Value;
+            this.Description = metricValue.Description;
+            this.xValue = metricValue.xValue;
+            this.isDateBased = metricValue.isDateBased;
+            this.Label = metricValue.Label;
+            this.Order = metricValue.Order;
+            this.CreatedDateTime = metricValue.CreatedDateTime;
+            this.ModifiedDateTime = metricValue.ModifiedDateTime;
+            this.CreatedByPersonId = metricValue.CreatedByPersonId;
+            this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="metricValue"></param>
+        public override void CopyToModel( MetricValue metricValue )
+        {
+            metricValue.Id = this.Id;
+            metricValue.Guid = this.Guid;
+            metricValue.IsSystem = this.IsSystem;
+            metricValue.MetricId = this.MetricId;
+            metricValue.Value = this.Value;
+            metricValue.Description = this.Description;
+            metricValue.xValue = this.xValue;
+            metricValue.isDateBased = this.isDateBased;
+            metricValue.Label = this.Label;
+            metricValue.Order = this.Order;
+            metricValue.CreatedDateTime = this.CreatedDateTime;
+            metricValue.ModifiedDateTime = this.ModifiedDateTime;
+            metricValue.CreatedByPersonId = this.CreatedByPersonId;
+            metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

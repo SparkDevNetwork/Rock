@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Attribute POCO Service class
 	/// </summary>
-    public partial class AttributeService : Service<Attribute, DTO.Attribute>
+    public partial class AttributeService : Service<Attribute, AttributeDTO>
     {
 		/// <summary>
 		/// Gets Attributes by Entity
@@ -75,12 +75,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Attribute CreateNew()
+        {
+            return new Attribute();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Attribute> QueryableDTO()
+        public override IQueryable<AttributeDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new AttributeDTO( m ) );
         }
     }
 }

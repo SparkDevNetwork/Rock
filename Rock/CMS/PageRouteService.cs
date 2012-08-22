@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Page Route POCO Service class
 	/// </summary>
-    public partial class PageRouteService : Service<PageRoute, DTO.PageRoute>
+    public partial class PageRouteService : Service<PageRoute, PageRouteDTO>
     {
 		/// <summary>
 		/// Gets Page Routes by Page Id
@@ -27,12 +27,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override PageRoute CreateNew()
+        {
+            return new PageRoute();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.PageRoute> QueryableDTO()
+        public override IQueryable<PageRouteDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PageRouteDTO( m ) );
         }
     }
 }

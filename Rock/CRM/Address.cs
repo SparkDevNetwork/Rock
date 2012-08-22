@@ -220,44 +220,6 @@ namespace Rock.CRM
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.Address"/> object.
-        /// </value>
-		public Rock.CRM.DTO.Address DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CRM.DTO.Address dto = new Rock.CRM.DTO.Address();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.Raw = this.Raw;
-				dto.Street1 = this.Street1;
-				dto.Street2 = this.Street2;
-				dto.City = this.City;
-				dto.State = this.State;
-				dto.Country = this.Country;
-				dto.Zip = this.Zip;
-				dto.Latitude = this.Latitude;
-				dto.Longitude = this.Longitude;
-				dto.StandardizeAttempt = this.StandardizeAttempt;
-				dto.StandardizeService = this.StandardizeService;
-				dto.StandardizeResult = this.StandardizeResult;
-				dto.StandardizeDate = this.StandardizeDate;
-				dto.GeocodeAttempt = this.GeocodeAttempt;
-				dto.GeocodeService = this.GeocodeService;
-				dto.GeocodeResult = this.GeocodeResult;
-				dto.GeocodeDate = this.GeocodeDate;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -292,6 +254,7 @@ namespace Rock.CRM
                 this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
     }
+
     /// <summary>
     /// Address Configuration class.
     /// </summary>
@@ -305,5 +268,225 @@ namespace Rock.CRM
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class AddressDTO : DTO<Address>
+    {
+        /// <summary>
+        /// Gets or sets the Raw.
+        /// </summary>
+        /// <value>
+        /// Raw.
+        /// </value>
+        public string Raw { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Street 1.
+        /// </summary>
+        /// <value>
+        /// Street 1.
+        /// </value>
+        public string Street1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Street 2.
+        /// </summary>
+        /// <value>
+        /// Street 2.
+        /// </value>
+        public string Street2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the City.
+        /// </summary>
+        /// <value>
+        /// City.
+        /// </value>
+        public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the State.
+        /// </summary>
+        /// <value>
+        /// State.
+        /// </value>
+        public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Country.
+        /// </summary>
+        /// <value>
+        /// Country.
+        /// </value>
+        public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Zip.
+        /// </summary>
+        /// <value>
+        /// Zip.
+        /// </value>
+        public string Zip { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Latitude.
+        /// </summary>
+        /// <value>
+        /// Latitude.
+        /// </value>
+        public double Latitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Longitude.
+        /// </summary>
+        /// <value>
+        /// Longitude.
+        /// </value>
+        public double Longitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Standardize Attempt.
+        /// </summary>
+        /// <value>
+        /// Standardize Attempt.
+        /// </value>
+        public DateTime? StandardizeAttempt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Standardize Service.
+        /// </summary>
+        /// <value>
+        /// Standardize Service.
+        /// </value>
+        public string StandardizeService { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Standardize Result.
+        /// </summary>
+        /// <value>
+        /// Standardize Result.
+        /// </value>
+        public string StandardizeResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Standardize Date.
+        /// </summary>
+        /// <value>
+        /// Standardize Date.
+        /// </value>
+        public DateTime? StandardizeDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Geocode Attempt.
+        /// </summary>
+        /// <value>
+        /// Geocode Attempt.
+        /// </value>
+        public DateTime? GeocodeAttempt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Geocode Service.
+        /// </summary>
+        /// <value>
+        /// Geocode Service.
+        /// </value>
+        public string GeocodeService { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Geocode Result.
+        /// </summary>
+        /// <value>
+        /// Geocode Result.
+        /// </value>
+        public string GeocodeResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Geocode Date.
+        /// </summary>
+        /// <value>
+        /// Geocode Date.
+        /// </value>
+        public DateTime? GeocodeDate { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public AddressDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public AddressDTO( Address address )
+        {
+            CopyFromModel( address );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="address"></param>
+        public override void CopyFromModel( Address address )
+        {
+            this.Id = address.Id;
+            this.Guid = address.Guid;
+            this.Raw = address.Raw;
+            this.Street1 = address.Street1;
+            this.Street2 = address.Street2;
+            this.City = address.City;
+            this.State = address.State;
+            this.Country = address.Country;
+            this.Zip = address.Zip;
+            this.Latitude = address.Latitude;
+            this.Longitude = address.Longitude;
+            this.StandardizeAttempt = address.StandardizeAttempt;
+            this.StandardizeService = address.StandardizeService;
+            this.StandardizeResult = address.StandardizeResult;
+            this.StandardizeDate = address.StandardizeDate;
+            this.GeocodeAttempt = address.GeocodeAttempt;
+            this.GeocodeService = address.GeocodeService;
+            this.GeocodeResult = address.GeocodeResult;
+            this.GeocodeDate = address.GeocodeDate;
+            this.CreatedDateTime = address.CreatedDateTime;
+            this.ModifiedDateTime = address.ModifiedDateTime;
+            this.CreatedByPersonId = address.CreatedByPersonId;
+            this.ModifiedByPersonId = address.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="address"></param>
+        public override void CopyToModel( Address address )
+        {
+            address.Id = this.Id;
+            address.Guid = this.Guid;
+            address.Raw = this.Raw;
+            address.Street1 = this.Street1;
+            address.Street2 = this.Street2;
+            address.City = this.City;
+            address.State = this.State;
+            address.Country = this.Country;
+            address.Zip = this.Zip;
+            address.Latitude = this.Latitude;
+            address.Longitude = this.Longitude;
+            address.StandardizeAttempt = this.StandardizeAttempt;
+            address.StandardizeService = this.StandardizeService;
+            address.StandardizeResult = this.StandardizeResult;
+            address.StandardizeDate = this.StandardizeDate;
+            address.GeocodeAttempt = this.GeocodeAttempt;
+            address.GeocodeService = this.GeocodeService;
+            address.GeocodeResult = this.GeocodeResult;
+            address.GeocodeDate = this.GeocodeDate;
+            address.CreatedDateTime = this.CreatedDateTime;
+            address.ModifiedDateTime = this.ModifiedDateTime;
+            address.CreatedByPersonId = this.CreatedByPersonId;
+            address.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

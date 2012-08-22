@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Site POCO Service class
 	/// </summary>
-    public partial class SiteService : Service<Site, DTO.Site>
+    public partial class SiteService : Service<Site, SiteDTO>
     {
 		/// <summary>
 		/// Gets Sites by Default Page Id
@@ -27,12 +27,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Site CreateNew()
+        {
+            return new Site();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Site> QueryableDTO()
+        public override IQueryable<SiteDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new SiteDTO( m ) );
         }
     }
 }

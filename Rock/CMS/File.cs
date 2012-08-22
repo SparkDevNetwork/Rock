@@ -126,34 +126,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.File"/> object.
-        /// </value>
-		public Rock.CMS.DTO.File DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.File dto = new Rock.CMS.DTO.File();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsTemporary = this.IsTemporary;
-				dto.IsSystem = this.IsSystem;
-				dto.Data = this.Data;
-				dto.Url = this.Url;
-				dto.FileName = this.FileName;
-				dto.MimeType = this.MimeType;
-				dto.Description = this.Description;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -177,6 +149,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// File Configuration class.
     /// </summary>
@@ -190,5 +163,125 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class FileDTO : DTO<File>
+    {
+        /// <summary>
+        /// Gets or sets the Temporary.
+        /// </summary>
+        /// <value>
+        /// Temporary.
+        /// </value>
+        public bool IsTemporary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Data.
+        /// </summary>
+        /// <value>
+        /// Data.
+        /// </value>
+        public byte[] Data { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Url.
+        /// </summary>
+        /// <value>
+        /// Url.
+        /// </value>
+        public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the File Name.
+        /// </summary>
+        /// <value>
+        /// File Name.
+        /// </value>
+        public string FileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Mime Type.
+        /// </summary>
+        /// <value>
+        /// Mime Type.
+        /// </value>
+        public string MimeType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public FileDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public FileDTO( File file )
+        {
+            CopyFromModel( file );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="file"></param>
+        public override void CopyFromModel( File file )
+        {
+            this.Id = file.Id;
+            this.Guid = file.Guid;
+            this.IsTemporary = file.IsTemporary;
+            this.IsSystem = file.IsSystem;
+            this.Data = file.Data;
+            this.Url = file.Url;
+            this.FileName = file.FileName;
+            this.MimeType = file.MimeType;
+            this.Description = file.Description;
+            this.CreatedDateTime = file.CreatedDateTime;
+            this.ModifiedDateTime = file.ModifiedDateTime;
+            this.CreatedByPersonId = file.CreatedByPersonId;
+            this.ModifiedByPersonId = file.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="file"></param>
+        public override void CopyToModel( File file )
+        {
+            file.Id = this.Id;
+            file.Guid = this.Guid;
+            file.IsTemporary = this.IsTemporary;
+            file.IsSystem = this.IsSystem;
+            file.Data = this.Data;
+            file.Url = this.Url;
+            file.FileName = this.FileName;
+            file.MimeType = this.MimeType;
+            file.Description = this.Description;
+            file.CreatedDateTime = this.CreatedDateTime;
+            file.ModifiedDateTime = this.ModifiedDateTime;
+            file.CreatedByPersonId = this.CreatedByPersonId;
+            file.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

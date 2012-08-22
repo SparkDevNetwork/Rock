@@ -84,26 +84,6 @@ namespace Rock.CRM
         public override string AuthEntity { get { return "CRM.Campus"; } }
 
         /// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.Campus"/> object.
-        /// </value>
-        [NotMapped]
-        public Rock.CRM.DTO.Campus DataTransferObject
-        {
-            get
-            {
-                Rock.CRM.DTO.Campus dto = new Rock.CRM.DTO.Campus();
-                dto.Id = this.Id;
-                dto.Guid = this.Guid;
-                dto.IsSystem = this.IsSystem;
-                dto.Name = this.Name;
-                return dto;
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -115,6 +95,7 @@ namespace Rock.CRM
         }
 
     }
+
     /// <summary>
     /// Campus Configuration class.
     /// </summary>
@@ -128,4 +109,65 @@ namespace Rock.CRM
         }
     }
 
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class CampusDTO : DTO<Campus>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Given Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public CampusDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public CampusDTO( Campus campus )
+        {
+            CopyFromModel( campus );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="campus"></param>
+        public override void CopyFromModel( Campus campus )
+        {
+            this.Id = campus.Id;
+            this.Guid = campus.Guid;
+            this.IsSystem = campus.IsSystem;
+            this.Name = campus.Name;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="campus"></param>
+        public override void CopyToModel( Campus campus )
+        {
+            campus.Id = this.Id;
+            campus.Guid = this.Guid;
+            campus.IsSystem = this.IsSystem;
+            campus.Name = this.Name;
+        }
+    }
 }

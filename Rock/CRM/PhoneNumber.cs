@@ -96,31 +96,6 @@ namespace Rock.CRM
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.PhoneNumber"/> object.
-        /// </value>
-		public Rock.CRM.DTO.PhoneNumber DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CRM.DTO.PhoneNumber dto = new Rock.CRM.DTO.PhoneNumber();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PersonId = this.PersonId;
-				dto.Number = this.Number;
-				dto.Description = this.Description;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -152,6 +127,7 @@ namespace Rock.CRM
 		public virtual Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Phone Number Configuration class.
     /// </summary>
@@ -166,5 +142,95 @@ namespace Rock.CRM
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class PhoneNumberDTO : DTO<PhoneNumber>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Number.
+        /// </summary>
+        /// <value>
+        /// Number.
+        /// </value>
+        public string Number { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PhoneNumberDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public PhoneNumberDTO( PhoneNumber phoneNumber )
+        {
+            CopyFromModel( phoneNumber );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        public override void CopyFromModel( PhoneNumber phoneNumber )
+        {
+            this.Id = phoneNumber.Id;
+            this.Guid = phoneNumber.Guid;
+            this.IsSystem = phoneNumber.IsSystem;
+            this.PersonId = phoneNumber.PersonId;
+            this.Number = phoneNumber.Number;
+            this.Description = phoneNumber.Description;
+            this.CreatedDateTime = phoneNumber.CreatedDateTime;
+            this.ModifiedDateTime = phoneNumber.ModifiedDateTime;
+            this.CreatedByPersonId = phoneNumber.CreatedByPersonId;
+            this.ModifiedByPersonId = phoneNumber.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        public override void CopyToModel( PhoneNumber phoneNumber )
+        {
+            phoneNumber.Id = this.Id;
+            phoneNumber.Guid = this.Guid;
+            phoneNumber.IsSystem = this.IsSystem;
+            phoneNumber.PersonId = this.PersonId;
+            phoneNumber.Number = this.Number;
+            phoneNumber.Description = this.Description;
+            phoneNumber.CreatedDateTime = this.CreatedDateTime;
+            phoneNumber.ModifiedDateTime = this.ModifiedDateTime;
+            phoneNumber.CreatedByPersonId = this.CreatedByPersonId;
+            phoneNumber.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Rock.CRM
 	/// <summary>
 	/// Person Viewed POCO Service class
 	/// </summary>
-    public partial class PersonViewedService : Service<PersonViewed, DTO.PersonViewed>
+    public partial class PersonViewedService : Service<PersonViewed, PersonViewedDTO>
     {
 		/// <summary>
 		/// Gets Person Vieweds by Target Person Id
@@ -37,12 +37,21 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override PersonViewed CreateNew()
+        {
+            return new PersonViewed();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.PersonViewed> QueryableDTO()
+        public override IQueryable<PersonViewedDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PersonViewedDTO( m ) );
         }
     }
 }

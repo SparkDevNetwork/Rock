@@ -50,7 +50,7 @@ namespace Rock.CMS
         /// <returns>A queryable list of related DTO objects.</returns>
         public override IQueryable<PageDTO> QueryableDTO()
         {
-            return this.Queryable().Select( i => new PageDTO(i));
+            return this.Queryable().Select( m => new PageDTO( m ) );
         }
     }
 }

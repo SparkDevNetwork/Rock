@@ -109,32 +109,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.EntityChange"/> object.
-        /// </value>
-		public Rock.Core.DTO.EntityChange DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.EntityChange dto = new Rock.Core.DTO.EntityChange();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.ChangeSet = this.ChangeSet;
-				dto.ChangeType = this.ChangeType;
-				dto.EntityType = this.EntityType;
-				dto.EntityId = this.EntityId;
-				dto.Property = this.Property;
-				dto.OriginalValue = this.OriginalValue;
-				dto.CurrentValue = this.CurrentValue;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -150,6 +124,7 @@ namespace Rock.Core
 		public virtual CRM.Person CreatedByPerson { get; set; }
 
     }
+    
     /// <summary>
     /// Entity Change Configuration class.
     /// </summary>
@@ -162,5 +137,121 @@ namespace Rock.Core
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class EntityChangeDTO : DTO<EntityChange>
+    {
+        /// <summary>
+        /// Gets or sets the Change Set.
+        /// </summary>
+        /// <value>
+        /// Change Set.
+        /// </value>
+        public Guid ChangeSet { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Change Type.
+        /// </summary>
+        /// <value>
+        /// Change Type.
+        /// </value>
+        public string ChangeType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Type.
+        /// </summary>
+        /// <value>
+        /// Entity Type.
+        /// </value>
+        public string EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        public int EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Property.
+        /// </summary>
+        /// <value>
+        /// Property.
+        /// </value>
+        public string Property { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Original Value.
+        /// </summary>
+        /// <value>
+        /// Original Value.
+        /// </value>
+        public string OriginalValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Current Value.
+        /// </summary>
+        /// <value>
+        /// Current Value.
+        /// </value>
+        public string CurrentValue { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public EntityChangeDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public EntityChangeDTO( EntityChange entityChange )
+        {
+            CopyFromModel( entityChange );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="entityChange"></param>
+        public override void CopyFromModel( EntityChange entityChange )
+        {
+            this.Id = entityChange.Id;
+            this.Guid = entityChange.Guid;
+            this.ChangeSet = entityChange.ChangeSet;
+            this.ChangeType = entityChange.ChangeType;
+            this.EntityType = entityChange.EntityType;
+            this.EntityId = entityChange.EntityId;
+            this.Property = entityChange.Property;
+            this.OriginalValue = entityChange.OriginalValue;
+            this.CurrentValue = entityChange.CurrentValue;
+            this.CreatedDateTime = entityChange.CreatedDateTime;
+            this.CreatedByPersonId = entityChange.CreatedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="entityChange"></param>
+        public override void CopyToModel( EntityChange entityChange )
+        {
+            entityChange.Id = this.Id;
+            entityChange.Guid = this.Guid;
+            entityChange.ChangeSet = this.ChangeSet;
+            entityChange.ChangeType = this.ChangeType;
+            entityChange.EntityType = this.EntityType;
+            entityChange.EntityId = this.EntityId;
+            entityChange.Property = this.Property;
+            entityChange.OriginalValue = this.OriginalValue;
+            entityChange.CurrentValue = this.CurrentValue;
+            entityChange.CreatedDateTime = this.CreatedDateTime;
+            entityChange.CreatedByPersonId = this.CreatedByPersonId;
+        }
     }
 }
