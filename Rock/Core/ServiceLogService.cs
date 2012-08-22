@@ -14,15 +14,24 @@ namespace Rock.Core
 	/// <summary>
 	/// Service Log POCO Service class
 	/// </summary>
-    public partial class ServiceLogService : Service<ServiceLog, DTO.ServiceLog>
+    public partial class ServiceLogService : Service<ServiceLog, ServiceLogDTO>
     {
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override ServiceLog CreateNew()
+        {
+            return new ServiceLog();
+        }
+
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.ServiceLog> QueryableDTO()
+        public override IQueryable<ServiceLogDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new ServiceLogDTO( m ) );
         }
     }
 }

@@ -14,15 +14,24 @@ namespace Rock.CRM
 	/// <summary>
 	/// Campus POCO Service class
 	/// </summary>
-    public partial class CampusService : Service<Campus, DTO.Campus>
+    public partial class CampusService : Service<Campus, CampusDTO>
     {
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Campus CreateNew()
+        {
+            return new Campus();
+        }
+
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Campus> QueryableDTO()
+        public override IQueryable<CampusDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new CampusDTO( m ) );
         }
     }
 }

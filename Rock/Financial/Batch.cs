@@ -168,4 +168,42 @@ namespace Rock.Financial
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class BatchDTO : DTO<Batch>
+    {
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public BatchDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public BatchDTO( Batch batch )
+        {
+            CopyFromModel( batch );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="batch"></param>
+        public override void CopyFromModel( Batch batch )
+        {
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="batch"></param>
+        public override void CopyToModel( Batch batch )
+        {
+        }
+    }
 }

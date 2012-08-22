@@ -114,33 +114,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.DefinedType"/> object.
-        /// </value>
-		public Rock.Core.DTO.DefinedType DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.DefinedType dto = new Rock.Core.DTO.DefinedType();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.FieldTypeId = this.FieldTypeId;
-				dto.Order = this.Order;
-				dto.Category = this.Category;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -189,6 +162,7 @@ namespace Rock.Core
         }
 
     }
+
     /// <summary>
     /// Defined Type Configuration class.
     /// </summary>
@@ -203,5 +177,115 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class DefinedTypeDTO : DTO<DefinedType>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Field Type Id.
+        /// </summary>
+        /// <value>
+        /// Field Type Id.
+        /// </value>
+        public int? FieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public DefinedTypeDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public DefinedTypeDTO( DefinedType definedType )
+        {
+            CopyFromModel( definedType );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="definedType"></param>
+        public override void CopyFromModel( DefinedType definedType )
+        {
+            this.Id = definedType.Id;
+            this.Guid = definedType.Guid;
+            this.IsSystem = definedType.IsSystem;
+            this.FieldTypeId = definedType.FieldTypeId;
+            this.Order = definedType.Order;
+            this.Category = definedType.Category;
+            this.Name = definedType.Name;
+            this.Description = definedType.Description;
+            this.CreatedDateTime = definedType.CreatedDateTime;
+            this.ModifiedDateTime = definedType.ModifiedDateTime;
+            this.CreatedByPersonId = definedType.CreatedByPersonId;
+            this.ModifiedByPersonId = definedType.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="definedType"></param>
+        public override void CopyToModel( DefinedType definedType )
+        {
+            definedType.Id = this.Id;
+            definedType.Guid = this.Guid;
+            definedType.IsSystem = this.IsSystem;
+            definedType.FieldTypeId = this.FieldTypeId;
+            definedType.Order = this.Order;
+            definedType.Category = this.Category;
+            definedType.Name = this.Name;
+            definedType.Description = this.Description;
+            definedType.CreatedDateTime = this.CreatedDateTime;
+            definedType.ModifiedDateTime = this.ModifiedDateTime;
+            definedType.CreatedByPersonId = this.CreatedByPersonId;
+            definedType.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

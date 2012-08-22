@@ -96,31 +96,6 @@ namespace Rock.Groups
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Groups.DTO.Member"/> object.
-        /// </value>
-		public Rock.Groups.DTO.Member DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Groups.DTO.Member dto = new Rock.Groups.DTO.Member();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.GroupId = this.GroupId;
-				dto.PersonId = this.PersonId;
-				dto.GroupRoleId = this.GroupRoleId;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -168,6 +143,7 @@ namespace Rock.Groups
 		public virtual GroupRole GroupRole { get; set; }
 
     }
+
     /// <summary>
     /// Member Configuration class.
     /// </summary>
@@ -184,5 +160,95 @@ namespace Rock.Groups
 			this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
 			this.HasRequired( p => p.GroupRole ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class MemberDTO : DTO<Member>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Id.
+        /// </summary>
+        /// <value>
+        /// Group Id.
+        /// </value>
+        public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Role Id.
+        /// </summary>
+        /// <value>
+        /// Group Role Id.
+        /// </value>
+        public int GroupRoleId { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public MemberDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public MemberDTO( Member member )
+        {
+            CopyFromModel( member );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="member"></param>
+        public override void CopyFromModel( Member member )
+        {
+            this.Id = member.Id;
+            this.Guid = member.Guid;
+            this.IsSystem = member.IsSystem;
+            this.GroupId = member.GroupId;
+            this.PersonId = member.PersonId;
+            this.GroupRoleId = member.GroupRoleId;
+            this.CreatedDateTime = member.CreatedDateTime;
+            this.ModifiedDateTime = member.ModifiedDateTime;
+            this.CreatedByPersonId = member.CreatedByPersonId;
+            this.ModifiedByPersonId = member.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="member"></param>
+        public override void CopyToModel( Member member )
+        {
+            member.Id = this.Id;
+            member.Guid = this.Guid;
+            member.IsSystem = this.IsSystem;
+            member.GroupId = this.GroupId;
+            member.PersonId = this.PersonId;
+            member.GroupRoleId = this.GroupRoleId;
+            member.CreatedDateTime = this.CreatedDateTime;
+            member.ModifiedDateTime = this.ModifiedDateTime;
+            member.CreatedByPersonId = this.CreatedByPersonId;
+            member.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

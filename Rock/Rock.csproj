@@ -550,10 +550,6 @@
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.DataTransferObjects\Rock.DataTransferObjects.csproj">
-      <Project>{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}</Project>
-      <Name>Rock.DataTransferObjects</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

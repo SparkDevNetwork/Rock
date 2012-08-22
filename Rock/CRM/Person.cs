@@ -284,51 +284,6 @@ namespace Rock.CRM
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.Person"/> object.
-        /// </value>
-		public Rock.CRM.DTO.Person DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CRM.DTO.Person dto = new Rock.CRM.DTO.Person();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.RecordTypeId = this.RecordTypeId;
-				dto.RecordStatusId = this.RecordStatusId;
-				dto.RecordStatusReasonId = this.RecordStatusReasonId;
-				dto.PersonStatusId = this.PersonStatusId;
-				dto.TitleId = this.TitleId;
-				dto.GivenName = this.GivenName;
-				dto.NickName = this.NickName;
-				dto.LastName = this.LastName;
-				dto.SuffixId = this.SuffixId;
-				dto.PhotoId = this.PhotoId;
-				dto.BirthDay = this.BirthDay;
-				dto.BirthMonth = this.BirthMonth;
-				dto.BirthYear = this.BirthYear;
-				dto.Gender = (int)this.Gender;
-				dto.MaritalStatusId = this.MaritalStatusId;
-				dto.AnniversaryDate = this.AnniversaryDate;
-				dto.GraduationDate = this.GraduationDate;
-				dto.Email = this.Email;
-				dto.IsEmailActive = this.IsEmailActive;
-				dto.EmailNote = this.EmailNote;
-				dto.DoNotEmail = this.DoNotEmail;
-				dto.SystemNote = this.SystemNote;
-				dto.ViewedCount = this.ViewedCount;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -543,6 +498,7 @@ namespace Rock.CRM
         }
 
     }
+
     /// <summary>
     /// Person Configuration class.
     /// </summary>
@@ -563,6 +519,296 @@ namespace Rock.CRM
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class PersonDTO : DTO<Person>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Record Type Id.
+        /// </summary>
+        /// <value>
+        /// Record Type Id.
+        /// </value>
+        public int? RecordTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Record Status Id.
+        /// </summary>
+        /// <value>
+        /// Record Status Id.
+        /// </value>
+        public int? RecordStatusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Record Status Reason Id.
+        /// </summary>
+        /// <value>
+        /// Record Status Reason Id.
+        /// </value>
+        public int? RecordStatusReasonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Status Id.
+        /// </summary>
+        /// <value>
+        /// Person Status Id.
+        /// </value>
+        public int? PersonStatusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title Id.
+        /// </summary>
+        /// <value>
+        /// Title Id.
+        /// </value>
+        public int? TitleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Given Name.
+        /// </summary>
+        /// <value>
+        /// Given Name.
+        /// </value>
+        public string GivenName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Nick Name.
+        /// </summary>
+        /// <value>
+        /// Nick Name.
+        /// </value>
+        public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Name.
+        /// </summary>
+        /// <value>
+        /// Last Name.
+        /// </value>
+        public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Suffix Id.
+        /// </summary>
+        /// <value>
+        /// Suffix Id.
+        /// </value>
+        public int? SuffixId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Photo Id.
+        /// </summary>
+        /// <value>
+        /// Photo Id.
+        /// </value>
+        public int? PhotoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Birth Day.
+        /// </summary>
+        /// <value>
+        /// Birth Day.
+        /// </value>
+        public int? BirthDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Birth Month.
+        /// </summary>
+        /// <value>
+        /// Birth Month.
+        /// </value>
+        public int? BirthMonth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Birth Year.
+        /// </summary>
+        /// <value>
+        /// Birth Year.
+        /// </value>
+        public int? BirthYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Gender.
+        /// </summary>
+        /// <value>
+        /// Gender.
+        /// </value>
+        public int? Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Marital Status Id.
+        /// </summary>
+        /// <value>
+        /// Marital Status Id.
+        /// </value>
+        public int? MaritalStatusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Anniversary Date.
+        /// </summary>
+        /// <value>
+        /// Anniversary Date.
+        /// </value>
+        public DateTime? AnniversaryDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Graduation Date.
+        /// </summary>
+        /// <value>
+        /// Graduation Date.
+        /// </value>
+        public DateTime? GraduationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Email.
+        /// </summary>
+        /// <value>
+        /// Email.
+        /// </value>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Email Is Active.
+        /// </summary>
+        /// <value>
+        /// Email Is Active.
+        /// </value>
+        public bool? IsEmailActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Email Note.
+        /// </summary>
+        /// <value>
+        /// Email Note.
+        /// </value>
+        public string EmailNote { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Do Not Email.
+        /// </summary>
+        /// <value>
+        /// Do Not Email.
+        /// </value>
+        public bool DoNotEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the System Note.
+        /// </summary>
+        /// <value>
+        /// System Note.
+        /// </value>
+        public string SystemNote { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Viewed Count.
+        /// </summary>
+        /// <value>
+        /// Viewed Count.
+        /// </value>
+        public int? ViewedCount { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PersonDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public PersonDTO( Person person )
+        {
+            CopyFromModel( person );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="person"></param>
+        public override void CopyFromModel( Person person )
+        {
+            this.Id = person.Id;
+            this.Guid = person.Guid;
+            this.IsSystem = person.IsSystem;
+            this.RecordTypeId = person.RecordTypeId;
+            this.RecordStatusId = person.RecordStatusId;
+            this.RecordStatusReasonId = person.RecordStatusReasonId;
+            this.PersonStatusId = person.PersonStatusId;
+            this.TitleId = person.TitleId;
+            this.GivenName = person.GivenName;
+            this.NickName = person.NickName;
+            this.LastName = person.LastName;
+            this.SuffixId = person.SuffixId;
+            this.PhotoId = person.PhotoId;
+            this.BirthDay = person.BirthDay;
+            this.BirthMonth = person.BirthMonth;
+            this.BirthYear = person.BirthYear;
+            this.Gender = ( int )person.Gender;
+            this.MaritalStatusId = person.MaritalStatusId;
+            this.AnniversaryDate = person.AnniversaryDate;
+            this.GraduationDate = person.GraduationDate;
+            this.Email = person.Email;
+            this.IsEmailActive = person.IsEmailActive;
+            this.EmailNote = person.EmailNote;
+            this.DoNotEmail = person.DoNotEmail;
+            this.SystemNote = person.SystemNote;
+            this.ViewedCount = person.ViewedCount;
+            this.CreatedDateTime = person.CreatedDateTime;
+            this.ModifiedDateTime = person.ModifiedDateTime;
+            this.CreatedByPersonId = person.CreatedByPersonId;
+            this.ModifiedByPersonId = person.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="person"></param>
+        public override void CopyToModel( Person person )
+        {
+            person.Id = this.Id;
+            person.Guid = this.Guid;
+            person.IsSystem = this.IsSystem;
+            person.RecordTypeId = this.RecordTypeId;
+            person.RecordStatusId = this.RecordStatusId;
+            person.RecordStatusReasonId = this.RecordStatusReasonId;
+            person.PersonStatusId = this.PersonStatusId;
+            person.TitleId = this.TitleId;
+            person.GivenName = this.GivenName;
+            person.NickName = this.NickName;
+            person.LastName = this.LastName;
+            person.SuffixId = this.SuffixId;
+            person.PhotoId = this.PhotoId;
+            person.BirthDay = this.BirthDay;
+            person.BirthMonth = this.BirthMonth;
+            person.BirthYear = this.BirthYear;
+            person.Gender = ( Gender )this.Gender;
+            person.MaritalStatusId = this.MaritalStatusId;
+            person.AnniversaryDate = this.AnniversaryDate;
+            person.GraduationDate = this.GraduationDate;
+            person.Email = this.Email;
+            person.IsEmailActive = this.IsEmailActive;
+            person.EmailNote = this.EmailNote;
+            person.DoNotEmail = this.DoNotEmail;
+            person.SystemNote = this.SystemNote;
+            person.ViewedCount = this.ViewedCount;
+            person.CreatedDateTime = this.CreatedDateTime;
+            person.ModifiedDateTime = this.ModifiedDateTime;
+            person.CreatedByPersonId = this.CreatedByPersonId;
+            person.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 
     /// <summary>

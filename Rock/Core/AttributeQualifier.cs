@@ -97,31 +97,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.AttributeQualifier"/> object.
-        /// </value>
-		public Rock.Core.DTO.AttributeQualifier DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.AttributeQualifier dto = new Rock.Core.DTO.AttributeQualifier();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.AttributeId = this.AttributeId;
-				dto.Key = this.Key;
-				dto.Value = this.Value;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -153,6 +128,7 @@ namespace Rock.Core
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Attribute Qualifier Configuration class.
     /// </summary>
@@ -167,5 +143,103 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class AttributeQualifierDTO : DTO<AttributeQualifier>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Attribute Id.
+        /// </summary>
+        /// <value>
+        /// Attribute Id.
+        /// </value>
+        public int AttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        /// <value>
+        /// Key.
+        /// </value>
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        /// <value>
+        /// Value.
+        /// </value>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public AttributeQualifierDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public AttributeQualifierDTO( AttributeQualifier attributeQualifier )
+        {
+            CopyFromModel( attributeQualifier );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="attributeQualifier"></param>
+        public override void CopyFromModel( AttributeQualifier attributeQualifier )
+        {
+            this.Id = attributeQualifier.Id;
+            this.Guid = attributeQualifier.Guid;
+            this.IsSystem = attributeQualifier.IsSystem;
+            this.AttributeId = attributeQualifier.AttributeId;
+            this.Key = attributeQualifier.Key;
+            this.Value = attributeQualifier.Value;
+            this.CreatedDateTime = attributeQualifier.CreatedDateTime;
+            this.ModifiedDateTime = attributeQualifier.ModifiedDateTime;
+            this.CreatedByPersonId = attributeQualifier.CreatedByPersonId;
+            this.ModifiedByPersonId = attributeQualifier.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="attributeQualifier"></param>
+        public override void CopyToModel( AttributeQualifier attributeQualifier )
+        {
+            attributeQualifier.Id = this.Id;
+            attributeQualifier.Guid = this.Guid;
+            attributeQualifier.IsSystem = this.IsSystem;
+            attributeQualifier.AttributeId = this.AttributeId;
+            attributeQualifier.Key = this.Key;
+            attributeQualifier.Value = this.Value;
+            attributeQualifier.CreatedDateTime = this.CreatedDateTime;
+            attributeQualifier.ModifiedDateTime = this.ModifiedDateTime;
+            attributeQualifier.CreatedByPersonId = this.CreatedByPersonId;
+            attributeQualifier.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

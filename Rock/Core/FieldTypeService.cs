@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Field Type POCO Service class
 	/// </summary>
-    public partial class FieldTypeService : Service<FieldType, DTO.FieldType>
+    public partial class FieldTypeService : Service<FieldType, FieldTypeDTO>
     {
 		/// <summary>
 		/// Gets Field Types by Name
@@ -27,12 +27,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override FieldType CreateNew()
+        {
+            return new FieldType();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.FieldType> QueryableDTO()
+        public override IQueryable<FieldTypeDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new FieldTypeDTO( m ) );
         }
     }
 }

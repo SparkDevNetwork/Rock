@@ -168,39 +168,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public string Cookies { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.ExceptionLog"/> object.
-        /// </value>
-		public Rock.Core.DTO.ExceptionLog DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.ExceptionLog dto = new Rock.Core.DTO.ExceptionLog();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.ParentId = this.ParentId;
-				dto.SiteId = this.SiteId;
-				dto.PageId = this.PageId;
-				dto.ExceptionDate = this.ExceptionDate;
-				dto.HasInnerException = this.HasInnerException;
-				dto.PersonId = this.PersonId;
-				dto.StatusCode = this.StatusCode;
-				dto.ExceptionType = this.ExceptionType;
-				dto.Description = this.Description;
-				dto.Source = this.Source;
-				dto.StackTrace = this.StackTrace;
-				dto.PageUrl = this.PageUrl;
-				dto.ServerVariables = this.ServerVariables;
-				dto.QueryString = this.QueryString;
-				dto.Form = this.Form;
-				dto.Cookies = this.Cookies;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -217,6 +184,7 @@ namespace Rock.Core
 		public virtual CRM.Person Person { get; set; }
 
     }
+
     /// <summary>
     /// Exception Log Configuration class.
     /// </summary>
@@ -229,5 +197,207 @@ namespace Rock.Core
         {
 			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class ExceptionLogDTO : DTO<ExceptionLog>
+    {
+        /// <summary>
+        /// Gets or sets the Parent Id.
+        /// </summary>
+        /// <value>
+        /// Parent Id.
+        /// </value>
+        public int? ParentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Id.
+        /// </summary>
+        /// <value>
+        /// Site Id.
+        /// </value>
+        public int? SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        public int? PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Exception Date.
+        /// </summary>
+        /// <value>
+        /// Exception Date.
+        /// </value>
+        public DateTime ExceptionDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Has Inner Exception.
+        /// </summary>
+        /// <value>
+        /// Has Inner Exception.
+        /// </value>
+        public bool? HasInnerException { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Status Code.
+        /// </summary>
+        /// <value>
+        /// Status Code.
+        /// </value>
+        public string StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Exception Type.
+        /// </summary>
+        /// <value>
+        /// Exception Type.
+        /// </value>
+        public string ExceptionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Source.
+        /// </summary>
+        /// <value>
+        /// Source.
+        /// </value>
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Stack Trace.
+        /// </summary>
+        /// <value>
+        /// Stack Trace.
+        /// </value>
+        public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Page Url.
+        /// </summary>
+        /// <value>
+        /// Page Url.
+        /// </value>
+        public string PageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Server Variables.
+        /// </summary>
+        /// <value>
+        /// Server Variables.
+        /// </value>
+        public string ServerVariables { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Query String.
+        /// </summary>
+        /// <value>
+        /// Query String.
+        /// </value>
+        public string QueryString { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Form.
+        /// </summary>
+        /// <value>
+        /// Form.
+        /// </value>
+        public string Form { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Cookies.
+        /// </summary>
+        /// <value>
+        /// Cookies.
+        /// </value>
+        public string Cookies { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public ExceptionLogDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public ExceptionLogDTO( ExceptionLog exceptionLog )
+        {
+            CopyFromModel( exceptionLog );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="exceptionLog"></param>
+        public override void CopyFromModel( ExceptionLog exceptionLog )
+        {
+            this.Id = exceptionLog.Id;
+            this.Guid = exceptionLog.Guid;
+            this.ParentId = exceptionLog.ParentId;
+            this.SiteId = exceptionLog.SiteId;
+            this.PageId = exceptionLog.PageId;
+            this.ExceptionDate = exceptionLog.ExceptionDate;
+            this.HasInnerException = exceptionLog.HasInnerException;
+            this.PersonId = exceptionLog.PersonId;
+            this.StatusCode = exceptionLog.StatusCode;
+            this.ExceptionType = exceptionLog.ExceptionType;
+            this.Description = exceptionLog.Description;
+            this.Source = exceptionLog.Source;
+            this.StackTrace = exceptionLog.StackTrace;
+            this.PageUrl = exceptionLog.PageUrl;
+            this.ServerVariables = exceptionLog.ServerVariables;
+            this.QueryString = exceptionLog.QueryString;
+            this.Form = exceptionLog.Form;
+            this.Cookies = exceptionLog.Cookies;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="exceptionLog"></param>
+        public override void CopyToModel( ExceptionLog exceptionLog )
+        {
+            exceptionLog.Id = this.Id;
+            exceptionLog.Guid = this.Guid;
+            exceptionLog.ParentId = this.ParentId;
+            exceptionLog.SiteId = this.SiteId;
+            exceptionLog.PageId = this.PageId;
+            exceptionLog.ExceptionDate = this.ExceptionDate;
+            exceptionLog.HasInnerException = this.HasInnerException;
+            exceptionLog.PersonId = this.PersonId;
+            exceptionLog.StatusCode = this.StatusCode;
+            exceptionLog.ExceptionType = this.ExceptionType;
+            exceptionLog.Description = this.Description;
+            exceptionLog.Source = this.Source;
+            exceptionLog.StackTrace = this.StackTrace;
+            exceptionLog.PageUrl = this.PageUrl;
+            exceptionLog.ServerVariables = this.ServerVariables;
+            exceptionLog.QueryString = this.QueryString;
+            exceptionLog.Form = this.Form;
+            exceptionLog.Cookies = this.Cookies;
+        }
     }
 }

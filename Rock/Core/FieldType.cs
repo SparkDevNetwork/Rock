@@ -108,32 +108,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.FieldType"/> object.
-        /// </value>
-		public Rock.Core.DTO.FieldType DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.FieldType dto = new Rock.Core.DTO.FieldType();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.Assembly = this.Assembly;
-				dto.Class = this.Class;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -184,6 +158,7 @@ namespace Rock.Core
         }
 
     }
+
     /// <summary>
     /// Field Type Configuration class.
     /// </summary>
@@ -197,5 +172,105 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class FieldTypeDTO : DTO<FieldType>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Assembly.
+        /// </summary>
+        /// <value>
+        /// Assembly.
+        /// </value>
+        public string Assembly { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Class.
+        /// </summary>
+        /// <value>
+        /// Class.
+        /// </value>
+        public string Class { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public FieldTypeDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public FieldTypeDTO( FieldType fieldType )
+        {
+            CopyFromModel( fieldType );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="fieldType"></param>
+        public override void CopyFromModel( FieldType fieldType )
+        {
+            this.Id = fieldType.Id;
+            this.Guid = fieldType.Guid;
+            this.IsSystem = fieldType.IsSystem;
+            this.Name = fieldType.Name;
+            this.Description = fieldType.Description;
+            this.Assembly = fieldType.Assembly;
+            this.Class = fieldType.Class;
+            this.CreatedDateTime = fieldType.CreatedDateTime;
+            this.ModifiedDateTime = fieldType.ModifiedDateTime;
+            this.CreatedByPersonId = fieldType.CreatedByPersonId;
+            this.ModifiedByPersonId = fieldType.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="fieldType"></param>
+        public override void CopyToModel( FieldType fieldType )
+        {
+            fieldType.Id = this.Id;
+            fieldType.Guid = this.Guid;
+            fieldType.IsSystem = this.IsSystem;
+            fieldType.Name = this.Name;
+            fieldType.Description = this.Description;
+            fieldType.Assembly = this.Assembly;
+            fieldType.Class = this.Class;
+            fieldType.CreatedDateTime = this.CreatedDateTime;
+            fieldType.ModifiedDateTime = this.ModifiedDateTime;
+            fieldType.CreatedByPersonId = this.CreatedByPersonId;
+            fieldType.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

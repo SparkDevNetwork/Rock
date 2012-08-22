@@ -14,7 +14,7 @@ namespace Rock.CRM
 	/// <summary>
 	/// Person POCO Service class
 	/// </summary>
-    public partial class PersonService : Service<Person, DTO.Person>
+    public partial class PersonService : Service<Person, PersonDTO>
     {
 		/// <summary>
 		/// Gets People by Email
@@ -186,12 +186,21 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Person CreateNew()
+        {
+            return new Person();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Person> QueryableDTO()
+        public override IQueryable<PersonDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PersonDTO( m ) );
         }
     }
 }

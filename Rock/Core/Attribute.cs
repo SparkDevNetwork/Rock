@@ -197,41 +197,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.Attribute"/> object.
-        /// </value>
-		public Rock.Core.DTO.Attribute DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.Attribute dto = new Rock.Core.DTO.Attribute();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.FieldTypeId = this.FieldTypeId;
-				dto.Entity = this.Entity;
-				dto.EntityQualifierColumn = this.EntityQualifierColumn;
-				dto.EntityQualifierValue = this.EntityQualifierValue;
-				dto.Key = this.Key;
-				dto.Name = this.Name;
-				dto.Category = this.Category;
-				dto.Description = this.Description;
-				dto.Order = this.Order;
-				dto.IsGridColumn = this.IsGridColumn;
-				dto.DefaultValue = this.DefaultValue;
-				dto.IsMultiValue = this.IsMultiValue;
-				dto.IsRequired = this.IsRequired;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -294,6 +259,7 @@ namespace Rock.Core
             AttributeQualifiers = new System.Collections.ObjectModel.Collection<AttributeQualifier>();
         }
     }
+
     /// <summary>
     /// Attribute Configuration class.
     /// </summary>
@@ -308,5 +274,195 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class AttributeDTO : DTO<Attribute>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Field Type Id.
+        /// </summary>
+        /// <value>
+        /// Field Type Id.
+        /// </value>
+        public int FieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        public string Entity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Column.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Column.
+        /// </value>
+        public string EntityQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Value.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Value.
+        /// </value>
+        public string EntityQualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        /// <value>
+        /// Key.
+        /// </value>
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Grid Column.
+        /// </summary>
+        /// <value>
+        /// Grid Column.
+        /// </value>
+        public bool IsGridColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Default Value.
+        /// </summary>
+        /// <value>
+        /// Default Value.
+        /// </value>
+        public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Multi Value.
+        /// </summary>
+        /// <value>
+        /// Multi Value.
+        /// </value>
+        public bool IsMultiValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Required.
+        /// </summary>
+        /// <value>
+        /// Required.
+        /// </value>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public AttributeDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public AttributeDTO( Attribute attribute )
+        {
+            CopyFromModel( attribute );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="attribute"></param>
+        public override void CopyFromModel( Attribute attribute )
+        {
+            this.Id = attribute.Id;
+            this.Guid = attribute.Guid;
+            this.IsSystem = attribute.IsSystem;
+            this.FieldTypeId = attribute.FieldTypeId;
+            this.Entity = attribute.Entity;
+            this.EntityQualifierColumn = attribute.EntityQualifierColumn;
+            this.EntityQualifierValue = attribute.EntityQualifierValue;
+            this.Key = attribute.Key;
+            this.Name = attribute.Name;
+            this.Category = attribute.Category;
+            this.Description = attribute.Description;
+            this.Order = attribute.Order;
+            this.IsGridColumn = attribute.IsGridColumn;
+            this.DefaultValue = attribute.DefaultValue;
+            this.IsMultiValue = attribute.IsMultiValue;
+            this.IsRequired = attribute.IsRequired;
+            this.CreatedDateTime = attribute.CreatedDateTime;
+            this.ModifiedDateTime = attribute.ModifiedDateTime;
+            this.CreatedByPersonId = attribute.CreatedByPersonId;
+            this.ModifiedByPersonId = attribute.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="attribute"></param>
+        public override void CopyToModel( Attribute attribute )
+        {
+            attribute.Id = this.Id;
+            attribute.Guid = this.Guid;
+            attribute.IsSystem = this.IsSystem;
+            attribute.FieldTypeId = this.FieldTypeId;
+            attribute.Entity = this.Entity;
+            attribute.EntityQualifierColumn = this.EntityQualifierColumn;
+            attribute.EntityQualifierValue = this.EntityQualifierValue;
+            attribute.Key = this.Key;
+            attribute.Name = this.Name;
+            attribute.Category = this.Category;
+            attribute.Description = this.Description;
+            attribute.Order = this.Order;
+            attribute.IsGridColumn = this.IsGridColumn;
+            attribute.DefaultValue = this.DefaultValue;
+            attribute.IsMultiValue = this.IsMultiValue;
+            attribute.IsRequired = this.IsRequired;
+            attribute.CreatedDateTime = this.CreatedDateTime;
+            attribute.ModifiedDateTime = this.ModifiedDateTime;
+            attribute.CreatedByPersonId = this.CreatedByPersonId;
+            attribute.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

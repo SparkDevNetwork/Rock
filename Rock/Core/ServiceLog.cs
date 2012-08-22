@@ -78,29 +78,6 @@ namespace Rock.Core
 		[DataMember]
 		public bool Success { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.ServiceLog"/> object.
-        /// </value>
-		public Rock.Core.DTO.ServiceLog DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.ServiceLog dto = new Rock.Core.DTO.ServiceLog();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.Time = this.Time;
-				dto.Input = this.Input;
-				dto.Type = this.Type;
-				dto.Name = this.Name;
-				dto.Result = this.Result;
-				dto.Success = this.Success;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -108,6 +85,7 @@ namespace Rock.Core
 		public override string AuthEntity { get { return "Core.ServiceLog"; } }
 
     }
+
     /// <summary>
     /// Service Log Configuration class.
     /// </summary>
@@ -119,5 +97,107 @@ namespace Rock.Core
         public ServiceLogConfiguration()
         {
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class ServiceLogDTO : DTO<ServiceLog>
+    {
+		/// <summary>
+		/// Gets or sets the Time.
+		/// </summary>
+		/// <value>
+		/// Time.
+		/// </value>
+		public DateTime? Time { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Input.
+		/// </summary>
+		/// <value>
+		/// Input.
+		/// </value>
+		public string Input { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Type.
+		/// </summary>
+		/// <value>
+		/// Type.
+		/// </value>
+		public string Type { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Name.
+		/// </summary>
+		/// <value>
+		/// Name.
+		/// </value>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Result.
+		/// </summary>
+		/// <value>
+		/// Result.
+		/// </value>
+		public string Result { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Success.
+		/// </summary>
+		/// <value>
+		/// Success.
+		/// </value>
+		public bool Success { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public ServiceLogDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public ServiceLogDTO( ServiceLog serviceLog )
+        {
+            CopyFromModel( serviceLog );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="serviceLog"></param>
+        public override void CopyFromModel( ServiceLog serviceLog )
+        {
+            this.Id = serviceLog.Id;
+            this.Guid = serviceLog.Guid;
+            this.Time = serviceLog.Time;
+            this.Input = serviceLog.Input;
+            this.Type = serviceLog.Type;
+            this.Name = serviceLog.Name;
+            this.Result = serviceLog.Result;
+            this.Success = serviceLog.Success;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="serviceLog"></param>
+        public override void CopyToModel( ServiceLog serviceLog )
+        {
+            serviceLog.Id = this.Id;
+            serviceLog.Guid = this.Guid;
+            serviceLog.Time = this.Time;
+            serviceLog.Input = this.Input;
+            serviceLog.Type = this.Type;
+            serviceLog.Name = this.Name;
+            serviceLog.Result = this.Result;
+            serviceLog.Success = this.Success;
+        }
     }
 }

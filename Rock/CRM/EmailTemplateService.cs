@@ -14,7 +14,7 @@ namespace Rock.CRM
 	/// <summary>
 	/// Email Template POCO Service class
 	/// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate, DTO.EmailTemplate>
+    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDTO>
     {
 		/// <summary>
 		/// Gets Email Template by Guid
@@ -37,12 +37,21 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override EmailTemplate CreateNew()
+        {
+            return new EmailTemplate();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.EmailTemplate> QueryableDTO()
+        public override IQueryable<EmailTemplateDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new EmailTemplateDTO( m ) );
         }
     }
 }

@@ -94,31 +94,6 @@ namespace Rock.Groups
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Groups.DTO.GroupType"/> object.
-        /// </value>
-		public Rock.Groups.DTO.GroupType DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Groups.DTO.GroupType dto = new Rock.Groups.DTO.GroupType();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.DefaultGroupRoleId = this.DefaultGroupRoleId;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -183,6 +158,7 @@ namespace Rock.Groups
 		public virtual GroupRole DefaultGroupRole { get; set; }
 
     }
+
     /// <summary>
     /// Group Type Configuration class.
     /// </summary>
@@ -198,5 +174,95 @@ namespace Rock.Groups
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class GroupTypeDTO : DTO<GroupType>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Default Group Role Id.
+        /// </summary>
+        /// <value>
+        /// Default Group Role Id.
+        /// </value>
+        public int? DefaultGroupRoleId { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public GroupTypeDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public GroupTypeDTO( GroupType groupType )
+        {
+            CopyFromModel( groupType );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="groupType"></param>
+        public override void CopyFromModel( GroupType groupType )
+        {
+            this.Id = groupType.Id;
+            this.Guid = groupType.Guid;
+            this.IsSystem = groupType.IsSystem;
+            this.Name = groupType.Name;
+            this.Description = groupType.Description;
+            this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+            this.CreatedDateTime = groupType.CreatedDateTime;
+            this.ModifiedDateTime = groupType.ModifiedDateTime;
+            this.CreatedByPersonId = groupType.CreatedByPersonId;
+            this.ModifiedByPersonId = groupType.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="groupType"></param>
+        public override void CopyToModel( GroupType groupType )
+        {
+            groupType.Id = this.Id;
+            groupType.Guid = this.Guid;
+            groupType.IsSystem = this.IsSystem;
+            groupType.Name = this.Name;
+            groupType.Description = this.Description;
+            groupType.DefaultGroupRoleId = this.DefaultGroupRoleId;
+            groupType.CreatedDateTime = this.CreatedDateTime;
+            groupType.ModifiedDateTime = this.ModifiedDateTime;
+            groupType.CreatedByPersonId = this.CreatedByPersonId;
+            groupType.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

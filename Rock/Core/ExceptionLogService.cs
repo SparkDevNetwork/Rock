@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Exception Log POCO Service class
 	/// </summary>
-    public partial class ExceptionLogService : Service<ExceptionLog, DTO.ExceptionLog>
+    public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDTO>
     {
 		/// <summary>
 		/// Gets Exception Logs by Parent Id
@@ -47,12 +47,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override ExceptionLog CreateNew()
+        {
+            return new ExceptionLog();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.ExceptionLog> QueryableDTO()
+        public override IQueryable<ExceptionLogDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new ExceptionLogDTO( m ) );
         }
     }
 }

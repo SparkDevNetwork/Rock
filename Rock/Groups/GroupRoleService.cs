@@ -14,7 +14,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Group Role POCO Service class
 	/// </summary>
-    public partial class GroupRoleService : Service<GroupRole, DTO.GroupRole>
+    public partial class GroupRoleService : Service<GroupRole, GroupRoleDTO>
     {
 		/// <summary>
 		/// Gets Group Roles by Order
@@ -27,12 +27,21 @@ namespace Rock.Groups
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override GroupRole CreateNew()
+        {
+            return new GroupRole();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.GroupRole> QueryableDTO()
+        public override IQueryable<GroupRoleDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new GroupRoleDTO( m ) );
         }
     }
 }

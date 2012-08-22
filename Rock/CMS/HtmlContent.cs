@@ -142,36 +142,6 @@ namespace Rock.CMS
 		[DataMember]
 		public DateTime? ExpireDateTime { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.HtmlContent"/> object.
-        /// </value>
-		public Rock.CMS.DTO.HtmlContent DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.HtmlContent dto = new Rock.CMS.DTO.HtmlContent();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.BlockId = this.BlockId;
-				dto.EntityValue = this.EntityValue;
-				dto.Version = this.Version;
-				dto.Content = this.Content;
-				dto.IsApproved = this.IsApproved;
-				dto.ApprovedByPersonId = this.ApprovedByPersonId;
-				dto.ApprovedDateTime = this.ApprovedDateTime;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.StartDateTime = this.StartDateTime;
-				dto.ExpireDateTime = this.ExpireDateTime;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -221,6 +191,7 @@ namespace Rock.CMS
             return Content;
         }
     }
+
     /// <summary>
     /// Html Content Configuration class.
     /// </summary>
@@ -236,5 +207,144 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class HtmlContentDTO : DTO<HtmlContent>
+    {
+        /// <summary>
+        /// Gets or sets the Block Id.
+        /// </summary>
+        /// <value>
+        /// Block Id.
+        /// </value>
+        public int BlockId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Value.
+        /// </summary>
+        /// <value>
+        /// Entity Value.
+        /// </value>
+        public string EntityValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Version.
+        /// </summary>
+        /// <value>
+        /// Version.
+        /// </value>
+        public int Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Content.
+        /// </summary>
+        /// <value>
+        /// Content.
+        /// </value>
+        public string Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Approved.
+        /// </summary>
+        /// <value>
+        /// Approved.
+        /// </value>
+        public bool IsApproved { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Approved By Person Id.
+        /// </summary>
+        /// <value>
+        /// Approved By Person Id.
+        /// </value>
+        public int? ApprovedByPersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Approved Date Time.
+        /// </summary>
+        /// <value>
+        /// Approved Date Time.
+        /// </value>
+        public DateTime? ApprovedDateTime { get; set; }
+        /// <summary>
+        /// Gets or sets the Start Date Time.
+        /// </summary>
+        /// <value>
+        /// Start Date Time.
+        /// </value>
+        public DateTime? StartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Expire Date Time.
+        /// </summary>
+        /// <value>
+        /// Expire Date Time.
+        /// </value>
+        public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public HtmlContentDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public HtmlContentDTO( HtmlContent htmlContent )
+        {
+            CopyFromModel( htmlContent );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="htmlContent"></param>
+        public override void CopyFromModel( HtmlContent htmlContent )
+        {
+            this.Id = htmlContent.Id;
+            this.Guid = htmlContent.Guid;
+            this.BlockId = htmlContent.BlockId;
+            this.EntityValue = htmlContent.EntityValue;
+            this.Version = htmlContent.Version;
+            this.Content = htmlContent.Content;
+            this.IsApproved = htmlContent.IsApproved;
+            this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
+            this.ApprovedDateTime = htmlContent.ApprovedDateTime;
+            this.CreatedDateTime = htmlContent.CreatedDateTime;
+            this.ModifiedDateTime = htmlContent.ModifiedDateTime;
+            this.CreatedByPersonId = htmlContent.CreatedByPersonId;
+            this.ModifiedByPersonId = htmlContent.ModifiedByPersonId;
+            this.StartDateTime = htmlContent.StartDateTime;
+            this.ExpireDateTime = htmlContent.ExpireDateTime;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="htmlContent"></param>
+        public override void CopyToModel( HtmlContent htmlContent )
+        {
+            htmlContent.Id = this.Id;
+            htmlContent.Guid = this.Guid;
+            htmlContent.BlockId = this.BlockId;
+            htmlContent.EntityValue = this.EntityValue;
+            htmlContent.Version = this.Version;
+            htmlContent.Content = this.Content;
+            htmlContent.IsApproved = this.IsApproved;
+            htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
+            htmlContent.ApprovedDateTime = this.ApprovedDateTime;
+            htmlContent.CreatedDateTime = this.CreatedDateTime;
+            htmlContent.ModifiedDateTime = this.ModifiedDateTime;
+            htmlContent.CreatedByPersonId = this.CreatedByPersonId;
+            htmlContent.ModifiedByPersonId = this.ModifiedByPersonId;
+            htmlContent.StartDateTime = this.StartDateTime;
+            htmlContent.ExpireDateTime = this.ExpireDateTime;
+        }
     }
 }

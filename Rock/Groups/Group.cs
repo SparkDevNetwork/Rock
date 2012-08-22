@@ -115,33 +115,6 @@ namespace Rock.Groups
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Groups.DTO.Group"/> object.
-        /// </value>
-		public Rock.Groups.DTO.Group DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Groups.DTO.Group dto = new Rock.Groups.DTO.Group();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.ParentGroupId = this.ParentGroupId;
-				dto.GroupTypeId = this.GroupTypeId;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.IsSecurityRole = this.IsSecurityRole;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -197,6 +170,7 @@ namespace Rock.Groups
 		public virtual GroupType GroupType { get; set; }
 
     }
+
     /// <summary>
     /// Group Configuration class.
     /// </summary>
@@ -212,5 +186,115 @@ namespace Rock.Groups
 			this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete(false);
 			this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class GroupDTO : DTO<Group>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent Group Id.
+        /// </summary>
+        /// <value>
+        /// Parent Group Id.
+        /// </value>
+        public int? ParentGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Type Id.
+        /// </summary>
+        /// <value>
+        /// Group Type Id.
+        /// </value>
+        public int GroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Is Security Role.
+        /// </summary>
+        /// <value>
+        /// Is Security Role.
+        /// </value>
+        public bool IsSecurityRole { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public GroupDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public GroupDTO( Group group )
+        {
+            CopyFromModel( group );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="group"></param>
+        public override void CopyFromModel( Group group )
+        {
+            this.Id = group.Id;
+            this.Guid = group.Guid;
+            this.IsSystem = group.IsSystem;
+            this.ParentGroupId = group.ParentGroupId;
+            this.GroupTypeId = group.GroupTypeId;
+            this.Name = group.Name;
+            this.Description = group.Description;
+            this.IsSecurityRole = group.IsSecurityRole;
+            this.CreatedDateTime = group.CreatedDateTime;
+            this.ModifiedDateTime = group.ModifiedDateTime;
+            this.CreatedByPersonId = group.CreatedByPersonId;
+            this.ModifiedByPersonId = group.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="group"></param>
+        public override void CopyToModel( Group group )
+        {
+            group.Id = this.Id;
+            group.Guid = this.Guid;
+            group.IsSystem = this.IsSystem;
+            group.ParentGroupId = this.ParentGroupId;
+            group.GroupTypeId = this.GroupTypeId;
+            group.Name = this.Name;
+            group.Description = this.Description;
+            group.IsSecurityRole = this.IsSecurityRole;
+            group.CreatedDateTime = this.CreatedDateTime;
+            group.ModifiedDateTime = this.ModifiedDateTime;
+            group.CreatedByPersonId = this.CreatedByPersonId;
+            group.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

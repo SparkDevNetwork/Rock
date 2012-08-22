@@ -145,4 +145,42 @@ namespace Rock.Financial
             this.HasOptional(g => g.ModifiedByPerson).WithMany().HasForeignKey(g => g.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class GatewayDTO : DTO<Gateway>
+    {
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public GatewayDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public GatewayDTO( Gateway gateway )
+        {
+            CopyFromModel( gateway );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="gateway"></param>
+        public override void CopyFromModel( Gateway gateway )
+        {
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="gateway"></param>
+        public override void CopyToModel( Gateway gateway )
+        {
+        }
+    }
 }

@@ -16,7 +16,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// User POCO Service class
 	/// </summary>
-    public partial class UserService : Service<User, DTO.User>
+    public partial class UserService : Service<User, UserDTO>
     {
         private const string VALIDATION_KEY = "D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2";
 
@@ -240,12 +240,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override User CreateNew()
+        {
+            return new User();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.User> QueryableDTO()
+        public override IQueryable<UserDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new UserDTO( m ) );
         }
 
         #region Static Methods

@@ -202,42 +202,6 @@ namespace Rock.Util
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Util.DTO.Job"/> object.
-        /// </value>
-		public Rock.Util.DTO.Job DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Util.DTO.Job dto = new Rock.Util.DTO.Job();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.IsActive = this.IsActive;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.Assemby = this.Assemby;
-				dto.Class = this.Class;
-				dto.CronExpression = this.CronExpression;
-				dto.LastSuccessfulRun = this.LastSuccessfulRun;
-				dto.LastRunDate = this.LastRunDate;
-				dto.LastRunDuration = this.LastRunDuration;
-				dto.LastStatus = this.LastStatus;
-				dto.LastStatusMessage = this.LastStatusMessage;
-				dto.LastRunSchedulerName = this.LastRunSchedulerName;
-				dto.NotificationEmails = this.NotificationEmails;
-				dto.NotificationStatus = (int)this.NotificationStatus;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -262,6 +226,7 @@ namespace Rock.Util
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Job Configuration class.
     /// </summary>
@@ -275,6 +240,206 @@ namespace Rock.Util
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class JobDTO : DTO<Job>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Active.
+        /// </summary>
+        /// <value>
+        /// Active.
+        /// </value>
+        public bool? IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Assemby.
+        /// </summary>
+        /// <value>
+        /// Assemby.
+        /// </value>
+        public string Assemby { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Class.
+        /// </summary>
+        /// <value>
+        /// Class.
+        /// </value>
+        public string Class { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Cron Expression.
+        /// </summary>
+        /// <value>
+        /// Cron Expression.
+        /// </value>
+        public string CronExpression { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Successful Run.
+        /// </summary>
+        /// <value>
+        /// Last Successful Run.
+        /// </value>
+        public DateTime? LastSuccessfulRun { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Run Date.
+        /// </summary>
+        /// <value>
+        /// Last Run Date.
+        /// </value>
+        public DateTime? LastRunDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Run Duration.
+        /// </summary>
+        /// <value>
+        /// Last Run Duration.
+        /// </value>
+        public int? LastRunDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Status.
+        /// </summary>
+        /// <value>
+        /// Last Status.
+        /// </value>
+        public string LastStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Status Message.
+        /// </summary>
+        /// <value>
+        /// Last Status Message.
+        /// </value>
+        public string LastStatusMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Run Scheduler Name.
+        /// </summary>
+        /// <value>
+        /// Last Run Scheduler Name.
+        /// </value>
+        public string LastRunSchedulerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Notification Emails.
+        /// </summary>
+        /// <value>
+        /// Notification Emails.
+        /// </value>
+        public string NotificationEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Notification Status.
+        /// </summary>
+        /// <value>
+        /// Notification Status.
+        /// </value>
+        public int NotificationStatus { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public JobDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public JobDTO( Job job )
+        {
+            CopyFromModel( job );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="job"></param>
+        public override void CopyFromModel( Job job )
+        {
+            this.Id = job.Id;
+            this.Guid = job.Guid;
+            this.IsSystem = job.IsSystem;
+            this.IsActive = job.IsActive;
+            this.Name = job.Name;
+            this.Description = job.Description;
+            this.Assemby = job.Assemby;
+            this.Class = job.Class;
+            this.CronExpression = job.CronExpression;
+            this.LastSuccessfulRun = job.LastSuccessfulRun;
+            this.LastRunDate = job.LastRunDate;
+            this.LastRunDuration = job.LastRunDuration;
+            this.LastStatus = job.LastStatus;
+            this.LastStatusMessage = job.LastStatusMessage;
+            this.LastRunSchedulerName = job.LastRunSchedulerName;
+            this.NotificationEmails = job.NotificationEmails;
+            this.NotificationStatus = ( int )job.NotificationStatus;
+            this.CreatedDateTime = job.CreatedDateTime;
+            this.ModifiedDateTime = job.ModifiedDateTime;
+            this.CreatedByPersonId = job.CreatedByPersonId;
+            this.ModifiedByPersonId = job.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="job"></param>
+        public override void CopyToModel( Job job )
+        {
+            job.Id = this.Id;
+            job.Guid = this.Guid;
+            job.IsSystem = this.IsSystem;
+            job.IsActive = this.IsActive;
+            job.Name = this.Name;
+            job.Description = this.Description;
+            job.Assemby = this.Assemby;
+            job.Class = this.Class;
+            job.CronExpression = this.CronExpression;
+            job.LastSuccessfulRun = this.LastSuccessfulRun;
+            job.LastRunDate = this.LastRunDate;
+            job.LastRunDuration = this.LastRunDuration;
+            job.LastStatus = this.LastStatus;
+            job.LastStatusMessage = this.LastStatusMessage;
+            job.LastRunSchedulerName = this.LastRunSchedulerName;
+            job.NotificationEmails = this.NotificationEmails;
+            job.NotificationStatus = ( JobNotificationStatus )this.NotificationStatus;
+            job.CreatedDateTime = this.CreatedDateTime;
+            job.ModifiedDateTime = this.ModifiedDateTime;
+            job.CreatedByPersonId = this.CreatedByPersonId;
+            job.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 
     /// <summary>

@@ -13,7 +13,7 @@ namespace Rock.Financial
     /// <summary>
     /// Service class for Pledge objects.
     /// </summary>
-    public partial class PledgeService : Service<Pledge, DTO.Pledge>
+    public partial class PledgeService : Service<Pledge, PledgeDTO>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PledgeService"/> class.
@@ -31,12 +31,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Pledge CreateNew()
+        {
+            return new Pledge();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Pledge> QueryableDTO()
+        public override IQueryable<PledgeDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PledgeDTO( m ) );
         }
     }
 }

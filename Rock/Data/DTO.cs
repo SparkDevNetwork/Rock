@@ -69,13 +69,20 @@ namespace Rock.Data
         /// Copies properties to the model
         /// </summary>
         /// <param name="dto"></param>
-        public abstract void CopyFromModel(T model);
+        public virtual void CopyFromModel( T model )
+        {
+            throw new System.NotImplementedException();
+        }
+
 
         /// <summary>
         /// Copies properties from the model
         /// </summary>
         /// <param name="model"></param>
-        public abstract void CopyToModel(T model);
+        public virtual void CopyToModel( T model )
+        {
+            throw new System.NotImplementedException();
+        }
 
     }
 }

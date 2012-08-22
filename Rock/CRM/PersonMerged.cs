@@ -58,27 +58,6 @@ namespace Rock.CRM
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.PersonMerged"/> object.
-        /// </value>
-		public Rock.CRM.DTO.PersonMerged DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CRM.DTO.PersonMerged dto = new Rock.CRM.DTO.PersonMerged();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.CurrentId = this.CurrentId;
-				dto.CurrentGuid = this.CurrentGuid;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -98,6 +77,7 @@ namespace Rock.CRM
             }
         }
     }
+
     /// <summary>
     /// Person Trail Configuration class.
     /// </summary>
@@ -109,5 +89,71 @@ namespace Rock.CRM
         public PersonMergedConfiguration()
         {
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class PersonMergedDTO : DTO<PersonMerged>
+    {
+        /// <summary>
+        /// Gets or sets the Current Id.
+        /// </summary>
+        /// <value>
+        /// Current Id.
+        /// </value>
+        public int CurrentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Current Guid.
+        /// </summary>
+        /// <value>
+        /// Current Guid.
+        /// </value>
+        public Guid CurrentGuid { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PersonMergedDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public PersonMergedDTO( PersonMerged personMerged )
+        {
+            CopyFromModel( personMerged );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="personMerged"></param>
+        public override void CopyFromModel( PersonMerged personMerged )
+        {
+            this.Id = personMerged.Id;
+            this.Guid = personMerged.Guid;
+            this.CurrentId = personMerged.CurrentId;
+            this.CurrentGuid = personMerged.CurrentGuid;
+            this.CreatedDateTime = personMerged.CreatedDateTime;
+            this.CreatedByPersonId = personMerged.CreatedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="personMerged"></param>
+        public override void CopyToModel( PersonMerged personMerged )
+        {
+            personMerged.Id = this.Id;
+            personMerged.Guid = this.Guid;
+            personMerged.CurrentId = this.CurrentId;
+            personMerged.CurrentGuid = this.CurrentGuid;
+            personMerged.CreatedDateTime = this.CreatedDateTime;
+            personMerged.CreatedByPersonId = this.CreatedByPersonId;
+        }
     }
 }

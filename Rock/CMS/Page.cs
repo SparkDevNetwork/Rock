@@ -337,6 +337,7 @@ namespace Rock.CMS
             return Name;
         }
     }
+
     /// <summary>
     /// Page Configuration class.
     /// </summary>
@@ -357,7 +358,7 @@ namespace Rock.CMS
     /// <summary>
     /// Data Transformation Object
     /// </summary>
-    public class PageDTO : DTO<Page>
+    public partial class PageDTO : DTO<Page>
     {
         /// <summary>
         /// Gets or sets the Name.
@@ -495,12 +496,27 @@ namespace Rock.CMS
         /// </value>
         public string IconUrl { get; set; }
 
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public PageDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
         public PageDTO( Page page )
         {
             CopyFromModel( page );
         }
 
-        public void CopyFromModel( Page page )
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="page"></param>
+        public override void CopyFromModel( Page page )
         {
             this.Id = page.Id;
             this.Guid = page.Guid;
@@ -527,7 +543,11 @@ namespace Rock.CMS
             this.IconUrl = page.IconUrl;
         }
 
-        public void CopyToModel( Page page )
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="page"></param>
+        public override void CopyToModel( Page page )
         {
             page.Id = this.Id;
             page.Guid = this.Guid;

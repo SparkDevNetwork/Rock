@@ -13,7 +13,7 @@ namespace Rock.Financial
     /// <summary>
     /// Service class for PersonAccountLookup objects.
     /// </summary>
-    public partial class PersonAccountLookupService : Service<PersonAccountLookup, DTO.PersonAccountLookup>
+    public partial class PersonAccountLookupService : Service<PersonAccountLookup, PersonAccountLookupDTO>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class.
@@ -31,12 +31,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override PersonAccountLookup CreateNew()
+        {
+            return new PersonAccountLookup();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.PersonAccountLookup> QueryableDTO()
+        public override IQueryable<PersonAccountLookupDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PersonAccountLookupDTO( m ) );
         }
     }
 }

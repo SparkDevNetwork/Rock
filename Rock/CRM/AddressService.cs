@@ -14,7 +14,7 @@ namespace Rock.CRM
 	/// <summary>
 	/// Address POCO Service class
 	/// </summary>
-    public partial class AddressService : Service<Address, DTO.Address>
+    public partial class AddressService : Service<Address, AddressDTO>
     {
 		/// <summary>
 		/// Gets Address by Raw
@@ -46,7 +46,7 @@ namespace Rock.CRM
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Standardize( Rock.CRM.DTO.Address address, int? personId )
+        public Address Standardize( AddressDTO address, int? personId )
         {
             Address addressModel = GetByAddressDTO( address, personId );
 
@@ -102,7 +102,7 @@ namespace Rock.CRM
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Geocode( Rock.CRM.DTO.Address address, int? personId )
+        public Address Geocode( AddressDTO address, int? personId )
         {
             Address addressModel = GetByAddressDTO( address, personId );
 
@@ -161,7 +161,7 @@ namespace Rock.CRM
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Address GetByAddressDTO( Rock.CRM.DTO.Address address, int? personId )
+        private Address GetByAddressDTO( AddressDTO address, int? personId )
         {
             string raw = address.Raw;
 
@@ -186,12 +186,21 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Address CreateNew()
+        {
+            return new Address();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Address> QueryableDTO()
+        public override IQueryable<AddressDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new AddressDTO( m ) );
         }
     }
 }

@@ -153,37 +153,6 @@ namespace Rock.CRM
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.EmailTemplate"/> object.
-        /// </value>
-		public Rock.CRM.DTO.EmailTemplate DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CRM.DTO.EmailTemplate dto = new Rock.CRM.DTO.EmailTemplate();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PersonId = this.PersonId;
-				dto.Category = this.Category;
-				dto.Title = this.Title;
-				dto.From = this.From;
-				dto.To = this.To;
-				dto.Cc = this.Cc;
-				dto.Bcc = this.Bcc;
-				dto.Subject = this.Subject;
-				dto.Body = this.Body;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -216,6 +185,7 @@ namespace Rock.CRM
 		public virtual Person ModifiedByPerson { get; set; }
 
     }
+    
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>
@@ -230,5 +200,155 @@ namespace Rock.CRM
 			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class EmailTemplateDTO : DTO<EmailTemplate>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the From.
+        /// </summary>
+        /// <value>
+        /// From.
+        /// </value>
+        public string From { get; set; }
+
+        /// <summary>
+        /// Gets or sets the To.
+        /// </summary>
+        /// <value>
+        /// To.
+        /// </value>
+        public string To { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Cc.
+        /// </summary>
+        /// <value>
+        /// Cc.
+        /// </value>
+        public string Cc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Bcc.
+        /// </summary>
+        /// <value>
+        /// Bcc.
+        /// </value>
+        public string Bcc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Subject.
+        /// </summary>
+        /// <value>
+        /// Subject.
+        /// </value>
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Body.
+        /// </summary>
+        /// <value>
+        /// Body.
+        /// </value>
+        public string Body { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public EmailTemplateDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public EmailTemplateDTO( EmailTemplate emailTemplate )
+        {
+            CopyFromModel( emailTemplate );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="emailTemplate"></param>
+        public override void CopyFromModel( EmailTemplate emailTemplate )
+        {
+            this.Id = emailTemplate.Id;
+            this.Guid = emailTemplate.Guid;
+            this.IsSystem = emailTemplate.IsSystem;
+            this.PersonId = emailTemplate.PersonId;
+            this.Category = emailTemplate.Category;
+            this.Title = emailTemplate.Title;
+            this.From = emailTemplate.From;
+            this.To = emailTemplate.To;
+            this.Cc = emailTemplate.Cc;
+            this.Bcc = emailTemplate.Bcc;
+            this.Subject = emailTemplate.Subject;
+            this.Body = emailTemplate.Body;
+            this.CreatedDateTime = emailTemplate.CreatedDateTime;
+            this.ModifiedDateTime = emailTemplate.ModifiedDateTime;
+            this.CreatedByPersonId = emailTemplate.CreatedByPersonId;
+            this.ModifiedByPersonId = emailTemplate.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="emailTemplate"></param>
+        public override void CopyToModel( EmailTemplate emailTemplate )
+        {
+            emailTemplate.Id = this.Id;
+            emailTemplate.Guid = this.Guid;
+            emailTemplate.IsSystem = this.IsSystem;
+            emailTemplate.PersonId = this.PersonId;
+            emailTemplate.Category = this.Category;
+            emailTemplate.Title = this.Title;
+            emailTemplate.From = this.From;
+            emailTemplate.To = this.To;
+            emailTemplate.Cc = this.Cc;
+            emailTemplate.Bcc = this.Bcc;
+            emailTemplate.Subject = this.Subject;
+            emailTemplate.Body = this.Body;
+            emailTemplate.CreatedDateTime = this.CreatedDateTime;
+            emailTemplate.ModifiedDateTime = this.ModifiedDateTime;
+            emailTemplate.CreatedByPersonId = this.CreatedByPersonId;
+            emailTemplate.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

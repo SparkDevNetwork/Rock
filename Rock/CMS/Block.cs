@@ -97,31 +97,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.Block"/> object.
-        /// </value>
-		public Rock.CMS.DTO.Block DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.Block dto = new Rock.CMS.DTO.Block();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Path = this.Path;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -153,6 +128,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Block Configuration class.
     /// </summary>
@@ -166,5 +142,95 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class BlockDTO : DTO<Block>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Path.
+        /// </summary>
+        /// <value>
+        /// Path.
+        /// </value>
+        public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public BlockDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public BlockDTO( Block block )
+        {
+            CopyFromModel( block );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="block"></param>
+        public override void CopyFromModel( Block block )
+        {
+            this.Id = block.Id;
+            this.Guid = block.Guid;
+            this.IsSystem = block.IsSystem;
+            this.Path = block.Path;
+            this.Name = block.Name;
+            this.Description = block.Description;
+            this.CreatedDateTime = block.CreatedDateTime;
+            this.ModifiedDateTime = block.ModifiedDateTime;
+            this.CreatedByPersonId = block.CreatedByPersonId;
+            this.ModifiedByPersonId = block.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="block"></param>
+        public override void CopyToModel( Block block )
+        {
+            block.Id = this.Id;
+            block.Guid = this.Guid;
+            block.IsSystem = this.IsSystem;
+            block.Path = this.Path;
+            block.Name = this.Name;
+            block.Description = this.Description;
+            block.CreatedDateTime = this.CreatedDateTime;
+            block.ModifiedDateTime = this.ModifiedDateTime;
+            block.CreatedByPersonId = this.CreatedByPersonId;
+            block.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Block POCO Service class
 	/// </summary>
-    public partial class BlockService : Service<Block, DTO.Block>
+    public partial class BlockService : Service<Block, BlockDTO>
     {
 		/// <summary>
 		/// Gets Blocks by Name
@@ -81,12 +81,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Block CreateNew()
+        {
+            return new Block();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Block> QueryableDTO()
+        public override IQueryable<BlockDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new BlockDTO( m ) );
         }
     }
 }

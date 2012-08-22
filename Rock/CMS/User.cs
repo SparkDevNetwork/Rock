@@ -224,42 +224,6 @@ namespace Rock.CMS
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.User"/> object.
-        /// </value>
-		public Rock.CMS.DTO.User DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.User dto = new Rock.CMS.DTO.User();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.UserName = this.UserName;
-				dto.AuthenticationType = (int)this.AuthenticationType;
-				dto.Password = this.Password;
-				dto.IsConfirmed = this.IsConfirmed;
-				dto.LastActivityDate = this.LastActivityDate;
-				dto.LastLoginDate = this.LastLoginDate;
-				dto.LastPasswordChangedDate = this.LastPasswordChangedDate;
-				dto.CreationDate = this.CreationDate;
-				dto.IsOnLine = this.IsOnLine;
-				dto.IsLockedOut = this.IsLockedOut;
-				dto.LastLockedOutDate = this.LastLockedOutDate;
-				dto.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
-				dto.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
-				dto.ApiKey = this.ApiKey;
-				dto.PersonId = this.PersonId;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -350,6 +314,7 @@ namespace Rock.CMS
         #endregion
 
     }
+
     /// <summary>
     /// User Configuration class.
     /// </summary>
@@ -364,6 +329,206 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class UserDTO : DTO<User>
+    {
+        /// <summary>
+        /// Gets or sets the User Name.
+        /// </summary>
+        /// <value>
+        /// User Name.
+        /// </value>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Authentication Type.
+        /// </summary>
+        /// <value>
+        /// Authentication Type.
+        /// </value>
+        public int AuthenticationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Password.
+        /// </summary>
+        /// <value>
+        /// Password.
+        /// </value>
+        public string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Is Confirmed.
+        /// </summary>
+        /// <value>
+        /// Is Confirmed.
+        /// </value>
+        public bool? IsConfirmed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Activity Date.
+        /// </summary>
+        /// <value>
+        /// Last Activity Date.
+        /// </value>
+        public DateTime? LastActivityDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Login Date.
+        /// </summary>
+        /// <value>
+        /// Last Login Date.
+        /// </value>
+        public DateTime? LastLoginDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Password Changed Date.
+        /// </summary>
+        /// <value>
+        /// Last Password Changed Date.
+        /// </value>
+        public DateTime? LastPasswordChangedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Creation Date.
+        /// </summary>
+        /// <value>
+        /// Creation Date.
+        /// </value>
+        public DateTime? CreationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Is On Line.
+        /// </summary>
+        /// <value>
+        /// Is On Line.
+        /// </value>
+        public bool? IsOnLine { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Is Locked Out.
+        /// </summary>
+        /// <value>
+        /// Is Locked Out.
+        /// </value>
+        public bool? IsLockedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Locked Out Date.
+        /// </summary>
+        /// <value>
+        /// Last Locked Out Date.
+        /// </value>
+        public DateTime? LastLockedOutDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Failed Password Attempt Count.
+        /// </summary>
+        /// <value>
+        /// Failed Password Attempt Count.
+        /// </value>
+        public int? FailedPasswordAttemptCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Failed Password Attempt Window Start.
+        /// </summary>
+        /// <value>
+        /// Failed Password Attempt Window Start.
+        /// </value>
+        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Api Key.
+        /// </summary>
+        /// <value>
+        /// Api Key.
+        /// </value>
+        public string ApiKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public UserDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public UserDTO( User user )
+        {
+            CopyFromModel( user );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="user"></param>
+        public override void CopyFromModel( User user )
+        {
+            this.Id = user.Id;
+            this.Guid = user.Guid;
+            this.UserName = user.UserName;
+            this.AuthenticationType = ( int )user.AuthenticationType;
+            this.Password = user.Password;
+            this.IsConfirmed = user.IsConfirmed;
+            this.LastActivityDate = user.LastActivityDate;
+            this.LastLoginDate = user.LastLoginDate;
+            this.LastPasswordChangedDate = user.LastPasswordChangedDate;
+            this.CreationDate = user.CreationDate;
+            this.IsOnLine = user.IsOnLine;
+            this.IsLockedOut = user.IsLockedOut;
+            this.LastLockedOutDate = user.LastLockedOutDate;
+            this.FailedPasswordAttemptCount = user.FailedPasswordAttemptCount;
+            this.FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart;
+            this.ApiKey = user.ApiKey;
+            this.PersonId = user.PersonId;
+            this.CreatedDateTime = user.CreatedDateTime;
+            this.ModifiedDateTime = user.ModifiedDateTime;
+            this.CreatedByPersonId = user.CreatedByPersonId;
+            this.ModifiedByPersonId = user.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="user"></param>
+        public override void CopyToModel( User user )
+        {
+            user.Id = this.Id;
+            user.Guid = this.Guid;
+            user.UserName = this.UserName;
+            user.AuthenticationType = ( AuthenticationType )this.AuthenticationType;
+            user.Password = this.Password;
+            user.IsConfirmed = this.IsConfirmed;
+            user.LastActivityDate = this.LastActivityDate;
+            user.LastLoginDate = this.LastLoginDate;
+            user.LastPasswordChangedDate = this.LastPasswordChangedDate;
+            user.CreationDate = this.CreationDate;
+            user.IsOnLine = this.IsOnLine;
+            user.IsLockedOut = this.IsLockedOut;
+            user.LastLockedOutDate = this.LastLockedOutDate;
+            user.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
+            user.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
+            user.ApiKey = this.ApiKey;
+            user.PersonId = this.PersonId;
+            user.CreatedDateTime = this.CreatedDateTime;
+            user.ModifiedDateTime = this.ModifiedDateTime;
+            user.CreatedByPersonId = this.CreatedByPersonId;
+            user.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 
     /// <summary>

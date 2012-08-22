@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="CMS\BlocksController.cs" />
     <Compile Include="CMS\PagesController.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
@@ -57,10 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Rock.DataTransferObjects\Rock.DataTransferObjects.csproj">
-      <Project>{2bbf8883-7c46-42e3-9f7f-7b1b6cd7d9f5}</Project>
-      <Name>Rock.DataTransferObjects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>

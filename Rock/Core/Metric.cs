@@ -185,40 +185,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.Metric"/> object.
-        /// </value>
-		public Rock.Core.DTO.Metric DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.Metric dto = new Rock.Core.DTO.Metric();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Type= this.Type;
-				dto.Category = this.Category;
-				dto.Title = this.Title;
-				dto.Subtitle = this.Subtitle;
-				dto.Description = this.Description;
-				dto.MinValue = this.MinValue;
-				dto.MaxValue = this.MaxValue;
-				dto.CollectionFrequency = this.CollectionFrequency;
-				dto.LastCollected = this.LastCollected;
-				dto.Source = this.Source;
-				dto.SourceSQL = this.SourceSQL;
-				dto.Order = this.Order;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
 
         /// <summary>
         /// Gets the auth entity.
@@ -266,6 +232,7 @@ namespace Rock.Core
             
         }
     }
+
     /// <summary>
     /// Metric Configuration class.
     /// </summary>
@@ -280,5 +247,185 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class MetricDTO : DTO<Metric>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Type.
+        /// </summary>
+        /// <value>
+        /// Type.
+        /// </value>
+        public bool Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Subtitle.
+        /// </summary>
+        /// <value>
+        /// Subtitle.
+        /// </value>
+        public string Subtitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MinValue.
+        /// </summary>
+        /// <value>
+        /// MinValue.
+        /// </value>
+        public int MinValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MaxValue.
+        /// </summary>
+        /// <value>
+        /// MaxValue.
+        /// </value>
+        public int MaxValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CollectionFrequency.
+        /// </summary>
+        /// <value>
+        /// CollectionFrequency.
+        /// </value>
+        public int CollectionFrequency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LastCollected date.
+        /// </summary>
+        /// <value>
+        /// LastCollected.
+        /// </value>
+        public DateTime LastCollected { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Source.
+        /// </summary>
+        /// <value>
+        /// Source.
+        /// </value>
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceSQL.
+        /// </summary>
+        /// <value>
+        /// SourceSQL.
+        /// </value>
+        public string SourceSQL { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public MetricDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public MetricDTO( Metric metric )
+        {
+            CopyFromModel( metric );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="metric"></param>
+        public override void CopyFromModel( Metric metric )
+        {
+            this.Id = metric.Id;
+            this.Guid = metric.Guid;
+            this.IsSystem = metric.IsSystem;
+            this.Type = metric.Type;
+            this.Category = metric.Category;
+            this.Title = metric.Title;
+            this.Subtitle = metric.Subtitle;
+            this.Description = metric.Description;
+            this.MinValue = metric.MinValue;
+            this.MaxValue = metric.MaxValue;
+            this.CollectionFrequency = metric.CollectionFrequency;
+            this.LastCollected = metric.LastCollected;
+            this.Source = metric.Source;
+            this.SourceSQL = metric.SourceSQL;
+            this.Order = metric.Order;
+            this.CreatedDateTime = metric.CreatedDateTime;
+            this.ModifiedDateTime = metric.ModifiedDateTime;
+            this.CreatedByPersonId = metric.CreatedByPersonId;
+            this.ModifiedByPersonId = metric.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="metric"></param>
+        public override void CopyToModel( Metric metric )
+        {
+            metric.Id = this.Id;
+            metric.Guid = this.Guid;
+            metric.IsSystem = this.IsSystem;
+            metric.Type = this.Type;
+            metric.Category = this.Category;
+            metric.Title = this.Title;
+            metric.Subtitle = this.Subtitle;
+            metric.Description = this.Description;
+            metric.MinValue = this.MinValue;
+            metric.MaxValue = this.MaxValue;
+            metric.CollectionFrequency = this.CollectionFrequency;
+            metric.LastCollected = this.LastCollected;
+            metric.Source = this.Source;
+            metric.SourceSQL = this.SourceSQL;
+            metric.Order = this.Order;
+            metric.CreatedDateTime = this.CreatedDateTime;
+            metric.ModifiedDateTime = this.ModifiedDateTime;
+            metric.CreatedByPersonId = this.CreatedByPersonId;
+            metric.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

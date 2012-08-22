@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Attribute Qualifier POCO Service class
 	/// </summary>
-    public partial class AttributeQualifierService : Service<AttributeQualifier, DTO.AttributeQualifier>
+    public partial class AttributeQualifierService : Service<AttributeQualifier, AttributeQualifierDTO>
     {
 		/// <summary>
 		/// Gets Attribute Qualifiers by Attribute Id
@@ -27,12 +27,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override AttributeQualifier CreateNew()
+        {
+            return new AttributeQualifier();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.AttributeQualifier> QueryableDTO()
+        public override IQueryable<AttributeQualifierDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new AttributeQualifierDTO( m ) );
         }
     }
 }

@@ -87,30 +87,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.SiteDomain"/> object.
-        /// </value>
-		public Rock.CMS.DTO.SiteDomain DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.SiteDomain dto = new Rock.CMS.DTO.SiteDomain();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.SiteId = this.SiteId;
-				dto.Domain = this.Domain;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -142,6 +118,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Site Domain Configuration class.
     /// </summary>
@@ -156,5 +133,85 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class SiteDomainDTO : DTO<SiteDomain>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Id.
+        /// </summary>
+        /// <value>
+        /// Site Id.
+        /// </value>
+        public int SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Domain.
+        /// </summary>
+        /// <value>
+        /// Domain.
+        /// </value>
+        public string Domain { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public SiteDomainDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public SiteDomainDTO( SiteDomain siteDomain )
+        {
+            CopyFromModel( siteDomain );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="siteDomain"></param>
+        public override void CopyFromModel( SiteDomain siteDomain )
+        {
+            this.Id = siteDomain.Id;
+            this.Guid = siteDomain.Guid;
+            this.IsSystem = siteDomain.IsSystem;
+            this.SiteId = siteDomain.SiteId;
+            this.Domain = siteDomain.Domain;
+            this.CreatedDateTime = siteDomain.CreatedDateTime;
+            this.ModifiedDateTime = siteDomain.ModifiedDateTime;
+            this.CreatedByPersonId = siteDomain.CreatedByPersonId;
+            this.ModifiedByPersonId = siteDomain.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="siteDomain"></param>
+        public override void CopyToModel( SiteDomain siteDomain )
+        {
+            siteDomain.Id = this.Id;
+            siteDomain.Guid = this.Guid;
+            siteDomain.IsSystem = this.IsSystem;
+            siteDomain.SiteId = this.SiteId;
+            siteDomain.Domain = this.Domain;
+            siteDomain.CreatedDateTime = this.CreatedDateTime;
+            siteDomain.ModifiedDateTime = this.ModifiedDateTime;
+            siteDomain.CreatedByPersonId = this.CreatedByPersonId;
+            siteDomain.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

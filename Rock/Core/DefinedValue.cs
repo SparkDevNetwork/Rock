@@ -106,32 +106,6 @@ namespace Rock.Core
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.DefinedValue"/> object.
-        /// </value>
-		public Rock.Core.DTO.DefinedValue DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.DefinedValue dto = new Rock.Core.DTO.DefinedValue();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.DefinedTypeId = this.DefinedTypeId;
-				dto.Order = this.Order;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -171,6 +145,7 @@ namespace Rock.Core
 		}
 
     }
+    
     /// <summary>
     /// Defined Value Configuration class.
     /// </summary>
@@ -185,5 +160,105 @@ namespace Rock.Core
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class DefinedValueDTO : DTO<DefinedValue>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Type Id.
+        /// </summary>
+        /// <value>
+        /// Defined Type Id.
+        /// </value>
+        public int DefinedTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public DefinedValueDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public DefinedValueDTO( DefinedValue definedValue )
+        {
+            CopyFromModel( definedValue );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="definedValue"></param>
+        public override void CopyFromModel( DefinedValue definedValue )
+        {
+            this.Id = definedValue.Id;
+            this.Guid = definedValue.Guid;
+            this.IsSystem = definedValue.IsSystem;
+            this.DefinedTypeId = definedValue.DefinedTypeId;
+            this.Order = definedValue.Order;
+            this.Name = definedValue.Name;
+            this.Description = definedValue.Description;
+            this.CreatedDateTime = definedValue.CreatedDateTime;
+            this.ModifiedDateTime = definedValue.ModifiedDateTime;
+            this.CreatedByPersonId = definedValue.CreatedByPersonId;
+            this.ModifiedByPersonId = definedValue.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="definedValue"></param>
+        public override void CopyToModel( DefinedValue definedValue )
+        {
+            definedValue.Id = this.Id;
+            definedValue.Guid = this.Guid;
+            definedValue.IsSystem = this.IsSystem;
+            definedValue.DefinedTypeId = this.DefinedTypeId;
+            definedValue.Order = this.Order;
+            definedValue.Name = this.Name;
+            definedValue.Description = this.Description;
+            definedValue.CreatedDateTime = this.CreatedDateTime;
+            definedValue.ModifiedDateTime = this.ModifiedDateTime;
+            definedValue.CreatedByPersonId = this.CreatedByPersonId;
+            definedValue.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Site Domain POCO Service class
 	/// </summary>
-    public partial class SiteDomainService : Service<SiteDomain, DTO.SiteDomain>
+    public partial class SiteDomainService : Service<SiteDomain, SiteDomainDTO>
     {
 		/// <summary>
 		/// Gets Site Domain by Domain
@@ -58,12 +58,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override SiteDomain CreateNew()
+        {
+            return new SiteDomain();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.SiteDomain> QueryableDTO()
+        public override IQueryable<SiteDomainDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new SiteDomainDTO( m ) );
         }
     }
 }

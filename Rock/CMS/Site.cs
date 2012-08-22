@@ -175,39 +175,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.Site"/> object.
-        /// </value>
-		public Rock.CMS.DTO.Site DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.Site dto = new Rock.CMS.DTO.Site();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Name = this.Name;
-				dto.Description = this.Description;
-				dto.Theme = this.Theme;
-				dto.DefaultPageId = this.DefaultPageId;
-				dto.FaviconUrl = this.FaviconUrl;
-				dto.AppleTouchIconUrl = this.AppleTouchIconUrl;
-				dto.FacebookAppId = this.FacebookAppId;
-				dto.FacebookAppSecret = this.FacebookAppSecret;
-				dto.LoginPageReference = this.LoginPageReference;
-				dto.RegistrationPageReference = this.RegistrationPageReference;
-				dto.ErrorPage = this.ErrorPage;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -284,5 +251,175 @@ namespace Rock.CMS
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
+    }
+
+    /// <summary>
+    /// Data Transformation Object
+    /// </summary>
+    public partial class SiteDTO : DTO<Site>
+    {
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Theme.
+        /// </summary>
+        /// <value>
+        /// Theme.
+        /// </value>
+        public string Theme { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Default Page Id.
+        /// </summary>
+        /// <value>
+        /// Default Page Id.
+        /// </value>
+        public int? DefaultPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Favicon Url.
+        /// </summary>
+        /// <value>
+        /// Favicon Url.
+        /// </value>
+        public string FaviconUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Apple Touch Icon Url.
+        /// </summary>
+        /// <value>
+        /// Apple Touch Icon Url.
+        /// </value>
+        public string AppleTouchIconUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Facebook App Id.
+        /// </summary>
+        /// <value>
+        /// Facebook App Id.
+        /// </value>
+        public string FacebookAppId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Facebook App Secret.
+        /// </summary>
+        /// <value>
+        /// Facebook App Secret.
+        /// </value>
+        public string FacebookAppSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Login Page Reference.
+        /// </summary>
+        /// <value>
+        /// Login Page Reference.
+        /// </value>
+        public string LoginPageReference { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Registration Page Reference.
+        /// </summary>
+        /// <value>
+        /// Registration Page Reference.
+        /// </value>
+        public string RegistrationPageReference { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Error Page.
+        /// </summary>
+        /// <value>
+        /// Error Page.
+        /// </value>
+        public string ErrorPage { get; set; }
+
+        /// <summary>
+        /// Instantiate new DTO object
+        /// </summary>
+        public SiteDTO()
+        {
+        }
+
+        /// <summary>
+        /// Instantiate new DTO object from Model
+        /// </summary>
+        /// <param name="auth"></param>
+        public SiteDTO( Site site )
+        {
+            CopyFromModel( site );
+        }
+
+        /// <summary>
+        /// Copy DTO to Model
+        /// </summary>
+        /// <param name="site"></param>
+        public override void CopyFromModel( Site site )
+        {
+            this.Id = site.Id;
+            this.Guid = site.Guid;
+            this.IsSystem = site.IsSystem;
+            this.Name = site.Name;
+            this.Description = site.Description;
+            this.Theme = site.Theme;
+            this.DefaultPageId = site.DefaultPageId;
+            this.FaviconUrl = site.FaviconUrl;
+            this.AppleTouchIconUrl = site.AppleTouchIconUrl;
+            this.FacebookAppId = site.FacebookAppId;
+            this.FacebookAppSecret = site.FacebookAppSecret;
+            this.LoginPageReference = site.LoginPageReference;
+            this.RegistrationPageReference = site.RegistrationPageReference;
+            this.ErrorPage = site.ErrorPage;
+            this.CreatedDateTime = site.CreatedDateTime;
+            this.ModifiedDateTime = site.ModifiedDateTime;
+            this.CreatedByPersonId = site.CreatedByPersonId;
+            this.ModifiedByPersonId = site.ModifiedByPersonId;
+        }
+
+        /// <summary>
+        /// Copy Model to DTO
+        /// </summary>
+        /// <param name="site"></param>
+        public override void CopyToModel( Site site )
+        {
+            site.Id = this.Id;
+            site.Guid = this.Guid;
+            site.IsSystem = this.IsSystem;
+            site.Name = this.Name;
+            site.Description = this.Description;
+            site.Theme = this.Theme;
+            site.DefaultPageId = this.DefaultPageId;
+            site.FaviconUrl = this.FaviconUrl;
+            site.AppleTouchIconUrl = this.AppleTouchIconUrl;
+            site.FacebookAppId = this.FacebookAppId;
+            site.FacebookAppSecret = this.FacebookAppSecret;
+            site.LoginPageReference = this.LoginPageReference;
+            site.RegistrationPageReference = this.RegistrationPageReference;
+            site.ErrorPage = this.ErrorPage;
+            site.CreatedDateTime = this.CreatedDateTime;
+            site.ModifiedDateTime = this.ModifiedDateTime;
+            site.CreatedByPersonId = this.CreatedByPersonId;
+            site.ModifiedByPersonId = this.ModifiedByPersonId;
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace Rock.Util
 	/// <summary>
 	/// Job POCO Service class
 	/// </summary>
-    public partial class JobService : Service<Job, DTO.Job>
+    public partial class JobService : Service<Job, JobDTO>
     {
         /// <summary>
         /// Gets the active jobs.
@@ -89,12 +89,21 @@ namespace Rock.Util
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override Job CreateNew()
+        {
+            return new Job();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.Job> QueryableDTO()
+        public override IQueryable<JobDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new JobDTO( m ) );
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Rock.CMS
 	/// <summary>
 	/// Page Context POCO Service class
 	/// </summary>
-    public partial class PageContextService : Service<PageContext, DTO.PageContext>
+    public partial class PageContextService : Service<PageContext, PageContextDTO>
     {
 		/// <summary>
 		/// Gets Page Contexts by Page Id
@@ -27,12 +27,21 @@ namespace Rock.CMS
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override PageContext CreateNew()
+        {
+            return new PageContext();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.PageContext> QueryableDTO()
+        public override IQueryable<PageContextDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new PageContextDTO( m ) );
         }
     }
 }

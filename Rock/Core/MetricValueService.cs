@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// MetricValue POCO Service class
 	/// </summary>
-    public partial class MetricValueService : Service<MetricValue, DTO.MetricValue>
+    public partial class MetricValueService : Service<MetricValue, MetricValueDTO>
     {
 		/// <summary>
 		/// Gets MetricValues by MetricId
@@ -37,12 +37,21 @@ namespace Rock.Core
 		}
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override MetricValue CreateNew()
+        {
+            return new MetricValue();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.MetricValue> QueryableDTO()
+        public override IQueryable<MetricValueDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new MetricValueDTO( m ) );
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Defined Value POCO Service class
 	/// </summary>
-    public partial class DefinedValueService : Service<DefinedValue, DTO.DefinedValue>
+    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDTO>
     {
 		/// <summary>
 		/// Gets Defined Values by Defined Type Id
@@ -37,12 +37,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override DefinedValue CreateNew()
+        {
+            return new DefinedValue();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.DefinedValue> QueryableDTO()
+        public override IQueryable<DefinedValueDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new DefinedValueDTO( m ) );
         }
     }
 }

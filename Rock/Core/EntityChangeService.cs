@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Entity Change Service class
 	/// </summary>
-    public partial class EntityChangeService : Service<EntityChange, DTO.EntityChange>
+    public partial class EntityChangeService : Service<EntityChange, EntityChangeDTO>
     {
 		/// <summary>
 		/// Gets Entity Changes by Change Set
@@ -27,12 +27,21 @@ namespace Rock.Core
         }
 
         /// <summary>
+        /// Creates a new model
+        /// </summary>
+        /// <returns></returns>
+        public override EntityChange CreateNew()
+        {
+            return new EntityChange();
+        }
+
+        /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of related DTO objects.</returns>
-        public override IQueryable<DTO.EntityChange> QueryableDTO()
+        public override IQueryable<EntityChangeDTO> QueryableDTO()
         {
-            throw new System.NotImplementedException();
+            return this.Queryable().Select( m => new EntityChangeDTO( m ) );
         }
     }
 }
