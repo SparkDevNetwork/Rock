@@ -129,6 +129,22 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t{" );
 
             sb.AppendLine( "\t\t/// <summary>" );
+            sb.AppendFormat( "\t\t/// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
+            sb.AppendLine( "\t\t/// </summary>" );
+            sb.AppendFormat( "\t\tpublic {0}Service() : base()" + Environment.NewLine, type.Name );
+            sb.AppendLine( "\t\t{" );
+            sb.AppendLine( "\t\t}" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "\t\t/// <summary>" );
+            sb.AppendFormat( "\t\t/// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
+            sb.AppendLine( "\t\t/// </summary>" );
+            sb.AppendFormat( "\t\tpublic {0}Service(IRepository<{0}> repository) : base(repository)" + Environment.NewLine, type.Name );
+            sb.AppendLine( "\t\t{" );
+            sb.AppendLine( "\t\t}" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "\t\t/// <summary>" );
             sb.AppendLine( "\t\t/// Creates a new model" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendFormat( "\t\tpublic override {0} CreateNew()" + Environment.NewLine, type.Name );
