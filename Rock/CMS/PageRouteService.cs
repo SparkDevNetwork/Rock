@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class PageRouteService : Service<PageRoute, PageRouteDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PageRouteService"/> class
+		/// </summary>
+		public PageRouteService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PageRouteService"/> class
+		/// </summary>
+		public PageRouteService(IRepository<PageRoute> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override PageRoute CreateNew()

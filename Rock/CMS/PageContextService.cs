@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class PageContextService : Service<PageContext, PageContextDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PageContextService"/> class
+		/// </summary>
+		public PageContextService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PageContextService"/> class
+		/// </summary>
+		public PageContextService(IRepository<PageContext> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override PageContext CreateNew()

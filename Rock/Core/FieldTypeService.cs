@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class FieldTypeService : Service<FieldType, FieldTypeDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="FieldTypeService"/> class
+		/// </summary>
+		public FieldTypeService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FieldTypeService"/> class
+		/// </summary>
+		public FieldTypeService(IRepository<FieldType> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override FieldType CreateNew()

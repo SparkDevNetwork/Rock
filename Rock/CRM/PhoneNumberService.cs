@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PhoneNumberService"/> class
+		/// </summary>
+		public PhoneNumberService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PhoneNumberService"/> class
+		/// </summary>
+		public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override PhoneNumber CreateNew()

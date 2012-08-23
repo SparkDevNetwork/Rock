@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class GatewayService : Service<Gateway, GatewayDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="GatewayService"/> class
+		/// </summary>
+		public GatewayService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GatewayService"/> class
+		/// </summary>
+		public GatewayService(IRepository<Gateway> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Gateway CreateNew()

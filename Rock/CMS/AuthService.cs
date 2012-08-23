@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class AuthService : Service<Auth, AuthDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="AuthService"/> class
+		/// </summary>
+		public AuthService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AuthService"/> class
+		/// </summary>
+		public AuthService(IRepository<Auth> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Auth CreateNew()

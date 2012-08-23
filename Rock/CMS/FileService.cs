@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class FileService : Service<File, FileDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="FileService"/> class
+		/// </summary>
+		public FileService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FileService"/> class
+		/// </summary>
+		public FileService(IRepository<File> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override File CreateNew()

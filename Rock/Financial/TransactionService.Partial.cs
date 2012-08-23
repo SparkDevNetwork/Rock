@@ -16,13 +16,6 @@ namespace Rock.Financial
     /// </summary>
     public partial class TransactionService : Service<Transaction, TransactionDTO>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionService"/> class.
-        /// </summary>
-        public TransactionService() : base()
-        {
-        }
-
         public IEnumerable<Transaction> GetAllTransactions()
         {
            return Repository.GetAll();
@@ -68,14 +61,6 @@ namespace Rock.Financial
                 transactions = transactions.Where(transaction => transaction.TransactionCode == searchValue.TransactionCode);
             }
             return transactions;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionService"/> class.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public TransactionService(IRepository<Transaction> repository) : base(repository)
-        {
         }
     }
 }

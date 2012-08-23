@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class PersonMergedService : Service<PersonMerged, PersonMergedDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonMergedService"/> class
+		/// </summary>
+		public PersonMergedService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonMergedService"/> class
+		/// </summary>
+		public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override PersonMerged CreateNew()

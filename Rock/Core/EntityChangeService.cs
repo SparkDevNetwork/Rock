@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class EntityChangeService : Service<EntityChange, EntityChangeDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="EntityChangeService"/> class
+		/// </summary>
+		public EntityChangeService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EntityChangeService"/> class
+		/// </summary>
+		public EntityChangeService(IRepository<EntityChange> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override EntityChange CreateNew()

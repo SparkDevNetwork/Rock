@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class BatchService : Service<Batch, BatchDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="BatchService"/> class
+		/// </summary>
+		public BatchService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BatchService"/> class
+		/// </summary>
+		public BatchService(IRepository<Batch> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Batch CreateNew()

@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="BlockInstanceService"/> class
+		/// </summary>
+		public BlockInstanceService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BlockInstanceService"/> class
+		/// </summary>
+		public BlockInstanceService(IRepository<BlockInstance> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override BlockInstance CreateNew()

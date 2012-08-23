@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class UserService : Service<User, UserDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="UserService"/> class
+		/// </summary>
+		public UserService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UserService"/> class
+		/// </summary>
+		public UserService(IRepository<User> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override User CreateNew()

@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class PersonAccountLookupService : Service<PersonAccountLookup, PersonAccountLookupDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
+		/// </summary>
+		public PersonAccountLookupService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
+		/// </summary>
+		public PersonAccountLookupService(IRepository<PersonAccountLookup> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override PersonAccountLookup CreateNew()

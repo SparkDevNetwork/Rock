@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class AttributeService : Service<Attribute, AttributeDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="AttributeService"/> class
+		/// </summary>
+		public AttributeService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AttributeService"/> class
+		/// </summary>
+		public AttributeService(IRepository<Attribute> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Attribute CreateNew()

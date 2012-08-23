@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class AttributeQualifierService : Service<AttributeQualifier, AttributeQualifierDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="AttributeQualifierService"/> class
+		/// </summary>
+		public AttributeQualifierService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AttributeQualifierService"/> class
+		/// </summary>
+		public AttributeQualifierService(IRepository<AttributeQualifier> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override AttributeQualifier CreateNew()

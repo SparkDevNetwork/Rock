@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class PledgeService : Service<Pledge, PledgeDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PledgeService"/> class
+		/// </summary>
+		public PledgeService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PledgeService"/> class
+		/// </summary>
+		public PledgeService(IRepository<Pledge> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Pledge CreateNew()

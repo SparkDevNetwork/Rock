@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class PersonService : Service<Person, PersonDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonService"/> class
+		/// </summary>
+		public PersonService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PersonService"/> class
+		/// </summary>
+		public PersonService(IRepository<Person> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Person CreateNew()
