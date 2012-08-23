@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+		/// </summary>
+		public EmailTemplateService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+		/// </summary>
+		public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override EmailTemplate CreateNew()

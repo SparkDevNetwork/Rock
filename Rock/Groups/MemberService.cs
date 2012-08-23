@@ -23,6 +23,20 @@ namespace Rock.Groups
 	public partial class MemberService : Service<Member, MemberDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="MemberService"/> class
+		/// </summary>
+		public MemberService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MemberService"/> class
+		/// </summary>
+		public MemberService(IRepository<Member> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Member CreateNew()

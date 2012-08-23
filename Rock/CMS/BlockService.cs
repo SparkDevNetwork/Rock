@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class BlockService : Service<Block, BlockDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="BlockService"/> class
+		/// </summary>
+		public BlockService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BlockService"/> class
+		/// </summary>
+		public BlockService(IRepository<Block> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Block CreateNew()

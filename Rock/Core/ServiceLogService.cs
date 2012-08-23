@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class ServiceLogService : Service<ServiceLog, ServiceLogDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="ServiceLogService"/> class
+		/// </summary>
+		public ServiceLogService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ServiceLogService"/> class
+		/// </summary>
+		public ServiceLogService(IRepository<ServiceLog> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override ServiceLog CreateNew()

@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="TransactionDetailService"/> class
+		/// </summary>
+		public TransactionDetailService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TransactionDetailService"/> class
+		/// </summary>
+		public TransactionDetailService(IRepository<TransactionDetail> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override TransactionDetail CreateNew()

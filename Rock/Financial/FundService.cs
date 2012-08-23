@@ -23,6 +23,20 @@ namespace Rock.Financial
 	public partial class FundService : Service<Fund, FundDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="FundService"/> class
+		/// </summary>
+		public FundService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FundService"/> class
+		/// </summary>
+		public FundService(IRepository<Fund> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Fund CreateNew()

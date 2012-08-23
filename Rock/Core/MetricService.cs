@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class MetricService : Service<Metric, MetricDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="MetricService"/> class
+		/// </summary>
+		public MetricService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MetricService"/> class
+		/// </summary>
+		public MetricService(IRepository<Metric> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Metric CreateNew()

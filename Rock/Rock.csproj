@@ -252,13 +252,11 @@
     </Compile>
     <Compile Include="Financial\BatchDTO.cs" />
     <Compile Include="Financial\BatchService.cs" />
-    <Compile Include="Financial\BatchService.Partial.cs" />
     <Compile Include="Financial\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\FundDTO.cs" />
     <Compile Include="Financial\FundService.cs" />
-    <Compile Include="Financial\FundService.Partial.cs" />
     <Compile Include="Financial\Gateway.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -269,13 +267,11 @@
     </Compile>
     <Compile Include="Financial\PersonAccountLookupDTO.cs" />
     <Compile Include="Financial\PersonAccountLookupService.cs" />
-    <Compile Include="Financial\PersonAccountLookupService.Partial.cs" />
     <Compile Include="Financial\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\PledgeDTO.cs" />
     <Compile Include="Financial\PledgeService.cs" />
-    <Compile Include="Financial\PledgeService.Partial.cs" />
     <Compile Include="Financial\Transaction.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -284,7 +280,6 @@
     </Compile>
     <Compile Include="Financial\TransactionDetailDTO.cs" />
     <Compile Include="Financial\TransactionDetailService.cs" />
-    <Compile Include="Financial\TransactionDetailService.Partial.cs" />
     <Compile Include="Financial\TransactionDTO.cs" />
     <Compile Include="Financial\TransactionFund.cs">
       <SubType>Code</SubType>

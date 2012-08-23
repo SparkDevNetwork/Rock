@@ -23,6 +23,20 @@ namespace Rock.Util
 	public partial class JobService : Service<Job, JobDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="JobService"/> class
+		/// </summary>
+		public JobService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="JobService"/> class
+		/// </summary>
+		public JobService(IRepository<Job> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Job CreateNew()

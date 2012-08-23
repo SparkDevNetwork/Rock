@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class AddressService : Service<Address, AddressDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="AddressService"/> class
+		/// </summary>
+		public AddressService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AddressService"/> class
+		/// </summary>
+		public AddressService(IRepository<Address> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Address CreateNew()

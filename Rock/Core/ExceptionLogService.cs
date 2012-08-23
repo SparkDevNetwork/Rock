@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="ExceptionLogService"/> class
+		/// </summary>
+		public ExceptionLogService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ExceptionLogService"/> class
+		/// </summary>
+		public ExceptionLogService(IRepository<ExceptionLog> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override ExceptionLog CreateNew()

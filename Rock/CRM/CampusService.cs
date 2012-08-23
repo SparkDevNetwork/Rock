@@ -23,6 +23,20 @@ namespace Rock.CRM
 	public partial class CampusService : Service<Campus, CampusDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="CampusService"/> class
+		/// </summary>
+		public CampusService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CampusService"/> class
+		/// </summary>
+		public CampusService(IRepository<Campus> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Campus CreateNew()

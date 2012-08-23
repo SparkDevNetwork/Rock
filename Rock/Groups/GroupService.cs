@@ -23,6 +23,20 @@ namespace Rock.Groups
 	public partial class GroupService : Service<Group, GroupDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="GroupService"/> class
+		/// </summary>
+		public GroupService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GroupService"/> class
+		/// </summary>
+		public GroupService(IRepository<Group> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override Group CreateNew()

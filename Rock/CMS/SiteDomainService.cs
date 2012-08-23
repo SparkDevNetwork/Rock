@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class SiteDomainService : Service<SiteDomain, SiteDomainDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="SiteDomainService"/> class
+		/// </summary>
+		public SiteDomainService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SiteDomainService"/> class
+		/// </summary>
+		public SiteDomainService(IRepository<SiteDomain> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override SiteDomain CreateNew()

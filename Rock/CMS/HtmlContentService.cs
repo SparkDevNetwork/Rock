@@ -23,6 +23,20 @@ namespace Rock.CMS
 	public partial class HtmlContentService : Service<HtmlContent, HtmlContentDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="HtmlContentService"/> class
+		/// </summary>
+		public HtmlContentService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="HtmlContentService"/> class
+		/// </summary>
+		public HtmlContentService(IRepository<HtmlContent> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override HtmlContent CreateNew()

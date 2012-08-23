@@ -23,6 +23,20 @@ namespace Rock.Core
 	public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDTO>
 	{
 		/// <summary>
+		/// Initializes a new instance of the <see cref="DefinedTypeService"/> class
+		/// </summary>
+		public DefinedTypeService() : base()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DefinedTypeService"/> class
+		/// </summary>
+		public DefinedTypeService(IRepository<DefinedType> repository) : base(repository)
+		{
+		}
+
+		/// <summary>
 		/// Creates a new model
 		/// </summary>
 		public override DefinedType CreateNew()
