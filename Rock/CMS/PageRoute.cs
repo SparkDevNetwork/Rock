@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "cmsPageRoute" )]
-    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable
+    public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -147,6 +147,21 @@ namespace Rock.CMS
         /// </value>
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
+        public object ExportObject()
+        {
+            return this.ToDynamic();
+        }
+
+        public string ExportJson()
+        {
+            return ExportObject().ToJSON();
+        }
+
+        public void ImportJson(string data)
+        {
+            throw new NotImplementedException();
+        }
+
     }
     /// <summary>
     /// Page Route Configuration class.
@@ -158,7 +173,7 @@ namespace Rock.CMS
         /// </summary>
         public PageRouteConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

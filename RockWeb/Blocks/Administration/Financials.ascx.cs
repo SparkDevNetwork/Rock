@@ -6,7 +6,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Core;
 using Rock.Financial;
-using System.Linq;
+
 
 public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
 {
@@ -18,7 +18,7 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
     protected override void OnInit(EventArgs e)
     {
         base.OnInit(e);
-        _canConfigure = PageInstance.IsAuthorized("Configure", CurrentUser);
+        _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
         if (!_canConfigure)
         {
             DisplayError("You are not authorized to configure this page");

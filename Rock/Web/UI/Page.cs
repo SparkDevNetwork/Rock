@@ -79,61 +79,43 @@ namespace Rock.Web.UI
         public Dictionary<string, KeyValuePair<string, Zone>> Zones { get; private set; }
 
         /// <summary>
-        /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
-        /// </summary>
-        public int? CurrentPersonId
-        {
-            get
-            {
-                if ( Context.Items.Contains("CurrentPersonId"))
-                    return (int)Context.Items["CurrentPersonId"];
-
-                Rock.CMS.User user = CurrentUser;
-                if ( user != null )
-                {
-                    Context.Items.Add( "CurrentPersonId", user.PersonId );
-                    return user.PersonId;
-                }
-                
-                return null;
-            }
-
-            private set
-            {
-                Context.Items.Remove("CurrentPersonId");
-                if (value != null)
-                    Context.Items.Add("CurrentPersonId", value);
-            }
-        }
-
-        /// <summary>
-        /// The personID of the current person.  This is either the currently logged in user, of if the user
-        /// has not logged in, it may also be an impersonated person determined from using the encrypted
-        /// person key
+        /// The currently logged in user
         /// </summary>
         public Rock.CMS.User CurrentUser
         {
             get
             {
-                if ( Context.Items.Contains( "CurrentUser" ) )
+                if (_CurrentUser != null)
+                    return _CurrentUser;
+
+                if (_CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.CMS.User;
+
+                if (_CurrentUser == null)
                 {
-                    return ( Rock.CMS.User )Context.Items["CurrentUser"];
+                    _CurrentUser = Rock.CMS.UserService.GetCurrentUser();
+                    if (_CurrentUser != null)
+                        Context.Items.Add( "CurrentUser", _CurrentUser );
                 }
-                else
-                {
-                    Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
-                    Context.Items.Add( "CurrentUser", user );
-                    return user;
-                }
+    
+                if (_CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                    CurrentPerson = _CurrentUser.Person;
+
+                return _CurrentUser;
             }
 
             private set
             {
                 Context.Items.Remove("CurrentUser");
-                if (value != null)
-                    Context.Items.Add("CurrentUser", value);
+                _CurrentUser = value;
+
+                if (_CurrentUser != null)
+                    Context.Items.Add("CurrentUser", _CurrentUser);
+
+                CurrentPerson = _CurrentUser.Person;
             }
         }
+        private Rock.CMS.User _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -144,37 +126,40 @@ namespace Rock.Web.UI
         {
             get
             {
-                int? personId = CurrentPersonId;
-                if ( personId != null )
-                {
-                    if ( Context.Items.Contains( "CurrentPerson" ) )
-                    {
-                        return ( Person )Context.Items["CurrentPerson"];
-                    }
-                    else
-                    {
-                        Rock.CRM.PersonService personService = new CRM.PersonService();
-                        Person person = personService.Get( personId.Value );
-                        Context.Items.Add( "CurrentPerson", person );
-                        return person;
-                    }
-                }
+                if ( _CurrentPerson != null )
+                    return _CurrentPerson;
+
+                if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                    _CurrentPerson = Context.Items["CurrentPerson"] as Person;
+
                 return null;
             }
 
             private set
             {
-                Context.Items.Remove("CurrentPerson");
-                Context.Items.Remove("CurrentPersonId");
+                Context.Items.Remove( "CurrentPerson" );
+                _CurrentPerson = value;
 
-                if (value != null)
-                {
+                if ( _CurrentPerson != null )
                     Context.Items.Add( "CurrentPerson", value );
-                    CurrentPersonId = value.Id;
-                }
             }
         }
-        
+        private Person _CurrentPerson;
+
+        /// <summary>
+        /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
+        /// </summary>
+        public int? CurrentPersonId
+        {
+            get
+            {
+                if (CurrentPerson != null) 
+                    return CurrentPerson.Id;
+                else
+                    return null;
+            }
+        }
+
         /// <summary>
         /// Gets the root url path
         /// </summary>
@@ -357,7 +342,7 @@ namespace Rock.Web.UI
                 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
-                if ( !PageInstance.IsAuthorized( "View", user ) )
+                if ( !PageInstance.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
@@ -368,6 +353,13 @@ namespace Rock.Web.UI
                     PageInstance.Context = new Dictionary<string, Data.KeyModel>();
                     try 
                     {
+                        foreach ( var pageContext in PageInstance.PageContexts )
+                        {
+                            int contextId = 0;
+                            if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
+                                PageInstance.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                        }
+
                         char[] delim = new char[1] { ',' };
                         foreach (string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ))
                         {
@@ -376,6 +368,7 @@ namespace Rock.Web.UI
                             if (parts.Length == 2)
                                 PageInstance.Context.Add(parts[0], new Data.KeyModel(parts[1]));
                         }
+
                     }
                     catch {}
 
@@ -391,7 +384,7 @@ namespace Rock.Web.UI
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = PageInstance.IsAuthorized( "Configure", user );
+                    bool canConfigPage = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -416,9 +409,9 @@ namespace Rock.Web.UI
                     foreach ( Rock.Web.Cache.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = blockInstance.IsAuthorized( "Configure", user );
-                        bool canEdit = blockInstance.IsAuthorized( "Edit", user );
-                        bool canView = blockInstance.IsAuthorized( "View", user );
+                        bool canConfig = blockInstance.IsAuthorized( "Configure", CurrentPerson );
+                        bool canEdit = blockInstance.IsAuthorized( "Edit", CurrentPerson );
+                        bool canView = blockInstance.IsAuthorized( "View", CurrentPerson );
 
                         // Make sure user has access to view block instance
                         if ( canConfig || canEdit || canView )

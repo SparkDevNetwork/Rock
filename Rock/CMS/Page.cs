@@ -14,8 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.CMS
@@ -24,7 +24,7 @@ namespace Rock.CMS
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
-    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered
+    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Name.
@@ -49,10 +49,10 @@ namespace Rock.CMS
 		public string Title { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the System.
+		/// Gets or sets the IsSystem.
 		/// </summary>
 		/// <value>
-		/// System.
+		/// IsSystem.
 		/// </value>
 		[Required]
 		[DataMember]
@@ -331,8 +331,16 @@ namespace Rock.CMS
         /// Collection of Page Routes.
         /// </value>
 		public virtual ICollection<PageRoute> PageRoutes { get; set; }
-        
-		/// <summary>
+
+        /// <summary>
+        /// Gets or sets the Page Contexts.
+        /// </summary>
+        /// <value>
+        /// Collection of Page Contexts.
+        /// </value>
+        public virtual ICollection<PageContext> PageContexts { get; set; }
+
+        /// <summary>
         /// Gets or sets the Sites.
         /// </summary>
         /// <value>
@@ -389,6 +397,98 @@ namespace Rock.CMS
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Exports the Page as JSON.
+        /// </summary>
+        /// <returns></returns>
+        public string ExportJson()
+        {
+            return ExportObject().ToJSON();
+        }
+
+        /// <summary>
+        /// Exports the Page.
+        /// </summary>
+        /// <returns></returns>
+        public object ExportObject()
+        {
+            return MapPagesRecursive( this );
+        }
+
+        /// <summary>
+        /// Recursivly adds collections of child pages to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public static dynamic MapPagesRecursive( Page page )
+        {
+            dynamic exportPage = page.DataTransferObject.ToDynamic();
+            exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
+            exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
+            exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
+            MapBlockInstances( page, exportPage );
+            MapPageRoutes( page, exportPage );
+
+            if ( page.Pages == null )
+            {
+                return exportPage;
+            }
+
+            exportPage.Pages = new List<dynamic>();
+
+            foreach ( var childPage in page.Pages )
+            {
+                exportPage.Pages.Add( MapPagesRecursive( childPage ) );
+            }
+
+            return exportPage;
+        }
+
+        /// <summary>
+        /// Maps the block instances to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="exportPage">The export page.</param>
+        private static void MapBlockInstances( Page page, dynamic exportPage )
+        {
+            if ( page.BlockInstances == null )
+            {
+                return;
+            }
+
+            exportPage.BlockInstances = new List<dynamic>();
+
+            foreach ( var blockInstance in page.BlockInstances )
+            {
+                exportPage.BlockInstances.Add( blockInstance.ExportObject() );
+            }
+        }
+
+        /// <summary>
+        /// Maps the page routes to object graph for export.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="exportPage">The export page.</param>
+        private static void MapPageRoutes( Page page, dynamic exportPage )
+        {
+            if ( page.PageRoutes == null )
+            {
+                return;
+            }
+
+            exportPage.PageRoutes = new List<dynamic>();
+
+            foreach (var pageRoute in page.PageRoutes)
+            {
+                exportPage.PageRoutes.Add( pageRoute.ExportObject() );
+            }
+        }
+
+        public void ImportJson( string data )
+        {
+            throw new NotImplementedException();
         }
     }
     /// <summary>

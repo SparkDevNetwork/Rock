@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
 
                 entity = "Rock.Core.DefinedValue";
                 entityQualifierColumn = "DefinedTypeId";
-                canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
+                canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 

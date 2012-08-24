@@ -37,11 +37,9 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="AjaxControlToolkit">
-      <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\AjaxControlToolkit.dll</HintPath>
-    </Reference>
-    <Reference Include="AntiXSSLibrary">
-      <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\AntiXSSLibrary.dll</HintPath>
+    <Reference Include="AjaxControlToolkit, Version=4.1.60623.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\AjaxControlToolkit.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -50,12 +48,19 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlSanitizationLibrary">
-      <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\HtmlSanitizationLibrary.dll</HintPath>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="SanitizerProviders">
-      <HintPath>..\packages\AjaxControlToolkit.4.1.60501\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
+    <Reference Include="NuGet.Core, Version=2.0.30619.9119, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NuGet.Core.2.0.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+    </Reference>
+  <Reference Include="SanitizerProviders, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
+  </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.4.5.7\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -86,8 +91,10 @@
     <Compile Include="CMS\AuthService.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
     <Compile Include="CMS\BlockService.cs" />
+    <Compile Include="CMS\PageContextService.cs" />
     <Compile Include="CMS\FileService.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
+    <Compile Include="CMS\PageContext.cs" />
     <Compile Include="CMS\PageService.cs" />
     <Compile Include="CMS\PageRouteService.cs" />
     <Compile Include="CMS\SiteDomainService.cs" />
@@ -99,6 +106,10 @@
     <Compile Include="Core\AttributeQualifierService.cs" />
     <Compile Include="Core\AttributeService.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
     <Compile Include="Core\EntityChange.cs" />
@@ -120,6 +131,8 @@
     <Compile Include="CRM\PhoneNumberService.cs" />
     <Compile Include="CRM\DiscService.cs" />
     <Compile Include="Data\IRepository.cs" />
+    <Compile Include="Data\IExportable.cs" />
+    <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
@@ -245,6 +258,22 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208012042296_Metric.cs" />
+    <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
+      <DependentUpon>201208012042296_Metric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
+    <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
+      <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208062116447_PageContext.cs" />
+    <Compile Include="Migrations\201208062116447_PageContext.Designer.cs">
+      <DependentUpon>201208062116447_PageContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208161837259_RemoveGlobalValuesPage.cs" />
+    <Compile Include="Migrations\201208161837259_RemoveGlobalValuesPage.Designer.cs">
+      <DependentUpon>201208161837259_RemoveGlobalValuesPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -252,6 +281,10 @@
     <Compile Include="REST\CMS\IUserService.Partial.cs" />
     <Compile Include="REST\CMS\UserService.Partial.cs" />
     <Compile Include="REST\Core\AttributeService.Partial.cs" />
+    <Compile Include="REST\Core\IMetricValueService.cs" />
+    <Compile Include="REST\Core\MetricValueService.cs" />
+    <Compile Include="REST\Core\IMetricService.cs" />
+    <Compile Include="REST\Core\MetricService.cs" />
     <Compile Include="REST\Core\ExceptionLogService.cs" />
     <Compile Include="REST\Core\IAttributeService.Partial.cs" />
     <Compile Include="REST\Core\IExceptionLogService.cs" />
@@ -264,8 +297,15 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
+    <Compile Include="Services\NuGet\WebProjectManager.cs" />
+    <Compile Include="Services\NuGet\WebProjectSystem.cs" />
+    <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\Page.cs" />
+    <Compile Include="Transactions\EntityChangeTransaction.cs" />
+    <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\PageViewTransaction.cs" />
@@ -279,10 +319,15 @@
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="Web\Cache\AttributeValue.cs" />
+    <Compile Include="Web\Cache\DefinedType.cs" />
+    <Compile Include="Web\Cache\DefinedValue.cs" />
+    <Compile Include="Web\Cache\MetricValue.cs" />
+    <Compile Include="Web\Cache\Metric.cs" />
     <Compile Include="Web\Cache\GlobalAttributes.cs" />
     <Compile Include="Web\Cache\FieldType.cs" />
     <Compile Include="Web\Cache\Site.cs" />
     <Compile Include="Web\Cache\Page.cs" />
+    <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />

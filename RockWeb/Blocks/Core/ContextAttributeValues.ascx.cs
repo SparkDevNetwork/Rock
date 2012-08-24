@@ -32,6 +32,14 @@ namespace RockWeb.Blocks.Core
     {
         protected string _category = string.Empty;
 
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public override List<string> RequiredContext
+        {
+            get { return new List<string>() { AttributeValue( "Entity" ) }; }
+        }
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );

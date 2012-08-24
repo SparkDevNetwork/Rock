@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
 
         private Rock.Web.Cache.Page _page = null;
         private string _zoneName = string.Empty;
-        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings", "Page Routes" } ;
+        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
         
         protected string CurrentProperty
         {
@@ -53,11 +53,41 @@ namespace RockWeb.Blocks.Administration
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Web.Cache.Page.Read( pageId );
 
-                if ( _page.IsAuthorized( "Configure", CurrentUser ) )
+                if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
                 {
                     var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
                     foreach ( HtmlGenericControl fs in attributeControls )
                         phAttributes.Controls.Add( fs );
+
+                    List<string> blockContexts = new List<string>();
+                    foreach ( var blockInstance in _page.BlockInstances )
+                    {
+                        var block = TemplateControl.LoadControl( blockInstance.Block.Path ) as Rock.Web.UI.Block;
+                        if ( block != null )
+                        {
+                            block.PageInstance = _page;
+                            block.BlockInstance = blockInstance;
+                            foreach ( var context in block.RequiredContext )
+                                if ( !blockContexts.Contains( context ) )
+                                    blockContexts.Add( context );
+                        }
+                    }
+
+                    phContextPanel.Visible = blockContexts.Count > 0;
+
+                    int i = 0;
+                    foreach ( string context in blockContexts )
+                    {
+                        var tbContext = new LabeledTextBox();
+                        tbContext.ID = string.Format( "context_{0}", i++ );
+                        tbContext.Required = true;
+                        tbContext.LabelText = context;
+
+                        if ( _page.PageContexts.ContainsKey( context ) )
+                            tbContext.Text = _page.PageContexts[context];
+
+                        phContext.Controls.Add( tbContext );
+                    }
 
                 }
                 else
@@ -75,7 +105,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentUser ) )
+            if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 Rock.CMS.PageService pageService = new Rock.CMS.PageService();
                 Rock.CMS.Page page = pageService.Get( _page.Id );
@@ -132,10 +162,11 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                    Rock.CMS.Page page = pageService.Get( _page.Id );
-                    Rock.CMS.PageRouteService routeService = new Rock.CMS.PageRouteService();
-                    Rock.CMS.PageRoute pr;
+                    var pageService = new Rock.CMS.PageService();
+                    var routeService = new Rock.CMS.PageRouteService();
+                    var contextService = new Rock.CMS.PageContextService();
+                    
+                    var page = pageService.Get( _page.Id );
 
                     int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
                     if ( page.ParentPageId != parentPage )
@@ -145,10 +176,6 @@ namespace RockWeb.Blocks.Administration
 
                         if ( parentPage != 0 )
                             Rock.Web.Cache.Page.Flush( parentPage );
-
-                        foreach ( var route in page.PageRoutes )
-                            routeService.Delete( route, CurrentPersonId );
-                        page.PageRoutes.Clear();
                     }
 
                     page.Name = tbPageName.Text;
@@ -168,13 +195,32 @@ namespace RockWeb.Blocks.Administration
                     page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
                     
+                    foreach ( var pageRoute in page.PageRoutes.ToList() )
+                        routeService.Delete( pageRoute, CurrentPersonId );
+                    page.PageRoutes.Clear();
+
+                    foreach ( var pageContext in page.PageContexts.ToList() )
+                        contextService.Delete( pageContext, CurrentPersonId);
+                    page.PageContexts.Clear();
+
                     foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
                     {
-                        pr = new Rock.CMS.PageRoute();
-                        pr.Route = route;
-                        pr.Guid = Guid.NewGuid();
-                        page.PageRoutes.Add( pr );
+                        var pageRoute = new Rock.CMS.PageRoute();
+                        pageRoute.Route = route;
+                        pageRoute.Guid = Guid.NewGuid();
+                        page.PageRoutes.Add( pageRoute );
                     }
+
+                    if (phContextPanel.Visible)
+                        foreach ( var control in phContext.Controls)
+                            if ( control is LabeledTextBox )
+                            {
+                                var tbContext = control as LabeledTextBox;
+                                var pageContext = new Rock.CMS.PageContext();
+                                pageContext.Entity = tbContext.LabelText;
+                                pageContext.IdParameter = tbContext.Text;
+                                page.PageContexts.Add( pageContext );
+                            }
 
                     pageService.Save( page, CurrentPersonId );
 
@@ -239,7 +285,6 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = true;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = false;
                 pnlBasicProperty.DataBind();
             }
             else if ( CurrentProperty.Equals( "Menu Display" ) )
@@ -247,7 +292,6 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = true;
                 pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = false;
                 pnlMenuDisplay.DataBind();
             }
             else if ( CurrentProperty.Equals( "Advanced Settings" ) )
@@ -255,16 +299,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = true;
-                pnlRoutes.Visible = false;
                 pnlAdvancedSettings.DataBind();
-            }
-            else
-            {
-                pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = false;
-                pnlAdvancedSettings.Visible = false;
-                pnlRoutes.Visible = true;
-                pnlRoutes.DataBind();   
             }
 
             upPanel.DataBind();
