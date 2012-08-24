@@ -362,6 +362,12 @@
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
+    <Compile Include="Search\Person\Address.cs" />
+    <Compile Include="Search\Person\Email.cs" />
+    <Compile Include="Search\Person\Name.cs" />
+    <Compile Include="Search\Person\Phone.cs" />
+    <Compile Include="Search\SearchComponent.cs" />
+    <Compile Include="Search\SearchContainer.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
@@ -408,6 +414,7 @@
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
+    <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
