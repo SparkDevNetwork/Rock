@@ -164,14 +164,14 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Evaluates whether a selected user is allowed to perform the selected action on the selected
+        /// Evaluates whether a selected person is allowed to perform the selected action on the selected
         /// entity.
         /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="action"></param>
-        /// <param name="user"></param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, Rock.CMS.User user )
+        public static bool Authorized( ISecured entity, string action, Rock.CRM.Person person )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -184,8 +184,7 @@ namespace Rock.Security
                 Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
                 Authorizations[entity.AuthEntity][entity.Id].Keys.Contains( action ) )
             {
-
-                string userName = user != null ? user.Person.Guid.ToString() : string.Empty;
+                string userName = person != null ? person.Guid.ToString() : string.Empty;
 
                 foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
                 {
@@ -201,12 +200,11 @@ namespace Rock.Security
                     if ( authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && userName.Trim() == string.Empty )
                         return authRule.AllowOrDeny == "A";
 
-                    if ( authRule.SpecialRole == SpecialRole.None && userName != string.Empty )
+                    if ( authRule.SpecialRole == SpecialRole.None && person != null )
                     {
                         // See if person has been authorized to entity
                         if ( authRule.PersonId.HasValue && 
-                            user.PersonId.HasValue && 
-                            authRule.PersonId.Value == user.PersonId.Value )
+                            authRule.PersonId.Value == person.Id )
                             return authRule.AllowOrDeny == "A";
 
                         // See if person is in role authorized
@@ -224,7 +222,7 @@ namespace Rock.Security
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
             if ( entity.ParentAuthority != null )
-                return Authorized( entity.ParentAuthority, action, user );
+                return Authorized( entity.ParentAuthority, action, person );
             else
                 return entity.IsAllowedByDefault( action );
 
@@ -343,6 +341,13 @@ namespace Rock.Security
                 entityType.Add( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
 
             entityType[targetEntity.Id] = newActions;
+        }
+
+        public static IQueryable<AuthRule> FindAuthRules(ISecured securableObject)
+        {
+            return ( from action in securableObject.SupportedActions
+                     from rule in AuthRules( securableObject.AuthEntity, securableObject.Id, action )
+                     select rule ).AsQueryable();
         }
     }
 

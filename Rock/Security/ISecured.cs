@@ -5,6 +5,7 @@
 //
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.Security
 {
@@ -41,9 +42,11 @@ namespace Rock.Security
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        bool IsAuthorized( string action, Rock.CMS.User user );
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsAuthorized( string action, Rock.CRM.Person person );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -51,6 +54,14 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
+
         bool IsAllowedByDefault( string action );
+
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<AuthRule> FindAuthRules();
+
     }
 }

@@ -6,9 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
 
 using Rock.CMS;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -235,11 +237,13 @@ namespace Rock.Web.Cache
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool IsAuthorized( string action, User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -251,6 +255,11 @@ namespace Rock.Web.Cache
         public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion

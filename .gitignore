@@ -1,6 +1,7 @@
 /*.suo
 /_ReSharper.Ignite/
 /*.5.1.ReSharper.user
+/Rock.sln.DotSettings.user
 /_ReSharper.Rock/
 /desktop.ini
 /*.6.0.ReSharper.user
@@ -8,4 +9,6 @@
 *.DS_Store
 *.tlog
 /RockWeb/web.ConnectionStrings.config
-/RockWeb/web.ConnectionString.config
+
+/Rock.Tests/obj
+/Rock.Tests/bin

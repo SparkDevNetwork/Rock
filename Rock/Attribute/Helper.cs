@@ -163,6 +163,7 @@ namespace Rock.Attribute
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
             Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
+            Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
             foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
@@ -177,12 +178,36 @@ namespace Rock.Attribute
                         attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
 
                     attributes[cachedAttribute.Category].Add( cachedAttribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, attribute.GetValues( item.Id ) ) );
+                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, GetValues( attributeValueService, attribute, item.Id ) ) );
                 }
             }
 
             item.Attributes = attributes;
             item.AttributeValues = attributeValues;
+        }
+
+        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.Attribute attribute, int entityId )
+        {
+            Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
+            return GetValues( attributeValueService, attribute, entityId );
+        }
+
+        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.AttributeValueService attributeValueService, Rock.Core.Attribute attribute, int entityId )
+        {
+            var values = new List<Rock.Web.Cache.AttributeValue>();
+
+            foreach ( var value in attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId ) )
+                values.Add( new Rock.Web.Cache.AttributeValue( value ) );
+
+            if ( values.Count == 0 )
+            {
+                var value = new Rock.Web.Cache.AttributeValue();
+                value.AttributeId = attribute.Id;
+                value.Value = attribute.DefaultValue;
+                values.Add( value );
+            }
+
+            return values;
         }
 
         /// <summary>

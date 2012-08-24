@@ -29,8 +29,10 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
         /// </summary>
         public Service()
-            : this( new EFRepository<T>() )
-        { }
+        {
+            var factory = new RepositoryFactory<T>();
+            _repository = factory.FindRepository();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
@@ -182,16 +184,13 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            List<Rock.Core.EntityChange> entityChanges = _repository.Save( personId );
-
+            var entityChanges = _repository.Save( personId );
             if ( entityChanges != null && entityChanges.Count > 0 )
             {
-                Core.EntityChangeService entityChangeService = new Core.EntityChangeService();
-                foreach ( Rock.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChangeService.Add( entityChange, personId );
-                    entityChangeService.Save( entityChange, personId );
-                }
+                var transaction = new Rock.Transactions.EntityChangeTransaction();
+                transaction.Changes = entityChanges;
+                transaction.PersonId = personId;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
