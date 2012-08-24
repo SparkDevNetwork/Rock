@@ -15,6 +15,9 @@ using Rock.CRM;
 
 namespace Rock.Search.Person
 {
+    /// <summary>
+    /// Searches for people with matching names
+    /// </summary>
     [Description("Person Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
@@ -22,6 +25,9 @@ namespace Rock.Search.Person
     [Rock.Attribute.Property( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
     public class Name : SearchComponent
     {
+        /// <summary>
+        /// The text to display as the search type
+        /// </summary>
         public override string SearchLabel
         {
             get
@@ -33,6 +39,9 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <summary>
+        /// The URL to redirect user to for search
+        /// </summary>
         public override string ResultUrl
         {
             get
@@ -44,6 +53,11 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <summary>
+        /// Returns a list of matching people
+        /// </summary>
+        /// <param name="searchterm"></param>
+        /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
             string fName = string.Empty;
@@ -67,11 +81,18 @@ namespace Rock.Search.Person
             }
 
             var personService = new PersonService();
-            return personService.Queryable().
-                Where( p => ( p.GivenName.StartsWith( fName ) ||
-                    p.NickName.StartsWith( fName ) ) &&
-                    p.LastName.StartsWith( lName ) ).
-                    Select( p => ( lastFirst ? p.LastName + ", " + p.NickName : p.NickName + " " + p.LastName ) );
+
+            var people = personService.Queryable().
+                Where( p => ( ( p.NickName ?? p.GivenName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) );
+
+            if ( lastFirst )
+                people = people.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ?? p.GivenName );
+            else
+                people = people.OrderBy( p => p.NickName ?? p.GivenName ).ThenBy( p => p.LastName );
+
+            return people.
+                Select( p => ( lastFirst ? p.LastName + ", " + ( p.NickName ?? p.GivenName ) : ( p.NickName ?? p.GivenName ) + " " + p.LastName ) ).
+                Distinct();
         }
     }
 }

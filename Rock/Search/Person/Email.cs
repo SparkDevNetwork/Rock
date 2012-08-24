@@ -15,13 +15,19 @@ using Rock.CRM;
 
 namespace Rock.Search.Person
 {
-    [Description("Person Email Search")]
+    /// <summary>
+    /// Searches for people who's email matches selected term
+    /// </summary>
+    [Description( "Person Email Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Email")]
     [Rock.Attribute.Property( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Email" )]
     [Rock.Attribute.Property( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
     public class Email : SearchComponent
     {
+        /// <summary>
+        /// The text to display as the search type
+        /// </summary>
         public override string SearchLabel
         {
             get
@@ -33,6 +39,9 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <summary>
+        /// The URL to redirect user to for search
+        /// </summary>
         public override string ResultUrl
         {
             get
@@ -44,9 +53,19 @@ namespace Rock.Search.Person
             }
         }
 
+        /// <summary>
+        /// Returns a list of matching people
+        /// </summary>
+        /// <param name="searchterm"></param>
+        /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new List<string>().AsQueryable();
+            var personService = new PersonService();
+
+            return personService.Queryable().
+                Where( p => p.Email.Contains( searchterm ) ).
+                OrderBy( p => p.Email ).
+                Select( p => p.Email ).Distinct();
         }
     }
 }
