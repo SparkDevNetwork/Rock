@@ -34,6 +34,7 @@
       <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
@@ -86,6 +87,7 @@
     <Compile Include="Groups\GroupTypesController.cs" />
     <Compile Include="Groups\MembersController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\SearchController.cs" />
     <Compile Include="Util\JobsController.cs" />
   </ItemGroup>
   <ItemGroup>

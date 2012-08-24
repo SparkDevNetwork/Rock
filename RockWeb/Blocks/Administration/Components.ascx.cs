@@ -179,10 +179,10 @@ namespace RockWeb.Blocks.Administration
             var dataSource = new List<ComponentDescription>();
             foreach ( var component in _container.Dictionary )
             {
-                Type type = component.Value.GetType();
+                Type type = component.Value.Value.GetType();
                 if ( Rock.Attribute.Helper.UpdateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
                     Rock.Attribute.Helper.LoadAttributes( component.Value.Value );
-                dataSource.Add( new ComponentDescription( component.Key, component.Value.Value ) );
+                dataSource.Add( new ComponentDescription( component.Key, component.Value ) );
             }
 
             rGrid.DataSource = dataSource;

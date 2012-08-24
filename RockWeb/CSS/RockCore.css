@@ -583,7 +583,7 @@ div.filter-search .dropdown dt
     font-size: 11px;
 }
 
-div.filter-search .dropdown dd ul 
+div.filter-search .dropdown dd ul, ul.ui-autocomplete.ui-menu 
 { 
     background: #e3e3e4;
     border-color: #747474;
@@ -601,13 +601,19 @@ div.filter-search .dropdown dd ul
     padding: 6px 0 12px 0;
 }
 
-div.filter-search .dropdown dd ul li
+div.filter-search .dropdown dd ul li, ul.ui-autocomplete.ui-menu li
 {
     display: block;
     cursor: pointer; 
     color: #666a73;
     font-size: 11px;
     padding: 5px 10px;
+}
+
+ul.ui-autocomplete.ui-menu li a
+{
+    text-decoration: none;
+    color: #666a73;
 }
 
 /* jQuery Scrolling Capability */
