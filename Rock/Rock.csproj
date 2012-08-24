@@ -358,6 +358,10 @@
     <Compile Include="Migrations\201208181111566_UpdateEnums.Designer.cs">
       <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208241555418_AddSearchPlugins.cs" />
+    <Compile Include="Migrations\201208241555418_AddSearchPlugins.Designer.cs">
+      <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
@@ -638,6 +642,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201208181111566_UpdateEnums.resx">
       <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201208241555418_AddSearchPlugins.resx">
+      <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

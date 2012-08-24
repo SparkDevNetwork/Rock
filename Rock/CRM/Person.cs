@@ -433,6 +433,17 @@ namespace Rock.CRM
         }
 
         /// <summary>
+        /// Gets the full name (Last, First)
+        /// </summary>
+        public string FullNameLastFirst
+        {
+            get
+            {
+                return LastName + ", " + FirstName;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the birth date.
         /// </summary>
         /// <value>

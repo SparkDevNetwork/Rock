@@ -610,6 +610,16 @@ div.filter-search .dropdown dd ul li, ul.ui-autocomplete.ui-menu li
     padding: 5px 10px;
 }
 
+.ui-autocomplete
+{
+    max-height: 200px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: hidden;
+	/* add padding to account for vertical scrollbar */
+	padding-right: 20px;
+}
+
 ul.ui-autocomplete.ui-menu li a
 {
     text-decoration: none;
