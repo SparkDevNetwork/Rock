@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         $('input#{0}').autocomplete({{
             source: function( request, response ) {{
                 $.ajax({{
-                    url: 'api/search?type=' +  $('#{1}_hSearchFilter:first').val() + '&term=' + request.term,
+                    url: rock.baseUrl + 'api/search?type=' +  $('#{1}_hSearchFilter:first').val() + '&term=' + request.term,
                     dataType: 'json',
                     success: function(data, status, xhr){{ 
                         response($.map(data, function (item) {{
@@ -61,7 +61,7 @@ namespace Rock.Web.UI.Controls
                 var keyValue = $('#{1}_hSearchFilter:first').val();
                 var $li = $('.dropdown dd ul li[key=""' + keyValue + '""]:first');
                 var target = $li.attr('target');
-                window.location.href = target.replace('{{0}}',encodeURIComponent($(this).val()));
+                window.location.href = rock.baseUrl + target.replace('{{0}}',encodeURIComponent($(this).val()));
             }}
         }});
 
