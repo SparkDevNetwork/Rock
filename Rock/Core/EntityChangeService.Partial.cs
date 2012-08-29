@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Entity Change Service class
 	/// </summary>
-    public partial class EntityChangeService : Service<EntityChange, EntityChangeDTO>
+    public partial class EntityChangeService : Service<EntityChange, EntityChangeDto>
     {
 		/// <summary>
 		/// Gets Entity Changes by Change Set

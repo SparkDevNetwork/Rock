@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// MetricValue POCO Service class
 	/// </summary>
-    public partial class MetricValueService : Service<MetricValue, MetricValueDTO>
+    public partial class MetricValueService : Service<MetricValue, MetricValueDto>
     {
 		/// <summary>
 		/// Gets MetricValues by MetricId

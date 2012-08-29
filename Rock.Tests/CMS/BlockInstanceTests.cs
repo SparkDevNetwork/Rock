@@ -5,10 +5,10 @@
 //
 
 using System.Collections.Generic;
-using Rock.CMS;
+using Rock.Cms;
 using Xunit;
 
-namespace Rock.Tests.CMS
+namespace Rock.Tests.Cms
 {
     public class BlockInstanceTests
     {

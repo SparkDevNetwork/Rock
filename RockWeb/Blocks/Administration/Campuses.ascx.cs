@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
         
-        Rock.CRM.CampusService campusService = new Rock.CRM.CampusService();
+        Rock.Crm.CampusService campusService = new Rock.Crm.CampusService();
         
         #endregion
 
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gCampuses_Delete( object sender, RowEventArgs e )
         {
-            Rock.CRM.Campus campus = campusService.Get( ( int )gCampuses.DataKeys[e.RowIndex]["id"] );
+            Rock.Crm.Campus campus = campusService.Get( ( int )gCampuses.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 campusService.Delete( campus, CurrentPersonId );
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CRM.Campus campus;
+            Rock.Crm.Campus campus;
 
             int campusId = 0;
             if ( !Int32.TryParse( hfCampusId.Value, out campusId ) )
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( campusId == 0 )
             {
-                campus = new Rock.CRM.Campus();
+                campus = new Rock.Crm.Campus();
                 campusService.Add( campus, CurrentPersonId );
             }
             else
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int campusId )
         {
-            Rock.CRM.Campus campus = campusService.Get( campusId );
+            Rock.Crm.Campus campus = campusService.Get( campusId );
 
             if ( campus != null )
             {

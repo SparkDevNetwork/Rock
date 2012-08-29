@@ -141,17 +141,17 @@ namespace Rock.Groups
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Parent Group.

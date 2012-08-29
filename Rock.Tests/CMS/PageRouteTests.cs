@@ -5,10 +5,10 @@
 //
 
 using System;
-using Rock.CMS;
+using Rock.Cms;
 using Xunit;
 
-namespace Rock.Tests.CMS
+namespace Rock.Tests.Cms
 {
     public class PageRouteTests
     {

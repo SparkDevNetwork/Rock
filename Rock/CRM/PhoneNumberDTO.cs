@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Data Transfer Object for PhoneNumber object
 	/// </summary>
-	public partial class PhoneNumberDTO : DTO<PhoneNumber>
+	public partial class PhoneNumberDto : Dto<PhoneNumber>
 	{
 
 #pragma warning disable 1591
@@ -31,7 +31,7 @@ namespace Rock.CRM
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public PhoneNumberDTO ()
+		public PhoneNumberDto ()
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Rock.CRM
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="phoneNumber"></param>
-		public PhoneNumberDTO ( PhoneNumber phoneNumber )
+		public PhoneNumberDto ( PhoneNumber phoneNumber )
 		{
 			CopyFromModel( phoneNumber );
 		}

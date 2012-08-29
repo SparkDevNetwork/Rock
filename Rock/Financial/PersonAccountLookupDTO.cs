@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for PersonAccountLookup object
 	/// </summary>
-	public partial class PersonAccountLookupDTO : DTO<PersonAccountLookup>
+	public partial class PersonAccountLookupDto : Dto<PersonAccountLookup>
 	{
 
 #pragma warning disable 1591
@@ -29,7 +29,7 @@ namespace Rock.Financial
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public PersonAccountLookupDTO ()
+		public PersonAccountLookupDto ()
 		{
 		}
 
@@ -37,7 +37,7 @@ namespace Rock.Financial
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="personAccountLookup"></param>
-		public PersonAccountLookupDTO ( PersonAccountLookup personAccountLookup )
+		public PersonAccountLookupDto ( PersonAccountLookup personAccountLookup )
 		{
 			CopyFromModel( personAccountLookup );
 		}

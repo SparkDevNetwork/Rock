@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for ServiceLog object
 	/// </summary>
-	public partial class ServiceLogDTO : DTO<ServiceLog>
+	public partial class ServiceLogDto : Dto<ServiceLog>
 	{
 
 #pragma warning disable 1591
@@ -33,7 +33,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public ServiceLogDTO ()
+		public ServiceLogDto ()
 		{
 		}
 
@@ -41,7 +41,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="serviceLog"></param>
-		public ServiceLogDTO ( ServiceLog serviceLog )
+		public ServiceLogDto ( ServiceLog serviceLog )
 		{
 			CopyFromModel( serviceLog );
 		}

@@ -8,12 +8,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Page POCO Service class
 	/// </summary>
-    public partial class PageService : Service<Page, PageDTO>
+    public partial class PageService : Service<Page, PageDto>
     {
 		/// <summary>
 		/// Gets Pages by Parent Page Id

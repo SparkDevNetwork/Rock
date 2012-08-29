@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for ExceptionLog object
 	/// </summary>
-	public partial class ExceptionLogDTO : DTO<ExceptionLog>
+	public partial class ExceptionLogDto : Dto<ExceptionLog>
 	{
 
 #pragma warning disable 1591
@@ -43,7 +43,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public ExceptionLogDTO ()
+		public ExceptionLogDto ()
 		{
 		}
 
@@ -51,7 +51,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="exceptionLog"></param>
-		public ExceptionLogDTO ( ExceptionLog exceptionLog )
+		public ExceptionLogDto ( ExceptionLog exceptionLog )
 		{
 			CopyFromModel( exceptionLog );
 		}

@@ -113,8 +113,8 @@ namespace Rock.Communication
         /// <param name="templateGuid">The template GUID.</param>
         public Email( Guid templateGuid )
         {
-            Rock.CRM.EmailTemplateService service = new CRM.EmailTemplateService();
-            Rock.CRM.EmailTemplate template = service.GetByGuid( templateGuid );
+            Rock.Crm.EmailTemplateService service = new Crm.EmailTemplateService();
+            Rock.Crm.EmailTemplate template = service.GetByGuid( templateGuid );
             if ( template != null )
             {
                 To = template.To;

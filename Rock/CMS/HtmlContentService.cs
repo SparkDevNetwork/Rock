@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// HtmlContent Service class
 	/// </summary>
-	public partial class HtmlContentService : Service<HtmlContent, HtmlContentDTO>
+	public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="HtmlContentService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<HtmlContentDTO> QueryableDTO()
+		public override IQueryable<HtmlContentDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new HtmlContentDTO()
+			return this.Queryable().Select( m => new HtmlContentDto()
 				{
 					BlockId = m.BlockId,
 					EntityValue = m.EntityValue,

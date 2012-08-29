@@ -17,7 +17,7 @@ namespace Rock.Util
 	/// <summary>
 	/// Job POCO Service class
 	/// </summary>
-    public partial class JobService : Service<Job, JobDTO>
+    public partial class JobService : Service<Job, JobDto>
     {
         /// <summary>
         /// Gets the active jobs.

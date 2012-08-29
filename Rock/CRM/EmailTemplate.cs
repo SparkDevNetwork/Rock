@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Email Template POCO Entity.
@@ -158,7 +158,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.EmailTemplate"; } }
+		public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

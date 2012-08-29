@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Pledge object
 	/// </summary>
-	public partial class PledgeDTO : DTO<Pledge>
+	public partial class PledgeDto : Dto<Pledge>
 	{
 
 #pragma warning disable 1591
@@ -34,7 +34,7 @@ namespace Rock.Financial
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public PledgeDTO ()
+		public PledgeDto ()
 		{
 		}
 
@@ -42,7 +42,7 @@ namespace Rock.Financial
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="pledge"></param>
-		public PledgeDTO ( Pledge pledge )
+		public PledgeDto ( Pledge pledge )
 		{
 			CopyFromModel( pledge );
 		}

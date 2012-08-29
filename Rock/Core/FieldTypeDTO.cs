@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for FieldType object
 	/// </summary>
-	public partial class FieldTypeDTO : DTO<FieldType>
+	public partial class FieldTypeDto : Dto<FieldType>
 	{
 
 #pragma warning disable 1591
@@ -32,7 +32,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public FieldTypeDTO ()
+		public FieldTypeDto ()
 		{
 		}
 
@@ -40,7 +40,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="fieldType"></param>
-		public FieldTypeDTO ( FieldType fieldType )
+		public FieldTypeDto ( FieldType fieldType )
 		{
 			CopyFromModel( fieldType );
 		}

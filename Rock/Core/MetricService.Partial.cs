@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Metric POCO Service class
 	/// </summary>
-    public partial class MetricService : Service<Metric, MetricDTO>
+    public partial class MetricService : Service<Metric, MetricDto>
     {
 		/// <summary>
 		/// Gets Metrics by Type

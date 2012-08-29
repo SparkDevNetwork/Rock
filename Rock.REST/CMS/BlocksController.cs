@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CMS;
+using Rock.Cms;
 
-namespace Rock.Rest.CMS
+namespace Rock.Rest.Cms
 {
 	/// <summary>
 	/// Blocks REST API
 	/// </summary>
-	public partial class BlocksController : Rock.Rest.ApiController<Rock.CMS.Block, Rock.CMS.BlockDTO>
+	public partial class BlocksController : Rock.Rest.ApiController<Rock.Cms.Block, Rock.Cms.BlockDto>
 	{
-		public BlocksController() : base( new Rock.CMS.BlockService() ) { } 
+		public BlocksController() : base( new Rock.Cms.BlockService() ) { } 
 	}
 }

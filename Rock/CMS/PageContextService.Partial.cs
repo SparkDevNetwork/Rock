@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Page Context POCO Service class
 	/// </summary>
-    public partial class PageContextService : Service<PageContext, PageContextDTO>
+    public partial class PageContextService : Service<PageContext, PageContextDto>
     {
 		/// <summary>
 		/// Gets Page Contexts by Page Id

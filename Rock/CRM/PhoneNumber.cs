@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Phone Number POCO Entity.
@@ -100,7 +100,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.PhoneNumber"; } }
+		public override string AuthEntity { get { return "Crm.PhoneNumber"; } }
         
 		/// <summary>
         /// Gets or sets the Person.

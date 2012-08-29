@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for DefinedValue object
 	/// </summary>
-	public partial class DefinedValueDTO : DTO<DefinedValue>
+	public partial class DefinedValueDto : Dto<DefinedValue>
 	{
 
 #pragma warning disable 1591
@@ -32,7 +32,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public DefinedValueDTO ()
+		public DefinedValueDto ()
 		{
 		}
 
@@ -40,7 +40,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="definedValue"></param>
-		public DefinedValueDTO ( DefinedValue definedValue )
+		public DefinedValueDto ( DefinedValue definedValue )
 		{
 			CopyFromModel( definedValue );
 		}

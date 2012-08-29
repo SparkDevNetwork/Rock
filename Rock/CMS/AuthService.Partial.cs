@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Auth POCO Service class
 	/// </summary>
-    public partial class AuthService : Service<Auth, AuthDTO>
+    public partial class AuthService : Service<Auth, AuthDto>
     {
 		/// <summary>
 		/// Gets Auths by Entity Type And Entity Id

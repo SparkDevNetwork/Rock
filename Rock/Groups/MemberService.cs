@@ -20,7 +20,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Member Service class
 	/// </summary>
-	public partial class MemberService : Service<Member, MemberDTO>
+	public partial class MemberService : Service<Member, MemberDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MemberService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Groups
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<MemberDTO> QueryableDTO()
+		public override IQueryable<MemberDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new MemberDTO()
+			return this.Queryable().Select( m => new MemberDto()
 				{
 					IsSystem = m.IsSystem,
 					GroupId = m.GroupId,

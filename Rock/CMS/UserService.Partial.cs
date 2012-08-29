@@ -11,12 +11,12 @@ using System.Text;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// User POCO Service class
 	/// </summary>
-    public partial class UserService : Service<User, UserDTO>
+    public partial class UserService : Service<User, UserDto>
     {
         private const string VALIDATION_KEY = "D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2";
 
@@ -72,7 +72,7 @@ namespace Rock.CMS
         /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public User Create( Rock.CRM.Person person,
+        public User Create( Rock.Crm.Person person,
             AuthenticationType authenticationType,
             string username,
             string password,
@@ -262,8 +262,8 @@ namespace Rock.CMS
             {
                 if ( userName.StartsWith( "rckipid=" ) )
                 {
-                    Rock.CRM.PersonService personService = new CRM.PersonService();
-                    Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
+                    Rock.Crm.PersonService personService = new Crm.PersonService();
+                    Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
                         return impersonatedPerson.ImpersonatedUser;
                 }

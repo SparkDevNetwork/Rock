@@ -24,15 +24,15 @@
                 <div class="row">
                     <div class="span6">
                         <fieldset>
-                            <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="ParentPageId"/>
-                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name"/>
-                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Title"/>
-                            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Layout"/>
+                            <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="ParentPageId"/>
+                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Name"/>
+                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title"/>
+                            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Layout"/>
                         </fieldset>
                     </div>
                     <div class="span6">
                         <fieldset>
-                            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Description" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Description" />
                         </fieldset>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
 
              <asp:Panel ID="pnlMenuDisplay" runat="server" Visible="false" >
                 <fieldset>
-                    <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="DisplayInNavWhen"/>
+                    <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="DisplayInNavWhen"/>
                     <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
                     <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
                     <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
@@ -54,12 +54,12 @@
                             <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
                             <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
                             <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
-                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="OutputCacheDuration"/>
+                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="OutputCacheDuration"/>
                         </fieldset>
                     </div>
                     <div class="span6">
                         <fieldset>                
-                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" LabelText="Page Routes" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="PageRoutes"  />
+                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" LabelText="Page Routes" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="PageRoutes"  />
                         </fieldset>
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>

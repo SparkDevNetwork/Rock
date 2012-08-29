@@ -20,7 +20,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// PersonAccountLookup Service class
 	/// </summary>
-	public partial class PersonAccountLookupService : Service<PersonAccountLookup, PersonAccountLookupDTO>
+	public partial class PersonAccountLookupService : Service<PersonAccountLookup, PersonAccountLookupDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonAccountLookupDTO> QueryableDTO()
+		public override IQueryable<PersonAccountLookupDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new PersonAccountLookupDTO()
+			return this.Queryable().Select( m => new PersonAccountLookupDto()
 				{
 					PersonId = m.PersonId,
 					Account = m.Account,

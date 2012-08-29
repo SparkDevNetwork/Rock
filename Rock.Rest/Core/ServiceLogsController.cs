@@ -17,7 +17,7 @@ namespace Rock.Rest.Core
 	/// <summary>
 	/// ServiceLogs REST API
 	/// </summary>
-	public partial class ServiceLogsController : Rock.Rest.ApiController<Rock.Core.ServiceLog, Rock.Core.ServiceLogDTO>
+	public partial class ServiceLogsController : Rock.Rest.ApiController<Rock.Core.ServiceLog, Rock.Core.ServiceLogDto>
 	{
 		public ServiceLogsController() : base( new Rock.Core.ServiceLogService() ) { } 
 	}

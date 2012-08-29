@@ -51,9 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
-    <Compile Include="CMS\BlocksController.cs" />
-    <Compile Include="CMS\PageContextsController.cs" />
-    <Compile Include="CMS\PagesController.cs" />
+    <Compile Include="Cms\BlocksController.cs" />
+    <Compile Include="Cms\PageContextsController.cs" />
+    <Compile Include="Cms\PagesController.cs" />
     <Compile Include="Core\AttributeQualifiersController.cs" />
     <Compile Include="Core\AttributesController.cs" />
     <Compile Include="Core\AttributeValuesController.cs" />
@@ -65,13 +65,13 @@
     <Compile Include="Core\MetricsController.cs" />
     <Compile Include="Core\MetricValuesController.cs" />
     <Compile Include="Core\ServiceLogsController.cs" />
-    <Compile Include="CRM\AddressesController.cs" />
-    <Compile Include="CRM\CampusController.cs" />
-    <Compile Include="CRM\EmailTemplatesController.cs" />
-    <Compile Include="CRM\PeopleController.cs" />
-    <Compile Include="CRM\PersonMergedsController.cs" />
-    <Compile Include="CRM\PersonViewedsController.cs" />
-    <Compile Include="CRM\PhoneNumbersController.cs" />
+    <Compile Include="Crm\AddressesController.cs" />
+    <Compile Include="Crm\CampusController.cs" />
+    <Compile Include="Crm\EmailTemplatesController.cs" />
+    <Compile Include="Crm\PeopleController.cs" />
+    <Compile Include="Crm\PersonMergedsController.cs" />
+    <Compile Include="Crm\PersonViewedsController.cs" />
+    <Compile Include="Crm\PhoneNumbersController.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />

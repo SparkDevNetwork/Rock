@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Address POCO Service class
 	/// </summary>
-    public partial class AddressService : Service<Address, AddressDTO>
+    public partial class AddressService : Service<Address, AddressDto>
     {
 		/// <summary>
 		/// Gets Address by Raw
@@ -41,14 +41,14 @@ namespace Rock.CRM
         }
 
         /// <summary>
-        /// Standardizes the specified <see cref="Rock.CRM.DTO.Address"/>
+        /// Standardizes the specified <see cref="Rock.Crm.DTO.Address"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Standardize( AddressDTO address, int? personId )
+        public Address Standardize(AddressDto address, int? personId)
         {
-            Address addressModel = GetByAddressDTO( address, personId );
+            Address addressModel = GetByAddressDto(address, personId);
 
             Standardize( addressModel, personId );
 
@@ -97,14 +97,14 @@ namespace Rock.CRM
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="Rock.CRM.DTO.Address"/>
+        /// Geocodes the specified <see cref="Rock.Crm.DTO.Address"/>
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Geocode( AddressDTO address, int? personId )
+        public Address Geocode(AddressDto address, int? personId)
         {
-            Address addressModel = GetByAddressDTO( address, personId );
+            Address addressModel = GetByAddressDto(address, personId);
 
             Geocode( addressModel, personId );
 
@@ -161,7 +161,7 @@ namespace Rock.CRM
         /// <param name="address">The address.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Address GetByAddressDTO( AddressDTO address, int? personId )
+        private Address GetByAddressDto(AddressDto address, int? personId)
         {
             string raw = address.Raw;
 
@@ -173,7 +173,7 @@ namespace Rock.CRM
 
             if ( addressModel == null )
             {
-                addressModel = new CRM.Address();
+                addressModel = new Crm.Address();
                 addressModel.Raw = raw;
                 addressModel.Street1 = address.Street1;
                 addressModel.Street2 = address.Street2;

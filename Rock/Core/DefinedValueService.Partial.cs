@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Defined Value POCO Service class
 	/// </summary>
-    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDTO>
+    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
     {
 		/// <summary>
 		/// Gets Defined Values by Defined Type Id

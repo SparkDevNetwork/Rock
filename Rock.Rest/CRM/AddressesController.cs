@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CRM;
+using Rock.Crm;
 
-namespace Rock.Rest.CRM
+namespace Rock.Rest.Crm
 {
 	/// <summary>
 	/// Addresses REST API
 	/// </summary>
-	public partial class AddressesController : Rock.Rest.ApiController<Rock.CRM.Address, Rock.CRM.AddressDTO>
+	public partial class AddressesController : Rock.Rest.ApiController<Rock.Crm.Address, Rock.Crm.AddressDto>
 	{
-		public AddressesController() : base( new Rock.CRM.AddressService() ) { } 
+		public AddressesController() : base( new Rock.Crm.AddressService() ) { } 
 	}
 }

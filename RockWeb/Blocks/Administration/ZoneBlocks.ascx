@@ -54,8 +54,8 @@
         <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
-            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="Name" />
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="Name" />
+            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
         </fieldset>
 
         <div class="actions">

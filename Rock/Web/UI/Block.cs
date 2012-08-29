@@ -14,7 +14,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock.CMS;
+using Rock.Cms;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
@@ -66,7 +66,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
         /// </summary>
-        public Rock.CRM.Person CurrentPerson
+        public Rock.Crm.Person CurrentPerson
         {
             get { return ( ( Rock.Web.UI.Page )this.Page ).CurrentPerson; }
         }
@@ -425,7 +425,7 @@ namespace Rock.Web.UI
         internal void CreateAttributes()
         {
             if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
-                "Rock.CMS.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
+                "Rock.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
             {
                 this.BlockInstance.ReloadAttributeValues();
             }

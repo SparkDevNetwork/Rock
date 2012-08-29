@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Email Template POCO Service class
 	/// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDTO>
+    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
     {
 		/// <summary>
 		/// Gets Email Template by Guid

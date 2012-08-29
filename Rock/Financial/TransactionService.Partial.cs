@@ -14,7 +14,7 @@ namespace Rock.Financial
     /// <summary>
     /// Service class for Transaction objects.
     /// </summary>
-    public partial class TransactionService : Service<Transaction, TransactionDTO>
+    public partial class TransactionService : Service<Transaction, TransactionDto>
     {
         public IEnumerable<Transaction> GetAllTransactions()
         {

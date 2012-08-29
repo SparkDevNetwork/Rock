@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Person Viewed POCO Service class
 	/// </summary>
-    public partial class PersonViewedService : Service<PersonViewed, PersonViewedDTO>
+    public partial class PersonViewedService : Service<PersonViewed, PersonViewedDto>
     {
 		/// <summary>
 		/// Gets Person Vieweds by Target Person Id

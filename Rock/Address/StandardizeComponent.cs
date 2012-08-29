@@ -22,6 +22,6 @@ namespace Rock.Address
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public abstract bool Standardize( Rock.CRM.Address address, out string result );
+        public abstract bool Standardize( Rock.Crm.Address address, out string result );
     }
 }

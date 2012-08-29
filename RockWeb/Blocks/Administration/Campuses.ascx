@@ -23,7 +23,7 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Campus</legend>
-            <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.CRM.Campus, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Crm.Campus, Rock" PropertyName="Name" />
         </fieldset>
 
         <div class="actions">

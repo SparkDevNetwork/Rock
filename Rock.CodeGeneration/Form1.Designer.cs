@@ -33,7 +33,7 @@
             this.cblModels = new System.Windows.Forms.CheckedListBox();
             this.cbSelectAll = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.cbDTO = new System.Windows.Forms.CheckBox();
+            this.cbDto = new System.Windows.Forms.CheckBox();
             this.cbRest = new System.Windows.Forms.CheckBox();
             this.cbService = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
@@ -77,17 +77,17 @@
             this.cbSelectAll.UseVisualStyleBackColor = true;
             this.cbSelectAll.CheckedChanged += new System.EventHandler(this.cbSelectAll_CheckedChanged);
             // 
-            // cbDTO
+            // cbDto
             // 
-            this.cbDTO.AutoSize = true;
-            this.cbDTO.Checked = true;
-            this.cbDTO.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDTO.Location = new System.Drawing.Point(167, 299);
-            this.cbDTO.Name = "cbDTO";
-            this.cbDTO.Size = new System.Drawing.Size(49, 17);
-            this.cbDTO.TabIndex = 5;
-            this.cbDTO.Text = "DTO";
-            this.cbDTO.UseVisualStyleBackColor = true;
+            this.cbDto.AutoSize = true;
+            this.cbDto.Checked = true;
+            this.cbDto.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbDto.Location = new System.Drawing.Point(167, 299);
+            this.cbDto.Name = "cbDto";
+            this.cbDto.Size = new System.Drawing.Size(49, 17);
+            this.cbDto.TabIndex = 5;
+            this.cbDto.Text = "DTO";
+            this.cbDto.UseVisualStyleBackColor = true;
             // 
             // cbRest
             // 
@@ -120,7 +120,7 @@
             this.ClientSize = new System.Drawing.Size(386, 334);
             this.Controls.Add(this.cbService);
             this.Controls.Add(this.cbRest);
-            this.Controls.Add(this.cbDTO);
+            this.Controls.Add(this.cbDto);
             this.Controls.Add(this.cbSelectAll);
             this.Controls.Add(this.cblModels);
             this.Controls.Add(this.btnGenerate);
@@ -139,7 +139,7 @@
         private System.Windows.Forms.CheckedListBox cblModels;
         private System.Windows.Forms.CheckBox cbSelectAll;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.CheckBox cbDTO;
+        private System.Windows.Forms.CheckBox cbDto;
         private System.Windows.Forms.CheckBox cbRest;
         private System.Windows.Forms.CheckBox cbService;
     }

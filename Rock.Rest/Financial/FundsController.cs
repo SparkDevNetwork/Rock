@@ -17,7 +17,7 @@ namespace Rock.Rest.Financial
 	/// <summary>
 	/// Funds REST API
 	/// </summary>
-	public partial class FundsController : Rock.Rest.ApiController<Rock.Financial.Fund, Rock.Financial.FundDTO>
+	public partial class FundsController : Rock.Rest.ApiController<Rock.Financial.Fund, Rock.Financial.FundDto>
 	{
 		public FundsController() : base( new Rock.Financial.FundService() ) { } 
 	}

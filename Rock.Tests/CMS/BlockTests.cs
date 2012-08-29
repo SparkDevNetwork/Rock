@@ -4,10 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CMS;
+using Rock.Cms;
 using Xunit;
 
-namespace Rock.Tests.CMS
+namespace Rock.Tests.Cms
 {
     public class BlockTests
     {

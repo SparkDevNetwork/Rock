@@ -20,7 +20,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// TransactionDetail Service class
 	/// </summary>
-	public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDTO>
+	public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TransactionDetailService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TransactionDetailDTO> QueryableDTO()
+		public override IQueryable<TransactionDetailDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new TransactionDetailDTO()
+			return this.Queryable().Select( m => new TransactionDetailDto()
 				{
 					TransactionId = m.TransactionId,
 					Entity = m.Entity,

@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Site Domain POCO Service class
 	/// </summary>
-    public partial class SiteDomainService : Service<SiteDomain, SiteDomainDTO>
+    public partial class SiteDomainService : Service<SiteDomain, SiteDomainDto>
     {
 		/// <summary>
 		/// Gets Site Domain by Domain

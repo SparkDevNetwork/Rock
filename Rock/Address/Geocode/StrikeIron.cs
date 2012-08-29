@@ -29,7 +29,7 @@ namespace Rock.Address.Geocode
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Geocode( Rock.CRM.Address address, out string result )
+        public override bool Geocode( Rock.Crm.Address address, out string result )
         {
             if ( address != null )
             {

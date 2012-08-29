@@ -13,7 +13,7 @@ using System.Web;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Person POCO Entity.
@@ -288,7 +288,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.Person"; } }
+		public override string AuthEntity { get { return "Crm.Person"; } }
         
 		/// <summary>
         /// Gets or sets the Users.
@@ -296,7 +296,7 @@ namespace Rock.CRM
         /// <value>
         /// Collection of Users.
         /// </value>
-		public virtual ICollection<CMS.User> Users { get; set; }
+		public virtual ICollection<Cms.User> Users { get; set; }
         
 		/// <summary>
         /// Gets or sets the Email Templates.
@@ -496,11 +496,11 @@ namespace Rock.CRM
             }
         }
 
-        public Rock.CMS.User ImpersonatedUser
+        public Rock.Cms.User ImpersonatedUser
         {
             get
             {
-                Rock.CMS.User user = new CMS.User();
+                Rock.Cms.User user = new Cms.User();
                 user.UserName = this.FullName;
                 user.PersonId = this.Id;
                 user.Person = this;

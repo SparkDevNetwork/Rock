@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.CMS.AuthService authService = new Rock.CMS.AuthService();
+        private Rock.Cms.AuthService authService = new Rock.Cms.AuthService();
         private Rock.Security.ISecured iSecured;
 
         protected string CurrentAction
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
+            List<Rock.Cms.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
 
             Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
                 authService.Delete( auth, CurrentPersonId );
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Administration
             {
                 int id = ( int )rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
-                Rock.CMS.Auth auth = authService.Get( id );
+                Rock.Cms.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
@@ -229,15 +229,15 @@ namespace RockWeb.Blocks.Administration
                     bool actionUpdated = false;
                     bool alreadyExists = false;
 
-                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    Rock.Cms.SpecialRole specialRole = Rock.Cms.SpecialRole.None;
                     int? groupId = Int32.Parse(ddlRoles.SelectedValue);
 
                     switch(groupId)
                     {
-                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Cms.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.Cms.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.Cms.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.Cms.SpecialRole.None; break;
                     }
 
                     if (groupId < 0)
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
-                        Rock.CMS.Auth auth = new Rock.CMS.Auth();
+                        Rock.Cms.Auth auth = new Rock.Cms.Auth();
                         auth.EntityType = iSecured.AuthEntity;
                         auth.EntityId = iSecured.Id;
                         auth.Action = li.Text;
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Administration
         {
             cbUsers.DataTextField = "FullName";
             cbUsers.DataValueField = "Id";
-            cbUsers.DataSource = new Rock.CRM.PersonService().GetByFullName( tbUser.Text ).ToList();
+            cbUsers.DataSource = new Rock.Crm.PersonService().GetByFullName( tbUser.Text ).ToList();
             cbUsers.DataBind();
         }
 
@@ -314,12 +314,12 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
-                        Rock.CMS.Auth auth = new Rock.CMS.Auth();
+                        Rock.Cms.Auth auth = new Rock.Cms.Auth();
                         auth.EntityType = iSecured.AuthEntity;
                         auth.EntityId = iSecured.Id;
                         auth.Action = CurrentAction;
                         auth.AllowOrDeny = "A";
-                        auth.SpecialRole = Rock.CMS.SpecialRole.None;
+                        auth.SpecialRole = Rock.Cms.SpecialRole.None;
                         auth.PersonId = personId;
                         auth.Order = ++maxOrder;
                         authService.Add( auth, CurrentPersonId );
@@ -406,15 +406,15 @@ namespace RockWeb.Blocks.Administration
                 {
                     bool alreadyAdded = false;
 
-                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    Rock.Cms.SpecialRole specialRole = Rock.Cms.SpecialRole.None;
                     int? groupId = Int32.Parse( ddlRoles.SelectedValue );
 
                     switch ( groupId )
                     {
-                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Cms.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.Cms.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.Cms.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.Cms.SpecialRole.None; break;
                     }
 
                     if ( groupId < 0 )

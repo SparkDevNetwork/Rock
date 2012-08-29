@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// BlockInstance Service class
 	/// </summary>
-	public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDTO>
+	public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BlockInstanceService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<BlockInstanceDTO> QueryableDTO()
+		public override IQueryable<BlockInstanceDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new BlockInstanceDTO()
+			return this.Queryable().Select( m => new BlockInstanceDto()
 				{
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,

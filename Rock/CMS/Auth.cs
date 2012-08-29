@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
     /// <summary>
     /// Auth POCO Entity.
@@ -140,23 +140,23 @@ namespace Rock.CMS
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CMS.Auth"; } }
+		public override string AuthEntity { get { return "Cms.Auth"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Group.
@@ -170,9 +170,9 @@ namespace Rock.CMS
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person Person { get; set; }
+		public virtual Crm.Person Person { get; set; }
 
         /// <summary>
         /// The default authorization for a specific action.

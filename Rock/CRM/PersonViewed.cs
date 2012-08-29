@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Person Viewed POCO Entity.
@@ -71,7 +71,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.PersonViewed"; } }
+		public override string AuthEntity { get { return "Crm.PersonViewed"; } }
         
 		/// <summary>
         /// Gets or sets the Viewer Person.

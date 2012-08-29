@@ -2,7 +2,7 @@
 
 namespace Rock.Data
 {
-    public abstract class DTO<T> 
+    public abstract class Dto<T> 
         where T : Model<T>
     {
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Data
         /// <summary>
         /// Initializes a new instance of the data transformation object.
         /// </summary>
-        public DTO()
+        public Dto()
         {
         }
 
@@ -61,7 +61,7 @@ namespace Rock.Data
         /// Initializes a new instance of the data transformation object from a model
         /// </summary>
         /// <param name="model"></param>
-        public DTO(T model)
+        public Dto(T model)
         {
         }
 

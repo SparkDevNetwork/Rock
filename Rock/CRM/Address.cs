@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Address POCO Entity.
@@ -224,7 +224,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CRM.Address"; } }
+		public override string AuthEntity { get { return "Crm.Address"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

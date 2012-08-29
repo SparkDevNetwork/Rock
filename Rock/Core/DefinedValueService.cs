@@ -20,7 +20,7 @@ namespace Rock.Core
 	/// <summary>
 	/// DefinedValue Service class
 	/// </summary>
-	public partial class DefinedValueService : Service<DefinedValue, DefinedValueDTO>
+	public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DefinedValueService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<DefinedValueDTO> QueryableDTO()
+		public override IQueryable<DefinedValueDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new DefinedValueDTO()
+			return this.Queryable().Select( m => new DefinedValueDto()
 				{
 					IsSystem = m.IsSystem,
 					DefinedTypeId = m.DefinedTypeId,

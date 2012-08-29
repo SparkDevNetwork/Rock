@@ -119,9 +119,9 @@ namespace Rock.Core
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
 
     }
     

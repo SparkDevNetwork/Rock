@@ -179,9 +179,9 @@ namespace Rock.Core
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person Person { get; set; }
+		public virtual Crm.Person Person { get; set; }
 
     }
 

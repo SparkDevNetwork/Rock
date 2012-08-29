@@ -241,7 +241,7 @@ namespace Rock.Data
 
     public class Service<T, D> : Service<T>
         where T : Rock.Data.Model<T>
-        where D : Rock.Data.DTO<T>
+        where D : Rock.Data.Dto<T>
     {
         public Service() : base() { }
         public Service( IRepository<T> repository ) : base( repository ) { }
@@ -250,7 +250,7 @@ namespace Rock.Data
         /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
         /// </summary>
         /// <returns></returns>
-        public virtual IQueryable<D> QueryableDTO()
+        public virtual IQueryable<D> QueryableDto()
         {
             throw new System.NotImplementedException();
         }

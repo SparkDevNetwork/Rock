@@ -8,12 +8,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Phone Number POCO Service class
 	/// </summary>
-    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDTO>
+    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
     {
 		/// <summary>
 		/// Gets Phone Numbers by Person Id

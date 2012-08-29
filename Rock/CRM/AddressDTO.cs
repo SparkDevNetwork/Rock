@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Data Transfer Object for Address object
 	/// </summary>
-	public partial class AddressDTO : DTO<Address>
+	public partial class AddressDto : Dto<Address>
 	{
 
 #pragma warning disable 1591
@@ -44,7 +44,7 @@ namespace Rock.CRM
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public AddressDTO ()
+		public AddressDto ()
 		{
 		}
 
@@ -52,7 +52,7 @@ namespace Rock.CRM
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="address"></param>
-		public AddressDTO ( Address address )
+		public AddressDto ( Address address )
 		{
 			CopyFromModel( address );
 		}

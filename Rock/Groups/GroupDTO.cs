@@ -18,7 +18,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Data Transfer Object for Group object
 	/// </summary>
-	public partial class GroupDTO : DTO<Group>
+	public partial class GroupDto : Dto<Group>
 	{
 
 #pragma warning disable 1591
@@ -33,7 +33,7 @@ namespace Rock.Groups
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public GroupDTO ()
+		public GroupDto ()
 		{
 		}
 
@@ -41,7 +41,7 @@ namespace Rock.Groups
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="group"></param>
-		public GroupDTO ( Group group )
+		public GroupDto ( Group group )
 		{
 			CopyFromModel( group );
 		}

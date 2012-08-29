@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for DefinedType object
 	/// </summary>
-	public partial class DefinedTypeDTO : DTO<DefinedType>
+	public partial class DefinedTypeDto : Dto<DefinedType>
 	{
 
 #pragma warning disable 1591
@@ -33,7 +33,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public DefinedTypeDTO ()
+		public DefinedTypeDto ()
 		{
 		}
 
@@ -41,7 +41,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="definedType"></param>
-		public DefinedTypeDTO ( DefinedType definedType )
+		public DefinedTypeDto ( DefinedType definedType )
 		{
 			CopyFromModel( definedType );
 		}

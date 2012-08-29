@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// SiteDomain Service class
 	/// </summary>
-	public partial class SiteDomainService : Service<SiteDomain, SiteDomainDTO>
+	public partial class SiteDomainService : Service<SiteDomain, SiteDomainDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SiteDomainService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<SiteDomainDTO> QueryableDTO()
+		public override IQueryable<SiteDomainDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new SiteDomainDTO()
+			return this.Queryable().Select( m => new SiteDomainDto()
 				{
 					IsSystem = m.IsSystem,
 					SiteId = m.SiteId,
