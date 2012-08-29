@@ -5,49 +5,85 @@
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
 
-    <div class="grid-filter">
+    <asp:Panel ID="pnlList" runat="server">
+
+        <div class="grid-filter">
         <fieldset>
             <legend>Filter Options</legend>
             <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
         </fieldset>
-    </div>
+        </div>
 
-    <Rock:Grid ID="rGrid" runat="server" >
-        <Columns>
-            <asp:BoundField DataField="Id" HeaderText="Id" />
-            <asp:BoundField DataField="Category" HeaderText="Category"  />
-            <asp:BoundField DataField="Title" HeaderText="Title" />
-            <asp:BoundField DataField="Subtitle" HeaderText="Subtitle" />
-            <asp:BoundField DataField="Source" HeaderText="Source"/>
-            <asp:BoundField DataField="MinValue" HeaderText="MinValue" />
-            <asp:BoundField DataField="MaxValue" HeaderText="MaxValue" />
-            <asp:BoundField DataField="LastCollected" HeaderText="Last Collected" />
-            <Rock:EditField OnClick="rGrid_Edit" />
-            <Rock:DeleteField OnClick="rGrid_Delete" />
-        </Columns>
-    </Rock:Grid>
-     
-    <Rock:ModalDialog id="modalDetails" runat="server" Title="Metric Details" >
-    <Content>        
+        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" >
+            <Columns>
+                <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
+                <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
+                <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description"/>
+                <asp:BoundField DataField="MinValue" HeaderText="Minimum Value" SortExpression="MinValue"/>
+                <asp:BoundField DataField="MaxValue" HeaderText="Maximum Value" SortExpression="MaxValue"/>
+                <asp:BoundField DataField="CollectionFrequency.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequency"/>
+                <asp:BoundField DataField="Source" HeaderText="Source" SortExpression="Source"/>
+                <Rock:EditField OnClick="rGrid_Edit" />
+                <Rock:DeleteField OnClick="rGrid_Delete" />
+            </Columns>
+        </Rock:Grid>
+
+    </asp:Panel>
+
+    <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+
+        <asp:HiddenField ID="hfId" runat="server" />
+
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
-        <fieldset>
-            <Rock:LabeledDropDownList ID="ddlType" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Type" />
-            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Title" />
-            <Rock:DataTextBox ID="tbSubtitle" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Subtitle" />
-            <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Category" />
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-            <Rock:DataTextBox ID="tbMinValue" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="MinValue" />
-            <Rock:DataTextBox ID="tbMaxValue" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="MaxValue" />
-            <Rock:LabeledDropDownList ID="ddlCollectionFrequency" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="CollectionFrequency" />
-            <Rock:DataTextBox ID="tbSource" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Source" />
-            <Rock:DataTextBox ID="tbSourceSQL" runat="server" SourceTypeName="Rock.Core.Metric, Rock" PropertyName="SourceSQL" TextMode="MultiLine" Rows="3"/>
 
+        <div class="row">
 
-        </fieldset>
+            <div class="span6">
 
-        <asp:HiddenField ID="hfMetricId" runat="server" />
-    </Content>
-    </Rock:ModalDialog>
+                <fieldset>
+                    <legend><asp:Literal ID="lAction" runat="server">Metric</asp:Literal></legend>
+                    
+                    <Rock:DataTextBox ID="tbCategory" runat="server" 
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Category" />
+                    <Rock:DataTextBox ID="tbTitle" runat="server" 
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Title" />
+                    <Rock:DataTextBox ID="tbSubtitle" runat="server" 
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Subtitle" />                   
+                    <Rock:DataTextBox ID="tbDescription" runat="server" 
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                </fieldset>
+
+            </div>
+
+            <div class="span6">
+
+                <fieldset>
+                    <legend>&nbsp;</legend>
+                    <Rock:LabeledDropDownList ID="ddlCollectionFrequency" runat="server" LabelText="Collection Frequency" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
+                    <Rock:DataTextBox ID="tbMinValue" runat="server" LabelText="Minimum Value"
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="MinValue" />
+                    <Rock:DataTextBox ID="tbMaxValue" runat="server"  LabelText="Maximum Value"
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="MaxValue" />
+                      
+                    <Rock:DataTextBox ID="tbSource" runat="server" LabelText="Data Source"
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="Source" />
+                    <Rock:DataTextBox ID="tbSourceSQL" runat="server" LabelText="Source SQL"
+                        SourceTypeName="Rock.Core.Metric, Rock" PropertyName="SourceSQL" />
+
+                    <Rock:LabeledCheckBox ID="cbType" runat="server" LabelText="Allow Multiple Values" />                  
+                </fieldset>
+
+            </div>
+
+        </div>
+
+        <div class="actions">
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+        </div>
+
+    </asp:Panel>
 
 </ContentTemplate>
 </asp:UpdatePanel>
