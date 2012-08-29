@@ -63,8 +63,8 @@ namespace Rock.CodeGeneration
                         if ( cbService.Checked )
                             WriteServiceFile( rootFolder, type );
 
-                        if ( cbDTO.Checked )
-                            WriteDTOFile( rootFolder, type );
+                        if ( cbDto.Checked )
+                            WriteDtoFile( rootFolder, type );
 
                         if ( cbRest.Checked )
                             WriteRESTFile( rootFolder, type );
@@ -125,7 +125,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t/// <summary>" );
             sb.AppendFormat( "\t/// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t/// </summary>" );
-            sb.AppendFormat( "\tpublic partial class {0}Service : Service<{0}, {0}DTO>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\tpublic partial class {0}Service : Service<{0}, {0}Dto>" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t{" );
 
             sb.AppendLine( "\t\t/// <summary>" );
@@ -157,9 +157,9 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// Query DTO objects" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendLine( "\t\t/// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "\t\tpublic override IQueryable<{0}DTO> QueryableDTO()" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\t\tpublic override IQueryable<{0}Dto> QueryableDto()" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t{" );
-            sb.AppendFormat( "\t\t\treturn this.Queryable().Select( m => new {0}DTO()" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\t\t\treturn this.Queryable().Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t\t\t{" );
             foreach ( var property in properties )
                 sb.AppendFormat( "\t\t\t\t\t{0} = m.{0}," + Environment.NewLine, property.Key );
@@ -183,7 +183,7 @@ namespace Rock.CodeGeneration
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteDTOFile( DirectoryInfo rootFolder, Type type )
+        private void WriteDtoFile( DirectoryInfo rootFolder, Type type )
         {
             Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
             string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
@@ -217,13 +217,13 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t/// <summary>" );
             sb.AppendFormat( "\t/// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t/// </summary>" );
-            sb.AppendFormat( "\tpublic partial class {0}DTO : DTO<{0}>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\tpublic partial class {0}Dto : Dto<{0}>" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t{" );
 
             sb.AppendLine( "" );
             sb.AppendLine( "#pragma warning disable 1591" );
             foreach ( var property in properties )
-                if (!BaseDTOProperty(property.Key))
+                if (!BaseDtoProperty(property.Key))
                     sb.AppendFormat( "\t\tpublic {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
             sb.AppendLine( "#pragma warning restore 1591" );
 
@@ -232,7 +232,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// <summary>" );
             sb.AppendLine( "\t\t/// Instantiates a new DTO object" );
             sb.AppendLine( "\t\t/// </summary>" );
-            sb.AppendFormat( "\t\tpublic {0}DTO ()" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\t\tpublic {0}Dto ()" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t{" );
             sb.AppendLine( "\t\t}" );
             sb.AppendLine( "" );
@@ -241,7 +241,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// Instantiates a new DTO object from the model" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-            sb.AppendFormat( "\t\tpublic {0}DTO ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
+            sb.AppendFormat( "\t\tpublic {0}Dto ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
             sb.AppendLine( "\t\t{" );
             sb.AppendFormat( "\t\t\tCopyFromModel( {0} );" + Environment.NewLine, lcName );
             sb.AppendLine( "\t\t}" );
@@ -271,7 +271,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t}" );
             sb.AppendLine( "}" );
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "DTO.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Dto.cs" ) );
 
             using ( var outputFile = new StreamWriter( file.FullName ) )
             {
@@ -318,7 +318,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t/// <summary>" );
             sb.AppendFormat( "\t/// {0} REST API" + Environment.NewLine, pluralizedName );
             sb.AppendLine( "\t/// </summary>" );
-            sb.AppendFormat( "\tpublic partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}, {1}.{2}DTO>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "\tpublic partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}, {1}.{2}Dto>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "\t{" );
             sb.AppendFormat( "\t\tpublic {0}Controller() : base( new {1}.{2}Service() ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "\t}" );
@@ -424,7 +424,7 @@ namespace Rock.CodeGeneration
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        private bool BaseDTOProperty( string propertyName )
+        private bool BaseDtoProperty( string propertyName )
         {
             if ( propertyName == "Id" ) return true;
             if ( propertyName == "Guid" ) return true;

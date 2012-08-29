@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Page Route POCO Service class
 	/// </summary>
-    public partial class PageRouteService : Service<PageRoute, PageRouteDTO>
+    public partial class PageRouteService : Service<PageRoute, PageRouteDto>
     {
 		/// <summary>
 		/// Gets Page Routes by Page Id

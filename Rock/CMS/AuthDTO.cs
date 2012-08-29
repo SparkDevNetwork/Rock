@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for Auth object
 	/// </summary>
-	public partial class AuthDTO : DTO<Auth>
+	public partial class AuthDto : Dto<Auth>
 	{
 
 #pragma warning disable 1591
@@ -35,7 +35,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public AuthDTO ()
+		public AuthDto ()
 		{
 		}
 
@@ -43,7 +43,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="auth"></param>
-		public AuthDTO ( Auth auth )
+		public AuthDto ( Auth auth )
 		{
 			CopyFromModel( auth );
 		}

@@ -145,7 +145,7 @@ namespace Rock.Data
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }

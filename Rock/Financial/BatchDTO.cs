@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Batch object
 	/// </summary>
-	public partial class BatchDTO : DTO<Batch>
+	public partial class BatchDto : Dto<Batch>
 	{
 
 #pragma warning disable 1591
@@ -34,7 +34,7 @@ namespace Rock.Financial
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public BatchDTO ()
+		public BatchDto ()
 		{
 		}
 
@@ -42,7 +42,7 @@ namespace Rock.Financial
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="batch"></param>
-		public BatchDTO ( Batch batch )
+		public BatchDto ( Batch batch )
 		{
 			CopyFromModel( batch );
 		}

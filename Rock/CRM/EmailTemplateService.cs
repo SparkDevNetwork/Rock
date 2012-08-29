@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// EmailTemplate Service class
 	/// </summary>
-	public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDTO>
+	public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CRM
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<EmailTemplateDTO> QueryableDTO()
+		public override IQueryable<EmailTemplateDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new EmailTemplateDTO()
+			return this.Queryable().Select( m => new EmailTemplateDto()
 				{
 					IsSystem = m.IsSystem,
 					PersonId = m.PersonId,

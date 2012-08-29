@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.IO;
 
-using Rock.CRM;
+using Rock.Crm;
 
 namespace Rock.Transactions
 {

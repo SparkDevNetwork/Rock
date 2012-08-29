@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RockWeb.Themes.RockCMS.Layouts
+namespace RockWeb.Themes.RockCms.Layouts
 {
     public partial class Site : System.Web.UI.MasterPage
     {

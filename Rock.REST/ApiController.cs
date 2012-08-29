@@ -14,7 +14,7 @@ namespace Rock.Rest
 {
     public abstract class ApiController<T, D>  : ApiController 
         where T : Rock.Data.Model<T>
-        where D : Rock.Data.DTO<T>, new()
+        where D : Rock.Data.Dto<T>, new()
     {
         private Service<T, D> _service;
 
@@ -26,7 +26,7 @@ namespace Rock.Rest
         // GET api/<controller>
         public IQueryable<D> Get()
         {
-            return _service.QueryableDTO();
+            return _service.QueryableDto();
         }
 
         // GET api/<controller>/5

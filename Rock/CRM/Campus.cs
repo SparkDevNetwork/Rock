@@ -13,7 +13,7 @@ using System.Web;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Campus POCO Entity.
@@ -81,7 +81,7 @@ namespace Rock.CRM
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string AuthEntity { get { return "CRM.Campus"; } }
+        public override string AuthEntity { get { return "Crm.Campus"; } }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

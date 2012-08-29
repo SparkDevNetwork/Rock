@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Person POCO Service class
 	/// </summary>
-    public partial class PersonService : Service<Person, PersonDTO>
+    public partial class PersonService : Service<Person, PersonDto>
     {
 		/// <summary>
 		/// Gets People by Email

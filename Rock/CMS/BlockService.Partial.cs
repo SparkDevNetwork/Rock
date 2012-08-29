@@ -10,12 +10,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Block POCO Service class
 	/// </summary>
-    public partial class BlockService : Service<Block, BlockDTO>
+    public partial class BlockService : Service<Block, BlockDto>
     {
 		/// <summary>
 		/// Gets Blocks by Name

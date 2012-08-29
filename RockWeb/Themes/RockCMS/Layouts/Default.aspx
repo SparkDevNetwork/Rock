@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCMS/Layouts/Site.Master" 
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCms/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">

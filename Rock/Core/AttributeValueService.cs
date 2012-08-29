@@ -20,7 +20,7 @@ namespace Rock.Core
 	/// <summary>
 	/// AttributeValue Service class
 	/// </summary>
-	public partial class AttributeValueService : Service<AttributeValue, AttributeValueDTO>
+	public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AttributeValueService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AttributeValueDTO> QueryableDTO()
+		public override IQueryable<AttributeValueDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new AttributeValueDTO()
+			return this.Queryable().Select( m => new AttributeValueDto()
 				{
 					IsSystem = m.IsSystem,
 					AttributeId = m.AttributeId,

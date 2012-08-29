@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// File Service class
 	/// </summary>
-	public partial class FileService : Service<File, FileDTO>
+	public partial class FileService : Service<File, FileDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FileService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FileDTO> QueryableDTO()
+		public override IQueryable<FileDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new FileDTO()
+			return this.Queryable().Select( m => new FileDto()
 				{
 					IsTemporary = m.IsTemporary,
 					IsSystem = m.IsSystem,

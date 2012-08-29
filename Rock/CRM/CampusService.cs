@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Campus Service class
 	/// </summary>
-	public partial class CampusService : Service<Campus, CampusDTO>
+	public partial class CampusService : Service<Campus, CampusDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CampusService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CRM
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<CampusDTO> QueryableDTO()
+		public override IQueryable<CampusDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new CampusDTO()
+			return this.Queryable().Select( m => new CampusDto()
 				{
 					IsSystem = m.IsSystem,
 					Name = m.Name,

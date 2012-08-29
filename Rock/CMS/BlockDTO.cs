@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for Block object
 	/// </summary>
-	public partial class BlockDTO : DTO<Block>
+	public partial class BlockDto : Dto<Block>
 	{
 
 #pragma warning disable 1591
@@ -31,7 +31,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public BlockDTO ()
+		public BlockDto ()
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="block"></param>
-		public BlockDTO ( Block block )
+		public BlockDto ( Block block )
 		{
 			CopyFromModel( block );
 		}

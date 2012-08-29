@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for EntityChange object
 	/// </summary>
-	public partial class EntityChangeDTO : DTO<EntityChange>
+	public partial class EntityChangeDto : Dto<EntityChange>
 	{
 
 #pragma warning disable 1591
@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public EntityChangeDTO ()
+		public EntityChangeDto ()
 		{
 		}
 
@@ -42,7 +42,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="entityChange"></param>
-		public EntityChangeDTO ( EntityChange entityChange )
+		public EntityChangeDto ( EntityChange entityChange )
 		{
 			CopyFromModel( entityChange );
 		}

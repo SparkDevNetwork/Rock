@@ -48,7 +48,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'REST/CMS/HtmlContent/' + $(this).attr('html-id'),
+                    url: rock.baseUrl + 'REST/Cms/HtmlContent/' + $(this).attr('html-id'),
                     success: function (getData, status, xhr) {
 
                         htmlContent = getData;

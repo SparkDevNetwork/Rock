@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for SiteDomain object
 	/// </summary>
-	public partial class SiteDomainDTO : DTO<SiteDomain>
+	public partial class SiteDomainDto : Dto<SiteDomain>
 	{
 
 #pragma warning disable 1591
@@ -30,7 +30,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public SiteDomainDTO ()
+		public SiteDomainDto ()
 		{
 		}
 
@@ -38,7 +38,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="siteDomain"></param>
-		public SiteDomainDTO ( SiteDomain siteDomain )
+		public SiteDomainDto ( SiteDomain siteDomain )
 		{
 			CopyFromModel( siteDomain );
 		}

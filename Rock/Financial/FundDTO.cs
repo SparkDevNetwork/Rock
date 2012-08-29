@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Fund object
 	/// </summary>
-	public partial class FundDTO : DTO<Fund>
+	public partial class FundDto : Dto<Fund>
 	{
 
 #pragma warning disable 1591
@@ -41,7 +41,7 @@ namespace Rock.Financial
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public FundDTO ()
+		public FundDto ()
 		{
 		}
 
@@ -49,7 +49,7 @@ namespace Rock.Financial
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="fund"></param>
-		public FundDTO ( Fund fund )
+		public FundDto ( Fund fund )
 		{
 			CopyFromModel( fund );
 		}

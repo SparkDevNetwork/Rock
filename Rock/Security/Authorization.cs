@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 
 
-using Rock.CMS;
+using Rock.Cms;
 
 namespace Rock.Security
 {
@@ -171,7 +171,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, Rock.CRM.Person person )
+        public static bool Authorized( ISecured entity, string action, Rock.Crm.Person person )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -422,13 +422,13 @@ namespace Rock.Security
                 // All Users
                 switch (SpecialRole)
                 {
-                    case CMS.SpecialRole.AllUsers:
+                    case Cms.SpecialRole.AllUsers:
                         return "All Users";
 
-                    case CMS.SpecialRole.AllAuthenticatedUsers:
+                    case Cms.SpecialRole.AllAuthenticatedUsers:
                         return "All Authenticated Users";
 
-                    case CMS.SpecialRole.AllUnAuthenticatedUsers:
+                    case Cms.SpecialRole.AllUnAuthenticatedUsers:
                         return "All Un-Authenticated Users";
 
                     default:
@@ -437,8 +437,8 @@ namespace Rock.Security
                         {
                             try
                             {
-                                Rock.CRM.PersonService personService = new CRM.PersonService();
-                                Rock.CRM.Person person = personService.Get( PersonId.Value );
+                                Rock.Crm.PersonService personService = new Crm.PersonService();
+                                Rock.Crm.Person person = personService.Get( PersonId.Value );
                                 if (person != null)
                                     return person.FullName + " (User)";
                             }
@@ -486,7 +486,7 @@ namespace Rock.Security
         /// Initializes a new instance of the <see cref="AuthRule"/> class.
         /// </summary>
         /// <param name="auth">The auth.</param>
-        public AuthRule( Rock.CMS.Auth auth )
+        public AuthRule( Rock.Cms.Auth auth )
         {
             Id = auth.Id;
             EntityId = auth.EntityId;

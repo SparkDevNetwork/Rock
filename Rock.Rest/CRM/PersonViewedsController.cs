@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CRM;
+using Rock.Crm;
 
-namespace Rock.Rest.CRM
+namespace Rock.Rest.Crm
 {
 	/// <summary>
 	/// PersonVieweds REST API
 	/// </summary>
-	public partial class PersonViewedsController : Rock.Rest.ApiController<Rock.CRM.PersonViewed, Rock.CRM.PersonViewedDTO>
+	public partial class PersonViewedsController : Rock.Rest.ApiController<Rock.Crm.PersonViewed, Rock.Crm.PersonViewedDto>
 	{
-		public PersonViewedsController() : base( new Rock.CRM.PersonViewedService() ) { } 
+		public PersonViewedsController() : base( new Rock.Crm.PersonViewedService() ) { } 
 	}
 }

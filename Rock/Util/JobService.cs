@@ -20,7 +20,7 @@ namespace Rock.Util
 	/// <summary>
 	/// Job Service class
 	/// </summary>
-	public partial class JobService : Service<Job, JobDTO>
+	public partial class JobService : Service<Job, JobDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="JobService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Util
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<JobDTO> QueryableDTO()
+		public override IQueryable<JobDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new JobDTO()
+			return this.Queryable().Select( m => new JobDto()
 				{
 					IsSystem = m.IsSystem,
 					IsActive = m.IsActive,

@@ -18,7 +18,7 @@ namespace Rock.Util
 	/// <summary>
 	/// Data Transfer Object for Job object
 	/// </summary>
-	public partial class JobDTO : DTO<Job>
+	public partial class JobDto : Dto<Job>
 	{
 
 #pragma warning disable 1591
@@ -42,7 +42,7 @@ namespace Rock.Util
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public JobDTO ()
+		public JobDto ()
 		{
 		}
 
@@ -50,7 +50,7 @@ namespace Rock.Util
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="job"></param>
-		public JobDTO ( Job job )
+		public JobDto ( Job job )
 		{
 			CopyFromModel( job );
 		}

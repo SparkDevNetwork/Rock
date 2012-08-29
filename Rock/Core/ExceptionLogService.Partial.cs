@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Exception Log POCO Service class
 	/// </summary>
-    public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDTO>
+    public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDto>
     {
 		/// <summary>
 		/// Gets Exception Logs by Parent Id

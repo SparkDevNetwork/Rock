@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
 
         private bool canConfigure = false;
         private Rock.Web.Cache.Page _page = null;
-        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+        private Rock.Cms.PageService pageService = new Rock.Cms.PageService();
 
         #endregion
 
@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
                 Rock.Web.Cache.Page.Flush( page.Id );
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.Page page;
+            Rock.Cms.Page page;
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.CMS.Page();
+                page = new Rock.Cms.Page();
 
                 if ( _page != null )
                 {
@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Administration
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.CMS.Page lastPage =
+                Rock.Cms.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.CMS.Page page = pageService.Get( pageId );
+            Rock.Cms.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

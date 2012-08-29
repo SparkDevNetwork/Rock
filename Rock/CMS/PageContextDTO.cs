@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for PageContext object
 	/// </summary>
-	public partial class PageContextDTO : DTO<PageContext>
+	public partial class PageContextDto : Dto<PageContext>
 	{
 
 #pragma warning disable 1591
@@ -31,7 +31,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public PageContextDTO ()
+		public PageContextDto ()
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="pageContext"></param>
-		public PageContextDTO ( PageContext pageContext )
+		public PageContextDto ( PageContext pageContext )
 		{
 			CopyFromModel( pageContext );
 		}

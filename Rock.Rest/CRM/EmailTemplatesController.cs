@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CRM;
+using Rock.Crm;
 
-namespace Rock.Rest.CRM
+namespace Rock.Rest.Crm
 {
 	/// <summary>
 	/// EmailTemplates REST API
 	/// </summary>
-	public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.CRM.EmailTemplate, Rock.CRM.EmailTemplateDTO>
+	public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Crm.EmailTemplate, Rock.Crm.EmailTemplateDto>
 	{
-		public EmailTemplatesController() : base( new Rock.CRM.EmailTemplateService() ) { } 
+		public EmailTemplatesController() : base( new Rock.Crm.EmailTemplateService() ) { } 
 	}
 }

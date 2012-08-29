@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Auth Service class
 	/// </summary>
-	public partial class AuthService : Service<Auth, AuthDTO>
+	public partial class AuthService : Service<Auth, AuthDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AuthService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AuthDTO> QueryableDTO()
+		public override IQueryable<AuthDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new AuthDTO()
+			return this.Queryable().Select( m => new AuthDto()
 				{
 					EntityType = m.EntityType,
 					EntityId = m.EntityId,

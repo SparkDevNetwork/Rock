@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Site POCO Service class
 	/// </summary>
-    public partial class SiteService : Service<Site, SiteDTO>
+    public partial class SiteService : Service<Site, SiteDto>
     {
 		/// <summary>
 		/// Gets Sites by Default Page Id

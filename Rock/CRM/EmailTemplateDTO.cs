@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Data Transfer Object for EmailTemplate object
 	/// </summary>
-	public partial class EmailTemplateDTO : DTO<EmailTemplate>
+	public partial class EmailTemplateDto : Dto<EmailTemplate>
 	{
 
 #pragma warning disable 1591
@@ -37,7 +37,7 @@ namespace Rock.CRM
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public EmailTemplateDTO ()
+		public EmailTemplateDto ()
 		{
 		}
 
@@ -45,7 +45,7 @@ namespace Rock.CRM
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="emailTemplate"></param>
-		public EmailTemplateDTO ( EmailTemplate emailTemplate )
+		public EmailTemplateDto ( EmailTemplate emailTemplate )
 		{
 			CopyFromModel( emailTemplate );
 		}

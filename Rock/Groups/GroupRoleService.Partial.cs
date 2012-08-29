@@ -14,7 +14,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Group Role POCO Service class
 	/// </summary>
-    public partial class GroupRoleService : Service<GroupRole, GroupRoleDTO>
+    public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
     {
 		/// <summary>
 		/// Gets Group Roles by Order

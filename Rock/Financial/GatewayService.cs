@@ -20,7 +20,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Gateway Service class
 	/// </summary>
-	public partial class GatewayService : Service<Gateway, GatewayDTO>
+	public partial class GatewayService : Service<Gateway, GatewayDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GatewayService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<GatewayDTO> QueryableDTO()
+		public override IQueryable<GatewayDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new GatewayDTO()
+			return this.Queryable().Select( m => new GatewayDto()
 				{
 					Name = m.Name,
 					Description = m.Description,

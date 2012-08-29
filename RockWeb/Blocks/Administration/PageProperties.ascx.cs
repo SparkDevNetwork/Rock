@@ -106,8 +106,8 @@ namespace RockWeb.Blocks.Administration
         {
             if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                Rock.CMS.Page page = pageService.Get( _page.Id );
+                Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+                Rock.Cms.Page page = pageService.Get( _page.Id );
                 
                 rptProperties.DataSource = tabs;
                 rptProperties.DataBind();
@@ -161,9 +161,9 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    var pageService = new Rock.CMS.PageService();
-                    var routeService = new Rock.CMS.PageRouteService();
-                    var contextService = new Rock.CMS.PageContextService();
+                    var pageService = new Rock.Cms.PageService();
+                    var routeService = new Rock.Cms.PageRouteService();
+                    var contextService = new Rock.Cms.PageContextService();
                     
                     var page = pageService.Get( _page.Id );
 
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Administration
                     else
                         page.ParentPageId = null;
                     page.Layout = ddlLayout.Text;
-                    page.DisplayInNavWhen = (Rock.CMS.DisplayInNavWhen)Enum.Parse( typeof( Rock.CMS.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                    page.DisplayInNavWhen = (Rock.Cms.DisplayInNavWhen)Enum.Parse( typeof( Rock.Cms.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                     page.MenuDisplayDescription = cbMenuDescription.Checked;
                     page.MenuDisplayIcon = cbMenuIcon.Checked;
                     page.MenuDisplayChildPages = cbMenuChildPages.Checked;
@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Administration
 
                     foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
                     {
-                        var pageRoute = new Rock.CMS.PageRoute();
+                        var pageRoute = new Rock.Cms.PageRoute();
                         pageRoute.Route = route;
                         pageRoute.Guid = Guid.NewGuid();
                         page.PageRoutes.Add( pageRoute );
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Administration
                             if ( control is LabeledTextBox )
                             {
                                 var tbContext = control as LabeledTextBox;
-                                var pageContext = new Rock.CMS.PageContext();
+                                var pageContext = new Rock.Cms.PageContext();
                                 pageContext.Entity = tbContext.LabelText;
                                 pageContext.IdParameter = tbContext.Text;
                                 page.PageContexts.Add( pageContext );
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlParentPage.Items.Clear();
             ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
+            foreach ( var page in new Rock.Cms.PageService().GetByParentPageId( null ) )
                 AddPage( page, 1 );
 
             ddlLayout.Items.Clear();
@@ -250,10 +250,10 @@ namespace RockWeb.Blocks.Administration
             foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
 
-            ddlMenuWhen.BindToEnum( typeof( Rock.CMS.DisplayInNavWhen ) );
+            ddlMenuWhen.BindToEnum( typeof( Rock.Cms.DisplayInNavWhen ) );
         }
 
-        private void AddPage( Rock.CMS.Page page, int level )
+        private void AddPage( Rock.Cms.Page page, int level )
         {
             string pageName = new string( '-', level ) + page.Name;
             ddlParentPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );

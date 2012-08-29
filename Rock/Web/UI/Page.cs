@@ -17,7 +17,7 @@ using System.Web.UI.WebControls;
 using System.Web.Security;
 using System.Configuration;
 
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.UI.Controls;
 using Rock.Transactions;
 
@@ -81,7 +81,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The currently logged in user
         /// </summary>
-        public Rock.CMS.User CurrentUser
+        public Rock.Cms.User CurrentUser
         {
             get
             {
@@ -89,11 +89,11 @@ namespace Rock.Web.UI
                     return _CurrentUser;
 
                 if (_CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.CMS.User;
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
 
                 if (_CurrentUser == null)
                 {
-                    _CurrentUser = Rock.CMS.UserService.GetCurrentUser();
+                    _CurrentUser = Rock.Cms.UserService.GetCurrentUser();
                     if (_CurrentUser != null)
                         Context.Items.Add( "CurrentUser", _CurrentUser );
                 }
@@ -115,7 +115,7 @@ namespace Rock.Web.UI
                 CurrentPerson = _CurrentUser.Person;
             }
         }
-        private Rock.CMS.User _CurrentUser;
+        private Rock.Cms.User _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -289,8 +289,8 @@ namespace Rock.Web.UI
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.CRM.PersonService personService = new CRM.PersonService();
-                Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Crm.PersonService personService = new Crm.PersonService();
+                Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
@@ -299,7 +299,7 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            Rock.CMS.User user = CurrentUser;
+            Rock.Cms.User user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
@@ -317,8 +317,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.CRM.PersonService personService = new CRM.PersonService();
-                        Rock.CRM.Person person = personService.Get( personId.Value );
+                        Rock.Crm.PersonService personService = new Crm.PersonService();
+                        Rock.Crm.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;
@@ -689,7 +689,7 @@ namespace Rock.Web.UI
 
         #endregion
 
-        #region CMS Admin Content
+        #region Cms Admin Content
 
         private void AddPopupControls()
         {

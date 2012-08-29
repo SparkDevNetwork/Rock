@@ -20,7 +20,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Fund Service class
 	/// </summary>
-	public partial class FundService : Service<Fund, FundDTO>
+	public partial class FundService : Service<Fund, FundDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FundService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FundDTO> QueryableDTO()
+		public override IQueryable<FundDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new FundDTO()
+			return this.Queryable().Select( m => new FundDto()
 				{
 					Name = m.Name,
 					PublicName = m.PublicName,

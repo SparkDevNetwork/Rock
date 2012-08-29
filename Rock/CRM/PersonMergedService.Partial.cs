@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
 	/// <summary>
 	/// Person Trail POCO Service class
 	/// </summary>
-    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDTO>
+    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
     {
 		/// <summary>
 		/// Gets Person Trails by Current Id

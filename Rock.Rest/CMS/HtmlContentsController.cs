@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CMS;
+using Rock.Cms;
 
-namespace Rock.Rest.CMS
+namespace Rock.Rest.Cms
 {
 	/// <summary>
 	/// HtmlContents REST API
 	/// </summary>
-	public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.CMS.HtmlContent, Rock.CMS.HtmlContentDTO>
+	public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Cms.HtmlContent, Rock.Cms.HtmlContentDto>
 	{
-		public HtmlContentsController() : base( new Rock.CMS.HtmlContentService() ) { } 
+		public HtmlContentsController() : base( new Rock.Cms.HtmlContentService() ) { } 
 	}
 }

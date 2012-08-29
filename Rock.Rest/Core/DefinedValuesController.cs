@@ -17,7 +17,7 @@ namespace Rock.Rest.Core
 	/// <summary>
 	/// DefinedValues REST API
 	/// </summary>
-	public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Core.DefinedValue, Rock.Core.DefinedValueDTO>
+	public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Core.DefinedValue, Rock.Core.DefinedValueDto>
 	{
 		public DefinedValuesController() : base( new Rock.Core.DefinedValueService() ) { } 
 	}

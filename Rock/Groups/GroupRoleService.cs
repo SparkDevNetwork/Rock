@@ -20,7 +20,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// GroupRole Service class
 	/// </summary>
-	public partial class GroupRoleService : Service<GroupRole, GroupRoleDTO>
+	public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GroupRoleService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Groups
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<GroupRoleDTO> QueryableDTO()
+		public override IQueryable<GroupRoleDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new GroupRoleDTO()
+			return this.Queryable().Select( m => new GroupRoleDto()
 				{
 					IsSystem = m.IsSystem,
 					Name = m.Name,

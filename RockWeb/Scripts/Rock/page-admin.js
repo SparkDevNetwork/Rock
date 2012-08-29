@@ -13,7 +13,7 @@ function saveBlockMove() {
         type: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+        url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
         success: function (getData, status, xhr) {
 
             // Update the new zone
@@ -35,7 +35,7 @@ function saveBlockMove() {
                 contentType: 'application/json',
                 dataType: 'json',
                 data: JSON.stringify(getData),
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/Move/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Get a reference to the block instance's container div
@@ -121,7 +121,7 @@ $(document).ready(function () {
                 type: 'DELETE',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Remove the block instance's container div

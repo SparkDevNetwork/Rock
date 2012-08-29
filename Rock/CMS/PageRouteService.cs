@@ -15,12 +15,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// PageRoute Service class
 	/// </summary>
-	public partial class PageRouteService : Service<PageRoute, PageRouteDTO>
+	public partial class PageRouteService : Service<PageRoute, PageRouteDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PageRouteService"/> class
@@ -48,9 +48,9 @@ namespace Rock.CMS
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageRouteDTO> QueryableDTO()
+		public override IQueryable<PageRouteDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new PageRouteDTO()
+			return this.Queryable().Select( m => new PageRouteDto()
 				{
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,

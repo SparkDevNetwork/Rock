@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CMS;
+using Rock.Cms;
 
-namespace Rock.Rest.CMS
+namespace Rock.Rest.Cms
 {
 	/// <summary>
 	/// Files REST API
 	/// </summary>
-	public partial class FilesController : Rock.Rest.ApiController<Rock.CMS.File, Rock.CMS.FileDTO>
+	public partial class FilesController : Rock.Rest.ApiController<Rock.Cms.File, Rock.Cms.FileDto>
 	{
-		public FilesController() : base( new Rock.CMS.FileService() ) { } 
+		public FilesController() : base( new Rock.Cms.FileService() ) { } 
 	}
 }

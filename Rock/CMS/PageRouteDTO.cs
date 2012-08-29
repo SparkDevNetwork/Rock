@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for PageRoute object
 	/// </summary>
-	public partial class PageRouteDTO : DTO<PageRoute>
+	public partial class PageRouteDto : Dto<PageRoute>
 	{
 
 #pragma warning disable 1591
@@ -30,7 +30,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public PageRouteDTO ()
+		public PageRouteDto ()
 		{
 		}
 
@@ -38,7 +38,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="pageRoute"></param>
-		public PageRouteDTO ( PageRoute pageRoute )
+		public PageRouteDto ( PageRoute pageRoute )
 		{
 			CopyFromModel( pageRoute );
 		}

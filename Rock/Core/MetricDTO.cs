@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for Metric object
 	/// </summary>
-	public partial class MetricDTO : DTO<Metric>
+	public partial class MetricDto : Dto<Metric>
 	{
 
 #pragma warning disable 1591
@@ -40,7 +40,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public MetricDTO ()
+		public MetricDto ()
 		{
 		}
 
@@ -48,7 +48,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="metric"></param>
-		public MetricDTO ( Metric metric )
+		public MetricDto ( Metric metric )
 		{
 			CopyFromModel( metric );
 		}

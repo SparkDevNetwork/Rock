@@ -12,8 +12,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Communication;
-using Rock.CMS;
-using Rock.CRM;
+using Rock.Cms;
+using Rock.Crm;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security

@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Html Content POCO Service class
 	/// </summary>
-    public partial class HtmlContentService : Service<HtmlContent, HtmlContentDTO>
+    public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
     {
 		/// <summary>
 		/// Gets Html Contents by Approved By Person Id

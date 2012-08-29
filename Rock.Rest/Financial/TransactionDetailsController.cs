@@ -17,7 +17,7 @@ namespace Rock.Rest.Financial
 	/// <summary>
 	/// TransactionDetails REST API
 	/// </summary>
-	public partial class TransactionDetailsController : Rock.Rest.ApiController<Rock.Financial.TransactionDetail, Rock.Financial.TransactionDetailDTO>
+	public partial class TransactionDetailsController : Rock.Rest.ApiController<Rock.Financial.TransactionDetail, Rock.Financial.TransactionDetailDto>
 	{
 		public TransactionDetailsController() : base( new Rock.Financial.TransactionDetailService() ) { } 
 	}

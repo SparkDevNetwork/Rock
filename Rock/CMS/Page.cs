@@ -12,7 +12,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
     /// <summary>
     /// Page POCO Entity.
@@ -244,7 +244,7 @@ namespace Rock.CMS
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CMS.Page"; } }
+		public override string AuthEntity { get { return "Cms.Page"; } }
         
 		/// <summary>
         /// Gets or sets the Block Instances.
@@ -306,17 +306,17 @@ namespace Rock.CMS
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -362,7 +362,7 @@ namespace Rock.CMS
         /// <returns></returns>
         public static dynamic MapPagesRecursive( Page page )
         {
-            dynamic exportPage = page.DataTransferObject.ToDynamic();
+            dynamic exportPage = new PageDto(page).ToDynamic();
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );

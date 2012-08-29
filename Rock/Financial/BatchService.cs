@@ -20,7 +20,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Batch Service class
 	/// </summary>
-	public partial class BatchService : Service<Batch, BatchDTO>
+	public partial class BatchService : Service<Batch, BatchDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BatchService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<BatchDTO> QueryableDTO()
+		public override IQueryable<BatchDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new BatchDTO()
+			return this.Queryable().Select( m => new BatchDto()
 				{
 					Name = m.Name,
 					BatchDate = m.BatchDate,

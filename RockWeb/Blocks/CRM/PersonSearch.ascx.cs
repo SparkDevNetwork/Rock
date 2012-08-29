@@ -11,10 +11,10 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.CRM
+namespace RockWeb.Blocks.Crm
 {
     public partial class PersonSearch : Rock.Web.UI.Block
     {

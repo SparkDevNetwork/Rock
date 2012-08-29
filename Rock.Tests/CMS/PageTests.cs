@@ -7,9 +7,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Rock.CMS;
+using Rock.Cms;
 
-namespace Rock.Tests.CMS
+namespace Rock.Tests.Cms
 {
     public class PageTests
     {

@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for HtmlContent object
 	/// </summary>
-	public partial class HtmlContentDTO : DTO<HtmlContent>
+	public partial class HtmlContentDto : Dto<HtmlContent>
 	{
 
 #pragma warning disable 1591
@@ -36,7 +36,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public HtmlContentDTO ()
+		public HtmlContentDto ()
 		{
 		}
 
@@ -44,7 +44,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="htmlContent"></param>
-		public HtmlContentDTO ( HtmlContent htmlContent )
+		public HtmlContentDto ( HtmlContent htmlContent )
 		{
 			CopyFromModel( htmlContent );
 		}

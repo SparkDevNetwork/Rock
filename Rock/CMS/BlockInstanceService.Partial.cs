@@ -9,12 +9,12 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Block Instance POCO Service class
 	/// </summary>
-    public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDTO>
+    public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDto>
     {
 		/// <summary>
 		/// Gets Block Instances by Block Id

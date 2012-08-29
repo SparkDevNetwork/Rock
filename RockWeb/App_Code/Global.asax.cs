@@ -19,7 +19,7 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
-using Rock.CMS;
+using Rock.Cms;
 using Rock.Jobs;
 using Rock.Util;
 using Rock.Transactions;
@@ -299,7 +299,7 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+                Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
 
                 // save the exception info to the db
                 ExceptionLogService service = new ExceptionLogService();
@@ -446,10 +446,10 @@ namespace RockWeb
 
         private void AddEventHandlers()
         {
-            Rock.CMS.BlockInstance.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( BlockInstance_Updated );
-            Rock.CMS.BlockInstance.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( BlockInstance_Deleting );
-            Rock.CMS.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
-            Rock.CMS.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
+            Rock.Cms.BlockInstance.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( BlockInstance_Updated );
+            Rock.Cms.BlockInstance.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( BlockInstance_Deleting );
+            Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
+            Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
         }
 
         private void LoadCacheObjects()
@@ -503,7 +503,7 @@ namespace RockWeb
         void Page_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the updated page
-            Rock.CMS.Page page = e.Model as Rock.CMS.Page;
+            Rock.Cms.Page page = e.Model as Rock.Cms.Page;
             if ( page != null )
             {
                 // Check to see if the page being updated is cached
@@ -539,7 +539,7 @@ namespace RockWeb
         void Page_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted page
-            Rock.CMS.Page page = e.Model as Rock.CMS.Page;
+            Rock.Cms.Page page = e.Model as Rock.Cms.Page;
             if ( page != null )
             {
                 // Check to see if the page being updated is cached
@@ -567,7 +567,7 @@ namespace RockWeb
         void BlockInstance_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the update block instance
-            Rock.CMS.BlockInstance blockInstance = e.Model as Rock.CMS.BlockInstance;
+            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
             if ( blockInstance != null )
             {
                 // Flush the block instance from cache
@@ -587,7 +587,7 @@ namespace RockWeb
         void BlockInstance_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted block instance
-            Rock.CMS.BlockInstance blockInstance = e.Model as Rock.CMS.BlockInstance;
+            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
             if ( blockInstance != null )
             {
                 // Flush the block instance from cache

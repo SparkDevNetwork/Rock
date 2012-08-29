@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for Attribute object
 	/// </summary>
-	public partial class AttributeDTO : DTO<Attribute>
+	public partial class AttributeDto : Dto<Attribute>
 	{
 
 #pragma warning disable 1591
@@ -41,7 +41,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public AttributeDTO ()
+		public AttributeDto ()
 		{
 		}
 
@@ -49,7 +49,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="attribute"></param>
-		public AttributeDTO ( Attribute attribute )
+		public AttributeDto ( Attribute attribute )
 		{
 			CopyFromModel( attribute );
 		}

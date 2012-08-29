@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Gateway object
 	/// </summary>
-	public partial class GatewayDTO : DTO<Gateway>
+	public partial class GatewayDto : Dto<Gateway>
 	{
 
 #pragma warning disable 1591
@@ -32,7 +32,7 @@ namespace Rock.Financial
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public GatewayDTO ()
+		public GatewayDto ()
 		{
 		}
 
@@ -40,7 +40,7 @@ namespace Rock.Financial
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="gateway"></param>
-		public GatewayDTO ( Gateway gateway )
+		public GatewayDto ( Gateway gateway )
 		{
 			CopyFromModel( gateway );
 		}

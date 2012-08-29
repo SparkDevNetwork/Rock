@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for AttributeQualifier object
 	/// </summary>
-	public partial class AttributeQualifierDTO : DTO<AttributeQualifier>
+	public partial class AttributeQualifierDto : Dto<AttributeQualifier>
 	{
 
 #pragma warning disable 1591
@@ -31,7 +31,7 @@ namespace Rock.Core
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public AttributeQualifierDTO ()
+		public AttributeQualifierDto ()
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Rock.Core
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="attributeQualifier"></param>
-		public AttributeQualifierDTO ( AttributeQualifier attributeQualifier )
+		public AttributeQualifierDto ( AttributeQualifier attributeQualifier )
 		{
 			CopyFromModel( attributeQualifier );
 		}

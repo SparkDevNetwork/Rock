@@ -13,12 +13,12 @@ using System;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
 	/// <summary>
 	/// Data Transfer Object for File object
 	/// </summary>
-	public partial class FileDTO : DTO<File>
+	public partial class FileDto : Dto<File>
 	{
 
 #pragma warning disable 1591
@@ -34,7 +34,7 @@ namespace Rock.CMS
 		/// <summary>
 		/// Instantiates a new DTO object
 		/// </summary>
-		public FileDTO ()
+		public FileDto ()
 		{
 		}
 
@@ -42,7 +42,7 @@ namespace Rock.CMS
 		/// Instantiates a new DTO object from the model
 		/// </summary>
 		/// <param name="file"></param>
-		public FileDTO ( File file )
+		public FileDto ( File file )
 		{
 			CopyFromModel( file );
 		}

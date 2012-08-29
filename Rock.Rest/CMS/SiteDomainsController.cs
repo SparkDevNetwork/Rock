@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.CMS;
+using Rock.Cms;
 
-namespace Rock.Rest.CMS
+namespace Rock.Rest.Cms
 {
 	/// <summary>
 	/// SiteDomains REST API
 	/// </summary>
-	public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.CMS.SiteDomain, Rock.CMS.SiteDomainDTO>
+	public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.Cms.SiteDomain, Rock.Cms.SiteDomainDto>
 	{
-		public SiteDomainsController() : base( new Rock.CMS.SiteDomainService() ) { } 
+		public SiteDomainsController() : base( new Rock.Cms.SiteDomainService() ) { } 
 	}
 }

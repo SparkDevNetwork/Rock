@@ -14,7 +14,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Field Type POCO Service class
 	/// </summary>
-    public partial class FieldTypeService : Service<FieldType, FieldTypeDTO>
+    public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
     {
 		/// <summary>
 		/// Gets Field Types by Name

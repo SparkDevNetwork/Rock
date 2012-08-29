@@ -20,7 +20,7 @@ namespace Rock.Core
 	/// <summary>
 	/// ServiceLog Service class
 	/// </summary>
-	public partial class ServiceLogService : Service<ServiceLog, ServiceLogDTO>
+	public partial class ServiceLogService : Service<ServiceLog, ServiceLogDto>
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ServiceLogService"/> class
@@ -48,9 +48,9 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<ServiceLogDTO> QueryableDTO()
+		public override IQueryable<ServiceLogDto> QueryableDto()
 		{
-			return this.Queryable().Select( m => new ServiceLogDTO()
+			return this.Queryable().Select( m => new ServiceLogDto()
 				{
 					Time = m.Time,
 					Input = m.Input,
