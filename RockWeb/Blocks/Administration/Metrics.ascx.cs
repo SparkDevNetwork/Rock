@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
 			if ( metricId == 0 )
 			{
 				metric = new Rock.Core.Metric();
-				metric.System = false;
+				metric.IsSystem = false;
 				metric.Order = 0;
 			} 
 			else {
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
 			metric.Description = tbDescription.Text;
 			metric.MinValue = Int32.Parse( tbMinValue.Text );
 			metric.MaxValue = Int32.Parse( tbMaxValue.Text );
-			//metric.CollectionFrequency = ddlCollectionFrequency.SelectedIndex;
+			metric.CollectionFrequencyId = ddlCollectionFrequency.SelectedIndex;
 			metric.Source = tbSource.Text;
 			metric.Source = tbSourceSQL.Text;
 

@@ -168,7 +168,7 @@ namespace Rock.Core
 		/// <value>
 		/// Collection of Metrics.
 		/// </value>
-		public virtual ICollection<Metric> Metrics { get; set; }
+		//public virtual ICollection<Metric> Metrics { get; set; }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

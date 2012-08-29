@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Type.
@@ -119,7 +119,7 @@ namespace Rock.Core
 		/// LastCollected Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime LastCollected { get; set; }
+		public DateTime? LastCollected { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Source.
@@ -198,7 +198,7 @@ namespace Rock.Core
 			{ 
 				Rock.Core.DTO.Metric dto = new Rock.Core.DTO.Metric();
 				dto.Id = this.Id;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.Type = this.Type;				
 				dto.Category = this.Category;
 				dto.Title = this.Title;
@@ -279,7 +279,7 @@ namespace Rock.Core
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
+			//this.HasOptional( p => p.CollectionFrequencyId ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
 		}
     }
 }
