@@ -221,11 +221,6 @@ namespace Rock.Cms
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
-        public Site()
-        {
-            SiteDomains = new System.Collections.ObjectModel.Collection<SiteDomain>();
-        }
-
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>

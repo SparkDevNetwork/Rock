@@ -16,7 +16,7 @@ namespace Rock.Web
     /// <summary>
     /// Rock custom route handler
     /// </summary>
-    public class RockRouteHandler : IRouteHandler
+    public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and

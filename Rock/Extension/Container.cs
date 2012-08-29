@@ -16,10 +16,14 @@ namespace Rock.Extension
     /// <summary>
     /// Singleton generic class that uses MEF to load and cache all of the component classes
     /// </summary>
-    public abstract class Container<T, TData> : IContainer
+    public abstract class Container<T, TData> : IContainer, IDisposable
         where T : Component
         where TData : IComponentData
     {
+        // MEF Container
+        private CompositionContainer container;
+        private bool IsDisposed;
+
         /// <summary>
         /// Gets the componentss.
         /// </summary>
@@ -40,9 +44,6 @@ namespace Rock.Extension
             }
         }
 
-        // MEF Container
-        private CompositionContainer container;
-
         /// <summary>
         /// Gets or sets the components.
         /// </summary>
@@ -50,6 +51,14 @@ namespace Rock.Extension
         /// The components.
         /// </value>
         protected abstract IEnumerable<Lazy<T, TData>> MEFComponents { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public Container()
+        {
+            IsDisposed = false;
+        }
 
         /// <summary>
         /// Forces a reloading of all the GeocodeService classes
@@ -89,6 +98,34 @@ namespace Rock.Extension
             foreach ( KeyValuePair<int, List<Lazy<T, TData>>> entry in components )
                 foreach ( Lazy<T, TData> component in entry.Value )
                     Components.Add( id++, component );
+        }
+
+        /// <summary>
+        /// Dispose object
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    if (container != null)
+                        container.Dispose();
+                }
+
+                container = null;
+                IsDisposed = true;
+            }
         }
     }
 }
