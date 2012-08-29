@@ -34,7 +34,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// System.
 		/// </value>
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Type.
@@ -106,7 +106,7 @@ namespace Rock.Core.DTO
 		/// <value>
 		/// LastCollected.
 		/// </value>
-		public DateTime LastCollected { get; set; }
+		public DateTime? LastCollected { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Source.

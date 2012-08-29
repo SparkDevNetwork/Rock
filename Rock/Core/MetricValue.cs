@@ -34,7 +34,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool System { get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Metric Id.
@@ -151,7 +151,7 @@ namespace Rock.Core
 			{ 
 				Rock.Core.DTO.MetricValue dto = new Rock.Core.DTO.MetricValue();
 				dto.Id = this.Id;
-				dto.System = this.System;
+				dto.IsSystem = this.IsSystem;
 				dto.MetricId = this.MetricId;
 				dto.Value = this.Value;
 				dto.Description = this.Description;

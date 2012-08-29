@@ -204,6 +204,22 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Defined Types.
+		/// </summary>
+		/// <value>
+		/// the Defined Types.
+		/// </value>
+		public DbSet<Rock.Core.Metric> Metrics { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Defined Values.
+		/// </summary>
+		/// <value>
+		/// the Defined Values.
+		/// </value>
+		public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+
         /// <summary>
         /// Gets or sets the Service Logs.
         /// </summary>
@@ -389,6 +405,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.CRM.EmailTemplateConfiguration() );
