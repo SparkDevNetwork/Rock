@@ -63,6 +63,18 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Trys to get the model with the id value
+        /// </summary>
+        /// <returns></returns>
+        public bool TryGet( int id, out T item )
+        {
+            item = Get(id);
+            if (item == null)
+                return false;
+            return true;
+        }
+
+        /// <summary>
         /// Gets the model by the public encrypted key.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
@@ -226,4 +238,27 @@ namespace Rock.Data
             }
         }
     }
+
+    public class Service<T, D> : Service<T>
+        where T : Rock.Data.Model<T>
+        where D : Rock.Data.DTO<T>
+    {
+        public Service() : base() { }
+        public Service( IRepository<T> repository ) : base( repository ) { }
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<D> QueryableDTO()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public virtual T CreateNew()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
 }

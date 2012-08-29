@@ -247,7 +247,6 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = "";
 
-            int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
             string cachedContent = GetCacheItem( entityValue ) as string;
 
             // if content not cached load it from DB
@@ -256,13 +255,14 @@ namespace RockWeb.Blocks.Cms
                 Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
 
                 if ( content != null )
-                {
                     html = content.Content;
+                else
+                    html = string.Empty;
 
-                    // cache content
-                    if ( cacheDuration > 0 )
-                        AddCacheItem( entityValue, html, cacheDuration );
-                }
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 ) ;
+                    AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;

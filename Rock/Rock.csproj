@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,8 +13,17 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock</RootNamespace>
     <AssemblyName>Rock</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <UseIISExpress>false</UseIISExpress>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>Rock.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +43,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility">
@@ -41,9 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\AjaxControlToolkit.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.4.3.1\lib\net40\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -67,7 +79,6 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.Services" />
@@ -79,57 +90,115 @@
     <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CMS\AuthDTO.cs" />
     <Compile Include="CMS\AuthService.cs" />
+    <Compile Include="CMS\AuthService.Partial.cs" />
+    <Compile Include="CMS\BlockDTO.cs" />
+    <Compile Include="CMS\BlockInstanceDTO.cs" />
     <Compile Include="CMS\BlockInstanceService.cs" />
+    <Compile Include="CMS\BlockInstanceService.Partial.cs" />
+    <Compile Include="CMS\BlockService.Partial.cs" />
     <Compile Include="CMS\BlockService.cs" />
-    <Compile Include="CMS\PageContextService.cs" />
+    <Compile Include="CMS\FileDTO.cs" />
     <Compile Include="CMS\FileService.cs" />
+    <Compile Include="CMS\HtmlContentDTO.cs" />
     <Compile Include="CMS\HtmlContentService.cs" />
+    <Compile Include="CMS\PageContextDTO.cs" />
+    <Compile Include="CMS\PageContextService.cs" />
+    <Compile Include="CMS\PageContextService.Partial.cs" />
+    <Compile Include="CMS\HtmlContentService.Partial.cs" />
     <Compile Include="CMS\PageContext.cs" />
-    <Compile Include="CMS\PageService.cs" />
+    <Compile Include="CMS\PageDTO.cs" />
+    <Compile Include="CMS\PageRouteDTO.cs" />
     <Compile Include="CMS\PageRouteService.cs" />
+    <Compile Include="CMS\PageService.cs" />
+    <Compile Include="CMS\PageService.Partial.cs" />
+    <Compile Include="CMS\PageRouteService.Partial.cs" />
+    <Compile Include="CMS\SiteDomainDTO.cs" />
     <Compile Include="CMS\SiteDomainService.cs" />
+    <Compile Include="CMS\SiteDomainService.Partial.cs" />
+    <Compile Include="CMS\SiteDTO.cs" />
     <Compile Include="CMS\SiteService.cs" />
+    <Compile Include="CMS\SiteService.Partial.cs" />
+    <Compile Include="CMS\UserDTO.cs" />
     <Compile Include="CMS\UserService.cs" />
+    <Compile Include="CMS\UserService.Partial.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
+    <Compile Include="Core\AttributeDTO.cs" />
+    <Compile Include="Core\AttributeQualifierDTO.cs" />
     <Compile Include="Core\AttributeQualifierService.cs" />
+    <Compile Include="Core\AttributeQualifierService.Partial.cs" />
     <Compile Include="Core\AttributeService.cs" />
+    <Compile Include="Core\AttributeService.Partial.cs" />
+    <Compile Include="Core\AttributeValueDTO.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
-    <Compile Include="Core\MetricValue.cs" />
-    <Compile Include="Core\MetricValueService.cs" />
-    <Compile Include="Core\MetricService.cs" />
-    <Compile Include="Core\Metric.cs" />
+    <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\DefinedTypeDTO.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
+    <Compile Include="Core\DefinedValueDTO.cs" />
     <Compile Include="Core\DefinedValueService.cs" />
-    <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\EntityChangeDTO.cs" />
     <Compile Include="Core\EntityChangeService.cs" />
-    <Compile Include="Core\ExceptionLog.cs" />
+    <Compile Include="Core\ExceptionLogDTO.cs" />
     <Compile Include="Core\ExceptionLogService.cs" />
+    <Compile Include="Core\FieldTypeDTO.cs" />
     <Compile Include="Core\FieldTypeService.cs" />
+    <Compile Include="Core\MetricDTO.cs" />
+    <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\MetricValue.cs" />
+    <Compile Include="Core\MetricValueDTO.cs" />
+    <Compile Include="Core\MetricValueService.cs" />
+    <Compile Include="Core\MetricValueService.Partial.cs" />
+    <Compile Include="Core\MetricService.Partial.cs" />
+    <Compile Include="Core\Metric.cs" />
+    <Compile Include="Core\DefinedTypeService.Partial.cs" />
+    <Compile Include="Core\DefinedValueService.Partial.cs" />
+    <Compile Include="Core\EntityChange.cs" />
+    <Compile Include="Core\EntityChangeService.Partial.cs" />
+    <Compile Include="Core\ExceptionLog.cs" />
+    <Compile Include="Core\ExceptionLogService.Partial.cs" />
+    <Compile Include="Core\FieldTypeService.Partial.cs" />
     <Compile Include="Core\RangeValue.cs" />
+    <Compile Include="Core\ServiceLogDTO.cs" />
     <Compile Include="Core\ServiceLogService.cs" />
+    <Compile Include="CRM\AddressDTO.cs" />
     <Compile Include="CRM\AddressService.cs" />
+    <Compile Include="CRM\AddressService.Partial.cs" />
     <Compile Include="CRM\Campus.cs" />
+    <Compile Include="CRM\CampusDTO.cs" />
     <Compile Include="CRM\CampusService.cs" />
+    <Compile Include="CRM\EmailTemplateDTO.cs" />
     <Compile Include="CRM\EmailTemplateService.cs" />
-    <Compile Include="CRM\PersonService.cs" />
+    <Compile Include="CRM\EmailTemplateService.Partial.cs" />
+    <Compile Include="CRM\PersonDTO.cs" />
+    <Compile Include="CRM\PersonMergedDTO.cs" />
     <Compile Include="CRM\PersonMergedService.cs" />
+    <Compile Include="CRM\PersonService.cs" />
+    <Compile Include="CRM\PersonService.Partial.cs" />
+    <Compile Include="CRM\PersonMergedService.Partial.cs" />
     <Compile Include="CRM\PersonMerged.cs" />
     <Compile Include="CRM\PersonViewed.cs" />
+    <Compile Include="CRM\PersonViewedDTO.cs" />
     <Compile Include="CRM\PersonViewedService.cs" />
+    <Compile Include="CRM\PersonViewedService.Partial.cs" />
+    <Compile Include="CRM\PhoneNumberDTO.cs" />
     <Compile Include="CRM\PhoneNumberService.cs" />
+    <Compile Include="CRM\PhoneNumberService.Partial.cs" />
     <Compile Include="CRM\DiscService.cs" />
+    <Compile Include="Data\DTO.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
@@ -187,21 +256,27 @@
     <Compile Include="Financial\Batch.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\BatchDTO.cs" />
     <Compile Include="Financial\BatchService.cs" />
     <Compile Include="Financial\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\FundDTO.cs" />
     <Compile Include="Financial\FundService.cs" />
     <Compile Include="Financial\Gateway.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\GatewayDTO.cs" />
+    <Compile Include="Financial\GatewayService.cs" />
     <Compile Include="Financial\PersonAccountLookup.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PersonAccountLookupDTO.cs" />
     <Compile Include="Financial\PersonAccountLookupService.cs" />
     <Compile Include="Financial\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\PledgeDTO.cs" />
     <Compile Include="Financial\PledgeService.cs" />
     <Compile Include="Financial\Transaction.cs">
       <SubType>Code</SubType>
@@ -209,20 +284,31 @@
     <Compile Include="Financial\TransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Financial\TransactionDetailDTO.cs" />
     <Compile Include="Financial\TransactionDetailService.cs" />
+    <Compile Include="Financial\TransactionDTO.cs" />
     <Compile Include="Financial\TransactionFund.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Financial\TransactionSearchValue.cs" />
     <Compile Include="Financial\TransactionService.cs" />
+    <Compile Include="Financial\TransactionService.Partial.cs" />
     <Compile Include="Groups\Group.cs" />
-    <Compile Include="Groups\GroupService.cs" />
-    <Compile Include="Groups\GroupRole.cs" />
+    <Compile Include="Groups\GroupDTO.cs" />
+    <Compile Include="Groups\GroupRoleDTO.cs" />
     <Compile Include="Groups\GroupRoleService.cs" />
+    <Compile Include="Groups\GroupService.cs" />
+    <Compile Include="Groups\GroupService.Partial.cs" />
+    <Compile Include="Groups\GroupRole.cs" />
+    <Compile Include="Groups\GroupRoleService.Partial.cs" />
     <Compile Include="Groups\GroupType.cs" />
+    <Compile Include="Groups\GroupTypeDTO.cs" />
     <Compile Include="Groups\GroupTypeService.cs" />
+    <Compile Include="Groups\GroupTypeService.Partial.cs" />
     <Compile Include="Groups\Member.cs" />
+    <Compile Include="Groups\MemberDTO.cs" />
     <Compile Include="Groups\MemberService.cs" />
+    <Compile Include="Groups\MemberService.Partial.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
@@ -274,26 +360,24 @@
     <Compile Include="Migrations\201208161837259_RemoveGlobalValuesPage.Designer.cs">
       <DependentUpon>201208161837259_RemoveGlobalValuesPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208181111566_UpdateEnums.cs" />
+    <Compile Include="Migrations\201208181111566_UpdateEnums.Designer.cs">
+      <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201208241555418_AddSearchPlugins.cs" />
+    <Compile Include="Migrations\201208241555418_AddSearchPlugins.Designer.cs">
+      <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
-    <Compile Include="REST\CMS\IUserService.Partial.cs" />
-    <Compile Include="REST\CMS\UserService.Partial.cs" />
-    <Compile Include="REST\Core\AttributeService.Partial.cs" />
-    <Compile Include="REST\Core\IMetricValueService.cs" />
-    <Compile Include="REST\Core\MetricValueService.cs" />
-    <Compile Include="REST\Core\IMetricService.cs" />
-    <Compile Include="REST\Core\MetricService.cs" />
-    <Compile Include="REST\Core\ExceptionLogService.cs" />
-    <Compile Include="REST\Core\IAttributeService.Partial.cs" />
-    <Compile Include="REST\Core\IExceptionLogService.cs" />
-    <Compile Include="REST\CRM\EmailTemplateService.cs" />
-    <Compile Include="REST\CRM\IEmailTemplateService.cs" />
-    <Compile Include="REST\CRM\IPersonTrailService.cs" />
-    <Compile Include="REST\CRM\IPersonViewedService.cs" />
-    <Compile Include="REST\CRM\PersonTrailService.cs" />
-    <Compile Include="REST\CRM\PersonViewedService.cs" />
+    <Compile Include="Search\Person\Address.cs" />
+    <Compile Include="Search\Person\Email.cs" />
+    <Compile Include="Search\Person\Name.cs" />
+    <Compile Include="Search\Person\Phone.cs" />
+    <Compile Include="Search\SearchComponent.cs" />
+    <Compile Include="Search\SearchContainer.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
@@ -312,7 +396,9 @@
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
     <Compile Include="Util\Job.cs" />
+    <Compile Include="Util\JobDTO.cs" />
     <Compile Include="Util\JobService.cs" />
+    <Compile Include="Util\JobService.Partial.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\Attribute.cs" />
     <Compile Include="Web\Cache\Block.cs" />
@@ -338,6 +424,7 @@
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
+    <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -403,64 +490,6 @@
     <Compile Include="Data\UnitOfWorkScope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\EFRepository.cs" />
-    <Compile Include="REST\CMS\AuthService.cs" />
-    <Compile Include="REST\CMS\BlockInstanceService.cs" />
-    <Compile Include="REST\CMS\BlockInstanceService.Partial.cs" />
-    <Compile Include="REST\CMS\BlockService.cs" />
-    <Compile Include="REST\CMS\IBlockInstanceService.Partial.cs" />
-    <Compile Include="REST\CMS\FileService.cs" />
-    <Compile Include="REST\CMS\HtmlContentService.cs" />
-    <Compile Include="REST\CMS\IAuthService.cs" />
-    <Compile Include="REST\CMS\IBlockInstanceService.cs" />
-    <Compile Include="REST\CMS\IBlockService.cs" />
-    <Compile Include="REST\CMS\IFileService.cs" />
-    <Compile Include="REST\CMS\IHtmlContentService.cs" />
-    <Compile Include="REST\CMS\IPageRouteService.cs" />
-    <Compile Include="REST\CMS\IPageService.cs" />
-    <Compile Include="REST\CMS\ISiteDomainService.cs" />
-    <Compile Include="REST\CMS\ISiteService.cs" />
-    <Compile Include="REST\CMS\IUserService.cs" />
-    <Compile Include="REST\CMS\PageRouteService.cs" />
-    <Compile Include="REST\CMS\PageService.cs" />
-    <Compile Include="REST\CMS\SiteDomainService.cs" />
-    <Compile Include="REST\CMS\SiteService.cs" />
-    <Compile Include="REST\CMS\UserService.cs" />
-    <Compile Include="REST\Core\AttributeQualifierService.cs" />
-    <Compile Include="REST\Core\AttributeService.cs" />
-    <Compile Include="REST\Core\AttributeValueService.cs" />
-    <Compile Include="REST\Core\DefinedTypeService.cs" />
-    <Compile Include="REST\Core\DefinedValueService.cs" />
-    <Compile Include="REST\Core\EntityChangeService.cs" />
-    <Compile Include="REST\Core\FieldTypeService.cs" />
-    <Compile Include="REST\Core\IAttributeQualifierService.cs" />
-    <Compile Include="REST\Core\IAttributeService.cs" />
-    <Compile Include="REST\Core\IAttributeValueService.cs" />
-    <Compile Include="REST\Core\IDefinedTypeService.cs" />
-    <Compile Include="REST\Core\IDefinedValueService.cs" />
-    <Compile Include="REST\Core\IEntityChangeService.cs" />
-    <Compile Include="REST\Core\IFieldTypeService.cs" />
-    <Compile Include="REST\Core\IServiceLogService.cs" />
-    <Compile Include="REST\Core\ServiceLogService.cs" />
-    <Compile Include="REST\CRM\AddressService.cs" />
-    <Compile Include="REST\CRM\AddressService.Partial.cs" />
-    <Compile Include="REST\CRM\IAddressService.cs" />
-    <Compile Include="REST\CRM\IAddressService.Partial.cs" />
-    <Compile Include="REST\CRM\IPersonService.cs" />
-    <Compile Include="REST\CRM\IPhoneNumberService.cs" />
-    <Compile Include="REST\CRM\PersonService.cs" />
-    <Compile Include="REST\CRM\PhoneNumberService.cs" />
-    <Compile Include="REST\Groups\GroupRoleService.cs" />
-    <Compile Include="REST\Groups\GroupService.cs" />
-    <Compile Include="REST\Groups\GroupTypeService.cs" />
-    <Compile Include="REST\Groups\IGroupRoleService.cs" />
-    <Compile Include="REST\Groups\IGroupService.cs" />
-    <Compile Include="REST\Groups\IGroupTypeService.cs" />
-    <Compile Include="REST\Groups\IMemberService.cs" />
-    <Compile Include="REST\Groups\MemberService.cs" />
-    <Compile Include="REST\IService.cs" />
-    <Compile Include="REST\ServiceHelper.cs" />
-    <Compile Include="REST\Util\IJobService.cs" />
-    <Compile Include="REST\Util\JobService.cs" />
     <Compile Include="Service References\MelissaData.AddressCheck\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -612,24 +641,32 @@
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.DataTransferObjects\Rock.DataTransferObjects.csproj">
-      <Project>{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}</Project>
-      <Name>Rock.DataTransferObjects</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201208181111566_UpdateEnums.resx">
+      <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201208241555418_AddSearchPlugins.resx">
+      <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51120</DevelopmentServerPort>
+          <DevelopmentServerPort>65463</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

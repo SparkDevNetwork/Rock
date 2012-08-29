@@ -28,9 +28,8 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( _blockInstance, phAttributes, !Page.IsPostBack );
                 }
                 else
                 {

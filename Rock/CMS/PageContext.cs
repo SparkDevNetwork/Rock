@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -97,31 +98,6 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.PageContext"/> object.
-        /// </value>
-		public Rock.CMS.DTO.PageContext DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.PageContext dto = new Rock.CMS.DTO.PageContext();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Entity = this.Entity;
-                dto.IdParameter = this.IdParameter;
-                dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -153,6 +129,7 @@ namespace Rock.CMS
 		public virtual CRM.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>
