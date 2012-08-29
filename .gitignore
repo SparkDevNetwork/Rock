@@ -12,3 +12,5 @@
 
 /Rock.Tests/obj
 /Rock.Tests/bin
+/*.vsp
+/*.psess
