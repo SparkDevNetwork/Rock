@@ -55,9 +55,8 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _page, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
                     List<string> blockContexts = new List<string>();
                     foreach ( var blockInstance in _page.BlockInstances )

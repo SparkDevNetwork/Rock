@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Web;
@@ -83,26 +84,6 @@ namespace Rock.CRM
         public override string AuthEntity { get { return "CRM.Campus"; } }
 
         /// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.Campus"/> object.
-        /// </value>
-        [NotMapped]
-        public Rock.CRM.DTO.Campus DataTransferObject
-        {
-            get
-            {
-                Rock.CRM.DTO.Campus dto = new Rock.CRM.DTO.Campus();
-                dto.Id = this.Id;
-                dto.Guid = this.Guid;
-                dto.IsSystem = this.IsSystem;
-                dto.Name = this.Name;
-                return dto;
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -114,6 +95,7 @@ namespace Rock.CRM
         }
 
     }
+
     /// <summary>
     /// Campus Configuration class.
     /// </summary>
@@ -126,5 +108,4 @@ namespace Rock.CRM
         {
         }
     }
-
 }

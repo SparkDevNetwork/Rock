@@ -21,8 +21,6 @@
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
         
-        <asp:HiddenField ID="hfComponentId" runat="server" />
-
         <asp:ValidationSummary runat="server" CssClass="failureNotification" />
 
         <fieldset>
