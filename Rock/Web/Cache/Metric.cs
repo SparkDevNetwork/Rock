@@ -175,7 +175,7 @@ namespace Rock.Web.Cache
 			metric.MinValue = metricModel.MinValue;
 			metric.MaxValue = metricModel.MaxValue;
 			metric.CollectionFrequencyId = metricModel.CollectionFrequencyId;
-			metric.LastCollected = (DateTime) metricModel.LastCollected;
+			metric.LastCollected = metricModel.LastCollected;
 			metric.Source = metricModel.Source;
 			metric.SourceSQL = metricModel.SourceSQL;
 
