@@ -17,15 +17,15 @@ using System.Web;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// DISC Class for administering and scoring a DISC Assessment
-	/// </summary>
-	public class DiscService
-	{
-		/// <summary>
-		/// Raw question data. This data format comes from source disc.js file from Greg Wiens.
-		/// </summary>
-		private static string[,] questionData = {
+    /// <summary>
+    /// DISC Class for administering and scoring a DISC Assessment
+    /// </summary>
+    public class DiscService
+    {
+        /// <summary>
+        /// Raw question data. This data format comes from source disc.js file from Greg Wiens.
+        /// </summary>
+        private static string[,] questionData = {
 			{"Fearless in conquering a challenge", "Always enjoys having fun", "Free to express true feelings", "Usually at rest with circumstances", "NNNN", "NNNN"},
 			{"Tries to avoid mistakes","Securely fixed in place","Convinces others ","Goes along with the flow","CDIS","CDIN"},
 			{"Liked by others","Systematically thinks through issues","Clearly conveys thoughts","Untroubled by stress","ICDN","NCDS"},
@@ -58,121 +58,244 @@ namespace Rock.Crm
 			{"Capable of expressing strong feelings","Prominently stands out","Minutely exact","Satisfied with life","IDCS","IDCS"}
 		};
 
-		/// <summary>
-		/// The AssessmentResults struct used to return the final assessment scores
-		/// </summary>
-		public struct AssessmentResults
-		{
-			public int AdaptiveBehaviorS;
-			public int AdaptiveBehaviorC;
-			public int AdaptiveBehaviorI;
-			public int AdaptiveBehaviorD;
+        /// <summary>
+        /// The AssessmentResults struct used to return the final assessment scores
+        /// </summary>
+        public struct AssessmentResults
+        {
+            public int AdaptiveBehaviorS;
+            public int AdaptiveBehaviorC;
+            public int AdaptiveBehaviorI;
+            public int AdaptiveBehaviorD;
 
-			public int NaturalBehaviorS;
-			public int NaturalBehaviorC;
-			public int NaturalBehaviorI;
-			public int NaturalBehaviorD;
-		}
+            public int NaturalBehaviorS;
+            public int NaturalBehaviorC;
+            public int NaturalBehaviorI;
+            public int NaturalBehaviorD;
 
-		/// <summary>
-		/// An individual response to a question. 
-		/// <para>Properties: QuestionNumber, ResponseNumber, ResponseID (QuestionNumber + ResponseNumber), ResponseText, MostScore, and LeastScore.</para>
-		/// </summary>
-		public struct ResponseItem
-		{
-			public string QuestionNumber;
-			public string ResponseNumber;
-			public string ResponseID;
-			public string ResponseText;
-			public string MostScore;
-			public string LeastScore;
-		}
+            public DateTime LastSaveDate;
+        }
 
-		/// <summary>
-		/// Fetch a List of <see cref="ResponseItem"/> for display/processing.
-		/// </summary>
-		/// <returns>a List of <see cref="ResponseItem"/>.</returns>
-		static public List<ResponseItem> GetResponses()
-		{
-			List<ResponseItem> responseList = new List<ResponseItem>();
-			ResponseItem response = new ResponseItem();
+        /// <summary>
+        /// An individual response to a question. 
+        /// <para>Properties: QuestionNumber, ResponseNumber, ResponseID (QuestionNumber + ResponseNumber), ResponseText, MostScore, and LeastScore.</para>
+        /// </summary>
+        public struct ResponseItem
+        {
+            public string QuestionNumber;
+            public string ResponseNumber;
+            public string ResponseID;
+            public string ResponseText;
+            public string MostScore;
+            public string LeastScore;
+        }
 
-			for ( int questionIndex = 0; questionIndex < questionData.GetLength( 0 ); questionIndex++ )
-			{
-				for ( int responseIndex = 0; responseIndex < 4; responseIndex++ )
-				{
-					response.QuestionNumber = ( questionIndex + 1 ).ToString( "D2" );
-					response.ResponseNumber = ( responseIndex + 1 ).ToString();
-					response.ResponseID = response.QuestionNumber + response.ResponseNumber; ;
-					response.ResponseText = questionData[questionIndex, responseIndex];
-					response.MostScore = questionData[questionIndex, 4].Substring( responseIndex, 1 );
-					response.LeastScore = questionData[questionIndex, 5].Substring( responseIndex, 1 );
+        /// <summary>
+        /// Fetch a List of <see cref="ResponseItem"/> for display/processing.
+        /// </summary>
+        /// <returns>a List of <see cref="ResponseItem"/>.</returns>
+        static public List<ResponseItem> GetResponses()
+        {
+            List<ResponseItem> responseList = new List<ResponseItem>();
+            ResponseItem response = new ResponseItem();
 
-					responseList.Add( response );
-				}
-			}
+            for (int questionIndex = 0; questionIndex < questionData.GetLength(0); questionIndex++)
+            {
+                for (int responseIndex = 0; responseIndex < 4; responseIndex++)
+                {
+                    response.QuestionNumber = (questionIndex + 1).ToString("D2");
+                    response.ResponseNumber = (responseIndex + 1).ToString();
+                    response.ResponseID = response.QuestionNumber + response.ResponseNumber; ;
+                    response.ResponseText = questionData[questionIndex, responseIndex];
+                    response.MostScore = questionData[questionIndex, 4].Substring(responseIndex, 1);
+                    response.LeastScore = questionData[questionIndex, 5].Substring(responseIndex, 1);
 
-			return responseList;
-		}
+                    responseList.Add(response);
+                }
+            }
 
-		/// <summary>
-		/// Scores the test.
-		/// </summary>
-		/// <param name="selectedResponseIDs">a List of ResponseIDs to be scored.</param>
-		/// <returns>a struct TestResults object with final scores.</returns>
-		static public AssessmentResults Score( List<string> selectedResponseIDs )
-		{
-			List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
+            return responseList;
+        }
 
-			// Holds the most and least totals for each Letter attribute
-			Dictionary<string, int[]> results = new Dictionary<string, int[]>();
-			results["S"] = new int[] { 0, 0 };
-			results["C"] = new int[] { 0, 0 };
-			results["I"] = new int[] { 0, 0 };
-			results["N"] = new int[] { 0, 0 }; // This is intentionally not used after most/least totalling (foreach loop below). Placebo questions?
-			results["D"] = new int[] { 0, 0 };
+        /// <summary>
+        /// Scores the test.
+        /// </summary>
+        /// <param name="selectedResponseIDs">a List of ResponseIDs to be scored.</param>
+        /// <returns>a struct TestResults object with final scores.</returns>
+        static public AssessmentResults Score(List<string> selectedResponseIDs)
+        {
+            List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
 
-			foreach ( string selectedResponseID in selectedResponseIDs )
-			{
-				string responseID = selectedResponseID.Substring( 0, 3 );
-				string MorL = selectedResponseID.Substring( 3, 1 );
+            // Holds the most and least totals for each Letter attribute
+            Dictionary<string, int[]> results = new Dictionary<string, int[]>();
+            results["S"] = new int[] { 0, 0 };
+            results["C"] = new int[] { 0, 0 };
+            results["I"] = new int[] { 0, 0 };
+            results["N"] = new int[] { 0, 0 }; // This is intentionally not used after most/least totalling (foreach loop below). Placebo questions?
+            results["D"] = new int[] { 0, 0 };
 
-				DiscService.ResponseItem selectedResponse = responseList.Find(
-					delegate( DiscService.ResponseItem responseItem )
-					{
-						return responseItem.ResponseID == responseID;
-					}
-				);
+            foreach (string selectedResponseID in selectedResponseIDs)
+            {
+                string responseID = selectedResponseID.Substring(0, 3);
+                string MorL = selectedResponseID.Substring(3, 1);
 
-				if ( MorL == "m" )
-					results[selectedResponse.MostScore][0]++;
-				else
-					results[selectedResponse.LeastScore][1]++;
-			}
+                DiscService.ResponseItem selectedResponse = responseList.Find(
+                    delegate(DiscService.ResponseItem responseItem)
+                    {
+                        return responseItem.ResponseID == responseID;
+                    }
+                );
 
-			int nbS = 27 - results["S"][1];
-			int nbC = 26 - results["C"][1];
-			int nbI = 26 - results["I"][1];
-			int nbD = 27 - results["D"][1];
+                if (MorL == "m")
+                    results[selectedResponse.MostScore][0]++;
+                else
+                    results[selectedResponse.LeastScore][1]++;
+            }
 
-			decimal decX = results["S"][0] + results["C"][0] + results["I"][0] + results["D"][0];
-			decimal decY = nbS + nbC + nbI + nbD;
+            int nbS = 27 - results["S"][1];
+            int nbC = 26 - results["C"][1];
+            int nbI = 26 - results["I"][1];
+            int nbD = 27 - results["D"][1];
 
-			AssessmentResults testResults = new AssessmentResults();
-			if ( decX > 0 && decY > 0 )
-			{
-				testResults.AdaptiveBehaviorS = Convert.ToInt32( ( results["S"][0] / decX * 100 ) );
-				testResults.AdaptiveBehaviorC = Convert.ToInt32( ( results["C"][0] / decX * 100 ) );
-				testResults.AdaptiveBehaviorI = Convert.ToInt32( ( results["I"][0] / decX * 100 ) );
-				testResults.AdaptiveBehaviorD = Convert.ToInt32( ( results["D"][0] / decX * 100 ) );
+            decimal decX = results["S"][0] + results["C"][0] + results["I"][0] + results["D"][0];
+            decimal decY = nbS + nbC + nbI + nbD;
 
-				testResults.NaturalBehaviorS = Convert.ToInt32( ( nbS / decY * 100 ) );
-				testResults.NaturalBehaviorC = Convert.ToInt32( ( nbC / decY * 100 ) );
-				testResults.NaturalBehaviorI = Convert.ToInt32( ( nbI / decY * 100 ) );
-				testResults.NaturalBehaviorD = Convert.ToInt32( ( nbD / decY * 100 ) );
-			}
+            AssessmentResults testResults = new AssessmentResults();
+            if (decX > 0 && decY > 0)
+            {
+                testResults.AdaptiveBehaviorS = Convert.ToInt32((results["S"][0] / decX * 100));
+                testResults.AdaptiveBehaviorC = Convert.ToInt32((results["C"][0] / decX * 100));
+                testResults.AdaptiveBehaviorI = Convert.ToInt32((results["I"][0] / decX * 100));
+                testResults.AdaptiveBehaviorD = Convert.ToInt32((results["D"][0] / decX * 100));
 
-			return testResults;
-		}
-	}
+                testResults.NaturalBehaviorS = Convert.ToInt32((nbS / decY * 100));
+                testResults.NaturalBehaviorC = Convert.ToInt32((nbC / decY * 100));
+                testResults.NaturalBehaviorI = Convert.ToInt32((nbI / decY * 100));
+                testResults.NaturalBehaviorD = Convert.ToInt32((nbD / decY * 100));
+            }
+
+            return testResults;
+        }
+
+        /// <summary>
+        /// Loads and returns saved Assessment scores for the Person.
+        /// </summary>
+        /// <param name="person">The Person to get the scores for.</param>
+        /// <returns>AssessmentResults</returns>
+        static public AssessmentResults LoadSavedAssessmentResults(Person person)
+        {
+            AssessmentResults savedScores = new AssessmentResults();
+            int attributeValueLookupResult;
+            bool attributeValueLookupSuccessful = false;
+            DateTime lastAssessmentDate = DateTime.MinValue;
+
+            var discAttributes = person.Attributes["DISC"];
+
+            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            {
+                attributeValueLookupResult = 0;
+                switch (attrib.Key)
+                {
+                    case "DISCAdaptiveD":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
+                        break;
+                    case "DISCAdaptiveI":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
+                        break;
+                    case "DISCAdaptiveS":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
+                        break;
+                    case "DISCAdaptiveC":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
+                        break;
+                    case "DISCNaturalD":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorD = attributeValueLookupResult;
+                        break;
+                    case "DISCNaturalI":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorI = attributeValueLookupResult;
+                        break;
+                    case "DISCNaturalS":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorS = attributeValueLookupResult;
+                        break;
+                    case "DISCNaturalC":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorC = attributeValueLookupResult;
+                        break;
+                    case "DISCLastSaveDate":
+                        attributeValueLookupSuccessful = DateTime.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate);
+                        savedScores.LastSaveDate = lastAssessmentDate;
+                        break;
+                }
+            }
+
+            return savedScores;
+        }
+
+        /// <summary>
+        /// Saves Assessment results to a Person's PersonProperties
+        /// </summary>
+        /// <param name="person"></param>
+        /// <param name="ABd">Adaptive Behavior D</param>
+        /// <param name="ABi">Adaptive Behavior I</param>
+        /// <param name="ABs">Adaptive Behavior S</param>
+        /// <param name="ABc">Adaptive Behavior C</param>
+        /// <param name="NBd">Natural Behavior D</param>
+        /// <param name="NBi">Natural Behavior I</param>
+        /// <param name="NBs">Natural Behavior S</param>
+        /// <param name="NBc">Natural Behavior C</param>
+        static public void SaveAssessmentResults(
+            Person person,
+            String ABd,
+            String ABi,
+            String ABs,
+            String ABc,
+            String NBd,
+            String NBi,
+            String NBs,
+            String NBc)
+        {
+            var discAttributes = person.Attributes["DISC"];
+
+            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            {
+                switch (attrib.Key)
+                {
+                    case "DISCAdaptiveD":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABd, person.Id);
+                        break;
+                    case "DISCAdaptiveI":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABi, person.Id);
+                        break;
+                    case "DISCAdaptiveS":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABs, person.Id);
+                        break;
+                    case "DISCAdaptiveC":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABc, person.Id);
+                        break;
+                    case "DISCNaturalD":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBd, person.Id);
+                        break;
+                    case "DISCNaturalI":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBi, person.Id);
+                        break;
+                    case "DISCNaturalS":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBs, person.Id);
+                        break;
+                    case "DISCNaturalC":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBc, person.Id);
+                        break;
+                    case "DISCLastSaveDate":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, DateTime.Now.ToString(), person.Id);
+                        break;
+                }
+            }
+        }
+    }
 }
