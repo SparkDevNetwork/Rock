@@ -51,9 +51,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Cms\AuthsController.cs" />
+    <Compile Include="Cms\BlockInstancesController.cs" />
     <Compile Include="Cms\BlocksController.cs" />
+    <Compile Include="Cms\FilesController.cs" />
+    <Compile Include="Cms\HtmlContentsController.cs" />
     <Compile Include="Cms\PageContextsController.cs" />
+    <Compile Include="Cms\PageRoutesController.cs" />
     <Compile Include="Cms\PagesController.cs" />
+    <Compile Include="Cms\SiteDomainsController.cs" />
+    <Compile Include="Cms\SitesController.cs" />
+    <Compile Include="Cms\UsersController.cs" />
     <Compile Include="Core\AttributeQualifiersController.cs" />
     <Compile Include="Core\AttributesController.cs" />
     <Compile Include="Core\AttributeValuesController.cs" />
@@ -86,6 +94,7 @@
     <Compile Include="Groups\GroupsController.cs" />
     <Compile Include="Groups\GroupTypesController.cs" />
     <Compile Include="Groups\MembersController.cs" />
+    <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\SearchController.cs" />
     <Compile Include="Util\JobsController.cs" />

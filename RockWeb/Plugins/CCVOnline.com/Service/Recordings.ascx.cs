@@ -60,7 +60,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
                     BindGrid();
 
                     ddlCampus.Items.Clear();
-                    foreach ( var campus in new Rock.CRM.CampusService().Queryable().OrderBy( c => c.Name ) )
+                    foreach ( var campus in new Rock.Crm.CampusService().Queryable().OrderBy( c => c.Name ) )
                         ddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
                 }
             }
@@ -118,7 +118,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
             if ( e.CommandName == "START" || e.CommandName == "STOP" )
             {
                 Recording recording = recordingService.Get( Int32.Parse( e.CommandArgument.ToString() ) );
-                if ( recording != null && recording.SendRequest( e.CommandName.ToString().ToLower() ) )
+                if ( recording != null && SendRequest( e.CommandName.ToString().ToLower(), recording ) )
                     recordingService.Save( recording, CurrentPersonId );
             }
 
@@ -171,7 +171,7 @@ namespace RockWeb.Plugins.CCVOnline.Service
             recording.RecordingName = tbRecording.Text;
 
             if ( recordingId == 0 && cbStartRecording.Visible && cbStartRecording.Checked )
-                recording.SendRequest( "start" );
+                SendRequest( "start", recording );
 
             recordingService.Save( recording, CurrentPersonId );
 
@@ -248,6 +248,31 @@ namespace RockWeb.Plugins.CCVOnline.Service
             pnlDetails.Visible = true;
         }
 
-        #endregion
+		public bool SendRequest( string action, Recording recording )
+		{
+			Rock.Net.WebResponse response = RecordingService.SendRecordingRequest( recording.App, recording.StreamName, recording.RecordingName, action.ToLower() );
+
+			if ( response != null && response.HttpStatusCode == System.Net.HttpStatusCode.OK )
+			{
+
+				if ( action.ToLower() == "start" )
+				{
+					recording.StartTime = DateTime.Now;
+					recording.StartResponse = RecordingService.ParseResponse( response.Message );
+				}
+				else
+				{
+					recording.StopTime = DateTime.Now;
+					recording.StopResponse = RecordingService.ParseResponse( response.Message );
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+
+		#endregion
     }
 }

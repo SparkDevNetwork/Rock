@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SiteService"/> class
 		/// </summary>
-		public SiteService() : base()
+		public SiteService()
+			: base()
 		{
 		}
 
