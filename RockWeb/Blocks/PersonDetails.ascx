@@ -1,7 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonDetails.ascx.cs" Inherits="RockWeb.Blocks.PersonDetails" %>
 
+<script src="/RockWeb/Scripts/jquery.tagsinput.js"></script>
+<link href="/RockWeb/CSS/jquery.tagsinput.css" rel="stylesheet">
+
 <link href="/RockWeb/CSS/PersonDetailsCore.css" rel="stylesheet">
 <script src="/RockWeb/Scripts/tinyscrollbar.min.js"></script>
+
+
 
 <div id="person-profile" class="row-fluid">
     <div class="span3">
@@ -179,13 +184,10 @@
     <div class="span9 tags-notes-attributes">
         <div class="row-fluid tag-row">
             <div class="span12 tag-span">
-                <h2>Tags</h2>
-                <ul>
-                    <li><a href="" class="tag global">All In</a></li>
-                    <li><a href="" class="tag personal">Future IT Volunteer</a></li>
-                    <li><a href="" class="tag global">Read Through The Bible</a></li>
-                    <li><a href="" class="tag personal">Awesome People</a></li>
-                </ul>
+                <h2>Tags</h2>            
+                <div class="tag-wrap">
+                    <input name="person-tags" id="person-tags" value="foo^personal,bar,baz" />
+                </div>
             </div>
         </div>
 
@@ -288,7 +290,40 @@
                 <script>
                     $(document).ready(function () {
                         $('#person-notes').tinyscrollbar({ size: 150 });
+
+                        $('#person-tags').tagsInput({
+                            autocomplete_url: '/rockweb/autocomplete-sample.html',
+                            'height':'auto',
+                            'width': '100%',
+                            'interactive': true,
+                            'defaultText': 'add tag',
+                            'removeWithBackspace': false,
+                            'onAddTag': AddTag,
+                            'onRemoveTag': RemoveTag,
+                            'enableDelete': true
+                        });
                     });
+
+                    function AddTag(tagName) {
+                        // save tag to server (if tag does not exist don't save and trigger event below)
+
+                        // simulate a tag that does not already exist, this check should be done on the server
+                        if (tagName.toLowerCase() == 'does not exist') {
+                            var r = confirm("A tag called '" + tagName + "' does not exist. Do you want to create a new personal tag?");
+                            if (r == true) {
+                                // call server control to add tag
+                                // save person to tag
+                            }
+                            else {
+                                // remove tag
+                                $('#person-tags').removeTag(tagName);
+                            } 
+                        }
+                    }
+
+                    function RemoveTag(tagName) {
+                        // call server to remove tag
+                    }
                 </script>
         
             </div>
@@ -310,7 +345,7 @@
                     </section>
 
                     <section class="known-relationships">
-                        <header>Known Relationships <a href="#" class="edit"><i class="icon-edit"></i></a></header>
+                        <header>Known Relationships <a href="#" class="edit"><i class="icon-chevron-right"></i></a></header>
 
                         <ul>
                             <li><a href="#" class="highlight"><i class="icon-user photo"></i> Bret Norman <small>Invited</small></a></li>
@@ -323,7 +358,7 @@
                     </section>
 
                     <section class="implied-relationships">
-                        <header>Implied Relationships <a href="#" class="edit"><i class="icon-edit"></i></a></header>
+                        <header>Implied Relationships <a href="#" class="edit"><i class="icon-chevron-right"></i></a></header>
 
                         <ul>
                             <li><a href="#" class="highlight"><i class="icon-user photo"></i> David Roberts</a></li>
