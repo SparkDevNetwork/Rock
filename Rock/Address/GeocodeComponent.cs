@@ -22,7 +22,7 @@ namespace Rock.Address
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public abstract bool Geocode( Rock.CRM.Address address, out string result );
+        public abstract bool Geocode( Rock.Crm.Address address, out string result );
     }
 
 }

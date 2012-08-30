@@ -24,7 +24,7 @@ SET @PageId = SCOPE_IDENTITY()
 INSERT INTO [cmsPageRoute] ([IsSystem],[PageId],[Route],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,@PageId,'SystemInfo','Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'617CF50F-C199-470A-8B32-F9115BDD02C0')
 
 -- cmsBlockInstance
-INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(0,@PageId,NULL,@BlockId,'Content',0,'SystemInfo',0,'Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'D1FD9A6B-C213-4074-8D84-EE5353635443')
+INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,@PageId,NULL,@BlockId,'Content',0,'SystemInfo',0,'Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'D1FD9A6B-C213-4074-8D84-EE5353635443')
 " );
         }
 

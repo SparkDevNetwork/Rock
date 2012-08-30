@@ -6,12 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.CMS
+namespace Rock.Cms
 {
     /// <summary>
     /// Page Route POCO Entity.
@@ -97,36 +98,11 @@ namespace Rock.CMS
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CMS.DTO.PageContext"/> object.
-        /// </value>
-		public Rock.CMS.DTO.PageContext DataTransferObject
-		{
-			get 
-			{ 
-				Rock.CMS.DTO.PageContext dto = new Rock.CMS.DTO.PageContext();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.PageId = this.PageId;
-				dto.Entity = this.Entity;
-                dto.IdParameter = this.IdParameter;
-                dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "CMS.PageContext"; } }
+		public override string AuthEntity { get { return "Cms.PageContext"; } }
         
 		/// <summary>
         /// Gets or sets the Page.
@@ -140,19 +116,20 @@ namespace Rock.CMS
         /// Gets or sets the Created By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
 
     }
+
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>

@@ -33,6 +33,9 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatValue( Control parentControl, string value, bool condensed )
         {
+            if ( condensed )
+                return System.Web.HttpUtility.HtmlEncode( value ).Ellipsis(100);
+
             return value;
         }
 

@@ -6,13 +6,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
 
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -106,9 +108,9 @@ namespace Rock.Web.Cache
         public bool MenuDisplayChildPages { get; private set; }
 
         /// <summary>
-        /// Gets a <see cref="CMS.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
+        /// Gets a <see cref="Cms.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
         /// </summary>
-        public CMS.DisplayInNavWhen DisplayInNavWhen { get; private set; }
+        public Cms.DisplayInNavWhen DisplayInNavWhen { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the page requires SSL encryption.
@@ -260,8 +262,8 @@ namespace Rock.Web.Cache
                 {
                     pageIds = new List<int>();
 
-                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                    foreach ( Rock.CMS.Page page in pageService.GetByParentPageId( this.Id ) )
+                    Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+                    foreach ( Rock.Cms.Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
                         pages.Add( Page.Read( page ) );
@@ -296,8 +298,8 @@ namespace Rock.Web.Cache
                     blockInstanceIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
+                    Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
+                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -305,7 +307,7 @@ namespace Rock.Web.Cache
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
+                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -346,8 +348,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.PageService pageService = new CMS.PageService();
-            Rock.CMS.Page pageModel = pageService.Get( this.Id );
+            Rock.Cms.PageService pageService = new Cms.PageService();
+            Rock.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
@@ -363,13 +365,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The current user.</param>
         /// <returns></returns>
-        public bool DisplayInNav( Rock.CRM.Person person )
+        public bool DisplayInNav( Rock.Crm.Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
-                case CMS.DisplayInNavWhen.Always:
+                case Cms.DisplayInNavWhen.Always:
                     return true;
-                case CMS.DisplayInNavWhen.WhenAllowed:
+                case Cms.DisplayInNavWhen.WhenAllowed:
                     return this.IsAuthorized( "View", person );
                 default:
                     return false;
@@ -595,7 +597,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="pageModel"></param>
         /// <returns></returns>
-        public static Page Read( Rock.CMS.Page pageModel )
+        public static Page Read( Rock.Cms.Page pageModel )
         {
             Page page = Page.CopyModel( pageModel );
 
@@ -623,8 +625,8 @@ namespace Rock.Web.Cache
                 return page;
             else
             {
-                Rock.CMS.PageService pageService = new CMS.PageService();
-                Rock.CMS.Page pageModel = pageService.Get( id );
+                Rock.Cms.PageService pageService = new Cms.PageService();
+                Rock.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( pageModel );
@@ -642,7 +644,7 @@ namespace Rock.Web.Cache
         }
 
         // Copies the Model object to the Cached object
-        private static Page CopyModel( Rock.CMS.Page pageModel )
+        private static Page CopyModel( Rock.Cms.Page pageModel )
         {
             Page page = new Page();
             page.Id = pageModel.Id;
@@ -756,7 +758,7 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }
@@ -772,6 +774,11 @@ namespace Rock.Web.Cache
             return action == "View";
         }
 
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
+        }
+
         #endregion
 
         #region Menu XML Methods
@@ -781,7 +788,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( Rock.CRM.Person person )
+        public XDocument MenuXml( Rock.Crm.Person person )
         {
             return MenuXml( 1, person );
         }
@@ -792,13 +799,13 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Rock.CRM.Person person )
+        public XDocument MenuXml( int levelsDeep, Rock.Crm.Person person )
         {
             XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  Rock.CRM.Person person )
+        private XElement MenuXmlElement( int levelsDeep,  Rock.Crm.Person person )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {

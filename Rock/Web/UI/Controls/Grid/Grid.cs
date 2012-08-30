@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
             }
  
             // add author info
-            Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+            Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
             if (user != null)
                 excel.Workbook.Properties.Author = user.Person.FullName;
             else
@@ -787,12 +787,12 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Template used for the pager row in the <see cref="Grid"/> control
     /// </summary>
-    internal class PagerTemplate : ITemplate
+    internal class PagerTemplate : ITemplate, IDisposable
     {
         const int ALL_ITEMS_SIZE = 1000000;
 
         //Literal lStatus;
-
+        private bool IsDisposed;
         HtmlGenericControl NavigationPanel;
 
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
@@ -800,7 +800,12 @@ namespace Rock.Web.UI.Controls
 
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
-        
+
+        public PagerTemplate()
+        {
+            IsDisposed = false;
+        }
+
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -1009,6 +1014,33 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         internal event PageNavigationEventHandler ItemsPerPageClick;
 
+        /// <summary>
+        /// Dispose object
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    if (NavigationPanel != null)
+                        NavigationPanel.Dispose();
+                }
+
+                NavigationPanel = null;
+                IsDisposed = true;
+            }
+        }
     }
 
     #endregion

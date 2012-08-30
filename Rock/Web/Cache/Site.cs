@@ -6,9 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
 
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -122,8 +124,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.SiteService siteService = new CMS.SiteService();
-            Rock.CMS.Site siteModel = siteService.Get( this.Id );
+            Rock.Cms.SiteService siteService = new Cms.SiteService();
+            Rock.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
@@ -159,8 +161,8 @@ namespace Rock.Web.Cache
                 return site;
             else
             {
-                Rock.CMS.SiteService siteService = new CMS.SiteService();
-                Rock.CMS.Site siteModel = siteService.Get( id );
+                Rock.Cms.SiteService siteService = new Cms.SiteService();
+                Rock.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
                     site = new Site();
@@ -239,7 +241,7 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.CRM.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }
@@ -253,6 +255,11 @@ namespace Rock.Web.Cache
         public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion

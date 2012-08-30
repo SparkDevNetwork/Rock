@@ -18,43 +18,63 @@
 
         <div class="tabContent" >
 
-        <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-message error"/>
             
-        <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
-            <fieldset>
-                <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="ParentPageId"/>
-                <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Name"/>
-                <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Title"/>
-                <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Layout"/>
-                <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="Description" />
-            </fieldset>
-        </asp:Panel>
+            <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
+                <div class="row">
+                    <div class="span6">
+                        <fieldset>
+                            <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="ParentPageId"/>
+                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Name"/>
+                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title"/>
+                            <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Layout"/>
+                        </fieldset>
+                    </div>
+                    <div class="span6">
+                        <fieldset>
+                            <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Description" />
+                        </fieldset>
+                    </div>
+                </div>
+            </asp:Panel>
 
-         <asp:Panel ID="pnlMenuDisplay" runat="server" Visible="false" >
-            <fieldset>
-                <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="DisplayInNavWhen"/>
-                <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
-                <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
-                <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
-            </fieldset>
-        </asp:Panel>
+             <asp:Panel ID="pnlMenuDisplay" runat="server" Visible="false" >
+                <fieldset>
+                    <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="DisplayInNavWhen"/>
+                    <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
+                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
+                    <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
+                </fieldset>
+            </asp:Panel>
 
-        <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
-            <fieldset>
-                <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
-                <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
-                <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
-                <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="OutputCacheDuration"/>
-            </fieldset>
-        </asp:Panel>
+            <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
+                <div class="row">
+                    <div class="span6">
+                        <fieldset>
+                            <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
+                            <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
+                            <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
+                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="OutputCacheDuration"/>
+                        </fieldset>
+                    </div>
+                    <div class="span6">
+                        <fieldset>                
+                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" LabelText="Page Routes" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="PageRoutes"  />
+                        </fieldset>
+                        <asp:PlaceHolder ID="phContextPanel" runat="server">
+                            <fieldset>
+                                <legend>Context Parameters</legend>
+                                <p>There are one or more blocks on this page that need to load objects based on a 'context' parameter.  
+                                Please enter the route parameter name or query string parameter name that will contain the id for 
+                                each of the objects below.</p>
+                                <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
+                            </fieldset>
+                        </asp:PlaceHolder>
+                    </div>
+                </div>
+            </asp:Panel>
 
-        <asp:Panel ID="pnlRoutes" runat="server" Visible="false" >
-            <fieldset>                
-                <Rock:DataTextBox ID="tbPageRoute" runat="server" LabelText="Page Routes" SourceTypeName="Rock.CMS.Page, Rock" PropertyName="PageRoutes"  />
-            </fieldset>
-        </asp:Panel>
-
-        <placeholder id="phAttributes" runat="server"></placeholder>
+            <asp:PlaceHolder id="phAttributes" runat="server" />
 
         </div>
 

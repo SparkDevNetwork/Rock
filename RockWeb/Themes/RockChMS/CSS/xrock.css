@@ -127,7 +127,7 @@ input, textarea, select, .uneditable-input
     border-radius: 4px 4px 0 0;
 }
 
-/* CMS Overrides */
+/* Cms Overrides */
 .grid-table caption 
 {
     font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif;

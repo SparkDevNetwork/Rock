@@ -6,7 +6,7 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockCMS/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
@@ -16,7 +16,7 @@
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/base.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCms/CSS/rock.css") %>">
 
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>

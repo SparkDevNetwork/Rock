@@ -19,8 +19,10 @@ namespace Rock.Data
     /// Repository for working with the Entity Framework
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class EFRepository<T> : IRepository<T> where T : Rock.Data.Model<T>
+    public class EFRepository<T> : IRepository<T>, IDisposable
+        where T : Rock.Data.Model<T>
     {
+        private bool IsDisposed;
         private DbContext _context;
 
         /// <summary>
@@ -55,6 +57,7 @@ namespace Rock.Data
         /// <param name="objectContext">The object context.</param>
         public EFRepository( DbContext objectContext )
         {
+            IsDisposed = false;
             _context = objectContext;
             _objectSet = Context.Set<T>();
         }
@@ -302,6 +305,34 @@ namespace Rock.Data
             }
 
             return entityChanges;
+        }
+
+        /// <summary>
+        /// Dispose object
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    if (_context != null)
+                        _context.Dispose();
+                }
+
+                _context = null;
+                IsDisposed = true;
+            }
         }
     }
 }

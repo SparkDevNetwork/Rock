@@ -20,13 +20,12 @@
 using System;
 using System.Web;
 using System.IO;
-using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 
 using Quartz;
-using Rock.CMS;
+using Rock.Cms;
 using Rock.Core;
 
 namespace Rock.Jobs
