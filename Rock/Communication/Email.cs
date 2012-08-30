@@ -113,8 +113,8 @@ namespace Rock.Communication
         /// <param name="templateGuid">The template GUID.</param>
         public Email( Guid templateGuid )
         {
-            Rock.CRM.EmailTemplateService service = new CRM.EmailTemplateService();
-            Rock.CRM.EmailTemplate template = service.GetByGuid( templateGuid );
+            Rock.Crm.EmailTemplateService service = new Crm.EmailTemplateService();
+            Rock.Crm.EmailTemplate template = service.GetByGuid( templateGuid );
             if ( template != null )
             {
                 To = template.To;
@@ -343,7 +343,7 @@ namespace Rock.Communication
             if ( String.IsNullOrWhiteSpace( recipients ) )
                 return new List<string>();
             else
-                return new List<string>( recipients.Split( ',' ) );
+                return new List<string>( recipients.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
         }
 
         /// <summary>
@@ -363,39 +363,45 @@ namespace Rock.Communication
         public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body, 
             string server, int port, bool useSSL, string userName, string password)
         {
-            if (!string.IsNullOrEmpty(server))
+            if ( !string.IsNullOrEmpty( server ) )
             {
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress( from );
 
                 foreach ( string e in to )
-                    message.To.Add( new MailAddress( e ) );
+                    if ( !string.IsNullOrWhiteSpace( e ) )
+                        message.To.Add( new MailAddress( e ) );
 
-                foreach ( string e in cc )
-                    message.CC.Add( new MailAddress( e ) );
-
-                foreach ( string e in bcc )
-                    message.Bcc.Add( new MailAddress( e ) );
-
-                message.Subject = subject;
-                message.Body = body;
-                message.IsBodyHtml = true;
-                message.Priority = MailPriority.Normal;
-
-                SmtpClient smtpClient = new SmtpClient( server );
-                if ( port != 0 )
-                    smtpClient.Port = port;
-
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                smtpClient.EnableSsl = useSSL;
-
-                if ( !string.IsNullOrEmpty( userName ) )
+                if ( message.To.Count > 0 )
                 {
-                    smtpClient.UseDefaultCredentials = false;
-                    smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
-                }
+                    foreach ( string e in cc )
+                        if ( !string.IsNullOrWhiteSpace( e ) )
+                            message.CC.Add( new MailAddress( e ) );
 
-                smtpClient.Send( message );
+                    foreach ( string e in bcc )
+                        if ( !string.IsNullOrWhiteSpace( e ) )
+                            message.Bcc.Add( new MailAddress( e ) );
+
+                    message.Subject = subject;
+                    message.Body = body;
+                    message.IsBodyHtml = true;
+                    message.Priority = MailPriority.Normal;
+
+                    SmtpClient smtpClient = new SmtpClient( server );
+                    if ( port != 0 )
+                        smtpClient.Port = port;
+
+                    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtpClient.EnableSsl = useSSL;
+
+                    if ( !string.IsNullOrEmpty( userName ) )
+                    {
+                        smtpClient.UseDefaultCredentials = false;
+                        smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
+                    }
+
+                    smtpClient.Send( message );
+                }
             }
         }
     }

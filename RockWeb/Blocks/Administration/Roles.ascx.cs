@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var authService = new Rock.CMS.AuthService();
+                var authService = new Rock.Cms.AuthService();
                 var groupService = new Rock.Groups.GroupService();
 
                 Rock.Groups.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );

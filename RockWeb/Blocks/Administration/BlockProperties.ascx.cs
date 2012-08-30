@@ -28,9 +28,8 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( _blockInstance, phAttributes, !Page.IsPostBack );
                 }
                 else
                 {
@@ -70,8 +69,8 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+                    Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
+                    Rock.Cms.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
 
                     Rock.Attribute.Helper.LoadAttributes( blockInstance );
 

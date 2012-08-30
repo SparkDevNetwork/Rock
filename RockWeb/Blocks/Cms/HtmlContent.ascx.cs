@@ -12,7 +12,7 @@ using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
 using Rock;
-using Rock.CMS;
+using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -75,9 +75,9 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            Rock.Cms.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
             if ( content == null )
-                content = new Rock.CMS.HtmlContent();
+                content = new Rock.Cms.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
-                Rock.CMS.HtmlContent content = null;
+                Rock.Cms.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Cms
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.CMS.HtmlContent();
+                    content = new Rock.Cms.HtmlContent();
                     content.BlockId = BlockInstance.Id;
                     content.EntityValue = entityValue;
 
@@ -247,22 +247,22 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = "";
 
-            int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
             string cachedContent = GetCacheItem( entityValue ) as string;
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
 
                 if ( content != null )
-                {
                     html = content.Content;
+                else
+                    html = string.Empty;
 
-                    // cache content
-                    if ( cacheDuration > 0 )
-                        AddCacheItem( entityValue, html, cacheDuration );
-                }
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 ) ;
+                    AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;

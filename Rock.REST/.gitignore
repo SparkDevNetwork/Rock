@@ -1,5 +1,2 @@
-/*.ConnectionStrings.config
-/Rock.REST.csproj.user
-/Rock.REST.suo
-/bin/*.*
-/obj/*
+/bin/
+/obj/

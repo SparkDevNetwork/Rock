@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
 
         private Rock.Web.Cache.Page _page = null;
         private string _zoneName = string.Empty;
-        private Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
+        private Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
 
         #endregion
 
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.BlockInstance blockInstance = blockInstanceService.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.BlockInstance blockInstance = blockInstanceService.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.BlockInstance blockInstance;
+            Rock.Cms.BlockInstance blockInstance;
 
             int blockInstanceId = 0;
             if ( !Int32.TryParse( hfBlockInstanceId.Value, out blockInstanceId ) )
@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockInstanceId == 0 )
             {
-                blockInstance = new Rock.CMS.BlockInstance();
+                blockInstance = new Rock.Cms.BlockInstance();
 
                 Rock.Web.Cache.BlockInstanceLocation location = hfBlockLocation.Value.ConvertToEnum<Rock.Web.Cache.BlockInstanceLocation>();
                 if ( location == Rock.Web.Cache.BlockInstanceLocation.Layout )
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Administration
 
                 blockInstance.Zone = _zoneName;
 
-                Rock.CMS.BlockInstance lastBlock =
+                Rock.Cms.BlockInstance lastBlock =
                     blockInstanceService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
                                                 OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -283,10 +283,10 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.CMS.BlockService blockService = new Rock.CMS.BlockService();
+                Rock.Cms.BlockService blockService = new Rock.Cms.BlockService();
 
                 // Add any unregistered blocks
-                foreach ( Rock.CMS.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+                foreach ( Rock.Cms.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
                 {
                     try
                     {
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( Rock.Web.Cache.BlockInstanceLocation location, int blockInstanceId )
         {
-            Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( blockInstanceId );
+            Rock.Cms.BlockInstance blockInstance = blockInstanceService.Get( blockInstanceId );
             hfBlockLocation.Value = location.ConvertToString();
 
             if ( blockInstance != null )

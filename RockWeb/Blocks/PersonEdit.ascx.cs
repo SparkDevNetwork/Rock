@@ -5,9 +5,10 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Web.UI;
 
-using Rock.CRM;
+using Rock.Crm;
 
 namespace RockWeb.Blocks
 {
@@ -15,9 +16,17 @@ namespace RockWeb.Blocks
     {
         private Person person;
 
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public override List<string> RequiredContext
+        {
+            get { return new List<string>() { "Rock.Crm.Person" }; }
+        }
+
         protected void Page_Load( object sender, EventArgs e )
         {
-            Person person = PageInstance.GetCurrentContext( "Rock.CRM.Person" ) as Rock.CRM.Person;
+            Person person = PageInstance.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
             if (person == null)
             {
                 PersonService personService = new PersonService();

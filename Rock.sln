@@ -1,12 +1,12 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}|Rock.DataTransferObjects.dll;{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}|Rock.Com.CCVOnline.dll;"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -30,13 +30,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "Quartz\Quartz.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockJobSchedulerService", "RockJobSchedulerService\RockJobSchedulerService.csproj", "{40A78663-3080-4A9D-9E11-38A188555C87}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RockJobSchedulerServiceInstaller", "RockJobSchedulerServiceInstaller\RockJobSchedulerServiceInstaller.vdproj", "{377EC182-2CD5-48D8-84D1-40D0BB289F26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DataTransferObjects", "Rock.DataTransferObjects\Rock.DataTransferObjects.csproj", "{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests", "Rock.Tests\Rock.Tests.csproj", "{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEF5DC8B-8F73-4CA9-A93F-554338D3EBB0}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		Rock.vsmdi = Rock.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Com.CCVOnline", "Rock.Com.CCVOnline\Rock.Com.CCVOnline.csproj", "{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}"
 EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Rock.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -86,34 +96,31 @@ Global
 		{40A78663-3080-4A9D-9E11-38A188555C87}.Release|Mixed Platforms.Build.0 = Release|x86
 		{40A78663-3080-4A9D-9E11-38A188555C87}.Release|x86.ActiveCfg = Release|x86
 		{40A78663-3080-4A9D-9E11-38A188555C87}.Release|x86.Build.0 = Release|x86
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Debug|Any CPU.ActiveCfg = Debug
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Debug|Mixed Platforms.ActiveCfg = Debug
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Debug|x86.ActiveCfg = Debug
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Release|Any CPU.ActiveCfg = Release
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Release|Mixed Platforms.ActiveCfg = Release
-		{377EC182-2CD5-48D8-84D1-40D0BB289F26}.Release|x86.ActiveCfg = Release
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2BBF8883-7C46-42E3-9F7F-7B1B6CD7D9F5}.Release|x86.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|x86.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}.Release|x86.ActiveCfg = Release|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

@@ -14,8 +14,8 @@ using System.Web.Security;
 
 using Facebook;
 
-using Rock.CMS;
-using Rock.CRM;
+using Rock.Cms;
+using Rock.Crm;
 
 namespace RockWeb.Blocks.Security
 {
@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.Cms.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
                     Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked, false);
 
