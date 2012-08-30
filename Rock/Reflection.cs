@@ -66,7 +66,7 @@ namespace Rock
             return types;
         }
 
-        private static Dictionary<string, Type> SearchAssembly( Assembly assembly, Type baseType )
+        public static Dictionary<string, Type> SearchAssembly( Assembly assembly, Type baseType )
         {
             Dictionary<string, Type> types = new Dictionary<string, Type>();
 
