@@ -12,34 +12,53 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 
+using Rock;
+
 namespace Rock.CodeGeneration
 {
     public partial class Form1 : Form
     {
         PluralizationService pls = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
+		Assembly rockAssembly = null;
 
         public Form1()
         {
             InitializeComponent();
-        }
+		}
 
         private void btnLoad_Click( object sender, EventArgs e )
         {
-            var types = new SortedDictionary<String, Type>();
+			var modelInterface = typeof( Rock.Data.IModel );
+			rockAssembly = modelInterface.Assembly;
+			FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
 
-            cblModels.Items.Clear();
+			ofdAssembly.InitialDirectory = fi.DirectoryName;
+			ofdAssembly.Filter = "dll files (*.dll)|*.dll";
+			ofdAssembly.FileName = "Rock.dll";
+			ofdAssembly.RestoreDirectory = true;
 
-            var modelInterface = typeof( Rock.Data.IModel );
-            var rockAssembly = modelInterface.Assembly;
+			if ( ofdAssembly.ShowDialog() == DialogResult.OK )
+			{
+				Cursor = Cursors.WaitCursor;
 
-            foreach ( Type type in rockAssembly.GetTypes() )
-                if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
-                    foreach ( Type interfaceType in type.GetInterfaces() )
-                        if ( interfaceType == modelInterface )
-                            cblModels.Items.Add( type );
+				cblModels.Items.Clear();
 
-            CheckAllItems( true );
-            cbSelectAll.Checked = true;
+				foreach ( var file in ofdAssembly.FileNames )
+				{
+					var assembly = Assembly.LoadFrom( file );
+
+					foreach ( Type type in assembly.GetTypes() )
+						if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
+							foreach ( Type interfaceType in type.GetInterfaces() )
+								if ( interfaceType == modelInterface )
+									cblModels.Items.Add( type );
+				}
+
+				CheckAllItems( true );
+				cbSelectAll.Checked = true;
+
+				Cursor = Cursors.Default;
+			}
         }
 
         private void cbSelectAll_CheckedChanged( object sender, EventArgs e )
@@ -49,6 +68,23 @@ namespace Rock.CodeGeneration
 
         private void btnGenerate_Click( object sender, EventArgs e )
         {
+			string serviceDtoFolder = Path.Combine(RootFolder().FullName, "Rock");
+			string restFolder = Path.Combine(RootFolder().FullName, "Rock.Rest");
+
+			if (cbService.Checked || cbDto.Checked)
+			{
+				fbdServiceDtoOutput.SelectedPath = serviceDtoFolder;
+				if (fbdServiceDtoOutput.ShowDialog() == DialogResult.OK)
+					serviceDtoFolder = fbdServiceDtoOutput.SelectedPath;
+			}
+
+			if ( cbRest.Checked )
+			{
+				fbdRestOutput.SelectedPath = restFolder;
+				if ( fbdRestOutput.ShowDialog() == DialogResult.OK )
+					restFolder = fbdRestOutput.SelectedPath;
+			}
+
             Cursor = Cursors.WaitCursor;
 
             if ( cblModels.CheckedItems.Count > 0 )
@@ -61,18 +97,20 @@ namespace Rock.CodeGeneration
                         Type type = ( Type )item;
 
                         if ( cbService.Checked )
-                            WriteServiceFile( rootFolder, type );
+							WriteServiceFile( serviceDtoFolder, type );
 
                         if ( cbDto.Checked )
-                            WriteDtoFile( rootFolder, type );
+							WriteDtoFile( serviceDtoFolder, type );
 
                         if ( cbRest.Checked )
-                            WriteRESTFile( rootFolder, type );
+							WriteRESTFile( restFolder, type );
                     }
                 }
             }
 
             Cursor = Cursors.Default;
+
+			MessageBox.Show( "Files have been generated" );
         }
 
         /// <summary>
@@ -90,8 +128,16 @@ namespace Rock.CodeGeneration
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteServiceFile( DirectoryInfo rootFolder, Type type )
+        private void WriteServiceFile( string rootFolder, Type type )
         {
+			string repoConstructorParam = string.Empty;
+			if ( !type.Assembly.Equals(rockAssembly))
+				foreach ( var context in Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) ) )
+				{
+					repoConstructorParam = string.Format( " new EFRepository<{0}>( new {1}() ) ", type.Name, context.Value.FullName );
+					break;
+				}
+
             Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
 
             var properties = new Dictionary<string, string>();
@@ -126,13 +172,14 @@ namespace Rock.CodeGeneration
             sb.AppendFormat( "\t/// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t/// </summary>" );
             sb.AppendFormat( "\tpublic partial class {0}Service : Service<{0}, {0}Dto>" + Environment.NewLine, type.Name );
-            sb.AppendLine( "\t{" );
+			sb.AppendLine( "\t{" );
 
             sb.AppendLine( "\t\t/// <summary>" );
             sb.AppendFormat( "\t\t/// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t/// </summary>" );
-            sb.AppendFormat( "\t\tpublic {0}Service() : base()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "\t\t{" );
+            sb.AppendFormat( "\t\tpublic {0}Service()" + Environment.NewLine, type.Name );
+			sb.AppendFormat( "\t\t\t: base({0})" + Environment.NewLine, repoConstructorParam );
+			sb.AppendLine( "\t\t{" );
             sb.AppendLine( "\t\t}" );
             sb.AppendLine( "" );
 
@@ -171,19 +218,15 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Service.cs" ) );
-
-            using ( var outputFile = new StreamWriter( file.FullName ) )
-            {
-                outputFile.Write( sb.ToString() );
-            }
-        }
+			WriteFile( file, sb );
+		}
 
         /// <summary>
         /// Writes the DTO file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteDtoFile( DirectoryInfo rootFolder, Type type )
+        private void WriteDtoFile( string rootFolder, Type type )
         {
             Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
             string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
@@ -272,25 +315,29 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Dto.cs" ) );
-
-            using ( var outputFile = new StreamWriter( file.FullName ) )
-            {
-                outputFile.Write( sb.ToString() );
-            }
-        }
+			WriteFile( file, sb );
+		}
 
         /// <summary>
         /// Writes the REST file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteRESTFile( DirectoryInfo rootFolder, Type type )
+        private void WriteRESTFile( string rootFolder, Type type )
         {
             Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
             string pluralizedName = pls.Pluralize(type.Name);
-            string restNamespace = type.Namespace.Replace( "Rock.", "Rock.Rest." );
 
-            var properties = new Dictionary<string, string>();
+			string baseName = new DirectoryInfo( rootFolder ).Name;
+			if ( baseName.EndsWith( ".Rest" ) )
+				baseName = baseName.Substring( 0, baseName.Length - 5 );
+			string restNamespace = type.Namespace;
+			if (restNamespace.StartsWith(baseName + ".", true, null))
+				restNamespace = baseName + ".Rest" + restNamespace.Substring(baseName.Length);
+			else
+				restNamespace = ".Rest." + restNamespace;
+
+			var properties = new Dictionary<string, string>();
             foreach ( var property in type.GetProperties() )
                 if ( System.Attribute.IsDefined( property, dataMemberType ) )
                     properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
@@ -326,11 +373,7 @@ namespace Rock.CodeGeneration
 
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restNamespace ).FullName, pluralizedName + "Controller.cs" ) );
-
-            using ( var outputFile = new StreamWriter( file.FullName ) )
-            {
-                outputFile.Write( sb.ToString() );
-            }
+			WriteFile( file, sb );
         }
 
         /// <summary>
@@ -350,17 +393,22 @@ namespace Rock.CodeGeneration
         /// <summary>
         /// Gets the namespace folder for a selected type
         /// </summary>
-        private DirectoryInfo NamespaceFolder( DirectoryInfo rootFolder, string objectNamespace )
+        private DirectoryInfo NamespaceFolder( string rootFolder, string objectNamespace )
         {
-            var dirInfo = new DirectoryInfo( Path.Combine( rootFolder.FullName, objectNamespace ) );
-            while (!dirInfo.Exists && objectNamespace.Contains('.'))
-            {
-                int i = objectNamespace.LastIndexOf('.');
-                objectNamespace = objectNamespace.Substring( 0, i ) + "\\" + objectNamespace.Substring( i + 1 );
-                dirInfo = new DirectoryInfo( Path.Combine( rootFolder.FullName, objectNamespace ) );
-            }
+			DirectoryInfo di = new DirectoryInfo( rootFolder );
 
-            return dirInfo;
+			var commonParts = new List<string>();
+			while (objectNamespace.ToLower().StartsWith(di.Name.ToLower() + "."))
+			{
+				commonParts.Add( di.Name );
+				objectNamespace = objectNamespace.Substring(di.Name.Length + 1);
+				di = di.Parent;
+			}
+			rootFolder = di.FullName;
+			foreach ( string part in commonParts )
+				rootFolder = Path.Combine( rootFolder, part );
+
+			return new DirectoryInfo( Path.Combine( rootFolder, objectNamespace.Replace('.', '\\') ) );
         }
 
         /// <summary>
@@ -393,6 +441,17 @@ namespace Rock.CodeGeneration
             else
                 return GetKeyName( propertyType.Name );
         }
+
+		private void WriteFile( FileInfo file, StringBuilder sb )
+		{
+			if ( !file.Directory.Exists )
+				file.Directory.Create();
+
+			using ( var outputFile = new StreamWriter( file.FullName ) )
+			{
+				outputFile.Write( sb.ToString() );
+			}
+		}
 
         /// <summary>
         /// Replace any type names that have an equivelant C# alias
