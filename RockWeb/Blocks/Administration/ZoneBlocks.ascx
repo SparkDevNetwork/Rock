@@ -5,7 +5,7 @@
 <ContentTemplate>
 
     <asp:HiddenField ID="hfOption" runat="server" Value="Page" />
-    <ul id="zone-block-options" class="pills" data-pills="pills">
+    <ul id="zone-block-options" class="nav nav-pills" data-pills="pills">
         <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>' >Current Page</a></li>
         <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>'><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
     </ul>
@@ -54,8 +54,8 @@
         <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
-            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="Name" />
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="Name" />
+            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
         </fieldset>
 
         <div class="actions">

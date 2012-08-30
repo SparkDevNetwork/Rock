@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table";
+            base.CssClass = "grid-table table-bordered table-stripped";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -170,13 +170,15 @@ namespace Rock.Web.UI.Controls
             this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
             this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
 
-            this.Actions.EnableExcelExport = this.ShowActionExcelExport;
+            this.Actions.IsExcelExportEnabled = this.ShowActionExcelExport;
 
             base.OnInit( e );
         }
 
         void Actions_ExcelExportClick( object sender, EventArgs e )
         {
+            OnGridRebind( e );
+
             // create default settings
             string filename = "export.xlsx";
             string workSheetName = "Export";
@@ -200,7 +202,7 @@ namespace Rock.Web.UI.Controls
             }
  
             // add author info
-            Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
+            Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
             if (user != null)
                 excel.Workbook.Properties.Author = user.Person.FullName;
             else
@@ -356,8 +358,6 @@ namespace Rock.Web.UI.Controls
             this.Page.Response.BinaryWrite( byteArray );
             this.Page.Response.Flush();
             this.Page.Response.End();
-            
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -787,12 +787,12 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Template used for the pager row in the <see cref="Grid"/> control
     /// </summary>
-    internal class PagerTemplate : ITemplate
+    internal class PagerTemplate : ITemplate, IDisposable
     {
         const int ALL_ITEMS_SIZE = 1000000;
 
         //Literal lStatus;
-
+        private bool IsDisposed;
         HtmlGenericControl NavigationPanel;
 
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
@@ -800,7 +800,12 @@ namespace Rock.Web.UI.Controls
 
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
-        
+
+        public PagerTemplate()
+        {
+            IsDisposed = false;
+        }
+
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
@@ -1009,6 +1014,33 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         internal event PageNavigationEventHandler ItemsPerPageClick;
 
+        /// <summary>
+        /// Dispose object
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    if (NavigationPanel != null)
+                        NavigationPanel.Dispose();
+                }
+
+                NavigationPanel = null;
+                IsDisposed = true;
+            }
+        }
     }
 
     #endregion

@@ -6,9 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
+using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -65,7 +67,7 @@ namespace Rock.Financial
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool TaxDeductible { get; set; }
+        public bool IsTaxDeductible { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -83,7 +85,7 @@ namespace Rock.Financial
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -110,7 +112,7 @@ namespace Rock.Financial
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Pledgable { get; set; }
+        public bool IsPledgable { get; set; }
 
         /// <summary>
         /// Gets or sets the gl code.
@@ -157,6 +159,14 @@ namespace Rock.Financial
         /// The parent fund.
         /// </value>
         public virtual Fund ParentFund { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the fund.
+        /// </summary>
+        /// <value>
+        /// The type of the fund.
+        /// </value>
+        public virtual DefinedValue FundType { get; set; }
 
         /// <summary>
         /// Gets or sets the child funds.
@@ -252,6 +262,7 @@ namespace Rock.Financial
         public FundConfiguration()
         {
             this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
+            this.HasOptional(f => f.FundType).WithMany().HasForeignKey(f => f.FundTypeId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }

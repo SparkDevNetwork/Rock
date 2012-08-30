@@ -4,9 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -14,7 +15,7 @@ namespace Rock.Financial
     /// <summary>
     /// PersonAccountLookup POCO class.
     /// </summary>
-    [Table("fiancialPersonAccountLookup")]
+    [Table("financialPersonAccountLookup")]
     public partial class PersonAccountLookup : ModelWithAttributes<PersonAccountLookup>
     {
         /// <summary>

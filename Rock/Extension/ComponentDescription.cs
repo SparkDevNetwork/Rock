@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Extension
 {
@@ -43,20 +44,20 @@ namespace Rock.Extension
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        public bool Active { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ComponentDescription"/> class.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ComponentDescription( int id, Rock.Attribute.IHasAttributes service )
+        public ComponentDescription( int id, KeyValuePair<string, Rock.Attribute.IHasAttributes> service )
         {
             Id = id;
 
-            Type type = service.GetType();
+            Type type = service.Value.GetType();
 
-            Name = type.Name;
+            Name = service.Key;
 
             // Look for a DescriptionAttribute on the class and if found, use its value for the description
             // property of this class
@@ -67,10 +68,10 @@ namespace Rock.Extension
 
             // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
             // otherwise default to true
-            if ( service.AttributeValues.ContainsKey( "Active" ) )
-                Active = bool.Parse( service.AttributeValues["Active"].Value[0].Value );
+            if ( service.Value.AttributeValues.ContainsKey( "Active" ) )
+                IsActive = bool.Parse( service.Value.AttributeValues["Active"].Value[0].Value );
             else
-                Active = true;
+                IsActive = true;
         }
     }
 }

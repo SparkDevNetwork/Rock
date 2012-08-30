@@ -14,12 +14,12 @@ using System.Web.Security;
 
 using Facebook;
 
-using Rock.CMS;
-using Rock.CRM;
+using Rock.Cms;
+using Rock.Crm;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
     public partial class Login : Rock.Web.UI.Block
     {
         /// <summary>
@@ -54,10 +54,9 @@ namespace RockWeb.Blocks.Security
         {
             if ( Page.IsValid )
             {
-                if ( Rock.CMS.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
+                if ( Rock.Cms.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
                 {
-                    FormsAuthentication.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked );
-                    Session["UserIsAuthenticated"] = true;
+                    Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked, false);
 
                     string returnUrl = Request.QueryString["returnurl"];
                     if ( returnUrl != null )
@@ -223,8 +222,7 @@ namespace RockWeb.Blocks.Security
                     user.LastActivityDate = DateTime.Now;
                     userService.Save( user, user.PersonId );
 
-                    FormsAuthentication.SetAuthCookie( user.UserName, false );
-                    Session["UserIsAuthenticated"] = true;
+                    Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
                     if ( state != null )
                         Response.Redirect( state );

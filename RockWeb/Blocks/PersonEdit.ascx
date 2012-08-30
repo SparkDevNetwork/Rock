@@ -6,7 +6,7 @@
 <asp:TextBox ID="txtFirstName" runat="server"></asp:TextBox>
 <Rock:DataAnnotationValidator ID="valFirstName" runat="server" 
     ControlToValidate="txtFirstName" PropertyName="FirstName"  
-    SourceTypeName="Rock.CRM.Person, Rock" ForeColor="Red" />
+    SourceTypeName="Rock.Crm.Person, Rock" ForeColor="Red" />
 
 <br />
 <asp:Label ID="lblNickName" runat="server" Text="Nick Name" AssociatedControlID="txtNickName"></asp:Label> 

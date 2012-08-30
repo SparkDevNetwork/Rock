@@ -6,9 +6,12 @@
 <head runat="server">
     <title>Oops...</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/base.css") %>">
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/cms-core.css") %>">
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockCMS/CSS/rock.css") %>">
+
+
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/bootstrap.min.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/RockCore.css") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
 
     <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
 

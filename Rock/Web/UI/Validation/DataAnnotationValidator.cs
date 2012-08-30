@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Validation
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        public bool Required
+        public bool IsRequired
         {
             get
             {

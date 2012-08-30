@@ -18,8 +18,8 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
         
-        Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-        Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
+        Rock.Cms.SiteService siteService = new Rock.Cms.SiteService();
+        Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
         
         #endregion
 
@@ -27,13 +27,16 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gSites.DataKeyNames = new string[] { "id" };
-                gSites.Actions.EnableAdd = true;
+                gSites.Actions.IsAddEnabled = true;
                 gSites.Actions.AddClick += gSites_Add;
                 gSites.GridRebind += gSites_GridRebind;
             }
+
+            SecurityField securityField = gSites.Columns[3] as SecurityField;
+            securityField.EntityType = typeof(Rock.Cms.Site);
 
             string script = @"
         Sys.Application.add_load(function () {
@@ -52,7 +55,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.Authorized( "Configure", CurrentUser ) )
+            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -81,7 +84,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 siteService.Delete( site, CurrentPersonId );
@@ -115,14 +118,14 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.Site site;
-            Rock.CMS.SiteDomain sd;
+            Rock.Cms.Site site;
+            Rock.Cms.SiteDomain sd;
             bool newSite = false;
                         
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                siteService = new Rock.CMS.SiteService();
-                siteDomainService = new Rock.CMS.SiteDomainService();
+                siteService = new Rock.Cms.SiteService();
+                siteDomainService = new Rock.Cms.SiteDomainService();
 
                 int siteId = 0;
                 if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
@@ -131,7 +134,7 @@ namespace RockWeb.Blocks.Administration
                 if ( siteId == 0 )
                 {
                     newSite = true;
-                    site = new Rock.CMS.Site();
+                    site = new Rock.Cms.Site();
                     siteService.Add( site, CurrentPersonId );
                 }
                 else
@@ -146,10 +149,10 @@ namespace RockWeb.Blocks.Administration
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
-                
+
                 foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
                 {
-                    sd = new Rock.CMS.SiteDomain();
+                    sd = new Rock.Cms.SiteDomain();
                     sd.Domain = domain;
                     sd.Guid = Guid.NewGuid();
                     site.SiteDomains.Add( sd );
@@ -187,8 +190,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             ddlDefaultPage.Items.Clear();
-            ddlDefaultPage.Items.Add( new ListItem( "Root", "0" ) );
-            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
+            foreach ( var page in new Rock.Cms.PageService().GetByParentPageId( null ) )
                 AddPage( page, 1 );
 
             ddlTheme.Items.Clear();
@@ -197,7 +199,7 @@ namespace RockWeb.Blocks.Administration
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
         }
 
-        private void AddPage( Rock.CMS.Page page, int level )
+        private void AddPage( Rock.Cms.Page page, int level )
         {
             string pageName = new string( '-', level ) + page.Name;
             ddlDefaultPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );
@@ -207,7 +209,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int siteId )
         {
-            Rock.CMS.Site site = siteService.Get( siteId );
+            Rock.Cms.Site site = siteService.Get( siteId );
 
             if ( site != null )
             {
@@ -217,7 +219,9 @@ namespace RockWeb.Blocks.Administration
                 tbSiteName.Text = site.Name;
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
-                ddlDefaultPage.SelectedValue = site.DefaultPage != null ? site.DefaultPage.Id.ToString() : "0";
+                if ( site.DefaultPageId.HasValue )
+                    ddlDefaultPage.SelectedValue = site.DefaultPageId.Value.ToString();
+
                 tbSiteDomains.Text = string.Join("\n", site.SiteDomains.Select(dom => dom.Domain).ToArray());
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
@@ -229,7 +233,6 @@ namespace RockWeb.Blocks.Administration
                 lAction.Text = "Add";
                 tbSiteName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
-                ddlDefaultPage.SelectedValue = "0";
                 ddlTheme.Text = PageInstance.Site.Theme;
                 tbSiteDomains.Text = string.Empty;
                 tbFaviconUrl.Text = string.Empty;

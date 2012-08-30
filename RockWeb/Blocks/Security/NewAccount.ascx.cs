@@ -13,14 +13,14 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Communication;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
     [Rock.Attribute.Property( 0, "Check for Duplicates", "Duplicates", "", 
         "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
-        false, "true", "Rock", "Rock.FieldTypes.Boolean" )]
+        false, "true", "Rock", "Rock.Field.Types.Boolean" )]
     [Rock.Attribute.Property( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
     [Rock.Attribute.Property( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
         "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
@@ -137,8 +137,8 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
-                Rock.CMS.User user = userService.GetByUserName( tbUserName.Text );
+                Rock.Cms.UserService userService = new Rock.Cms.UserService();
+                Rock.Cms.User user = userService.GetByUserName( tbUserName.Text );
                 if ( user == null )
                     DisplayDuplicates( Direction.Forward );
                 else
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Security
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
             {
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.Cms.UserService userService = new Rock.Cms.UserService();
                 var users = userService.GetByPersonId(personId).ToList();
                 if (users.Count > 0)
                     DisplaySendLogin( personId, Direction.Forward );
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Security
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 PersonService personService = new PersonService();
-                Rock.CMS.UserService userService = new Rock.CMS.UserService();
+                Rock.Cms.UserService userService = new Rock.Cms.UserService();
 
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Security
                     mergeObjects.Add( person );
 
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        if (user.AuthenticationType != Rock.CMS.AuthenticationType.Facebook)
+                        if (user.AuthenticationType != Rock.Cms.AuthenticationType.Facebook)
                             userObjects.Add( user );
 
                     personObjects.Add( person, userObjects );
@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Security
 
             if (person != null)
             {
-                Rock.CMS.User user = CreateUser( person, false );
+                Rock.Cms.User user = CreateUser( person, false );
 
                 var mergeObjects = new List<object>();
                 mergeObjects.Add( person );
@@ -337,11 +337,10 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage("Invalid Person");
         }
 
-        private void DisplaySuccess( Rock.CMS.User user )
+        private void DisplaySuccess( Rock.Cms.User user )
         {
             FormsAuthentication.SignOut();
-            FormsAuthentication.SetAuthCookie( tbUserName.Text, false );
-            Session["UserIsAuthenticated"] = true;
+            Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
             {
@@ -407,7 +406,7 @@ namespace RockWeb.Blocks.Security
 
         private Person CreatePerson()
         {
-            Rock.CRM.PersonService personService = new PersonService();
+            Rock.Crm.PersonService personService = new PersonService();
 
             Person person = new Person();
             person.GivenName = tbFirstName.Text;
@@ -441,10 +440,10 @@ namespace RockWeb.Blocks.Security
             return person;
         }
 
-        private Rock.CMS.User CreateUser( Person person, bool confirmed )
+        private Rock.Cms.User CreateUser( Person person, bool confirmed )
         {
-            Rock.CMS.UserService userService = new Rock.CMS.UserService();
-            return userService.Create( person, Rock.CMS.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
+            Rock.Cms.UserService userService = new Rock.Cms.UserService();
+            return userService.Create( person, Rock.Cms.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )

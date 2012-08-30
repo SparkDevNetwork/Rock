@@ -10,6 +10,7 @@
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField HeaderText="Description" DataField="Description" />
                 <asp:BoundField HeaderText="Theme" DataField="Theme" />
+                <Rock:SecurityField/>
                 <Rock:EditField OnClick="gSites_Edit" />
                 <Rock:DeleteField OnClick="gSites_Delete" />
             </Columns>
@@ -23,29 +24,29 @@
 
         <asp:ValidationSummary runat="server" CssClass="failureNotification"/>
 
-        <div class="row">
+        <div class="row-fluid">
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Site</legend>
-                    <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Name" />
-                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                    <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="Theme" />
-                    <Rock:DataDropDownList ID="ddlDefaultPage" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="DefaultPageId" LabelText="Default Page" />
+                    <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Name" Tip="Hi There!" />
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                    <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Theme" />
+                    <Rock:DataDropDownList ID="ddlDefaultPage" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="DefaultPageId" LabelText="Default Page" />
                 </fieldset>
 
             </div>
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend>&nbsp;</legend>
-                    <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" />
-                    <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FaviconUrl" />
-                    <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="AppleTouchIconUrl" />
-                    <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FacebookAppId" />
-                    <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.CMS.Site, Rock" PropertyName="FacebookAppSecret" />
+                    <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" />
+                    <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FaviconUrl" />
+                    <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="AppleTouchIconUrl" />
+                    <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FacebookAppId" />
+                    <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FacebookAppSecret" />
                 </fieldset>
 
             </div>

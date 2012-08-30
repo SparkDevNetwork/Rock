@@ -29,8 +29,10 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
         /// </summary>
         public Service()
-            : this( new EFRepository<T>() )
-        { }
+        {
+            var factory = new RepositoryFactory<T>();
+            _repository = factory.FindRepository();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
@@ -58,6 +60,18 @@ namespace Rock.Data
         public T Get( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
+        }
+
+        /// <summary>
+        /// Trys to get the model with the id value
+        /// </summary>
+        /// <returns></returns>
+        public bool TryGet( int id, out T item )
+        {
+            item = Get(id);
+            if (item == null)
+                return false;
+            return true;
         }
 
         /// <summary>
@@ -182,16 +196,13 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            List<Rock.Core.EntityChange> entityChanges = _repository.Save( personId );
-
+            var entityChanges = _repository.Save( personId );
             if ( entityChanges != null && entityChanges.Count > 0 )
             {
-                Core.EntityChangeService entityChangeService = new Core.EntityChangeService();
-                foreach ( Rock.Core.EntityChange entityChange in entityChanges )
-                {
-                    entityChangeService.Add( entityChange, personId );
-                    entityChangeService.Save( entityChange, personId );
-                }
+                var transaction = new Rock.Transactions.EntityChangeTransaction();
+                transaction.Changes = entityChanges;
+                transaction.PersonId = personId;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
@@ -227,4 +238,27 @@ namespace Rock.Data
             }
         }
     }
+
+    public class Service<T, D> : Service<T>
+        where T : Rock.Data.Model<T>
+        where D : Rock.Data.Dto<T>
+    {
+        public Service() : base() { }
+        public Service( IRepository<T> repository ) : base( repository ) { }
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<D> QueryableDto()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public virtual T CreateNew()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
 }

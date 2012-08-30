@@ -11,7 +11,7 @@ using System.Web.SessionState;
 using System.Web.Security;
 
 using Rock;
-using Rock.CMS;
+using Rock.Cms;
 
 using Goheer.EXIF;
 
@@ -51,7 +51,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			
 			FileService fileService = new FileService();
 
-            Rock.CMS.File cmsFile;
+            Rock.Cms.File cmsFile;
                         
 			// was an ID given? if so, fetch that file and replace it with the new one
             if ( context.Request.QueryString.Count > 0)
@@ -62,9 +62,9 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			}
 			else
 			{
-				// ...otherwise create a new CMS File
-				cmsFile = new Rock.CMS.File();
-                cmsFile.Temporary = true;
+				// ...otherwise create a new Cms File
+				cmsFile = new Rock.Cms.File();
+                cmsFile.IsTemporary = true;
                 fileService.Add( cmsFile, null );
 			}
 
