@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCMS/Layouts/Site.Master" 
+﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCms/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -104,25 +104,28 @@
     <script>
         /* script to manage header lock */
         $(document).ready(function () {
-            var headerIsLocked = localStorage.getItem("rock-header-lock");
+            /*var headerIsLocked = localStorage.getItem("rock-header-lock");
 
             if (headerIsLocked == "false") {
-                $('#content, #header-lock, header.topbar').toggleClass('unlock');                
-            }
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');
+            }*/
+
+            $('#header-lock').click(function (e) {
+                $('#content, #header-lock, header.topbar').toggleClass('unlock');
+
+                if ($('#header-lock').hasClass('unlock')) {
+                    localStorage.setItem('rock-header-lock', 'false');
+                }
+                else {
+                    localStorage.setItem('rock-header-lock', 'true');
+                }
+                alert('oh my goodness');
+                e.preventDefault();
+            });
+
         });
 
-        $('#header-lock').click(function () {
-            $('#content, #header-lock, header.topbar').toggleClass('unlock');
-
-            if ($('#header-lock').hasClass('unlock')) {
-                localStorage.setItem('rock-header-lock', 'false');
-            }
-            else {
-                localStorage.setItem('rock-header-lock', 'true');
-            }
-
-            e.preventDefault();
-        });
+        
 	</script>
             
 </asp:Content>

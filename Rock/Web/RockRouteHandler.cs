@@ -16,7 +16,7 @@ namespace Rock.Web
     /// <summary>
     /// Rock custom route handler
     /// </summary>
-    public class RockRouteHandler : IRouteHandler
+    public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and
@@ -59,8 +59,8 @@ namespace Rock.Web
                     site = Rock.Web.Cache.Site.Read( sites[host] );
                 else
                 {
-                    Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
-                    Rock.CMS.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
+                    Rock.Cms.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
                         sites.Add( host, siteDomain.SiteId );
@@ -100,7 +100,7 @@ namespace Rock.Web
             }
             else
             {
-                string theme = "RockCMS";
+                string theme = "RockCms";
                 string layout = "Default";
                 string layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
 
@@ -116,7 +116,7 @@ namespace Rock.Web
                     page.LayoutPath = layoutPath;
                 }
                 else
-                    page = Cache.Page.Read( new CMS.Page() );
+                    page = Cache.Page.Read( new Cms.Page() );
 
                 try
                 {
@@ -131,11 +131,11 @@ namespace Rock.Web
                     layout = "Default";
 
                     // If not using the Rock theme, verify that default Layout exists in the selected theme directory
-                    if ( theme != "RockCMS" &&
+                    if ( theme != "RockCms" &&
                         !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/{0}/Layouts/Default.aspx", theme ) ) ) )
                     {
                         // If default layout doesn't exist in the selected theme, switch to the Default layout
-                        theme = "RockCMS";
+                        theme = "RockCms";
                         layout = "Default";
                     }
 

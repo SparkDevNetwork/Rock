@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.CMS.AuthService authService = new Rock.CMS.AuthService();
+        private Rock.Cms.AuthService authService = new Rock.Cms.AuthService();
         private Rock.Security.ISecured iSecured;
 
         protected string CurrentAction
@@ -50,18 +50,23 @@ namespace RockWeb.Blocks.Administration
             // Instantiate object
             iSecured = entityType.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, entityType, new object[] { entityId } ) as Rock.Security.ISecured;
 
-            if ( iSecured.Authorized( "Configure", CurrentUser ) )
+            if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 rptActions.DataSource = iSecured.SupportedActions;
                 rptActions.DataBind();
-                ShowActionNote();
 
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                 rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                rGrid.RowDataBound += new GridViewRowEventHandler(rGrid_RowDataBound);
                 rGrid.ShowHeaderWhenEmpty = false;
                 rGrid.EmptyDataText = string.Empty;
                 rGrid.ShowActionRow = false;
+
+                rGridParentRules.DataKeyNames = new string[] { "id" };
+                rGridParentRules.ShowHeaderWhenEmpty = false;
+                rGridParentRules.EmptyDataText = string.Empty;
+                rGridParentRules.ShowActionRow = false;
 
                 BindRoles();
 
@@ -84,7 +89,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.Authorized( "Configure", CurrentUser ) )
+            if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if (!Page.IsPostBack)
                     BindGrid();
@@ -92,6 +97,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 rGrid.Visible = false;
+                rGridParentRules.Visible = false;
                 nbMessage.Text = "You are not authorized to edit security for this entity";
                 nbMessage.Visible = true;
             }
@@ -108,7 +114,7 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            List<Rock.CMS.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
+            List<Rock.Cms.Auth> rules = authService.GetAuths( iSecured.AuthEntity, iSecured.Id, CurrentAction ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
 
             Rock.Security.Authorization.ReloadAction( iSecured.AuthEntity, iSecured.Id, CurrentAction );
@@ -128,7 +134,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
                 authService.Delete( auth, CurrentPersonId );
@@ -157,7 +163,6 @@ namespace RockWeb.Blocks.Administration
                 rptActions.DataSource = iSecured.SupportedActions;
                 rptActions.DataBind();
 
-                ShowActionNote();
                 SetRoleActions();
             }
 
@@ -172,7 +177,7 @@ namespace RockWeb.Blocks.Administration
             {
                 int id = ( int )rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
-                Rock.CMS.Auth auth = authService.Get( id );
+                Rock.Cms.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
@@ -224,15 +229,15 @@ namespace RockWeb.Blocks.Administration
                     bool actionUpdated = false;
                     bool alreadyExists = false;
 
-                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    Rock.Cms.SpecialRole specialRole = Rock.Cms.SpecialRole.None;
                     int? groupId = Int32.Parse(ddlRoles.SelectedValue);
 
                     switch(groupId)
                     {
-                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Cms.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.Cms.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.Cms.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.Cms.SpecialRole.None; break;
                     }
 
                     if (groupId < 0)
@@ -250,7 +255,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
-                        Rock.CMS.Auth auth = new Rock.CMS.Auth();
+                        Rock.Cms.Auth auth = new Rock.Cms.Auth();
                         auth.EntityType = iSecured.AuthEntity;
                         auth.EntityId = iSecured.Id;
                         auth.Action = li.Text;
@@ -279,7 +284,7 @@ namespace RockWeb.Blocks.Administration
         {
             cbUsers.DataTextField = "FullName";
             cbUsers.DataValueField = "Id";
-            cbUsers.DataSource = new Rock.CRM.PersonService().GetByFullName( tbUser.Text ).ToList();
+            cbUsers.DataSource = new Rock.Crm.PersonService().GetByFullName( tbUser.Text ).ToList();
             cbUsers.DataBind();
         }
 
@@ -309,12 +314,12 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
-                        Rock.CMS.Auth auth = new Rock.CMS.Auth();
+                        Rock.Cms.Auth auth = new Rock.Cms.Auth();
                         auth.EntityType = iSecured.AuthEntity;
                         auth.EntityId = iSecured.Id;
                         auth.Action = CurrentAction;
                         auth.AllowOrDeny = "A";
-                        auth.SpecialRole = Rock.CMS.SpecialRole.None;
+                        auth.SpecialRole = Rock.Cms.SpecialRole.None;
                         auth.PersonId = personId;
                         auth.Order = ++maxOrder;
                         authService.Add( auth, CurrentPersonId );
@@ -341,10 +346,27 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction ); ;
+            rGrid.DataBind();
+            
+            List<Rock.Security.AuthRule> parentRules = new List<Rock.Security.AuthRule>();
+            AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
+            rGridParentRules.DataSource = parentRules;
+            rGridParentRules.DataBind();
+        }
+
+        private void AddParentRules(List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action)
+        {
+            if ( parent != null )
             {
-                rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction );
-                rGrid.DataBind();
+                foreach ( Rock.Security.AuthRule rule in Rock.Security.Authorization.AuthRules( parent.AuthEntity, parent.Id, action ) )
+                    if ( !rules.Exists( r =>
+                        r.SpecialRole == rule.SpecialRole &&
+                        r.PersonId == rule.PersonId &&
+                        r.GroupId == rule.GroupId ) )
+                        rules.Add( rule );
+
+                AddParentRules( rules, parent.ParentAuthority, action );
             }
         }
 
@@ -368,14 +390,6 @@ namespace RockWeb.Blocks.Administration
                 return "";
         }
 
-        private void ShowActionNote()
-        {
-            bool defaultAction = iSecured.DefaultAuthorization( CurrentAction );
-            lActionNote.Text = string.Format( "By default, all users <span class='label {0}'>{1}</span> be authorized to {2}.",
-                ( defaultAction ? "success" : "important" ), ( defaultAction ? "WILL" : "WILL NOT" ), CurrentAction );
-            
-        }
-
         private void SetRoleActions()
         {
             cblRoleActionList.Items.Clear();
@@ -392,15 +406,15 @@ namespace RockWeb.Blocks.Administration
                 {
                     bool alreadyAdded = false;
 
-                    Rock.CMS.SpecialRole specialRole = Rock.CMS.SpecialRole.None;
+                    Rock.Cms.SpecialRole specialRole = Rock.Cms.SpecialRole.None;
                     int? groupId = Int32.Parse( ddlRoles.SelectedValue );
 
                     switch ( groupId )
                     {
-                        case -1: specialRole = Rock.CMS.SpecialRole.AllUsers; break;
-                        case -2: specialRole = Rock.CMS.SpecialRole.AllAuthenticatedUsers; break;
-                        case -3: specialRole = Rock.CMS.SpecialRole.AllUnAuthenticatedUsers; break;
-                        default: specialRole = Rock.CMS.SpecialRole.None; break;
+                        case -1: specialRole = Rock.Cms.SpecialRole.AllUsers; break;
+                        case -2: specialRole = Rock.Cms.SpecialRole.AllAuthenticatedUsers; break;
+                        case -3: specialRole = Rock.Cms.SpecialRole.AllUnAuthenticatedUsers; break;
+                        default: specialRole = Rock.Cms.SpecialRole.None; break;
                     }
 
                     if ( groupId < 0 )

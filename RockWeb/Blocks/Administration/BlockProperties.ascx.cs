@@ -17,16 +17,19 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
+            Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
+            if ( masterPage != null )
+                masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+            
             try
             {
                 int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
                 _blockInstance = Rock.Web.Cache.BlockInstance.Read( blockInstanceId );
 
-                if ( _blockInstance.Authorized( "Configure", CurrentUser ) )
+                if ( _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( _blockInstance, phAttributes, !Page.IsPostBack );
                 }
                 else
                 {
@@ -43,7 +46,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _blockInstance.Authorized( "Configure", CurrentUser ) )
+            if ( !Page.IsPostBack && _blockInstance.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 tbBlockName.Text = _blockInstance.Name;
                 tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
@@ -60,14 +63,14 @@ namespace RockWeb.Blocks.Administration
                 Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _blockInstance );
         }
 
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void masterPage_OnSave( object sender, EventArgs e )
         {
             if ( Page.IsValid )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+                    Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
+                    Rock.Cms.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
 
                     Rock.Attribute.Helper.LoadAttributes( blockInstance );
 
@@ -82,7 +85,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 string script = "window.parent.closeModal()";
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), "close-modal", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
 

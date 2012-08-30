@@ -1,4 +1,6 @@
-﻿function saveBlockMove() {
+﻿var $moveLink;
+
+function saveBlockMove() {
 
     // The current block's id
     var blockInstanceId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
@@ -11,7 +13,7 @@
         type: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+        url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
         success: function (getData, status, xhr) {
 
             // Update the new zone
@@ -81,7 +83,7 @@ $(document).ready(function () {
     $('a.blockinstance-move').click(function () {
 
         // Get a reference to the anchor tag for use in the dialog success function
-        var $moveLink = $(this);
+        $moveLink = $(this);
 
         // Add the current block's id as an attribute of the move dialog's save button
         $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance', $(this).attr('href'));
@@ -119,7 +121,7 @@ $(document).ready(function () {
                 type: 'DELETE',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Remove the block instance's container div

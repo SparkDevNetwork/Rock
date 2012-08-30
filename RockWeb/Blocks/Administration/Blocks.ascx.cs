@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool _canConfigure = false;
-        private Rock.CMS.BlockService _blockService = new Rock.CMS.BlockService();
+        private Rock.Cms.BlockService _blockService = new Rock.Cms.BlockService();
 
         #endregion
 
@@ -31,12 +31,12 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Block block = _blockService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Block block = _blockService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
                 _blockService.Delete( block, CurrentPersonId );
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Administration
 
         void modalDetails_SaveClick( object sender, EventArgs e )
         {
-            Rock.CMS.Block block;
+            Rock.Cms.Block block;
 
             int blockId = 0;
             if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out blockId ) )
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockId == 0 )
             {
-                block = new Rock.CMS.Block();
+                block = new Rock.Cms.Block();
                 _blockService.Add( block, CurrentPersonId );
             }
             else
@@ -141,15 +141,15 @@ namespace RockWeb.Blocks.Administration
 
         private void ScanForUnregisteredBlocks()
         {
-            foreach ( Rock.CMS.Block block in _blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.Cms.Block block in _blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {
                     Control control = LoadControl( block.Path );
                     if ( control is Rock.Web.UI.Block )
                     {
-                        block.Name = Path.GetFileNameWithoutExtension( block.Path );
-                        block.Description = block.Path;
+                        block.Name = Path.GetFileNameWithoutExtension( block.Path ).SplitCase();
+                        block.Description = string.Empty;
 
                         _blockService.Add( block, CurrentPersonId );
                         _blockService.Save( block, CurrentPersonId );
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int blockId )
         {
-            Rock.CMS.Block block = _blockService.Get( blockId );
+            Rock.Cms.Block block = _blockService.Get( blockId );
 
             if ( block != null )
             {

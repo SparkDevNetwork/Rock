@@ -19,12 +19,14 @@ namespace RockWeb.Blocks.Security
 
             action = hfTest.Value;
 
-            if (CurrentPerson != null)
+            var currentPerson = CurrentPerson;
+            if ( currentPerson != null )
             {
                 phHello.Visible = true;
-                lHello.Text = string.Format( "<span>Hello {0}</span>", CurrentPerson.FirstName);
+                lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.FirstName );
 
-                phMyAccount.Visible = CurrentUser != null && CurrentUser.IsAuthenticated;
+                var currentUser = CurrentUser;
+                phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
                 lbLoginLogout.Text = "Logout";
             }
             else
@@ -44,7 +46,6 @@ namespace RockWeb.Blocks.Security
             else
             {
                 FormsAuthentication.SignOut();
-                Session.Remove( "UserIsAuthenticated" );
 
                 Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference (PageInstance.Id, PageInstance.RouteId );
                 Response.Redirect( PageInstance.BuildUrl( pageRef, null ) );

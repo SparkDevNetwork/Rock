@@ -35,26 +35,26 @@
     
         <div class="row">
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Email Template</legend>
-                    <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Category" />
-                    <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Title" />
-                    <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="From" />
-                    <Rock:DataTextBox ID="tbTo" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="To" />
-                    <Rock:DataTextBox ID="tbCc" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Cc" />
-                    <Rock:DataTextBox ID="tbBcc" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Bcc" />
+                    <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Category" />
+                    <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Title" />
+                    <Rock:DataTextBox ID="tbFrom" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="From" />
+                    <Rock:DataTextBox ID="tbTo" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="To" />
+                    <Rock:DataTextBox ID="tbCc" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Cc" />
+                    <Rock:DataTextBox ID="tbBcc" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Bcc" />
                 </fieldset>
 
             </div>
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
                     <legend>&nbsp;</legend>
-                    <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Subject" />
-                    <Rock:DataTextBox ID="tbBody" runat="server" SourceTypeName="Rock.CRM.EmailTemplate, Rock" PropertyName="Body" TextMode="MultiLine" Rows="10" CssClass="xxlarge" />
+                    <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Subject" />
+                    <Rock:DataTextBox ID="tbBody" runat="server" SourceTypeName="Rock.Crm.EmailTemplate, Rock" PropertyName="Body" TextMode="MultiLine" Rows="10" CssClass="xxlarge" />
                 </fieldset>
 
             </div>

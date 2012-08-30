@@ -1,0 +1,82 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Dialog" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+
+    <title></title>
+
+    <!--[if lt IE 9]>
+        <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
+    <![endif]-->
+
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/font-awesome.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
+    
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
+
+    <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
+
+    <style>
+        html, body 
+        {
+            height: 100%;
+            min-height: 100%;
+            width: 100%;
+            min-width: 100%;
+            background-color: #ffffff;  
+            margin: 0 0 0 0;
+            padding: 0 0 0 0;
+            vertical-align: top;
+        }
+    </style>
+
+    <asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+
+<body id="dialog">
+    <form id="form1" runat="server">
+        
+        <div id="headerPanel" class="modal-header">
+            <a id="closeLink" href="#" class="close" onclick="window.parent.closeModal();">&times;</a>
+            <h3><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+        </div>
+
+        <div id="mdlbody">
+        <div class="modal-body">
+            <div id="modal-scroll-container" class="scroll-container">
+	            <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+	            <div class="viewport">
+		            <div class="overview">
+                        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+			        </div>
+	            </div>
+            </div>		
+        </div>
+        </div>
+        <div id="pnl1"></div>
+
+        <div id="footerPanel" class="modal-footer">
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
+        </div>
+
+        <div id="pnl2"></div>
+
+    </form>
+
+    <script type="text/javascript">
+        Sys.Application.add_load(function () {
+            $('#modal-scroll-container').tinyscrollbar({ size: 150 });
+        });
+    </script>
+</body>
+</html>

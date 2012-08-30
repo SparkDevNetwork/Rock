@@ -16,6 +16,8 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledCheckBox runat=server></{0}:LabeledTextBox>" )]
     public class LabeledCheckBox : CheckBox
     {
+        private Label label;
+
         /// <summary>
         /// Gets or sets the help tip.
         /// </summary>
@@ -82,13 +84,29 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["LabelText"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return label.Text;
             }
             set
             {
-                ViewState["LabelText"] = value;
+                EnsureChildControls();
+                label.Text = value;
             }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            Controls.Clear();
+
+            label = new Label();
+            label.AssociatedControlID = this.ID;
+
+            Controls.Add( label );
         }
 
         /// <summary>
@@ -97,20 +115,44 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.Write( @"<dd><ul class=""inputs-list""><li>" );
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // render the checkbox control
+            label.AddCssClass( "control-label" );
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "checkbox" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
             base.Render( writer );
 
-            writer.Write( string.Format( @"<label for=""{0}"">{1}</label>", this.ClientID, LabelText ) );
+            writer.RenderEndTag();
 
             if ( Tip.Trim() != string.Empty )
-                writer.Write( string.Format( @"<a class=""help-tip"" href=""#"">help<span>{0}</span></a>", Tip.Trim() ) );
+            {
+                writer.AddAttribute( "class", "help-tip" );
+                writer.AddAttribute( "href", "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( Tip.Trim() );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
 
             if ( Help.Trim() != string.Empty )
-                writer.Write( string.Format( @"<span class=""help-block"">{0}</span>", Help.Trim() ) );
+            {
+                writer.AddAttribute( "class", "help-block" );
+                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.Write( Help.Trim() );
+                writer.RenderEndTag();
+            }
 
-            writer.Write( @"</li></ul></dd>" );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
     }

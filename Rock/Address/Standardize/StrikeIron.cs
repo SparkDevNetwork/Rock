@@ -34,7 +34,7 @@ namespace Rock.Address.Standardize
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Standardize( Rock.CRM.Address address, out string result )
+        public override bool Standardize( Rock.Crm.Address address, out string result )
         {
             if ( address != null )
             {

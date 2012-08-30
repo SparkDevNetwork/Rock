@@ -9,7 +9,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool _canConfigure = false;
-        private Rock.CRM.EmailTemplateService _emailTemplateService = new Rock.CRM.EmailTemplateService();
+        private Rock.Crm.EmailTemplateService _emailTemplateService = new Rock.Crm.EmailTemplateService();
 
         #endregion
 
@@ -34,14 +34,14 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
                     rGrid.Actions.AddClick += rGrid_AddClick;
                     rGrid.GridRebind += rGrid_GridRebind;
 
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
                 _emailTemplateService.Delete( emailTemplate, CurrentPersonId );
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CRM.EmailTemplate emailTemplate;
+            Rock.Crm.EmailTemplate emailTemplate;
 
             int emailTemplateId = 0;
             if ( !Int32.TryParse( hfEmailTemplateId.Value, out emailTemplateId ) )
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int emailTemplateId )
         {
-            Rock.CRM.EmailTemplate emailTemplate = _emailTemplateService.Get( emailTemplateId );
+            Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( emailTemplateId );
 
             if ( emailTemplate != null )
             {

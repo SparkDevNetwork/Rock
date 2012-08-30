@@ -6,13 +6,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
 
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -20,6 +22,7 @@ namespace Rock.Web.Cache
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -105,9 +108,9 @@ namespace Rock.Web.Cache
         public bool MenuDisplayChildPages { get; private set; }
 
         /// <summary>
-        /// Gets a <see cref="CMS.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
+        /// Gets a <see cref="Cms.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
         /// </summary>
-        public CMS.DisplayInNavWhen DisplayInNavWhen { get; private set; }
+        public Cms.DisplayInNavWhen DisplayInNavWhen { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the page requires SSL encryption.
@@ -169,7 +172,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -259,8 +262,8 @@ namespace Rock.Web.Cache
                 {
                     pageIds = new List<int>();
 
-                    Rock.CMS.PageService pageService = new Rock.CMS.PageService();
-                    foreach ( Rock.CMS.Page page in pageService.GetByParentPageId( this.Id ) )
+                    Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+                    foreach ( Rock.Cms.Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
                         pages.Add( Page.Read( page ) );
@@ -295,8 +298,8 @@ namespace Rock.Web.Cache
                     blockInstanceIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
+                    Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
+                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -304,7 +307,7 @@ namespace Rock.Web.Cache
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.CMS.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
+                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
                     {
                         blockInstanceIds.Add( blockInstance.Id );
                         Rock.Attribute.Helper.LoadAttributes( blockInstance );
@@ -316,6 +319,14 @@ namespace Rock.Web.Cache
             }
         }
         private List<int> blockInstanceIds = null;
+
+        /// <summary>
+        /// Gets or sets the page contexts that have been defined for the page
+        /// </summary>
+        /// <value>
+        /// The page contexts.
+        /// </value>
+        public Dictionary<string, string> PageContexts { get; set; }
 
         /// <summary>
         /// Gets a dictionary of the current context items (models).
@@ -337,8 +348,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.PageService pageService = new CMS.PageService();
-            Rock.CMS.Page pageModel = pageService.Get( this.Id );
+            Rock.Cms.PageService pageService = new Cms.PageService();
+            Rock.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
@@ -354,14 +365,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="user">The current user.</param>
         /// <returns></returns>
-        public bool DisplayInNav( User user )
+        public bool DisplayInNav( Rock.Crm.Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
-                case CMS.DisplayInNavWhen.Always:
+                case Cms.DisplayInNavWhen.Always:
                     return true;
-                case CMS.DisplayInNavWhen.WhenAllowed:
-                    return this.Authorized( "View", user );
+                case Cms.DisplayInNavWhen.WhenAllowed:
+                    return this.IsAuthorized( "View", person );
                 default:
                     return false;
             }
@@ -385,8 +396,17 @@ namespace Rock.Web.Cache
                     Type service = serviceType.MakeGenericType( modelType );
                     var serviceInstance = Activator.CreateInstance( service );
 
-                    MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                    keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                    {
+                        MethodInfo getMethod = service.GetMethod( "Get" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IModel;
+                    }
+                    else
+                    {
+                        MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                    }
+
                     if ( keyModel.Model is Rock.Attribute.IHasAttributes )
                         Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
                 }
@@ -577,7 +597,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="pageModel"></param>
         /// <returns></returns>
-        public static Page Read( Rock.CMS.Page pageModel )
+        public static Page Read( Rock.Cms.Page pageModel )
         {
             Page page = Page.CopyModel( pageModel );
 
@@ -605,8 +625,8 @@ namespace Rock.Web.Cache
                 return page;
             else
             {
-                Rock.CMS.PageService pageService = new CMS.PageService();
-                Rock.CMS.Page pageModel = pageService.Get( id );
+                Rock.Cms.PageService pageService = new Cms.PageService();
+                Rock.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( pageModel );
@@ -624,7 +644,7 @@ namespace Rock.Web.Cache
         }
 
         // Copies the Model object to the Cached object
-        private static Page CopyModel( Rock.CMS.Page pageModel )
+        private static Page CopyModel( Rock.Cms.Page pageModel )
         {
             Page page = new Page();
             page.Id = pageModel.Id;
@@ -650,6 +670,11 @@ namespace Rock.Web.Cache
                 foreach ( var category in pageModel.Attributes )
                     foreach ( var attribute in category.Value )
                         page.AttributeIds.Add( attribute.Id );
+
+            page.PageContexts = new Dictionary<string,string>();
+            if ( pageModel.PageContexts != null )
+                foreach ( var pageContext in pageModel.PageContexts )
+                    page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
             page.AuthEntity = pageModel.AuthEntity;
             page.SupportedActions = pageModel.SupportedActions;
@@ -711,7 +736,13 @@ namespace Rock.Web.Cache
         /// </summary>
         public Security.ISecured ParentAuthority
         {
-            get { return this.ParentPage; }
+            get
+            {
+                if ( this.ParentPage != null )
+                    return this.ParentPage;
+                else
+                    return this.Site;
+            }
         }
 
         /// <summary>
@@ -723,11 +754,13 @@ namespace Rock.Web.Cache
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool Authorized( string action, User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -736,9 +769,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion
@@ -748,28 +786,28 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Returns XML for a page menu.  XML will be 1 level deep
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( User user )
+        public XDocument MenuXml( Rock.Crm.Person person )
         {
-            return MenuXml( 1, user );
+            return MenuXml( 1, person );
         }
 
         /// <summary>
         /// Returns XML for a page menu.
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, User user )
+        public XDocument MenuXml( int levelsDeep, Rock.Crm.Person person )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, user );
+            XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  User user )
+        private XElement MenuXmlElement( int levelsDeep,  Rock.Crm.Person person )
         {
-            if ( levelsDeep >= 0 && this.DisplayInNav( user ) )
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
 				XElement pageElement = new XElement( "page",
 					new XAttribute( "id", this.Id ),
@@ -788,7 +826,7 @@ namespace Rock.Web.Cache
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages)
                 foreach ( Page page in Pages )
                 {
-                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, user );
+                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
                     if ( childPageElement != null )
                         childPagesElement.Add( childPageElement );
                 }

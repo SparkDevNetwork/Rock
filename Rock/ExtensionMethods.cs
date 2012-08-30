@@ -6,11 +6,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 
 namespace Rock
 {
@@ -28,8 +29,7 @@ namespace Rock
         /// <returns></returns>
         public static string ToJSON( this object obj )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            return serializer.Serialize( obj );
+            return JsonConvert.SerializeObject( obj );
         }
 
         /// <summary>
@@ -40,9 +40,26 @@ namespace Rock
         /// <returns></returns>
         public static string ToJSON( this object obj, int recursionDepth )
         {
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            serializer.RecursionLimit = recursionDepth;
-            return serializer.Serialize( obj );
+            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
+        }
+
+        /// <summary>
+        /// Creates a copy of the object's property as a DynamicObject.
+        /// </summary>
+        /// <param name="obj">The object to copy.</param>
+        /// <returns></returns>
+        public static ExpandoObject ToDynamic( this object obj )
+        {
+            dynamic expando = new ExpandoObject();
+            var dict = expando as IDictionary<string, object>;
+            var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+
+            foreach (var prop in properties)
+            {
+                dict[prop.Name] = prop.GetValue( obj, null );
+            }
+
+            return expando;
         }
 
         #endregion
@@ -104,6 +121,20 @@ namespace Rock
         public static string EscapeQuotes( this string str )
         {
             return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+        }
+
+        public static string Ellipsis( this string str, int maxLength )
+        {
+            if (str.Length <= maxLength)
+                return str;
+
+            maxLength -= 3;
+            var truncatedString = str.Substring(0, maxLength);
+            var lastSpace = truncatedString.LastIndexOf( ' ' );
+            if ( lastSpace > 0 )
+                truncatedString = truncatedString.Substring( 0, lastSpace );
+
+            return truncatedString + "...";
         }
 
         #endregion
@@ -337,12 +368,25 @@ namespace Rock
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
-        public static String AsDelimited<T>( this List<T> items, string delimiter)
+        public static string AsDelimited<T>( this List<T> items, string delimiter)
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
                 strings.Add( item.ToString() );
             return String.Join( delimiter, strings.ToArray() );
+        }
+
+        /// <summary>
+        /// Joins a dictionary of items
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static string Join( this Dictionary<string, string> items, string delimter )
+        {
+            List<string> parms = new List<string>();
+            foreach ( var item in items )
+                parms.Add( string.Join( "=", new string[] { item.Key, item.Value } ) );
+            return string.Join( delimter, parms.ToArray() );
         }
 
         #endregion

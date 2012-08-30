@@ -9,20 +9,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 using Rock;
-using Rock.CMS;
+using Rock.Cms;
 
 namespace RockWeb.Blocks.Cms
 {
     [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
     [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
     [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.FieldTypes.Integer" )]
+    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
     [Rock.Attribute.Property( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
     [Rock.Attribute.Property( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
-    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.FieldTypes.Boolean" )]
+    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
 
     public partial class HtmlContent : Rock.Web.UI.Block
     {
@@ -74,9 +75,9 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            Rock.Cms.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
             if ( content == null )
-                content = new Rock.CMS.HtmlContent();
+                content = new Rock.Cms.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -91,8 +92,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( _requireApproval )
                 {
-                    cbApprove.Checked = content.Approved;
-                    cbApprove.Enabled = UserAuthorized( "Approve" );
+                    cbApprove.Checked = content.IsApproved;
+                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
                     cbApprove.Visible = true;
                 }
                 else
@@ -128,9 +129,9 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( UserAuthorized( "Edit" ) || UserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
-                Rock.CMS.HtmlContent content = null;
+                Rock.Cms.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -152,7 +153,7 @@ namespace RockWeb.Blocks.Cms
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.CMS.HtmlContent();
+                    content = new Rock.Cms.HtmlContent();
                     content.BlockId = BlockInstance.Id;
                     content.EntityValue = entityValue;
 
@@ -191,10 +192,10 @@ namespace RockWeb.Blocks.Cms
                     content.ExpireDateTime = null;
                 }
 
-                if ( !_requireApproval || UserAuthorized( "Approve" ) )
+                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
                 {
-                    content.Approved = !_requireApproval || cbApprove.Checked;
-                    if ( content.Approved )
+                    content.IsApproved = !_requireApproval || cbApprove.Checked;
+                    if ( content.IsApproved )
                     {
                         content.ApprovedByPersonId = CurrentPersonId;
                         content.ApprovedDateTime = DateTime.Now;
@@ -225,10 +226,13 @@ namespace RockWeb.Blocks.Cms
             if ( canConfig || canEdit )
             {
                 LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "edit icon-button";
+                lbEdit.CssClass = "edit";
                 lbEdit.ToolTip = "Edit HTML";
                 lbEdit.Click += new EventHandler( lbEdit_Click );
                 configControls.Add( lbEdit );
+                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
+                lbEdit.Controls.Add( iEdit );
+                iEdit.Attributes.Add( "class", "icon-edit" );
 
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
@@ -243,22 +247,22 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = "";
 
-            int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
             string cachedContent = GetCacheItem( entityValue ) as string;
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
 
                 if ( content != null )
-                {
                     html = content.Content;
+                else
+                    html = string.Empty;
 
-                    // cache content
-                    if ( cacheDuration > 0 )
-                        AddCacheItem( entityValue, html, cacheDuration );
-                }
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 ) ;
+                    AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;
@@ -281,7 +285,7 @@ namespace RockWeb.Blocks.Cms
                     v.Content,
                     ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
                     ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
-                    v.Approved,
+                    Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,
                     v.ExpireDateTime

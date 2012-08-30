@@ -15,7 +15,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'REST/CMS/User/Available/' + escape($(this).val()),
+                    url: rock.baseUrl + 'REST/Cms/User/Available/' + escape($(this).val()),
                     success: function (getData, status, xhr) {
 
                         if (getData) {
@@ -52,7 +52,7 @@
 
         <div class="row">
 
-            <div class="6 columns">
+            <div class="span6">
 
                <fieldset>
                     <legend>New Account</legend>
@@ -69,7 +69,7 @@
 
             </div>
 
-            <div class="6 columns">
+            <div class="span6">
 
                 <fieldset>
 	                <legend>Your Information</legend> 

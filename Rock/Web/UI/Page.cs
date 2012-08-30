@@ -17,7 +17,7 @@ using System.Web.UI.WebControls;
 using System.Web.Security;
 using System.Configuration;
 
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.UI.Controls;
 using Rock.Transactions;
 
@@ -79,61 +79,43 @@ namespace Rock.Web.UI
         public Dictionary<string, KeyValuePair<string, Zone>> Zones { get; private set; }
 
         /// <summary>
-        /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
+        /// The currently logged in user
         /// </summary>
-        public int? CurrentPersonId
+        public Rock.Cms.User CurrentUser
         {
             get
             {
-                if ( Context.Items.Contains("CurrentPersonId"))
-                    return (int)Context.Items["CurrentPersonId"];
+                if (_CurrentUser != null)
+                    return _CurrentUser;
 
-                Rock.CMS.User user = CurrentUser;
-                if ( user != null )
-                {
-                    Context.Items.Add( "CurrentPersonId", user.PersonId );
-                    return user.PersonId;
-                }
-                
-                return null;
-            }
+                if (_CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
 
-            private set
-            {
-                Context.Items.Remove("CurrentPersonId");
-                if (value != null)
-                    Context.Items.Add("CurrentPersonId", value);
-            }
-        }
+                if (_CurrentUser == null)
+                {
+                    _CurrentUser = Rock.Cms.UserService.GetCurrentUser();
+                    if (_CurrentUser != null)
+                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                }
+    
+                if (_CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                    CurrentPerson = _CurrentUser.Person;
 
-        /// <summary>
-        /// The personID of the current person.  This is either the currently logged in user, of if the user
-        /// has not logged in, it may also be an impersonated person determined from using the encrypted
-        /// person key
-        /// </summary>
-        public Rock.CMS.User CurrentUser
-        {
-            get
-            {
-                if ( Context.Items.Contains( "CurrentUser" ) )
-                {
-                    return ( Rock.CMS.User )Context.Items["CurrentUser"];
-                }
-                else
-                {
-                    Rock.CMS.User user = Rock.CMS.UserService.GetCurrentUser();
-                    Context.Items.Add( "CurrentUser", user );
-                    return user;
-                }
+                return _CurrentUser;
             }
 
             private set
             {
                 Context.Items.Remove("CurrentUser");
-                if (value != null)
-                    Context.Items.Add("CurrentUser", value);
+                _CurrentUser = value;
+
+                if (_CurrentUser != null)
+                    Context.Items.Add("CurrentUser", _CurrentUser);
+
+                CurrentPerson = _CurrentUser.Person;
             }
         }
+        private Rock.Cms.User _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -144,37 +126,40 @@ namespace Rock.Web.UI
         {
             get
             {
-                int? personId = CurrentPersonId;
-                if ( personId != null )
-                {
-                    if ( Context.Items.Contains( "CurrentPerson" ) )
-                    {
-                        return ( Person )Context.Items["CurrentPerson"];
-                    }
-                    else
-                    {
-                        Rock.CRM.PersonService personService = new CRM.PersonService();
-                        Person person = personService.Get( personId.Value );
-                        Context.Items.Add( "CurrentPerson", person );
-                        return person;
-                    }
-                }
+                if ( _CurrentPerson != null )
+                    return _CurrentPerson;
+
+                if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                    _CurrentPerson = Context.Items["CurrentPerson"] as Person;
+
                 return null;
             }
 
             private set
             {
-                Context.Items.Remove("CurrentPerson");
-                Context.Items.Remove("CurrentPersonId");
+                Context.Items.Remove( "CurrentPerson" );
+                _CurrentPerson = value;
 
-                if (value != null)
-                {
+                if ( _CurrentPerson != null )
                     Context.Items.Add( "CurrentPerson", value );
-                    CurrentPersonId = value.Id;
-                }
             }
         }
-        
+        private Person _CurrentPerson;
+
+        /// <summary>
+        /// The Person ID of the currently logged in user.  Returns null if there is not a user logged in
+        /// </summary>
+        public int? CurrentPersonId
+        {
+            get
+            {
+                if (CurrentPerson != null) 
+                    return CurrentPerson.Id;
+                else
+                    return null;
+            }
+        }
+
         /// <summary>
         /// Gets the root url path
         /// </summary>
@@ -295,7 +280,6 @@ namespace Rock.Web.UI
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
-                Session.Remove("UserIsAuthenticated");
                 CurrentPerson = null;
                 CurrentUser = null;
                 Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
@@ -305,19 +289,17 @@ namespace Rock.Web.UI
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.CRM.PersonService personService = new CRM.PersonService();
-                Rock.CRM.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Crm.PersonService personService = new Crm.PersonService();
+                Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
-                    FormsAuthentication.SetAuthCookie("rckipid=" + impersonatedPerson.EncryptedKey, false );
-                    Session["UserIsAuthenticated"] = false;
-
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
                     CurrentUser =  impersonatedPerson.ImpersonatedUser;
                 }
             }
 
             // Get current user/person info
-            Rock.CMS.User user = CurrentUser;
+            Rock.Cms.User user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
@@ -335,8 +317,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.CRM.PersonService personService = new CRM.PersonService();
-                        Rock.CRM.Person person = personService.Get( personId.Value );
+                        Rock.Crm.PersonService personService = new Crm.PersonService();
+                        Rock.Crm.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;
@@ -360,7 +342,7 @@ namespace Rock.Web.UI
                 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
-                if ( !PageInstance.Authorized( "View", user ) )
+                if ( !PageInstance.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
@@ -371,6 +353,13 @@ namespace Rock.Web.UI
                     PageInstance.Context = new Dictionary<string, Data.KeyModel>();
                     try 
                     {
+                        foreach ( var pageContext in PageInstance.PageContexts )
+                        {
+                            int contextId = 0;
+                            if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
+                                PageInstance.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                        }
+
                         char[] delim = new char[1] { ',' };
                         foreach (string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ))
                         {
@@ -379,6 +368,7 @@ namespace Rock.Web.UI
                             if (parts.Length == 2)
                                 PageInstance.Context.Add(parts[0], new Data.KeyModel(parts[1]));
                         }
+
                     }
                     catch {}
 
@@ -394,7 +384,7 @@ namespace Rock.Web.UI
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = PageInstance.Authorized( "Configure", user );
+                    bool canConfigPage = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -419,9 +409,9 @@ namespace Rock.Web.UI
                     foreach ( Rock.Web.Cache.BlockInstance blockInstance in PageInstance.BlockInstances )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = blockInstance.Authorized( "Configure", user );
-                        bool canEdit = blockInstance.Authorized( "Edit", user );
-                        bool canView = blockInstance.Authorized( "View", user );
+                        bool canConfig = blockInstance.IsAuthorized( "Configure", CurrentPerson );
+                        bool canEdit = blockInstance.IsAuthorized( "Edit", CurrentPerson );
+                        bool canView = blockInstance.IsAuthorized( "View", CurrentPerson );
 
                         // Make sure user has access to view block instance
                         if ( canConfig || canEdit || canView )
@@ -484,10 +474,10 @@ namespace Rock.Web.UI
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
-                                    if ( !blockInstance.Block.InstancePropertiesVerified )
+                                    if ( !blockInstance.Block.IsInstancePropertiesVerified )
                                     {
                                         block.CreateAttributes();
-                                        blockInstance.Block.InstancePropertiesVerified = true;
+                                        blockInstance.Block.IsInstancePropertiesVerified = true;
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized
@@ -544,45 +534,64 @@ namespace Rock.Web.UI
                         // Block Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
-                        aBlockConfig.Attributes.Add( "class", "block-config icon-button" );
+                        aBlockConfig.Attributes.Add( "class", "btn block-config" );
                         aBlockConfig.Attributes.Add( "href", "#" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                        HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                        aBlockConfig.Controls.Add( iBlockConfig );
+                        iBlockConfig.Attributes.Add( "class", "icon-th-large" );
 
                         // Page Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
-                        aAttributes.Attributes.Add( "class", "properties icon-button show-modal-iframe" );
-                        aAttributes.Attributes.Add( "height", "400px" );
-                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}", PageInstance.Id ) ) );
-                        aAttributes.Attributes.Add( "title", "Page Properties" );
+                        aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
+                        aAttributes.Attributes.Add( "height", "500px" );
+                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", PageInstance.Id ) ) );
+                        HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                        aAttributes.Controls.Add( iAttributes );
+                        iAttributes.Attributes.Add( "class", "icon-cog" );
 
                         // Child Pages
                         HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aChildPages );
-                        aChildPages.Attributes.Add( "class", "page-child-pages icon-button show-modal-iframe" );
-                        aChildPages.Attributes.Add( "height", "400px" );
-                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}", PageInstance.Id ) ) );
-                        aChildPages.Attributes.Add( "Title", "Child Pages" );
-                        aChildPages.Attributes.Add( "primary-button", "" );
-                        aChildPages.Attributes.Add( "secondary-button", "Done" );
+                        aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
+                        aChildPages.Attributes.Add( "height", "500px" );
+                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", PageInstance.Id ) ) );
+                        HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
+                        aChildPages.Controls.Add( iChildPages );
+                        iChildPages.Attributes.Add( "class", "icon-sitemap" );
 
                         // Page Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
-                        aPageZones.Attributes.Add( "class", "page-zones icon-button" );
+                        aPageZones.Attributes.Add( "class", "btn page-zones" );
                         aPageZones.Attributes.Add( "href", "#" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
+                        HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
+                        aPageZones.Controls.Add( iPageZones );
+                        iPageZones.Attributes.Add( "class", "icon-columns" );
 
                         // Page Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
-                        aPageSecurity.Attributes.Add( "class", "page-security icon-button show-modal-iframe" );
-                        aPageSecurity.Attributes.Add( "height", "400px" );
-                        aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}",
+                        aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
+                        aPageSecurity.Attributes.Add( "height", "500px" );
+                        aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
-                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
-                        aPageSecurity.Attributes.Add( "primary-button", "" );
-                        aPageSecurity.Attributes.Add( "secondary-button", "Done" );
+                        HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
+                        aPageSecurity.Controls.Add( iPageSecurity );
+                        iPageSecurity.Attributes.Add( "class", "icon-lock" );
+
+                        // System Info
+                        HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
+                        buttonBar.Controls.Add( aSystemInfo );
+                        aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
+                        aSystemInfo.Attributes.Add( "height", "500px" );
+                        aSystemInfo.Attributes.Add( "href", ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) );
+                        HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
+                        aSystemInfo.Controls.Add( iSystemInfo );
+                        iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
+
                     }
 
                     // Check to see if page output should be cached.  The RockRouteHandler
@@ -680,25 +689,17 @@ namespace Rock.Web.UI
 
         #endregion
 
-        #region CMS Admin Content
+        #region Cms Admin Content
 
         private void AddPopupControls()
         {
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
-            ModalDialog modalPopup = new ModalDialog();
+            ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.DisableDefaultSave = true;
             modalPopup.OnCancelScript = "closeModal();";
             this.Form.Controls.Add( modalPopup );
-
-            modalPopup.Content.AddCssClass( "iframe" );
-
-            HtmlGenericControl modalIFrame = new HtmlGenericControl( "iframe" );
-            modalIFrame.ID = "iframe";
-            modalIFrame.Attributes.Add( "scrolling", "no" );
-            modalPopup.Content.Controls.Add( modalIFrame );
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
@@ -723,12 +724,15 @@ namespace Rock.Web.UI
                 // Zone content configuration widget
                 HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
                 zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "class", "zone-configuration" );
+                zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
 
                 HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
-                zoneConfigLink.Attributes.Add( "class", "icon-button zoneinstance-config" );
+                zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
                 zoneConfigLink.Attributes.Add( "href", "#" );
                 zoneConfig.Controls.Add( zoneConfigLink );
+                HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
+                iZoneConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                zoneConfigLink.Controls.Add( iZoneConfig );
 
                 HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
                 zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
@@ -741,14 +745,15 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.Attributes.Add( "class", "zone-blocks icon-button show-modal-iframe" );
-                aBlockConfig.Attributes.Add( "height", "400px" );
-                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}", PageInstance.Id, control.ID ) ) );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
+                aBlockConfig.Attributes.Add( "height", "500px" );
+                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", PageInstance.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
-                aBlockConfig.Attributes.Add( "primary-button", "" );
-                aBlockConfig.Attributes.Add( "secondary-button", "Done" );
-                aBlockConfig.InnerText = "Blocks";
+                //aBlockConfig.InnerText = "Blocks";
+                HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
+                iZoneBlocks.Attributes.Add( "class", "icon-th-large" );
+                aBlockConfig.Controls.Add( iZoneBlocks );
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
                 zoneContent.Attributes.Add( "class", "zone-content" );
@@ -768,16 +773,20 @@ namespace Rock.Web.UI
                 // Add the config buttons
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
                 blockConfig.ClientIDMode = ClientIDMode.AutoID;
-                blockConfig.Attributes.Add( "class", "block-configuration" );
+                blockConfig.Attributes.Add( "class", "block-configuration config-bar" );
                 blockWrapper.Controls.Add( blockConfig );
 
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
-                blockConfigLink.Attributes.Add( "class", "icon-button blockinstance-config" );
+                blockConfigLink.Attributes.Add( "class", "blockinstance-config" );
                 blockConfigLink.Attributes.Add( "href", "#" );
+                HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                iBlockConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
+                blockConfigLink.Controls.Add( iBlockConfig );
+
                 blockConfig.Controls.Add( blockConfigLink );
 
                 HtmlGenericControl blockConfigBar = new HtmlGenericControl( "div" );
-                blockConfigBar.Attributes.Add( "class", "block-configuration-bar" );
+                blockConfigBar.Attributes.Add( "class", "block-configuration-bar config-bar" );
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );

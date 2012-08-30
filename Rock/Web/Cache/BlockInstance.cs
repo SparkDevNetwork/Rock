@@ -4,9 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Linq;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -14,6 +16,7 @@ namespace Rock.Web.Cache
     /// Information about a blockInstance that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
+    [Serializable]
     public class BlockInstance : Security.ISecured, Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -60,7 +63,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.DTO.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -116,8 +119,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-            Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+            Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
+            Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
 
             if ( blockInstanceModel != null )
             {
@@ -135,8 +138,8 @@ namespace Rock.Web.Cache
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+                Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
+                Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
 
                 if ( blockInstanceModel != null )
                 {
@@ -176,7 +179,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="blockInstanceModel"></param>
         /// <returns></returns>
-        public static BlockInstance Read( Rock.CMS.BlockInstance blockInstanceModel )
+        public static BlockInstance Read( Rock.Cms.BlockInstance blockInstanceModel )
         {
             BlockInstance blockInstance = BlockInstance.CopyModel( blockInstanceModel );
 
@@ -204,8 +207,8 @@ namespace Rock.Web.Cache
                 return blockInstance;
             else
             {
-                Rock.CMS.BlockInstanceService blockInstanceService = new CMS.BlockInstanceService();
-                Rock.CMS.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
+                Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
+                Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
                 if ( blockInstanceModel != null )
                 {
                     Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
@@ -221,7 +224,7 @@ namespace Rock.Web.Cache
             }
         }
 
-        private static BlockInstance CopyModel ( Rock.CMS.BlockInstance blockInstanceModel )
+        private static BlockInstance CopyModel ( Rock.Cms.BlockInstance blockInstanceModel )
         {
             BlockInstance blockInstance = new BlockInstance();
             blockInstance.Id = blockInstanceModel.Id;
@@ -299,11 +302,13 @@ namespace Rock.Web.Cache
         /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="user">The user.</param>
-        /// <returns></returns>
-        public virtual bool Authorized( string action, Rock.CMS.User user )
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
         {
-            return Security.Authorization.Authorized( this, action, user );
+            return Security.Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -312,9 +317,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public bool DefaultAuthorization( string action )
+        public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return Authorization.FindAuthRules( this );
         }
 
         #endregion
@@ -323,6 +333,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// The location of the block instance
     /// </summary>
+    [Serializable]
     public enum BlockInstanceLocation
     {
         /// <summary>

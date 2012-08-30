@@ -5,9 +5,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Core;
 using Rock.Web.UI.Controls;
 
@@ -19,6 +22,8 @@ namespace RockWeb.Blocks.Administration
     [Rock.Attribute.Property( 0, "Entity", "Applies To", "Entity Name", false, "" )]
     [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [Rock.Attribute.Property( 3, "Allow Setting of Values", "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
+    [Rock.Attribute.Property( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
     public partial class Attributes : Rock.Web.UI.Block
     {
         #region Fields
@@ -26,9 +31,10 @@ namespace RockWeb.Blocks.Administration
         protected string _entity = string.Empty;
         protected string _entityQualifierColumn = string.Empty;
         protected string _entityQualifierValue = string.Empty;
+        protected bool _setValues = false;
+        protected int? _entityId = null;
 
         private bool _canConfigure = false;
-        private Rock.Core.AttributeService _attributeService = new Rock.Core.AttributeService();
 
         #endregion
 
@@ -52,18 +58,37 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-                _canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
+                _setValues = Convert.ToBoolean( AttributeValue( "SetValues" ) );
+
+                string entityIdString = AttributeValue( "EntityId" );
+                if ( string.IsNullOrWhiteSpace( entityIdString ) )
+                    entityIdString = PageParameter( "EntityId" );
+                if ( !string.IsNullOrWhiteSpace( entityIdString ) )
+                {
+                    int entityIdint = 0;
+                    if ( Int32.TryParse( entityIdString, out entityIdint ) )
+                        _entityId = entityIdint;
+                }
+
+                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.EnableAdd = true;
+                    rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+                    rGrid.RowDataBound += rGrid_RowDataBound;
+
+                    rGrid.Columns[7].Visible = !_setValues;
+                    rGrid.Columns[8].Visible = _setValues;
+                    rGrid.Columns[10].Visible = _setValues;
+
                     modalDetails.SaveClick += modalDetails_SaveClick;
+                    modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
 
                     string script = string.Format( @"
         Sys.Application.add_load(function () {{
@@ -74,6 +99,22 @@ namespace RockWeb.Blocks.Administration
     ", rGrid.ClientID );
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
 
+                    // Create the dropdown list for listing the available field types
+                    var fieldTypeService = new Rock.Core.FieldTypeService();
+                    var items = fieldTypeService.
+                        Queryable().
+                        Select( f => new { f.Id, f.Name } ).
+                        OrderBy( f => f.Name );
+
+                    ddlFieldType.AutoPostBack = true;
+                    ddlFieldType.SelectedIndexChanged += new EventHandler( ddlFieldType_SelectedIndexChanged );
+                    ddlFieldType.Items.Clear();
+                    foreach ( var item in items )
+                        ddlFieldType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+
+                    string editAttributeId = Request.Form[hfIdValues.UniqueID];
+                    if ( Page.IsPostBack && editAttributeId != null && editAttributeId.Trim() != string.Empty )
+                        ShowEditValue( Int32.Parse( editAttributeId ), false );
                 }
                 else
                 {
@@ -86,10 +127,52 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        void modalDetails_SaveClick( object sender, EventArgs e )
+        {
+            if ( _setValues )
+            {
+                int attributeId = 0;
+                if ( hfIdValues.Value != string.Empty && !Int32.TryParse( hfIdValues.Value, out attributeId ) )
+                    attributeId = 0;
+
+                if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
+                {
+                    var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+
+                    AttributeValueService attributeValueService = new AttributeValueService();
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                    if ( attributeValue == null )
+                    {
+                        attributeValue = new Rock.Core.AttributeValue();
+                        attributeValue.AttributeId = attributeId;
+                        attributeValue.EntityId = _entityId;
+                        attributeValueService.Add( attributeValue, CurrentPersonId );
+                    }
+
+                    var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+                    attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
+
+                    attributeValueService.Save( attributeValue, CurrentPersonId );
+
+                    Rock.Web.Cache.Attribute.Flush( attributeId );
+                    if ( _entity == string.Empty && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                        Rock.Web.Cache.GlobalAttributes.Flush();
+
+                }
+
+                modalDetails.Hide();
+            }
+
+            BindGrid();
+        }
+
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
+
+            if ( Page.IsPostBack && hfId.Value != string.Empty )
+                BuildConfigControls();
 
             base.OnLoad( e );
         }
@@ -108,15 +191,23 @@ namespace RockWeb.Blocks.Administration
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
+        protected void rGrid_EditValue( object sender, RowEventArgs e )
+        {
+            if (_setValues)
+                ShowEditValue( ( int )rGrid.DataKeys[e.RowIndex]["id"], true );
+        }
+
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.Attribute attribute = _attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            var attributeService = new Rock.Core.AttributeService();
+
+            Rock.Core.Attribute attribute = attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.Attribute.Flush( attribute.Id );
 
-                _attributeService.Delete( attribute, CurrentPersonId );
-                _attributeService.Save( attribute, CurrentPersonId );
+                attributeService.Delete( attribute, CurrentPersonId );
+                attributeService.Save( attribute, CurrentPersonId );
             }
 
             BindGrid();
@@ -132,41 +223,124 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        void modalDetails_SaveClick( object sender, EventArgs e )
+        void rGrid_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            Rock.Core.Attribute attribute;
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
+                AttributeService attributeService = new AttributeService();
+                var attribute = attributeService.Get( attributeId );
+                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
+
+                if ( _setValues )
+                {
+                    Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
+                    if ( lValue != null )
+                    {
+                        AttributeValueService attributeValueService = new AttributeValueService();
+                        var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                        if ( attributeValue != null && !string.IsNullOrWhiteSpace(attributeValue.Value))
+                            lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
+                        else
+                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, true ) );
+                    }
+                }
+                else
+                {
+                    Literal lDefaultValue = e.Row.FindControl( "lDefaultValue" ) as Literal;
+                    if ( lDefaultValue != null )
+                        lDefaultValue.Text = fieldType.Field.FormatValue( lDefaultValue, attribute.DefaultValue, true ); 
+                }
+
+            }
+        }
+
+        void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
+        {
             int attributeId = 0;
-            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId) )
+            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId ) )
                 attributeId = 0;
 
-            if ( attributeId == 0 )
+            if ( attributeId != 0 )
             {
-                attribute = new Rock.Core.Attribute();
-                attribute.System = false;
-                attribute.Entity = _entity;
-                attribute.EntityQualifierColumn = _entityQualifierColumn;
-                attribute.EntityQualifierValue = _entityQualifierValue;
-                _attributeService.Add( attribute, CurrentPersonId );
+                var attribute = Rock.Web.Cache.Attribute.Read ( attributeId );
+                BuildConfigControls( attribute.QualifierValues );
             }
             else
+                BuildConfigControls();
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Web.Cache.Attribute.Flush( attributeId );
-                attribute = _attributeService.Get( attributeId );
+                var attributeService = new Rock.Core.AttributeService();
+                var attributeQualifierService = new Rock.Core.AttributeQualifierService();
+
+                Rock.Core.Attribute attribute;
+
+                int attributeId = 0;
+                if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId ) )
+                    attributeId = 0;
+
+                if ( attributeId == 0 )
+                {
+                    attribute = new Rock.Core.Attribute();
+                    attribute.IsSystem = false;
+                    attribute.Entity = _entity;
+                    attribute.EntityQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityQualifierValue = _entityQualifierValue;
+                    attributeService.Add( attribute, CurrentPersonId );
+                }
+                else
+                {
+                    Rock.Web.Cache.Attribute.Flush( attributeId );
+                    attribute = attributeService.Get( attributeId );
+                }
+
+                attribute.Key = tbKey.Text;
+                attribute.Name = tbName.Text;
+                attribute.Category = tbCategory.Text;
+                attribute.Description = tbDescription.Text;
+                attribute.FieldTypeId = Int32.Parse(ddlFieldType.SelectedValue);
+
+                var fieldType = Rock.Web.Cache.FieldType.Read(attribute.FieldTypeId);
+
+                foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
+                    attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                attribute.AttributeQualifiers.Clear();
+
+                List<Control> configControls = new List<Control>();
+                foreach ( var key in fieldType.Field.ConfigurationKeys() )
+                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+
+                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
+                {
+                    AttributeQualifier qualifier = new AttributeQualifier();
+                    qualifier.Key = configValue.Key;
+                    qualifier.Value = configValue.Value.Value;
+                    attribute.AttributeQualifiers.Add( qualifier );
+                }
+
+                attribute.DefaultValue = tbDefaultValue.Text;
+                attribute.IsMultiValue = cbMultiValue.Checked;
+                attribute.IsRequired = cbRequired.Checked;
+
+                attributeService.Save( attribute, CurrentPersonId );
+
             }
 
-            attribute.Key = tbKey.Text;
-            attribute.Name = tbName.Text;
-            attribute.Category = tbCategory.Text;
-            attribute.Description = tbDescription.Text;
-            attribute.FieldTypeId = Int32.Parse( ddlFieldType.SelectedValue );
-            attribute.DefaultValue = tbDefaultValue.Text;
-            attribute.MultiValue = cbMultiValue.Checked;
-            attribute.Required = cbRequired.Checked;
-
-            _attributeService.Save( attribute, CurrentPersonId );
-
             BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
         }
 
         #endregion
@@ -194,7 +368,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = _attributeService.Queryable().
+            var queryable = new Rock.Core.AttributeService().Queryable().
                 Where( a => a.Entity == _entity &&
                     ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
                     ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
@@ -203,35 +377,43 @@ namespace RockWeb.Blocks.Administration
                 queryable = queryable.
                     Where( a => a.Category == ddlCategoryFilter.SelectedValue );
 
-            rGrid.DataSource = queryable.
-                OrderBy( a => a.Category ).
-                ThenBy( a => a.Key ).
-                ToList();
+            SortProperty sortProperty = rGrid.SortProperty;
+            if ( sortProperty != null )
+                queryable = queryable.
+                    Sort( sortProperty );
+            else
+                queryable = queryable.
+                    OrderBy( a => a.Category ).
+                    ThenBy( a => a.Key );
 
+            rGrid.DataSource = queryable.ToList();
             rGrid.DataBind();
         }
 
         protected void ShowEdit( int attributeId )
         {
-            var attribute = _attributeService.Get( attributeId );
+            var attributeModel =  new Rock.Core.AttributeService().Get( attributeId );
 
-            if ( attribute != null )
+            if ( attributeModel != null )
             {
-                modalDetails.Title = "Edit Attribute";
+                var attribute = Rock.Web.Cache.Attribute.Read(attributeModel);
+
+                lAction.Text = "Edit";
                 hfId.Value = attribute.Id.ToString();
 
                 tbKey.Text = attribute.Key;
                 tbName.Text = attribute.Name;
                 tbCategory.Text = attribute.Category;
                 tbDescription.Text = attribute.Description;
-                ddlFieldType.SelectedValue = attribute.FieldTypeId.ToString();
+                ddlFieldType.SelectedValue = attribute.FieldType.Id.ToString();
+                BuildConfigControls( attribute.QualifierValues );
                 tbDefaultValue.Text = attribute.DefaultValue;
-                cbMultiValue.Checked = attribute.MultiValue;
-                cbRequired.Checked = attribute.Required;
+                cbMultiValue.Checked = attribute.IsMultiValue;
+                cbRequired.Checked = attribute.IsRequired;
             }
             else
             {
-                modalDetails.Title = "Add Attribute";
+                lAction.Text = "Add";
                 hfId.Value = string.Empty;
 
                 tbKey.Text = string.Empty;
@@ -239,19 +421,78 @@ namespace RockWeb.Blocks.Administration
                 tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
                 tbDescription.Text = string.Empty;
 
-                try {
-                    ddlFieldType.SelectedValue = ddlFieldType.Items.FindByText("Text").Value;
-                }
-                catch {
-                    ddlFieldType.SelectedIndex = 0;
-                }
+                FieldTypeService fieldTypeService = new FieldTypeService();
+                var fieldTypeModel = fieldTypeService.GetByName("Text").FirstOrDefault();
+                if (fieldTypeModel != null)
+                    ddlFieldType.SelectedValue = fieldTypeModel.Id.ToString();
+                BuildConfigControls( );
 
                 tbDefaultValue.Text = string.Empty;
                 cbMultiValue.Checked = false;
                 cbRequired.Checked = false;
             }
 
-            modalDetails.Show();
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        private void BuildConfigControls()
+        {
+            BuildConfigControls( null );
+        }
+
+        private void BuildConfigControls(Dictionary<string, Rock.Field.ConfigurationValue> qualifierValues)
+        {
+            var fieldType = Rock.Web.Cache.FieldType.Read( Int32.Parse( ddlFieldType.SelectedValue ) );
+            if ( fieldType != null )
+            {
+                phFieldTypeQualifiers.Controls.Clear();
+                var configControls = fieldType.Field.ConfigurationControls();
+
+                int i = 0;
+                foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
+                {
+                    Label lbl = new Label();
+                    phFieldTypeQualifiers.Controls.Add( lbl );
+                    lbl.Text = configValue.Value.Name;
+
+                    Control control = configControls[i];
+                    phFieldTypeQualifiers.Controls.Add( control );
+                    control.ID = "configControl_" + configValue.Key;
+
+                    phFieldTypeQualifiers.Controls.Add( new LiteralControl( "<br/>" ) );
+
+                    i++;
+                }
+
+                if ( qualifierValues != null )
+                    fieldType.Field.SetConfigurationValues( configControls, qualifierValues );
+            }
+        }
+
+        protected void ShowEditValue( int attributeId, bool setValues )
+        {
+            if ( _setValues )
+            {
+                var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+
+                hfIdValues.Value = attribute.Id.ToString();
+                lCaption.Text = attribute.Name;
+
+                AttributeValueService attributeValueService = new AttributeValueService();
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+
+                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+
+                Control editControl = fieldType.Field.EditControl( attribute.QualifierValues );
+                if ( setValues && attributeValue != null )
+                    fieldType.Field.SetEditValue( editControl, attribute.QualifierValues, attributeValue.Value );
+
+                phEditControl.Controls.Clear();
+                phEditControl.Controls.Add( editControl );
+
+                modalDetails.Show();
+            }
         }
 
         private void DisplayError( string message )

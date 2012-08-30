@@ -65,17 +65,27 @@ namespace Rock.Data
         /// </summary>
         public void Dispose()
         {
-            if ( !isDisposed )
-            {
-                currentScope = null;
-                //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-                if ( SaveAllChangesAtScopeEnd )
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
                 {
-                    objectContext.SaveChanges();
+                    currentScope = null;
+                    //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
+
+                    if (SaveAllChangesAtScopeEnd)
+                    {
+                        objectContext.SaveChanges();
+                    }
+
+                    objectContext.Dispose();
                 }
 
-                objectContext.Dispose();
                 isDisposed = true;
             }
         }

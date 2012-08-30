@@ -6,9 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -45,7 +46,7 @@ namespace Rock.Financial
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool Closed { get; set; }
+        public bool IsClosed { get; set; }
 
         /// <summary>
         /// Gets or sets the campus id.
