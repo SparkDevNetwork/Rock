@@ -6,7 +6,7 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{3ADB92E5-342B-458D-B779-369FC8A66CF6}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{3fc5ac6b-7e6c-41cd-b424-29ed3ed1bc90}|Rock.Com.CCVOnline.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -116,11 +116,18 @@ Global
 		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3FC5AC6B-7E6C-41CD-B424-29ED3ED1BC90}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
