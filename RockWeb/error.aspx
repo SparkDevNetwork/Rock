@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/RockCore.css") %>">
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
+<!--    <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script> -->
+    <script src="<%= ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" >
 
     <script>
         $(document).ready(function () {
