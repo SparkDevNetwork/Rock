@@ -222,6 +222,13 @@ div.filter-search dl.dropdown
 }
 
 /* page nav */
+
+header.navbar nav
+{
+    position: relative;
+    z-index: 9999;
+}
+
 header.navbar nav ul {
     list-style: none outside none;
 }
@@ -273,6 +280,7 @@ header.navbar nav ul li .nav-menu section
 header.navbar nav ul li .nav-menu {
 	left: -999em;
 	position: absolute;
+    background: #5a5a5a;
 	background: -moz-linear-gradient(top, rgba(97,97,97,1) 0%, rgba(97,97,97,1) 30%, rgba(81,81,81,1) 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,97,97,1)), color-stop(30%,rgba(97,97,97,1)), color-stop(100%,rgba(81,81,81,1)));
     background: -webkit-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
