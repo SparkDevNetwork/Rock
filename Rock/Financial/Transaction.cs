@@ -151,6 +151,16 @@ namespace Rock.Financial
         [MaxLength(500)]
         public string Summary { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static Transaction Read( int id )
+		{
+			return Read<Transaction>( id );
+		}
+
         /// <summary>
         /// Gets or sets the batch.
         /// </summary>

@@ -123,6 +123,16 @@ namespace Rock.Core
         /// </value>
 		public virtual Crm.Person CreatedByPerson { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static EntityChange Read( int id )
+		{
+			return Read<EntityChange>( id );
+		}
+
     }
     
     /// <summary>
