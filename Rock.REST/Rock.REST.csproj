@@ -43,6 +43,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -75,6 +76,7 @@
     <Compile Include="Core\ServiceLogsController.cs" />
     <Compile Include="Crm\AddressesController.cs" />
     <Compile Include="Crm\CampusController.cs" />
+    <Compile Include="Crm\AddressesController.Partial.cs" />
     <Compile Include="Crm\EmailTemplatesController.cs" />
     <Compile Include="Crm\PeopleController.cs" />
     <Compile Include="Crm\PersonMergedsController.cs" />
