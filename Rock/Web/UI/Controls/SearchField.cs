@@ -53,7 +53,8 @@ namespace Rock.Web.UI.Controls
                     }}
                 }});
             }},
-            minLength: 2
+            minLength: 2,
+            appendTo: 'div.filter-search'
         }});
 
         $('input#{0}').keyup(function(event){{
