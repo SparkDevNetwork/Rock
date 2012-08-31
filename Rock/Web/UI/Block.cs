@@ -318,6 +318,26 @@ namespace Rock.Web.UI
             return ( ( Rock.Web.UI.Page )this.Page ).PageParameter( name );
         }
 
+		/// <summary>
+		/// Gets the value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public string GetUserValue( string key )
+		{
+			return ( (Rock.Web.UI.Page)this.Page ).GetUserValue( key );
+		}
+
+		/// <summary>
+		/// Sets a value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		public void SetUserValue( string key, string value )
+		{
+			( (Rock.Web.UI.Page)this.Page ).SetUserValue( key, value );
+		}
+
         /// <summary>
         /// Adds icons to the configuration area of a block instance.  Can be overridden to
         /// add additionsl icons
