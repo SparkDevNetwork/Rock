@@ -409,6 +409,7 @@ namespace RockWeb
         {
             //filters.Add( new System.Web.Http.AuthorizeAttribute() );
             filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
+			filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 
         private void RegisterRoutes( RouteCollection routes )
@@ -427,15 +428,20 @@ namespace RockWeb
             }
 
             
+			// Add any custom api routes
+			foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Rest.IHasCustomRoutes ) ) )
+			{
+				var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
+				if ( controller != null )
+					controller.AddRoutes( routes );
+			}
+
             // Add API Service routes
             routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = System.Web.Http.RouteParameter.Optional }
             );
-
-            //routes.MapPageRoute( "", "REST/help", "~/RESTHelp.aspx" );
-            //new Rock.REST.ServiceHelper( this.Server.MapPath("~/Extensions") ).AddRoutes( routes, "REST/" );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );

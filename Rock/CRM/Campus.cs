@@ -83,6 +83,16 @@ namespace Rock.Crm
         [NotMapped]
         public override string AuthEntity { get { return "Crm.Campus"; } }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static Campus Read( int id )
+		{
+			return Read<Campus>( id );
+		}
+
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
