@@ -219,7 +219,17 @@ namespace Rock.Crm
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
+
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static Address Read( int id )
+		{
+			return Read<Address>( id );
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>

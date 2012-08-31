@@ -76,6 +76,17 @@ namespace Rock.Crm
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
+
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static PersonMerged Read( int id )
+		{
+			return Read<PersonMerged>( id );
+		}
+
     }
 
     /// <summary>
