@@ -84,6 +84,17 @@ namespace Rock.Core
 		[NotMapped]
 		public override string AuthEntity { get { return "Core.ServiceLog"; } }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static ServiceLog Read( int id )
+		{
+			return Read<ServiceLog>( id );
+		}
+
+
     }
 
     /// <summary>
