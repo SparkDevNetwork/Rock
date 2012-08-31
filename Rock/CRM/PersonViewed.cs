@@ -89,6 +89,16 @@ namespace Rock.Crm
         /// </value>
 		public virtual Person TargetPerson { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static PersonViewed Read( int id )
+		{
+			return Read<PersonViewed>( id );
+		}
+
     }
 
     /// <summary>
