@@ -16,7 +16,7 @@ namespace Rock.Financial
     /// TransactionFund POCO class.
     /// </summary>
     [Table("financialTransactionFund")]
-    public partial class TransactionFund
+	public partial class TransactionFund
     {
         /// <summary>
         /// Gets or sets the transaction id.
@@ -48,6 +48,12 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         public decimal? Amount { get; set; }
+
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
 
         /// <summary>
         /// Gets or sets the transaction.

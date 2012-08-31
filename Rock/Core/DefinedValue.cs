@@ -137,6 +137,17 @@ namespace Rock.Core
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
 		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static DefinedValue Read( int id )
+		{
+			return Read<DefinedValue>( id );
+		}
+
+
+		/// <summary>
 		/// Gets the parent authority.
 		/// </summary>
 		public override Security.ISecured ParentAuthority

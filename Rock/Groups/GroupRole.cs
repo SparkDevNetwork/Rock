@@ -95,6 +95,16 @@ namespace Rock.Groups
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static GroupRole Read( int id )
+		{
+			return Read<GroupRole>( id );
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>

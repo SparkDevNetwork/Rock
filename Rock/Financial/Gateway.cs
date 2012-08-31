@@ -129,6 +129,16 @@ namespace Rock.Financial
         /// The modified by person.
         /// </value>
         public virtual Person ModifiedByPerson { get; set; }
+
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static Gateway Read( int id )
+		{
+			return Read<Gateway>( id );
+		}
     }
 
     /// <summary>
