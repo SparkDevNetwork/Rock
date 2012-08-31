@@ -72,6 +72,11 @@ a {
   -webkit-transition: background-color 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
 }
 
+a:hover 
+{
+    text-decoration: none;   
+}
+
 form {
     margin: 0;
 }
@@ -364,7 +369,11 @@ header.navbar nav ul li .nav-menu ul li a:hover {
     font-size: 28px;
     margin-top: 6px;
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+    font-weight: normal;
+    letter-spacing: -0.03em;
 }
 
 /* footer bar */
@@ -417,3 +426,9 @@ header.navbar nav ul li .nav-menu ul li a:hover {
 	padding: 16px;
 }
 
+/* person details overrides */
+aside.contact-info header
+{
+    font-weight: normal;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+}
