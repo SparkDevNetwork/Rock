@@ -25,5 +25,15 @@ namespace Rock.Core
         {
             return Repository.Find( t => t.Name == name );
         }
-    }
+		
+		/// <summary>
+		/// Gets Field Types by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>FieldType object.</returns>
+		public Rock.Core.FieldType GetByGuid( Guid guid )
+		{
+			return Repository.FirstOrDefault( t => t.Guid == guid );
+		}
+	}
 }
