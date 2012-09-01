@@ -1220,6 +1220,15 @@ namespace Rock.Web.UI
 			return string.Empty;
 		}
 
+        /// <summary>
+        /// Gets all user values for the current user
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, List<string>> GetAllUserValues()
+        {
+            return SessionUserValues();
+        }
+
 		/// <summary>
 		/// Sets a value for the current user for a given key
 		/// </summary>

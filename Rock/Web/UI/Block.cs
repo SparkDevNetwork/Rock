@@ -328,6 +328,15 @@ namespace Rock.Web.UI
 			return ( (Rock.Web.UI.Page)this.Page ).GetUserValue( key );
 		}
 
+        /// <summary>
+        /// Gets all user values for the current user
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, List<string>> GetAllUserValues()
+        {
+            return ((Rock.Web.UI.Page)this.Page).GetAllUserValues();
+        }
+        
 		/// <summary>
 		/// Sets a value for the current user for a given key
 		/// </summary>

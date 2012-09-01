@@ -128,22 +128,22 @@ namespace Rockweb.Blocks.Crm
             //Yup, build question table
             buildQuestionTable();
 
-            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults(CurrentPerson);
-
-            if (savedScores.LastSaveDate > DateTime.MinValue)
+            //Display saved scores, if any
+            string savedDiscScores = this.GetUserValue("DISC");
+            if (savedDiscScores.Length > 0)
             {
-                //build last results table
-                lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString("MM/dd/yyyy");
+                string[] scoreData = savedDiscScores.Split(new char [] { ':' } );
+                lblLastAssessmentDate.Text = scoreData[8];
 
-                lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
-                lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
-                lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
-                lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
+                lblPrevABd.Text = scoreData[0];
+                lblPrevABi.Text = scoreData[1];
+                lblPrevABs.Text = scoreData[2];
+                lblPrevABc.Text = scoreData[3];
 
-                lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
-                lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
-                lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
-                lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
+                lblPrevNBd.Text = scoreData[4];
+                lblPrevNBi.Text = scoreData[5];
+                lblPrevNBs.Text = scoreData[6];
+                lblPrevNBc.Text = scoreData[7];
             }
 
             if (IsPostBack)
@@ -180,33 +180,38 @@ namespace Rockweb.Blocks.Crm
             }
 
             // Score the responses and return the results
-            DiscService.AssessmentResults results = DiscService.Score(selectedResponseIDs);
+            string results = DiscService.Score(selectedResponseIDs);
+            string[] scoreData = results.Split(new char[] { ':' });
 
             //Display results out to user
-            lblABd.Text = results.AdaptiveBehaviorD.ToString();
-            lblABi.Text = results.AdaptiveBehaviorI.ToString();
-            lblABs.Text = results.AdaptiveBehaviorS.ToString();
-            lblABc.Text = results.AdaptiveBehaviorC.ToString();
+            lblABd.Text = scoreData[0];
+            lblABi.Text = scoreData[1];
+            lblABs.Text = scoreData[2];
+            lblABc.Text = scoreData[3];
 
-            lblNBd.Text = results.NaturalBehaviorD.ToString();
-            lblNBi.Text = results.NaturalBehaviorI.ToString();
-            lblNBs.Text = results.NaturalBehaviorS.ToString();
-            lblNBc.Text = results.NaturalBehaviorC.ToString();
+            lblNBd.Text = scoreData[4];
+            lblNBi.Text = scoreData[5];
+            lblNBs.Text = scoreData[6];
+            lblNBc.Text = scoreData[7];
         }
 
         protected void btnSaveResults_Click(object sender, EventArgs e)
         {
-            DiscService.SaveAssessmentResults(
-                CurrentPerson,
-                lblABd.Text,
-                lblABi.Text,
-                lblABs.Text,
-                lblABc.Text,
-                lblNBd.Text,
-                lblNBi.Text,
-                lblNBs.Text,
-                lblNBc.Text
-            );
+            //Store the values in the correct order
+            // Adaptive D:I:S:C:
+            // Natural D:I:S:C:
+            // Current ShortDate
+            string DISCScoreUserValue = lblABd.Text +
+                ":" + lblABi.Text +
+                ":" + lblABs.Text +
+                ":" + lblABc.Text +
+                ":" + lblNBd.Text +
+                ":" + lblNBi.Text +
+                ":" + lblNBs.Text +
+                ":" + lblNBc.Text +
+                ":" + DateTime.Now.ToShortDateString();
+
+            this.SetUserValue("DISC", DISCScoreUserValue);
         }
     }
 }
