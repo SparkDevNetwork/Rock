@@ -18,10 +18,12 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCms/CSS/rock.css") %>">
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
+<!--    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script> -->
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
+<!--    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script> -->
+<!--    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script> -->
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
 
 </head>
 <body id="splash">

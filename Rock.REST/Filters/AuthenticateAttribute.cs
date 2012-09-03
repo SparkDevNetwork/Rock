@@ -23,7 +23,10 @@ namespace Rock.Rest.Filters
 				var userService = new UserService();
 				var user = userService.GetByUserName(principal.Identity.Name);
 				if ( user != null )
+				{
+					actionContext.Request.SetUserPrincipal( principal );
 					return;
+				}
 			}
 
             // If not, see if there's a valid token
