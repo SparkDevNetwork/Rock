@@ -318,6 +318,27 @@ namespace Rock.Data
         public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        public RockContext()
+            : base()
+        {
+            // Do no let EF create the database, it should be created through migrations
+            Database.SetInitializer<RockContext>( null );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContext"/> class.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        public RockContext( string connectionString )
+            : base( connectionString )
+        {
+            // Do no let EF create the database, it should be created through migrations
+            Database.SetInitializer<RockContext>( null );
+        }
+
+        /// <summary>
         /// This method is called when the context has been initialized, but
         /// before the model has been locked down and used to initialize the context. 
         /// </summary>

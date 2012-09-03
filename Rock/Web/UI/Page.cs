@@ -1206,6 +1206,60 @@ namespace Rock.Web.UI
             
         }
 
+		/// <summary>
+		/// Gets the value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public string GetUserValue( string key )
+		{
+			var values = SessionUserValues();
+			if (values.ContainsKey(key))
+				foreach ( string value in SessionUserValues()[key] )
+					return value;
+			return string.Empty;
+		}
+
+		/// <summary>
+		/// Sets a value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		public void SetUserValue( string key, string value )
+		{
+			var newValues = new List<string>();
+			newValues.Add( value );
+
+			var sessionValues = SessionUserValues();
+			if ( sessionValues.ContainsKey( key ) )
+				sessionValues[key] = newValues;
+			else
+				sessionValues.Add( key, newValues );
+
+			if ( CurrentPerson != null )
+				new PersonService().SaveUserValue( CurrentPerson, key, newValues, CurrentPersonId );
+		}
+
+		private Dictionary<string, List<string>> SessionUserValues()
+		{
+			string sessionKey = string.Format( "{0}_{1}",
+				Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
+
+			var userValues = Session[sessionKey] as Dictionary<string, List<string>>;
+			if ( userValues == null )
+			{
+				if ( CurrentPerson != null )
+					userValues = new PersonService().GetUserValues( CurrentPerson );
+				else
+					userValues = new Dictionary<string, List<string>>();
+
+				Session[sessionKey] = userValues;
+			}
+
+			return userValues;
+		}
+
+
         #endregion
 
         #region Event Handlers
@@ -1309,3 +1363,4 @@ namespace Rock.Web.UI
     #endregion
 
 }
+

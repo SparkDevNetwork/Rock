@@ -45,6 +45,16 @@ namespace Rock.Financial
         /// </value>
         public virtual Person Person { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static PersonAccountLookup Read( int id )
+		{
+			return Read<PersonAccountLookup>( id );
+		}
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>

@@ -389,6 +389,7 @@
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
     <Compile Include="SystemGuid\Block.cs" />
+    <Compile Include="SystemGuid\FieldType.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />

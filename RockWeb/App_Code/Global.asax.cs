@@ -428,13 +428,6 @@ namespace RockWeb
             }
 
             
-            // Add API Service routes
-            routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = System.Web.Http.RouteParameter.Optional }
-            );
-
 			// Add any custom api routes
 			foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Rest.IHasCustomRoutes ) ) )
 			{
@@ -442,6 +435,13 @@ namespace RockWeb
 				if ( controller != null )
 					controller.AddRoutes( routes );
 			}
+
+            // Add API Service routes
+            routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = System.Web.Http.RouteParameter.Optional }
+            );
 
             // Add a default page route
             routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
