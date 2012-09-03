@@ -7,7 +7,10 @@ namespace Rock.Migrations
     {
         public override void Up()
         {
-            AlterColumn("dbo.crmPerson", "Gender", c => c.Int(nullable: false));
+			Sql( @"
+UPDATE [crmPerson] SET [Gender] = 0 WHERE [Gender] IS NULL
+" ); 
+			AlterColumn( "dbo.crmPerson", "Gender", c => c.Int( nullable: false ) );
         }
         
         public override void Down()
