@@ -129,7 +129,8 @@ namespace Rockweb.Blocks.Crm
             buildQuestionTable();
 
             //Display saved scores, if any
-            string savedDiscScores = this.GetUserValue("DISC");
+            string savedDiscScores = GetUserValue("Rock.Crm.DISC.SavedScores");
+
             if (savedDiscScores.Length > 0)
             {
                 string[] scoreData = savedDiscScores.Split(new char [] { ':' } );
@@ -211,7 +212,7 @@ namespace Rockweb.Blocks.Crm
                 ":" + lblNBc.Text +
                 ":" + DateTime.Now.ToShortDateString();
 
-            this.SetUserValue("DISC", DISCScoreUserValue);
+            SetUserValue("Rock.Crm.DISC.SavedScores", DISCScoreUserValue);
         }
     }
 }
