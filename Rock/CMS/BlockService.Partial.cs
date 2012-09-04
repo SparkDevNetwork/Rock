@@ -54,14 +54,15 @@ namespace Rock.Cms
 
             // Now remove from the list any that are already registered (via the path)
             var registered = from r in Repository.GetAll() select r.Path;
-            return ( from u in list.Except( registered ) select new Block { Path = u, Guid = Guid.NewGuid() } );
+            return ( from u in list.Except( registered, StringComparer.CurrentCultureIgnoreCase ) select new Block { Path = u, Guid = Guid.NewGuid() } );
         }
 
         private static void FindAllBlocksInPath( string physWebAppPath, List<string> list, string folder )
         {
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
             string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
-            // Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
+            
+			// Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
             string virtualPath = string.Format( "~/{0}/", folder );
 
             // search for all blocks under the physical path 
