@@ -850,9 +850,9 @@ namespace Rock.Web.UI.Controls
             divSize.Attributes.Add( "class", "page-size" );
             divPagination.Controls.Add( divSize );
 
-            Label lblPageSize = new Label();
-            lblPageSize.Text = "Items per page:";
-            divSize.Controls.Add( lblPageSize );
+			//Label lblPageSize = new Label();
+			//lblPageSize.Text = "Items per page:";
+			//divSize.Controls.Add( lblPageSize );
 
             HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
             divSizeOptions.Attributes.Add( "class", "page-size-options" );
@@ -877,7 +877,13 @@ namespace Rock.Web.UI.Controls
             ItemLink[3].Text = "All";
        }
 
-        public void SetNavigation( int pageCount, int pageIndex, int pageSize )
+		/// <summary>
+		/// Set the Page Navigation Display
+		/// </summary>
+		/// <param name="pageCount">The number of total pages</param>
+		/// <param name="pageIndex">The current page index</param>
+		/// <param name="pageSize">The number of items on each page</param>
+		public void SetNavigation( int pageCount, int pageIndex, int pageSize )
         {
             //// Set status
             //if (lStatus != null)
@@ -888,39 +894,42 @@ namespace Rock.Web.UI.Controls
             {
                 if ( pageCount > 1 )
                 {
-                    int pageNumber = ( int )( pageIndex / 10 );
+					int totalGroups = (int)( ( pageCount - 1 ) / 10 );
+					int currentGroup = (int)( pageIndex / 10 );
 
-                    if ( pageNumber <= 0 )
+					int prevPageIndex = 0;
+                    if ( pageIndex <= 0 )
                     {
                         PageLinkListItem[0].Attributes["class"] = "prev disabled";
-                        PageLink[0].Attributes["page-index"] = "0";
-                        PageLink[0].Enabled = false;
+						PageLink[0].Enabled = false;
                     }
                     else
                     {
+						prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
                         PageLinkListItem[0].Attributes["class"] = "prev";
-                        PageLink[0].Attributes["page-index"] = ( pageNumber - 1 ).ToString();
                         PageLink[0].Enabled = true;
                     }
+					PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
 
-                    if ( pageNumber + 9 >= pageCount )
+					int nextPageIndex = pageIndex;
+                    if ( pageIndex >= pageCount - 1)
                     {
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
-                        PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = pageIndex.ToString();
                         PageLink[PageLinkListItem.Length - 1].Enabled = false;
                     }
                     else
                     {
+						nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
-                        PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = ( pageNumber + 10 ).ToString();
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
+					PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
 
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
                     {
-                        int currentPage = pageNumber + ( i - 1 );
+						int currentPage = currentGroup + ( i - 1 );
 
                         HtmlGenericControl li = PageLinkListItem[i];
                         LinkButton lb = PageLink[i];
