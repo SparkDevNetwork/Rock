@@ -102,8 +102,7 @@ namespace Rock.Crm
         /// Scores the test.
         /// </summary>
         /// <param name="selectedResponseIDs">a List of ResponseIDs to be scored.</param>
-        /// <returns>a struct TestResults object with final scores.</returns>
-        //static public AssessmentResults Score(List<string> selectedResponseIDs)
+        /// <returns>a String testResults with final scores.</returns>
         static public String Score(List<string> selectedResponseIDs)
         {
             List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
