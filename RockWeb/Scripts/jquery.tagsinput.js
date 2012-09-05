@@ -16,6 +16,7 @@
         + Made check for current tag case insensitive
         + Added the ability to add a CSS class to the tags
         + Added ability to disable delete
+        + Added autocomplete appendTo option
 */
 
 (function($) {
@@ -211,22 +212,23 @@
 	}
 		
 	$.fn.tagsInput = function(options) { 
-    var settings = jQuery.extend({
-      interactive:true,
-      defaultText:'add a tag',
-      minChars:0,
-      width:'300px',
-      height:'100px',
-      autocomplete: {selectFirst: false },
-      'hide':true,
-      'delimiter':',',
-      'unique':true,
-      removeWithBackspace:true,
-      placeholderColor:'#666666',
-      autosize: true,
-      comfortZone: 20,
-      enableDelete: true,
-      inputPadding: 6*2
+	    var settings = jQuery.extend({
+	        interactive:true,
+	        defaultText:'add a tag',
+	        minChars:0,
+	        width:'300px',
+	        height:'100px',
+	        autocomplete: {selectFirst: false },
+	        'hide':true,
+	        'delimiter':',',
+	        'unique':true,
+	        removeWithBackspace:true,
+	        placeholderColor:'#666666',
+	        autosize: true,
+	        comfortZone: 20,
+	        enableDelete: true,
+	        inputPadding: 6 * 2,
+            autoCompleteAppendTo: 'div.tag-wrap'
     },options);
 
 		this.each(function() { 
@@ -291,7 +293,7 @@
 				});
 						
 				if (settings.autocomplete_url != undefined) {
-					autocomplete_options = {source: settings.autocomplete_url};
+				    autocomplete_options = { source: settings.autocomplete_url, appendTo: settings.autoCompleteAppendTo };
 					for (attrname in settings.autocomplete) { 
 						autocomplete_options[attrname] = settings.autocomplete[attrname]; 
 					}

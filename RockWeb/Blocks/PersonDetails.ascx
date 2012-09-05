@@ -290,9 +290,10 @@
                 <script>
                     $(document).ready(function () {
                         $('#person-notes').tinyscrollbar({ size: 150 });
-
+                        $('ul.ui-autocomplete').css('width', '300px');
                         $('#person-tags').tagsInput({
                             autocomplete_url: '/rockweb/autocomplete-sample.html',
+                            autoCompleteAppendTo: 'div.tag-wrap',
                             'height':'auto',
                             'width': '100%',
                             'interactive': true,
