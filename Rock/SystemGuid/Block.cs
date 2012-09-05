@@ -17,5 +17,10 @@ namespace Rock.SystemGuid
 		/// Gets the Plugin Manager guid
 		/// </summary>
 		public static Guid PLUGIN_MANAGER { get { return new Guid( "F80268E6-2625-4565-AA2E-790C5E40A119" ); } }
+
+		/// <summary>
+		/// HTML Content Block Guid
+		/// </summary>
+		public static Guid HTML_CONTENT { get { return new Guid( "19B61D65-37E3-459F-A44F-DEF0089118A3" ); } }
 	}
 }

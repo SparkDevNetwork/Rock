@@ -18,6 +18,16 @@ namespace Rock.Cms
     public partial class BlockService : Service<Block, BlockDto>
     {
 		/// <summary>
+		/// Gets Block by Guid
+		/// </summary>
+		/// <param name="guid">Guid.</param>
+		/// <returns>Block object.</returns>
+		public Block GetByGuid( Guid guid )
+		{
+			return Repository.FirstOrDefault( t => t.Guid == guid );
+		}
+
+		/// <summary>
 		/// Gets Blocks by Name
 		/// </summary>
 		/// <param name="name">Name.</param>
