@@ -332,7 +332,14 @@ namespace RockWeb.Blocks.Administration
             {
                 lAction.Text = "Add ";
                 hfBlockInstanceId.Value = "0";
-                ddlBlockType.SelectedIndex = -1;
+
+				// Select HTML Content block by default
+				var block = new Rock.Cms.BlockService().GetByGuid( Rock.SystemGuid.Block.HTML_CONTENT );
+				if (block != null)
+					ddlBlockType.SelectedValue = block.Id.ToString();				
+				else
+					ddlBlockType.SelectedIndex = -1;
+
                 tbBlockName.Text = string.Empty;
             }
 
