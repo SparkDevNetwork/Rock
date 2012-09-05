@@ -124,8 +124,14 @@ div.tagsinput div
     color: #90111A !important;
 }
 
-.ui-autocomplete 
+.tag-wrap .ui-autocomplete 
 {
+    position: absolute; 
+    left: 0px; 
+    top: 4px; 
+    width: 250px;
+    z-index: 90;
+    
     list-style: none;
     padding: 12px;
     background-color: #7c7c7c;

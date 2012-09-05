@@ -382,16 +382,7 @@ aside.supplemental-info header a
     padding-left: 2.5641%;   
 }
 
-.note-attribute-column .row-fluid 
-{
-    --margin-left: 2.5641%;
-}
 
-.note-attribute-column .row-fluid.tag-row 
-{
-    --margin-left: 0;
-    --width: 102.5641%
-}
 
 div.tag-span 
 {

@@ -161,6 +161,7 @@ header.navbar .content .account-name {
 	display: block;
 	float: right;
 	font-size: 11px;
+    color: #aaa;
 }
 
 header.navbar .content .account-name > span:after {
@@ -208,7 +209,8 @@ header.navbar .content .filter-search {
 header.navbar .content div.filter-search input 
 {
     background-color: transparent;
-    color: #a9a8a8;   
+    color: #a9a8a8;
+    font-size: 13px;   
 }
 
 header.navbar .content div.filter-search .filter 
