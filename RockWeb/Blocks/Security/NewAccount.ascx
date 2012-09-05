@@ -15,7 +15,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'REST/Cms/User/Available/' + escape($(this).val()),
+                    url: rock.baseUrl + 'api/users/available/' + escape($(this).val()),
                     success: function (getData, status, xhr) {
 
                         if (getData) {

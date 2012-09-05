@@ -14,8 +14,7 @@ namespace Rock.Rest.Crm
 	/// <summary>
 	/// Addresses REST API
 	/// </summary>
-	public partial class AddressesController 
-		: Rock.Rest.ApiController<Rock.Crm.Address, Rock.Crm.AddressDto>, IHasCustomRoutes
+	public partial class AddressesController : IHasCustomRoutes
 	{
 		/// <summary>
 		/// Add custom routes needed for geocoding and standardization
