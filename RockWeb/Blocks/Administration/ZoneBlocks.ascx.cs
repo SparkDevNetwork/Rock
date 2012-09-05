@@ -138,9 +138,8 @@ namespace RockWeb.Blocks.Administration
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
-
-                _page.FlushBlockInstances();
-            }
+				Rock.Web.Cache.Page.FlushLayoutBlockInstances( _page.Layout );
+			}
 
             BindGrids();
         }
@@ -176,8 +175,7 @@ namespace RockWeb.Blocks.Administration
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
-
-                _page.FlushBlockInstances();
+				_page.FlushBlockInstances();
             }
 
             BindGrids();
@@ -249,7 +247,11 @@ namespace RockWeb.Blocks.Administration
             blockInstanceService.Save( blockInstance, CurrentPersonId );
 
             Rock.Security.Authorization.CopyAuthorization( _page, blockInstance, CurrentPersonId );
-            _page.FlushBlockInstances();
+
+			if (blockInstance.Layout != null)
+				Rock.Web.Cache.Page.FlushLayoutBlockInstances(_page.Layout);
+			else
+				_page.FlushBlockInstances();
 
             BindGrids();
 
