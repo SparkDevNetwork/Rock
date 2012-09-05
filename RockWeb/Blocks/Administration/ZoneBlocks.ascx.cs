@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                ddlBlockType.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DataSource = blockService.Queryable().OrderBy( b => b.Name).ToList();
                 ddlBlockType.DataTextField = "Name";
                 ddlBlockType.DataValueField = "Id";
                 ddlBlockType.DataBind();
