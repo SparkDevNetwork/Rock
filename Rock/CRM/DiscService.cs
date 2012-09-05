@@ -73,6 +73,22 @@ namespace Rock.Crm
         }
 
         /// <summary>
+        /// Scores saved for a user.
+        /// </summary>
+        public struct SavedScores
+        {
+            public string AdaptiveD;
+            public string AdaptiveI;
+            public string AdaptiveS;
+            public string AdaptiveC;
+            public string NaturalD;
+            public string NaturalI;
+            public string NaturalS;
+            public string NaturalC;
+            public string DateSaved;
+        }
+
+        /// <summary>
         /// Fetch a List of <see cref="ResponseItem"/> for display/processing.
         /// </summary>
         /// <returns>a List of <see cref="ResponseItem"/>.</returns>
@@ -156,6 +172,37 @@ namespace Rock.Crm
             }
 
             return testResults;
+        }
+
+        /// <summary>
+        /// Returns a struct of the saved scores for a person, if there are any. Otherwise, returns zeroes.
+        /// </summary>
+        /// <param name="person"></param>
+        /// <returns></returns>
+        static public SavedScores GetSavedScores(Person person)
+        {
+            PersonService service = new PersonService();
+            List<String> savedScores = service.GetUserValue(person, "Rock.Crm.DISC.SavedScores");
+            
+            string[] scoreData;
+            if (savedScores != null)
+                scoreData = savedScores[0].Split(new char [] { ':' } );
+            else
+                scoreData = "0:0:0:0:0:0:0:0:No Saved Scores".Split(new char[] { ':' });
+
+            SavedScores scores = new SavedScores();
+
+            scores.AdaptiveD = scoreData[0];
+            scores.AdaptiveI = scoreData[1];
+            scores.AdaptiveS = scoreData[2];
+            scores.AdaptiveC = scoreData[3];
+            scores.NaturalD = scoreData[4];
+            scores.NaturalI = scoreData[5];
+            scores.NaturalS = scoreData[6];
+            scores.NaturalC = scoreData[7];
+            scores.DateSaved = scoreData[8];
+
+            return scores;
         }
     }
 }

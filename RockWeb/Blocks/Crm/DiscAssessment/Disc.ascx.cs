@@ -129,23 +129,17 @@ namespace Rockweb.Blocks.Crm
             buildQuestionTable();
 
             //Display saved scores, if any
-            string savedDiscScores = GetUserValue("Rock.Crm.DISC.SavedScores");
+            DiscService.SavedScores scores = DiscService.GetSavedScores(this.CurrentPerson);
 
-            if (savedDiscScores.Length > 0)
-            {
-                string[] scoreData = savedDiscScores.Split(new char [] { ':' } );
-                lblLastAssessmentDate.Text = scoreData[8];
-
-                lblPrevABd.Text = scoreData[0];
-                lblPrevABi.Text = scoreData[1];
-                lblPrevABs.Text = scoreData[2];
-                lblPrevABc.Text = scoreData[3];
-
-                lblPrevNBd.Text = scoreData[4];
-                lblPrevNBi.Text = scoreData[5];
-                lblPrevNBs.Text = scoreData[6];
-                lblPrevNBc.Text = scoreData[7];
-            }
+            lblLastAssessmentDate.Text = scores.DateSaved;
+            lblPrevABd.Text = scores.AdaptiveD;
+            lblPrevABi.Text = scores.AdaptiveI;
+            lblPrevABs.Text = scores.AdaptiveS;
+            lblPrevABc.Text = scores.AdaptiveC;
+            lblPrevNBd.Text = scores.NaturalD;
+            lblPrevNBi.Text = scores.NaturalI;
+            lblPrevNBs.Text = scores.NaturalS;
+            lblPrevNBc.Text = scores.NaturalC;
 
             if (IsPostBack)
                 btnSaveResults.Enabled = true;
