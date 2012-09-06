@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -120,5 +121,17 @@ namespace Rock
 
             return type.ToString();
         }
+
+		/// <summary>
+		/// Returnes the Description Attribute value for a given type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public static string GetDescription( Type type )
+		{
+			foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
+				return ( (DescriptionAttribute)descriptionAttribute ).Description;
+			return null;
+		}
     }
 }

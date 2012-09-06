@@ -18,11 +18,8 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/cms-core.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockCms/CSS/rock.css") %>">
 
-<!--    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script> -->
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
-<!--    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script> -->
-<!--    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script> -->
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
 
