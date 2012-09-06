@@ -707,6 +707,21 @@ namespace Rock.Web.Cache
                 }
         }
 
+		/// <summary>
+		/// Flushes the block instances for all the pages that use a specific layout.
+		/// </summary>
+		public static void FlushLayoutBlockInstances( string layout )
+		{
+			ObjectCache cache = MemoryCache.Default;
+			foreach ( var item in cache )
+				if ( item.Key.StartsWith( "Rock:Page:" ) )
+				{
+					Page page = cache[item.Key] as Page;
+					if ( page != null && page.Layout == layout )
+						page.FlushBlockInstances();
+				}
+		}
+
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
