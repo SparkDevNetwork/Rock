@@ -12,3 +12,12 @@
 /Rock.Rest.dll
 /Rock.Rest.pdb
 /*.Json.dll
+/*.Json.xml
+/Microsoft.Data.Edm.dll
+/Microsoft.Data.Edm.xml
+/Microsoft.Data.OData.Contrib.dll
+/Microsoft.Data.OData.dll
+/Microsoft.Data.OData.xml
+/System.Spatial.dll
+/System.Spatial.xml
+/System.Web.Http.OData.dll
