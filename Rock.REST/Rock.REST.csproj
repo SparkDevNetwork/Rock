@@ -77,6 +77,8 @@
     <Compile Include="Core\MetricsController.cs" />
     <Compile Include="Core\MetricValuesController.cs" />
     <Compile Include="Core\ServiceLogsController.cs" />
+    <Compile Include="Core\TaggedItemsController.cs" />
+    <Compile Include="Core\TagsController.cs" />
     <Compile Include="Crm\AddressesController.cs" />
     <Compile Include="Crm\CampusController.cs" />
     <Compile Include="Crm\AddressesController.Partial.cs" />
