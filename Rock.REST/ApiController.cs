@@ -27,9 +27,10 @@ namespace Rock.Rest
 		}
 
 		// GET api/<controller>
-		public IEnumerable<D> Get()
+		[Queryable]
+		public IQueryable<D> Get()
 		{
-			return _service.QueryableDto().ToList();
+			return _service.QueryableDto();
 		}
 
 		// GET api/<controller>/5
