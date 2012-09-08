@@ -27,9 +27,10 @@ namespace Rock.Rest
 		}
 
 		// GET api/<controller>
-		public IEnumerable<D> Get()
+		[Queryable]
+		public IQueryable<D> Get()
 		{
-			return _service.QueryableDto().ToList();
+			return _service.QueryableDto();
 		}
 
 		// GET api/<controller>/5
@@ -88,8 +89,8 @@ namespace Rock.Rest
 
 					throw new HttpResponseException( HttpStatusCode.BadRequest );
 			}
-
-			throw new HttpResponseException( HttpStatusCode.Unauthorized );
+			else
+				throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
 		// DELETE api/<controller>/5
@@ -105,8 +106,8 @@ namespace Rock.Rest
 				_service.Delete( model, user.PersonId );
 				_service.Save( model, user.PersonId );
 			}
-
-			throw new HttpResponseException( HttpStatusCode.Unauthorized );
+			else
+				throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
 		protected Rock.Cms.User CurrentUser()

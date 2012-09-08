@@ -138,9 +138,8 @@ namespace RockWeb.Blocks.Administration
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
-
-                _page.FlushBlockInstances();
-            }
+				Rock.Web.Cache.Page.FlushLayoutBlockInstances( _page.Layout );
+			}
 
             BindGrids();
         }
@@ -176,8 +175,7 @@ namespace RockWeb.Blocks.Administration
             {
                 blockInstanceService.Delete( blockInstance, CurrentPersonId );
                 blockInstanceService.Save( blockInstance, CurrentPersonId );
-
-                _page.FlushBlockInstances();
+				_page.FlushBlockInstances();
             }
 
             BindGrids();
@@ -249,7 +247,11 @@ namespace RockWeb.Blocks.Administration
             blockInstanceService.Save( blockInstance, CurrentPersonId );
 
             Rock.Security.Authorization.CopyAuthorization( _page, blockInstance, CurrentPersonId );
-            _page.FlushBlockInstances();
+
+			if (blockInstance.Layout != null)
+				Rock.Web.Cache.Page.FlushLayoutBlockInstances(_page.Layout);
+			else
+				_page.FlushBlockInstances();
 
             BindGrids();
 
@@ -307,7 +309,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                ddlBlockType.DataSource = blockService.Queryable().ToList();
+                ddlBlockType.DataSource = blockService.Queryable().OrderBy( b => b.Name).ToList();
                 ddlBlockType.DataTextField = "Name";
                 ddlBlockType.DataValueField = "Id";
                 ddlBlockType.DataBind();
@@ -330,7 +332,14 @@ namespace RockWeb.Blocks.Administration
             {
                 lAction.Text = "Add ";
                 hfBlockInstanceId.Value = "0";
-                ddlBlockType.SelectedIndex = -1;
+
+				// Select HTML Content block by default
+				var block = new Rock.Cms.BlockService().GetByGuid( Rock.SystemGuid.Block.HTML_CONTENT );
+				if (block != null)
+					ddlBlockType.SelectedValue = block.Id.ToString();				
+				else
+					ddlBlockType.SelectedIndex = -1;
+
                 tbBlockName.Text = string.Empty;
             }
 
