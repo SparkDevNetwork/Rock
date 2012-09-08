@@ -396,7 +396,8 @@ div.tag-span
 {
     float: left;
     font-size: 14px; 
-    line-height: 18px;  
+    line-height: 18px;
+    margin-top: 0;
 }
 
 .tag-wrap 
@@ -424,9 +425,24 @@ section.person-notes header  a.note-add
     float: right;
 }
 
+section.person-notes #note-entry
+{
+    padding: 2.5%;
+    border-radius: 4px;
+    color: #7c7c7c;
+    margin-bottom: 12px;
+    background-color: #d6d6d6;
+}
+
+section.person-notes #note-entry textarea
+{
+    width: 95%;
+}
+
 section.person-notes div.person-notes-details
 {
     margin-top: -10px;
+    clear: both;
 }
 
 section.person-notes div.note-container-top 
@@ -461,6 +477,11 @@ section.person-notes article
     padding: 12px;
     margin-bottom: 12px;
     background: #d6d6d6;  
+}
+
+section.person-notes article.users-note
+{
+    background: #bbb;  
 }
 
 section.person-notes article:last-child
@@ -503,6 +524,39 @@ section.person-notes article .details h5
 {
     margin-left: 12px; 
     margin-top: 12px;  
+}
+
+section.person-notes article.personal
+{
+    background: #bbb;  
+}
+
+section.person-notes article.personal i
+{
+    color: #7c7c7c;
+}
+
+section.person-notes article.alert
+{
+    background: #c45a5a;  
+    color: #fff;
+}
+
+section.person-notes article.alert h5, section.person-notes article.alert .details
+{
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+section.person-notes article.alert i
+{
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+section.person-notes article.alert i.icon-comment:before
+{
+    content: "\f06a";
 }
 
 /* responsive stuff */
