@@ -22,6 +22,11 @@ namespace Rock.Crm
     public partial class Person : ModelWithAttributes<Person>, IAuditable
     {
 		/// <summary>
+		/// The Entity Type used for saving user values
+		/// </summary>
+		public const string USER_VALUE_ENTITY = "Rock.Crm.Person.Value";
+
+		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
 		/// <value>
