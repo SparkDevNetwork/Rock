@@ -3,6 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Web.Http;
 
@@ -26,6 +29,15 @@ namespace Rock.Com.CCVOnline.Rest.Service
 				defaults: new
 				{
 					controller = "recordings"
+				} );
+
+			routes.MapHttpRoute(
+				name: "ServiceRecordingDate",
+				routeTemplate: "api/recordings/dates",
+				defaults: new
+				{
+					controller = "recordings",
+					action = "dates"
 				} );
 		}
 
@@ -62,5 +74,27 @@ namespace Rock.Com.CCVOnline.Rest.Service
 			}
 			throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
+
+		[HttpGet]
+		public IEnumerable<DateTime> Dates( )
+		{
+			var user = this.CurrentUser();
+			if ( user != null )
+			{
+				var RecordingService = new CCVOnline.Service.RecordingService();
+				var dates = RecordingService.QueryableDto()
+					.Where( r => r.StartTime.HasValue)
+					.Select(r => r.StartTime.Value)
+					.Distinct()
+					.ToList();
+
+				return dates
+					.Select( d => d.Date )
+					.Distinct();
+			}
+
+			throw new HttpResponseException( HttpStatusCode.Unauthorized );
+		}
+
 	}
 }
