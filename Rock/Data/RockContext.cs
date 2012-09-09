@@ -165,7 +165,23 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
-        /// <summary>
+		/// <summary>
+		/// Gets or sets the Tags.
+		/// </summary>
+		/// <value>
+		/// the Tags.
+		/// </value>
+		public DbSet<Rock.Core.Tag> Tags { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Tagged Items.
+		/// </summary>
+		/// <value>
+		/// the Tagged Items.
+		/// </value>
+		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+
+		/// <summary>
         /// Gets or sets the Addresses.
         /// </summary>
         /// <value>

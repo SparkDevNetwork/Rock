@@ -146,6 +146,9 @@
     <Compile Include="Core\AttributeValueDto.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
     <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\Tag.cs" />
+    <Compile Include="Core\TagDto.cs" />
+    <Compile Include="Core\TaggedItem.cs" />
     <Compile Include="Core\DefinedTypeDto.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueDto.cs" />
@@ -174,6 +177,9 @@
     <Compile Include="Core\RangeValue.cs" />
     <Compile Include="Core\ServiceLogDto.cs" />
     <Compile Include="Core\ServiceLogService.cs" />
+    <Compile Include="Core\TaggedItemDto.cs" />
+    <Compile Include="Core\TaggedItemService.cs" />
+    <Compile Include="Core\TagService.cs" />
     <Compile Include="Crm\AddressDto.cs" />
     <Compile Include="Crm\AddressService.cs" />
     <Compile Include="Crm\AddressService.Partial.cs" />
@@ -371,6 +377,10 @@
     <Compile Include="Migrations\201208291337203_UpdateAcronymCasing.cs" />
     <Compile Include="Migrations\201208291337203_UpdateAcronymCasing.Designer.cs">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209051845133_AddTags.cs" />
+    <Compile Include="Migrations\201209051845133_AddTags.Designer.cs">
+      <DependentUpon>201209051845133_AddTags.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -665,6 +675,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201208291337203_UpdateAcronymCasing.resx">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209051845133_AddTags.resx">
+      <DependentUpon>201209051845133_AddTags.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
