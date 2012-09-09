@@ -431,6 +431,9 @@
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
+    <Compile Include="Web\UI\ContextBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -522,6 +525,9 @@
     </Compile>
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
+    <Compile Include="Web\UI\PersonBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>
