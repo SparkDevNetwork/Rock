@@ -158,11 +158,10 @@
     <Compile Include="Core\FieldTypeService.cs" />
     <Compile Include="Core\MetricDto.cs" />
     <Compile Include="Core\MetricService.cs" />
+    <Compile Include="Core\MetricService.Partial.cs" />
     <Compile Include="Core\MetricValue.cs" />
     <Compile Include="Core\MetricValueDto.cs" />
     <Compile Include="Core\MetricValueService.cs" />
-    <Compile Include="Core\MetricValueService.Partial.cs" />
-    <Compile Include="Core\MetricService.Partial.cs" />
     <Compile Include="Core\Metric.cs" />
     <Compile Include="Core\DefinedTypeService.Partial.cs" />
     <Compile Include="Core\DefinedValueService.Partial.cs" />
@@ -170,7 +169,7 @@
     <Compile Include="Core\EntityChangeService.Partial.cs" />
     <Compile Include="Core\ExceptionLog.cs" />
     <Compile Include="Core\ExceptionLogService.Partial.cs" />
-    <Compile Include="Core\FieldTypeService.Partial.cs" />
+    <Compile Include="Core\MetricValueService.Partial.cs" />
     <Compile Include="Core\RangeValue.cs" />
     <Compile Include="Core\ServiceLogDto.cs" />
     <Compile Include="Core\ServiceLogService.cs" />

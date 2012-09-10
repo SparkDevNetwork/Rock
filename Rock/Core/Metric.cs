@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -192,11 +193,11 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Rock.Core.DTO.Metric"/> object.
         /// </value>
-		public Rock.Core.DTO.Metric DataTransferObject
+		public Rock.Core.MetricDto DataTransferObject
 		{
 			get 
-			{ 
-				Rock.Core.DTO.Metric dto = new Rock.Core.DTO.Metric();
+			{
+				Rock.Core.MetricDto dto = new Rock.Core.MetricDto();
 				dto.Id = this.Id;
 				dto.IsSystem = this.IsSystem;
 				dto.Type = this.Type;				
@@ -248,7 +249,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="CRM.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
@@ -256,7 +257,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="CRM.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
 
         /// <summary>
         /// Gets the parent authority.

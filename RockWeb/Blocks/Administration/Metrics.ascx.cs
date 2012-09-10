@@ -37,8 +37,8 @@ namespace RockWeb.Blocks.Administration
 
 			try
 			{
-				_canConfigure = PageInstance.Authorized( "Configure", CurrentUser );
-
+				_canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+				
 				BindFilter();
 
 				BindCollectionFrequencies();
@@ -46,8 +46,8 @@ namespace RockWeb.Blocks.Administration
 				if ( _canConfigure )
 				{
 					rGrid.DataKeyNames = new string[] { "id" };
-					rGrid.Actions.EnableAdd = true;
-
+					rGrid.Actions.IsAddEnabled = true;
+					
 					rGrid.Actions.AddClick += rGrid_Add;
 					rGrid.GridRebind += rGrid_GridRebind;
 
