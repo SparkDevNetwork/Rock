@@ -318,6 +318,26 @@ namespace Rock.Web.UI
             return ( ( Rock.Web.UI.Page )this.Page ).PageParameter( name );
         }
 
+		/// <summary>
+		/// Gets the value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public string GetUserValue( string key )
+		{
+			return ( (Rock.Web.UI.Page)this.Page ).GetUserValue( key );
+		}
+
+		/// <summary>
+		/// Sets a value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		public void SetUserValue( string key, string value )
+		{
+			( (Rock.Web.UI.Page)this.Page ).SetUserValue( key, value );
+		}
+
         /// <summary>
         /// Adds icons to the configuration area of a block instance.  Can be overridden to
         /// add additionsl icons
@@ -358,7 +378,8 @@ namespace Rock.Web.UI
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
                 aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockInstance.Id ) ) );
-                //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
+				aAttributes.Attributes.Add( "title", "Block Properties" );
+				//aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
@@ -373,8 +394,9 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
                     Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
-                configControls.Add( aSecureBlock );
-                HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
+				aSecureBlock.Attributes.Add( "title", "Block Security" );
+				configControls.Add( aSecureBlock );
+				HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
                 iSecureBlock.Attributes.Add( "class", "icon-lock" );
                 
@@ -384,7 +406,7 @@ namespace Rock.Web.UI
                 aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
                 aMoveBlock.Attributes.Add( "zone", BlockInstance.Zone );
                 aMoveBlock.Attributes.Add( "zoneloc", BlockInstance.BlockInstanceLocation.ToString() );
-                aMoveBlock.Attributes.Add( "title", "Move" );
+                aMoveBlock.Attributes.Add( "title", "Move Block" );
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
                 aMoveBlock.Controls.Add( iMoveBlock );
@@ -394,7 +416,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete blockinstance-delete" );
                 aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
-                aDeleteBlock.Attributes.Add( "title", "Delete" );
+                aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
                 aDeleteBlock.Controls.Add( iDeleteBlock );
