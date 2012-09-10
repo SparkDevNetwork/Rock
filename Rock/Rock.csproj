@@ -146,6 +146,8 @@
     <Compile Include="Core\AttributeValueDto.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
     <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\TaggedItemService.Partial.cs" />
+    <Compile Include="Core\TagService.Partial.cs" />
     <Compile Include="Core\Tag.cs" />
     <Compile Include="Core\TagDto.cs" />
     <Compile Include="Core\TaggedItem.cs" />
