@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Core
                 _category = PageParameter( "AttributeCategory" );
 
             ObjectCache cache = MemoryCache.Default;
-            string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", base.Entity, entityQualifierColumn, entityQualifierValue );
+            string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", base.EntityType, entityQualifierColumn, entityQualifierValue );
 
             Dictionary<string, List<int>> cachedAttributes = cache[cacheKey] as Dictionary<string, List<int>>;
             if ( cachedAttributes == null )
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
 
                 AttributeService attributeService = new AttributeService();
                 foreach ( var item in attributeService.Queryable().
-                    Where( a => a.Entity == base.Entity &&
+                    Where( a => a.Entity == EntityType &&
                         ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
                         ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue ).
                     OrderBy( a => a.Category ).

@@ -4,8 +4,7 @@
     <div class="span12 tag-span">
         <h2>Tags</h2>            
         <div class="tag-wrap">
-            <input name="person-tags" id="person-tags" value="foo^personal,bar,baz" />
+            <asp:PlaceHolder ID="phTags" runat="server"></asp:PlaceHolder>
         </div>
     </div>
 </div>
-

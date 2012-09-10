@@ -96,6 +96,8 @@
     <Compile Include="Core\AttributesController.cs" />
     <Compile Include="Core\AttributeValuesController.cs" />
     <Compile Include="Core\AttributesController.Partial.cs" />
+    <Compile Include="Core\TaggedItemsController.cs" />
+    <Compile Include="Core\TagsController.Partial.cs" />
     <Compile Include="Core\DefinedTypesController.cs" />
     <Compile Include="Core\DefinedValuesController.cs" />
     <Compile Include="Core\EntityChangesController.cs" />
@@ -104,7 +106,7 @@
     <Compile Include="Core\MetricsController.cs" />
     <Compile Include="Core\MetricValuesController.cs" />
     <Compile Include="Core\ServiceLogsController.cs" />
-    <Compile Include="Core\TaggedItemsController.cs" />
+    <Compile Include="Core\TaggedItemsController.Partial.cs" />
     <Compile Include="Core\TagsController.cs" />
     <Compile Include="Crm\AddressesController.cs" />
     <Compile Include="Crm\CampusController.cs" />

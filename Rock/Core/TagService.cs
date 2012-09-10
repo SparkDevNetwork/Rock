@@ -49,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TagDto> QueryableDto()
+		public override IQueryable<TagDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new TagDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<TagDto> QueryableDto(IQueryable<Tag> items)
+		{
+			return items.Select( m => new TagDto()
 				{
 					IsSystem = m.IsSystem,
 					Entity = m.Entity,
