@@ -184,5 +184,106 @@ namespace Rock.Crm
 
             return GetByEncryptedKey( encryptedKey );
         }
+
+		/// <summary>
+		/// Saves values for a given person, and key
+		/// </summary>
+		/// <param name="person"></param>
+		/// <param name="key"></param>
+		/// <param name="values"></param>
+		/// <param name="personId"></param>
+		public void SaveUserValue(Person person, string key, List<string> values, int? personId)
+		{
+			var attributeService = new Core.AttributeService();
+			var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+				Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key );
+
+			if ( attribute == null )
+			{
+				var fieldTypeService = new Core.FieldTypeService();
+				var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
+
+				attribute = new Core.Attribute();
+				attribute.IsSystem = false;
+				attribute.Entity = Person.USER_VALUE_ENTITY;
+				attribute.EntityQualifierColumn = string.Empty;
+				attribute.EntityQualifierValue = string.Empty;
+				attribute.Key = key;
+				attribute.Name = key;
+				attribute.Category = string.Empty;
+				attribute.DefaultValue = string.Empty;
+				attribute.IsMultiValue = false;
+				attribute.IsRequired = false;
+				attribute.Description = string.Empty;
+				attribute.FieldTypeId = fieldType.Id;
+				attribute.Order = 0;
+
+				attributeService.Add( attribute, personId );
+				attributeService.Save( attribute, personId );
+			}
+
+			var attributeValueService = new Core.AttributeValueService();
+			var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+			foreach ( var attributeValue in attributeValues )
+				attributeValueService.Delete( attributeValue, personId );
+
+			foreach ( var value in values )
+			{
+				var attributeValue = new Core.AttributeValue();
+				attributeValue.AttributeId = attribute.Id;
+				attributeValue.EntityId = person.Id;
+				attributeValue.Value = value;
+				attributeValueService.Add( attributeValue, personId );
+				attributeValueService.Save( attributeValue, personId );
+			}
+		}
+
+		/// <summary>
+		/// Gets values for a given person, and key
+		/// </summary>
+		/// <param name="person"></param>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public List<string> GetUserValue( Person person, string key )
+		{
+			var attributeService = new Core.AttributeService();
+			var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+				Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key);
+
+			if (attribute != null)
+			{
+				var attributeValueService = new Core.AttributeValueService();
+				var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
+				if (attributeValues != null && attributeValues.Count() > 0)
+					return attributeValues.Select( v => v.Value).ToList();
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets all values for a given person
+		/// </summary>
+		/// <param name="person"></param>
+		/// <returns></returns>
+		public Dictionary<string, List<string>> GetUserValues( Person person )
+		{
+			var values = new Dictionary<string, List<string>>();
+
+			foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
+				.Where( v =>
+					v.Attribute.Entity == Person.USER_VALUE_ENTITY &&
+					v.Attribute.EntityQualifierColumn == string.Empty &&
+					v.Attribute.EntityQualifierValue == string.Empty &&
+					v.EntityId == person.Id ) )
+			{
+				if (!values.Keys.Contains(attributeValue.Attribute.Key))
+					values.Add(attributeValue.Attribute.Key, new List<string>());
+				values[attributeValue.Attribute.Key].Add(attributeValue.Value);
+			}
+
+			return values;
+		}
+
     }
 }

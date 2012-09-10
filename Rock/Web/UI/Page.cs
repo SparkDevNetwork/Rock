@@ -547,7 +547,8 @@ namespace Rock.Web.UI
                         aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
                         aAttributes.Attributes.Add( "height", "500px" );
                         aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", PageInstance.Id ) ) );
-                        HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+						aAttributes.Attributes.Add( "Title", "Page Properties" );
+						HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
                         iAttributes.Attributes.Add( "class", "icon-cog" );
 
@@ -557,7 +558,8 @@ namespace Rock.Web.UI
                         aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
                         aChildPages.Attributes.Add( "height", "500px" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", PageInstance.Id ) ) );
-                        HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
+						aChildPages.Attributes.Add( "Title", "Child Pages" );
+						HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
                         iChildPages.Attributes.Add( "class", "icon-sitemap" );
 
@@ -578,7 +580,8 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "height", "500px" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
-                        HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
+						aPageSecurity.Attributes.Add( "Title", "Page Security" );
+						HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
                         iPageSecurity.Attributes.Add( "class", "icon-lock" );
 
@@ -588,7 +591,8 @@ namespace Rock.Web.UI
                         aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
                         aSystemInfo.Attributes.Add( "href", ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) );
-                        HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
+						aSystemInfo.Attributes.Add( "Title", "Rock Information" );
+						HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
                         iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
 
@@ -1206,6 +1210,60 @@ namespace Rock.Web.UI
             
         }
 
+		/// <summary>
+		/// Gets the value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public string GetUserValue( string key )
+		{
+			var values = SessionUserValues();
+			if (values.ContainsKey(key))
+				foreach ( string value in SessionUserValues()[key] )
+					return value;
+			return string.Empty;
+		}
+
+		/// <summary>
+		/// Sets a value for the current user for a given key
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		public void SetUserValue( string key, string value )
+		{
+			var newValues = new List<string>();
+			newValues.Add( value );
+
+			var sessionValues = SessionUserValues();
+			if ( sessionValues.ContainsKey( key ) )
+				sessionValues[key] = newValues;
+			else
+				sessionValues.Add( key, newValues );
+
+			if ( CurrentPerson != null )
+				new PersonService().SaveUserValue( CurrentPerson, key, newValues, CurrentPersonId );
+		}
+
+		private Dictionary<string, List<string>> SessionUserValues()
+		{
+			string sessionKey = string.Format( "{0}_{1}",
+				Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
+
+			var userValues = Session[sessionKey] as Dictionary<string, List<string>>;
+			if ( userValues == null )
+			{
+				if ( CurrentPerson != null )
+					userValues = new PersonService().GetUserValues( CurrentPerson );
+				else
+					userValues = new Dictionary<string, List<string>>();
+
+				Session[sessionKey] = userValues;
+			}
+
+			return userValues;
+		}
+
+
         #endregion
 
         #region Event Handlers
@@ -1309,3 +1367,4 @@ namespace Rock.Web.UI
     #endregion
 
 }
+

@@ -22,6 +22,11 @@ namespace Rock.Crm
     public partial class Person : ModelWithAttributes<Person>, IAuditable
     {
 		/// <summary>
+		/// The Entity Type used for saving user values
+		/// </summary>
+		public const string USER_VALUE_ENTITY = "Rock.Crm.Person.Value";
+
+		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
 		/// <value>
@@ -283,6 +288,16 @@ namespace Rock.Crm
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
+
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static Person Read( int id )
+		{
+			return Read<Person>( id );
+		}
 		
         /// <summary>
         /// Gets the auth entity.

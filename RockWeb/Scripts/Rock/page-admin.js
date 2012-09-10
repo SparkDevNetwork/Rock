@@ -13,14 +13,14 @@ function saveBlockMove() {
         type: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
+        url: rock.baseUrl + 'api/blockinstances/' + blockInstanceId,
         success: function (getData, status, xhr) {
 
             // Update the new zone
             getData.Zone = zoneName;
 
             // Set the appropriate parent value (layout or page)
-            if ($('#block-move-Location_0').attr('checked') == true) {
+            if ($('#block-move-Location_0').attr('checked') == 'checked') {
                 getData.Layout = null;
                 getData.PageId = rock.pageId;
             }
@@ -35,7 +35,7 @@ function saveBlockMove() {
                 contentType: 'application/json',
                 dataType: 'json',
                 data: JSON.stringify(getData),
-                url: rock.baseUrl + 'REST/Cms/BlockInstance/Move/' + blockInstanceId,
+                url: rock.baseUrl + 'api/blockinstances/move/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Get a reference to the block instance's container div
@@ -121,7 +121,7 @@ $(document).ready(function () {
                 type: 'DELETE',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'REST/Cms/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'api/blockinstances/' + blockInstanceId,
                 success: function (data, status, xhr) {
 
                     // Remove the block instance's container div

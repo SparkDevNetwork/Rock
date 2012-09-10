@@ -108,7 +108,7 @@ INSERT INTO [cmsPageRoute] ([IsSystem],[PageId],[Route],[CreatedDateTime],[Modif
 DELETE [cmsPageRoute] WHERE [Guid] = '1D9A7766-71D4-4CC8-A8A5-71C2D100922C'
 DELETE [cmsBlockInstance] WHERE [Guid] = '434CB505-016B-418A-B27A-D0FDD07DD928'
 DELETE [cmsPage] WHERE [Guid] = '5E036ADE-C2A4-4988-B393-DAC58230F02E'
-DELETE [cmsBlock] WHERE [Guid] = '0D0DC731-E282-44EA-AD1E-89D16AB20192'
+DELETE [cmsBlock] WHERE [Guid] = '764D3E67-2D01-437A-9F45-9F8C97878434'
 
 -- Remove Componenent Attributes
 DELETE [coreAttribute] WHERE [Guid] = '3fdd185d-3fe4-4be9-b769-26c6fc5c15f9'

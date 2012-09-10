@@ -148,6 +148,17 @@ namespace Rock.Cms
         /// </value>
 		public virtual Crm.Person ModifiedByPerson { get; set; }
 
+		/// <summary>
+		/// Static Method to return an object based on the id
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <returns></returns>
+		public static File Read( int id )
+		{
+			return Read<File>( id );
+		}
+
+
     }
 
     /// <summary>
