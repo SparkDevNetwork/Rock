@@ -1,0 +1,5 @@
+C:\Users\david.stevens\My Code\Rock-ChMS\Rock.DataTransferObjects\bin\Debug\Rock.DataTransferObjects.dll
+C:\Users\david.stevens\My Code\Rock-ChMS\Rock.DataTransferObjects\bin\Debug\Rock.DataTransferObjects.pdb
+C:\Users\david.stevens\My Code\Rock-ChMS\Rock.DataTransferObjects\obj\Debug\Rock.DataTransferObjects.dll
+C:\Users\david.stevens\My Code\Rock-ChMS\Rock.DataTransferObjects\obj\Debug\Rock.DataTransferObjects.pdb
+C:\Users\david.stevens\My Code\Rock-ChMS\Rock.DataTransferObjects\obj\Debug\Rock.DataTransferObjects.csprojResolveAssemblyReference.cache

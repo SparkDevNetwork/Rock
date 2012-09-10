@@ -19,29 +19,18 @@ using Rock.Data;
 namespace Rock.Core
 {
 	/// <summary>
-	/// Metric Value POCO Service class
+	/// Metric Value Service class
 	/// </summary>
-    public partial class MetricValueService : Service<Rock.Core.MetricValue>
+    public partial class MetricValueService : Service<MetricValue, MetricValueDto>
     {
-		/// <summary>
-		/// Gets Metric Values by Metric Id
-		/// </summary>
-		/// <param name="MetricId">Metric Id.</param>
-		/// <returns>An enumerable list of MetricValue objects.</returns>
-	    public IEnumerable<Rock.Core.MetricValue> GetByMetricId( int MetricId )
-        {
-            return Repository.Find( t => t.MetricId == MetricId ).OrderBy( t => t.Order );
-        }
+
+
+
+
+
+
+
 		
-		/// <summary>
-		/// Gets Metric Value by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>MetricValue object.</returns>
-	    public Rock.Core.MetricValue GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
 		
     }
 }

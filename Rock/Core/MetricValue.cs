@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -145,6 +146,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Rock.Core.DTO.MetricValue"/> object.
         /// </value>
+		/*  DTO no longer used 8/30/12
 		public Rock.Core.DTO.MetricValue DataTransferObject
 		{
 			get 
@@ -166,7 +168,7 @@ namespace Rock.Core
 				dto.Guid = this.Guid;
 				return dto; 
 			}
-		}
+		} */
 
         /// <summary>
         /// Gets the auth entity.
@@ -188,7 +190,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="CRM.Person"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
+		public virtual Crm.Person CreatedByPerson { get; set; }
         
 		/// <summary>
         /// Gets or sets the Modified By Person.
@@ -196,7 +198,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="CRM.Person"/> object.
         /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+		public virtual Crm.Person ModifiedByPerson { get; set; }
 
 		/// <summary>
 		/// Gets the parent authority.
