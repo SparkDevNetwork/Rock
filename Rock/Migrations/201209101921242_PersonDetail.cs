@@ -9,6 +9,38 @@ namespace Rock.Migrations
     {
 		public override void Up()
 		{
+			// Add Login Status to person detail layout
+			var blockInstance = DefaultSystemBlockInstance( "Login Status", new Guid("19C2140D-498A-4675-B8A2-18B281736F6E") );
+			blockInstance.PageId = null;
+			blockInstance.Layout = "PersonDetail";
+			blockInstance.Zone = "zHeader";
+			AddBlockInstance( null, "04712F3D-9667-4901-A49D-4507573EF7AD", blockInstance );
+
+			// Add Menu to person detail layout
+			blockInstance = DefaultSystemBlockInstance( "Menu", new Guid( "148E5996-00DE-4341-8541-20CB3FFB7C74" ) );
+			blockInstance.PageId = null;
+			blockInstance.Layout = "PersonDetail";
+			blockInstance.Zone = "Menu";
+			AddBlockInstance( null, "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", blockInstance );
+
+			AddBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "DD516FA7-966E-4C80-8523-BEAC91C8EEDA", "12" );
+			AddBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "D8A029F8-83BE-454A-99D3-94D879EBF87C", "~/Assets/XSLT/PageNav.xslt" );
+			AddBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "9909E07F-0E68-43B8-A151-24D03C795093", "3" );
+
+			// Add footer to person detail layout
+			blockInstance = DefaultSystemBlockInstance( "Footer Content", new Guid( "AE29A24E-6F85-4BC8-8C14-A8BF97A5D263" ) );
+			blockInstance.PageId = null;
+			blockInstance.Layout = "PersonDetail";
+			blockInstance.Zone = "Footer";
+			AddBlockInstance( null, "19B61D65-37E3-459F-A44F-DEF0089118A3", blockInstance );
+
+			Sql( @"
+	DECLARE @BlockId int
+	SET @BlockId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = 'AE29A24E-6F85-4BC8-8C14-A8BF97A5D263')
+	INSERT INTO [cmsHtmlContent] ([BlockId],[EntityValue],[Version],[Content],[IsApproved],[ApprovedByPersonId],[ApprovedDateTime],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[StartDateTime],[ExpireDateTime],[Guid])
+		VALUES(@BlockId,'',0,'<p>  Copyright&nbsp; 2012 Spark Development Network</p> ',1,1,GETDATE(),GETDATE(),GETDATE(),1,1,NULL,NULL,'CF2CBF21-4902-4621-90E5-8B55F963B56A')
+" );
+
 			// Add Container page for all person related pages
 			var page = DefaultSystemPage( "Person Pages", "Container page for person related pages", new Guid( "BF04BB7E-BE3A-4A38-A37C-386B55496303" ) );
 			page.DisplayInNavWhen = DisplayInNavWhen.Never;
@@ -98,6 +130,23 @@ namespace Rock.Migrations
 
 			// Delete person container page
 			DeletePage( "BF04BB7E-BE3A-4A38-A37C-386B55496303" );
+
+			// Delete footer content on person detail layout
+			Sql( @"
+	DELETE [cmsHtmlContent] WHERE [Guid] = 'CF2CBF21-4902-4621-90E5-8B55F963B56A'
+" );
+			DeleteBlockInstance( "AE29A24E-6F85-4BC8-8C14-A8BF97A5D263" );
+
+			// Delete Menu block on person detail layout
+			DeleteBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "DD516FA7-966E-4C80-8523-BEAC91C8EEDA" );
+			DeleteBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "D8A029F8-83BE-454A-99D3-94D879EBF87C" );
+			DeleteBlockAttributeValue( "148E5996-00DE-4341-8541-20CB3FFB7C74", "9909E07F-0E68-43B8-A151-24D03C795093" );
+
+			DeleteBlockInstance( "148E5996-00DE-4341-8541-20CB3FFB7C74" );
+
+			// Delete login status on person detail layout
+			DeleteBlockInstance( "19C2140D-498A-4675-B8A2-18B281736F6E" );
+
 		}
     }
 }
