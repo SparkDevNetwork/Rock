@@ -139,9 +139,23 @@ namespace Rock
 
         #endregion
 
-        #region DateTime Extensions
+		#region Boolean Extensions
 
-        /// <summary>
+		/// <summary>
+		/// A numeric 1 or 0
+		/// </summary>
+		/// <param name="field"></param>
+		/// <returns></returns>
+		public static int Bit( this Boolean field )
+		{
+			return field ? 1 : 0;
+		}
+
+		#endregion
+
+		#region DateTime Extensions
+
+		/// <summary>
         /// The total months.
         /// </summary>
         /// <param name="start">The start.</param>
