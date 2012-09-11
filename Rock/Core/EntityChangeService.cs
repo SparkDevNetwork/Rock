@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EntityChangeService"/> class
 		/// </summary>
-		public EntityChangeService() : base()
+		public EntityChangeService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<EntityChangeDto> QueryableDto()
+		public override IQueryable<EntityChangeDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new EntityChangeDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<EntityChangeDto> QueryableDto( IQueryable<EntityChange> items )
+		{
+			return items.Select( m => new EntityChangeDto()
 				{
 					ChangeSet = m.ChangeSet,
 					ChangeType = m.ChangeType,

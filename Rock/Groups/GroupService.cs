@@ -25,7 +25,8 @@ namespace Rock.Groups
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GroupService"/> class
 		/// </summary>
-		public GroupService() : base()
+		public GroupService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Groups
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<GroupDto> QueryableDto()
+		public override IQueryable<GroupDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new GroupDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<GroupDto> QueryableDto( IQueryable<Group> items )
+		{
+			return items.Select( m => new GroupDto()
 				{
 					IsSystem = m.IsSystem,
 					ParentGroupId = m.ParentGroupId,

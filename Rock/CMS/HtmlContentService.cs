@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="HtmlContentService"/> class
 		/// </summary>
-		public HtmlContentService() : base()
+		public HtmlContentService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<HtmlContentDto> QueryableDto()
+		public override IQueryable<HtmlContentDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new HtmlContentDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<HtmlContentDto> QueryableDto( IQueryable<HtmlContent> items )
+		{
+			return items.Select( m => new HtmlContentDto()
 				{
 					BlockId = m.BlockId,
 					EntityValue = m.EntityValue,

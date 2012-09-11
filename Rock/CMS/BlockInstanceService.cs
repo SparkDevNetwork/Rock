@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BlockInstanceService"/> class
 		/// </summary>
-		public BlockInstanceService() : base()
+		public BlockInstanceService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<BlockInstanceDto> QueryableDto()
+		public override IQueryable<BlockInstanceDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new BlockInstanceDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<BlockInstanceDto> QueryableDto( IQueryable<BlockInstance> items )
+		{
+			return items.Select( m => new BlockInstanceDto()
 				{
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,

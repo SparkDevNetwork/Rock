@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AttributeQualifierService"/> class
 		/// </summary>
-		public AttributeQualifierService() : base()
+		public AttributeQualifierService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AttributeQualifierDto> QueryableDto()
+		public override IQueryable<AttributeQualifierDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new AttributeQualifierDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<AttributeQualifierDto> QueryableDto( IQueryable<AttributeQualifier> items )
+		{
+			return items.Select( m => new AttributeQualifierDto()
 				{
 					IsSystem = m.IsSystem,
 					AttributeId = m.AttributeId,

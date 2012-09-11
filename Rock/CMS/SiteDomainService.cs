@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SiteDomainService"/> class
 		/// </summary>
-		public SiteDomainService() : base()
+		public SiteDomainService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<SiteDomainDto> QueryableDto()
+		public override IQueryable<SiteDomainDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new SiteDomainDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<SiteDomainDto> QueryableDto( IQueryable<SiteDomain> items )
+		{
+			return items.Select( m => new SiteDomainDto()
 				{
 					IsSystem = m.IsSystem,
 					SiteId = m.SiteId,
