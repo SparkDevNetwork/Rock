@@ -92,13 +92,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static FieldType Read( Rock.Core.FieldType fieldTypeModel )
         {
-            FieldType fieldType = FieldType.CopyModel( fieldTypeModel );
-
             string cacheKey = FieldType.CacheKey( fieldTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 
-            return fieldType;
+            ObjectCache cache = MemoryCache.Default;
+            FieldType fieldType = cache[cacheKey] as FieldType;
+
+			if ( fieldType != null )
+				return fieldType;
+			else
+			{
+				fieldType = FieldType.CopyModel( fieldTypeModel );
+				cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
+
+				return fieldType;
+			}
         }
 
         /// <summary>

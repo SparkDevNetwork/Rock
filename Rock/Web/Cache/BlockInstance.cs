@@ -181,13 +181,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockInstance Read( Rock.Cms.BlockInstance blockInstanceModel )
         {
-            BlockInstance blockInstance = BlockInstance.CopyModel( blockInstanceModel );
+			string cacheKey = BlockInstance.CacheKey( blockInstanceModel.Id );
 
-            string cacheKey = BlockInstance.CacheKey( blockInstanceModel.Id );
             ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, blockInstance, new CacheItemPolicy() );
+            BlockInstance blockInstance = cache[cacheKey] as BlockInstance;
 
-            return blockInstance;
+			if ( blockInstance != null )
+				return blockInstance;
+			else
+			{
+				blockInstance = BlockInstance.CopyModel( blockInstanceModel );
+				cache.Set( cacheKey, blockInstance, new CacheItemPolicy() );
+
+				return blockInstance;
+			}
         }
 
         /// <summary>

@@ -100,13 +100,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValue Read( Rock.Core.DefinedValue definedValueModel )
         {
-            DefinedValue definedValue = DefinedValue.CopyModel( definedValueModel );
-
             string cacheKey = DefinedValue.CacheKey( definedValueModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
 
-            return definedValue;
+            ObjectCache cache = MemoryCache.Default;
+            DefinedValue definedValue = cache[cacheKey] as DefinedValue;
+
+			if ( definedValue != null )
+				return definedValue;
+			else
+			{
+				definedValue = DefinedValue.CopyModel( definedValueModel );
+				cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
+
+				return definedValue;
+			}
         }
 
         /// <summary>

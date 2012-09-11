@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Text;
 using System.Web.UI;
 
@@ -31,13 +32,17 @@ namespace RockWeb.Blocks.Core
 			if ( base.Entity != null )
 			{
 				var service = new TaggedItemService();
-				foreach ( var item in service.GetByEntity(
-					base.EntityType, entityQualifierColumn, entityQualifierValue, CurrentPersonId, base.Entity.Id ) )
+				foreach ( dynamic item in service.GetByEntity(
+					base.EntityType, entityQualifierColumn, entityQualifierValue, CurrentPersonId, base.Entity.Id )
+					.Select( i => new {
+						OwnerId = i.Tag.OwnerId,
+						Name = i.Tag.Name
+					}))
 				{
 					if ( sb.Length > 0 )
 						sb.Append( ',' );
-					sb.Append( item.Tag.Name );
-					if ( CurrentPersonId.HasValue && item.Tag.OwnerId == CurrentPersonId.Value )
+					sb.Append( item.Name );
+					if ( CurrentPersonId.HasValue && item.OwnerId == CurrentPersonId.Value )
 						sb.Append( "^personal" );
 				}
 
