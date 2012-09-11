@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Data.Entity.Migrations;
 using System.Linq;
+using System.Text;
 
 using Rock;
 using Rock.Cms;
+
 
 namespace Rock.Migrations
 {
@@ -33,7 +35,6 @@ namespace Rock.Migrations
 
 		public void AddBlock( BlockDto block )
 		{
-
 			Sql( string.Format( @"
 				INSERT INTO [cmsBlock] (
 					[IsSystem],[Path],[Name],[Description],
@@ -200,13 +201,24 @@ namespace Rock.Migrations
 
 		public void AddBlockInstance( string pageGuid, string blockGuid, string name, string zone, string guid, int order = 0 )
 		{
-			Sql( string.Format( @"
-				
-				DECLARE @PageId int
-				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+			var sb = new StringBuilder();
 
+			sb.Append(@"
+				DECLARE @PageId int
+");
+			if (string.IsNullOrWhiteSpace(pageGuid))
+				sb.Append( @"
+				SET @PageId = NULL
+");
+			else
+				sb.AppendFormat( @"
+				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+", 					pageGuid);
+
+			sb.AppendFormat( @"
+				
 				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{1}')
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				INSERT INTO [cmsBlockInstance] (
 					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
@@ -214,30 +226,40 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@PageId,NULL,@BlockId,'{2}',
-					{3},'{4}',0,
+					1,@PageId,NULL,@BlockId,'{1}',
+					{2},'{3}',0,
 					GETDATE(),GETDATE(),1,1,
-					'{5}')
+					'{4}')
 ",
-					pageGuid,
 					blockGuid,
 					zone,
 					order,
 					name,
-					guid )
-			);
+					guid );
+
+			Sql(sb.ToString());
 		}
 
 		public void AddBlockInstance( string pageGuid, string blockGuid, BlockInstanceDto blockInstance )
 		{
+			var sb = new StringBuilder();
 
-			Sql( string.Format( @"
-
+			sb.Append(@"
 				DECLARE @PageId int
+");
+			if (string.IsNullOrWhiteSpace(pageGuid))
+				sb.Append( @"
+				SET @PageId = NULL
+");
+			else
+				sb.AppendFormat( @"
 				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+", 					pageGuid);
+
+			sb.AppendFormat( @"
 
 				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{1}')
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				INSERT INTO [cmsBlockInstance] (
 					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
@@ -245,14 +267,13 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					{2},@PageId,{3},@BlockId,'{4}',
-					{5},'{6}',{7},
-					'{8}','{9}',{10},{11},
-					'{12}')
+					{1},@PageId,{2},@BlockId,'{3}',
+					{4},'{5}',{6},
+					'{7}','{8}',{9},{10},
+					'{11}')
 ",
-					pageGuid,
 					blockGuid,
- 					blockInstance.IsSystem,
+ 					blockInstance.IsSystem.Bit(),
 					blockInstance.Layout == null ? "NULL" : "'" + blockInstance.Layout + "'",
 					blockInstance.Zone,
 					blockInstance.Order,
@@ -262,11 +283,21 @@ namespace Rock.Migrations
 					blockInstance.ModifiedDateTime,
 					blockInstance.CreatedByPersonId,
 					blockInstance.ModifiedByPersonId,
-					blockInstance.Guid )
-			);
+					blockInstance.Guid );
+
+			Sql(sb.ToString());
 		}
 
-		public BlockInstanceDto DefaultSystemBlockInstance( string name, string description, Guid guid )
+		public void DeleteBlockInstance( string guid )
+		{
+			Sql( string.Format( @"
+				DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
+",
+					guid
+					) );
+		}
+
+		public BlockInstanceDto DefaultSystemBlockInstance( string name, Guid guid )
 		{
 			var blockInstance = new BlockInstanceDto();
 
