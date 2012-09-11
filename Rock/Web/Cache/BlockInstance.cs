@@ -97,7 +97,26 @@ namespace Rock.Web.Cache
             }
         }
 
-        /// <summary>
+		/// <summary>
+		/// Gets the page id.
+		/// </summary>
+		public int? PageId { get; private set; }
+
+		/// <summary>
+		/// Gets the page.
+		/// </summary>
+		public Page Page
+		{
+			get
+			{
+				if ( PageId.HasValue )
+					return Page.Read( PageId.Value );
+				else
+					return null;
+			}
+		}
+
+		/// <summary>
         /// Gets the block id.
         /// </summary>
         public int BlockId { get; private set; }
@@ -235,6 +254,7 @@ namespace Rock.Web.Cache
         {
             BlockInstance blockInstance = new BlockInstance();
             blockInstance.Id = blockInstanceModel.Id;
+			blockInstance.PageId = blockInstanceModel.PageId;
             blockInstance.BlockId = blockInstanceModel.BlockId;
             blockInstance.Name = blockInstanceModel.Name;
             blockInstance.Zone = blockInstanceModel.Zone;
@@ -280,7 +300,12 @@ namespace Rock.Web.Cache
         /// </summary>
         public Security.ISecured ParentAuthority
         {
-            get { return null; }
+            get 
+			{
+				if ( this.BlockInstanceLocation == Cache.BlockInstanceLocation.Page )
+					return this.Page;
+				return null;
+			}
         }
 
         /// <summary>
