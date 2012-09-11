@@ -40,12 +40,11 @@ namespace RockWeb.Blocks.Core
 					if ( CurrentPersonId.HasValue && item.Tag.OwnerId == CurrentPersonId.Value )
 						sb.Append( "^personal" );
 				}
-			}
 
-			phTags.Controls.Add( new LiteralControl( string.Format(
-				"<input name=\"person-tags\" id=\"person-tags\" value=\"{0}\" />", sb.ToString() ) ) );
+				phTags.Controls.Add( new LiteralControl( string.Format(
+					"<input name=\"person-tags\" id=\"person-tags\" value=\"{0}\" />", sb.ToString() ) ) );
 
-            string script = string.Format( @"
+				string script = string.Format( @"
     $(document).ready(function () {{
         $('ul.ui-autocomplete').css('width', '300px');
         $('#person-tags').tagsInput({{
@@ -120,11 +119,12 @@ namespace RockWeb.Blocks.Core
         }});
     }}
 
-", base.EntityType, CurrentPersonId, base.Entity.Id, 
- string.IsNullOrWhiteSpace(entityQualifierColumn) ? "" : "/" + entityQualifierColumn,
- string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue);
-			this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.BlockInstance.Id.ToString(), script, true );
-
+",
+	base.EntityType, CurrentPersonId, base.Entity.Id,
+	string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
+	string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
+				this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.BlockInstance.Id.ToString(), script, true );
+			}
 		}
     }
 }
