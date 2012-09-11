@@ -15,7 +15,7 @@ using Rock.Core;
 namespace Rock.Rest.Core
 {
 	/// <summary>
-	/// Tags REST API
+	/// TaggedItems REST API
 	/// </summary>
 	public partial class TaggedItemsController : Rock.Rest.ApiController<Rock.Core.TaggedItem, Rock.Core.TaggedItemDto>
 	{

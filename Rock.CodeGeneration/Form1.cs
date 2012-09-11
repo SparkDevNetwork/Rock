@@ -124,7 +124,7 @@ namespace Rock.CodeGeneration
         }
 
         /// <summary>
-        /// Writes the DTO file for a given type
+        /// Writes the Service file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
@@ -204,9 +204,19 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// Query DTO objects" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendLine( "\t\t/// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "\t\tpublic override IQueryable<{0}Dto> QueryableDto()" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "\t\tpublic override IQueryable<{0}Dto> QueryableDto( )" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t{" );
-            sb.AppendFormat( "\t\t\treturn this.Queryable().Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
+			sb.AppendLine( "\t\t\treturn QueryableDto( this.Queryable() );" );
+			sb.AppendLine( "\t\t}" );
+			sb.AppendLine( "" );
+
+			sb.AppendLine( "\t\t/// <summary>" );
+			sb.AppendLine( "\t\t/// Query DTO objects" );
+			sb.AppendLine( "\t\t/// </summary>" );
+			sb.AppendLine( "\t\t/// <returns>A queryable list of DTO objects</returns>" );
+			sb.AppendFormat( "\t\tpublic IQueryable<{0}Dto> QueryableDto( IQueryable<{0}> items )" + Environment.NewLine, type.Name );
+			sb.AppendLine( "\t\t{" );
+			sb.AppendFormat( "\t\t\treturn items.Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t\t\t{" );
             foreach ( var property in properties )
                 sb.AppendFormat( "\t\t\t\t\t{0} = m.{0}," + Environment.NewLine, property.Key );

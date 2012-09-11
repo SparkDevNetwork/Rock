@@ -58,7 +58,7 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<TagDto> QueryableDto(IQueryable<Tag> items)
+		public IQueryable<TagDto> QueryableDto( IQueryable<Tag> items )
 		{
 			return items.Select( m => new TagDto()
 				{

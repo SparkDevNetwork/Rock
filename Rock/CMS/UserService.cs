@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UserService"/> class
 		/// </summary>
-		public UserService() : base()
+		public UserService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<UserDto> QueryableDto()
+		public override IQueryable<UserDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new UserDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
+		{
+			return items.Select( m => new UserDto()
 				{
 					UserName = m.UserName,
 					AuthenticationType = m.AuthenticationType,

@@ -49,7 +49,7 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TaggedItemDto> QueryableDto()
+		public override IQueryable<TaggedItemDto> QueryableDto( )
 		{
 			return QueryableDto( this.Queryable() );
 		}
@@ -60,7 +60,7 @@ namespace Rock.Core
 		/// <returns>A queryable list of DTO objects</returns>
 		public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
 		{
-			return this.Queryable().Select( m => new TaggedItemDto()
+			return items.Select( m => new TaggedItemDto()
 				{
 					IsSystem = m.IsSystem,
 					TagId = m.TagId,

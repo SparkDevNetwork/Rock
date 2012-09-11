@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AddressService"/> class
 		/// </summary>
-		public AddressService() : base()
+		public AddressService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AddressDto> QueryableDto()
+		public override IQueryable<AddressDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new AddressDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<AddressDto> QueryableDto( IQueryable<Address> items )
+		{
+			return items.Select( m => new AddressDto()
 				{
 					Raw = m.Raw,
 					Street1 = m.Street1,
