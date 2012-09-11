@@ -220,6 +220,7 @@ namespace Rock.Migrations
 				DECLARE @BlockId int
 				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
+				DECLARE @BlockInstanceId int
 				INSERT INTO [cmsBlockInstance] (
 					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
@@ -230,6 +231,7 @@ namespace Rock.Migrations
 					{2},'{3}',0,
 					GETDATE(),GETDATE(),1,1,
 					'{4}')
+				SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
 					blockGuid,
 					zone,
@@ -237,6 +239,14 @@ namespace Rock.Migrations
 					name,
 					guid );
 
+			// If adding a layout block, give edit/configuration authorization to admin role
+			if ( string.IsNullOrWhiteSpace( pageGuid ) )
+				sb.Append( @"
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+" );
 			Sql(sb.ToString());
 		}
 
@@ -261,6 +271,7 @@ namespace Rock.Migrations
 				DECLARE @BlockId int
 				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
+				DECLARE @BlockInstanceId int
 				INSERT INTO [cmsBlockInstance] (
 					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
@@ -271,6 +282,7 @@ namespace Rock.Migrations
 					{4},'{5}',{6},
 					'{7}','{8}',{9},{10},
 					'{11}')
+				SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
 					blockGuid,
  					blockInstance.IsSystem.Bit(),
@@ -285,12 +297,23 @@ namespace Rock.Migrations
 					blockInstance.ModifiedByPersonId,
 					blockInstance.Guid );
 
-			Sql(sb.ToString());
+			// If adding a layout block, give edit/configuration authorization to admin role
+			if ( string.IsNullOrWhiteSpace( pageGuid ) )
+				sb.Append( @"
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+" );
+			Sql( sb.ToString() );
 		}
 
 		public void DeleteBlockInstance( string guid )
 		{
 			Sql( string.Format( @"
+				DECLARE @BlockInstanceId int
+				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+				DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockInstanceId
 				DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
 ",
 					guid
