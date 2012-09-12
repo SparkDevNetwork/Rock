@@ -147,15 +147,13 @@ namespace Rock.Attribute
         /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes"/> and <see cref="P:IHasAttributes.AttributeValues"/> of any <see cref="IHasAttributes"/> object
         /// </summary>
-        /// <param name="item">The item.</param>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes item )
+        /// <param name="entity">The item.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-            var attributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
-            var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>>();
-
+			var attributes = new Dictionary<int, Rock.Web.Cache.Attribute>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
-            Type entityType = item.GetType();
+            Type entityType = entity.GetType();
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
@@ -165,49 +163,56 @@ namespace Rock.Attribute
             Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
             Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
-            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
+			// Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
+			foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
-                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( item, null ).ToString() == attribute.EntityQualifierValue ) ) )
+                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
-                    Rock.Web.Cache.Attribute cachedAttribute = Rock.Web.Cache.Attribute.Read(attribute);
+					attributes.Add(attribute.Id, Rock.Web.Cache.Attribute.Read(attribute));
+				}
+			}
 
-                    if ( !attributes.ContainsKey( cachedAttribute.Category ) )
-                        attributes.Add( cachedAttribute.Category, new List<Web.Cache.Attribute>() );
+			var categorizedAttributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
+			var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>>();
 
-                    attributes[cachedAttribute.Category].Add( cachedAttribute );
-                    attributeValues.Add( attribute.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, GetValues( attributeValueService, attribute, item.Id ) ) );
-                }
-            }
+			foreach ( var attribute in attributes )
+			{
+				// Categorize the attributes
+                if ( !categorizedAttributes.ContainsKey( attribute.Value.Category ) )
+                    categorizedAttributes.Add( attribute.Value.Category, new List<Web.Cache.Attribute>() );
+                categorizedAttributes[attribute.Value.Category].Add( attribute.Value );
 
-            item.Attributes = attributes;
-            item.AttributeValues = attributeValues;
-        }
+				// Add a placeholder for this item's value for each attribute
+				attributeValues.Add( attribute.Value.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Value.Name, new List<Rock.Web.Cache.AttributeValue>() ) );
+			}
 
-        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.Attribute attribute, int entityId )
-        {
-            Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
-            return GetValues( attributeValueService, attribute, entityId );
-        }
+			// Read this item's value(s) for each attribute 
+			foreach ( dynamic item in attributeValueService.Queryable()
+				.Where( v => v.EntityId == entity.Id && attributes.Keys.Contains( v.AttributeId ) )
+				.Select( v => new
+				{
+					Value = v,
+					Key = v.Attribute.Key
+				} ) )
+			{
+				attributeValues[item.Key].Value.Add( new Rock.Web.Cache.AttributeValue( item.Value ) );
+			}
 
-        public static List<Rock.Web.Cache.AttributeValue> GetValues( Rock.Core.AttributeValueService attributeValueService, Rock.Core.Attribute attribute, int entityId )
-        {
-            var values = new List<Rock.Web.Cache.AttributeValue>();
+			// Look for any attributes that don't have a value and create a default value entry
+			foreach ( var attributeEntry in attributes )
+				if ( attributeValues[attributeEntry.Value.Key].Value.Count == 0 )
+				{
+					var attributeValue = new Rock.Web.Cache.AttributeValue();
+					attributeValue.AttributeId = attributeEntry.Value.Id;
+					attributeValue.Value = attributeEntry.Value.DefaultValue;
+					attributeValues[attributeEntry.Value.Key].Value.Add( attributeValue );
+				}
 
-            foreach ( var value in attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId ) )
-                values.Add( new Rock.Web.Cache.AttributeValue( value ) );
-
-            if ( values.Count == 0 )
-            {
-                var value = new Rock.Web.Cache.AttributeValue();
-                value.AttributeId = attribute.Id;
-                value.Value = attribute.DefaultValue;
-                values.Add( value );
-            }
-
-            return values;
+            entity.Attributes = categorizedAttributes;
+            entity.AttributeValues = attributeValues;
         }
 
         /// <summary>
