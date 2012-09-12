@@ -12,7 +12,7 @@
 
     <asp:Panel ID="pnlLists" runat="server" CssClass="pill-content">
 
-        <div id="divPage" runat="server" >
+        <div id="divPage" runat="server" class="pill-pane" >
             <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found">
                 <Columns>
                     <Rock:ReorderField />
@@ -28,7 +28,7 @@
             </Rock:Grid>
         </div>
 
-        <div id="divLayout" runat="server" >
+        <div id="divLayout" runat="server" class="pill-pane" >
             <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found">
                 <Columns>
                     <Rock:ReorderField />
