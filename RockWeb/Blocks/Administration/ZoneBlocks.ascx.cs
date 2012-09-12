@@ -100,18 +100,18 @@ namespace RockWeb.Blocks.Administration
 
             if ( hfOption.Value == "Page" )
             {
-                liPage.Attributes["class"] = "active";
-                liLayout.Attributes["class"] = "";
-                divPage.Attributes["class"] = "active";
-                divLayout.Attributes["class"] = "";
+				liPage.AddCssClass( "active" );
+				divPage.AddCssClass( "active" );
+				liLayout.RemoveCssClass( "active" );
+				divLayout.RemoveCssClass( "active" );
             }
             else
             {
-                liPage.Attributes["class"] = "";
-                liLayout.Attributes["class"] = "active";
-                divPage.Attributes["class"] = "";
-                divLayout.Attributes["class"] = "active";
-            }
+				liPage.RemoveCssClass( "active" );
+				divPage.RemoveCssClass( "active" );
+				liLayout.AddCssClass( "active" );
+				divLayout.AddCssClass( "active" );
+			}
         }
         #endregion
 
