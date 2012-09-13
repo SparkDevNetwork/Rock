@@ -2,20 +2,21 @@
 
 <aside class="bio">             
     <div class="content">
-        <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />
+
+<%--        <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />--%>
 
         <section class="group">
-            <span class="member-status">Member</span>
-            <span class="record-status inactive">Inactive</span>
+            <span class="member-status"><asp:Literal ID="lPersonStatus" runat="server" /></span>
+            <span class="record-status<%= (RecordStatus == "Inactive" ? " inactive" : "") %>"><%= RecordStatus %></span>
 
-            <span class="campus">Peoria Campus</span>
-            <span class="area">West Wing</span>
+            <span class="campus">TODO: Campus</span>
+            <span class="area">TODO: Area</span>
         </section>
 
         <section class="group">
-            <span class="age">39 yrs old <em>(2/10)</em></span>
-            <span class="gender">Male</span>
-            <span class="marital-status">Married 17yrs <em>(12/23)</em></span>
+            <span class="age"><asp:Literal ID="lAge" runat="server" /></span>
+            <span class="gender"><asp:Literal ID="lGender" runat="server" /></span>
+            <span class="marital-status"><asp:Literal ID="lMaritalStatus" runat="server" /> <asp:Literal ID="lAnniversary" runat="server" /></span>
         </section>
     </div>
     <footer>

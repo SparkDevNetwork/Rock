@@ -1,6 +1,7 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Family.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Family" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMembers.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.GroupMembers" %>
+<asp:PlaceHolder ID="phGroups" runat="server"></asp:PlaceHolder>
 
-<section class="family group">
+<%--<section class="family group">
     <header>Edmiston Family <a href="#" class="edit"><i class="icon-edit"></i></a></header>
 
     <ul class="group">
@@ -44,4 +45,4 @@
     </ul>
 
 </section>
- 
+ --%>

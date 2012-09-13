@@ -26,12 +26,13 @@ namespace Rock.Web.UI
 				return requiredContext;
 			}
 		}
-
-		protected override void OnLoad( EventArgs e )
+		protected override void OnInit( EventArgs e )
 		{
-			this.Person = PageInstance.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+			base.OnInit( e );
 
-			base.OnLoad( e );
+			this.Person = PageInstance.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+			if ( Person == null )
+				Person = new Person();
 		}
 	}
 
