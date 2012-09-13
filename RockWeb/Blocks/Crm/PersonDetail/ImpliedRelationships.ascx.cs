@@ -7,7 +7,7 @@
 using System;
 using System.Web.UI;
 
-using Rock.CRM;
+using Rock.Crm;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
