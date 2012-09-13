@@ -6,7 +6,7 @@ using System.Web;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Email Templates
+    /// System Groups
     /// </summary>
     public static class Group
     {

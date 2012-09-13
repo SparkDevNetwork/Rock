@@ -139,6 +139,27 @@ namespace Rock
 
         #endregion
 
+		#region Int Extensions
+
+		/// <summary>
+		/// Gets the Defined Value name associated with this id
+		/// </summary>
+		/// <param name="field"></param>
+		/// <returns></returns>
+		public static string DefinedValue( this int? id )
+		{
+			if ( !id.HasValue )
+				return string.Empty;
+			
+			var definedValue = Rock.Web.Cache.DefinedValue.Read( id.Value );
+			if ( definedValue != null )
+				return definedValue.Name;
+			else
+				return string.Empty;
+		}
+
+		#endregion
+
 		#region Boolean Extensions
 
 		/// <summary>
@@ -154,6 +175,33 @@ namespace Rock
 		#endregion
 
 		#region DateTime Extensions
+
+		/// <summary>
+		/// Returns the age at the current date
+		/// </summary>
+		/// <param name="start"></param>
+		/// <returns></returns>
+		public static int Age( this DateTime? start )
+		{
+			if ( start.HasValue )
+				return start.Value.Age();
+			else
+				return 0;
+		}
+
+		/// <summary>
+		/// Returns the age at the current date
+		/// </summary>
+		/// <param name="start"></param>
+		/// <returns></returns>
+		public static int Age( this DateTime start )
+		{
+			var now = DateTime.Today;
+			int age = now.Year - start.Year;
+			if ( start > now.AddYears( -age ) ) age--;
+
+			return age;
+		}
 
 		/// <summary>
         /// The total months.
