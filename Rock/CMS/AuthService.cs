@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AuthService"/> class
 		/// </summary>
-		public AuthService() : base()
+		public AuthService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AuthDto> QueryableDto()
+		public override IQueryable<AuthDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new AuthDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
+		{
+			return items.Select( m => new AuthDto()
 				{
 					EntityType = m.EntityType,
 					EntityId = m.EntityId,

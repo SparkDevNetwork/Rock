@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AttributeService"/> class
 		/// </summary>
-		public AttributeService() : base()
+		public AttributeService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AttributeDto> QueryableDto()
+		public override IQueryable<AttributeDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new AttributeDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<AttributeDto> QueryableDto( IQueryable<Attribute> items )
+		{
+			return items.Select( m => new AttributeDto()
 				{
 					IsSystem = m.IsSystem,
 					FieldTypeId = m.FieldTypeId,

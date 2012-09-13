@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ServiceLogService"/> class
 		/// </summary>
-		public ServiceLogService() : base()
+		public ServiceLogService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<ServiceLogDto> QueryableDto()
+		public override IQueryable<ServiceLogDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new ServiceLogDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<ServiceLogDto> QueryableDto( IQueryable<ServiceLog> items )
+		{
+			return items.Select( m => new ServiceLogDto()
 				{
 					Time = m.Time,
 					Input = m.Input,

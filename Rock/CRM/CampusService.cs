@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CampusService"/> class
 		/// </summary>
-		public CampusService() : base()
+		public CampusService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<CampusDto> QueryableDto()
+		public override IQueryable<CampusDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new CampusDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<CampusDto> QueryableDto( IQueryable<Campus> items )
+		{
+			return items.Select( m => new CampusDto()
 				{
 					IsSystem = m.IsSystem,
 					Name = m.Name,

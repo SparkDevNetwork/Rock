@@ -27,13 +27,14 @@ namespace Rock.Rest
 		}
 
 		// GET api/<controller>
-		public IEnumerable<D> Get()
+		[Queryable]
+		public virtual IQueryable<D> Get()
 		{
-			return _service.QueryableDto().ToList();
+			return _service.QueryableDto();
 		}
 
 		// GET api/<controller>/5
-		public D Get( int id )
+		public virtual D Get( int id )
 		{
 			T model;
 			if ( !_service.TryGet( id, out model ) )
@@ -43,8 +44,8 @@ namespace Rock.Rest
 			return dto;
 		}
 
-		// POST api/<controller>
-		public HttpResponseMessage Post( [FromBody]D value )
+		// POST api/<controller> (insert)
+		public virtual HttpResponseMessage Post( [FromBody]D value )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -69,8 +70,8 @@ namespace Rock.Rest
 			throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
-		// PUT api/<controller>/5
-		public void Put( int id, [FromBody]D value )
+		// PUT api/<controller>/5  (update)
+		public virtual void Put( int id, [FromBody]D value )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -88,12 +89,12 @@ namespace Rock.Rest
 
 					throw new HttpResponseException( HttpStatusCode.BadRequest );
 			}
-
-			throw new HttpResponseException( HttpStatusCode.Unauthorized );
+			else
+				throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
 		// DELETE api/<controller>/5
-		public void Delete( int id )
+		public virtual void Delete( int id )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -105,11 +106,11 @@ namespace Rock.Rest
 				_service.Delete( model, user.PersonId );
 				_service.Save( model, user.PersonId );
 			}
-
-			throw new HttpResponseException( HttpStatusCode.Unauthorized );
+			else
+				throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
-		protected Rock.Cms.User CurrentUser()
+		protected virtual Rock.Cms.User CurrentUser()
 		{
 			var principal = ControllerContext.Request.GetUserPrincipal();
 			if ( principal != null && principal.Identity != null )

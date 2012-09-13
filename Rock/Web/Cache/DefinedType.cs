@@ -110,13 +110,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedType Read( Rock.Core.DefinedType definedTypeModel )
         {
-            DefinedType definedType = DefinedType.CopyModel( definedTypeModel );
-
             string cacheKey = DefinedType.CacheKey( definedTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, definedType, new CacheItemPolicy() );
 
-            return definedType;
+            ObjectCache cache = MemoryCache.Default;
+            DefinedType definedType = cache[cacheKey] as DefinedType;
+
+			if ( definedType != null )
+				return definedType;
+			else
+			{
+				definedType = DefinedType.CopyModel( definedTypeModel );
+				cache.Set( cacheKey, definedType, new CacheItemPolicy() );
+
+				return definedType;
+			}
         }
 
         /// <summary>

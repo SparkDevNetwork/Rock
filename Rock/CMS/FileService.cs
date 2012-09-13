@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FileService"/> class
 		/// </summary>
-		public FileService() : base()
+		public FileService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FileDto> QueryableDto()
+		public override IQueryable<FileDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new FileDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
+		{
+			return items.Select( m => new FileDto()
 				{
 					IsTemporary = m.IsTemporary,
 					IsSystem = m.IsSystem,

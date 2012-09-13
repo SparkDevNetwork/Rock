@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PageContextService"/> class
 		/// </summary>
-		public PageContextService() : base()
+		public PageContextService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageContextDto> QueryableDto()
+		public override IQueryable<PageContextDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PageContextDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
+		{
+			return items.Select( m => new PageContextDto()
 				{
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,
