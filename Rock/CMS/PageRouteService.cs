@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PageRouteService"/> class
 		/// </summary>
-		public PageRouteService() : base()
+		public PageRouteService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageRouteDto> QueryableDto()
+		public override IQueryable<PageRouteDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PageRouteDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PageRouteDto> QueryableDto( IQueryable<PageRoute> items )
+		{
+			return items.Select( m => new PageRouteDto()
 				{
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,

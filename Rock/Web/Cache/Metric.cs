@@ -118,13 +118,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Metric Read( Rock.Core.Metric metricModel )
         {
-            Metric metric = Metric.CopyModel( metricModel );
-
             string cacheKey = Metric.CacheKey( metricModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, metric, new CacheItemPolicy() );
 
-            return metric;
+            ObjectCache cache = MemoryCache.Default;
+            Metric metric = cache[cacheKey] as Metric;
+
+			if ( metric != null )
+				return metric;
+			else
+			{
+				metric = Metric.CopyModel( metricModel );
+				cache.Set( cacheKey, metric, new CacheItemPolicy() );
+
+				return metric;
+			}
         }
 
         /// <summary>

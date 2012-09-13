@@ -165,7 +165,23 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
-        /// <summary>
+		/// <summary>
+		/// Gets or sets the Tags.
+		/// </summary>
+		/// <value>
+		/// the Tags.
+		/// </value>
+		public DbSet<Rock.Core.Tag> Tags { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Tagged Items.
+		/// </summary>
+		/// <value>
+		/// the Tagged Items.
+		/// </value>
+		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+
+		/// <summary>
         /// Gets or sets the Addresses.
         /// </summary>
         /// <value>
@@ -316,27 +332,6 @@ namespace Rock.Data
         /// The transaction funds.
         /// </value>
         public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockContext"/> class.
-        /// </summary>
-        public RockContext()
-            : base()
-        {
-            // Do no let EF create the database, it should be created through migrations
-            Database.SetInitializer<RockContext>( null );
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockContext"/> class.
-        /// </summary>
-        /// <param name="connectionString">The connection string.</param>
-        public RockContext( string connectionString )
-            : base( connectionString )
-        {
-            // Do no let EF create the database, it should be created through migrations
-            Database.SetInitializer<RockContext>( null );
-        }
 
         /// <summary>
         /// This method is called when the context has been initialized, but

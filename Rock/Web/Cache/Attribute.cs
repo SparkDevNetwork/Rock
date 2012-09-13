@@ -142,13 +142,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Attribute Read( Rock.Core.Attribute attributeModel )
         {
-            Attribute attribute = Attribute.CopyModel( attributeModel );
+			string cacheKey = Attribute.CacheKey( attributeModel.Id );
 
-            string cacheKey = Attribute.CacheKey( attributeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+			ObjectCache cache = MemoryCache.Default;
+			Attribute attribute = cache[cacheKey] as Attribute;
 
-            return attribute;
+			if ( attribute != null )
+				return attribute;
+			else
+			{
+				attribute = Attribute.CopyModel( attributeModel );
+				cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+				return attribute;
+			}
         }
 
         /// <summary>

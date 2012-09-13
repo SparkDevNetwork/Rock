@@ -146,6 +146,11 @@
     <Compile Include="Core\AttributeValueDto.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
     <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\TaggedItemService.Partial.cs" />
+    <Compile Include="Core\TagService.Partial.cs" />
+    <Compile Include="Core\Tag.cs" />
+    <Compile Include="Core\TagDto.cs" />
+    <Compile Include="Core\TaggedItem.cs" />
     <Compile Include="Core\DefinedTypeDto.cs" />
     <Compile Include="Core\DefinedTypeService.cs" />
     <Compile Include="Core\DefinedValueDto.cs" />
@@ -174,6 +179,9 @@
     <Compile Include="Core\RangeValue.cs" />
     <Compile Include="Core\ServiceLogDto.cs" />
     <Compile Include="Core\ServiceLogService.cs" />
+    <Compile Include="Core\TaggedItemDto.cs" />
+    <Compile Include="Core\TaggedItemService.cs" />
+    <Compile Include="Core\TagService.cs" />
     <Compile Include="Crm\AddressDto.cs" />
     <Compile Include="Crm\AddressService.cs" />
     <Compile Include="Crm\AddressService.Partial.cs" />
@@ -372,8 +380,25 @@
     <Compile Include="Migrations\201208291337203_UpdateAcronymCasing.Designer.cs">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209051845133_AddTags.cs" />
+    <Compile Include="Migrations\201209051845133_AddTags.Designer.cs">
+      <DependentUpon>201209051845133_AddTags.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209101921242_PersonDetail.cs" />
+    <Compile Include="Migrations\201209101921242_PersonDetail.Designer.cs">
+      <DependentUpon>201209101921242_PersonDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209121950361_FixGroupTypeRoleKeys.cs" />
+    <Compile Include="Migrations\201209121950361_FixGroupTypeRoleKeys.Designer.cs">
+      <DependentUpon>201209121950361_FixGroupTypeRoleKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209131341496_RenameFamilyMemberBlock.cs" />
+    <Compile Include="Migrations\201209131341496_RenameFamilyMemberBlock.Designer.cs">
+      <DependentUpon>201209131341496_RenameFamilyMemberBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
+    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
     <Compile Include="Search\Person\Address.cs" />
@@ -389,6 +414,7 @@
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
     <Compile Include="SystemGuid\Block.cs" />
+    <Compile Include="SystemGuid\GroupType.cs" />
     <Compile Include="SystemGuid\FieldType.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
@@ -431,6 +457,9 @@
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
+    <Compile Include="Web\UI\ContextBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -522,6 +551,9 @@
     </Compile>
     <Compile Include="Data\IFeed.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
+    <Compile Include="Web\UI\PersonBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -659,6 +691,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201208291337203_UpdateAcronymCasing.resx">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209051845133_AddTags.resx">
+      <DependentUpon>201209051845133_AddTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209101921242_PersonDetail.resx">
+      <DependentUpon>201209101921242_PersonDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209121950361_FixGroupTypeRoleKeys.resx">
+      <DependentUpon>201209121950361_FixGroupTypeRoleKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209131341496_RenameFamilyMemberBlock.resx">
+      <DependentUpon>201209131341496_RenameFamilyMemberBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

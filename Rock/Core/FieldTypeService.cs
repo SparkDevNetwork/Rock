@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FieldTypeService"/> class
 		/// </summary>
-		public FieldTypeService() : base()
+		public FieldTypeService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FieldTypeDto> QueryableDto()
+		public override IQueryable<FieldTypeDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new FieldTypeDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<FieldTypeDto> QueryableDto( IQueryable<FieldType> items )
+		{
+			return items.Select( m => new FieldTypeDto()
 				{
 					IsSystem = m.IsSystem,
 					Name = m.Name,

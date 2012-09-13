@@ -599,13 +599,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Page Read( Rock.Cms.Page pageModel )
         {
-            Page page = Page.CopyModel( pageModel );
-
             string cacheKey = Page.CacheKey( pageModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, page, new CacheItemPolicy() );
 
-            return page;
+            ObjectCache cache = MemoryCache.Default;
+            Page page = cache[cacheKey] as Page;
+
+			if ( page != null )
+				return page;
+			else
+			{
+				page = Page.CopyModel( pageModel );
+				cache.Set( cacheKey, page, new CacheItemPolicy() );
+
+				return page;
+			}
         }
 
         /// <summary>
@@ -706,6 +713,21 @@ namespace Rock.Web.Cache
                         cache.Remove( item.Key );
                 }
         }
+
+		/// <summary>
+		/// Flushes the block instances for all the pages that use a specific layout.
+		/// </summary>
+		public static void FlushLayoutBlockInstances( string layout )
+		{
+			ObjectCache cache = MemoryCache.Default;
+			foreach ( var item in cache )
+				if ( item.Key.StartsWith( "Rock:Page:" ) )
+				{
+					Page page = cache[item.Key] as Page;
+					if ( page != null && page.Layout == layout )
+						page.FlushBlockInstances();
+				}
+		}
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
