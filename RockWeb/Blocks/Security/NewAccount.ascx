@@ -50,7 +50,7 @@
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 
-        <div class="row">
+        <div class="row-fluid">
 
             <div class="span6">
 
@@ -76,17 +76,15 @@
                     <Rock:LabeledTextBox ID="tbFirstName" runat="server" LabelText="First Name" Required="true" ></Rock:LabeledTextBox>
                     <Rock:LabeledTextBox ID="tbLastName" runat="server" LabelText="Last Name" Required="true" ></Rock:LabeledTextBox>
                     <Rock:LabeledTextBox ID="tbEmail" runat="server" LabelText="Email" Required="true" ></Rock:LabeledTextBox>
-                    <Rock:LabeledDropDownList ID="ddlGender" runat="server" LabelText="Gender">
+                    <Rock:LabeledDropDownList ID="ddlGender" runat="server" LabelText="Gender" CssClass="input-small">
                         <asp:ListItem Text="" Value="U"></asp:ListItem>
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>
                         <asp:ListItem Text="Female" Value="F"></asp:ListItem>
                     </Rock:LabeledDropDownList>
-                    <dl>
-                        <dt>
-                            <asp:Label runat="server" AssociatedControlID="ddlBirthMonth" Text="Birthdate"></asp:Label>
-                        </dt>
-                        <dd>
-                            <asp:DropDownList ID="ddlBirthMonth" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBirthMonth_IndexChanged" class="small">
+                    <div class="control-group">
+                        <asp:Label runat="server" AssociatedControlID="ddlBirthMonth" Text="Birthdate"></asp:Label>
+                        <div class="controls">
+                            <asp:DropDownList ID="ddlBirthMonth" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBirthMonth_IndexChanged" class="input-small">
                                 <asp:ListItem Text="Month" Value="0"></asp:ListItem>
                                 <asp:ListItem Text="January" Value="1"></asp:ListItem>
                                 <asp:ListItem Text="February" Value="2"></asp:ListItem>
@@ -100,15 +98,15 @@
                                 <asp:ListItem Text="October" Value="10"></asp:ListItem>
                                 <asp:ListItem Text="November" Value="11"></asp:ListItem>
                                 <asp:ListItem Text="December" Value="12"></asp:ListItem>
-                            </asp:DropDownList>
-                            <asp:DropDownList ID="ddlBirthDay" runat="server" class="mini">
+                            </asp:DropDownList> &nbsp;
+                            <asp:DropDownList ID="ddlBirthDay" runat="server" class="input-small">
                                 <asp:ListItem Text="Day" Value="0"></asp:ListItem>
-                            </asp:DropDownList>
-                            <asp:DropDownList ID="ddlBirthYear" runat="server" class="small">
+                            </asp:DropDownList> &nbsp;
+                            <asp:DropDownList ID="ddlBirthYear" runat="server" class="input-small">
                                 <asp:ListItem Text="Year" Value="0"></asp:ListItem>
                             </asp:DropDownList>
-                        </dd>
-                    </dl>
+                        </div>
+                    </div>
                </fieldset>
 
             </div>
@@ -116,7 +114,7 @@
         </div>
 
         <div class="actions">
-            <asp:Button ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn primary" OnClick="btnUserInfoNext_Click" />
+            <asp:Button ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnUserInfoNext_Click" />
         </div>
 
     </asp:PlaceHolder>

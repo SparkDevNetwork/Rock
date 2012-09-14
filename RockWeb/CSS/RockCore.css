@@ -310,6 +310,12 @@ span.cke_skin_kama {
     
 }
 
+/* Create Account Styling */
+.new-account .actions
+{
+    text-align: right;
+}
+
 /* Dialog Styling */
 #dialog 
 {
