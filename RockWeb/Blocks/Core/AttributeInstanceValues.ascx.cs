@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Core
             if ( _model != null )
                 lvAttributeValues.DataSource = _model.AttributeValues[_attribute.Key].Value;
             else
-                lvAttributeValues.DataSource = new List<Rock.Web.Cache.AttributeValue>();
+                lvAttributeValues.DataSource = new List<Rock.Core.AttributeValueDto>();
             lvAttributeValues.DataBind();
 
             if ( _attribute.IsMultiValue && lvAttributeValues.InsertItem != null )
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                var attributeValue = e.Item.DataItem as Rock.Web.Cache.AttributeValue;
+                var attributeValue = e.Item.DataItem as Rock.Core.AttributeValueDto;
                 if ( attributeValue != null )
                 {
                     PlaceHolder phDisplayValue = e.Item.FindControl( "phDisplayValue" ) as PlaceHolder;
