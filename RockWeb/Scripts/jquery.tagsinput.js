@@ -108,10 +108,21 @@
 				
 				if (value !='' && skipTag != true) { 
 
+				    // custom code to allow for custom css 
+				    var className = "";
+				    var tagTitle = value;
+
+				    // check for class name
+				    var j = value.indexOf("^");
+				    if (j != -1) {
+				        className = value.substring(j + 1);
+				        tagTitle = value.substring(0, j);
+				    }
+
                     // add html with delete enabled
                     if (enableDelete) {
-                        $('<span>').addClass('tag ' + options.class).append(
-                            $('<span>').text(value).append('&nbsp;&nbsp;'),
+                        $('<span>').addClass('tag ' + className).append(
+                            $('<span>').text(tagTitle).append('&nbsp;&nbsp;'),
                             $('<a>', {
                                 href  : '#',
                                 title : 'Removing tag',
@@ -122,8 +133,8 @@
                         ).insertBefore('#' + id + '_addTag');
                     } else {
                         // disable delete 
-                        $('<span>').addClass('tag ' + options.class).append(
-                            $('<span>').text(value).append('&nbsp;&nbsp;')
+                        $('<span>').addClass('tag ' + className).append(
+                            $('<span>').text(tagTitle).append('&nbsp;&nbsp;')
                             
                         ).insertBefore('#' + id + '_addTag');
                     }
@@ -379,21 +390,14 @@
 	};
 	
 	$.fn.tagsInput.importTags = function(obj,val) {			
-		$(obj).val('');
+
+	    console.log("Obj: " + $(obj).attr('id') + "; Val: " + val);
+
+	    $(obj).val('');
 		var id = $(obj).attr('id');
 		var tags = val.split(delimiter[id]);
 		for (i=0; i<tags.length; i++) { 
-			// custom code to allow for custom css 
-            var tagName = tags[i];
-            var className = "";
-            // check for class name
-            var j = tagName.indexOf("^");
-            if (j != -1) {
-                className = tagName.substring(j + 1);
-                tagName = tagName.substring(0, j);
-            }
-            
-            $(obj).addTag(tagName,{focus:false,callback:false, class:className});  // TODO: ADD CLASS HERE
+            $(obj).addTag(tags[i],{focus:false,callback:false, class:''}); 
 		}
 		if(tags_callbacks[id] && tags_callbacks[id]['onChange'])
 		{
