@@ -12,8 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Crm
 {
@@ -59,6 +57,24 @@ namespace Rock.Crm
 		};
 
         /// <summary>
+        /// The AssessmentResults struct used to return the final assessment scores
+        /// </summary>
+        public struct AssessmentResults
+        {
+            public int AdaptiveBehaviorS;
+            public int AdaptiveBehaviorC;
+            public int AdaptiveBehaviorI;
+            public int AdaptiveBehaviorD;
+
+            public int NaturalBehaviorS;
+            public int NaturalBehaviorC;
+            public int NaturalBehaviorI;
+            public int NaturalBehaviorD;
+
+            public DateTime LastSaveDate;
+        }
+
+        /// <summary>
         /// An individual response to a question. 
         /// <para>Properties: QuestionNumber, ResponseNumber, ResponseID (QuestionNumber + ResponseNumber), ResponseText, MostScore, and LeastScore.</para>
         /// </summary>
@@ -70,22 +86,6 @@ namespace Rock.Crm
             public string ResponseText;
             public string MostScore;
             public string LeastScore;
-        }
-
-        /// <summary>
-        /// Scores saved for a user.
-        /// </summary>
-        public struct SavedScores
-        {
-            public string AdaptiveD;
-            public string AdaptiveI;
-            public string AdaptiveS;
-            public string AdaptiveC;
-            public string NaturalD;
-            public string NaturalI;
-            public string NaturalS;
-            public string NaturalC;
-            public string DateSaved;
         }
 
         /// <summary>
@@ -118,8 +118,8 @@ namespace Rock.Crm
         /// Scores the test.
         /// </summary>
         /// <param name="selectedResponseIDs">a List of ResponseIDs to be scored.</param>
-        /// <returns>a String testResults with final scores.</returns>
-        static public String Score(List<string> selectedResponseIDs)
+        /// <returns>a struct TestResults object with final scores.</returns>
+        static public AssessmentResults Score(List<string> selectedResponseIDs)
         {
             List<DiscService.ResponseItem> responseList = DiscService.GetResponses();
 
@@ -157,52 +157,140 @@ namespace Rock.Crm
             decimal decX = results["S"][0] + results["C"][0] + results["I"][0] + results["D"][0];
             decimal decY = nbS + nbC + nbI + nbD;
 
-            string testResults = String.Empty;
+            AssessmentResults testResults = new AssessmentResults();
             if (decX > 0 && decY > 0)
             {
-                testResults += Convert.ToInt32((results["D"][0] / decX * 100)) + ":";
-                testResults += Convert.ToInt32((results["I"][0] / decX * 100)) + ":";
-                testResults += Convert.ToInt32((results["S"][0] / decX * 100)) + ":";
-                testResults += Convert.ToInt32((results["C"][0] / decX * 100)) + ":";
+                testResults.AdaptiveBehaviorS = Convert.ToInt32((results["S"][0] / decX * 100));
+                testResults.AdaptiveBehaviorC = Convert.ToInt32((results["C"][0] / decX * 100));
+                testResults.AdaptiveBehaviorI = Convert.ToInt32((results["I"][0] / decX * 100));
+                testResults.AdaptiveBehaviorD = Convert.ToInt32((results["D"][0] / decX * 100));
 
-                testResults += Convert.ToInt32((nbD / decY * 100)) + ":";
-                testResults += Convert.ToInt32((nbI / decY * 100)) + ":";
-                testResults += Convert.ToInt32((nbS / decY * 100)) + ":";
-                testResults += Convert.ToInt32((nbC / decY * 100));
+                testResults.NaturalBehaviorS = Convert.ToInt32((nbS / decY * 100));
+                testResults.NaturalBehaviorC = Convert.ToInt32((nbC / decY * 100));
+                testResults.NaturalBehaviorI = Convert.ToInt32((nbI / decY * 100));
+                testResults.NaturalBehaviorD = Convert.ToInt32((nbD / decY * 100));
             }
-
             return testResults;
         }
 
         /// <summary>
-        /// Returns a struct of the saved scores for a person, if there are any. Otherwise, returns zeroes.
+        /// Loads and returns saved Assessment scores for the Person.
+        /// </summary>
+        /// <param name="person">The Person to get the scores for.</param>
+        /// <returns>AssessmentResults</returns>
+        static public AssessmentResults LoadSavedAssessmentResults(Person person)
+        {
+            AssessmentResults savedScores = new AssessmentResults();
+            int attributeValueLookupResult;
+            bool attributeValueLookupSuccessful = false;
+            DateTime lastAssessmentDate = DateTime.MinValue;
+
+            var discAttributes = person.Attributes["DISC"];
+
+            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            {
+                attributeValueLookupResult = 0;
+                switch (attrib.Key)
+                {
+                    case "AdaptiveD":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
+                        break;
+                    case "AdaptiveI":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
+                        break;
+                    case "AdaptiveS":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
+                        break;
+                    case "AdaptiveC":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
+                        break;
+                    case "NaturalD":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorD = attributeValueLookupResult;
+                        break;
+                    case "NaturalI":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorI = attributeValueLookupResult;
+                        break;
+                    case "NaturalS":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorS = attributeValueLookupResult;
+                        break;
+                    case "NaturalC":
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        savedScores.NaturalBehaviorC = attributeValueLookupResult;
+                        break;
+                    case "LastSaveDate":
+                        attributeValueLookupSuccessful = DateTime.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate);
+                        savedScores.LastSaveDate = lastAssessmentDate;
+                        break;
+                }
+            }
+            return savedScores;
+        }
+
+        /// <summary>
+        /// Saves Assessment results to a Person's PersonProperties
         /// </summary>
         /// <param name="person"></param>
-        /// <returns></returns>
-        static public SavedScores GetSavedScores(Person person)
+        /// <param name="ABd">Adaptive Behavior D</param>
+        /// <param name="ABi">Adaptive Behavior I</param>
+        /// <param name="ABs">Adaptive Behavior S</param>
+        /// <param name="ABc">Adaptive Behavior C</param>
+        /// <param name="NBd">Natural Behavior D</param>
+        /// <param name="NBi">Natural Behavior I</param>
+        /// <param name="NBs">Natural Behavior S</param>
+        /// <param name="NBc">Natural Behavior C</param>
+        static public void SaveAssessmentResults(
+            Person person,
+            String ABd,
+            String ABi,
+            String ABs,
+            String ABc,
+            String NBd,
+            String NBi,
+            String NBs,
+            String NBc)
         {
-            PersonService service = new PersonService();
-            List<String> savedScores = service.GetUserValue(person, "Rock.Crm.DISC.SavedScores");
-            
-            string[] scoreData;
-            if (savedScores != null)
-                scoreData = savedScores[0].Split(new char [] { ':' } );
-            else
-                scoreData = "0:0:0:0:0:0:0:0:No Saved Scores".Split(new char[] { ':' });
+            var discAttributes = person.Attributes["DISC"];
 
-            SavedScores scores = new SavedScores();
-
-            scores.AdaptiveD = scoreData[0];
-            scores.AdaptiveI = scoreData[1];
-            scores.AdaptiveS = scoreData[2];
-            scores.AdaptiveC = scoreData[3];
-            scores.NaturalD = scoreData[4];
-            scores.NaturalI = scoreData[5];
-            scores.NaturalS = scoreData[6];
-            scores.NaturalC = scoreData[7];
-            scores.DateSaved = scoreData[8];
-
-            return scores;
+            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            {
+                switch (attrib.Key)
+                {
+                    case "AdaptiveD":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABd, person.Id);
+                        break;
+                    case "AdaptiveI":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABi, person.Id);
+                        break;
+                    case "AdaptiveS":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABs, person.Id);
+                        break;
+                    case "AdaptiveC":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, ABc, person.Id);
+                        break;
+                    case "NaturalD":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBd, person.Id);
+                        break;
+                    case "NaturalI":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBi, person.Id);
+                        break;
+                    case "NaturalS":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBs, person.Id);
+                        break;
+                    case "NaturalC":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBc, person.Id);
+                        break;
+                    case "LastSaveDate":
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, DateTime.Now.ToString(), person.Id);
+                        break;
+                }
+            }
         }
     }
 }
