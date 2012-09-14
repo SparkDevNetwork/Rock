@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Administration
                 cbMenuIcon.Checked = _page.MenuDisplayIcon;
                 cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
                 cbRequiresEncryption.Checked = _page.RequiresEncryption;
-                cbEnableViewState.Checked = _page.EnableViewstate;
+                cbEnableViewState.Checked = _page.EnableViewState;
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;

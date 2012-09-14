@@ -15,32 +15,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class Block
+    public class Block : Rock.Cms.BlockDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new Block object
-        /// </summary>
-        private Block() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets the path to the block control
-        /// </summary>
-        public string Path { get; private set; }
-
-        /// <summary>
-        /// Gets the name of block
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
+        private Block() : base() { }
+		private Block( Rock.Cms.Block block ) : base( block ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
@@ -72,7 +50,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
@@ -120,11 +98,8 @@ namespace Rock.Web.Cache
                 Rock.Cms.Block blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
-                    block = new Block();
-                    block.Id = blockModel.Id;
-                    block.Path = blockModel.Path;
-                    block.Name = blockModel.Name;
-                    block.Description = blockModel.Description;
+					block = new Block(blockModel);
+
                     block.IsInstancePropertiesVerified = false;
 
                     Rock.Attribute.Helper.LoadAttributes( blockModel );

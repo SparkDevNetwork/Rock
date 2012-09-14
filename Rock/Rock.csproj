@@ -396,6 +396,10 @@
     <Compile Include="Migrations\201209131341496_RenameFamilyMemberBlock.Designer.cs">
       <DependentUpon>201209131341496_RenameFamilyMemberBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209141222241_AddCampusForeignKeys.cs" />
+    <Compile Include="Migrations\201209141222241_AddCampusForeignKeys.Designer.cs">
+      <DependentUpon>201209141222241_AddCampusForeignKeys.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -435,7 +439,9 @@
     <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Web\Cache\BlockInstance.cs" />
     <Compile Include="Security\Role.cs" />
-    <Compile Include="Web\Cache\AttributeValue.cs" />
+    <Compile Include="Web\Cache\Campus.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\Cache\DefinedType.cs" />
     <Compile Include="Web\Cache\DefinedValue.cs" />
     <Compile Include="Web\Cache\MetricValue.cs" />
@@ -703,6 +709,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209131341496_RenameFamilyMemberBlock.resx">
       <DependentUpon>201209131341496_RenameFamilyMemberBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209141222241_AddCampusForeignKeys.resx">
+      <DependentUpon>201209141222241_AddCampusForeignKeys.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

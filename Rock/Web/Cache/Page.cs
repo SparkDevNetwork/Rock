@@ -19,114 +19,20 @@ using Rock.Security;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a page that is required by the rendering engine.
-    /// This information will be cached by the engine
-    /// </summary>
+	/// Information about a page that is required by the rendering engine.
+	/// This information will be cached by the engine
+	/// </summary>
     [Serializable]
-    public class Page : Security.ISecured, Rock.Attribute.IHasAttributes
+    public class Page : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new Page object
-        /// </summary>
-        private Page() { }
+		#region Constructors
 
-        #region Properties
+		private Page() : base() { }
+		private Page( Rock.Cms.Page page ) : base( page ) { }
 
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
+		#endregion
 
-        /// <summary>
-        /// Gets the layout.
-        /// </summary>
-        public string Layout { get; private set; }
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets the duration of the output cache.
-        /// </summary>
-        /// <value>
-        /// The duration of the output cache.
-        /// </value>
-        public int OutputCacheDuration { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        public string Title { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
-
-        /// <summary>
-        /// Gets the icon URL.
-        /// </summary>
-		public string IconUrl { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the page administration footer should be displayed on the page
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the footer should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        public bool IncludeAdminFooter { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether to display the page description in the page navigation menu.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if description should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        public bool MenuDisplayDescription { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether page icon should be included in the page navigation menu.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if icon should be included; otherwise, <c>false</c>.
-        /// </value>
-        public bool MenuDisplayIcon { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the pages child pages should be displayed in the page navigation menu.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if child pages should be included; otherwise, <c>false</c>.
-        /// </value>
-        public bool MenuDisplayChildPages { get; private set; }
-
-        /// <summary>
-        /// Gets a <see cref="Cms.DisplayInNavWhen"/> value indicating when or if the page should be included in a page navigation menu
-        /// </summary>
-        public Cms.DisplayInNavWhen DisplayInNavWhen { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the page requires SSL encryption.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if requires encryption; otherwise, <c>false</c>.
-        /// </value>
-        public bool RequiresEncryption { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the page should use viewstate
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if viewstate should be enabled; otherwise, <c>false</c>.
-        /// </value>
-        public bool EnableViewstate { get; private set; }
+		#region Properties
 
         /// <summary>
         /// Gets or sets the route id.
@@ -165,14 +71,14 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( this.Id, -1 ), null, null );
+                return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( Id, -1 ), null, null );
             }
         }
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
@@ -207,15 +113,14 @@ namespace Rock.Web.Cache
         private List<int> AttributeIds = new List<int>();
 
         /// <summary>
-        /// Gets or sets the layout path for the page
-        /// </summary>
-        /// <value>
-        /// The layout path.
-        /// </value>
-        public string LayoutPath { get; set; }
+		/// Gets or sets the layout path for the page
+		/// </summary>
+		/// <value>
+		/// The layout path.
+		/// </value>
+		public string LayoutPath { get; set; }
 
-        /// <summary>
-        /// Gets the parent <see cref="Page"/> object.
+		/// Gets the parent <see cref="Page"/> object.
         /// </summary>
         public Page ParentPage
         {
@@ -227,7 +132,6 @@ namespace Rock.Web.Cache
                     return null;
             }
         }
-        private int? ParentPageId;
 
         /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
@@ -242,7 +146,6 @@ namespace Rock.Web.Cache
                     return null;
             }
         }
-        private int? SiteId;
 
         /// <summary>
         /// Gets a List of child <see cref="Page"/> objects.
@@ -340,9 +243,9 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        /// <summary>
+		/// <summary>
         /// Saves the attribute values for the page
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -653,25 +556,8 @@ namespace Rock.Web.Cache
         // Copies the Model object to the Cached object
         private static Page CopyModel( Rock.Cms.Page pageModel )
         {
-            Page page = new Page();
-            page.Id = pageModel.Id;
-            page.ParentPageId = pageModel.ParentPageId;
-            page.SiteId = pageModel.SiteId;
-            page.Layout = pageModel.Layout;
-            page.Order = pageModel.Order;
-            page.OutputCacheDuration = pageModel.OutputCacheDuration;
-            page.Name = pageModel.Name;
-            page.Description = pageModel.Description;
-			page.IconUrl = pageModel.IconUrl;
-            page.AttributeValues = pageModel.AttributeValues;
-            page.IncludeAdminFooter = pageModel.IncludeAdminFooter;
-            page.Title = pageModel.Title;
-            page.DisplayInNavWhen = pageModel.DisplayInNavWhen;
-            page.MenuDisplayChildPages = pageModel.MenuDisplayChildPages;
-            page.MenuDisplayDescription = pageModel.MenuDisplayDescription;
-            page.MenuDisplayIcon = pageModel.MenuDisplayIcon;
-            page.EnableViewstate = pageModel.EnableViewState;
-            page.RequiresEncryption = pageModel.RequiresEncryption;
+			// Creates new object by copying properties of model
+            var page = new Rock.Web.Cache.Page(pageModel);
 
             if (pageModel.Attributes != null)
                 foreach ( var category in pageModel.Attributes )

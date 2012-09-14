@@ -57,7 +57,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes

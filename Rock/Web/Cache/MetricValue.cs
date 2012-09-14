@@ -17,48 +17,11 @@ namespace Rock.Web.Cache
     /// The value of a metric
     /// </summary>
     [Serializable]
-    public class MetricValue
+    public class MetricValue : Rock.Core.MetricValueDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new MetricValue object
-        /// </summary>
-		private MetricValue() { }
+		private MetricValue() : base() { }
+		private MetricValue( Rock.Core.MetricValue model ) : base( model ) { }
 
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-		/// <summary>
-		/// Gets the MetricId.
-		/// </summary>
-		public int MetricId { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the Value.
-		/// </summary>
-		public string Value { get; set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the xValue.
-		/// </summary>
-		public int xValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the isDateBased flag.
-		/// </summary>
-		public bool isDateBased { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Label.
-		/// </summary>
-		public string Label { get; set; }
-		
         #region Static Methods
 
         private static string CacheKey( int id )
@@ -129,16 +92,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static MetricValue CopyModel( Rock.Core.MetricValue metricValueModel )
         {
-            MetricValue metricValue= new MetricValue();
-            metricValue.Id = metricValueModel.Id;
-			metricValue.Id = metricValueModel.Id;
-			metricValue.MetricId = metricValueModel.MetricId;
-			metricValue.Value = metricValueModel.Value;
-			metricValue.Description = metricValueModel.Description;
-			metricValue.xValue = metricValueModel.xValue;
-			metricValue.isDateBased = metricValueModel.isDateBased;
-			metricValue.Label = metricValueModel.Label;
-			
+			MetricValue metricValue = new MetricValue( metricValueModel );
 			return metricValue;
         }
 
