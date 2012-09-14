@@ -379,7 +379,7 @@ namespace Rock.Web.UI
                         SetTitle( PageInstance.Name );
 
                     // set viewstate on/off
-                    this.EnableViewState = PageInstance.EnableViewstate;
+                    this.EnableViewState = PageInstance.EnableViewState;
 
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
@@ -506,12 +506,12 @@ namespace Rock.Web.UI
                         PageInstance.AddHtmlLink( this.Page, faviconLink );
                     }
 
-                    if ( PageInstance.Site.AppleTouchUrl != null )
+                    if ( PageInstance.Site.AppleTouchIconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.AppleTouchUrl) );
+						touchLink.Attributes.Add( "href", ResolveUrl( "~/" + PageInstance.Site.AppleTouchIconUrl ) );
 
                         PageInstance.AddHtmlLink( this.Page, touchLink );
                     }

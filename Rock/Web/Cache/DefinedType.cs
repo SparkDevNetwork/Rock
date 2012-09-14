@@ -14,19 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedType
+    public class DefinedType : Rock.Core.DefinedTypeDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new DefinedType object
-        /// </summary>
-        private DefinedType() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        private int? FieldTypeId { get; set; }
+        private DefinedType() : base() { }
+		private DefinedType( Rock.Core.DefinedType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -43,26 +34,6 @@ namespace Rock.Web.Cache
                 return null;
             }
         }
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        public string Category { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
 
         #region Static Methods
 
@@ -133,14 +104,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedType CopyModel( Rock.Core.DefinedType definedTypeModel )
         {
-            DefinedType definedType = new DefinedType();
-            definedType.Id = definedTypeModel.Id;
-            definedType.Order = definedTypeModel.Order;
-            definedType.Category = definedTypeModel.Category;
-            definedType.Name = definedTypeModel.Name;
-            definedType.Description = definedTypeModel.Description;
-            definedType.FieldTypeId = definedTypeModel.FieldTypeId;
-
+            DefinedType definedType = new DefinedType(definedTypeModel);
             return definedType;
         }
 

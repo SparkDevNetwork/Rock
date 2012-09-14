@@ -1,8 +1,13 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 
 namespace Rock.Data
 {
-    public abstract class Dto<T> 
+    public abstract class Dto<T>
         where T : Model<T>
     {
         /// <summary>
@@ -74,7 +79,6 @@ namespace Rock.Data
             throw new System.NotImplementedException();
         }
 
-
         /// <summary>
         /// Copies properties from the model
         /// </summary>
@@ -84,5 +88,5 @@ namespace Rock.Data
             throw new System.NotImplementedException();
         }
 
-    }
+	}
 }
