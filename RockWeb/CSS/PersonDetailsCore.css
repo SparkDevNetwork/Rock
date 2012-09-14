@@ -4,11 +4,6 @@ i[class^="icon-"].photo
     font-size: 12px;
 }
 
-div.block-instance.persondetails a  /* class will change when block is finalized */
-{
-    color: inherit;  
-}
-
 a.highlight
 {
     padding: 1px 4px;
