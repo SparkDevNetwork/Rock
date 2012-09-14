@@ -495,5 +495,87 @@ namespace Rock.Migrations
 		}
 
 		#endregion
+
+		#region DefinedType Methods
+
+		public void AddDefinedType( string category, string name, string description, string guid )
+		{
+			Sql( string.Format( @"
+				
+				DECLARE @FieldTypeId int
+				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+
+				DECLARE @Order int
+				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedType];
+
+				INSERT INTO [coreDefinedType] (
+					[IsSystem],[FieldTypeId],[Order],
+					[Category],[Name],[Description],
+					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+					[Guid])
+				VALUES(
+					1,@FieldTypeId,@Order,
+					'{0}','{1}','{2}',
+					GETDATE(),GETDATE(),1,1,
+					'{3}')
+",
+					category,
+					name,
+					description,
+					guid
+					) );
+		}
+
+		public void DeleteDefinedType( string guid )
+		{
+			Sql( string.Format( @"
+				DELETE [coreDefinedType] WHERE [Guid] = '{0}'
+",
+					guid
+					) );
+		}
+
+		#endregion
+
+		#region DefinedType Methods
+
+		public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
+		{
+			Sql( string.Format( @"
+				
+				DECLARE @DefinedTypeId int
+				SET @DefinedTypeId = (SELECT [Id] FROM [coreDefinedType] WHERE [Guid] = '{0}')
+
+				DECLARE @Order int
+				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+
+				INSERT INTO [coreDefinedValue] (
+					[IsSystem],[DefinedTypeId],[Order],
+					[Name],[Description],
+					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+					[Guid])
+				VALUES(
+					1,@DefinedTypeId,@Order,
+					'{1}','{2}',
+					GETDATE(),GETDATE(),1,1,
+					'{3}')
+",
+					definedTypeGuid,
+					name,
+					description,
+					guid
+					) );
+		}
+
+		public void DeleteDefinedValue( string guid )
+		{
+			Sql( string.Format( @"
+				DELETE [coreDefinedValue] WHERE [Guid] = '{0}'
+",
+					guid
+					) );
+		}
+
+		#endregion
 	}
 }

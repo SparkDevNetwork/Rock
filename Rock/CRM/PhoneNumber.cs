@@ -47,10 +47,24 @@ namespace Rock.Crm
 		/// Number.
 		/// </value>
 		[Required]
-		[MaxLength( 100 )]
+		[MaxLength( 20 )]
 		[DataMember]
 		public string Number { get; set; }
-		
+
+		[DataMember]
+		public int? NumberTypeId { get; set; }
+
+		public virtual Core.DefinedValue NumberType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the whether the number is unlisted or not.
+		/// </summary>
+		/// <value>
+		/// IsUnlisted.
+		/// </value>
+		[DataMember]
+		public bool IsUnlisted { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Description.
 		/// </summary>
@@ -136,6 +150,25 @@ namespace Rock.Crm
 			return Read<PhoneNumber>( id );
 		}
 
+		/// <summary>
+		/// Formats a phone number
+		/// </summary>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		public static string FormattedNumber( string number )
+		{
+			number = new System.Text.RegularExpressions.Regex( @"\D" ).Replace( number, string.Empty );
+			number = number.TrimStart( '1' );
+			if ( number.Length == 7 )
+				return Convert.ToInt64( number ).ToString( "###\\.####" );
+			if ( number.Length == 10 )
+				return Convert.ToInt64( number ).ToString( "###\\.###\\.####" );
+			if ( number.Length > 10 )
+				return Convert.ToInt64( number )
+					.ToString( "###\\.###\\.#### " + new String( '#', ( number.Length - 10 ) ) );
+			return number;
+		}
+
 
     }
 
@@ -150,7 +183,8 @@ namespace Rock.Crm
         public PhoneNumberConfiguration()
         {
 			this.HasRequired( p => p.Person ).WithMany( p => p.PhoneNumbers ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.NumberType ).WithMany().HasForeignKey( p => p.NumberTypeId ).WillCascadeOnDelete( false );
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
