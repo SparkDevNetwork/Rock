@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Rock.Crm;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Crm;
 
 namespace Rockweb.Blocks.Crm
 {
@@ -128,18 +126,23 @@ namespace Rockweb.Blocks.Crm
             //Yup, build question table
             buildQuestionTable();
 
-            //Display saved scores, if any
-            DiscService.SavedScores scores = DiscService.GetSavedScores(this.CurrentPerson);
+            DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults(CurrentPerson);
 
-            lblLastAssessmentDate.Text = scores.DateSaved;
-            lblPrevABd.Text = scores.AdaptiveD;
-            lblPrevABi.Text = scores.AdaptiveI;
-            lblPrevABs.Text = scores.AdaptiveS;
-            lblPrevABc.Text = scores.AdaptiveC;
-            lblPrevNBd.Text = scores.NaturalD;
-            lblPrevNBi.Text = scores.NaturalI;
-            lblPrevNBs.Text = scores.NaturalS;
-            lblPrevNBc.Text = scores.NaturalC;
+            if (savedScores.LastSaveDate > DateTime.MinValue)
+            {
+                //build last results table
+                lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString("MM/dd/yyyy");
+
+                lblPrevABd.Text = savedScores.AdaptiveBehaviorD.ToString();
+                lblPrevABi.Text = savedScores.AdaptiveBehaviorI.ToString();
+                lblPrevABs.Text = savedScores.AdaptiveBehaviorS.ToString();
+                lblPrevABc.Text = savedScores.AdaptiveBehaviorC.ToString();
+
+                lblPrevNBd.Text = savedScores.NaturalBehaviorD.ToString();
+                lblPrevNBi.Text = savedScores.NaturalBehaviorI.ToString();
+                lblPrevNBs.Text = savedScores.NaturalBehaviorS.ToString();
+                lblPrevNBc.Text = savedScores.NaturalBehaviorC.ToString();
+            }
 
             if (IsPostBack)
                 btnSaveResults.Enabled = true;
@@ -175,38 +178,33 @@ namespace Rockweb.Blocks.Crm
             }
 
             // Score the responses and return the results
-            string results = DiscService.Score(selectedResponseIDs);
-            string[] scoreData = results.Split(new char[] { ':' });
+            DiscService.AssessmentResults results = DiscService.Score(selectedResponseIDs);
 
             //Display results out to user
-            lblABd.Text = scoreData[0];
-            lblABi.Text = scoreData[1];
-            lblABs.Text = scoreData[2];
-            lblABc.Text = scoreData[3];
+            lblABd.Text = results.AdaptiveBehaviorD.ToString();
+            lblABi.Text = results.AdaptiveBehaviorI.ToString();
+            lblABs.Text = results.AdaptiveBehaviorS.ToString();
+            lblABc.Text = results.AdaptiveBehaviorC.ToString();
 
-            lblNBd.Text = scoreData[4];
-            lblNBi.Text = scoreData[5];
-            lblNBs.Text = scoreData[6];
-            lblNBc.Text = scoreData[7];
+            lblNBd.Text = results.NaturalBehaviorD.ToString();
+            lblNBi.Text = results.NaturalBehaviorI.ToString();
+            lblNBs.Text = results.NaturalBehaviorS.ToString();
+            lblNBc.Text = results.NaturalBehaviorC.ToString();
         }
 
         protected void btnSaveResults_Click(object sender, EventArgs e)
         {
-            //Store the values in the correct order
-            // Adaptive D:I:S:C:
-            // Natural D:I:S:C:
-            // Current ShortDate
-            string DISCScoreUserValue = lblABd.Text +
-                ":" + lblABi.Text +
-                ":" + lblABs.Text +
-                ":" + lblABc.Text +
-                ":" + lblNBd.Text +
-                ":" + lblNBi.Text +
-                ":" + lblNBs.Text +
-                ":" + lblNBc.Text +
-                ":" + DateTime.Now.ToShortDateString();
-
-            SetUserValue("Rock.Crm.DISC.SavedScores", DISCScoreUserValue);
+            DiscService.SaveAssessmentResults(
+                CurrentPerson,
+                lblABd.Text,
+                lblABi.Text,
+                lblABs.Text,
+                lblABc.Text,
+                lblNBd.Text,
+                lblNBi.Text,
+                lblNBs.Text,
+                lblNBc.Text
+            );
         }
     }
 }
