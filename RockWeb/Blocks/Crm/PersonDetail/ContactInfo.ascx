@@ -3,12 +3,7 @@
 <section class="contact-info group">
     <header>Contact Information <a href="#" class="edit"><i class="icon-edit"></i></a></header>
                 
-    <ul class="phone-numbers">
-        <li><a href="#" class="highlight"><i class="icon-phone"></i><span class="phone-unlisted" data-value="623.780.0135">Unlisted</span> <small>Home</small></a></li>
-        <li><a href="#" class="highlight"><i class="icon-phone"></i>623.298.2911 <small>Internal</small></a></li>
-        <li><a href="#" class="highlight"><i class="icon-phone"></i>623.866.2792 <small>Cell</small></a></li>
-        <li><a href="#" class="highlight"><i class="icon-phone"></i>623.376.2444 <small>Work</small></a></li>
-    </ul>
+    <ul id="ulPhoneNumbers" runat="server" class="phone-numbers"></ul>
 
     <script>
         $('ul.phone-numbers li a').live({
@@ -40,7 +35,7 @@
     </script>
 
     <ul class="emails">
-        <li>jonathan.edmiston@gmail.com</li>
+        <li><asp:HyperLink ID="hlEmail" runat="server" /></li>
     </ul>
 
     <ul class="addresses">
