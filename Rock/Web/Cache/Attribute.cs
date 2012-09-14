@@ -22,78 +22,29 @@ namespace Rock.Web.Cache
     /// property of this attribute object.
     /// </summary>
     [Serializable]
-    public class Attribute
+    public class Attribute : Rock.Core.AttributeDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new Attribute object
-        /// </summary>
-        private Attribute() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets the key.
-        /// </summary>
-        public string Key { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
+		private Attribute() : base() { }
+		private Attribute( Rock.Core.Attribute model ) : base( model ) { }
 
         /// <summary>
         /// Gets the category.
         /// </summary>
-        public string Category 
-        { 
-            get
-            {
-                return string.IsNullOrEmpty( category ) ? "Attributes" : category;
-            }
+		//public override string Category 
+		//{ 
+		//	get
+		//	{
+		//		return string.IsNullOrEmpty( base.Category ) ? "Attributes" : base.Category;
+		//	}
 
-            private set
-            {
-                if ( value == "Attributes" )
-                    category = null;
-                else
-                    category = value;
-            }
-        }
-        private string category;
-
-        /// <summary>
-        /// Gets if attribute supports multiple values
-        /// </summary>
-        public bool IsMultiValue { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating if this attribute should be displayed in a column when this attribute's parent object is
-        /// listed in a grid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if it should be added as a column; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsGridColumn { get; private set; }
-
-        /// <summary>
-        /// Gets the default value for the attribute
-        /// </summary>
-        public string DefaultValue { get; private set; }
-
-        /// <summary>
-        /// Gets the qualifier values if any have been defined for the attribute
-        /// </summary>
-        public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
-
-        private int FieldTypeId { get; set; }
+		//	private set
+		//	{
+		//		if ( value == "Attributes" )
+		//			base.Category = null;
+		//		else
+		//			base.Category = value;
+		//	}
+		//}
 
         /// <summary>
         /// Gets the type of the field.
@@ -106,13 +57,10 @@ namespace Rock.Web.Cache
             get { return FieldType.Read( FieldTypeId ); }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="Attribute"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsRequired { get; private set; }
+		/// <summary>
+		/// Gets the qualifier values if any have been defined for the attribute
+		/// </summary>
+		public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -122,9 +70,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control CreateControl( string value, bool setValue)
         {
-            Control editControl = this.FieldType.Field.EditControl( this.QualifierValues);
+            Control editControl = this.FieldType.Field.EditControl( QualifierValues);
             if ( setValue )
-                this.FieldType.Field.SetEditValue( editControl, this.QualifierValues, value );
+                this.FieldType.Field.SetEditValue( editControl, QualifierValues, value );
             return editControl;
         }
 
@@ -225,17 +173,7 @@ namespace Rock.Web.Cache
 
         private static Attribute CopyModel( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            Attribute attribute = new Attribute();
-            attribute.Id = attributeModel.Id;
-            attribute.Key = attributeModel.Key;
-            attribute.Name = attributeModel.Name;
-            attribute.Category = attributeModel.Category;
-            attribute.Description = attributeModel.Description;
-            attribute.IsGridColumn = attributeModel.IsGridColumn;
-            attribute.FieldTypeId = attributeModel.FieldTypeId;
-            attribute.DefaultValue = attributeModel.DefaultValue;
-            attribute.IsRequired = attributeModel.IsRequired;
-            attribute.IsMultiValue = attributeModel.IsMultiValue;
+            var attribute = new Attribute(attributeModel);
 
             attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )

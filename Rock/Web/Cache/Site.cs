@@ -19,64 +19,15 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class Site : Security.ISecured
+    public class Site : SiteDto, Security.ISecured
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new Site object
-        /// </summary>
-        private Site() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets the org id.
-        /// </summary>
-        public string OrgId { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
-
-        /// <summary>
-        /// Gets the theme.
-        /// </summary>
-        public string Theme { get; private set; }
-
-        /// <summary>
-        /// Gets the favicon URL.
-        /// </summary>
-        public string FaviconUrl { get; private set; }
-
-        /// <summary>
-        /// Gets the apple touch URL.
-        /// </summary>
-        public string AppleTouchUrl { get; private set; }
+        private Site() : base() { }
+		private Site( Rock.Cms.Site model ) : base( model ) { }
 
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; private set; }
-
-        /// <summary>
-        /// Gets the facebook app id.
-        /// </summary>
-        public string FacebookAppId { get; private set; }
-
-        /// <summary>
-        /// Gets the facebook app secret.
-        /// </summary>
-        public string FacebookAppSecret { get; private set; }
-
-        private List<int> AttributeIds = new List<int>();
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets a list of attributes associated with the site.  This object will not include values.
@@ -94,15 +45,7 @@ namespace Rock.Web.Cache
                 return attributes;
             }
         }
-
-        /// <summary>
-        /// Gets the default page id.
-        /// </summary>
-        public int? DefaultPageId
-        {
-            get;
-            private set;
-        }
+		private List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Gets the default page.
@@ -165,16 +108,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
-                    site = new Site();
-                    site.Id = siteModel.Id;
-                    site.Name = siteModel.Name;
-                    site.Description = siteModel.Description;
-                    site.Theme = siteModel.Theme;
-                    site.DefaultPageId = siteModel.DefaultPageId;
-                    site.AppleTouchUrl = siteModel.AppleTouchIconUrl;
-                    site.FaviconUrl = siteModel.FaviconUrl;
-                    site.FacebookAppId = siteModel.FacebookAppId;
-                    site.FacebookAppSecret = siteModel.FacebookAppSecret;
+					site = new Site( siteModel );
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 

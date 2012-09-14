@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Cms
 
                 // cache content
                 int cacheDuration = 0;
-                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 ) ;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
                     AddCacheItem( entityValue, html, cacheDuration );
             }
             else

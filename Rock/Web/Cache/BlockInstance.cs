@@ -17,30 +17,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockInstance : Security.ISecured, Rock.Attribute.IHasAttributes
+    public class BlockInstance : Rock.Cms.BlockInstanceDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new BlockInstance object
-        /// </summary>
-        private BlockInstance() { }
-
-        /// <summary>
-        /// The Id
-        /// </summary>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets the zone.
-        /// </summary>
-        public string Zone { get; private set; }
+		private BlockInstance() : base() { }
+		private BlockInstance( Rock.Cms.BlockInstance model ) : base( model ) { }
 
         /// <summary>
         /// Gets the location of the block instance (Layout or Page)
@@ -48,22 +28,9 @@ namespace Rock.Web.Cache
         public BlockInstanceLocation BlockInstanceLocation { get; private set; }
 
         /// <summary>
-        /// Gets the order.
-        /// </summary>
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets the duration of the output cache. If value is 0, the output will not be cached
-        /// </summary>
-        /// <value>
-        /// The duration of the output cache.
-        /// </value>
-        public int OutputCacheDuration { get; private set; }
-
-        /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -98,11 +65,6 @@ namespace Rock.Web.Cache
         }
 
 		/// <summary>
-		/// Gets the page id.
-		/// </summary>
-		public int? PageId { get; private set; }
-
-		/// <summary>
 		/// Gets the page.
 		/// </summary>
 		public Page Page
@@ -115,11 +77,6 @@ namespace Rock.Web.Cache
 					return null;
 			}
 		}
-
-		/// <summary>
-        /// Gets the block id.
-        /// </summary>
-        public int BlockId { get; private set; }
 
         /// <summary>
         /// Gets the block.
@@ -252,17 +209,12 @@ namespace Rock.Web.Cache
 
         private static BlockInstance CopyModel ( Rock.Cms.BlockInstance blockInstanceModel )
         {
-            BlockInstance blockInstance = new BlockInstance();
-            blockInstance.Id = blockInstanceModel.Id;
-			blockInstance.PageId = blockInstanceModel.PageId;
-            blockInstance.BlockId = blockInstanceModel.BlockId;
-            blockInstance.Name = blockInstanceModel.Name;
-            blockInstance.Zone = blockInstanceModel.Zone;
-            blockInstance.BlockInstanceLocation = blockInstanceModel.Page != null ? BlockInstanceLocation.Page : BlockInstanceLocation.Layout;
-            blockInstance.Order = blockInstanceModel.Order;
-            blockInstance.OutputCacheDuration = blockInstanceModel.OutputCacheDuration;
+            BlockInstance blockInstance = new BlockInstance(blockInstanceModel);
+
+			blockInstance.BlockInstanceLocation = blockInstanceModel.Page != null ? BlockInstanceLocation.Page : BlockInstanceLocation.Layout;
             blockInstance.AttributeValues = blockInstanceModel.AttributeValues;
-            blockInstance.AttributeIds = new List<int>();
+            
+			blockInstance.AttributeIds = new List<int>();
             if (blockInstanceModel.Attributes != null)
                 foreach ( var category in blockInstanceModel.Attributes )
                     foreach ( var attribute in category.Value )
