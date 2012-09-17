@@ -408,7 +408,7 @@ namespace RockWeb
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
         {
             //filters.Add( new System.Web.Http.AuthorizeAttribute() );
-            filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
+            //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
 			filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 

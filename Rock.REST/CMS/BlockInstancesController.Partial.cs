@@ -8,6 +8,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Cms;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Cms
 {
@@ -38,6 +39,7 @@ namespace Rock.Rest.Cms
 		/// <param name="blockInstance"></param>
 		/// <returns></returns>
 		[HttpPut]
+		[Authenticate]
 		public void Move( int id, BlockInstanceDto blockInstance )
 		{
 			var user = CurrentUser();
