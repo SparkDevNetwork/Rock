@@ -26,6 +26,7 @@ namespace Rock.Rest.Util
 	public partial class SearchController : ApiController
 	{
         // GET api/<controller>
+		[Queryable]
         public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;
