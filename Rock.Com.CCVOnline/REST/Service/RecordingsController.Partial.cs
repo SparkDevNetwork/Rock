@@ -33,7 +33,7 @@ namespace Rock.Com.CCVOnline.Rest.Service
 
 			routes.MapHttpRoute(
 				name: "ServiceRecordingDate",
-				routeTemplate: "api/recordings/dates",
+				routeTemplate: "api/recordings/dates/{qualifier}",
 				defaults: new
 				{
 					controller = "recordings",
@@ -76,21 +76,22 @@ namespace Rock.Com.CCVOnline.Rest.Service
 		}
 
 		[HttpGet]
-		public IEnumerable<DateTime> Dates( )
+		public IEnumerable<DateTime> Dates( string qualifier )
 		{
 			var user = this.CurrentUser();
 			if ( user != null )
 			{
 				var RecordingService = new CCVOnline.Service.RecordingService();
 				var dates = RecordingService.QueryableDto()
-					.Where( r => r.StartTime.HasValue)
-					.Select(r => r.StartTime.Value)
-					.Distinct()
+					.Where( r => r.StartTime.HasValue )
+					.OrderByDescending( r => r.StartTime.Value )
+					.Select( r => r.StartTime.Value )
 					.ToList();
 
-				return dates
-					.Select( d => d.Date )
-					.Distinct();
+				if (string.Equals(qualifier, "distinct", StringComparison.CurrentCultureIgnoreCase))
+					return dates.Select( d => d.Date).Distinct();
+				else
+					return dates;
 			}
 
 			throw new HttpResponseException( HttpStatusCode.Unauthorized );
