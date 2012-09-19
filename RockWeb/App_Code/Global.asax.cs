@@ -429,7 +429,9 @@ namespace RockWeb
 
             
 			// Add any custom api routes
-			foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Rest.IHasCustomRoutes ) ) )
+			foreach ( var type in Rock.Reflection.FindTypes( 
+				typeof( Rock.Rest.IHasCustomRoutes ), 
+				new System.IO.DirectoryInfo(Server.MapPath("~/bin")) ) )
 			{
 				var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
 				if ( controller != null )
