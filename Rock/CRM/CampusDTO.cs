@@ -18,12 +18,18 @@ namespace Rock.Crm
 	/// <summary>
 	/// Data Transfer Object for Campus object
 	/// </summary>
-	public partial class CampusDto : Dto<Campus>
+	public partial class CampusDto : IDto
 	{
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
 		public string Name { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -46,32 +52,40 @@ namespace Rock.Crm
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="campus"></param>
-		public override void CopyFromModel( Campus campus )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = campus.IsSystem;
-			this.Name = campus.Name;
-			this.CreatedDateTime = campus.CreatedDateTime;
-			this.ModifiedDateTime = campus.ModifiedDateTime;
-			this.CreatedByPersonId = campus.CreatedByPersonId;
-			this.ModifiedByPersonId = campus.ModifiedByPersonId;
-			this.Id = campus.Id;
-			this.Guid = campus.Guid;
+			if ( model is Campus )
+			{
+				var campus = (Campus)model;
+				this.IsSystem = campus.IsSystem;
+				this.Name = campus.Name;
+				this.CreatedDateTime = campus.CreatedDateTime;
+				this.ModifiedDateTime = campus.ModifiedDateTime;
+				this.CreatedByPersonId = campus.CreatedByPersonId;
+				this.ModifiedByPersonId = campus.ModifiedByPersonId;
+				this.Id = campus.Id;
+				this.Guid = campus.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="campus"></param>
-		public override void CopyToModel ( Campus campus )
+		public void CopyToModel ( IModel model )
 		{
-			campus.IsSystem = this.IsSystem;
-			campus.Name = this.Name;
-			campus.CreatedDateTime = this.CreatedDateTime;
-			campus.ModifiedDateTime = this.ModifiedDateTime;
-			campus.CreatedByPersonId = this.CreatedByPersonId;
-			campus.ModifiedByPersonId = this.ModifiedByPersonId;
-			campus.Id = this.Id;
-			campus.Guid = this.Guid;
+			if ( model is Campus )
+			{
+				var campus = (Campus)model;
+				campus.IsSystem = this.IsSystem;
+				campus.Name = this.Name;
+				campus.CreatedDateTime = this.CreatedDateTime;
+				campus.ModifiedDateTime = this.ModifiedDateTime;
+				campus.CreatedByPersonId = this.CreatedByPersonId;
+				campus.ModifiedByPersonId = this.ModifiedByPersonId;
+				campus.Id = this.Id;
+				campus.Guid = this.Guid;
+			}
 		}
 	}
 }

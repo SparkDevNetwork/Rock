@@ -18,7 +18,7 @@ namespace Rock.Crm
 	/// <summary>
 	/// Data Transfer Object for Person object
 	/// </summary>
-	public partial class PersonDto : Dto<Person>
+	public partial class PersonDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -46,6 +46,12 @@ namespace Rock.Crm
 		public bool DoNotEmail { get; set; }
 		public string SystemNote { get; set; }
 		public int? ViewedCount { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -68,76 +74,84 @@ namespace Rock.Crm
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="person"></param>
-		public override void CopyFromModel( Person person )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = person.IsSystem;
-			this.RecordTypeId = person.RecordTypeId;
-			this.RecordStatusId = person.RecordStatusId;
-			this.RecordStatusReasonId = person.RecordStatusReasonId;
-			this.PersonStatusId = person.PersonStatusId;
-			this.TitleId = person.TitleId;
-			this.GivenName = person.GivenName;
-			this.NickName = person.NickName;
-			this.LastName = person.LastName;
-			this.SuffixId = person.SuffixId;
-			this.PhotoId = person.PhotoId;
-			this.BirthDay = person.BirthDay;
-			this.BirthMonth = person.BirthMonth;
-			this.BirthYear = person.BirthYear;
-			this.Gender = person.Gender;
-			this.MaritalStatusId = person.MaritalStatusId;
-			this.AnniversaryDate = person.AnniversaryDate;
-			this.GraduationDate = person.GraduationDate;
-			this.Email = person.Email;
-			this.IsEmailActive = person.IsEmailActive;
-			this.EmailNote = person.EmailNote;
-			this.DoNotEmail = person.DoNotEmail;
-			this.SystemNote = person.SystemNote;
-			this.ViewedCount = person.ViewedCount;
-			this.CreatedDateTime = person.CreatedDateTime;
-			this.ModifiedDateTime = person.ModifiedDateTime;
-			this.CreatedByPersonId = person.CreatedByPersonId;
-			this.ModifiedByPersonId = person.ModifiedByPersonId;
-			this.Id = person.Id;
-			this.Guid = person.Guid;
+			if ( model is Person )
+			{
+				var person = (Person)model;
+				this.IsSystem = person.IsSystem;
+				this.RecordTypeId = person.RecordTypeId;
+				this.RecordStatusId = person.RecordStatusId;
+				this.RecordStatusReasonId = person.RecordStatusReasonId;
+				this.PersonStatusId = person.PersonStatusId;
+				this.TitleId = person.TitleId;
+				this.GivenName = person.GivenName;
+				this.NickName = person.NickName;
+				this.LastName = person.LastName;
+				this.SuffixId = person.SuffixId;
+				this.PhotoId = person.PhotoId;
+				this.BirthDay = person.BirthDay;
+				this.BirthMonth = person.BirthMonth;
+				this.BirthYear = person.BirthYear;
+				this.Gender = person.Gender;
+				this.MaritalStatusId = person.MaritalStatusId;
+				this.AnniversaryDate = person.AnniversaryDate;
+				this.GraduationDate = person.GraduationDate;
+				this.Email = person.Email;
+				this.IsEmailActive = person.IsEmailActive;
+				this.EmailNote = person.EmailNote;
+				this.DoNotEmail = person.DoNotEmail;
+				this.SystemNote = person.SystemNote;
+				this.ViewedCount = person.ViewedCount;
+				this.CreatedDateTime = person.CreatedDateTime;
+				this.ModifiedDateTime = person.ModifiedDateTime;
+				this.CreatedByPersonId = person.CreatedByPersonId;
+				this.ModifiedByPersonId = person.ModifiedByPersonId;
+				this.Id = person.Id;
+				this.Guid = person.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="person"></param>
-		public override void CopyToModel ( Person person )
+		public void CopyToModel ( IModel model )
 		{
-			person.IsSystem = this.IsSystem;
-			person.RecordTypeId = this.RecordTypeId;
-			person.RecordStatusId = this.RecordStatusId;
-			person.RecordStatusReasonId = this.RecordStatusReasonId;
-			person.PersonStatusId = this.PersonStatusId;
-			person.TitleId = this.TitleId;
-			person.GivenName = this.GivenName;
-			person.NickName = this.NickName;
-			person.LastName = this.LastName;
-			person.SuffixId = this.SuffixId;
-			person.PhotoId = this.PhotoId;
-			person.BirthDay = this.BirthDay;
-			person.BirthMonth = this.BirthMonth;
-			person.BirthYear = this.BirthYear;
-			person.Gender = this.Gender;
-			person.MaritalStatusId = this.MaritalStatusId;
-			person.AnniversaryDate = this.AnniversaryDate;
-			person.GraduationDate = this.GraduationDate;
-			person.Email = this.Email;
-			person.IsEmailActive = this.IsEmailActive;
-			person.EmailNote = this.EmailNote;
-			person.DoNotEmail = this.DoNotEmail;
-			person.SystemNote = this.SystemNote;
-			person.ViewedCount = this.ViewedCount;
-			person.CreatedDateTime = this.CreatedDateTime;
-			person.ModifiedDateTime = this.ModifiedDateTime;
-			person.CreatedByPersonId = this.CreatedByPersonId;
-			person.ModifiedByPersonId = this.ModifiedByPersonId;
-			person.Id = this.Id;
-			person.Guid = this.Guid;
+			if ( model is Person )
+			{
+				var person = (Person)model;
+				person.IsSystem = this.IsSystem;
+				person.RecordTypeId = this.RecordTypeId;
+				person.RecordStatusId = this.RecordStatusId;
+				person.RecordStatusReasonId = this.RecordStatusReasonId;
+				person.PersonStatusId = this.PersonStatusId;
+				person.TitleId = this.TitleId;
+				person.GivenName = this.GivenName;
+				person.NickName = this.NickName;
+				person.LastName = this.LastName;
+				person.SuffixId = this.SuffixId;
+				person.PhotoId = this.PhotoId;
+				person.BirthDay = this.BirthDay;
+				person.BirthMonth = this.BirthMonth;
+				person.BirthYear = this.BirthYear;
+				person.Gender = this.Gender;
+				person.MaritalStatusId = this.MaritalStatusId;
+				person.AnniversaryDate = this.AnniversaryDate;
+				person.GraduationDate = this.GraduationDate;
+				person.Email = this.Email;
+				person.IsEmailActive = this.IsEmailActive;
+				person.EmailNote = this.EmailNote;
+				person.DoNotEmail = this.DoNotEmail;
+				person.SystemNote = this.SystemNote;
+				person.ViewedCount = this.ViewedCount;
+				person.CreatedDateTime = this.CreatedDateTime;
+				person.ModifiedDateTime = this.ModifiedDateTime;
+				person.CreatedByPersonId = this.CreatedByPersonId;
+				person.ModifiedByPersonId = this.ModifiedByPersonId;
+				person.Id = this.Id;
+				person.Guid = this.Guid;
+			}
 		}
 	}
 }

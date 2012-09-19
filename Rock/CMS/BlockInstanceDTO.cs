@@ -18,7 +18,7 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for BlockInstance object
 	/// </summary>
-	public partial class BlockInstanceDto : Dto<BlockInstance>
+	public partial class BlockInstanceDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -30,6 +30,12 @@ namespace Rock.Cms
 		public int Order { get; set; }
 		public string Name { get; set; }
 		public int OutputCacheDuration { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -52,44 +58,52 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="blockInstance"></param>
-		public override void CopyFromModel( BlockInstance blockInstance )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = blockInstance.IsSystem;
-			this.PageId = blockInstance.PageId;
-			this.Layout = blockInstance.Layout;
-			this.BlockId = blockInstance.BlockId;
-			this.Zone = blockInstance.Zone;
-			this.Order = blockInstance.Order;
-			this.Name = blockInstance.Name;
-			this.OutputCacheDuration = blockInstance.OutputCacheDuration;
-			this.CreatedDateTime = blockInstance.CreatedDateTime;
-			this.ModifiedDateTime = blockInstance.ModifiedDateTime;
-			this.CreatedByPersonId = blockInstance.CreatedByPersonId;
-			this.ModifiedByPersonId = blockInstance.ModifiedByPersonId;
-			this.Id = blockInstance.Id;
-			this.Guid = blockInstance.Guid;
+			if ( model is BlockInstance )
+			{
+				var blockInstance = (BlockInstance)model;
+				this.IsSystem = blockInstance.IsSystem;
+				this.PageId = blockInstance.PageId;
+				this.Layout = blockInstance.Layout;
+				this.BlockId = blockInstance.BlockId;
+				this.Zone = blockInstance.Zone;
+				this.Order = blockInstance.Order;
+				this.Name = blockInstance.Name;
+				this.OutputCacheDuration = blockInstance.OutputCacheDuration;
+				this.CreatedDateTime = blockInstance.CreatedDateTime;
+				this.ModifiedDateTime = blockInstance.ModifiedDateTime;
+				this.CreatedByPersonId = blockInstance.CreatedByPersonId;
+				this.ModifiedByPersonId = blockInstance.ModifiedByPersonId;
+				this.Id = blockInstance.Id;
+				this.Guid = blockInstance.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="blockInstance"></param>
-		public override void CopyToModel ( BlockInstance blockInstance )
+		public void CopyToModel ( IModel model )
 		{
-			blockInstance.IsSystem = this.IsSystem;
-			blockInstance.PageId = this.PageId;
-			blockInstance.Layout = this.Layout;
-			blockInstance.BlockId = this.BlockId;
-			blockInstance.Zone = this.Zone;
-			blockInstance.Order = this.Order;
-			blockInstance.Name = this.Name;
-			blockInstance.OutputCacheDuration = this.OutputCacheDuration;
-			blockInstance.CreatedDateTime = this.CreatedDateTime;
-			blockInstance.ModifiedDateTime = this.ModifiedDateTime;
-			blockInstance.CreatedByPersonId = this.CreatedByPersonId;
-			blockInstance.ModifiedByPersonId = this.ModifiedByPersonId;
-			blockInstance.Id = this.Id;
-			blockInstance.Guid = this.Guid;
+			if ( model is BlockInstance )
+			{
+				var blockInstance = (BlockInstance)model;
+				blockInstance.IsSystem = this.IsSystem;
+				blockInstance.PageId = this.PageId;
+				blockInstance.Layout = this.Layout;
+				blockInstance.BlockId = this.BlockId;
+				blockInstance.Zone = this.Zone;
+				blockInstance.Order = this.Order;
+				blockInstance.Name = this.Name;
+				blockInstance.OutputCacheDuration = this.OutputCacheDuration;
+				blockInstance.CreatedDateTime = this.CreatedDateTime;
+				blockInstance.ModifiedDateTime = this.ModifiedDateTime;
+				blockInstance.CreatedByPersonId = this.CreatedByPersonId;
+				blockInstance.ModifiedByPersonId = this.ModifiedByPersonId;
+				blockInstance.Id = this.Id;
+				blockInstance.Guid = this.Guid;
+			}
 		}
 	}
 }

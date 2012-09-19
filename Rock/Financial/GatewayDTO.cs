@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Gateway object
 	/// </summary>
-	public partial class GatewayDto : Dto<Gateway>
+	public partial class GatewayDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -27,6 +27,12 @@ namespace Rock.Financial
 		public string ApiUrl { get; set; }
 		public string ApiKey { get; set; }
 		public string ApiSecret { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -49,38 +55,46 @@ namespace Rock.Financial
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="gateway"></param>
-		public override void CopyFromModel( Gateway gateway )
+		public void CopyFromModel( IModel model )
 		{
-			this.Name = gateway.Name;
-			this.Description = gateway.Description;
-			this.ApiUrl = gateway.ApiUrl;
-			this.ApiKey = gateway.ApiKey;
-			this.ApiSecret = gateway.ApiSecret;
-			this.ModifiedDateTime = gateway.ModifiedDateTime;
-			this.CreatedDateTime = gateway.CreatedDateTime;
-			this.CreatedByPersonId = gateway.CreatedByPersonId;
-			this.ModifiedByPersonId = gateway.ModifiedByPersonId;
-			this.Id = gateway.Id;
-			this.Guid = gateway.Guid;
+			if ( model is Gateway )
+			{
+				var gateway = (Gateway)model;
+				this.Name = gateway.Name;
+				this.Description = gateway.Description;
+				this.ApiUrl = gateway.ApiUrl;
+				this.ApiKey = gateway.ApiKey;
+				this.ApiSecret = gateway.ApiSecret;
+				this.ModifiedDateTime = gateway.ModifiedDateTime;
+				this.CreatedDateTime = gateway.CreatedDateTime;
+				this.CreatedByPersonId = gateway.CreatedByPersonId;
+				this.ModifiedByPersonId = gateway.ModifiedByPersonId;
+				this.Id = gateway.Id;
+				this.Guid = gateway.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="gateway"></param>
-		public override void CopyToModel ( Gateway gateway )
+		public void CopyToModel ( IModel model )
 		{
-			gateway.Name = this.Name;
-			gateway.Description = this.Description;
-			gateway.ApiUrl = this.ApiUrl;
-			gateway.ApiKey = this.ApiKey;
-			gateway.ApiSecret = this.ApiSecret;
-			gateway.ModifiedDateTime = this.ModifiedDateTime;
-			gateway.CreatedDateTime = this.CreatedDateTime;
-			gateway.CreatedByPersonId = this.CreatedByPersonId;
-			gateway.ModifiedByPersonId = this.ModifiedByPersonId;
-			gateway.Id = this.Id;
-			gateway.Guid = this.Guid;
+			if ( model is Gateway )
+			{
+				var gateway = (Gateway)model;
+				gateway.Name = this.Name;
+				gateway.Description = this.Description;
+				gateway.ApiUrl = this.ApiUrl;
+				gateway.ApiKey = this.ApiKey;
+				gateway.ApiSecret = this.ApiSecret;
+				gateway.ModifiedDateTime = this.ModifiedDateTime;
+				gateway.CreatedDateTime = this.CreatedDateTime;
+				gateway.CreatedByPersonId = this.CreatedByPersonId;
+				gateway.ModifiedByPersonId = this.ModifiedByPersonId;
+				gateway.Id = this.Id;
+				gateway.Guid = this.Guid;
+			}
 		}
 	}
 }

@@ -206,7 +206,7 @@
     <Compile Include="Crm\PhoneNumberService.cs" />
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
-    <Compile Include="Data\Dto.cs" />
+    <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />

@@ -18,12 +18,14 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for PersonAccountLookup object
 	/// </summary>
-	public partial class PersonAccountLookupDto : Dto<PersonAccountLookup>
+	public partial class PersonAccountLookupDto : IDto
 	{
 
 #pragma warning disable 1591
 		public int? PersonId { get; set; }
 		public string Account { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -46,24 +48,32 @@ namespace Rock.Financial
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="personAccountLookup"></param>
-		public override void CopyFromModel( PersonAccountLookup personAccountLookup )
+		public void CopyFromModel( IModel model )
 		{
-			this.PersonId = personAccountLookup.PersonId;
-			this.Account = personAccountLookup.Account;
-			this.Id = personAccountLookup.Id;
-			this.Guid = personAccountLookup.Guid;
+			if ( model is PersonAccountLookup )
+			{
+				var personAccountLookup = (PersonAccountLookup)model;
+				this.PersonId = personAccountLookup.PersonId;
+				this.Account = personAccountLookup.Account;
+				this.Id = personAccountLookup.Id;
+				this.Guid = personAccountLookup.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="personAccountLookup"></param>
-		public override void CopyToModel ( PersonAccountLookup personAccountLookup )
+		public void CopyToModel ( IModel model )
 		{
-			personAccountLookup.PersonId = this.PersonId;
-			personAccountLookup.Account = this.Account;
-			personAccountLookup.Id = this.Id;
-			personAccountLookup.Guid = this.Guid;
+			if ( model is PersonAccountLookup )
+			{
+				var personAccountLookup = (PersonAccountLookup)model;
+				personAccountLookup.PersonId = this.PersonId;
+				personAccountLookup.Account = this.Account;
+				personAccountLookup.Id = this.Id;
+				personAccountLookup.Guid = this.Guid;
+			}
 		}
 	}
 }

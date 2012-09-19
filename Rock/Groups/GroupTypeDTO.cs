@@ -18,7 +18,7 @@ namespace Rock.Groups
 	/// <summary>
 	/// Data Transfer Object for GroupType object
 	/// </summary>
-	public partial class GroupTypeDto : Dto<GroupType>
+	public partial class GroupTypeDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -26,6 +26,12 @@ namespace Rock.Groups
 		public string Name { get; set; }
 		public string Description { get; set; }
 		public int? DefaultGroupRoleId { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -48,36 +54,44 @@ namespace Rock.Groups
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="groupType"></param>
-		public override void CopyFromModel( GroupType groupType )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = groupType.IsSystem;
-			this.Name = groupType.Name;
-			this.Description = groupType.Description;
-			this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
-			this.CreatedDateTime = groupType.CreatedDateTime;
-			this.ModifiedDateTime = groupType.ModifiedDateTime;
-			this.CreatedByPersonId = groupType.CreatedByPersonId;
-			this.ModifiedByPersonId = groupType.ModifiedByPersonId;
-			this.Id = groupType.Id;
-			this.Guid = groupType.Guid;
+			if ( model is GroupType )
+			{
+				var groupType = (GroupType)model;
+				this.IsSystem = groupType.IsSystem;
+				this.Name = groupType.Name;
+				this.Description = groupType.Description;
+				this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+				this.CreatedDateTime = groupType.CreatedDateTime;
+				this.ModifiedDateTime = groupType.ModifiedDateTime;
+				this.CreatedByPersonId = groupType.CreatedByPersonId;
+				this.ModifiedByPersonId = groupType.ModifiedByPersonId;
+				this.Id = groupType.Id;
+				this.Guid = groupType.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="groupType"></param>
-		public override void CopyToModel ( GroupType groupType )
+		public void CopyToModel ( IModel model )
 		{
-			groupType.IsSystem = this.IsSystem;
-			groupType.Name = this.Name;
-			groupType.Description = this.Description;
-			groupType.DefaultGroupRoleId = this.DefaultGroupRoleId;
-			groupType.CreatedDateTime = this.CreatedDateTime;
-			groupType.ModifiedDateTime = this.ModifiedDateTime;
-			groupType.CreatedByPersonId = this.CreatedByPersonId;
-			groupType.ModifiedByPersonId = this.ModifiedByPersonId;
-			groupType.Id = this.Id;
-			groupType.Guid = this.Guid;
+			if ( model is GroupType )
+			{
+				var groupType = (GroupType)model;
+				groupType.IsSystem = this.IsSystem;
+				groupType.Name = this.Name;
+				groupType.Description = this.Description;
+				groupType.DefaultGroupRoleId = this.DefaultGroupRoleId;
+				groupType.CreatedDateTime = this.CreatedDateTime;
+				groupType.ModifiedDateTime = this.ModifiedDateTime;
+				groupType.CreatedByPersonId = this.CreatedByPersonId;
+				groupType.ModifiedByPersonId = this.ModifiedByPersonId;
+				groupType.Id = this.Id;
+				groupType.Guid = this.Guid;
+			}
 		}
 	}
 }

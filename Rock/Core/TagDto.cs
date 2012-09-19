@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for Tag object
 	/// </summary>
-	public partial class TagDto : Dto<Tag>
+	public partial class TagDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -29,6 +29,12 @@ namespace Rock.Core
 		public string Name { get; set; }
 		public int Order { get; set; }
 		public int? OwnerId { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -51,42 +57,50 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="tag"></param>
-		public override void CopyFromModel( Tag tag )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = tag.IsSystem;
-			this.Entity = tag.Entity;
-			this.EntityQualifierColumn = tag.EntityQualifierColumn;
-			this.EntityQualifierValue = tag.EntityQualifierValue;
-			this.Name = tag.Name;
-			this.Order = tag.Order;
-			this.OwnerId = tag.OwnerId;
-			this.CreatedDateTime = tag.CreatedDateTime;
-			this.ModifiedDateTime = tag.ModifiedDateTime;
-			this.CreatedByPersonId = tag.CreatedByPersonId;
-			this.ModifiedByPersonId = tag.ModifiedByPersonId;
-			this.Id = tag.Id;
-			this.Guid = tag.Guid;
+			if ( model is Tag )
+			{
+				var tag = (Tag)model;
+				this.IsSystem = tag.IsSystem;
+				this.Entity = tag.Entity;
+				this.EntityQualifierColumn = tag.EntityQualifierColumn;
+				this.EntityQualifierValue = tag.EntityQualifierValue;
+				this.Name = tag.Name;
+				this.Order = tag.Order;
+				this.OwnerId = tag.OwnerId;
+				this.CreatedDateTime = tag.CreatedDateTime;
+				this.ModifiedDateTime = tag.ModifiedDateTime;
+				this.CreatedByPersonId = tag.CreatedByPersonId;
+				this.ModifiedByPersonId = tag.ModifiedByPersonId;
+				this.Id = tag.Id;
+				this.Guid = tag.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="tag"></param>
-		public override void CopyToModel ( Tag tag )
+		public void CopyToModel ( IModel model )
 		{
-			tag.IsSystem = this.IsSystem;
-			tag.Entity = this.Entity;
-			tag.EntityQualifierColumn = this.EntityQualifierColumn;
-			tag.EntityQualifierValue = this.EntityQualifierValue;
-			tag.Name = this.Name;
-			tag.Order = this.Order;
-			tag.OwnerId = this.OwnerId;
-			tag.CreatedDateTime = this.CreatedDateTime;
-			tag.ModifiedDateTime = this.ModifiedDateTime;
-			tag.CreatedByPersonId = this.CreatedByPersonId;
-			tag.ModifiedByPersonId = this.ModifiedByPersonId;
-			tag.Id = this.Id;
-			tag.Guid = this.Guid;
+			if ( model is Tag )
+			{
+				var tag = (Tag)model;
+				tag.IsSystem = this.IsSystem;
+				tag.Entity = this.Entity;
+				tag.EntityQualifierColumn = this.EntityQualifierColumn;
+				tag.EntityQualifierValue = this.EntityQualifierValue;
+				tag.Name = this.Name;
+				tag.Order = this.Order;
+				tag.OwnerId = this.OwnerId;
+				tag.CreatedDateTime = this.CreatedDateTime;
+				tag.ModifiedDateTime = this.ModifiedDateTime;
+				tag.CreatedByPersonId = this.CreatedByPersonId;
+				tag.ModifiedByPersonId = this.ModifiedByPersonId;
+				tag.Id = this.Id;
+				tag.Guid = this.Guid;
+			}
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for MetricValue object
 	/// </summary>
-	public partial class MetricValueDto : Dto<MetricValue>
+	public partial class MetricValueDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -30,6 +30,12 @@ namespace Rock.Core
 		public bool isDateBased { get; set; }
 		public string Label { get; set; }
 		public int Order { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -52,44 +58,52 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="metricValue"></param>
-		public override void CopyFromModel( MetricValue metricValue )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = metricValue.IsSystem;
-			this.MetricId = metricValue.MetricId;
-			this.Value = metricValue.Value;
-			this.Description = metricValue.Description;
-			this.xValue = metricValue.xValue;
-			this.isDateBased = metricValue.isDateBased;
-			this.Label = metricValue.Label;
-			this.Order = metricValue.Order;
-			this.CreatedDateTime = metricValue.CreatedDateTime;
-			this.ModifiedDateTime = metricValue.ModifiedDateTime;
-			this.CreatedByPersonId = metricValue.CreatedByPersonId;
-			this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
-			this.Id = metricValue.Id;
-			this.Guid = metricValue.Guid;
+			if ( model is MetricValue )
+			{
+				var metricValue = (MetricValue)model;
+				this.IsSystem = metricValue.IsSystem;
+				this.MetricId = metricValue.MetricId;
+				this.Value = metricValue.Value;
+				this.Description = metricValue.Description;
+				this.xValue = metricValue.xValue;
+				this.isDateBased = metricValue.isDateBased;
+				this.Label = metricValue.Label;
+				this.Order = metricValue.Order;
+				this.CreatedDateTime = metricValue.CreatedDateTime;
+				this.ModifiedDateTime = metricValue.ModifiedDateTime;
+				this.CreatedByPersonId = metricValue.CreatedByPersonId;
+				this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
+				this.Id = metricValue.Id;
+				this.Guid = metricValue.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="metricValue"></param>
-		public override void CopyToModel ( MetricValue metricValue )
+		public void CopyToModel ( IModel model )
 		{
-			metricValue.IsSystem = this.IsSystem;
-			metricValue.MetricId = this.MetricId;
-			metricValue.Value = this.Value;
-			metricValue.Description = this.Description;
-			metricValue.xValue = this.xValue;
-			metricValue.isDateBased = this.isDateBased;
-			metricValue.Label = this.Label;
-			metricValue.Order = this.Order;
-			metricValue.CreatedDateTime = this.CreatedDateTime;
-			metricValue.ModifiedDateTime = this.ModifiedDateTime;
-			metricValue.CreatedByPersonId = this.CreatedByPersonId;
-			metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
-			metricValue.Id = this.Id;
-			metricValue.Guid = this.Guid;
+			if ( model is MetricValue )
+			{
+				var metricValue = (MetricValue)model;
+				metricValue.IsSystem = this.IsSystem;
+				metricValue.MetricId = this.MetricId;
+				metricValue.Value = this.Value;
+				metricValue.Description = this.Description;
+				metricValue.xValue = this.xValue;
+				metricValue.isDateBased = this.isDateBased;
+				metricValue.Label = this.Label;
+				metricValue.Order = this.Order;
+				metricValue.CreatedDateTime = this.CreatedDateTime;
+				metricValue.ModifiedDateTime = this.ModifiedDateTime;
+				metricValue.CreatedByPersonId = this.CreatedByPersonId;
+				metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
+				metricValue.Id = this.Id;
+				metricValue.Guid = this.Guid;
+			}
 		}
 	}
 }
