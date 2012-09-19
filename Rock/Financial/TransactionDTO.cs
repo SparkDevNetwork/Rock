@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Transaction object
 	/// </summary>
-	public partial class TransactionDto : Dto<Transaction>
+	public partial class TransactionDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -36,6 +36,12 @@ namespace Rock.Financial
 		public int? GatewayId { get; set; }
 		public int? SourceTypeId { get; set; }
 		public string Summary { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -58,56 +64,64 @@ namespace Rock.Financial
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="transaction"></param>
-		public override void CopyFromModel( Transaction transaction )
+		public void CopyFromModel( IModel model )
 		{
-			this.Description = transaction.Description;
-			this.TransactionDate = transaction.TransactionDate;
-			this.Entity = transaction.Entity;
-			this.EntityId = transaction.EntityId;
-			this.BatchId = transaction.BatchId;
-			this.CurrencyTypeId = transaction.CurrencyTypeId;
-			this.CreditCardTypeId = transaction.CreditCardTypeId;
-			this.Amount = transaction.Amount;
-			this.RefundTransactionId = transaction.RefundTransactionId;
-			this.TransactionImageId = transaction.TransactionImageId;
-			this.TransactionCode = transaction.TransactionCode;
-			this.GatewayId = transaction.GatewayId;
-			this.SourceTypeId = transaction.SourceTypeId;
-			this.Summary = transaction.Summary;
-			this.ModifiedDateTime = transaction.ModifiedDateTime;
-			this.CreatedDateTime = transaction.CreatedDateTime;
-			this.CreatedByPersonId = transaction.CreatedByPersonId;
-			this.ModifiedByPersonId = transaction.ModifiedByPersonId;
-			this.Id = transaction.Id;
-			this.Guid = transaction.Guid;
+			if ( model is Transaction )
+			{
+				var transaction = (Transaction)model;
+				this.Description = transaction.Description;
+				this.TransactionDate = transaction.TransactionDate;
+				this.Entity = transaction.Entity;
+				this.EntityId = transaction.EntityId;
+				this.BatchId = transaction.BatchId;
+				this.CurrencyTypeId = transaction.CurrencyTypeId;
+				this.CreditCardTypeId = transaction.CreditCardTypeId;
+				this.Amount = transaction.Amount;
+				this.RefundTransactionId = transaction.RefundTransactionId;
+				this.TransactionImageId = transaction.TransactionImageId;
+				this.TransactionCode = transaction.TransactionCode;
+				this.GatewayId = transaction.GatewayId;
+				this.SourceTypeId = transaction.SourceTypeId;
+				this.Summary = transaction.Summary;
+				this.ModifiedDateTime = transaction.ModifiedDateTime;
+				this.CreatedDateTime = transaction.CreatedDateTime;
+				this.CreatedByPersonId = transaction.CreatedByPersonId;
+				this.ModifiedByPersonId = transaction.ModifiedByPersonId;
+				this.Id = transaction.Id;
+				this.Guid = transaction.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="transaction"></param>
-		public override void CopyToModel ( Transaction transaction )
+		public void CopyToModel ( IModel model )
 		{
-			transaction.Description = this.Description;
-			transaction.TransactionDate = this.TransactionDate;
-			transaction.Entity = this.Entity;
-			transaction.EntityId = this.EntityId;
-			transaction.BatchId = this.BatchId;
-			transaction.CurrencyTypeId = this.CurrencyTypeId;
-			transaction.CreditCardTypeId = this.CreditCardTypeId;
-			transaction.Amount = this.Amount;
-			transaction.RefundTransactionId = this.RefundTransactionId;
-			transaction.TransactionImageId = this.TransactionImageId;
-			transaction.TransactionCode = this.TransactionCode;
-			transaction.GatewayId = this.GatewayId;
-			transaction.SourceTypeId = this.SourceTypeId;
-			transaction.Summary = this.Summary;
-			transaction.ModifiedDateTime = this.ModifiedDateTime;
-			transaction.CreatedDateTime = this.CreatedDateTime;
-			transaction.CreatedByPersonId = this.CreatedByPersonId;
-			transaction.ModifiedByPersonId = this.ModifiedByPersonId;
-			transaction.Id = this.Id;
-			transaction.Guid = this.Guid;
+			if ( model is Transaction )
+			{
+				var transaction = (Transaction)model;
+				transaction.Description = this.Description;
+				transaction.TransactionDate = this.TransactionDate;
+				transaction.Entity = this.Entity;
+				transaction.EntityId = this.EntityId;
+				transaction.BatchId = this.BatchId;
+				transaction.CurrencyTypeId = this.CurrencyTypeId;
+				transaction.CreditCardTypeId = this.CreditCardTypeId;
+				transaction.Amount = this.Amount;
+				transaction.RefundTransactionId = this.RefundTransactionId;
+				transaction.TransactionImageId = this.TransactionImageId;
+				transaction.TransactionCode = this.TransactionCode;
+				transaction.GatewayId = this.GatewayId;
+				transaction.SourceTypeId = this.SourceTypeId;
+				transaction.Summary = this.Summary;
+				transaction.ModifiedDateTime = this.ModifiedDateTime;
+				transaction.CreatedDateTime = this.CreatedDateTime;
+				transaction.CreatedByPersonId = this.CreatedByPersonId;
+				transaction.ModifiedByPersonId = this.ModifiedByPersonId;
+				transaction.Id = this.Id;
+				transaction.Guid = this.Guid;
+			}
 		}
 	}
 }

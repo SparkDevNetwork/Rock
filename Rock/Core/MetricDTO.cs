@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for Metric object
 	/// </summary>
-	public partial class MetricDto : Dto<Metric>
+	public partial class MetricDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -35,6 +35,12 @@ namespace Rock.Core
 		public string Source { get; set; }
 		public string SourceSQL { get; set; }
 		public int Order { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -57,54 +63,62 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="metric"></param>
-		public override void CopyFromModel( Metric metric )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = metric.IsSystem;
-			this.Type = metric.Type;
-			this.Category = metric.Category;
-			this.Title = metric.Title;
-			this.Subtitle = metric.Subtitle;
-			this.Description = metric.Description;
-			this.MinValue = metric.MinValue;
-			this.MaxValue = metric.MaxValue;
-			this.CollectionFrequency = metric.CollectionFrequency;
-			this.LastCollected = metric.LastCollected;
-			this.Source = metric.Source;
-			this.SourceSQL = metric.SourceSQL;
-			this.Order = metric.Order;
-			this.CreatedDateTime = metric.CreatedDateTime;
-			this.ModifiedDateTime = metric.ModifiedDateTime;
-			this.CreatedByPersonId = metric.CreatedByPersonId;
-			this.ModifiedByPersonId = metric.ModifiedByPersonId;
-			this.Id = metric.Id;
-			this.Guid = metric.Guid;
+			if ( model is Metric )
+			{
+				var metric = (Metric)model;
+				this.IsSystem = metric.IsSystem;
+				this.Type = metric.Type;
+				this.Category = metric.Category;
+				this.Title = metric.Title;
+				this.Subtitle = metric.Subtitle;
+				this.Description = metric.Description;
+				this.MinValue = metric.MinValue;
+				this.MaxValue = metric.MaxValue;
+				this.CollectionFrequency = metric.CollectionFrequency;
+				this.LastCollected = metric.LastCollected;
+				this.Source = metric.Source;
+				this.SourceSQL = metric.SourceSQL;
+				this.Order = metric.Order;
+				this.CreatedDateTime = metric.CreatedDateTime;
+				this.ModifiedDateTime = metric.ModifiedDateTime;
+				this.CreatedByPersonId = metric.CreatedByPersonId;
+				this.ModifiedByPersonId = metric.ModifiedByPersonId;
+				this.Id = metric.Id;
+				this.Guid = metric.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="metric"></param>
-		public override void CopyToModel ( Metric metric )
+		public void CopyToModel ( IModel model )
 		{
-			metric.IsSystem = this.IsSystem;
-			metric.Type = this.Type;
-			metric.Category = this.Category;
-			metric.Title = this.Title;
-			metric.Subtitle = this.Subtitle;
-			metric.Description = this.Description;
-			metric.MinValue = this.MinValue;
-			metric.MaxValue = this.MaxValue;
-			metric.CollectionFrequency = this.CollectionFrequency;
-			metric.LastCollected = this.LastCollected;
-			metric.Source = this.Source;
-			metric.SourceSQL = this.SourceSQL;
-			metric.Order = this.Order;
-			metric.CreatedDateTime = this.CreatedDateTime;
-			metric.ModifiedDateTime = this.ModifiedDateTime;
-			metric.CreatedByPersonId = this.CreatedByPersonId;
-			metric.ModifiedByPersonId = this.ModifiedByPersonId;
-			metric.Id = this.Id;
-			metric.Guid = this.Guid;
+			if ( model is Metric )
+			{
+				var metric = (Metric)model;
+				metric.IsSystem = this.IsSystem;
+				metric.Type = this.Type;
+				metric.Category = this.Category;
+				metric.Title = this.Title;
+				metric.Subtitle = this.Subtitle;
+				metric.Description = this.Description;
+				metric.MinValue = this.MinValue;
+				metric.MaxValue = this.MaxValue;
+				metric.CollectionFrequency = this.CollectionFrequency;
+				metric.LastCollected = this.LastCollected;
+				metric.Source = this.Source;
+				metric.SourceSQL = this.SourceSQL;
+				metric.Order = this.Order;
+				metric.CreatedDateTime = this.CreatedDateTime;
+				metric.ModifiedDateTime = this.ModifiedDateTime;
+				metric.CreatedByPersonId = this.CreatedByPersonId;
+				metric.ModifiedByPersonId = this.ModifiedByPersonId;
+				metric.Id = this.Id;
+				metric.Guid = this.Guid;
+			}
 		}
 	}
 }

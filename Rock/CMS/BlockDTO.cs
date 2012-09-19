@@ -18,7 +18,7 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for Block object
 	/// </summary>
-	public partial class BlockDto : Dto<Block>
+	public partial class BlockDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -26,6 +26,12 @@ namespace Rock.Cms
 		public string Path { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -48,36 +54,44 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="block"></param>
-		public override void CopyFromModel( Block block )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = block.IsSystem;
-			this.Path = block.Path;
-			this.Name = block.Name;
-			this.Description = block.Description;
-			this.CreatedDateTime = block.CreatedDateTime;
-			this.ModifiedDateTime = block.ModifiedDateTime;
-			this.CreatedByPersonId = block.CreatedByPersonId;
-			this.ModifiedByPersonId = block.ModifiedByPersonId;
-			this.Id = block.Id;
-			this.Guid = block.Guid;
+			if ( model is Block )
+			{
+				var block = (Block)model;
+				this.IsSystem = block.IsSystem;
+				this.Path = block.Path;
+				this.Name = block.Name;
+				this.Description = block.Description;
+				this.CreatedDateTime = block.CreatedDateTime;
+				this.ModifiedDateTime = block.ModifiedDateTime;
+				this.CreatedByPersonId = block.CreatedByPersonId;
+				this.ModifiedByPersonId = block.ModifiedByPersonId;
+				this.Id = block.Id;
+				this.Guid = block.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="block"></param>
-		public override void CopyToModel ( Block block )
+		public void CopyToModel ( IModel model )
 		{
-			block.IsSystem = this.IsSystem;
-			block.Path = this.Path;
-			block.Name = this.Name;
-			block.Description = this.Description;
-			block.CreatedDateTime = this.CreatedDateTime;
-			block.ModifiedDateTime = this.ModifiedDateTime;
-			block.CreatedByPersonId = this.CreatedByPersonId;
-			block.ModifiedByPersonId = this.ModifiedByPersonId;
-			block.Id = this.Id;
-			block.Guid = this.Guid;
+			if ( model is Block )
+			{
+				var block = (Block)model;
+				block.IsSystem = this.IsSystem;
+				block.Path = this.Path;
+				block.Name = this.Name;
+				block.Description = this.Description;
+				block.CreatedDateTime = this.CreatedDateTime;
+				block.ModifiedDateTime = this.ModifiedDateTime;
+				block.CreatedByPersonId = this.CreatedByPersonId;
+				block.ModifiedByPersonId = this.ModifiedByPersonId;
+				block.Id = this.Id;
+				block.Guid = this.Guid;
+			}
 		}
 	}
 }

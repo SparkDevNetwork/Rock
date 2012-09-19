@@ -18,7 +18,7 @@ namespace Rock.Rest
 {
 	public abstract class ApiController<T, D> : ApiController
 		where T : Rock.Data.Model<T>
-		where D : Rock.Data.Dto<T>, new()
+		where D : Rock.Data.IDto, new()
 	{
 		private Service<T, D> _service;
 

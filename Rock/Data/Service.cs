@@ -241,7 +241,7 @@ namespace Rock.Data
 
     public class Service<T, D> : Service<T>
         where T : Rock.Data.Model<T>
-        where D : Rock.Data.Dto<T>
+        where D : Rock.Data.IDto
     {
         public Service() : base() { }
         public Service( IRepository<T> repository ) : base( repository ) { }

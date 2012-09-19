@@ -18,12 +18,16 @@ namespace Rock.Crm
 	/// <summary>
 	/// Data Transfer Object for PersonMerged object
 	/// </summary>
-	public partial class PersonMergedDto : Dto<PersonMerged>
+	public partial class PersonMergedDto : IDto
 	{
 
 #pragma warning disable 1591
 		public int CurrentId { get; set; }
 		public Guid CurrentGuid { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -46,28 +50,36 @@ namespace Rock.Crm
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="personMerged"></param>
-		public override void CopyFromModel( PersonMerged personMerged )
+		public void CopyFromModel( IModel model )
 		{
-			this.CurrentId = personMerged.CurrentId;
-			this.CurrentGuid = personMerged.CurrentGuid;
-			this.CreatedDateTime = personMerged.CreatedDateTime;
-			this.CreatedByPersonId = personMerged.CreatedByPersonId;
-			this.Id = personMerged.Id;
-			this.Guid = personMerged.Guid;
+			if ( model is PersonMerged )
+			{
+				var personMerged = (PersonMerged)model;
+				this.CurrentId = personMerged.CurrentId;
+				this.CurrentGuid = personMerged.CurrentGuid;
+				this.CreatedDateTime = personMerged.CreatedDateTime;
+				this.CreatedByPersonId = personMerged.CreatedByPersonId;
+				this.Id = personMerged.Id;
+				this.Guid = personMerged.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="personMerged"></param>
-		public override void CopyToModel ( PersonMerged personMerged )
+		public void CopyToModel ( IModel model )
 		{
-			personMerged.CurrentId = this.CurrentId;
-			personMerged.CurrentGuid = this.CurrentGuid;
-			personMerged.CreatedDateTime = this.CreatedDateTime;
-			personMerged.CreatedByPersonId = this.CreatedByPersonId;
-			personMerged.Id = this.Id;
-			personMerged.Guid = this.Guid;
+			if ( model is PersonMerged )
+			{
+				var personMerged = (PersonMerged)model;
+				personMerged.CurrentId = this.CurrentId;
+				personMerged.CurrentGuid = this.CurrentGuid;
+				personMerged.CreatedDateTime = this.CreatedDateTime;
+				personMerged.CreatedByPersonId = this.CreatedByPersonId;
+				personMerged.Id = this.Id;
+				personMerged.Guid = this.Guid;
+			}
 		}
 	}
 }
