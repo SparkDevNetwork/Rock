@@ -25,6 +25,8 @@ namespace Rock.Crm
 		public bool IsSystem { get; set; }
 		public int PersonId { get; set; }
 		public string Number { get; set; }
+		public int? NumberTypeId { get; set; }
+		public bool IsUnlisted { get; set; }
 		public string Description { get; set; }
 #pragma warning restore 1591
 
@@ -53,6 +55,8 @@ namespace Rock.Crm
 			this.IsSystem = phoneNumber.IsSystem;
 			this.PersonId = phoneNumber.PersonId;
 			this.Number = phoneNumber.Number;
+			this.NumberTypeId = phoneNumber.NumberTypeId;
+			this.IsUnlisted = phoneNumber.IsUnlisted;
 			this.Description = phoneNumber.Description;
 			this.CreatedDateTime = phoneNumber.CreatedDateTime;
 			this.ModifiedDateTime = phoneNumber.ModifiedDateTime;
@@ -71,6 +75,8 @@ namespace Rock.Crm
 			phoneNumber.IsSystem = this.IsSystem;
 			phoneNumber.PersonId = this.PersonId;
 			phoneNumber.Number = this.Number;
+			phoneNumber.NumberTypeId = this.NumberTypeId;
+			phoneNumber.IsUnlisted = this.IsUnlisted;
 			phoneNumber.Description = this.Description;
 			phoneNumber.CreatedDateTime = this.CreatedDateTime;
 			phoneNumber.ModifiedDateTime = this.ModifiedDateTime;
