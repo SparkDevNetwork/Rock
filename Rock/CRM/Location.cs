@@ -15,10 +15,10 @@ using Rock.Data;
 namespace Rock.Crm
 {
     /// <summary>
-    /// Address POCO Entity.
+    /// Location POCO Entity.
     /// </summary>
-    [Table( "crmAddress" )]
-    public partial class Address : ModelWithAttributes<Address>, IAuditable
+    [Table( "crmLocation" )]
+    public partial class Location : ModelWithAttributes<Location>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the Raw.
@@ -98,7 +98,7 @@ namespace Rock.Crm
 		/// </value>
 		[DataMember]
 		public double Latitude { get; set; }
-		
+
 		/// <summary>
 		/// Gets or sets the Longitude.
 		/// </summary>
@@ -107,7 +107,17 @@ namespace Rock.Crm
 		/// </value>
 		[DataMember]
 		public double Longitude { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Parcel Id.
+		/// </summary>
+		/// <value>
+		/// Parcel Id.
+		/// </value>
+		[MaxLength( 50 )]
+		[DataMember]
+		public string ParcelId { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Standardize Attempt.
 		/// </summary>
@@ -225,16 +235,16 @@ namespace Rock.Crm
 		/// </summary>
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
-		public static Address Read( int id )
+		public static Location Read( int id )
 		{
-			return Read<Address>( id );
+			return Read<Location>( id );
 		}
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.Address"; } }
+		public override string AuthEntity { get { return "Crm.Location"; } }
         
 		/// <summary>
         /// Gets or sets the Created By Person.
@@ -266,14 +276,14 @@ namespace Rock.Crm
     }
 
     /// <summary>
-    /// Address Configuration class.
+    /// Location Configuration class.
     /// </summary>
-    public partial class AddressConfiguration : EntityTypeConfiguration<Address>
+    public partial class LocationConfiguration : EntityTypeConfiguration<Location>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AddressConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="LocationConfiguration"/> class.
         /// </summary>
-        public AddressConfiguration()
+        public LocationConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);

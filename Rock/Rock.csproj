@@ -182,9 +182,9 @@
     <Compile Include="Core\TaggedItemDto.cs" />
     <Compile Include="Core\TaggedItemService.cs" />
     <Compile Include="Core\TagService.cs" />
-    <Compile Include="Crm\AddressDto.cs" />
-    <Compile Include="Crm\AddressService.cs" />
-    <Compile Include="Crm\AddressService.Partial.cs" />
+    <Compile Include="Crm\LocationDto.cs" />
+    <Compile Include="Crm\LocationService.cs" />
+    <Compile Include="Crm\LocationService.Partial.cs" />
     <Compile Include="Crm\Campus.cs" />
     <Compile Include="Crm\CampusDto.cs" />
     <Compile Include="Crm\CampusService.cs" />
@@ -244,7 +244,7 @@
     <Compile Include="Core\DefinedValue.cs" />
     <Compile Include="Core\FieldType.cs" />
     <Compile Include="Core\ServiceLog.cs" />
-    <Compile Include="Crm\Address.cs" />
+    <Compile Include="Crm\Location.cs" />
     <Compile Include="Crm\EmailTemplate.cs" />
     <Compile Include="Crm\Person.cs" />
     <Compile Include="Crm\PhoneNumber.cs" />
@@ -403,6 +403,10 @@
     <Compile Include="Migrations\201209141346354_PhoneNumberType.cs" />
     <Compile Include="Migrations\201209141346354_PhoneNumberType.Designer.cs">
       <DependentUpon>201209141346354_PhoneNumberType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209191239132_ChangeAddressToLocation.cs" />
+    <Compile Include="Migrations\201209191239132_ChangeAddressToLocation.Designer.cs">
+      <DependentUpon>201209191239132_ChangeAddressToLocation.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -720,6 +724,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209141346354_PhoneNumberType.resx">
       <DependentUpon>201209141346354_PhoneNumberType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209191239132_ChangeAddressToLocation.resx">
+      <DependentUpon>201209191239132_ChangeAddressToLocation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

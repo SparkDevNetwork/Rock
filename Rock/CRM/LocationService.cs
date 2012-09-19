@@ -18,38 +18,38 @@ using Rock.Data;
 namespace Rock.Crm
 {
 	/// <summary>
-	/// Address Service class
+	/// Location Service class
 	/// </summary>
-	public partial class AddressService : Service<Address, AddressDto>
+	public partial class LocationService : Service<Location, LocationDto>
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AddressService"/> class
+		/// Initializes a new instance of the <see cref="LocationService"/> class
 		/// </summary>
-		public AddressService()
+		public LocationService()
 			: base()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="AddressService"/> class
+		/// Initializes a new instance of the <see cref="LocationService"/> class
 		/// </summary>
-		public AddressService(IRepository<Address> repository) : base(repository)
+		public LocationService(IRepository<Location> repository) : base(repository)
 		{
 		}
 
 		/// <summary>
 		/// Creates a new model
 		/// </summary>
-		public override Address CreateNew()
+		public override Location CreateNew()
 		{
-			return new Address();
+			return new Location();
 		}
 
 		/// <summary>
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AddressDto> QueryableDto( )
+		public override IQueryable<LocationDto> QueryableDto( )
 		{
 			return QueryableDto( this.Queryable() );
 		}
@@ -58,9 +58,9 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<AddressDto> QueryableDto( IQueryable<Address> items )
+		public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
 		{
-			return items.Select( m => new AddressDto()
+			return items.Select( m => new LocationDto()
 				{
 					Raw = m.Raw,
 					Street1 = m.Street1,
@@ -71,6 +71,7 @@ namespace Rock.Crm
 					Zip = m.Zip,
 					Latitude = m.Latitude,
 					Longitude = m.Longitude,
+					ParcelId = m.ParcelId,
 					StandardizeAttempt = m.StandardizeAttempt,
 					StandardizeService = m.StandardizeService,
 					StandardizeResult = m.StandardizeResult,

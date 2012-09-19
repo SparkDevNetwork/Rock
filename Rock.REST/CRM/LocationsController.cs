@@ -15,10 +15,10 @@ using Rock.Crm;
 namespace Rock.Rest.Crm
 {
 	/// <summary>
-	/// Addresses REST API
+	/// Locations REST API
 	/// </summary>
-	public partial class AddressesController : Rock.Rest.ApiController<Rock.Crm.Address, Rock.Crm.AddressDto>
+	public partial class LocationsController : Rock.Rest.ApiController<Rock.Crm.Location, Rock.Crm.LocationDto>
 	{
-		public AddressesController() : base( new Rock.Crm.AddressService() ) { } 
+		public LocationsController() : base( new Rock.Crm.LocationService() ) { } 
 	}
 }
