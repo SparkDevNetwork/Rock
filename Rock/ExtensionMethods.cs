@@ -73,7 +73,10 @@ namespace Rock
         /// <returns></returns>
         public static string SplitCase( this string str )
         {
-            return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+			if ( str == null )
+				return null;
+
+			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str )
         {
-            char[] delimiter = new char[] {','};
+			char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
@@ -96,7 +99,10 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
-            int count, position0, position1;
+			if ( str == null )
+				return null;
+
+			int count, position0, position1;
             count = position0 = position1 = 0;
             string upperString = str.ToUpper();
             string upperPattern = oldValue.ToUpper();
@@ -118,13 +124,30 @@ namespace Rock
             return new string( chars, 0, count );
         }
 
+		/// <summary>
+		/// Adds escape character for quotes in a string
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
         public static string EscapeQuotes( this string str )
         {
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+			if ( str == null )
+				return null;
+
+			return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
         }
 
+		/// <summary>
+		/// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
+		/// </summary>
+		/// <param name="str"></param>
+		/// <param name="maxLength"></param>
+		/// <returns></returns>
         public static string Ellipsis( this string str, int maxLength )
         {
+			if ( str == null )
+				return null;
+
             if (str.Length <= maxLength)
                 return str;
 
