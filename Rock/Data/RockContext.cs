@@ -182,12 +182,12 @@ namespace Rock.Data
 		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
 
 		/// <summary>
-        /// Gets or sets the Addresses.
+        /// Gets or sets the Location.
         /// </summary>
         /// <value>
-        /// the Addresses.
+        /// the Location.
         /// </value>
-        public DbSet<Rock.Crm.Address> Addresses { get; set; }
+        public DbSet<Rock.Crm.Location> Locations { get; set; }
 
         /// <summary>
         /// Gets or sets the Campuses.
@@ -361,10 +361,10 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );

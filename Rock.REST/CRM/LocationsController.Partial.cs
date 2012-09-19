@@ -12,9 +12,9 @@ using Rock.Crm;
 namespace Rock.Rest.Crm
 {
 	/// <summary>
-	/// Addresses REST API
+	/// Locations REST API
 	/// </summary>
-	public partial class AddressesController : IHasCustomRoutes
+	public partial class LocationsController : IHasCustomRoutes
 	{
 		/// <summary>
 		/// Add custom routes needed for geocoding and standardization
@@ -23,39 +23,39 @@ namespace Rock.Rest.Crm
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
 		{
 			routes.MapHttpRoute(
-				name: "AddressGeocode",
-				routeTemplate: "api/addresses/geocode",
+				name: "LocationGeocode",
+				routeTemplate: "api/locations/geocode",
 				defaults: new
 				{
-					controller = "addresses",
+					controller = "locations",
 					action = "geocode"
 				} );
 
 			routes.MapHttpRoute(
-				name: "AddressStandardize",
-				routeTemplate: "api/addresses/standardize",
+				name: "LocationStandardize",
+				routeTemplate: "api/locations/standardize",
 				defaults: new
 				{
-					controller = "addresses",
+					controller = "locations",
 					action = "standardize"
 				} );
 		}
 
 		/// <summary>
-		/// Geocode an address
+		/// Geocode an location
 		/// </summary>
-		/// <param name="address"></param>
+		/// <param name="location"></param>
 		/// <returns></returns>
 		[HttpPut]
-		public AddressDto Geocode( AddressDto address )
+		public LocationDto Geocode( LocationDto location )
 		{
 			var user = CurrentUser();
 			if ( user != null )
 			{
-				if ( address != null )
+				if ( location != null )
 				{
-					var addressService = new AddressService();
-					return new AddressDto( addressService.Geocode( address, user.PersonId ) );
+					var locationService = new LocationService();
+					return new LocationDto( locationService.Geocode( location, user.PersonId ) );
 				}
 				throw new HttpResponseException( HttpStatusCode.BadRequest );
 			}
@@ -63,20 +63,20 @@ namespace Rock.Rest.Crm
 		}
 
 		/// <summary>
-		/// Standardize an address
+		/// Standardize an location
 		/// </summary>
-		/// <param name="address"></param>
+		/// <param name="location"></param>
 		/// <returns></returns>
 		[HttpPut]
-		public AddressDto Standardize( AddressDto address )
+		public LocationDto Standardize( LocationDto location )
 		{
 			var user = CurrentUser();
 			if ( user != null )
 			{
-				if ( address != null )
+				if ( location != null )
 				{
-					var addressService = new AddressService();
-					return new AddressDto( addressService.Standardize( address, user.PersonId ) );
+					var locationService = new LocationService();
+					return new LocationDto( locationService.Standardize( location, user.PersonId ) );
 				}
 				throw new HttpResponseException( HttpStatusCode.BadRequest );
 			}

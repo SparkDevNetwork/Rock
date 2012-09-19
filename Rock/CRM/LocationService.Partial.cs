@@ -12,72 +12,72 @@ using Rock.Data;
 namespace Rock.Crm
 {
 	/// <summary>
-	/// Address POCO Service class
+	/// Location POCO Service class
 	/// </summary>
-    public partial class AddressService : Service<Address, AddressDto>
+    public partial class LocationService : Service<Location, LocationDto>
     {
 		/// <summary>
-		/// Gets Address by Raw
+		/// Gets Location by Raw
 		/// </summary>
 		/// <param name="raw">Raw.</param>
-		/// <returns>Address object.</returns>
-	    public Address GetByRaw( string raw )
+		/// <returns>Location object.</returns>
+	    public Location GetByRaw( string raw )
         {
             return Repository.FirstOrDefault( t => ( t.Raw == raw || ( raw == null && t.Raw == null ) ) );
         }
 		
 		/// <summary>
-		/// Gets Address by Street 1 And Street 2 And City And State And Zip
+		/// Gets Location by Street 1 And Street 2 And City And State And Zip
 		/// </summary>
 		/// <param name="street1">Street 1.</param>
 		/// <param name="street2">Street 2.</param>
 		/// <param name="city">City.</param>
 		/// <param name="state">State.</param>
 		/// <param name="zip">Zip.</param>
-		/// <returns>Address object.</returns>
-	    public Address GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
+		/// <returns>Location object.</returns>
+	    public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
         {
             return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
         }
 
         /// <summary>
-        /// Standardizes the specified <see cref="Rock.Crm.DTO.Address"/>
+        /// Standardizes the specified <see cref="Rock.Crm.LocationDTO"/>
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Standardize(AddressDto address, int? personId)
+        public Location Standardize(LocationDto location, int? personId)
         {
-            Address addressModel = GetByAddressDto(address, personId);
+            Location locationModel = GetByLocationDto(location, personId);
 
-            Standardize( addressModel, personId );
+            Standardize( locationModel, personId );
 
-            return addressModel;
+            return locationModel;
         }
 
         /// <summary>
-        /// Standardizes the specified <see cref="Address"/>
+        /// Standardizes the specified <see cref="Location"/>
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
-        public void Standardize( Address address, int? personId )
+        public void Standardize( Location location, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
-            string inputAddress = address.ToString();
+            string inputLocation = location.ToString();
 
             // Try each of the standardization services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeComponent, Rock.Extension.IComponentData>> service in Rock.Address.StandardizeContainer.Instance.Components )
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value[0].Value ) )
                 {
                     string result;
-                    bool success = service.Value.Value.Standardize( address, out result );
+                    bool success = service.Value.Value.Standardize( location, out result );
 
                     // Log the results of the service
                     Core.ServiceLog log = new Core.ServiceLog();
                     log.Time = DateTime.Now;
-                    log.Type = "Address Standardize";
+                    log.Type = "Location Standardize";
                     log.Name = service.Value.Metadata.ComponentName;
-                    log.Input = inputAddress;
+                    log.Input = inputLocation;
                     log.Result = result;
                     log.Success = success;
                     logService.Add( log, personId );
@@ -86,40 +86,40 @@ namespace Rock.Crm
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        address.StandardizeService = service.Value.Metadata.ComponentName;
-                        address.StandardizeResult = result;
-                        address.StandardizeDate = DateTime.Now;
+                        location.StandardizeService = service.Value.Metadata.ComponentName;
+                        location.StandardizeResult = result;
+                        location.StandardizeDate = DateTime.Now;
                         break;
                     }
                 }
 
-            address.StandardizeAttempt = DateTime.Now;
+            location.StandardizeAttempt = DateTime.Now;
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="Rock.Crm.DTO.Address"/>
+		/// Geocodes the specified <see cref="Rock.Crm.LocationDTO"/>
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Address Geocode(AddressDto address, int? personId)
+        public Location Geocode(LocationDto location, int? personId)
         {
-            Address addressModel = GetByAddressDto(address, personId);
+            Location locationModel = GetByLocationDto(location, personId);
 
-            Geocode( addressModel, personId );
+            Geocode( locationModel, personId );
 
-            return addressModel;
+            return locationModel;
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="Address"/>
+        /// Geocodes the specified <see cref="Location"/>
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
-        public void Geocode( Address address, int? personId )
+        public void Geocode( Location location, int? personId )
         {
             Core.ServiceLogService logService = new Core.ServiceLogService();
-            string inputAddress = address.ToString();
+            string inputLocation = location.ToString();
 
             // Try each of the geocoding services that were found through MEF
 
@@ -127,14 +127,14 @@ namespace Rock.Crm
                 if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value[0].Value ) )
                 {
                     string result;
-                    bool success = service.Value.Value.Geocode( address, out result );
+                    bool success = service.Value.Value.Geocode( location, out result );
 
                     // Log the results of the service
                     Core.ServiceLog log = new Core.ServiceLog();
                     log.Time = DateTime.Now;
-                    log.Type = "Address Geocode";
+                    log.Type = "Location Geocode";
                     log.Name = service.Value.Metadata.ComponentName;
-                    log.Input = inputAddress;
+                    log.Input = inputLocation;
                     log.Result = result;
                     log.Success = success;
                     logService.Add( log, personId );
@@ -143,46 +143,46 @@ namespace Rock.Crm
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        address.GeocodeService = service.Value.Metadata.ComponentName;
-                        address.GeocodeResult = result;
-                        address.GeocodeDate = DateTime.Now;
+                        location.GeocodeService = service.Value.Metadata.ComponentName;
+                        location.GeocodeResult = result;
+                        location.GeocodeDate = DateTime.Now;
                         break;
                     }
                 }
 
-            address.GeocodeAttempt = DateTime.Now;
+            location.GeocodeAttempt = DateTime.Now;
         }
 
         /// <summary>
-        /// Looks for an existing address model first by searching for a raw value, and then by the street, 
-        /// city, state, and zip of the specified address stub.  If a match is not found, then a new address
+        /// Looks for an existing location model first by searching for a raw value, and then by the street, 
+        /// city, state, and zip of the specified location stub.  If a match is not found, then a new location
         /// block is returned.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Address GetByAddressDto(AddressDto address, int? personId)
+        private Location GetByLocationDto(LocationDto location, int? personId)
         {
-            string raw = address.Raw;
+            string raw = location.Raw;
 
-            Address addressModel = GetByRaw( raw );
+            Location locationModel = GetByRaw( raw );
 
-            if ( addressModel == null )
-                addressModel = GetByStreet1AndStreet2AndCityAndStateAndZip(
-                    address.Street1, address.Street2, address.City, address.State, address.Zip );
+            if ( locationModel == null )
+                locationModel = GetByStreet1AndStreet2AndCityAndStateAndZip(
+                    location.Street1, location.Street2, location.City, location.State, location.Zip );
 
-            if ( addressModel == null )
+            if ( locationModel == null )
             {
-                addressModel = new Crm.Address();
-                addressModel.Raw = raw;
-                addressModel.Street1 = address.Street1;
-                addressModel.Street2 = address.Street2;
-                addressModel.City = address.City;
-                addressModel.State = address.State;
-                addressModel.Zip = address.Zip;
+                locationModel = new Crm.Location();
+                locationModel.Raw = raw;
+                locationModel.Street1 = location.Street1;
+                locationModel.Street2 = location.Street2;
+                locationModel.City = location.City;
+                locationModel.State = location.State;
+                locationModel.Zip = location.Zip;
             }
 
-            return addressModel;
+            return locationModel;
         }
     }
 }
