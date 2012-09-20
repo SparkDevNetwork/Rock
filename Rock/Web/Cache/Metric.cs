@@ -75,12 +75,12 @@ namespace Rock.Web.Cache
 		/// <summary>
 		/// Gets or sets the MinValue.
 		/// </summary>
-		public int MinValue { get; set; }
+		public int? MinValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the MaxValue.
 		/// </summary>
-		public int MaxValue { get; set; }
+		public int? MaxValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the CollectionFrequency.

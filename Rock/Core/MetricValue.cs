@@ -69,7 +69,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int xValue { get; set; }
+		public string xValue { get; set; }
 				
 		/// <summary>
 		/// Gets or sets the isDateBased flag.

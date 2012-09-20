@@ -21,18 +21,12 @@ namespace Rock.Core
 	/// <summary>
 	/// Metric POCO Service class
 	/// </summary>
-    public partial class MetricService : Service<Rock.Core.Metric>
+	public partial class MetricService : Service<Metric, MetricDto>
     {
 		
-		/// <summary>
-		/// Gets Metric by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Metric object.</returns>
-	    public Rock.Core.Metric GetByGuid( Guid guid )
-        {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
-        }
+		
+
+
 		
     }
 }
