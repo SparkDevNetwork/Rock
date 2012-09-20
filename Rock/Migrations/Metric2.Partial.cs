@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Rock.Migrations
 {
-    public partial class Metric
+    public partial class Metric2
     {
 		/// <summary>
 		/// Adds the metric data.

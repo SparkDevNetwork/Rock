@@ -28,10 +28,10 @@ namespace Rock.Core
 		public string Title { get; set; }
 		public string Subtitle { get; set; }
 		public string Description { get; set; }
-		public int MinValue { get; set; }
-		public int MaxValue { get; set; }
-		public int CollectionFrequency { get; set; }
-		public DateTime LastCollected { get; set; }
+		public int? MinValue { get; set; }
+		public int? MaxValue { get; set; }
+		public int CollectionFrequencyId { get; set; }
+		public DateTime? LastCollected { get; set; }
 		public string Source { get; set; }
 		public string SourceSQL { get; set; }
 		public int Order { get; set; }
@@ -76,7 +76,7 @@ namespace Rock.Core
 				this.Description = metric.Description;
 				this.MinValue = metric.MinValue;
 				this.MaxValue = metric.MaxValue;
-				this.CollectionFrequency = metric.CollectionFrequency;
+				this.CollectionFrequencyId = metric.CollectionFrequencyId;
 				this.LastCollected = metric.LastCollected;
 				this.Source = metric.Source;
 				this.SourceSQL = metric.SourceSQL;
@@ -107,7 +107,7 @@ namespace Rock.Core
 				metric.Description = this.Description;
 				metric.MinValue = this.MinValue;
 				metric.MaxValue = this.MaxValue;
-				metric.CollectionFrequency = this.CollectionFrequency;
+				metric.CollectionFrequencyId = this.CollectionFrequencyId;
 				metric.LastCollected = this.LastCollected;
 				metric.Source = this.Source;
 				metric.SourceSQL = this.SourceSQL;

@@ -146,6 +146,12 @@
     <Compile Include="Core\AttributeValueDto.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
     <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\MetricDto.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\MetricService.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Core\TaggedItemService.Partial.cs" />
     <Compile Include="Core\TagService.Partial.cs" />
     <Compile Include="Core\Tag.cs" />
@@ -162,8 +168,6 @@
     <Compile Include="Core\FieldTypeDto.cs" />
     <Compile Include="Core\FieldTypeService.cs" />
     <Compile Include="Core\FieldTypeService.Partial.cs" />
-    <Compile Include="Core\MetricDto.cs" />
-    <Compile Include="Core\MetricService.cs" />
     <Compile Include="Core\MetricService.Partial.cs" />
     <Compile Include="Core\MetricValue.cs" />
     <Compile Include="Core\MetricValueDto.cs" />
@@ -353,6 +357,10 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201208012042296_Metric.cs" />
+    <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
+      <DependentUpon>201208012042296_Metric.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
     <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
       <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
@@ -413,13 +421,15 @@
     <Compile Include="Migrations\201209201608084_GroupLocationType.Designer.cs">
       <DependentUpon>201209201608084_GroupLocationType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201209191842125_Metric.cs" />
-    <Compile Include="Migrations\201209191842125_Metric.Designer.cs">
-      <DependentUpon>201209191842125_Metric.cs</DependentUpon>
+    <Compile Include="Migrations\201209202126005_Metric2.cs" />
+    <Compile Include="Migrations\201209202126005_Metric2.Designer.cs">
+      <DependentUpon>201209202126005_Metric2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\Metric.Partial.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
+    <Compile Include="Migrations\Metric2.Partial.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
@@ -744,8 +754,8 @@
     <EmbeddedResource Include="Migrations\201209201608084_GroupLocationType.resx">
       <DependentUpon>201209201608084_GroupLocationType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201209191842125_Metric.resx">
-      <DependentUpon>201209191842125_Metric.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201209202126005_Metric2.resx">
+      <DependentUpon>201209202126005_Metric2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
