@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class Metric : IMigrationMetadata
+    public sealed partial class Metric2 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Metric));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Metric2));
         
         string IMigrationMetadata.Id
         {
-            get { return "201209191842125_Metric"; }
+            get { return "201209202126005_Metric2"; }
         }
         
         string IMigrationMetadata.Source
