@@ -71,7 +71,21 @@ namespace Rock.Data
             return _objectSet;
         }
 
-        /// <summary>
+		/// <summary>
+		/// An <see cref="IQueryable{T}"/> list of entitities
+		/// with a eager load of includes properties
+		/// </summary>
+		/// <returns></returns>
+		public virtual IQueryable<T> AsQueryable(string includes)
+		{
+			DbQuery<T> value = _objectSet;
+			if (!String.IsNullOrEmpty(includes))
+				foreach(var include in includes.SplitDelimitedValues())
+					value = value.Include(include);
+			return value;
+		}
+
+		/// <summary>
         /// An <see cref="IEnumerable{T}"/> list of all entities
         /// </summary>
         /// <returns></returns>
