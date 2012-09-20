@@ -47,7 +47,7 @@ namespace Rock.Groups
         /// The location type.
         /// </value>
         [DataMember]
-        public int LocationTypeId { get; set; }
+        public int? LocationTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the group.
@@ -64,7 +64,15 @@ namespace Rock.Groups
         /// The location.
         /// </value>
         public virtual Rock.Crm.Location Location { get; set; }
-    }
+
+		/// <summary>
+		/// Gets or sets the Location Type.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Core.DefinedValue"/> object.
+		/// </value>
+		public virtual Core.DefinedValue LocationType { get; set; }
+	}
 
     /// <summary>
 	/// GroupLocation Configuration class
@@ -75,9 +83,10 @@ namespace Rock.Groups
 		/// Initializes a new instance of the <see cref="GroupLocationConfiguration"/> class.
         /// </summary>
 		public GroupLocationConfiguration()
-        {
-            this.HasRequired(t => t.Group).WithMany(t => t.Locations).HasForeignKey(t => t.GroupId);
-            this.HasRequired(t => t.Location).WithMany().HasForeignKey(t => t.LocationId);
-        }
+		{
+			this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
+			this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
+			this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );
+		}
     }
 }

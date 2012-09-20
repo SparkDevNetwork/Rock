@@ -29,8 +29,8 @@ namespace Rock.Crm
 		public string State { get; set; }
 		public string Country { get; set; }
 		public string Zip { get; set; }
-		public double Latitude { get; set; }
-		public double Longitude { get; set; }
+		public double? Latitude { get; set; }
+		public double? Longitude { get; set; }
 		public string ParcelId { get; set; }
 		public DateTime? StandardizeAttempt { get; set; }
 		public string StandardizeService { get; set; }

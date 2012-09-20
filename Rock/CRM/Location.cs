@@ -97,7 +97,7 @@ namespace Rock.Crm
 		/// Latitude.
 		/// </value>
 		[DataMember]
-		public double Latitude { get; set; }
+		public double? Latitude { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Longitude.
@@ -106,7 +106,7 @@ namespace Rock.Crm
 		/// Longitude.
 		/// </value>
 		[DataMember]
-		public double Longitude { get; set; }
+		public double? Longitude { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Parcel Id.
