@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web.UI;
 
-using Rock.Field;
 
 namespace Rock.Web.Cache
 {
@@ -22,18 +21,18 @@ namespace Rock.Web.Cache
 		private MetricValue() : base() { }
 		private MetricValue( Rock.Core.MetricValue model ) : base( model ) { }
 
-        #region Static Methods
+		#region Static Methods
 
-        private static string CacheKey( int id )
-        {
+		private static string CacheKey( int id )
+		{
 			return string.Format( "Rock:MetricValue:{0}", id );
-        }
+		}
 
-        /// <summary>
-        /// Adds MetricValue model to cache, and returns cached object
-        /// </summary>
-        /// <param name="metricValueModel">The metricValueModel to cache</param>
-        /// <returns></returns>
+		/// <summary>
+		/// Adds MetricValue model to cache, and returns cached object
+		/// </summary>
+		/// <param name="metricValueModel">The metricValueModel to cache</param>
+		/// <returns></returns>
 		public static MetricValue Read( Rock.Core.MetricValue metricValueModel )
         {
             string cacheKey = MetricValue.CacheKey( metricValueModel.Id );
@@ -52,27 +51,27 @@ namespace Rock.Web.Cache
 			}
         }
 
-        /// <summary>
-        /// Returns MetricValue object from cache.  If metricValue does not already exist in cache, it
-        /// will be read and added to cache
-        /// </summary>
-        /// <param name="id">The id of the MetricValue to read</param>
-        /// <returns></returns>
-        public static MetricValue Read( int id )
-        {
-            string cacheKey = MetricValue.CacheKey( id );
+		/// <summary>
+		/// Returns MetricValue object from cache.  If metricValue does not already exist in cache, it
+		/// will be read and added to cache
+		/// </summary>
+		/// <param name="id">The id of the MetricValue to read</param>
+		/// <returns></returns>
+		public static MetricValue Read( int id )
+		{
+			string cacheKey = MetricValue.CacheKey( id );
 
-            ObjectCache cache = MemoryCache.Default;
-            MetricValue metricValue = cache[cacheKey] as MetricValue;
+			ObjectCache cache = MemoryCache.Default;
+			MetricValue metricValue = cache[cacheKey] as MetricValue;
 
 			if ( metricValue != null )
 				return metricValue;
-            else
-            {
-                Rock.Core.MetricValueService metricService = new Rock.Core.MetricValueService();
-                Rock.Core.MetricValue metricValueModel = metricService.Get( id );
-                if ( metricValueModel != null )
-                {
+			else
+			{
+				Rock.Core.MetricValueService metricService = new Rock.Core.MetricValueService();
+				Rock.Core.MetricValue metricValueModel = metricService.Get( id );
+				if ( metricValueModel != null )
+				{
 					metricValue = MetricValue.CopyModel( metricValueModel );
 
 					cache.Set( cacheKey, metricValue, new CacheItemPolicy() );
@@ -94,18 +93,18 @@ namespace Rock.Web.Cache
         {
 			MetricValue metricValue = new MetricValue( metricValueModel );
 			return metricValue;
-        }
+		}
 
-        /// <summary>
-        /// Removes metricValue from cache
-        /// </summary>
-        /// <param name="id">The id of the metricValue to remove from cache</param>
-        public static void Flush( int id )
-        {
-            ObjectCache cache = MemoryCache.Default;
-            cache.Remove( MetricValue.CacheKey( id ) );
-        }
+		/// <summary>
+		/// Removes metricValue from cache
+		/// </summary>
+		/// <param name="id">The id of the metricValue to remove from cache</param>
+		public static void Flush( int id )
+		{
+			ObjectCache cache = MemoryCache.Default;
+			cache.Remove( MetricValue.CacheKey( id ) );
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

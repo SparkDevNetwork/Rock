@@ -26,7 +26,7 @@ namespace Rock.Core
 		public int MetricId { get; set; }
 		public string Value { get; set; }
 		public string Description { get; set; }
-		public int xValue { get; set; }
+		public string xValue { get; set; }
 		public bool isDateBased { get; set; }
 		public string Label { get; set; }
 		public int Order { get; set; }
