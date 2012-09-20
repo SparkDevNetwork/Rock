@@ -28,8 +28,8 @@ namespace Rock.Core
 		public string Title { get; set; }
 		public string Subtitle { get; set; }
 		public string Description { get; set; }
-		public int MinValue { get; set; }
-		public int MaxValue { get; set; }
+		public int? MinValue { get; set; }
+		public int? MaxValue { get; set; }
 		public int CollectionFrequencyId { get; set; }
 		public DateTime? LastCollected { get; set; }
 		public string Source { get; set; }

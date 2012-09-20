@@ -93,7 +93,7 @@ namespace Rock.Core
 		/// MinValue.
 		/// </value>
 		[DataMember]
-		public int MinValue { get; set; }
+		public int? MinValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the MaxValue.
@@ -102,7 +102,7 @@ namespace Rock.Core
 		/// MaxValue.
 		/// </value>
 		[DataMember]
-		public int MaxValue { get; set; }
+		public int? MaxValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the CollectionFrequency.

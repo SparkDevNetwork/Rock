@@ -45,7 +45,7 @@ namespace Rock.Web.Cache
 		/// <summary>
 		/// Gets or sets the xValue.
 		/// </summary>
-		public int xValue { get; set; }
+		public string xValue { get; set; }
 
 		/// <summary>
 		/// Gets or sets the isDateBased flag.

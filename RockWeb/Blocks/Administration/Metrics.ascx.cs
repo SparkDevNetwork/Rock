@@ -38,40 +38,34 @@ namespace RockWeb.Blocks.Administration
 			try
 			{
 				_canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
-				
-				BindFilter();
 
-				BindCollectionFrequencies();
+				BindCategoryFilter();				
 
 				if ( _canConfigure )
 				{
-					rGrid.DataKeyNames = new string[] { "id" };
-					rGrid.Actions.IsAddEnabled = true;
-					
-					rGrid.Actions.AddClick += rGrid_Add;
-					rGrid.GridRebind += rGrid_GridRebind;
+					rGridMetric.DataKeyNames = new string[] { "id" };
+					rGridMetric.Actions.IsAddEnabled = true;
 
-					string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this metric?');
-                }});
-        }});
-    ", rGrid.ClientID );
-					this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+					rGridMetric.Actions.AddClick += rGridMetric_Add;
+					rGridMetric.GridRebind += rGridMetric_GridRebind;
 
-					//// Create the dropdown list for listing the available field types
-					//var fieldTypeService = new Rock.Core.FieldTypeService();
-					//var items = fieldTypeService.
-					//    Queryable().
-					//    Select( f => new { f.Id, f.Name } ).
-					//    OrderBy( f => f.Name );
+					rGridValue.DataKeyNames = new string[] { "id" };
+					rGridValue.Actions.IsAddEnabled = true;
 
-					//ddlFieldType.AutoPostBack = true;
-					//ddlFieldType.SelectedIndexChanged += new EventHandler( ddlFieldType_SelectedIndexChanged );
-					//ddlFieldType.Items.Clear();
-					//foreach ( var item in items )
-					//    ddlFieldType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+					rGridValue.Actions.AddClick += rGridValue_Add;
+					rGridValue.GridRebind += rGridValue_GridRebind;
+
+					modalValue.SaveClick += btnSaveValue_Click;
+					modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+
+					this.Page.ClientScript.RegisterStartupScript( this.GetType(), 
+						string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), @"
+						Sys.Application.add_load(function () {{
+							$('td.grid-icon-cell.delete a').click(function(){{
+								return confirm('Are you sure you want to delete this value?');
+								}});
+						}});", true 
+					);								
 				}
 				else
 				{
@@ -87,7 +81,7 @@ namespace RockWeb.Blocks.Administration
 		protected override void OnLoad( EventArgs e )
 		{
 			if ( !Page.IsPostBack && _canConfigure )
-				BindGrid();
+				BindGridMetric();
 
 			base.OnLoad( e );
 		}
@@ -98,19 +92,36 @@ namespace RockWeb.Blocks.Administration
 
 		protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
 		{
-			BindGrid();
+			BindCategoryFilter();
+			BindGridMetric();
 		}
 
-		protected void rGrid_Edit( object sender, RowEventArgs e )
+		protected void rGridMetric_Add( object sender, EventArgs e )
 		{
-			ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+			BindCollectionFrequencies();
+			ShowEditMetric( 0 );
 		}
 
-		protected void rGrid_Delete( object sender, RowEventArgs e )
+		protected void rGridMetric_Edit( object sender, RowEventArgs e )
+		{
+			BindCollectionFrequencies();
+			ShowEditMetric( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
+		}
+
+		protected void rGridMetric_EditValue( object sender, RowEventArgs e )
+		{
+			hfIdMetric.Value = rGridMetric.DataKeys[e.RowIndex]["id"].ToString();
+			BindGridValue();
+
+			pnlMetricList.Visible = false;
+			pnlValueList.Visible = true;
+		}
+
+		protected void rGridMetric_Delete( object sender, RowEventArgs e )
 		{
 			var metricService = new Rock.Core.MetricService();
 
-			Rock.Core.Metric metric = metricService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+			Rock.Core.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
 			if ( metric != null )
 			{
 				Rock.Web.Cache.Metric.Flush( metric.Id );
@@ -119,30 +130,16 @@ namespace RockWeb.Blocks.Administration
 				metricService.Save( metric, CurrentPersonId );
 			}
 
-			BindGrid();
+			BindGridMetric();
 		}
 
-		protected void rGrid_Add( object sender, EventArgs e )
-		{
-			ShowEdit( 0 );
-		}
-
-		void rGrid_GridRebind( object sender, EventArgs e )
-		{
-			BindGrid();
-		}
-
-		protected void btnSave_Click( object sender, EventArgs e )
+		protected void btnSaveMetric_Click( object sender, EventArgs e )
 		{
 			using ( new Rock.Data.UnitOfWorkScope() )
 			{
 				var metricService = new Rock.Core.MetricService();
-
-				Rock.Core.Metric metric;
-
-				int metricId = 0;
-				if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out metricId ) )
-					metricId = 0;
+				Rock.Core.Metric metric;				
+				int metricId = ( hfIdMetric.Value ) != null ? Int32.Parse( hfIdMetric.Value ) : 0;
 
 				if ( metricId == 0 )
 				{
@@ -160,52 +157,123 @@ namespace RockWeb.Blocks.Administration
 				metric.Title = tbTitle.Text;
 				metric.Subtitle = tbSubtitle.Text;
 				metric.Description = tbDescription.Text;
-				metric.MinValue = Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands );
-				metric.MaxValue = Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands );
+				metric.MinValue = tbMinValue.Text != "" ? Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands ) : (int?)null;
+				metric.MaxValue = tbMinValue.Text != "" ? Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands ) : (int?)null;
 				metric.Type = cbType.Checked;
-				metric.CollectionFrequencyId = Int32.Parse(ddlCollectionFrequency.SelectedValue);
-				metric.CollectionFrequency = definedValueService.Get(metric.CollectionFrequencyId);
+				metric.CollectionFrequencyId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
 				metric.Source = tbSource.Text;
 				metric.SourceSQL = tbSourceSQL.Text;
 
 				metricService.Save( metric, CurrentPersonId );
 			}
 
-			BindGrid();
+			BindCategoryFilter();
+			BindGridMetric();
 
-			pnlDetails.Visible = false;
-			pnlList.Visible = true;
+			pnlMetricDetails.Visible = false;
+			pnlMetricList.Visible = true;
 		}
 
-		protected void btnCancel_Click( object sender, EventArgs e )
+		protected void btnCancelMetric_Click( object sender, EventArgs e )
 		{
-			pnlDetails.Visible = false;
-			pnlList.Visible = true;
+			pnlMetricDetails.Visible = false;
+			pnlMetricList.Visible = true;
 		}
 
+		void rGridMetric_GridRebind( object sender, EventArgs e )
+		{
+			BindCategoryFilter();
+			BindGridMetric();
+		}
+		
+		protected void rGridValue_Add( object sender, EventArgs e )
+		{
+			BindMetricFilter();
+			ShowEditValue( 0 );
+		}
+
+		protected void rGridValue_Edit( object sender, RowEventArgs e )
+		{
+			BindMetricFilter();
+			ShowEditValue( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+		}
+
+		protected void rGridValue_Delete( object sender, RowEventArgs e )
+		{
+			var metricValueService = new Rock.Core.MetricValueService();
+
+			Rock.Core.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+			if ( metricValue != null )
+			{
+				Rock.Web.Cache.Metric.Flush( metricValue.Id );
+
+				metricValueService.Delete( metricValue, CurrentPersonId );
+				metricValueService.Save( metricValue, CurrentPersonId );
+			}
+
+			BindGridValue();
+		}
+
+		protected void btnValueDone_Click( object sender, EventArgs e )
+		{
+			BindCategoryFilter();
+			BindGridMetric();
+			pnlValueList.Visible = false;
+			pnlMetricList.Visible = true;		
+		}
+
+		protected void btnSaveValue_Click( object sender, EventArgs e )
+		{
+			using ( new Rock.Data.UnitOfWorkScope() )
+			{
+				int metricValueId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
+				var metricValueService = new Rock.Core.MetricValueService();
+				Rock.Core.MetricValue metricValue;								
+
+				if ( metricValueId == 0 )
+				{
+					metricValue = new Rock.Core.MetricValue();
+					metricValue.IsSystem = false;
+					metricValue.MetricId = Int32.Parse( hfIdMetric.Value );
+					metricValueService.Add( metricValue, CurrentPersonId );
+				}
+				else
+				{
+					Rock.Web.Cache.Metric.Flush( metricValueId );
+					metricValue = metricValueService.Get( metricValueId );
+				}
+
+				metricValue.Value = tbValue.Text;
+				metricValue.Description = tbValueDescription.Text;
+				metricValue.xValue = tbXValue.Text;
+				metricValue.Label = tbLabel.Text;
+				metricValue.isDateBased = cbIsDateBased.Checked;
+				metricValue.MetricId = Int32.Parse(ddlMetricFilter.SelectedValue);
+				metricValueService.Save( metricValue, CurrentPersonId );
+			}
+
+			BindGridValue();
+
+			modalValue.Hide();
+			pnlValueList.Visible = true;
+		}
+
+		protected void btnCancelValue_Click( object sender, EventArgs e )
+		{
+			modalValue.Hide();
+			pnlValueList.Visible = true;
+		}
+
+		void rGridValue_GridRebind( object sender, EventArgs e )
+		{
+			BindGridValue();
+		}
+		
 		#endregion
 
 		#region Methods
-
-		private void BindCollectionFrequencies()
-		{
-			ddlCollectionFrequency.Items.Clear();
-			
-			List<DefinedValue> definedValues = new List<DefinedValue>();
-			using ( new Rock.Data.UnitOfWorkScope() )
-			{
-				definedValues = definedValueService
-					.Queryable()
-					.Where( 	definedValue => definedValue.DefinedType.Name == "Frequency" )
-					.ToList();
-			}
-
-			foreach ( DefinedValue value in definedValues )
-				ddlCollectionFrequency.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
-						
-		}
-
-		private void BindFilter()
+				
+		private void BindCategoryFilter()
 		{
 			ddlCategoryFilter.Items.Clear();
 			ddlCategoryFilter.Items.Add( "[All]" );
@@ -221,7 +289,7 @@ namespace RockWeb.Blocks.Administration
 				ddlCategoryFilter.Items.Add( item );
 		}
 
-		private void BindGrid()
+		private void BindGridMetric()
 		{
 			var queryable = new Rock.Core.MetricService().Queryable();
 
@@ -229,7 +297,7 @@ namespace RockWeb.Blocks.Administration
 				queryable = queryable.
 					Where( a => a.Category == ddlCategoryFilter.SelectedValue );
 
-			SortProperty sortProperty = rGrid.SortProperty;
+			SortProperty sortProperty = rGridMetric.SortProperty;
 			if ( sortProperty != null )
 				queryable = queryable.
 					Sort( sortProperty );
@@ -238,22 +306,39 @@ namespace RockWeb.Blocks.Administration
 					OrderBy( a => a.Category ).
 					ThenBy( a => a.Title );
 
-			rGrid.DataSource = queryable.ToList();
-			rGrid.DataBind();
+			rGridMetric.DataSource = queryable.ToList();
+			rGridMetric.DataBind();
+
 		}
 
-		
-		protected void ShowEdit( int metricId )
+		private void BindCollectionFrequencies()
 		{
-			var metricModel = new Rock.Core.MetricService().Get( metricId );
+			ddlCollectionFrequency.Items.Clear();
 
+			List<DefinedValue> definedValues = new List<DefinedValue>();
+			using ( new Rock.Data.UnitOfWorkScope() )
+			{
+				definedValues = definedValueService.Queryable().
+					Where( definedValue => definedValue.DefinedType.Name == "Frequency" ).
+					ToList();
+			}
+
+			foreach ( DefinedValue value in definedValues )
+				ddlCollectionFrequency.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+
+		}
+
+		protected void ShowEditMetric( int metricId )
+		{
+			hfIdMetric.Value = metricId.ToString();
+
+			var metricModel = new Rock.Core.MetricService().Get( metricId );
+			
 			if ( metricModel != null )
 			{
 				var metric = Rock.Web.Cache.Metric.Read( metricModel );
 
 				lAction.Text = "Edit";
-				hfId.Value = metric.Id.ToString();
-
 				tbCategory.Text = metric.Category;
 				tbTitle.Text = metric.Title;
 				tbSubtitle.Text = metric.Subtitle;
@@ -268,7 +353,6 @@ namespace RockWeb.Blocks.Administration
 			else
 			{
 				lAction.Text = "Add";
-				hfId.Value = string.Empty;
 				tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
 				tbTitle.Text = string.Empty;
 				tbSubtitle.Text = string.Empty;
@@ -280,8 +364,79 @@ namespace RockWeb.Blocks.Administration
 				tbSourceSQL.Text = string.Empty;
 			}
 
-			pnlList.Visible = false;
-			pnlDetails.Visible = true;
+			pnlMetricList.Visible = false;
+			pnlMetricDetails.Visible = true;
+		}
+
+		private void BindMetricFilter()
+		{
+			ddlMetricFilter.Items.Clear();
+
+			List<Metric> metrics = new List<Metric>();
+			using ( new Rock.Data.UnitOfWorkScope() )
+			{
+				metrics = metricService.Queryable().
+					Where( a => a.Title != "" && a.Title != null ).
+					OrderBy( a => a.Title ).
+					ToList();
+			}
+
+			foreach ( Metric metric in metrics )
+				ddlMetricFilter.Items.Add( new ListItem( metric.Title, metric.Id.ToString() ) );
+
+			ddlMetricFilter.SelectedValue = hfIdMetric.Value;
+		}
+		
+		private void BindGridValue( )
+		{
+			int metricId = ( hfIdMetric.Value != null ) ? Int32.Parse( hfIdMetric.Value ) : 0;
+			var queryable = new Rock.Core.MetricValueService().Queryable();
+			
+			queryable = queryable.
+				Where( a => a.MetricId == metricId );
+
+			SortProperty sortProperty = rGridValue.SortProperty;
+			if ( sortProperty != null )
+				queryable = queryable.
+					Sort( sortProperty );
+			else
+				queryable = queryable.
+					OrderBy( a => a.Id ).
+					ThenBy( a => a.Value );
+
+			rGridValue.DataSource = queryable.ToList();
+			rGridValue.DataBind();
+		}
+
+		protected void ShowEditValue( int metricValueId )
+		{
+			hfIdValue.Value = metricValueId.ToString();
+			
+			var metricValueModel = new Rock.Core.MetricValueService().Get( metricValueId );
+
+			if ( metricValueModel != null )
+			{
+				var metricValue = Rock.Web.Cache.MetricValue.Read( metricValueModel );
+				lValue.Text = "Edit";
+				tbValue.Text = metricValue.Value;
+				tbValueDescription.Text = metricValue.Description;
+				tbXValue.Text = metricValue.xValue;
+				tbLabel.Text = metricValue.Label;
+				cbIsDateBased.Checked = metricValue.isDateBased;
+			}
+			else 
+			{
+				lValue.Text = "Add";
+				tbValue.Text = string.Empty;
+				tbValueDescription.Text = string.Empty;
+				tbXValue.Text = string.Empty;
+				tbLabel.Text = string.Empty;
+				cbIsDateBased.Checked = false;
+			}
+
+			ddlMetricFilter.SelectedValue = hfIdMetric.Value;				
+			modalValue.Show();
+			
 		}
 
 		private void DisplayError( string message )
@@ -292,7 +447,5 @@ namespace RockWeb.Blocks.Administration
 		}
 
 		#endregion
-
-
 	}
 }

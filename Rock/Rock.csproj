@@ -156,6 +156,7 @@
     <Compile Include="Core\ExceptionLogService.cs" />
     <Compile Include="Core\FieldTypeDto.cs" />
     <Compile Include="Core\FieldTypeService.cs" />
+    <Compile Include="Core\FieldTypeService.Partial.cs" />
     <Compile Include="Core\MetricDto.cs" />
     <Compile Include="Core\MetricService.cs" />
     <Compile Include="Core\MetricService.Partial.cs" />
@@ -343,10 +344,6 @@
     <Compile Include="Migrations\201207301824251_PersonMerge.Designer.cs">
       <DependentUpon>201207301824251_PersonMerge.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201208012042296_Metric.cs" />
-    <Compile Include="Migrations\201208012042296_Metric.Designer.cs">
-      <DependentUpon>201208012042296_Metric.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201208060640275_AddPackageManager.cs" />
     <Compile Include="Migrations\201208060640275_AddPackageManager.Designer.cs">
       <DependentUpon>201208060640275_AddPackageManager.cs</DependentUpon>
@@ -371,7 +368,12 @@
     <Compile Include="Migrations\201208291337203_UpdateAcronymCasing.Designer.cs">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209191842125_Metric.cs" />
+    <Compile Include="Migrations\201209191842125_Metric.Designer.cs">
+      <DependentUpon>201209191842125_Metric.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\Metric.Partial.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\UpdateFieldTypes.Partial.cs" />
     <Compile Include="Net\WebRequest.cs" />
@@ -658,6 +660,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201208291337203_UpdateAcronymCasing.resx">
       <DependentUpon>201208291337203_UpdateAcronymCasing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209191842125_Metric.resx">
+      <DependentUpon>201209191842125_Metric.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
