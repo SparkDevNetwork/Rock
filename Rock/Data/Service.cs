@@ -52,7 +52,17 @@ namespace Rock.Data
             return _repository.AsQueryable();
         }
 
-        /// <summary>
+		/// <summary>
+		/// Gets an <see cref="IQueryable{T}"/> list of all models
+		/// with eager loading of properties specified in includes
+		/// </summary>
+		/// <returns></returns>
+		public IQueryable<T> Queryable(string includes)
+		{
+			return _repository.AsQueryable(includes);
+		}
+
+		/// <summary>
         /// Gets the model with the id value
         /// </summary>
         /// <param name="id">id</param>
