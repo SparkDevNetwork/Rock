@@ -261,7 +261,15 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
 
-        /// <summary>
+		/// <summary>
+		/// Gets or sets the Group Locations.
+		/// </summary>
+		/// <value>
+		/// the Group Locations.
+		/// </value>
+		public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
+
+		/// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
@@ -378,7 +386,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Groups.GroupLocationConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
 		}
     }

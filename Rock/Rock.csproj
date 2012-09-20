@@ -317,6 +317,7 @@
     <Compile Include="Groups\MemberDto.cs" />
     <Compile Include="Groups\MemberService.cs" />
     <Compile Include="Groups\MemberService.Partial.cs" />
+    <Compile Include="Groups\GroupLocation.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
@@ -407,6 +408,10 @@
     <Compile Include="Migrations\201209191239132_ChangeAddressToLocation.cs" />
     <Compile Include="Migrations\201209191239132_ChangeAddressToLocation.Designer.cs">
       <DependentUpon>201209191239132_ChangeAddressToLocation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201209192056325_GroupRoles.cs" />
+    <Compile Include="Migrations\201209192056325_GroupRoles.Designer.cs">
+      <DependentUpon>201209192056325_GroupRoles.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -727,6 +732,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209191239132_ChangeAddressToLocation.resx">
       <DependentUpon>201209191239132_ChangeAddressToLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209192056325_GroupRoles.resx">
+      <DependentUpon>201209192056325_GroupRoles.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

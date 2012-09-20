@@ -63,6 +63,7 @@ namespace Rock.Groups
 			return items.Select( m => new GroupRoleDto()
 				{
 					IsSystem = m.IsSystem,
+					GroupTypeId = m.GroupTypeId,
 					Name = m.Name,
 					Description = m.Description,
 					Order = m.Order,

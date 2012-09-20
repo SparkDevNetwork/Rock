@@ -131,7 +131,7 @@ namespace Rock.Groups
         /// <value>
         /// Collection of Group Roles.
         /// </value>
-		public virtual ICollection<GroupRole> GroupRoles { get; set; }
+		public virtual ICollection<GroupRole> Roles { get; set; }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

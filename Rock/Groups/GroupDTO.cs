@@ -25,6 +25,7 @@ namespace Rock.Groups
 		public bool IsSystem { get; set; }
 		public int? ParentGroupId { get; set; }
 		public int GroupTypeId { get; set; }
+		public int? CampusId { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
 		public bool IsSecurityRole { get; set; }
@@ -64,6 +65,7 @@ namespace Rock.Groups
 				this.IsSystem = group.IsSystem;
 				this.ParentGroupId = group.ParentGroupId;
 				this.GroupTypeId = group.GroupTypeId;
+				this.CampusId = group.CampusId;
 				this.Name = group.Name;
 				this.Description = group.Description;
 				this.IsSecurityRole = group.IsSecurityRole;
@@ -88,6 +90,7 @@ namespace Rock.Groups
 				group.IsSystem = this.IsSystem;
 				group.ParentGroupId = this.ParentGroupId;
 				group.GroupTypeId = this.GroupTypeId;
+				group.CampusId = this.CampusId;
 				group.Name = this.Name;
 				group.Description = this.Description;
 				group.IsSecurityRole = this.IsSecurityRole;
