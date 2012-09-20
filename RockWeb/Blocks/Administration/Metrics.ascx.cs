@@ -21,11 +21,13 @@ namespace RockWeb.Blocks.Administration
 	public partial class Metrics : Rock.Web.UI.Block
 	{
 		#region Fields
+		private const string definedTypeName = "Frequency";
 
 		private MetricService metricService = new MetricService();
 		private MetricValueService metricValueService = new MetricValueService();
-		private DefinedValueService definedValueService = new DefinedValueService();
+		private DefinedValueService definedValueService = new DefinedValueService();		
 		private bool _canConfigure = false;
+		
 
 		#endregion
 
@@ -319,7 +321,7 @@ namespace RockWeb.Blocks.Administration
 			using ( new Rock.Data.UnitOfWorkScope() )
 			{
 				definedValues = definedValueService.Queryable().
-					Where( definedValue => definedValue.DefinedType.Name == "Frequency" ).
+					Where( definedValue => definedValue.DefinedType.Name == definedTypeName ).
 					ToList();
 			}
 
