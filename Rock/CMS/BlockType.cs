@@ -15,10 +15,10 @@ using Rock.Data;
 namespace Rock.Cms
 {
     /// <summary>
-    /// Block POCO Entity.
+    /// Block Type POCO Entity.
     /// </summary>
-    [Table( "cmsBlock" )]
-    public partial class Block : ModelWithAttributes<Block>, IAuditable, IExportable
+    [Table( "cmsBlockType" )]
+    public partial class BlockType : ModelWithAttributes<BlockType>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -101,7 +101,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Block"; } }
+		public override string AuthEntity { get { return "Cms.BlockType"; } }
         
 		/// <summary>
         /// Gets or sets the Block Instances.
@@ -132,9 +132,9 @@ namespace Rock.Cms
 		/// </summary>
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
-		public static Block Read( int id )
+		public static BlockType Read( int id )
 		{
-			return Read<Block>( id );
+			return Read<BlockType>( id );
 		}
 
         /// <summary>
@@ -167,14 +167,14 @@ namespace Rock.Cms
     }
 
     /// <summary>
-    /// Block Configuration class.
+    /// Block Type Configuration class.
     /// </summary>
-    public partial class BlockConfiguration : EntityTypeConfiguration<Block>
+    public partial class BlockTypeConfiguration : EntityTypeConfiguration<BlockType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BlockConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BlockTypeConfiguration"/> class.
         /// </summary>
-        public BlockConfiguration()
+        public BlockTypeConfiguration()
         {
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);

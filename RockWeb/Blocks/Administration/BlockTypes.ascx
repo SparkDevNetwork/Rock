@@ -1,11 +1,11 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Blocks.ascx.cs" Inherits="RockWeb.Blocks.Administration.Blocks" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BlockTypes.ascx.cs" Inherits="RockWeb.Blocks.Administration.BlockTypes" %>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
 
-    <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Blocks Found" AllowSorting="true" >
+    <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Block Types Found" AllowSorting="true" >
         <Columns>
             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
             <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
@@ -21,9 +21,9 @@
         <asp:HiddenField ID="hfId" runat="server" />
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
         <fieldset>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="Name" />
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-            <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="Path" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+            <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Path" />
         </fieldset>
     </Content>
     </Rock:ModalDialog>

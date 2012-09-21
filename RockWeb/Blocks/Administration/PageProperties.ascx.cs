@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Administration
                     List<string> blockContexts = new List<string>();
                     foreach ( var blockInstance in _page.BlockInstances )
                     {
-                        var block = TemplateControl.LoadControl( blockInstance.Block.Path ) as Rock.Web.UI.Block;
+                        var block = TemplateControl.LoadControl( blockInstance.BlockType.Path ) as Rock.Web.UI.Block;
                         if ( block != null )
                         {
                             block.PageInstance = _page;

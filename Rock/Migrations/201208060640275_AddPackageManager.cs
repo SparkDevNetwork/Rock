@@ -52,7 +52,7 @@ INSERT INTO [coreAttributeValue] ([IsSystem],[AttributeId],[EntityId],[Order],[V
 INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
 	VALUES('CMS.Page',@PageId,0,'Edit','A',0,NULL,2,'Jul 13 2012 12:50:00:000PM','Jul 13 2012 12:50:00:000PM',1,1,'632E474F-29D0-4D7D-A51A-5FD2D8DE74FE')
 
-", Rock.SystemGuid.Page.PLUGIN_SETTINGS, Rock.SystemGuid.Page.PLUGIN_MANAGER, Rock.SystemGuid.Block.PLUGIN_MANAGER ) );
+", Rock.SystemGuid.Page.PLUGIN_SETTINGS, Rock.SystemGuid.Page.PLUGIN_MANAGER, Rock.SystemGuid.BlockType.PLUGIN_MANAGER ) );
         }
         
         public override void Down()
@@ -76,7 +76,7 @@ DELETE [coreAttribute] WHERE [Guid] = '306E7E7C-9416-4098-9C25-488380B940A5'
 DELETE [coreAttributeValue] WHERE [Guid] = '5CB48974-6BB6-435B-A04A-2BF9B7CD778E'
 
 
-", Rock.SystemGuid.Page.PLUGIN_MANAGER, Rock.SystemGuid.Block.PLUGIN_MANAGER ));
+", Rock.SystemGuid.Page.PLUGIN_MANAGER, Rock.SystemGuid.BlockType.PLUGIN_MANAGER ));
         }
     }
 }

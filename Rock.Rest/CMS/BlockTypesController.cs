@@ -15,7 +15,7 @@ using Rock.Cms;
 namespace Rock.Rest.Cms
 {
 	/// <summary>
-	/// Blocks REST API
+	/// BlockTypes REST API
 	/// </summary>
 	public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Cms.BlockType, Rock.Cms.BlockTypeDto>
 	{

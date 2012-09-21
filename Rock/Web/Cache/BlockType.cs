@@ -11,18 +11,18 @@ using System.Runtime.Caching;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a block that is required by the rendering engine.
+    /// Information about a block type that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class Block : Rock.Cms.BlockDto
+    public class BlockType : Rock.Cms.BlockTypeDto
     {
-        private Block() : base() { }
-		private Block( Rock.Cms.Block block ) : base( block ) { }
+        private BlockType() : base() { }
+		private BlockType( Rock.Cms.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
-        /// verified for the block.  If not, Rock will create and/or update the attributes associated with the block.
+        /// verified for the block type.  If not, Rock will create and/or update the attributes associated with the block.
         /// </summary>
         /// <value>
         /// 	<c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
@@ -31,7 +31,7 @@ namespace Rock.Web.Cache
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
-        /// List of attributes associated with the block.  This object will not include values.
+        /// List of attributes associated with the block type.  This object will not include values.
         /// To get values associated with the current block instance, use the AttributeValues
         /// </summary>
         public List<Rock.Web.Cache.Attribute> Attributes
@@ -58,15 +58,15 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.Cms.BlockService blockService = new Cms.BlockService();
-            Rock.Cms.Block blockModel = blockService.Get( this.Id );
+            Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
+            Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( this.Id );
 
-            if ( blockModel != null )
+            if ( blockTypeModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( blockModel );
-                foreach ( var category in blockModel.Attributes )
+                Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
+                foreach ( var category in blockTypeModel.Attributes )
                     foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( blockTypeModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -74,56 +74,56 @@ namespace Rock.Web.Cache
 
         private static string CacheKey( int id )
         {
-            return string.Format( "Rock:Block:{0}", id );
+            return string.Format( "Rock:BlockType:{0}", id );
         }
 
         /// <summary>
-        /// Returns Block object from cache.  If block does not already exist in cache, it
+        /// Returns Block Type object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static Block Read( int id )
+        public static BlockType Read( int id )
         {
-            string cacheKey = Block.CacheKey( id );
+            string cacheKey = BlockType.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Block block = cache[cacheKey] as Block;
+            BlockType blockType = cache[cacheKey] as BlockType;
 
-            if ( block != null )
-                return block;
+            if ( blockType != null )
+                return blockType;
             else
             {
-                Rock.Cms.BlockService blockService = new Cms.BlockService();
-                Rock.Cms.Block blockModel = blockService.Get( id );
-                if ( blockModel != null )
+                Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
+                Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( id );
+                if ( blockTypeModel != null )
                 {
-					block = new Block(blockModel);
+					blockType = new BlockType(blockTypeModel);
 
-                    block.IsInstancePropertiesVerified = false;
+                    blockType.IsInstancePropertiesVerified = false;
 
-                    Rock.Attribute.Helper.LoadAttributes( blockModel );
+                    Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
 
-                    block.AttributeValues = blockModel.AttributeValues;
+                    blockType.AttributeValues = blockTypeModel.AttributeValues;
 
-                    if (blockModel.Attributes != null)
-                        foreach ( var category in blockModel.Attributes )
+                    if (blockTypeModel.Attributes != null)
+                        foreach ( var category in blockTypeModel.Attributes )
                             foreach ( var attribute in category.Value )
-                                block.AttributeIds.Add( attribute.Id );
+                                blockType.AttributeIds.Add( attribute.Id );
 
-                    // Block cache expiration monitors the actual block on the file system so that it is flushed from 
+                    // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
                     // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any
                     // BlockInstancePropery attributes that may have been added or modified
-                    string physicalPath = System.Web.HttpContext.Current.Request.MapPath( block.Path );
+                    string physicalPath = System.Web.HttpContext.Current.Request.MapPath( blockType.Path );
                     List<string> filePaths = new List<string>();
                     filePaths.Add( physicalPath );
                     filePaths.Add( physicalPath + ".cs" );
 
                     CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
                     cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
-                    cache.Set( cacheKey, block, cacheItemPolicy );
+                    cache.Set( cacheKey, blockType, cacheItemPolicy );
 
-                    return block;
+                    return blockType;
                 }
                 else
                     return null;
@@ -132,13 +132,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes block from cache
+        /// Removes block type from cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Block.CacheKey( id ) );
+            cache.Remove( BlockType.CacheKey( id ) );
         }
 
         #endregion
