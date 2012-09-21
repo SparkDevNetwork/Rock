@@ -425,7 +425,7 @@ namespace Rock.Web.UI
                             FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
                                 ( canConfig || canEdit ? "can-configure " : "" ) +
-                                HtmlHelper.CssClassFormat( blockInstance.Block.Name ) );
+                                HtmlHelper.CssClassFormat( blockInstance.BlockType.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
                             string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", blockInstance.Id );
@@ -441,7 +441,7 @@ namespace Rock.Web.UI
 
                                 try
                                 {
-                                    control = TemplateControl.LoadControl( blockInstance.Block.Path );
+                                    control = TemplateControl.LoadControl( blockInstance.BlockType.Path );
                                     control.ClientIDMode = ClientIDMode.AutoID;
                                 }
                                 catch ( Exception ex )
@@ -474,10 +474,10 @@ namespace Rock.Web.UI
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed blockinstance 
                                     //  attributes in code and have them automatically added to the database)
-                                    if ( !blockInstance.Block.IsInstancePropertiesVerified )
+                                    if ( !blockInstance.BlockType.IsInstancePropertiesVerified )
                                     {
                                         block.CreateAttributes();
-                                        blockInstance.Block.IsInstancePropertiesVerified = true;
+                                        blockInstance.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized
@@ -795,7 +795,7 @@ namespace Rock.Web.UI
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
                 if (string.IsNullOrWhiteSpace(blockInstance.Name))
-                    blockConfigTitle.InnerText = blockInstance.Block.Name;
+                    blockConfigTitle.InnerText = blockInstance.BlockType.Name;
                 else
                     blockConfigTitle.InnerText = blockInstance.Name;
                 blockConfigBar.Controls.Add( blockConfigTitle );

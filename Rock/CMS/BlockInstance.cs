@@ -50,14 +50,14 @@ namespace Rock.Cms
 		public string Layout { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Block Id.
+		/// Gets or sets the Block Type Id.
 		/// </summary>
 		/// <value>
-		/// Block Id.
+		/// Block Type Id.
 		/// </value>
 		[Required]
 		[DataMember]
-		public int BlockId { get; set; }
+		public int BlockTypeId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Zone.
@@ -153,12 +153,12 @@ namespace Rock.Cms
 		public virtual ICollection<HtmlContent> HtmlContents { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Block.
+        /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
-        /// A <see cref="Block"/> object.
+        /// A <see cref="BlockType"/> object.
         /// </value>
-		public virtual Block Block { get; set; }
+		public virtual BlockType BlockType { get; set; }
         
 		/// <summary>
         /// Gets or sets the Page.
@@ -223,9 +223,9 @@ namespace Rock.Cms
         {
             dynamic exportObject = this.ToDynamic();
 
-            if (Block != null)
+            if (BlockType != null)
             {
-                exportObject.Block = Block.ExportObject();
+                exportObject.BlockType = BlockType.ExportObject();
             }
 
             if (HtmlContents == null)
@@ -259,7 +259,7 @@ namespace Rock.Cms
         /// </summary>
         public BlockInstanceConfiguration()
         {
-			this.HasRequired( p => p.Block ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+			this.HasRequired( p => p.BlockType ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.Page ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);

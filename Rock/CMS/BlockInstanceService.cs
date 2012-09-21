@@ -65,7 +65,7 @@ namespace Rock.Cms
 					IsSystem = m.IsSystem,
 					PageId = m.PageId,
 					Layout = m.Layout,
-					BlockId = m.BlockId,
+					BlockTypeId = m.BlockTypeId,
 					Zone = m.Zone,
 					Order = m.Order,
 					Name = m.Name,

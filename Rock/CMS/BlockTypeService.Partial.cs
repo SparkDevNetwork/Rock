@@ -13,16 +13,16 @@ using Rock.Data;
 namespace Rock.Cms
 {
 	/// <summary>
-	/// Block POCO Service class
+	/// Block Type POCO Service class
 	/// </summary>
-    public partial class BlockService : Service<Block, BlockDto>
+    public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
     {
 		/// <summary>
-		/// Gets Block by Guid
+		/// Gets Block Type by Guid
 		/// </summary>
 		/// <param name="guid">Guid.</param>
-		/// <returns>Block object.</returns>
-		public Block GetByGuid( Guid guid )
+		/// <returns>Block Type object.</returns>
+		public BlockType GetByGuid( Guid guid )
 		{
 			return Repository.FirstOrDefault( t => t.Guid == guid );
 		}
@@ -31,8 +31,8 @@ namespace Rock.Cms
 		/// Gets Blocks by Name
 		/// </summary>
 		/// <param name="name">Name.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByName( string name )
+		/// <returns>An enumerable list of Block Type objects.</returns>
+	    public IEnumerable<BlockType> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }
@@ -41,8 +41,8 @@ namespace Rock.Cms
 		/// Gets Blocks by Path
 		/// </summary>
 		/// <param name="path">Path.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByPath( string path )
+		/// <returns>An enumerable list of Block Type objects.</returns>
+	    public IEnumerable<BlockType> GetByPath( string path )
         {
             return Repository.Find( t => t.Path == path );
         }
@@ -51,8 +51,8 @@ namespace Rock.Cms
         /// Gets a list of Blocks on the filesystem that have not yet been registered in the service.
         /// </summary>
         /// <param name="physWebAppPath">the physical path of the web application</param>
-        /// <returns>a collection of <see cref="Block">Blocks</see> that are not yet registered</returns>
-        public IEnumerable<Block> GetUnregisteredBlocks( string physWebAppPath )
+        /// <returns>a collection of <see cref="BlockType">Blocks</see> that are not yet registered</returns>
+        public IEnumerable<BlockType> GetUnregisteredBlocks( string physWebAppPath )
         {
             List<string> list = new List<string>();
 
@@ -64,7 +64,7 @@ namespace Rock.Cms
 
             // Now remove from the list any that are already registered (via the path)
             var registered = from r in Repository.GetAll() select r.Path;
-            return ( from u in list.Except( registered, StringComparer.CurrentCultureIgnoreCase ) select new Block { Path = u, Guid = Guid.NewGuid() } );
+            return ( from u in list.Except( registered, StringComparer.CurrentCultureIgnoreCase ) select new BlockType { Path = u, Guid = Guid.NewGuid() } );
         }
 
         private static void FindAllBlocksInPath( string physWebAppPath, List<string> list, string folder )

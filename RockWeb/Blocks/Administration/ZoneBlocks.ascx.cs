@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Administration
                 blockInstance = blockInstanceService.Get( blockInstanceId );
 
             blockInstance.Name = tbBlockName.Text;
-            blockInstance.BlockId = Convert.ToInt32( ddlBlockType.SelectedValue );
+            blockInstance.BlockTypeId = Convert.ToInt32( ddlBlockType.SelectedValue );
 
             blockInstanceService.Save( blockInstance, CurrentPersonId );
 
@@ -285,23 +285,23 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Cms.BlockService blockService = new Rock.Cms.BlockService();
+                Rock.Cms.BlockTypeService blockTypeService = new Rock.Cms.BlockTypeService();
 
                 // Add any unregistered blocks
-                foreach ( Rock.Cms.Block block in blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+                foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
                 {
                     try
                     {
-                        Control control = LoadControl( block.Path );
+                        Control control = LoadControl( blockType.Path );
                         if ( control is Rock.Web.UI.Block )
                         {
-                            block.Name = Path.GetFileNameWithoutExtension( block.Path );
+                            blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path );
                             // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
-                            block.Name = System.Text.RegularExpressions.Regex.Replace( block.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
-                            block.Description = block.Path;
+                            blockType.Name = System.Text.RegularExpressions.Regex.Replace( blockType.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
+                            blockType.Description = blockType.Path;
 
-                            blockService.Add( block, CurrentPersonId );
-                            blockService.Save( block, CurrentPersonId );
+                            blockTypeService.Add( blockType, CurrentPersonId );
+                            blockTypeService.Save( blockType, CurrentPersonId );
                         }
                     }
                     catch
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                ddlBlockType.DataSource = blockService.Queryable().OrderBy( b => b.Name).ToList();
+                ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name).ToList();
                 ddlBlockType.DataTextField = "Name";
                 ddlBlockType.DataValueField = "Id";
                 ddlBlockType.DataBind();
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Administration
             {
                 lAction.Text = "Edit ";
                 hfBlockInstanceId.Value = blockInstance.Id.ToString();
-                ddlBlockType.SelectedValue = blockInstance.Block.Id.ToString();
+                ddlBlockType.SelectedValue = blockInstance.BlockType.Id.ToString();
                 tbBlockName.Text = blockInstance.Name;
             }
             else
@@ -334,9 +334,9 @@ namespace RockWeb.Blocks.Administration
                 hfBlockInstanceId.Value = "0";
 
 				// Select HTML Content block by default
-				var block = new Rock.Cms.BlockService().GetByGuid( Rock.SystemGuid.Block.HTML_CONTENT );
-				if (block != null)
-					ddlBlockType.SelectedValue = block.Id.ToString();				
+				var blockType = new Rock.Cms.BlockTypeService().GetByGuid( Rock.SystemGuid.BlockType.HTML_CONTENT );
+				if (blockType != null)
+					ddlBlockType.SelectedValue = blockType.Id.ToString();				
 				else
 					ddlBlockType.SelectedIndex = -1;
 

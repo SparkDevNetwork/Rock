@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Rock.Tests.Cms
 {
-    public class BlockTests
+    public class BlockTypeTests
     {
         public class TheExportObjectMethod
         {
             [Fact]
             public void ShouldCopyEntity()
             {
-                var block = new Block() {Name = "some block"};
-                dynamic result = block.ExportObject();
-                Assert.Equal( result.Name, block.Name );
+                var blockType = new BlockType() {Name = "some block type"};
+                dynamic result = blockType.ExportObject();
+                Assert.Equal( result.Name, blockType.Name );
             }
         }
 
@@ -27,8 +27,8 @@ namespace Rock.Tests.Cms
             [Fact]
             public void ShouldNotBeEmpty()
             {
-                var block = new Block() { Name = "some block" };
-                var result = block.ExportJson();
+                var blockType = new BlockType() { Name = "some block type" };
+                var result = blockType.ExportJson();
                 Assert.NotEmpty( result );
             }
         }

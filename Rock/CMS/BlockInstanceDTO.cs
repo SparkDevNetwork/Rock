@@ -25,7 +25,7 @@ namespace Rock.Cms
 		public bool IsSystem { get; set; }
 		public int? PageId { get; set; }
 		public string Layout { get; set; }
-		public int BlockId { get; set; }
+		public int BlockTypeId { get; set; }
 		public string Zone { get; set; }
 		public int Order { get; set; }
 		public string Name { get; set; }
@@ -66,7 +66,7 @@ namespace Rock.Cms
 				this.IsSystem = blockInstance.IsSystem;
 				this.PageId = blockInstance.PageId;
 				this.Layout = blockInstance.Layout;
-				this.BlockId = blockInstance.BlockId;
+				this.BlockTypeId = blockInstance.BlockTypeId;
 				this.Zone = blockInstance.Zone;
 				this.Order = blockInstance.Order;
 				this.Name = blockInstance.Name;
@@ -92,7 +92,7 @@ namespace Rock.Cms
 				blockInstance.IsSystem = this.IsSystem;
 				blockInstance.PageId = this.PageId;
 				blockInstance.Layout = this.Layout;
-				blockInstance.BlockId = this.BlockId;
+				blockInstance.BlockTypeId = this.BlockTypeId;
 				blockInstance.Zone = this.Zone;
 				blockInstance.Order = this.Order;
 				blockInstance.Name = this.Name;

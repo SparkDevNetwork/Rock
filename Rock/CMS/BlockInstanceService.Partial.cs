@@ -17,13 +17,13 @@ namespace Rock.Cms
     public partial class BlockInstanceService : Service<BlockInstance, BlockInstanceDto>
     {
 		/// <summary>
-		/// Gets Block Instances by Block Id
+		/// Gets Block Instances by Block Type Id
 		/// </summary>
-		/// <param name="blockId">Block Id.</param>
+		/// <param name="blockTypeId">Block Type Id.</param>
 		/// <returns>An enumerable list of BlockInstance objects.</returns>
-	    public IEnumerable<BlockInstance> GetByBlockId( int blockId )
+	    public IEnumerable<BlockInstance> GetByBlockTypeId( int blockTypeId )
         {
-            return Repository.Find( t => t.BlockId == blockId ).OrderBy( t => t.Order );
+            return Repository.Find( t => t.BlockTypeId == blockTypeId ).OrderBy( t => t.Order );
         }
 		
 		/// <summary>

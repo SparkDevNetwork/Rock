@@ -10,9 +10,9 @@ using Rock.Cms;
 namespace Rock.Migrations
 {
 	/// <summary>
-	/// Custom Migration methods
+	/// Custom Migration methods for migrations prior to the 201209211556505_BlockToBlockType migration
 	/// </summary>
-	public abstract class RockMigration : DbMigration
+	public abstract class RockMigration_0 : DbMigration
 	{
 		#region Block Methods
 
@@ -20,7 +20,7 @@ namespace Rock.Migrations
 		{
 			Sql( string.Format( @"
 				
-				INSERT INTO [cmsBlockType] (
+				INSERT INTO [cmsBlock] (
 					[IsSystem],[Path],[Name],[Description],
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
@@ -39,7 +39,7 @@ namespace Rock.Migrations
 		public void AddBlock( BlockTypeDto block )
 		{
 			Sql( string.Format( @"
-				INSERT INTO [cmsBlockType] (
+				INSERT INTO [cmsBlock] (
 					[IsSystem],[Path],[Name],[Description],
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
@@ -62,7 +62,7 @@ namespace Rock.Migrations
 		public void DeleteBlock( string guid )
 		{
 			Sql( string.Format( @"
-				DELETE [cmsBlockType] WHERE [Guid] = '{0}'
+				DELETE [cmsBlock] WHERE [Guid] = '{0}'
 ",
 					guid
 					) );
@@ -220,17 +220,17 @@ namespace Rock.Migrations
 
 			sb.AppendFormat( @"
 				
-				DECLARE @BlockTypeId int
-				SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+				DECLARE @BlockId int
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				DECLARE @BlockInstanceId int
 				INSERT INTO [cmsBlockInstance] (
-					[IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
+					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@PageId,NULL,@BlockTypeId,'{1}',
+					1,@PageId,NULL,@BlockId,'{1}',
 					{2},'{3}',0,
 					GETDATE(),GETDATE(),1,1,
 					'{4}')
@@ -271,17 +271,17 @@ namespace Rock.Migrations
 
 			sb.AppendFormat( @"
 
-				DECLARE @BlockTypeId int
-				SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+				DECLARE @BlockId int
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				DECLARE @BlockInstanceId int
 				INSERT INTO [cmsBlockInstance] (
-					[IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
+					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					{1},@PageId,{2},@BlockTypeId,'{3}',
+					{1},@PageId,{2},@BlockId,'{3}',
 					{4},'{5}',{6},
 					'{7}','{8}',{9},{10},
 					'{11}')
@@ -347,8 +347,8 @@ namespace Rock.Migrations
 		{
 			Sql( string.Format( @"
 				
-				DECLARE @BlockTypeId int
-				SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+				DECLARE @BlockId int
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				DECLARE @FieldTypeId int
 				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
@@ -360,7 +360,7 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockTypeId',CAST(@BlockTypeId as varchar),
+					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},0,'{7}',0,0,
 					GETDATE(),GETDATE(),1,1,
@@ -383,8 +383,8 @@ namespace Rock.Migrations
 
 			Sql( string.Format( @"
 
-				DECLARE @BlockTypeId int
-				SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+				DECLARE @BlockId int
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
 				DECLARE @FieldTypeId int
 				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
@@ -396,7 +396,7 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockTypeId',CAST(@BlockTypeId as varchar),
+					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},{7},'{8}',{9},{10},
 					'{11}','{12}',{13},{14},

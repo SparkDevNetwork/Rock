@@ -35,7 +35,7 @@ namespace Rock.Tests.Cms
             [Fact]
             public void ShouldCopyBlock()
             {
-                var blockInstane = new BlockInstance { Block = new Block() };
+                var blockInstane = new BlockInstance { BlockType = new BlockType() };
                 dynamic result = blockInstane.ExportObject();
                 Assert.NotNull( result.Block );
             }

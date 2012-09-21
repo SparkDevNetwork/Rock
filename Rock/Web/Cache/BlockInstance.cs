@@ -79,13 +79,13 @@ namespace Rock.Web.Cache
 		}
 
         /// <summary>
-        /// Gets the block.
+        /// Gets the block type
         /// </summary>
-        public Block Block
+        public BlockType BlockType
         {
             get
             {
-                return Block.Read( BlockId );
+                return BlockType.Read( BlockTypeId );
             }
         }
 

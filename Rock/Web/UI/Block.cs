@@ -447,7 +447,7 @@ namespace Rock.Web.UI
         internal void CreateAttributes()
         {
             if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
-                "Rock.Cms.BlockInstance", "BlockId", this.BlockInstance.BlockId.ToString(), CurrentPersonId ) )
+                "Rock.Cms.BlockInstance", "BlockTypeId", this.BlockInstance.BlockTypeId.ToString(), CurrentPersonId ) )
             {
                 this.BlockInstance.ReloadAttributeValues();
             }

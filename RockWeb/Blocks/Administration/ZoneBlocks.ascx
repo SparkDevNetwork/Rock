@@ -19,7 +19,7 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gPageBlocks_Edit" />
@@ -35,7 +35,7 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gLayoutBlocks_Edit" />
@@ -55,7 +55,7 @@
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="Name" />
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
+            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Cms.BlockInstance, Rock" PropertyName="BlockTypeId" LabelText="Type" />
         </fieldset>
 
         <div class="actions">

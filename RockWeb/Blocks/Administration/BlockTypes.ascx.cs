@@ -14,12 +14,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Blocks : Rock.Web.UI.Block
+	public partial class BlockTypes : Rock.Web.UI.Block
     {
         #region Fields
 
         private bool _canConfigure = false;
-        private Rock.Cms.BlockService _blockService = new Rock.Cms.BlockService();
+        private Rock.Cms.BlockTypeService _blockTypeService = new Rock.Cms.BlockTypeService();
 
         #endregion
 
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
                     string script = string.Format( @"
         Sys.Application.add_load(function () {{
             $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this block?');
+                return confirm('Are you sure you want to delete this block type?');
                 }});
         }});
     ", rGrid.ClientID );
@@ -85,13 +85,13 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Cms.Block block = _blockService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.BlockType blockType = _blockTypeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( BlockInstance != null )
             {
-                _blockService.Delete( block, CurrentPersonId );
-                _blockService.Save( block, CurrentPersonId );
+                _blockTypeService.Delete( blockType, CurrentPersonId );
+                _blockTypeService.Save( blockType, CurrentPersonId );
 
-                Rock.Web.Cache.Block.Flush( block.Id );
+                Rock.Web.Cache.BlockType.Flush( blockType.Id );
             }
 
             BindGrid();
@@ -109,28 +109,28 @@ namespace RockWeb.Blocks.Administration
 
         void modalDetails_SaveClick( object sender, EventArgs e )
         {
-            Rock.Cms.Block block;
+            Rock.Cms.BlockType blockType;
 
-            int blockId = 0;
-            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out blockId ) )
-                blockId = 0;
+            int blockTypeId = 0;
+            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out blockTypeId ) )
+                blockTypeId = 0;
 
-            if ( blockId == 0 )
+            if ( blockTypeId == 0 )
             {
-                block = new Rock.Cms.Block();
-                _blockService.Add( block, CurrentPersonId );
+                blockType = new Rock.Cms.BlockType();
+                _blockTypeService.Add( blockType, CurrentPersonId );
             }
             else
             {
-                Rock.Web.Cache.Block.Flush( blockId );
-                block = _blockService.Get( blockId );
+                Rock.Web.Cache.BlockType.Flush( blockTypeId );
+                blockType = _blockTypeService.Get( blockTypeId );
             }
 
-            block.Name = tbName.Text;
-            block.Path = tbPath.Text;
-            block.Description = tbDescription.Text;
+            blockType.Name = tbName.Text;
+            blockType.Path = tbPath.Text;
+            blockType.Description = tbDescription.Text;
 
-            _blockService.Save( block, CurrentPersonId );
+            _blockTypeService.Save( blockType, CurrentPersonId );
 
             BindGrid();
         }
@@ -141,18 +141,18 @@ namespace RockWeb.Blocks.Administration
 
         private void ScanForUnregisteredBlocks()
         {
-            foreach ( Rock.Cms.Block block in _blockService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.Cms.BlockType blockType in _blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {
-                    Control control = LoadControl( block.Path );
+                    Control control = LoadControl( blockType.Path );
                     if ( control is Rock.Web.UI.Block )
                     {
-                        block.Name = Path.GetFileNameWithoutExtension( block.Path ).SplitCase();
-                        block.Description = Rock.Reflection.GetDescription(control.GetType()) ?? string.Empty;
+                        blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path ).SplitCase();
+                        blockType.Description = Rock.Reflection.GetDescription(control.GetType()) ?? string.Empty;
 
-                        _blockService.Add( block, CurrentPersonId );
-                        _blockService.Save( block, CurrentPersonId );
+                        _blockTypeService.Add( blockType, CurrentPersonId );
+                        _blockTypeService.Save( blockType, CurrentPersonId );
                     }
                 }
                 catch
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = _blockService.Queryable();
+            var queryable = _blockTypeService.Queryable();
 
             SortProperty sortProperty = rGrid.SortProperty;
             if (sortProperty != null)
@@ -175,22 +175,22 @@ namespace RockWeb.Blocks.Administration
             rGrid.DataBind();
         }
 
-        protected void ShowEdit( int blockId )
+        protected void ShowEdit( int blockTypeId )
         {
-            Rock.Cms.Block block = _blockService.Get( blockId );
+            Rock.Cms.BlockType blockType = _blockTypeService.Get( blockTypeId );
 
-            if ( block != null )
+            if ( blockType != null )
             {
-                modalDetails.Title = "Edit Block";
-                hfId.Value = block.Id.ToString();
+                modalDetails.Title = "Edit Block Type";
+                hfId.Value = blockType.Id.ToString();
 
-                tbName.Text = block.Name;
-                tbPath.Text = block.Path;
-                tbDescription.Text = block.Description;
+                tbName.Text = blockType.Name;
+                tbPath.Text = blockType.Path;
+                tbDescription.Text = blockType.Description;
             }
             else
             {
-                modalDetails.Title = "Add Block";
+                modalDetails.Title = "Add Block Type";
                 hfId.Value = string.Empty;
 
                 tbName.Text = string.Empty;
