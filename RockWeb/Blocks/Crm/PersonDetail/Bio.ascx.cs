@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Crm;
@@ -26,6 +27,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			var page = Page as Rock.Web.UI.Page;
 			if ( page != null )
 				page.SetTitle( Person.FullName );
+
+			if ( Person.PhotoId.HasValue )
+			{
+				var img = new HtmlImage();
+				phImage.Controls.Add( img );
+				img.Src = string.Format( "~/image.ashx?id={0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
+				img.Alt = Person.FullName;
+			}
 
 			lPersonStatus.Text = Person.PersonStatusId.DefinedValue();
 			RecordStatus = Person.RecordStatusId.DefinedValue();

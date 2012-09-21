@@ -425,6 +425,10 @@
     <Compile Include="Migrations\201209202126005_Metric2.Designer.cs">
       <DependentUpon>201209202126005_Metric2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209211336499_PersonPhotoRelationship.cs" />
+    <Compile Include="Migrations\201209211336499_PersonPhotoRelationship.Designer.cs">
+      <DependentUpon>201209211336499_PersonPhotoRelationship.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -756,6 +760,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209202126005_Metric2.resx">
       <DependentUpon>201209202126005_Metric2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209211336499_PersonPhotoRelationship.resx">
+      <DependentUpon>201209211336499_PersonPhotoRelationship.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
