@@ -36,16 +36,16 @@ namespace Rock.Web.UI
         #region Public Properties
 
         /// <summary>
-        /// The current page instance.  This value is read and cached by the RockRouteHandler
+        /// The current page.  This value is read and cached by the RockRouteHandler
         /// and set by the layout's base class (Rock.Web.UI.Page) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.Page PageInstance { get; set; }
+        public Rock.Web.Cache.Page CurrentPage { get; set; }
 
         /// <summary>
-        /// The current block instance.  This value is read and cached by the layout's 
+        /// The current block.  This value is read and cached by the layout's 
         /// base class (Rock.Web.UI.Page) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.BlockInstance BlockInstance { get; set; }
+        public Rock.Web.Cache.Block CurrentBlock { get; set; }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null
@@ -181,7 +181,7 @@ namespace Rock.Web.UI
         private string ItemCacheKey( string key )
         {
             return string.Format( "Rock:Page:{0}:Block:{1}:ItemCache:{2}",
-                this.PageInstance.Id, BlockInstance.Id, key );
+                this.CurrentPage.Id, CurrentBlock.Id, key );
         }
 
         /// <summary>
@@ -190,10 +190,10 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( BlockInstance.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id );
+                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
                 trigger.EventName = "Click";
                 updatePanel.Triggers.Add( trigger );
             }
@@ -213,9 +213,9 @@ namespace Rock.Web.UI
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if ( BlockInstance.OutputCacheDuration > 0 )
+            if ( CurrentBlock.OutputCacheDuration > 0 )
             {
-                string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", BlockInstance.Id );
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", CurrentBlock.Id );
                 StringBuilder sbOutput = new StringBuilder();
                 StringWriter swOutput = new StringWriter( sbOutput );
                 HtmlTextWriter twOutput = new HtmlTextWriter( swOutput );
@@ -223,7 +223,7 @@ namespace Rock.Web.UI
                 base.Render( twOutput );
 
                 CacheItemPolicy cacheDuration = new CacheItemPolicy();
-                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( BlockInstance.OutputCacheDuration );
+                cacheDuration.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( CurrentBlock.OutputCacheDuration );
 
                 ObjectCache cache = MemoryCache.Default;
                 cache.Set( blockCacheKey, sbOutput.ToString(), cacheDuration );
@@ -281,17 +281,17 @@ namespace Rock.Web.UI
         //}
 
         /// <summary>
-        /// Returns the current blockinstance value for the selected attribute
+        /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public string AttributeValue( string key )
         {
-            if ( BlockInstance != null  && 
-                BlockInstance.AttributeValues != null &&
-                BlockInstance.AttributeValues.ContainsKey( key ) )
-                return BlockInstance.AttributeValues[key].Value[0].Value;
+            if ( CurrentBlock != null  && 
+                CurrentBlock.AttributeValues != null &&
+                CurrentBlock.AttributeValues.ContainsKey( key ) )
+                return CurrentBlock.AttributeValues[key].Value[0].Value;
 
             return null;
         }
@@ -303,7 +303,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public bool IsUserAuthorized( string action )
         {
-            return BlockInstance.IsAuthorized( action, CurrentPerson );
+            return CurrentBlock.IsAuthorized( action, CurrentPerson );
         }
 
         /// <summary>
@@ -357,13 +357,13 @@ namespace Rock.Web.UI
                     {
                         Button trigger = new Button();
                         trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", BlockInstance.Id.ToString() );
+                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id.ToString() );
                         trigger.Click += trigger_Click;
                         content.Controls.Add( trigger );
 
                         HiddenField triggerData = new HiddenField();
                         triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", BlockInstance.Id.ToString() );
+                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", CurrentBlock.Id.ToString() );
                         content.Controls.Add( triggerData );
                     }
                 );
@@ -377,7 +377,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", BlockInstance.Id ) ) );
+                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) );
 				aAttributes.Attributes.Add( "title", "Block Properties" );
 				//aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -393,7 +393,7 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
-                    Security.Authorization.EncodeEntityTypeName( BlockInstance.GetType() ), BlockInstance.Id ) ) );
+                    Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) );
 				aSecureBlock.Attributes.Add( "title", "Block Security" );
 				configControls.Add( aSecureBlock );
 				HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -402,10 +402,10 @@ namespace Rock.Web.UI
                 
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                aMoveBlock.Attributes.Add( "class", "block-move blockinstance-move" );
-                aMoveBlock.Attributes.Add("href", BlockInstance.Id.ToString());
-                aMoveBlock.Attributes.Add( "zone", BlockInstance.Zone );
-                aMoveBlock.Attributes.Add( "zoneloc", BlockInstance.BlockInstanceLocation.ToString() );
+                aMoveBlock.Attributes.Add( "class", "block-move block-move" );
+                aMoveBlock.Attributes.Add("href", CurrentBlock.Id.ToString());
+                aMoveBlock.Attributes.Add( "zone", CurrentBlock.Zone );
+                aMoveBlock.Attributes.Add( "zoneloc", CurrentBlock.BlockLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move Block" );
                 configControls.Add( aMoveBlock );
                 HtmlGenericControl iMoveBlock = new HtmlGenericControl( "i" );
@@ -414,8 +414,8 @@ namespace Rock.Web.UI
 
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
-                aDeleteBlock.Attributes.Add( "class", "delete blockinstance-delete" );
-                aDeleteBlock.Attributes.Add("href", BlockInstance.Id.ToString());
+                aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
+                aDeleteBlock.Attributes.Add("href", CurrentBlock.Id.ToString());
                 aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
@@ -447,9 +447,9 @@ namespace Rock.Web.UI
         internal void CreateAttributes()
         {
             if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
-                "Rock.Cms.BlockInstance", "BlockTypeId", this.BlockInstance.BlockTypeId.ToString(), CurrentPersonId ) )
+                "Rock.Cms.Block", "BlockTypeId", this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
             {
-                this.BlockInstance.ReloadAttributeValues();
+                this.CurrentBlock.ReloadAttributeValues();
             }
         }
 
@@ -457,9 +457,9 @@ namespace Rock.Web.UI
         {
             object[] customAttributes = this.GetType().GetCustomAttributes( typeof( Rock.Security.AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
-                this.BlockInstance.BlockActions = ( ( Rock.Security.AdditionalActionsAttribute )customAttributes[0] ).AdditionalActions;
+                this.CurrentBlock.BlockTypeActions = ( ( Rock.Security.AdditionalActionsAttribute )customAttributes[0] ).AdditionalActions;
             else
-                this.BlockInstance.BlockActions = new List<string>();
+                this.CurrentBlock.BlockTypeActions = new List<string>();
         }
 
         #endregion
@@ -467,13 +467,13 @@ namespace Rock.Web.UI
         #region Event Handlers
 
         /// <summary>
-        /// Handles the BlockInstanceAttributesUpdated event of the CmsBlock control.
+        /// Handles the BlockAttributesUpdated event of the CmsBlock control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.BlockInstanceAttributesUpdatedEventArgs"/> instance containing the event data.</param>
-        void CmsBlock_BlockInstanceAttributesUpdated( object sender, BlockInstanceAttributesUpdatedEventArgs e )
+        /// <param name="e">The <see cref="Rock.Web.UI.BlockAttributesUpdatedEventArgs"/> instance containing the event data.</param>
+        void CmsBlock_BlockAttributesUpdated( object sender, BlockAttributesUpdatedEventArgs e )
         {
-            if ( e.BlockInstanceID == BlockInstance.Id && AttributesUpdated != null )
+            if ( e.BlockID == CurrentBlock.Id && AttributesUpdated != null )
                 AttributesUpdated( sender, e );
         }
 

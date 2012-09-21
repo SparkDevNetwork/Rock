@@ -71,8 +71,7 @@ namespace Rock.Cms
 					CreatedByPersonId = m.CreatedByPersonId,
 					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
-					Guid = m.Guid,
-				});
+					Guid = m.Guid,				});
 		}
 	}
 }

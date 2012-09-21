@@ -37,9 +37,9 @@ namespace Rock.Cms
         }
 		
 		/// <summary>
-		/// Gets Html Content by BlockInstance And Entity Value And Version
+		/// Gets Html Content by Block And Entity Value And Version
 		/// </summary>
-		/// <param name="blockId">a block instance id</param>
+		/// <param name="blockId">a block id</param>
 		/// <param name="entityValue">Entity Value.</param>
 		/// <param name="version">Version.</param>
 		/// <returns>HtmlContent object.</returns>

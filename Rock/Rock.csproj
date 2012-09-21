@@ -105,9 +105,9 @@
     <Compile Include="Cms\AuthService.cs" />
     <Compile Include="Cms\AuthService.Partial.cs" />
     <Compile Include="Cms\BlockTypeDto.cs" />
-    <Compile Include="Cms\BlockInstanceDto.cs" />
-    <Compile Include="Cms\BlockInstanceService.cs" />
-    <Compile Include="Cms\BlockInstanceService.Partial.cs" />
+    <Compile Include="Cms\BlockDto.cs" />
+    <Compile Include="Cms\BlockService.cs" />
+    <Compile Include="Cms\BlockService.Partial.cs" />
     <Compile Include="Cms\BlockTypeService.Partial.cs" />
     <Compile Include="Cms\BlockTypeService.cs" />
     <Compile Include="Cms\FileDto.cs" />
@@ -232,7 +232,7 @@
     <Compile Include="Address\Geocode\ServiceObjects.cs" />
     <Compile Include="Cms\Auth.cs" />
     <Compile Include="Cms\BlockType.cs" />
-    <Compile Include="Cms\BlockInstance.cs" />
+    <Compile Include="Cms\Block.cs" />
     <Compile Include="Cms\File.cs" />
     <Compile Include="Cms\HtmlContent.cs" />
     <Compile Include="Cms\Page.cs" />
@@ -433,6 +433,10 @@
     <Compile Include="Migrations\201209211556505_BlockToBlockType.Designer.cs">
       <DependentUpon>201209211556505_BlockToBlockType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209211853275_BlockInstanceToBlock.cs" />
+    <Compile Include="Migrations\201209211853275_BlockInstanceToBlock.Designer.cs">
+      <DependentUpon>201209211853275_BlockInstanceToBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -477,7 +481,7 @@
     <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\Attribute.cs" />
     <Compile Include="Web\Cache\BlockType.cs" />
-    <Compile Include="Web\Cache\BlockInstance.cs" />
+    <Compile Include="Web\Cache\Block.cs" />
     <Compile Include="Security\Role.cs" />
     <Compile Include="Web\Cache\Campus.cs">
       <SubType>Code</SubType>
@@ -773,6 +777,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209211556505_BlockToBlockType.resx">
       <DependentUpon>201209211556505_BlockToBlockType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209211853275_BlockInstanceToBlock.resx">
+      <DependentUpon>201209211853275_BlockInstanceToBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

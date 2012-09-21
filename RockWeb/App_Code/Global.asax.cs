@@ -454,8 +454,8 @@ namespace RockWeb
 
         private void AddEventHandlers()
         {
-            Rock.Cms.BlockInstance.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( BlockInstance_Updated );
-            Rock.Cms.BlockInstance.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( BlockInstance_Deleting );
+            Rock.Cms.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
+            Rock.Cms.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
             Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
             Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
         }
@@ -568,42 +568,42 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Flushes a block instance and it's parent page from cache whenever it is updated
+        /// Flushes a block and it's parent page from cache whenever it is updated
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        void BlockInstance_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
+        void Block_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the update block instance
-            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
-            if ( blockInstance != null )
+            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.BlockInstance.Flush( blockInstance.Id );
+                Rock.Web.Cache.Block.Flush( block.Id );
 
                 // Flush the block instance's parent page 
-                if ( blockInstance.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( blockInstance.PageId.Value );
+                if ( block.PageId.HasValue )
+                    Rock.Web.Cache.Page.Flush( block.PageId.Value );
             }
         }
 
         /// <summary>
-        /// Flushes a block instance and it's parent page from cache whenever it is being deleted
+        /// Flushes a block and it's parent page from cache whenever it is being deleted
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        void BlockInstance_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
+        void Block_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted block instance
-            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
-            if ( blockInstance != null )
+            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.BlockInstance.Flush( blockInstance.Id );
+                Rock.Web.Cache.Block.Flush( block.Id );
 
                 // Flush the block instance's parent page 
-                if ( blockInstance.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( blockInstance.PageId.Value );
+                if ( block.PageId.HasValue )
+                    Rock.Web.Cache.Page.Flush( block.PageId.Value );
             }
         }
 

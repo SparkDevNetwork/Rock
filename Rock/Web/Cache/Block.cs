@@ -13,19 +13,19 @@ using Rock.Security;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a blockInstance that is required by the rendering engine.
+    /// Information about a block that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockInstance : Rock.Cms.BlockInstanceDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class Block : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-		private BlockInstance() : base() { }
-		private BlockInstance( Rock.Cms.BlockInstance model ) : base( model ) { }
+		private Block() : base() { }
+		private Block( Rock.Cms.Block model ) : base( model ) { }
 
         /// <summary>
-        /// Gets the location of the block instance (Layout or Page)
+        /// Gets the location of the block (Layout or Page)
         /// </summary>
-        public BlockInstanceLocation BlockInstanceLocation { get; private set; }
+        public BlockLocation BlockLocation { get; private set; }
 
         /// <summary>
         /// Dictionary of all attributes and their values.
@@ -34,7 +34,7 @@ namespace Rock.Web.Cache
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
-        /// List of attributes associated with the BlockInstance.  This object will not include values.
+        /// List of attributes associated with the Block.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
         public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
@@ -95,15 +95,15 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
-            Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+            var blockService = new Cms.BlockService();
+            var blockModel = blockService.Get( this.Id );
 
-            if ( blockInstanceModel != null )
+            if ( blockModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
-                foreach ( var category in blockInstanceModel.Attributes )
+                Rock.Attribute.Helper.LoadAttributes( blockModel );
+                foreach ( var category in blockModel.Attributes )
                     foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValues( blockInstanceModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                        Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
             }
         }
 
@@ -114,18 +114,18 @@ namespace Rock.Web.Cache
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
-                Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( this.Id );
+                var blockService = new Cms.BlockService();
+                var blockModel = blockService.Get( this.Id );
 
-                if ( blockInstanceModel != null )
+                if ( blockModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
+                    Rock.Attribute.Helper.LoadAttributes( blockModel );
 
-                    this.AttributeValues = blockInstanceModel.AttributeValues;
+                    this.AttributeValues = blockModel.AttributeValues;
 
                     this.AttributeIds = new List<int>();
-                    if ( blockInstanceModel.Attributes != null )
-                        foreach ( var category in blockInstanceModel.Attributes )
+                    if ( blockModel.Attributes != null )
+                        foreach ( var category in blockModel.Attributes )
                             foreach ( var attribute in category.Value )
                                 this.AttributeIds.Add( attribute.Id );
                 }
@@ -147,93 +147,93 @@ namespace Rock.Web.Cache
 
         private static string CacheKey( int id )
         {
-            return string.Format( "Rock:BlockInstance:{0}", id );
+            return string.Format( "Rock:Block:{0}", id );
         }
 
         /// <summary>
-        /// Adds BlockInstance model to cache, and returns cached object
+        /// Adds Block model to cache, and returns cached object
         /// </summary>
-        /// <param name="blockInstanceModel"></param>
+        /// <param name="blockModel"></param>
         /// <returns></returns>
-        public static BlockInstance Read( Rock.Cms.BlockInstance blockInstanceModel )
+        public static Block Read( Rock.Cms.Block blockModel )
         {
-			string cacheKey = BlockInstance.CacheKey( blockInstanceModel.Id );
+			string cacheKey = Block.CacheKey( blockModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            BlockInstance blockInstance = cache[cacheKey] as BlockInstance;
+            Block block = cache[cacheKey] as Block;
 
-			if ( blockInstance != null )
-				return blockInstance;
+			if ( block != null )
+				return block;
 			else
 			{
-				blockInstance = BlockInstance.CopyModel( blockInstanceModel );
-				cache.Set( cacheKey, blockInstance, new CacheItemPolicy() );
+				block = Block.CopyModel( blockModel );
+				cache.Set( cacheKey, block, new CacheItemPolicy() );
 
-				return blockInstance;
+				return block;
 			}
         }
 
         /// <summary>
-        /// Returns BlockInstance object from cache.  If blockInstance does not already exist in cache, it
+        /// Returns Block object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static BlockInstance Read( int id )
+        public static Block Read( int id )
         {
-            string cacheKey = BlockInstance.CacheKey( id );
+            string cacheKey = Block.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            BlockInstance blockInstance = cache[cacheKey] as BlockInstance;
+            Block block = cache[cacheKey] as Block;
 
-            if ( blockInstance != null )
-                return blockInstance;
+            if ( block != null )
+                return block;
             else
             {
-                Rock.Cms.BlockInstanceService blockInstanceService = new Cms.BlockInstanceService();
-                Rock.Cms.BlockInstance blockInstanceModel = blockInstanceService.Get( id );
-                if ( blockInstanceModel != null )
+                var blockService = new Cms.BlockService();
+                var blockModel = blockService.Get( id );
+                if ( blockModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( blockInstanceModel );
+                    Rock.Attribute.Helper.LoadAttributes( blockModel );
 
-                    blockInstance = BlockInstance.CopyModel( blockInstanceModel );
+                    block = Block.CopyModel( blockModel );
 
-                    cache.Set( cacheKey, blockInstance, new CacheItemPolicy() );
+                    cache.Set( cacheKey, block, new CacheItemPolicy() );
 
-                    return blockInstance;
+                    return block;
                 }
                 else
                     return null;
             }
         }
 
-        private static BlockInstance CopyModel ( Rock.Cms.BlockInstance blockInstanceModel )
+        private static Block CopyModel ( Rock.Cms.Block blockModel )
         {
-            BlockInstance blockInstance = new BlockInstance(blockInstanceModel);
+            Block block = new Block(blockModel);
 
-			blockInstance.BlockInstanceLocation = blockInstanceModel.Page != null ? BlockInstanceLocation.Page : BlockInstanceLocation.Layout;
-            blockInstance.AttributeValues = blockInstanceModel.AttributeValues;
+			block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
+            block.AttributeValues = blockModel.AttributeValues;
             
-			blockInstance.AttributeIds = new List<int>();
-            if (blockInstanceModel.Attributes != null)
-                foreach ( var category in blockInstanceModel.Attributes )
+			block.AttributeIds = new List<int>();
+            if (blockModel.Attributes != null)
+                foreach ( var category in blockModel.Attributes )
                     foreach ( var attribute in category.Value )
-                        blockInstance.AttributeIds.Add( attribute.Id );
+                        block.AttributeIds.Add( attribute.Id );
 
-            blockInstance.AuthEntity = blockInstanceModel.AuthEntity;
-            blockInstance.InstanceActions = blockInstanceModel.SupportedActions;
+            block.AuthEntity = blockModel.AuthEntity;
+            block.BlockActions = blockModel.SupportedActions;
 
-            return blockInstance;
+            return block;
         }
 
         /// <summary>
-        /// Removes blockInstance from cache
+        /// Removes block from cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( BlockInstance.CacheKey( id ) );
+            cache.Remove( Block.CacheKey( id ) );
         }
 
         #endregion
@@ -254,7 +254,7 @@ namespace Rock.Web.Cache
         {
             get 
 			{
-				if ( this.BlockInstanceLocation == Cache.BlockInstanceLocation.Page )
+				if ( this.BlockLocation == Cache.BlockLocation.Page )
 					return this.Page;
 				return null;
 			}
@@ -269,18 +269,18 @@ namespace Rock.Web.Cache
             {
                 List<string> combinedActions = new List<string>();
                 
-                if (InstanceActions != null)
-                    combinedActions.AddRange(InstanceActions);
-                
                 if (BlockActions != null)
                     combinedActions.AddRange(BlockActions);
+                
+                if (BlockTypeActions != null)
+                    combinedActions.AddRange(BlockTypeActions);
 
                 return combinedActions;
             }
         }
 
-        internal List<string> InstanceActions { get; set; }
         internal List<string> BlockActions { get; set; }
+        internal List<string> BlockTypeActions { get; set; }
 
         /// <summary>
         /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -315,18 +315,18 @@ namespace Rock.Web.Cache
     }
 
     /// <summary>
-    /// The location of the block instance
+    /// The location of the block 
     /// </summary>
     [Serializable]
-    public enum BlockInstanceLocation
+    public enum BlockLocation
     {
         /// <summary>
-        /// Block instance is located in the layout (will be rendered for every page using the layout)
+        /// Block is located in the layout (will be rendered for every page using the layout)
         /// </summary>
         Layout,
 
         /// <summary>
-        /// Block instance is located on the page
+        /// Block is located on the page
         /// </summary>
         Page,
     }

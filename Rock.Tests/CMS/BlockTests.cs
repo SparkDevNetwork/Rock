@@ -10,24 +10,24 @@ using Xunit;
 
 namespace Rock.Tests.Cms
 {
-    public class BlockInstanceTests
+    public class BlockTests
     {
         public class TheExportObjectMethod
         {
             [Fact]
             public void ShouldCopyEntity()
             {
-                var blockInstance = new BlockInstance { Name = "Foo" };
-                dynamic result = blockInstance.ExportObject();
-                Assert.Equal( result.Name, blockInstance.Name );
+                var block = new Block { Name = "Foo" };
+                dynamic result = block.ExportObject();
+                Assert.Equal( result.Name, block.Name );
             }
 
             [Fact]
             public void ShouldCopyHtmlContents()
             {
-                var blockInstance = new BlockInstance { HtmlContents = new List<HtmlContent>() };
-                blockInstance.HtmlContents.Add( new HtmlContent() );
-                dynamic result = blockInstance.ExportObject();
+                var block = new Block { HtmlContents = new List<HtmlContent>() };
+                block.HtmlContents.Add( new HtmlContent() );
+                dynamic result = block.ExportObject();
                 Assert.NotNull( result.HtmlContents );
                 Assert.NotEmpty( result.HtmlContents );
             }
@@ -35,8 +35,8 @@ namespace Rock.Tests.Cms
             [Fact]
             public void ShouldCopyBlock()
             {
-                var blockInstane = new BlockInstance { BlockType = new BlockType() };
-                dynamic result = blockInstane.ExportObject();
+                var block = new Block { BlockType = new BlockType() };
+                dynamic result = block.ExportObject();
                 Assert.NotNull( result.Block );
             }
         }
@@ -46,8 +46,8 @@ namespace Rock.Tests.Cms
             [Fact]
             public void ShouldNotBeEmpty()
             {
-                var blockIntance = new BlockInstance() { Name = "Foo" };
-                var result = blockIntance.ExportJson();
+                var block = new Block() { Name = "Foo" };
+                var result = block.ExportJson();
                 Assert.NotEmpty( result );
             }
         }

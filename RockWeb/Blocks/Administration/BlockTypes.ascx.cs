@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( _canConfigure )
                 {
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Administration
                 }});
         }});
     ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
 
                 }
                 else
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Administration
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
             Rock.Cms.BlockType blockType = _blockTypeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
-            if ( BlockInstance != null )
+            if ( CurrentBlock != null )
             {
                 _blockTypeService.Delete( blockType, CurrentPersonId );
                 _blockTypeService.Save( blockType, CurrentPersonId );

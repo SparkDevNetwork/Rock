@@ -152,9 +152,9 @@ namespace Rock.Cms
         /// Gets or sets the Block.
         /// </summary>
         /// <value>
-        /// A <see cref="BlockInstance"/> object.
+        /// A <see cref="Block"/> object.
         /// </value>
-		public virtual BlockInstance Block { get; set; }
+		public virtual Block Block { get; set; }
         
 		/// <summary>
         /// Gets or sets the Approved By Person.
