@@ -33,7 +33,12 @@ namespace Rock.Tests.Fakes
             return db.AsQueryable();
         }
 
-        public virtual IEnumerable<T> GetAll()
+		public virtual IQueryable<T> AsQueryable(string includes)
+		{
+			return db.AsQueryable();
+		}
+		
+		public virtual IEnumerable<T> GetAll()
         {
             return db;
         }
