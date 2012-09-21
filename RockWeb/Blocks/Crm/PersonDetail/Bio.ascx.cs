@@ -5,6 +5,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -16,8 +18,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     {
 		protected string RecordStatus = string.Empty;
 
-        protected void Page_Load( object sender, EventArgs e )
-        {
+		protected override void OnInit( EventArgs e )
+		{
+			base.OnInit( e );
+
 			// Name
 			var page = Page as Rock.Web.UI.Page;
 			if ( page != null )
@@ -25,7 +29,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 			lPersonStatus.Text = Person.PersonStatusId.DefinedValue();
 			RecordStatus = Person.RecordStatusId.DefinedValue();
-			
+
+			var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+			if ( families != null )
+			{
+				var campusNames = new List<string>();
+				foreach(int campusId in families
+					.Where( g => g.CampusId.HasValue)
+					.Select( g => g.CampusId)
+					.ToList())
+					campusNames.Add(Rock.Web.Cache.Campus.Read(campusId).Name);
+				lCampus.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
+			}
+
 			if ( Person.BirthDate.HasValue)
 				lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", Person.BirthDate.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
 	
