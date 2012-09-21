@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Administration
                         _entityId = entityIdint;
                 }
 
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                 }});
         }});
     ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
 
                     // Create the dropdown list for listing the available field types
                     var fieldTypeService = new Rock.Core.FieldTypeService();

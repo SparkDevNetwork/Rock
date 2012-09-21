@@ -3,7 +3,7 @@ namespace Rock.Migrations
 	using System;
 	using System.Data.Entity.Migrations;
 
-	public partial class PhoneNumberType : RockMigration
+	public partial class PhoneNumberType : RockMigration_0
 	{
 		public override void Up()
 		{

@@ -46,13 +46,13 @@ namespace Rock.Tests.Cms
             }
 
             [Fact]
-            public void ShouldCopyBlockInstances()
+            public void ShouldCopyBlocks()
             {
-                var page = new Page() { BlockInstances = new List<BlockInstance>() };
-                page.BlockInstances.Add( new BlockInstance() );
+                var page = new Page() { Blocks = new List<Block>() };
+                page.Blocks.Add( new Block() );
                 dynamic result = page.ExportObject();
-                Assert.NotNull( result.BlockInstances );
-                Assert.NotEmpty( result.BlockInstances );
+                Assert.NotNull( result.Blocks );
+                Assert.NotEmpty( result.Blocks );
             }
 
             [Fact]

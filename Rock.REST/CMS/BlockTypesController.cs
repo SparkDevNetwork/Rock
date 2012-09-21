@@ -15,10 +15,10 @@ using Rock.Cms;
 namespace Rock.Rest.Cms
 {
 	/// <summary>
-	/// BlockInstances REST API
+	/// BlockTypes REST API
 	/// </summary>
-	public partial class BlockInstancesController : Rock.Rest.ApiController<Rock.Cms.BlockInstance, Rock.Cms.BlockInstanceDto>
+	public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Cms.BlockType, Rock.Cms.BlockTypeDto>
 	{
-		public BlockInstancesController() : base( new Rock.Cms.BlockInstanceService() ) { } 
+		public BlockTypesController() : base( new Rock.Cms.BlockTypeService() ) { } 
 	}
 }

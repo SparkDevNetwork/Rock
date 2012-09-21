@@ -22,20 +22,20 @@ namespace Rock.Data
         public DbSet<Rock.Cms.Auth> Auths { get; set; }
 
         /// <summary>
+        /// Gets or sets the Block Types.
+        /// </summary>
+        /// <value>
+        /// the Block Types.
+        /// </value>
+        public DbSet<Rock.Cms.BlockType> BlockTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
         /// the Blocks.
         /// </value>
         public DbSet<Rock.Cms.Block> Blocks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Block Instances.
-        /// </summary>
-        /// <value>
-        /// the Block Instances.
-        /// </value>
-        public DbSet<Rock.Cms.BlockInstance> BlockInstances { get; set; }
 
         /// <summary>
         /// Gets or sets the Files.
@@ -367,8 +367,8 @@ namespace Rock.Data
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
             modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.BlockInstanceConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );

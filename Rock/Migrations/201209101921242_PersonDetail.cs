@@ -5,7 +5,7 @@ namespace Rock.Migrations
 
 	using Rock.Cms;
 
-    public partial class PersonDetail : RockMigration
+    public partial class PersonDetail : RockMigration_0
     {
 		public override void Up()
 		{

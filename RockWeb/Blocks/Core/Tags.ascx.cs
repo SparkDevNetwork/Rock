@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
 	base.EntityType, CurrentPersonId, base.Entity.Id,
 	string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
 	string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
-				this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.BlockInstance.Id.ToString(), script, true );
+				this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.CurrentBlock.Id.ToString(), script, true );
 			}
 		}
     }
