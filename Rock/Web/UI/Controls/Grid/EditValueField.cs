@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
         public override bool Initialize( bool sortingEnabled, Control control )
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell tick";
+            this.ItemStyle.CssClass = "grid-icon-cell edit-value";
 
             EditValueFieldTemplate editValueFieldTemplate = new EditValueFieldTemplate();
             editValueFieldTemplate.LinkButtonClick += editValueFieldTemplate_LinkButtonClick;
