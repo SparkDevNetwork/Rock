@@ -9,7 +9,7 @@
             <span class="member-status"><asp:Literal ID="lPersonStatus" runat="server" /></span>
             <span class="record-status<%= (RecordStatus == "Inactive" ? " inactive" : "") %>"><%= RecordStatus %></span>
 
-            <span class="campus">TODO: Campus</span>
+            <span class="campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></span>
             <span class="area">TODO: Area</span>
         </section>
 
