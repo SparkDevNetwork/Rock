@@ -3,6 +3,7 @@
 <aside class="bio">             
     <div class="content">
 
+        <asp:PlaceHolder ID="phImage" runat="server"></asp:PlaceHolder>
 <%--        <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />--%>
 
         <section class="group">

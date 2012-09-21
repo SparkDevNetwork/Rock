@@ -408,7 +408,12 @@ namespace Rock.Crm
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
 		public virtual Core.DefinedValue Title { get; set; }
-        
+
+		/// <summary>
+		/// Gets or sets the Photo
+		/// </summary>
+		public virtual Cms.File Photo { get; set; }
+
 		/// <summary>
         /// Gets or sets the Created By Person.
         /// </summary>
@@ -542,7 +547,8 @@ namespace Rock.Crm
 			this.HasOptional( p => p.RecordType ).WithMany().HasForeignKey( p => p.RecordTypeId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
