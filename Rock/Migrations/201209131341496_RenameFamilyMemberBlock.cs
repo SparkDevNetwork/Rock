@@ -3,7 +3,7 @@ namespace Rock.Migrations
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class RenameFamilyMemberBlock : RockMigration
+    public partial class RenameFamilyMemberBlock : RockMigration_0
     {
         public override void Up()
         {

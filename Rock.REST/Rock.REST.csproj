@@ -80,9 +80,9 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="Cms\AuthsController.cs" />
-    <Compile Include="Cms\BlockInstancesController.cs" />
     <Compile Include="Cms\BlocksController.cs" />
-    <Compile Include="Cms\BlockInstancesController.Partial.cs" />
+    <Compile Include="Cms\BlocksController.Partial.cs" />
+    <Compile Include="Cms\BlockTypesController.cs" />
     <Compile Include="Cms\FilesController.cs" />
     <Compile Include="Cms\HtmlContentsController.cs" />
     <Compile Include="Cms\PageContextsController.cs" />

@@ -59,14 +59,14 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
                     List<string> blockContexts = new List<string>();
-                    foreach ( var blockInstance in _page.BlockInstances )
+                    foreach ( var block in _page.Blocks )
                     {
-                        var block = TemplateControl.LoadControl( blockInstance.Block.Path ) as Rock.Web.UI.Block;
-                        if ( block != null )
+                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as Rock.Web.UI.Block;
+                        if ( blockControl != null )
                         {
-                            block.PageInstance = _page;
-                            block.BlockInstance = blockInstance;
-                            foreach ( var context in block.RequiredContext )
+                            blockControl.CurrentPage = _page;
+                            blockControl.CurrentBlock = block;
+                            foreach ( var context in blockControl.RequiredContext )
                                 if ( !blockContexts.Contains( context ) )
                                     blockContexts.Add( context );
                         }

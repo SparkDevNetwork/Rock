@@ -18,7 +18,7 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
     protected override void OnInit(EventArgs e)
     {
         base.OnInit(e);
-        _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+        _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
         if (!_canConfigure)
         {
             DisplayError("You are not authorized to configure this page");

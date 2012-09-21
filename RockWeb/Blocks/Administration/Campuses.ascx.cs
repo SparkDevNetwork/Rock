@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gCampuses.DataKeyNames = new string[] { "id" };
                 gCampuses.Actions.IsAddEnabled = true;
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                     BindGrid();
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Administration
         protected void gCampuses_Delete( object sender, RowEventArgs e )
         {
             Rock.Crm.Campus campus = campusService.Get( ( int )gCampuses.DataKeys[e.RowIndex]["id"] );
-            if ( BlockInstance != null )
+            if ( CurrentBlock != null )
             {
                 campusService.Delete( campus, CurrentPersonId );
                 campusService.Save( campus, CurrentPersonId );

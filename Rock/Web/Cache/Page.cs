@@ -179,49 +179,49 @@ namespace Rock.Web.Cache
         private List<int> pageIds = null;
 
         /// <summary>
-        /// Gets a List of all the <see cref="BlockInstance"/> objects configured for the page and the page's layout.
+        /// Gets a List of all the <see cref="Block"/> objects configured for the page and the page's layout.
         /// </summary>
-        public List<BlockInstance> BlockInstances
+        public List<Block> Blocks
         {
             get
             {
-                List<BlockInstance> blockInstances = new List<BlockInstance>();
+                List<Block> blocks = new List<Block>();
 
-                if ( blockInstanceIds != null )
+                if ( blockIds != null )
                 {
-                    foreach ( int id in blockInstanceIds )
+                    foreach ( int id in blockIds )
                     {
-                        BlockInstance blockInstance = BlockInstance.Read( id );
-                        if ( blockInstance != null )
-                            blockInstances.Add( blockInstance );
+                        Block block = Block.Read( id );
+                        if ( block != null )
+                            blocks.Add( block );
                     }
                 }
                 else
                 {
-                    blockInstanceIds = new List<int>();
+                    blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.Cms.BlockInstanceService blockInstanceService = new Rock.Cms.BlockInstanceService();
-                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByLayout( this.Layout ) )
+                    Rock.Cms.BlockService blockService = new Rock.Cms.BlockService();
+                    foreach ( Rock.Cms.Block block in blockService.GetByLayout( this.Layout ) )
                     {
-                        blockInstanceIds.Add( blockInstance.Id );
-                        Rock.Attribute.Helper.LoadAttributes( blockInstance );
-                        blockInstances.Add( BlockInstance.Read( blockInstance ) );
+                        blockIds.Add( block.Id );
+                        Rock.Attribute.Helper.LoadAttributes( block );
+                        blocks.Add( Block.Read( block ) );
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.Cms.BlockInstance blockInstance in blockInstanceService.GetByPageId( this.Id ) )
+                    foreach ( Rock.Cms.Block block in blockService.GetByPageId( this.Id ) )
                     {
-                        blockInstanceIds.Add( blockInstance.Id );
-                        Rock.Attribute.Helper.LoadAttributes( blockInstance );
-                        blockInstances.Add( BlockInstance.Read( blockInstance ) );
+                        blockIds.Add( block.Id );
+                        Rock.Attribute.Helper.LoadAttributes( block );
+                        blocks.Add( Block.Read( block ) );
                     }
 
                 }
-                return blockInstances;
+                return blocks;
             }
         }
-        private List<int> blockInstanceIds = null;
+        private List<int> blockIds = null;
 
         /// <summary>
         /// Gets or sets the page contexts that have been defined for the page
@@ -323,9 +323,9 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the cached block instances.
         /// </summary>
-        public void FlushBlockInstances()
+        public void FlushBlocks()
         {
-            blockInstanceIds = null;
+            blockIds = null;
         }
 
         /// <summary>
@@ -603,7 +603,7 @@ namespace Rock.Web.Cache
 		/// <summary>
 		/// Flushes the block instances for all the pages that use a specific layout.
 		/// </summary>
-		public static void FlushLayoutBlockInstances( string layout )
+		public static void FlushLayoutBlocks( string layout )
 		{
 			ObjectCache cache = MemoryCache.Default;
 			foreach ( var item in cache )
@@ -611,7 +611,7 @@ namespace Rock.Web.Cache
 				{
 					Page page = cache[item.Key] as Page;
 					if ( page != null && page.Layout == layout )
-						page.FlushBlockInstances();
+						page.FlushBlocks();
 				}
 		}
 

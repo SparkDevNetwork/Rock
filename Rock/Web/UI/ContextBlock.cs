@@ -42,7 +42,7 @@ namespace Rock.Web.UI
 			if ( string.IsNullOrWhiteSpace( EntityType ) )
 				EntityType = PageParameter( "Entity" );
 
-			Entity = PageInstance.GetCurrentContext( EntityType );
+			Entity = CurrentPage.GetCurrentContext( EntityType );
 
 			base.OnInit( e );
 		}

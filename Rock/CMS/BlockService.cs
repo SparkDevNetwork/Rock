@@ -63,15 +63,20 @@ namespace Rock.Cms
 			return items.Select( m => new BlockDto()
 				{
 					IsSystem = m.IsSystem,
-					Path = m.Path,
+					PageId = m.PageId,
+					Layout = m.Layout,
+					BlockTypeId = m.BlockTypeId,
+					Zone = m.Zone,
+					Order = m.Order,
 					Name = m.Name,
-					Description = m.Description,
+					OutputCacheDuration = m.OutputCacheDuration,
 					CreatedDateTime = m.CreatedDateTime,
 					ModifiedDateTime = m.ModifiedDateTime,
 					CreatedByPersonId = m.CreatedByPersonId,
 					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }
