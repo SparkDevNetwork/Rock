@@ -112,6 +112,9 @@ namespace Rock.Rest.Core
 					var tagService = new TagService();
 					var taggedItemService = new TaggedItemService();
 
+					if ( name.Contains( '^' ) )
+						name = name.Split( '^' )[0];
+
 					var tag = tagService.GetByEntityAndName( entity, entityQualifier, entityQualifierValue, ownerId, name );
 					if ( tag == null )
 						throw new HttpResponseException( HttpStatusCode.NotFound );
