@@ -13,9 +13,9 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Cms
 {
 	/// <summary>
-	/// BlockInstances REST API
+	/// Blocks REST API
 	/// </summary>
-	public partial class BlockInstancesController : IHasCustomRoutes 
+	public partial class BlocksController : IHasCustomRoutes 
 	{
 		/// <summary>
 		/// Add Custom route needed for block move
@@ -24,29 +24,29 @@ namespace Rock.Rest.Cms
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
 		{
 			routes.MapHttpRoute(
-				name: "BlockInstanceMove",
-				routeTemplate: "api/blockinstances/move/{id}",
+				name: "BlockMove",
+				routeTemplate: "api/blocks/move/{id}",
 				defaults: new
 				{
-					controller = "blockinstances",
+					controller = "blocks",
 					action = "move"
 				} );
 		}
 
 		/// <summary>
-		/// Moves a block instance from one zone to another
+		/// Moves a block from one zone to another
 		/// </summary>
-		/// <param name="blockInstance"></param>
+		/// <param name="block"></param>
 		/// <returns></returns>
 		[HttpPut]
 		[Authenticate]
-		public void Move( int id, BlockInstanceDto blockInstance )
+		public void Move( int id, BlockDto block )
 		{
 			var user = CurrentUser();
 			if ( user != null )
 			{
-				var service = new BlockInstanceService();
-				BlockInstance model;
+				var service = new BlockService();
+				Block model;
 				if ( !service.TryGet( id, out model ) )
 					throw new HttpResponseException( HttpStatusCode.NotFound );
 
@@ -55,18 +55,18 @@ namespace Rock.Rest.Cms
 
 				if ( model.IsValid )
 				{
-					if ( model.Layout != null && model.Layout != blockInstance.Layout )
-						Rock.Web.Cache.Page.FlushLayoutBlockInstances( model.Layout );
+					if ( model.Layout != null && model.Layout != block.Layout )
+						Rock.Web.Cache.Page.FlushLayoutBlocks( model.Layout );
 
-					if (blockInstance.Layout != null)
-						Rock.Web.Cache.Page.FlushLayoutBlockInstances( blockInstance.Layout);
+					if (block.Layout != null)
+						Rock.Web.Cache.Page.FlushLayoutBlocks( block.Layout);
 					else
 					{
-						var page = Rock.Web.Cache.Page.Read( blockInstance.PageId.Value );
-						page.FlushBlockInstances();
+						var page = Rock.Web.Cache.Page.Read( block.PageId.Value );
+						page.FlushBlocks();
 					}
 
-					blockInstance.CopyToModel( model );
+					block.CopyToModel( model );
 
 					service.Move( model );
 					service.Save( model, user.PersonId );

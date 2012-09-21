@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Administration
                 if ( _page != null )
                     canConfigure = _page.IsAuthorized( "Configure", CurrentPerson );
                 else
-                    canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                    canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( canConfigure )
                 {
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.SiteId = PageInstance.Site.Id;
+                    page.SiteId = CurrentPage.Site.Id;
                 }
 
                 page.Title = tbPageName.Text;
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.Text = _page.Layout;
                     else
-                        ddlLayout.Text = PageInstance.Layout;
+                        ddlLayout.Text = CurrentPage.Layout;
                 }
                 catch { }
 

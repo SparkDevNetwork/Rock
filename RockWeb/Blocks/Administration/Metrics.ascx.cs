@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
 
 			try
 			{
-				_canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+				_canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
 				BindCategoryFilter();				
 
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Administration
 					modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
 					this.Page.ClientScript.RegisterStartupScript( this.GetType(), 
-						string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), @"
+						string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), @"
 						Sys.Application.add_load(function () {{
 							$('td.grid-icon-cell.delete a').click(function(){{
 								return confirm('Are you sure you want to delete this value?');

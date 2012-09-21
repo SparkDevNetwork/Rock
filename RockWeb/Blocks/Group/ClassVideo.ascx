@@ -9,7 +9,7 @@
         <asp:PlaceHolder ID="phTreeView" runat="server"></asp:PlaceHolder>
     </div>
     <div class="class-media">
-        <video id='video_<%=BlockInstance.Id %>' class='video-js vjs-default-skin' 
+        <video id='video_<%=CurrentBlock.Id %>' class='video-js vjs-default-skin' 
             controls width='640' height='264' preload='auto' style='display:none'>
         </video>
     </div>

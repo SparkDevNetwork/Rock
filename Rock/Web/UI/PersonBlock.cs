@@ -35,7 +35,7 @@ namespace Rock.Web.UI
 		{
 			base.OnInit( e );
 
-			this.Person = PageInstance.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+			this.Person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
 			if ( Person == null )
 				Person = new Person();
 		}

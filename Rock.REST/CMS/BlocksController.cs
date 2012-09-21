@@ -17,8 +17,8 @@ namespace Rock.Rest.Cms
 	/// <summary>
 	/// Blocks REST API
 	/// </summary>
-	public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Cms.BlockType, Rock.Cms.BlockTypeDto>
+	public partial class BlocksController : Rock.Rest.ApiController<Rock.Cms.Block, Rock.Cms.BlockDto>
 	{
-		public BlockTypesController() : base( new Rock.Cms.BlockTypeService() ) { } 
+		public BlocksController() : base( new Rock.Cms.BlockService() ) { } 
 	}
 }

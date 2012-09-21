@@ -95,7 +95,7 @@ namespace Rock.Web
 
                 // Return the page using the cached route
                 Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.Page ) );
-                cmsPage.PageInstance = page;
+                cmsPage.CurrentPage = page;
                 return cmsPage;
             }
             else
@@ -122,7 +122,7 @@ namespace Rock.Web
                 {
                     // Return the page for the selected theme and layout
                     Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
                 catch ( System.Web.HttpException )
@@ -147,7 +147,7 @@ namespace Rock.Web
 
                     // Return the default layout and/or theme
                     Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
             }

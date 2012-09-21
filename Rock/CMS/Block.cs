@@ -15,10 +15,10 @@ using Rock.Data;
 namespace Rock.Cms
 {
     /// <summary>
-    /// Block Instance POCO Entity.
+    /// Block POCO Entity.
     /// </summary>
-    [Table( "cmsBlockInstance" )]
-    public partial class BlockInstance : ModelWithAttributes<BlockInstance>, IAuditable, IOrdered, IExportable
+    [Table( "cmsBlock" )]
+    public partial class Block : ModelWithAttributes<Block>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -142,7 +142,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.BlockInstance"; } }
+		public override string AuthEntity { get { return "Cms.Block"; } }
         
 		/// <summary>
         /// Gets or sets the Html Contents.
@@ -189,9 +189,9 @@ namespace Rock.Cms
 		/// </summary>
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
-		public static BlockInstance Read( int id )
+		public static Block Read( int id )
 		{
-			return Read<BlockInstance>( id );
+			return Read<Block>( id );
 		}
 
 
@@ -252,15 +252,15 @@ namespace Rock.Cms
     /// <summary>
     /// Block Instance Configuration class.
     /// </summary>
-    public partial class BlockInstanceConfiguration : EntityTypeConfiguration<BlockInstance>
+    public partial class BlockConfiguration : EntityTypeConfiguration<Block>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BlockInstanceConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BlockConfiguration"/> class.
         /// </summary>
-        public BlockInstanceConfiguration()
+        public BlockConfiguration()
         {
-			this.HasRequired( p => p.BlockType ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.Page ).WithMany( p => p.BlockInstances ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}

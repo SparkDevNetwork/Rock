@@ -48,10 +48,10 @@ namespace Rock.Attribute
 
                 foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
                 {
-                    var blockInstanceProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
-                    attributesUpdated = UpdateAttribute( blockInstanceProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                    var blockProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
+                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
 
-                    existingKeys.Add( blockInstanceProperty.Key );
+                    existingKeys.Add( blockProperty.Key );
                 }
 
                 Core.AttributeService attributeService = new Core.AttributeService();

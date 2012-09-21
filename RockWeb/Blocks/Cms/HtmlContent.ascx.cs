@@ -40,22 +40,22 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
 
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
             _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
 
-            mpeContent.OnOkScript = string.Format("saveHtmlContent_{0}();", BlockInstance.Id);
+            mpeContent.OnOkScript = string.Format("saveHtmlContent_{0}();", CurrentBlock.Id);
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.Cms.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
             if ( content == null )
                 content = new Rock.Cms.HtmlContent();
 
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Cms
                 int version = 0;
                 if ( !Int32.TryParse( hfVersion.Value, out version ) )
                     version = 0;
-                content = service.GetByBlockIdAndEntityValueAndVersion( BlockInstance.Id, entityValue, version );
+                content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
 
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
@@ -154,13 +154,13 @@ namespace RockWeb.Blocks.Cms
                 if ( content == null )
                 {
                     content = new Rock.Cms.HtmlContent();
-                    content.BlockId = BlockInstance.Id;
+                    content.BlockId = CurrentBlock.Id;
                     content.EntityValue = entityValue;
 
                     if ( _supportVersioning )
                     {
                         int? maxVersion = service.Queryable().
-                            Where( c => c.BlockId == BlockInstance.Id &&
+                            Where( c => c.BlockId == CurrentBlock.Id &&
                                 c.EntityValue == entityValue ).
                             Select( c => ( int? )c.Version ).Max();
 
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
                     html = content.Content;
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Cms
         {
             HtmlContentService service = new HtmlContentService();
 
-            var versions = service.GetContent( BlockInstance.Id, EntityValue() ).
+            var versions = service.GetContent( CurrentBlock.Id, EntityValue() ).
                 Select( v => new
                 {
                     v.Id,

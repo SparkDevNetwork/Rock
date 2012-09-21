@@ -253,7 +253,7 @@ namespace Rock.Migrations
 			Sql(sb.ToString());
 		}
 
-		public void AddBlockInstance( string pageGuid, string blockGuid, BlockInstanceDto blockInstance )
+		public void AddBlockInstance( string pageGuid, string blockGuid, BlockDto blockInstance )
 		{
 			var sb = new StringBuilder();
 
@@ -323,9 +323,9 @@ namespace Rock.Migrations
 					) );
 		}
 
-		public BlockInstanceDto DefaultSystemBlockInstance( string name, Guid guid )
+		public BlockDto DefaultSystemBlockInstance( string name, Guid guid )
 		{
-			var blockInstance = new BlockInstanceDto();
+			var blockInstance = new BlockDto();
 
 			blockInstance.IsSystem = true;
 			blockInstance.Zone = "Content";

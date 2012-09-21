@@ -104,12 +104,12 @@ namespace Rock.Cms
 		public override string AuthEntity { get { return "Cms.BlockType"; } }
         
 		/// <summary>
-        /// Gets or sets the Block Instances.
+        /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
-        /// Collection of Block Instances.
+        /// Collection of Blocks.
         /// </value>
-		public virtual ICollection<BlockInstance> BlockInstances { get; set; }
+		public virtual ICollection<Block> Blocks { get; set; }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

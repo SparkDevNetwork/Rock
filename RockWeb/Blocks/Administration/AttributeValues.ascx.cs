@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Administration
                         _entityId = entityIdint;
                 }
 
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
