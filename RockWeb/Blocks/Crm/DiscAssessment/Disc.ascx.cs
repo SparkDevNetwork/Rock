@@ -123,7 +123,7 @@ namespace Rockweb.Blocks.Crm
             Page.ClientScript.RegisterStartupScript(GetType(), "IsScored", script, true);
 
             //Add reference to my JS file
-            PageInstance.AddScriptLink(this.Page, "~/Blocks/Crm/DiscAssessment/scripts/disc.js");
+            CurrentPage.AddScriptLink(this.Page, "~/Blocks/Crm/DiscAssessment/scripts/disc.js");
 
             //Yup, build question table
             buildQuestionTable();
