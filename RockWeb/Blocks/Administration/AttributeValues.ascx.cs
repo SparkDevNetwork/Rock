@@ -167,14 +167,13 @@ namespace RockWeb.Blocks.Administration
                 {
                     int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
-                    AttributeService attributeService = new AttributeService();
-                    var attribute = attributeService.Get( attributeId );
+                    var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
                     var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
 
                     AttributeValueService attributeValueService = new AttributeValueService();
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                     if ( attributeValue != null )
-                        lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
+                        lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, attribute.QualifierValues, true );
                 }
             }
         }

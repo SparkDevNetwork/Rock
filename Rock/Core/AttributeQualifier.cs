@@ -57,7 +57,6 @@ namespace Rock.Core
 		/// <value>
 		/// Value.
 		/// </value>
-		[Required]
 		[DataMember]
 		public string Value { get; set; }
 		

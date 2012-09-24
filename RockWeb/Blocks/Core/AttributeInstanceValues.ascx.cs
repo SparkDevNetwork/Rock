@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Core
                 {
                     PlaceHolder phDisplayValue = e.Item.FindControl( "phDisplayValue" ) as PlaceHolder;
                     if ( phDisplayValue != null  )
-                        phDisplayValue.Controls.Add( new LiteralControl( _attribute.FieldType.Field.FormatValue( phDisplayValue, attributeValue.Value, false ) ) );
+                        phDisplayValue.Controls.Add( new LiteralControl( _attribute.FieldType.Field.FormatValue( phDisplayValue, attributeValue.Value, _attribute.QualifierValues, false ) ) );
                     else
                     {
                         PlaceHolder phEditValue = e.Item.FindControl( "phEditValue" ) as PlaceHolder;

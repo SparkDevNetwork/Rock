@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
 							ulAttributes.Controls.Add(li);
 							li.Controls.Add(new LiteralControl(attribute.Name));
 
-							li.Controls.Add( new LiteralControl( " " ) );
+							li.Controls.Add( new LiteralControl( ": " ) );
 
 							var span = new HtmlGenericControl("span");
 							li.Controls.Add(span);
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Core
 
 							var values = model.AttributeValues[attribute.Key].Value;
 							if (values != null && values.Count > 0)
-								span.Controls.Add(new LiteralControl(attribute.FieldType.Field.FormatValue(span, values[0].Value, false)));
+								span.Controls.Add(new LiteralControl(attribute.FieldType.Field.FormatValue(span, values[0].Value, attribute.QualifierValues, false)));
 						}
                     }
             }
