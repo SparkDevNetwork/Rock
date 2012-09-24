@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -229,8 +230,7 @@ namespace RockWeb.Blocks.Administration
             {
                 int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
-                AttributeService attributeService = new AttributeService();
-                var attribute = attributeService.Get( attributeId );
+                var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
                 var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
 
                 if ( _setValues )
@@ -241,16 +241,16 @@ namespace RockWeb.Blocks.Administration
                         AttributeValueService attributeValueService = new AttributeValueService();
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace(attributeValue.Value))
-                            lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
+                            lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, attribute.QualifierValues, true );
                         else
-                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, true ) );
+                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                     }
                 }
                 else
                 {
                     Literal lDefaultValue = e.Row.FindControl( "lDefaultValue" ) as Literal;
                     if ( lDefaultValue != null )
-                        lDefaultValue.Text = fieldType.Field.FormatValue( lDefaultValue, attribute.DefaultValue, true ); 
+                        lDefaultValue.Text = fieldType.Field.FormatValue( lDefaultValue, attribute.DefaultValue, attribute.QualifierValues, true ); 
                 }
 
             }
@@ -311,25 +311,24 @@ namespace RockWeb.Blocks.Administration
                     attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
                 attribute.AttributeQualifiers.Clear();
 
-                List<Control> configControls = new List<Control>();
-                foreach ( var key in fieldType.Field.ConfigurationKeys() )
-                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
-
-                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
-                {
-                    AttributeQualifier qualifier = new AttributeQualifier();
-                    qualifier.Key = configValue.Key;
-                    qualifier.Value = configValue.Value.Value;
-                    attribute.AttributeQualifiers.Add( qualifier );
-                }
-
-                attribute.DefaultValue = tbDefaultValue.Text;
+				List<Control> configControls = new List<Control>();
+				foreach ( var key in fieldType.Field.ConfigurationKeys() )
+					configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+				foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
+				{
+					AttributeQualifier qualifier = new AttributeQualifier();
+					qualifier.IsSystem = false;
+					qualifier.Key = configValue.Key;
+					qualifier.Value = configValue.Value.Value ?? string.Empty;
+					attribute.AttributeQualifiers.Add( qualifier );
+				}
+				
+				attribute.DefaultValue = tbDefaultValue.Text;
                 attribute.IsMultiValue = cbMultiValue.Checked;
                 attribute.IsRequired = cbRequired.Checked;
 
                 attributeService.Save( attribute, CurrentPersonId );
-
-            }
+			}
 
             BindGrid();
 
@@ -452,15 +451,22 @@ namespace RockWeb.Blocks.Administration
                 int i = 0;
                 foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
                 {
-                    Label lbl = new Label();
-                    phFieldTypeQualifiers.Controls.Add( lbl );
+					var ctrlGroup = new HtmlGenericControl( "div" );
+					phFieldTypeQualifiers.Controls.Add( ctrlGroup );
+					ctrlGroup.AddCssClass( "control-group" );
+
+                    var lbl = new Label();
+                    ctrlGroup.Controls.Add( lbl );
+					lbl.AddCssClass( "control-label" );
                     lbl.Text = configValue.Value.Name;
 
-                    Control control = configControls[i];
-                    phFieldTypeQualifiers.Controls.Add( control );
-                    control.ID = "configControl_" + configValue.Key;
+					var ctrls = new HtmlGenericControl( "div" );
+					ctrlGroup.Controls.Add( ctrls );
+					ctrls.AddCssClass( "controls" );
 
-                    phFieldTypeQualifiers.Controls.Add( new LiteralControl( "<br/>" ) );
+                    Control control = configControls[i];
+                    ctrls.Controls.Add( control );
+                    control.ID = "configControl_" + configValue.Key;
 
                     i++;
                 }
