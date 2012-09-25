@@ -49,9 +49,18 @@ namespace Rock.Com.CCVOnline.Service
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<RecordingDto> QueryableDto()
+		public override IQueryable<RecordingDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new RecordingDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<RecordingDto> QueryableDto( IQueryable<Recording> items )
+		{
+			return items.Select( m => new RecordingDto()
 				{
 					Date = m.Date,
 					CampusId = m.CampusId,
