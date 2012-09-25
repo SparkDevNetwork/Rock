@@ -14,19 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedValue
+    public class DefinedValue : Rock.Core.DefinedValueDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new DefinedValue object
-        /// </summary>
-        private DefinedValue() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        private int DefinedTypeId { get; set; }
+		private DefinedValue() : base() { }
+		private DefinedValue( Rock.Core.DefinedValue model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -36,23 +27,8 @@ namespace Rock.Web.Cache
         /// </value>
         public DefinedType DefinedType
         {
-            get { return DefinedType.Read( DefinedTypeId ); }
+			get { return DefinedType.Read( DefinedTypeId ); }
         }
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
 
         #region Static Methods
 
@@ -100,13 +76,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValue Read( Rock.Core.DefinedValue definedValueModel )
         {
-            DefinedValue definedValue = DefinedValue.CopyModel( definedValueModel );
-
             string cacheKey = DefinedValue.CacheKey( definedValueModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
 
-            return definedValue;
+            ObjectCache cache = MemoryCache.Default;
+            DefinedValue definedValue = cache[cacheKey] as DefinedValue;
+
+			if ( definedValue != null )
+				return definedValue;
+			else
+			{
+				definedValue = DefinedValue.CopyModel( definedValueModel );
+				cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
+
+				return definedValue;
+			}
         }
 
         /// <summary>
@@ -116,13 +99,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValue CopyModel( Rock.Core.DefinedValue definedValueModel )
         {
-            DefinedValue definedValue = new DefinedValue();
-            definedValue.Id = definedValueModel.Id;
-            definedValue.Order = definedValueModel.Order;
-            definedValue.Name = definedValueModel.Name;
-            definedValue.Description = definedValueModel.Description;
-            definedValue.DefinedTypeId = definedValueModel.DefinedTypeId;
-
+			DefinedValue definedValue = new DefinedValue( definedValueModel );
             return definedValue;
         }
 

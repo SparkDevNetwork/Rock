@@ -140,6 +140,14 @@ namespace Rock.Core
         /// Collection of Defined Types.
         /// </value>
 		public virtual ICollection<DefinedType> DefinedTypes { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Metrics.
+		/// </summary>
+		/// <value>
+		/// Collection of Metrics.
+		/// </value>
+		//public virtual ICollection<Metric> Metrics { get; set; }
         
 		/// <summary>
         /// Gets or sets the Created By Person.

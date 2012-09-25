@@ -72,6 +72,11 @@ a {
   -webkit-transition: background-color 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
 }
 
+a:hover 
+{
+    text-decoration: none;   
+}
+
 form {
     margin: 0;
 }
@@ -156,6 +161,7 @@ header.navbar .content .account-name {
 	display: block;
 	float: right;
 	font-size: 11px;
+    color: #aaa;
 }
 
 header.navbar .content .account-name > span:after {
@@ -203,7 +209,8 @@ header.navbar .content .filter-search {
 header.navbar .content div.filter-search input 
 {
     background-color: transparent;
-    color: #a9a8a8;   
+    color: #a9a8a8;
+    font-size: 13px;   
 }
 
 header.navbar .content div.filter-search .filter 
@@ -217,6 +224,13 @@ div.filter-search dl.dropdown
 }
 
 /* page nav */
+
+header.navbar nav
+{
+    position: relative;
+    z-index: 9999;
+}
+
 header.navbar nav ul {
     list-style: none outside none;
 }
@@ -268,6 +282,7 @@ header.navbar nav ul li .nav-menu section
 header.navbar nav ul li .nav-menu {
 	left: -999em;
 	position: absolute;
+    background: #5a5a5a;
 	background: -moz-linear-gradient(top, rgba(97,97,97,1) 0%, rgba(97,97,97,1) 30%, rgba(81,81,81,1) 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,97,97,1)), color-stop(30%,rgba(97,97,97,1)), color-stop(100%,rgba(81,81,81,1)));
     background: -webkit-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
@@ -364,7 +379,11 @@ header.navbar nav ul li .nav-menu ul li a:hover {
     font-size: 28px;
     margin-top: 6px;
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+    font-weight: normal;
+    letter-spacing: -0.03em;
 }
 
 /* footer bar */
@@ -417,3 +436,9 @@ header.navbar nav ul li .nav-menu ul li a:hover {
 	padding: 16px;
 }
 
+/* person details overrides */
+aside.contact-info header
+{
+    font-weight: normal;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+}

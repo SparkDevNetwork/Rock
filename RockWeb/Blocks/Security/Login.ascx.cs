@@ -32,8 +32,8 @@ namespace RockWeb.Blocks.Security
             pnlMessage.Visible = false;
 
             // Determine if Facebook login enabled
-            string facebookAppId = PageInstance.Site.FacebookAppId;
-            string facebookAppSecret = PageInstance.Site.FacebookAppSecret;
+            string facebookAppId = CurrentPage.Site.FacebookAppId;
+            string facebookAppSecret = CurrentPage.Site.FacebookAppSecret;
             bool facebookEnabled = Convert.ToBoolean( AttributeValue( "FacebookEnabled" ) );
 
             // disable the facebook login button if it's not able to be used
@@ -117,8 +117,8 @@ namespace RockWeb.Blocks.Security
         {
             var returnUrl = Request.QueryString["returnurl"];
             var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-            oAuthClient.AppId = PageInstance.Site.FacebookAppId;
-            oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
+            oAuthClient.AppId = CurrentPage.Site.FacebookAppId;
+            oAuthClient.AppSecret = CurrentPage.Site.FacebookAppSecret;
 
             // setup some facebook connection settings
             var settings = new Dictionary<string, object>
@@ -148,8 +148,8 @@ namespace RockWeb.Blocks.Security
                 {
                     // create client to read response
                     var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-                    oAuthClient.AppId = PageInstance.Site.FacebookAppId;
-                    oAuthClient.AppSecret = PageInstance.Site.FacebookAppSecret;
+                    oAuthClient.AppId = CurrentPage.Site.FacebookAppId;
+                    oAuthClient.AppSecret = CurrentPage.Site.FacebookAppSecret;
                     dynamic tokenResult = oAuthClient.ExchangeCodeForAccessToken( code );
                     string accessToken = tokenResult.access_token;
 

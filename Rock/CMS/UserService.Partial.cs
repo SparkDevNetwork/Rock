@@ -47,19 +47,10 @@ namespace Rock.Cms
 		/// <returns>User object.</returns>
 	    public User GetByUserName( string userName )
         {
-            // Because this query is run on every page request, and the associated person is always needed, 
-            // we're loading the Person property immediately, rather than defering to a lazy-load
-            var efRepository = Repository as EFRepository<User>;
-            if ( efRepository != null )
-            {
-                var rockContext = efRepository.Context as RockContext;
-                if (rockContext != null)
-                {
-                    return rockContext.Users.Include( "Person" ).FirstOrDefault( t => t.UserName == userName );
-                }
-            }
-
-            return Repository.FirstOrDefault( t => t.UserName == userName );
+			return Repository
+				.AsQueryable( "Person" )
+				.Where( u => u.UserName == userName )
+				.FirstOrDefault();
         }
 
         /// <summary>

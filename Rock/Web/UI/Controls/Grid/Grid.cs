@@ -471,7 +471,7 @@ namespace Rock.Web.UI.Controls
         {
             int result = base.CreateChildControls(dataSource, dataBinding);
 
-            if ( _table != null )
+            if ( _table != null && _table.Parent != null )
             {
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                     this.BottomPagerRow.Visible = true;
@@ -1050,6 +1050,7 @@ namespace Rock.Web.UI.Controls
                 IsDisposed = true;
             }
         }
+
     }
 
     #endregion

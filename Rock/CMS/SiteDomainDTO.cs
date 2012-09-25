@@ -18,13 +18,19 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for SiteDomain object
 	/// </summary>
-	public partial class SiteDomainDto : Dto<SiteDomain>
+	public partial class SiteDomainDto : IDto
 	{
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
 		public int SiteId { get; set; }
 		public string Domain { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -47,34 +53,42 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="siteDomain"></param>
-		public override void CopyFromModel( SiteDomain siteDomain )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = siteDomain.IsSystem;
-			this.SiteId = siteDomain.SiteId;
-			this.Domain = siteDomain.Domain;
-			this.CreatedDateTime = siteDomain.CreatedDateTime;
-			this.ModifiedDateTime = siteDomain.ModifiedDateTime;
-			this.CreatedByPersonId = siteDomain.CreatedByPersonId;
-			this.ModifiedByPersonId = siteDomain.ModifiedByPersonId;
-			this.Id = siteDomain.Id;
-			this.Guid = siteDomain.Guid;
+			if ( model is SiteDomain )
+			{
+				var siteDomain = (SiteDomain)model;
+				this.IsSystem = siteDomain.IsSystem;
+				this.SiteId = siteDomain.SiteId;
+				this.Domain = siteDomain.Domain;
+				this.CreatedDateTime = siteDomain.CreatedDateTime;
+				this.ModifiedDateTime = siteDomain.ModifiedDateTime;
+				this.CreatedByPersonId = siteDomain.CreatedByPersonId;
+				this.ModifiedByPersonId = siteDomain.ModifiedByPersonId;
+				this.Id = siteDomain.Id;
+				this.Guid = siteDomain.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="siteDomain"></param>
-		public override void CopyToModel ( SiteDomain siteDomain )
+		public void CopyToModel ( IModel model )
 		{
-			siteDomain.IsSystem = this.IsSystem;
-			siteDomain.SiteId = this.SiteId;
-			siteDomain.Domain = this.Domain;
-			siteDomain.CreatedDateTime = this.CreatedDateTime;
-			siteDomain.ModifiedDateTime = this.ModifiedDateTime;
-			siteDomain.CreatedByPersonId = this.CreatedByPersonId;
-			siteDomain.ModifiedByPersonId = this.ModifiedByPersonId;
-			siteDomain.Id = this.Id;
-			siteDomain.Guid = this.Guid;
+			if ( model is SiteDomain )
+			{
+				var siteDomain = (SiteDomain)model;
+				siteDomain.IsSystem = this.IsSystem;
+				siteDomain.SiteId = this.SiteId;
+				siteDomain.Domain = this.Domain;
+				siteDomain.CreatedDateTime = this.CreatedDateTime;
+				siteDomain.ModifiedDateTime = this.ModifiedDateTime;
+				siteDomain.CreatedByPersonId = this.CreatedByPersonId;
+				siteDomain.ModifiedByPersonId = this.ModifiedByPersonId;
+				siteDomain.Id = this.Id;
+				siteDomain.Guid = this.Guid;
+			}
 		}
 	}
 }

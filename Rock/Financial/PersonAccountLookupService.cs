@@ -25,7 +25,8 @@ namespace Rock.Financial
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
 		/// </summary>
-		public PersonAccountLookupService() : base()
+		public PersonAccountLookupService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Financial
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonAccountLookupDto> QueryableDto()
+		public override IQueryable<PersonAccountLookupDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PersonAccountLookupDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PersonAccountLookupDto> QueryableDto( IQueryable<PersonAccountLookup> items )
+		{
+			return items.Select( m => new PersonAccountLookupDto()
 				{
 					PersonId = m.PersonId,
 					Account = m.Account,

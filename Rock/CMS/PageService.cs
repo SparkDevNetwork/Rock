@@ -25,7 +25,8 @@ namespace Rock.Cms
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PageService"/> class
 		/// </summary>
-		public PageService() : base()
+		public PageService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Cms
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageDto> QueryableDto()
+		public override IQueryable<PageDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PageDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
+		{
+			return items.Select( m => new PageDto()
 				{
 					Name = m.Name,
 					Title = m.Title,

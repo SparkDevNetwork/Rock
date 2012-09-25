@@ -48,7 +48,16 @@ namespace Rock.Groups
 		[Required]
 		[DataMember]
 		public int GroupTypeId { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Campus Id.
+		/// </summary>
+		/// <value>
+		/// Campus Id.
+		/// </value>
+		[DataMember]
+		public int? CampusId { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Name.
 		/// </summary>
@@ -146,7 +155,15 @@ namespace Rock.Groups
         /// Collection of Members.
         /// </value>
 		public virtual ICollection<Member> Members { get; set; }
-        
+
+		/// <summary>
+		/// Gets or sets the Locations.
+		/// </summary>
+		/// <value>
+		/// Collection of Locations.
+		/// </value>
+		public virtual ICollection<GroupLocation> Locations { get; set; }
+
 		/// <summary>
         /// Gets or sets the Created By Person.
         /// </summary>
@@ -179,7 +196,15 @@ namespace Rock.Groups
         /// </value>
 		public virtual GroupType GroupType { get; set; }
 
-    }
+		/// <summary>
+		/// Gets or sets the Campus.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Rock.Crm.Campus"/> object.
+		/// </value>
+		public virtual Rock.Crm.Campus Campus { get; set; }
+
+	}
 
     /// <summary>
     /// Group Configuration class.
@@ -195,6 +220,7 @@ namespace Rock.Groups
 			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete(false);
 			this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId).WillCascadeOnDelete( false );
 		}
     }
 }

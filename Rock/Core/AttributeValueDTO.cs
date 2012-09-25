@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for AttributeValue object
 	/// </summary>
-	public partial class AttributeValueDto : Dto<AttributeValue>
+	public partial class AttributeValueDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -27,6 +27,12 @@ namespace Rock.Core
 		public int? EntityId { get; set; }
 		public int? Order { get; set; }
 		public string Value { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -49,38 +55,46 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="attributeValue"></param>
-		public override void CopyFromModel( AttributeValue attributeValue )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = attributeValue.IsSystem;
-			this.AttributeId = attributeValue.AttributeId;
-			this.EntityId = attributeValue.EntityId;
-			this.Order = attributeValue.Order;
-			this.Value = attributeValue.Value;
-			this.CreatedDateTime = attributeValue.CreatedDateTime;
-			this.ModifiedDateTime = attributeValue.ModifiedDateTime;
-			this.CreatedByPersonId = attributeValue.CreatedByPersonId;
-			this.ModifiedByPersonId = attributeValue.ModifiedByPersonId;
-			this.Id = attributeValue.Id;
-			this.Guid = attributeValue.Guid;
+			if ( model is AttributeValue )
+			{
+				var attributeValue = (AttributeValue)model;
+				this.IsSystem = attributeValue.IsSystem;
+				this.AttributeId = attributeValue.AttributeId;
+				this.EntityId = attributeValue.EntityId;
+				this.Order = attributeValue.Order;
+				this.Value = attributeValue.Value;
+				this.CreatedDateTime = attributeValue.CreatedDateTime;
+				this.ModifiedDateTime = attributeValue.ModifiedDateTime;
+				this.CreatedByPersonId = attributeValue.CreatedByPersonId;
+				this.ModifiedByPersonId = attributeValue.ModifiedByPersonId;
+				this.Id = attributeValue.Id;
+				this.Guid = attributeValue.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="attributeValue"></param>
-		public override void CopyToModel ( AttributeValue attributeValue )
+		public void CopyToModel ( IModel model )
 		{
-			attributeValue.IsSystem = this.IsSystem;
-			attributeValue.AttributeId = this.AttributeId;
-			attributeValue.EntityId = this.EntityId;
-			attributeValue.Order = this.Order;
-			attributeValue.Value = this.Value;
-			attributeValue.CreatedDateTime = this.CreatedDateTime;
-			attributeValue.ModifiedDateTime = this.ModifiedDateTime;
-			attributeValue.CreatedByPersonId = this.CreatedByPersonId;
-			attributeValue.ModifiedByPersonId = this.ModifiedByPersonId;
-			attributeValue.Id = this.Id;
-			attributeValue.Guid = this.Guid;
+			if ( model is AttributeValue )
+			{
+				var attributeValue = (AttributeValue)model;
+				attributeValue.IsSystem = this.IsSystem;
+				attributeValue.AttributeId = this.AttributeId;
+				attributeValue.EntityId = this.EntityId;
+				attributeValue.Order = this.Order;
+				attributeValue.Value = this.Value;
+				attributeValue.CreatedDateTime = this.CreatedDateTime;
+				attributeValue.ModifiedDateTime = this.ModifiedDateTime;
+				attributeValue.CreatedByPersonId = this.CreatedByPersonId;
+				attributeValue.ModifiedByPersonId = this.ModifiedByPersonId;
+				attributeValue.Id = this.Id;
+				attributeValue.Guid = this.Guid;
+			}
 		}
 	}
 }

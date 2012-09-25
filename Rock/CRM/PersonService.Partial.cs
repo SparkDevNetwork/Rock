@@ -15,7 +15,9 @@ namespace Rock.Crm
 	/// Person POCO Service class
 	/// </summary>
     public partial class PersonService : Service<Person, PersonDto>
-    {
+	{
+		#region Get People
+
 		/// <summary>
 		/// Gets People by Email
 		/// </summary>
@@ -120,7 +122,11 @@ namespace Rock.Crm
                         p.GivenName.StartsWith( firstName.ToLower() ) ) );
         }
 
-        /// <summary>
+		#endregion
+
+		#region Get Person
+
+		/// <summary>
         /// Gets the by encrypted ID.
         /// </summary>
         /// <param name="encryptedID">The encrypted ID.</param>
@@ -184,6 +190,10 @@ namespace Rock.Crm
 
             return GetByEncryptedKey( encryptedKey );
         }
+
+		#endregion
+
+		#region User Values
 
 		/// <summary>
 		/// Saves values for a given person, and key
@@ -285,5 +295,6 @@ namespace Rock.Crm
 			return values;
 		}
 
-    }
+		#endregion
+	}
 }

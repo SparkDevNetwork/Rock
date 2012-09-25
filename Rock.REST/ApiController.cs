@@ -12,12 +12,13 @@ using System.ServiceModel.Channels;
 using System.Web.Http;
 
 using Rock.Data;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
 	public abstract class ApiController<T, D> : ApiController
 		where T : Rock.Data.Model<T>
-		where D : Rock.Data.Dto<T>, new()
+		where D : Rock.Data.IDto, new()
 	{
 		private Service<T, D> _service;
 
@@ -28,13 +29,13 @@ namespace Rock.Rest
 
 		// GET api/<controller>
 		[Queryable]
-		public IQueryable<D> Get()
+		public virtual IQueryable<D> Get()
 		{
 			return _service.QueryableDto();
 		}
 
 		// GET api/<controller>/5
-		public D Get( int id )
+		public virtual D Get( int id )
 		{
 			T model;
 			if ( !_service.TryGet( id, out model ) )
@@ -44,8 +45,9 @@ namespace Rock.Rest
 			return dto;
 		}
 
-		// POST api/<controller>
-		public HttpResponseMessage Post( [FromBody]D value )
+		// POST api/<controller> (insert)
+		[Authenticate]
+		public virtual HttpResponseMessage Post( [FromBody]D value )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -70,8 +72,9 @@ namespace Rock.Rest
 			throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
-		// PUT api/<controller>/5
-		public void Put( int id, [FromBody]D value )
+		// PUT api/<controller>/5  (update)
+		[Authenticate]
+		public virtual void Put( int id, [FromBody]D value )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -94,7 +97,8 @@ namespace Rock.Rest
 		}
 
 		// DELETE api/<controller>/5
-		public void Delete( int id )
+		[Authenticate]
+		public virtual void Delete( int id )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -110,7 +114,7 @@ namespace Rock.Rest
 				throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
-		protected Rock.Cms.User CurrentUser()
+		protected virtual Rock.Cms.User CurrentUser()
 		{
 			var principal = ControllerContext.Request.GetUserPrincipal();
 			if ( principal != null && principal.Identity != null )

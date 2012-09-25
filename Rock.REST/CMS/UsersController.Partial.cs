@@ -31,7 +31,7 @@ namespace Rock.Rest.Cms
 		/// <summary>
 		/// Tests if a username is available
 		/// </summary>
-		/// <param name="blockInstance"></param>
+		/// <param name="username"></param>
 		/// <returns></returns>
 		[HttpGet]
 		public bool Available( string username )

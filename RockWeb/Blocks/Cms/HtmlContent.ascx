@@ -6,7 +6,7 @@
     Sys.Application.add_load(function () {
 
         var modalPopup = $find('<%=mpeContent.BehaviorID%>');
-        modalPopup.add_hidden(modalHidden_<%=BlockInstance.Id %>);
+        modalPopup.add_hidden(modalHidden_<%=CurrentBlock.Id %>);
     
         $('#<%=tbStartDate.ClientID %>').kendoDatePicker({ open:function(e){
             window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
@@ -16,30 +16,30 @@
             window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
         } });
 
-        $('#html-content-version-<%=BlockInstance.Id %>').click(function () {
-            $('#html-content-versions-<%=BlockInstance.Id %>').show();
+        $('#html-content-version-<%=CurrentBlock.Id %>').click(function () {
+            $('#html-content-versions-<%=CurrentBlock.Id %>').show();
             $(this).hide();
-            $('#html-content-edit-<%=BlockInstance.Id %>').hide();
+            $('#html-content-edit-<%=CurrentBlock.Id %>').hide();
             $find('<%=mpeContent.BehaviorID%>')._layout(); 
             return false;
         });
 
-        $('#html-content-versions-cancel-<%=BlockInstance.Id %>').click(function () {
-            $('#html-content-edit-<%=BlockInstance.Id %>').show();
-            $('#html-content-version-<%=BlockInstance.Id %>').show();
-            $('#html-content-versions-<%=BlockInstance.Id %>').hide();
+        $('#html-content-versions-cancel-<%=CurrentBlock.Id %>').click(function () {
+            $('#html-content-edit-<%=CurrentBlock.Id %>').show();
+            $('#html-content-version-<%=CurrentBlock.Id %>').show();
+            $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
             $find('<%=mpeContent.BehaviorID%>')._layout(); 
             return false;
         });
 
         if ($('#<%=hfAction.ClientID %>').val() == 'Edit')
         {
-            $('#html-content-edit-<%=BlockInstance.Id %> textarea.html-content-editor').ckeditor(function() {
+            $('#html-content-edit-<%=CurrentBlock.Id %> textarea.html-content-editor').ckeditor(function() {
                 $find('<%=mpeContent.BehaviorID%>').show(); 
             }, ckoptionsAdv).end();
         }
 
-        $('a.html-content-show-version-<%=BlockInstance.Id %>').click(function () {
+        $('a.html-content-show-version-<%=CurrentBlock.Id %>').click(function () {
 
             if (CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].checkDirty() == false ||
                 confirm('Loading a previous version will cause any changes you\'ve made to the existing text to be lost.  Are you sure you want to continue?'))
@@ -53,7 +53,7 @@
 
                         htmlContent = getData;
                         
-                        $('#html-content-version-<%=BlockInstance.Id %>').text('Version ' + htmlContent.Version);
+                        $('#html-content-version-<%=CurrentBlock.Id %>').text('Version ' + htmlContent.Version);
                         $('#<%=hfVersion.ClientID %>').val(htmlContent.Version);
                         $('#<%=tbStartDate.ClientID %>').val(htmlContent.StartDateTime);
                         $('#<%=tbExpireDate.ClientID %>').val(htmlContent.ExpireDateTime);
@@ -61,9 +61,9 @@
 
                         CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].setData(htmlContent.Content, function() {
                             CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].resetDirty();
-                            $('#html-content-edit-<%=BlockInstance.Id %>').show();
-                            $('#html-content-version-<%=BlockInstance.Id %>').show();
-                            $('#html-content-versions-<%=BlockInstance.Id %>').hide();
+                            $('#html-content-edit-<%=CurrentBlock.Id %>').show();
+                            $('#html-content-version-<%=CurrentBlock.Id %>').show();
+                            $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
                             $find('<%=mpeContent.BehaviorID%>')._layout(); 
                         });
 
@@ -77,11 +77,11 @@
 
     });
 
-    function modalHidden_<%=BlockInstance.Id %>(){
+    function modalHidden_<%=CurrentBlock.Id %>(){
         CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].destroy();
     }
 
-    function saveHtmlContent_<%=BlockInstance.Id %>(){
+    function saveHtmlContent_<%=CurrentBlock.Id %>(){
         $('#<%=btnSave.ClientID %>').click();
     }
 
@@ -99,17 +99,17 @@
         <div class="modal-header">
             <a id="aClose" runat="server" href="#" class="close">&times;</a>
             <h3>HTML Content</h3>
-            <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=BlockInstance.Id %>" 
+            <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=CurrentBlock.Id %>" 
                 class="html-content-version-label">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a></asp:PlaceHolder>
         </div>
 
-        <div id="html-content-versions-<%=BlockInstance.Id %>" style="display:none">
+        <div id="html-content-versions-<%=CurrentBlock.Id %>" style="display:none">
             <div class="modal-body">
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
                     <Columns>
                         <asp:TemplateField SortExpression="Version" HeaderText="Version">
                             <ItemTemplate>
-                                <a html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=BlockInstance.Id %>" href="#">Version <%# Eval("Version") %></a>
+                                <a html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=CurrentBlock.Id %>" href="#">Version <%# Eval("Version") %></a>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="ModifiedDateTime" HeaderText="Modified" SortExpression="ModifiedDateTime" />
@@ -122,11 +122,11 @@
                 </Rock:Grid>
             </div>
             <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=BlockInstance.Id %>" class="btn secondary">Cancel</button>
+                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn secondary">Cancel</button>
             </div>
         </div>
 
-        <div id="html-content-edit-<%=BlockInstance.Id %>">
+        <div id="html-content-edit-<%=CurrentBlock.Id %>">
             <asp:panel ID="pnlVersioningHeader" runat="server" class="html-content-edit-header">
                 <asp:HiddenField ID="hfVersion" runat="server" />
                 Start: <asp:TextBox ID="tbStartDate" runat="server"></asp:TextBox>

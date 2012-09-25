@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PhoneNumberService"/> class
 		/// </summary>
-		public PhoneNumberService() : base()
+		public PhoneNumberService()
+			: base()
 		{
 		}
 
@@ -48,13 +49,24 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PhoneNumberDto> QueryableDto()
+		public override IQueryable<PhoneNumberDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PhoneNumberDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
+		{
+			return items.Select( m => new PhoneNumberDto()
 				{
 					IsSystem = m.IsSystem,
 					PersonId = m.PersonId,
 					Number = m.Number,
+					NumberTypeId = m.NumberTypeId,
+					IsUnlisted = m.IsUnlisted,
 					Description = m.Description,
 					CreatedDateTime = m.CreatedDateTime,
 					ModifiedDateTime = m.ModifiedDateTime,

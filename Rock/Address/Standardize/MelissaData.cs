@@ -23,25 +23,25 @@ namespace Rock.Address.Standardize
         /// <summary>
         /// Standardizes the address
         /// </summary>
-        /// <param name="address">The address.</param>
+		/// <param name="location">The location.</param>
         /// <param name="result">The AddressCheck result code</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Standardize( Rock.Crm.Address address, out string result )
+        public override bool Standardize( Rock.Crm.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var requestArray = new RequestArray();
                 requestArray.CustomerID = AttributeValue("CustomerId");
                 requestArray.OptAddressParsed = "True";
 
                 RequestArrayRecord requestAddress = new RequestArrayRecord();
-                requestAddress.AddressLine1 = address.Street1;
-                requestAddress.AddressLine2 = address.Street2;
-                requestAddress.City = address.City;
-                requestAddress.State = address.State;
-                requestAddress.Zip = address.Zip;
+                requestAddress.AddressLine1 = location.Street1;
+                requestAddress.AddressLine2 = location.Street2;
+                requestAddress.City = location.City;
+                requestAddress.State = location.State;
+                requestAddress.Zip = location.Zip;
                 requestAddress.RecordID = "1";
 
                 requestArray.Record = new RequestArrayRecord[1];
@@ -57,14 +57,14 @@ namespace Rock.Address.Standardize
                     if ( responseArray.Record[0].Results.Contains( "AS01" ) )
                     {
                         ResponseArrayRecordAddress responseAddress = responseArray.Record[0].Address;
-                        address.Street1 = responseAddress.Address1;
-                        address.Street2 = responseAddress.Address2;
-                        address.City = responseAddress.City.Name;
-                        address.State = responseAddress.State.Abbreviation;
-                        address.Zip = responseAddress.Zip + '-' + responseAddress.Plus4;
-                        if ( address.Street2.Trim() == string.Empty &&
+                        location.Street1 = responseAddress.Address1;
+                        location.Street2 = responseAddress.Address2;
+                        location.City = responseAddress.City.Name;
+                        location.State = responseAddress.State.Abbreviation;
+                        location.Zip = responseAddress.Zip + '-' + responseAddress.Plus4;
+                        if ( location.Street2.Trim() == string.Empty &&
                             responseAddress.Suite.Trim() != string.Empty )
-                            address.Street2 = responseAddress.Suite;
+                            location.Street2 = responseAddress.Suite;
 
                         return true;
                     }

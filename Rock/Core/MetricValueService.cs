@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MetricValueService"/> class
 		/// </summary>
-		public MetricValueService() : base()
+		public MetricValueService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<MetricValueDto> QueryableDto()
+		public override IQueryable<MetricValueDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new MetricValueDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<MetricValueDto> QueryableDto( IQueryable<MetricValue> items )
+		{
+			return items.Select( m => new MetricValueDto()
 				{
 					IsSystem = m.IsSystem,
 					MetricId = m.MetricId,

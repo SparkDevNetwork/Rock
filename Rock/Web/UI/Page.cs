@@ -49,20 +49,20 @@ namespace Rock.Web.UI
         /// The current Rock page instance being requested.  This value is set 
         /// by the RockRouteHandler immediately after instantiating the page
         /// </summary>
-        public Rock.Web.Cache.Page PageInstance 
+        public Rock.Web.Cache.Page CurrentPage 
         {
             get 
             { 
-                return _pageInstance; 
+                return _currentPage; 
             }
             set
             {
-                _pageInstance = value;
-                HttpContext.Current.Items.Add( "Rock:SiteId", _pageInstance.Site.Id );
-                HttpContext.Current.Items.Add( "Rock:PageId", _pageInstance.Id);
+                _currentPage = value;
+                HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Site.Id );
+                HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id);
             }
         }
-        private Rock.Web.Cache.Page _pageInstance = null;
+        private Rock.Web.Cache.Page _currentPage = null;
 
         /// <summary>
         /// The Page Title controls on the page.
@@ -178,7 +178,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return ResolveUrl( string.Format( "~/Themes/{0}", PageInstance.Site.Theme ) );
+                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Site.Theme ) );
             }
         }
 
@@ -282,7 +282,7 @@ namespace Rock.Web.UI
                 FormsAuthentication.SignOut();
                 CurrentPerson = null;
                 CurrentUser = null;
-                Response.Redirect( BuildUrl( new PageReference( PageInstance.Id, PageInstance.RouteId ), null ), true );
+                Response.Redirect( BuildUrl( new PageReference( CurrentPage.Id, CurrentPage.RouteId ), null ), true );
             }
 
             // If the impersonated query key was included then set the current person
@@ -331,10 +331,10 @@ namespace Rock.Web.UI
             }
 
             // If a PageInstance exists
-            if ( PageInstance != null )
+            if ( CurrentPage != null )
             {
                 // check if page should have been loaded via ssl
-                if ( !Request.IsSecureConnection && PageInstance.RequiresEncryption )
+                if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
                     Response.Redirect( redirectUrl ); 
@@ -342,7 +342,7 @@ namespace Rock.Web.UI
                 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
-                if ( !PageInstance.IsAuthorized( "View", CurrentPerson ) )
+                if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                         FormsAuthentication.RedirectToLoginPage();
@@ -350,14 +350,14 @@ namespace Rock.Web.UI
                 else
                 {
                     // Set current models (context)
-                    PageInstance.Context = new Dictionary<string, Data.KeyModel>();
+                    CurrentPage.Context = new Dictionary<string, Data.KeyModel>();
                     try 
                     {
-                        foreach ( var pageContext in PageInstance.PageContexts )
+                        foreach ( var pageContext in CurrentPage.PageContexts )
                         {
                             int contextId = 0;
                             if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
-                                PageInstance.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                                CurrentPage.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
                         }
 
                         char[] delim = new char[1] { ',' };
@@ -366,25 +366,25 @@ namespace Rock.Web.UI
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
                             string[] parts = contextItem.Split('|');
                             if (parts.Length == 2)
-                                PageInstance.Context.Add(parts[0], new Data.KeyModel(parts[1]));
+                                CurrentPage.Context.Add(parts[0], new Data.KeyModel(parts[1]));
                         }
 
                     }
                     catch {}
 
                     // set page title
-                    if ( PageInstance.Title != null && PageInstance.Title != "" )
-                        SetTitle( PageInstance.Title );
+                    if ( CurrentPage.Title != null && CurrentPage.Title != "" )
+                        SetTitle( CurrentPage.Title );
                     else
-                        SetTitle( PageInstance.Name );
+                        SetTitle( CurrentPage.Name );
 
                     // set viewstate on/off
-                    this.EnableViewState = PageInstance.EnableViewstate;
+                    this.EnableViewState = CurrentPage.EnableViewState;
 
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                    bool canConfigPage = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -394,11 +394,11 @@ namespace Rock.Web.UI
         baseUrl:'{2}' 
     }};
 ",
-                        PageInstance.Id, PageInstance.Layout, AppPath );
+                        CurrentPage.Id, CurrentPage.Layout, AppPath );
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
-                    if ( PageInstance.IncludeAdminFooter )
+                    if ( CurrentPage.IncludeAdminFooter )
                     {
                         AddPopupControls();
                         if ( canConfigPage )
@@ -406,12 +406,12 @@ namespace Rock.Web.UI
                     }
 
                     // Load the blocks and insert them into page zones
-                    foreach ( Rock.Web.Cache.BlockInstance blockInstance in PageInstance.BlockInstances )
+                    foreach ( Rock.Web.Cache.Block block in CurrentPage.Blocks )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = blockInstance.IsAuthorized( "Configure", CurrentPerson );
-                        bool canEdit = blockInstance.IsAuthorized( "Edit", CurrentPerson );
-                        bool canView = blockInstance.IsAuthorized( "View", CurrentPerson );
+                        bool canConfig = block.IsAuthorized( "Configure", CurrentPerson );
+                        bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
+                        bool canView = block.IsAuthorized( "View", CurrentPerson );
 
                         // Make sure user has access to view block instance
                         if ( canConfig || canEdit || canView )
@@ -419,17 +419,17 @@ namespace Rock.Web.UI
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
-                            blockWrapper.ID = string.Format("bid_{0}", blockInstance.Id);
-                            blockWrapper.Attributes.Add( "zoneloc", blockInstance.BlockInstanceLocation.ToString() );
+                            blockWrapper.ID = string.Format("bid_{0}", block.Id);
+                            blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
-                            FindZone( blockInstance.Zone ).Controls.Add( blockWrapper );
+                            FindZone( block.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
                                 ( canConfig || canEdit ? "can-configure " : "" ) +
-                                HtmlHelper.CssClassFormat( blockInstance.Block.Name ) );
+                                HtmlHelper.CssClassFormat( block.BlockType.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
-                            string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", blockInstance.Id );
-                            if ( blockInstance.OutputCacheDuration > 0 && cache.Contains( blockCacheKey ) )
+                            string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", block.Id );
+                            if ( block.OutputCacheDuration > 0 && cache.Contains( blockCacheKey ) )
                             {
                                 // If the current block exists in our custom output cache, add the cached output instead of adding the control
                                 blockWrapper.Controls.Add( new LiteralControl( cache[blockCacheKey] as string ) );
@@ -441,7 +441,7 @@ namespace Rock.Web.UI
 
                                 try
                                 {
-                                    control = TemplateControl.LoadControl( blockInstance.Block.Path );
+                                    control = TemplateControl.LoadControl( block.BlockType.Path );
                                     control.ClientIDMode = ClientIDMode.AutoID;
                                 }
                                 catch ( Exception ex )
@@ -452,37 +452,37 @@ namespace Rock.Web.UI
                                     control = div;
                                 }
 
-                                Block block = null;
+                                Block blockControl = null;
 
                                 // Check to see if the control was a PartialCachingControl or not
                                 if ( control is Block )
-                                    block = control as Block;
+                                    blockControl = control as Block;
                                 else
                                 {
                                     if ( control is PartialCachingControl && ( ( PartialCachingControl )control ).CachedControl != null )
-                                        block = ( Block )( ( PartialCachingControl )control ).CachedControl;
+                                        blockControl = ( Block )( ( PartialCachingControl )control ).CachedControl;
                                 }
 
                                 // If the current control is a block, set it's properties
-                                if ( block != null )
+                                if ( blockControl != null )
                                 {
-                                    block.PageInstance = PageInstance;
-                                    block.BlockInstance = blockInstance;
+                                    blockControl.CurrentPage = CurrentPage;
+                                    blockControl.CurrentBlock = block;
 
-                                    block.ReadAdditionalActions();
+                                    blockControl.ReadAdditionalActions();
 
                                     // If the block's AttributeProperty values have not yet been verified verify them.
-                                    // (This provides a mechanism for block developers to define the needed blockinstance 
+                                    // (This provides a mechanism for block developers to define the needed block
                                     //  attributes in code and have them automatically added to the database)
-                                    if ( !blockInstance.Block.IsInstancePropertiesVerified )
+                                    if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
-                                        block.CreateAttributes();
-                                        blockInstance.Block.IsInstancePropertiesVerified = true;
+                                        blockControl.CreateAttributes();
+                                        block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized
-                                    if (PageInstance.IncludeAdminFooter)
-                                        AddBlockConfig(blockWrapper, block, blockInstance, canConfig, canEdit);
+                                    if (CurrentPage.IncludeAdminFooter)
+                                        AddBlockConfig(blockWrapper, blockControl, block, canConfig, canEdit);
                                 }
 
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
@@ -496,28 +496,28 @@ namespace Rock.Web.UI
                     }
 
                     // Add favicon and apple touch icons to page
-                    if ( PageInstance.Site.FaviconUrl != null )
+                    if ( CurrentPage.Site.FaviconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.FaviconUrl) );
+                        faviconLink.Attributes.Add( "href", ResolveUrl("~/" + CurrentPage.Site.FaviconUrl) );
 
-                        PageInstance.AddHtmlLink( this.Page, faviconLink );
+                        CurrentPage.AddHtmlLink( this.Page, faviconLink );
                     }
 
-                    if ( PageInstance.Site.AppleTouchUrl != null )
+                    if ( CurrentPage.Site.AppleTouchIconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl("~/" + PageInstance.Site.AppleTouchUrl) );
+						touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.AppleTouchIconUrl ) );
 
-                        PageInstance.AddHtmlLink( this.Page, touchLink );
+                        CurrentPage.AddHtmlLink( this.Page, touchLink );
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( PageInstance.IncludeAdminFooter && canConfigPage)
+                    if ( CurrentPage.IncludeAdminFooter && canConfigPage)
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -546,7 +546,7 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
                         aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", PageInstance.Id ) ) );
+                        aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) );
 						aAttributes.Attributes.Add( "Title", "Page Properties" );
 						HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
@@ -557,7 +557,7 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
                         aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", PageInstance.Id ) ) );
+                        aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) );
 						aChildPages.Attributes.Add( "Title", "Child Pages" );
 						HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
@@ -579,7 +579,7 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
-                            Security.Authorization.EncodeEntityTypeName( PageInstance.GetType() ), PageInstance.Id ) ) );
+                            Security.Authorization.EncodeEntityTypeName( CurrentPage.GetType() ), CurrentPage.Id ) ) );
 						aPageSecurity.Attributes.Add( "Title", "Page Security" );
 						HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
@@ -601,10 +601,10 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache 
                     // so it should always exist
-                    if ( PageInstance.OutputCacheDuration > 0 )
+                    if ( CurrentPage.OutputCacheDuration > 0 )
                     {
                         Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( DateTime.Now.AddSeconds( PageInstance.OutputCacheDuration ) );
+                        Response.Cache.SetExpires( DateTime.Now.AddSeconds( CurrentPage.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
                 }
@@ -626,8 +626,8 @@ namespace Rock.Web.UI
             {
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
-                transaction.PageId = PageInstance.Id;
-                transaction.SiteId = PageInstance.Site.Id;
+                transaction.PageId = CurrentPage.Id;
+                transaction.SiteId = CurrentPage.Site.Id;
                 if ( CurrentPersonId != null )
                     transaction.PersonId = (int)CurrentPersonId;
                 transaction.IPAddress = Request.UserHostAddress;
@@ -679,16 +679,16 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string AttributeValue( string key )
         {
-            if ( PageInstance == null )
+            if ( CurrentPage == null )
                 return string.Empty;
 
-            if ( PageInstance.AttributeValues == null )
+            if ( CurrentPage.AttributeValues == null )
                 return string.Empty;
 
-            if ( !PageInstance.AttributeValues.ContainsKey( key ) )
+            if ( !CurrentPage.AttributeValues.ContainsKey( key ) )
                 return string.Empty;
 
-            return string.Join( "|", PageInstance.AttributeValues[key].Value );
+            return string.Join( "|", CurrentPage.AttributeValues[key].Value );
         }
 
         #endregion
@@ -751,7 +751,7 @@ namespace Rock.Web.UI
                 zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", PageInstance.Id, control.ID ) ) );
+                aBlockConfig.Attributes.Add( "href", ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
@@ -769,8 +769,8 @@ namespace Rock.Web.UI
         }
 
         // Adds the configuration html elements for editing a block
-        private void AddBlockConfig( HtmlGenericContainer blockWrapper, Block block, 
-            Rock.Web.Cache.BlockInstance blockInstance, bool canConfig, bool canEdit )
+        private void AddBlockConfig( HtmlGenericContainer blockWrapper, Block blockControl, 
+            Rock.Web.Cache.Block block, bool canConfig, bool canEdit )
         {
             if ( canConfig || canEdit )
             {
@@ -781,7 +781,7 @@ namespace Rock.Web.UI
                 blockWrapper.Controls.Add( blockConfig );
 
                 HtmlGenericControl blockConfigLink = new HtmlGenericControl( "a" );
-                blockConfigLink.Attributes.Add( "class", "blockinstance-config" );
+                //blockConfigLink.Attributes.Add( "class", "blockinstance-config" );
                 blockConfigLink.Attributes.Add( "href", "#" );
                 HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                 iBlockConfig.Attributes.Add( "class", "icon-circle-arrow-right" );
@@ -794,13 +794,13 @@ namespace Rock.Web.UI
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
-                if (string.IsNullOrWhiteSpace(blockInstance.Name))
-                    blockConfigTitle.InnerText = blockInstance.Block.Name;
+                if (string.IsNullOrWhiteSpace(block.Name))
+                    blockConfigTitle.InnerText = block.BlockType.Name;
                 else
-                    blockConfigTitle.InnerText = blockInstance.Name;
+                    blockConfigTitle.InnerText = block.Name;
                 blockConfigBar.Controls.Add( blockConfigTitle );
 
-                foreach ( Control configControl in block.GetConfigurationControls( canConfig, canEdit ) )
+                foreach ( Control configControl in blockControl.GetConfigurationControls( canConfig, canEdit ) )
                 {
                     configControl.ClientIDMode = ClientIDMode.AutoID;
                     blockConfigBar.Controls.Add( configControl );
@@ -840,7 +840,7 @@ namespace Rock.Web.UI
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
-            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", PageInstance.Layout ) ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout ) ) );
             rblLocation.LabelText = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }
@@ -1304,13 +1304,13 @@ namespace Rock.Web.UI
     /// <summary>
     /// Event Argument used when block instance properties are updated
     /// </summary>
-    internal class BlockInstanceAttributesUpdatedEventArgs : EventArgs
+    internal class BlockAttributesUpdatedEventArgs : EventArgs
     {
-        public int BlockInstanceID { get; private set; }
+        public int BlockID { get; private set; }
 
-        public BlockInstanceAttributesUpdatedEventArgs( int blockInstanceID )
+        public BlockAttributesUpdatedEventArgs( int blockId )
         {
-            BlockInstanceID = blockInstanceID;
+            BlockID = blockId;
         }
     }
 

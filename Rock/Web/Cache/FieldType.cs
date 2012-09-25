@@ -14,32 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class FieldType
+    public class FieldType : Rock.Core.FieldTypeDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new FieldType object
-        /// </summary>
-        private FieldType() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets the path.
-        /// </summary>
-        public string Path { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
+        private FieldType() : base() { }
+		private FieldType( Rock.Core.FieldType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the field 
@@ -92,13 +70,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static FieldType Read( Rock.Core.FieldType fieldTypeModel )
         {
-            FieldType fieldType = FieldType.CopyModel( fieldTypeModel );
-
             string cacheKey = FieldType.CacheKey( fieldTypeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 
-            return fieldType;
+            ObjectCache cache = MemoryCache.Default;
+            FieldType fieldType = cache[cacheKey] as FieldType;
+
+			if ( fieldType != null )
+				return fieldType;
+			else
+			{
+				fieldType = FieldType.CopyModel( fieldTypeModel );
+				cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
+
+				return fieldType;
+			}
         }
 
         /// <summary>
@@ -108,11 +93,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static FieldType CopyModel( Rock.Core.FieldType fieldTypeModel )
         {
-            FieldType fieldType = new FieldType();
-            fieldType.Id = fieldTypeModel.Id;
-            fieldType.Name = fieldTypeModel.Name;
-            fieldType.Description = fieldTypeModel.Description;
-            fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldTypeModel.Assembly, fieldTypeModel.Class );
+			FieldType fieldType = new FieldType( fieldTypeModel );
+			fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );
 
             return fieldType;
         }
