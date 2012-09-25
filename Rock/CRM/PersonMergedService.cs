@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PersonMergedService"/> class
 		/// </summary>
-		public PersonMergedService() : base()
+		public PersonMergedService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonMergedDto> QueryableDto()
+		public override IQueryable<PersonMergedDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PersonMergedDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PersonMergedDto> QueryableDto( IQueryable<PersonMerged> items )
+		{
+			return items.Select( m => new PersonMergedDto()
 				{
 					CurrentId = m.CurrentId,
 					CurrentGuid = m.CurrentGuid,

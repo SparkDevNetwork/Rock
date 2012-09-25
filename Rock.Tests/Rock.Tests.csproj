@@ -54,8 +54,8 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cms\BlockInstanceTests.cs" />
     <Compile Include="Cms\BlockTests.cs" />
+    <Compile Include="Cms\BlockTypeTests.cs" />
     <Compile Include="Cms\HtmlContentTests.cs" />
     <Compile Include="Cms\PageRouteTests.cs" />
     <Compile Include="Cms\PageTests.cs" />

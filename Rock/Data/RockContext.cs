@@ -22,20 +22,20 @@ namespace Rock.Data
         public DbSet<Rock.Cms.Auth> Auths { get; set; }
 
         /// <summary>
+        /// Gets or sets the Block Types.
+        /// </summary>
+        /// <value>
+        /// the Block Types.
+        /// </value>
+        public DbSet<Rock.Cms.BlockType> BlockTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
         /// the Blocks.
         /// </value>
         public DbSet<Rock.Cms.Block> Blocks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Block Instances.
-        /// </summary>
-        /// <value>
-        /// the Block Instances.
-        /// </value>
-        public DbSet<Rock.Cms.BlockInstance> BlockInstances { get; set; }
 
         /// <summary>
         /// Gets or sets the Files.
@@ -157,6 +157,22 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Defined Types.
+		/// </summary>
+		/// <value>
+		/// the Defined Types.
+		/// </value>
+		public DbSet<Rock.Core.Metric> Metrics { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Defined Values.
+		/// </summary>
+		/// <value>
+		/// the Defined Values.
+		/// </value>
+		public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+
         /// <summary>
         /// Gets or sets the Service Logs.
         /// </summary>
@@ -165,13 +181,29 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Addresses.
+		/// <summary>
+		/// Gets or sets the Tags.
+		/// </summary>
+		/// <value>
+		/// the Tags.
+		/// </value>
+		public DbSet<Rock.Core.Tag> Tags { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Tagged Items.
+		/// </summary>
+		/// <value>
+		/// the Tagged Items.
+		/// </value>
+		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+
+		/// <summary>
+        /// Gets or sets the Location.
         /// </summary>
         /// <value>
-        /// the Addresses.
+        /// the Location.
         /// </value>
-        public DbSet<Rock.Crm.Address> Addresses { get; set; }
+        public DbSet<Rock.Crm.Location> Locations { get; set; }
 
         /// <summary>
         /// Gets or sets the Campuses.
@@ -245,7 +277,15 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
 
-        /// <summary>
+		/// <summary>
+		/// Gets or sets the Group Locations.
+		/// </summary>
+		/// <value>
+		/// the Group Locations.
+		/// </value>
+		public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
+
+		/// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
@@ -327,8 +367,8 @@ namespace Rock.Data
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
             modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.BlockInstanceConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );
@@ -344,11 +384,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.AddressConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
@@ -362,7 +404,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Groups.GroupLocationConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
 		}
     }

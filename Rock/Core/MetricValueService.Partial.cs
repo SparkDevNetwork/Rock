@@ -21,7 +21,7 @@ namespace Rock.Core
 		/// </summary>
 		/// <param name="metricId">metricId.</param>
 		/// <returns>An enumerable list of MetricValue objects.</returns>
-	    public IEnumerable<MetricValue> MetricId( int? metricId )
+		public IEnumerable<Rock.Core.MetricValue> GetByMetricId( int? metricId )
         {
 			return Repository.Find( t => ( t.MetricId == metricId || ( metricId == null && t.MetricId == null ) ) ).OrderBy( t => t.Order );
         }

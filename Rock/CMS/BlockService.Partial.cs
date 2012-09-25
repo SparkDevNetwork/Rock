@@ -5,7 +5,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 using Rock.Data;
@@ -18,77 +17,65 @@ namespace Rock.Cms
     public partial class BlockService : Service<Block, BlockDto>
     {
 		/// <summary>
-		/// Gets Block by Guid
+		/// Gets Blocks by Block Type Id
 		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Block object.</returns>
-		public Block GetByGuid( Guid guid )
-		{
-			return Repository.FirstOrDefault( t => t.Guid == guid );
-		}
-
-		/// <summary>
-		/// Gets Blocks by Name
-		/// </summary>
-		/// <param name="name">Name.</param>
+		/// <param name="blockTypeId">Block Type Id.</param>
 		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByName( string name )
+	    public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
         {
-            return Repository.Find( t => t.Name == name );
+            return Repository.Find( t => t.BlockTypeId == blockTypeId ).OrderBy( t => t.Order );
         }
 		
 		/// <summary>
-		/// Gets Blocks by Path
+		/// Gets Block Instances by Layout
 		/// </summary>
-		/// <param name="path">Path.</param>
+		/// <param name="layout">Layout.</param>
 		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByPath( string path )
+	    public IEnumerable<Block> GetByLayout( string layout )
         {
-            return Repository.Find( t => t.Path == path );
+            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
+        }
+		
+		/// <summary>
+		/// Gets Block Instances by Layout And Page Id And Zone
+		/// </summary>
+		/// <param name="layout">Layout.</param>
+		/// <param name="pageId">Page Id.</param>
+		/// <param name="zone">Zone.</param>
+		/// <returns>An enumerable list of Block objects.</returns>
+	    public IEnumerable<Block> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
+        {
+            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
+        }
+		
+		/// <summary>
+		/// Gets Block Instances by Page Id
+		/// </summary>
+		/// <param name="pageId">Page Id.</param>
+		/// <returns>An enumerable list of Block objects.</returns>
+	    public IEnumerable<Block> GetByPageId( int? pageId )
+        {
+            return Repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
-        /// Gets a list of Blocks on the filesystem that have not yet been registered in the service.
+        /// Moves the specified block to another zone.
         /// </summary>
-        /// <param name="physWebAppPath">the physical path of the web application</param>
-        /// <returns>a collection of <see cref="Block">Blocks</see> that are not yet registered</returns>
-        public IEnumerable<Block> GetUnregisteredBlocks( string physWebAppPath )
+        /// <param name="block">The block.</param>
+        /// <returns></returns>
+        public int Move( Block block )
         {
-            List<string> list = new List<string>();
+            Block existingBlock = Get( block.Id );
 
-            // Find all the blocks in the Blocks folder...
-            FindAllBlocksInPath( physWebAppPath, list, "Blocks" );
+            int? order = Queryable().
+                            Where( b => b.Layout == block.Layout &&
+                                b.PageId == block.PageId &&
+                                b.Zone == block.Zone ).
+                            Select( b => ( int? )b.Order ).Max();
 
-            // Now do the exact same thing for the Plugins folder...
-            FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
+            block.Order = order.HasValue ? order.Value + 1 : 0;
 
-            // Now remove from the list any that are already registered (via the path)
-            var registered = from r in Repository.GetAll() select r.Path;
-            return ( from u in list.Except( registered, StringComparer.CurrentCultureIgnoreCase ) select new Block { Path = u, Guid = Guid.NewGuid() } );
-        }
-
-        private static void FindAllBlocksInPath( string physWebAppPath, List<string> list, string folder )
-        {
-            // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
-            string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
-            
-			// Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
-            string virtualPath = string.Format( "~/{0}/", folder );
-
-            // search for all blocks under the physical path 
-            DirectoryInfo di = new DirectoryInfo( physicalPath );
-            if ( di.Exists )
-            {
-                var allBlockNames = di.GetFiles( "*.ascx", SearchOption.AllDirectories );
-                string fileName = string.Empty;
-
-                // Convert them to virtual file/path: ~/<folder>/foo/bar.ascx
-                for ( int i = 0; i < allBlockNames.Length; i++ )
-                {
-                    fileName = allBlockNames[i].FullName.Replace( physicalPath, virtualPath );
-                    list.Add( fileName.Replace( @"\", "/" ) );
-                }
-            }
+            return block.Order;
         }
     }
 }

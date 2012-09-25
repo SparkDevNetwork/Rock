@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
 		/// </summary>
-		public EmailTemplateService() : base()
+		public EmailTemplateService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<EmailTemplateDto> QueryableDto()
+		public override IQueryable<EmailTemplateDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new EmailTemplateDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
+		{
+			return items.Select( m => new EmailTemplateDto()
 				{
 					IsSystem = m.IsSystem,
 					PersonId = m.PersonId,

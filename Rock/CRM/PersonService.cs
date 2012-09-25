@@ -25,7 +25,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PersonService"/> class
 		/// </summary>
-		public PersonService() : base()
+		public PersonService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Crm
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonDto> QueryableDto()
+		public override IQueryable<PersonDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new PersonDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
+		{
+			return items.Select( m => new PersonDto()
 				{
 					IsSystem = m.IsSystem,
 					RecordTypeId = m.RecordTypeId,

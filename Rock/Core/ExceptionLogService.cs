@@ -25,7 +25,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ExceptionLogService"/> class
 		/// </summary>
-		public ExceptionLogService() : base()
+		public ExceptionLogService()
+			: base()
 		{
 		}
 
@@ -48,9 +49,18 @@ namespace Rock.Core
 		/// Query DTO objects
 		/// </summary>
 		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<ExceptionLogDto> QueryableDto()
+		public override IQueryable<ExceptionLogDto> QueryableDto( )
 		{
-			return this.Queryable().Select( m => new ExceptionLogDto()
+			return QueryableDto( this.Queryable() );
+		}
+
+		/// <summary>
+		/// Query DTO objects
+		/// </summary>
+		/// <returns>A queryable list of DTO objects</returns>
+		public IQueryable<ExceptionLogDto> QueryableDto( IQueryable<ExceptionLog> items )
+		{
+			return items.Select( m => new ExceptionLogDto()
 				{
 					ParentId = m.ParentId,
 					SiteId = m.SiteId,

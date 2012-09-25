@@ -109,9 +109,9 @@
     content: "\f044";
 }
 
-.grid-icon-cell.tick a:before
+.grid-icon-cell.edit-value a:before
 {
-    content: "\f00c";
+    content: "\f022";
 }
 
 .grid-icon-cell.security a:before
@@ -158,7 +158,6 @@
 	float: right;
 	overflow: hidden;
     display: block;
-    height: 16px;
     width: 16px;
     background-repeat: no-repeat;
     margin-left: 4px;

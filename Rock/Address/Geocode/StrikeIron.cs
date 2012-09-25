@@ -24,14 +24,14 @@ namespace Rock.Address.Geocode
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+		/// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Geocode( Rock.Crm.Address address, out string result )
+        public override bool Geocode( Rock.Crm.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
                 registeredUser.UserID = AttributeValue("UserID");
@@ -45,12 +45,12 @@ namespace Rock.Address.Geocode
                 SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
-                    address.Street1,
-                    address.Street2,
+                    location.Street1,
+                    location.Street2,
                     string.Format("{0} {1} {2}", 
-                        address.City,
-                        address.State,
-                        address.Zip),
+                        location.City,
+                        location.State,
+                        location.Zip),
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
@@ -66,8 +66,8 @@ namespace Rock.Address.Geocode
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.Latitude = usAddress.GeoCode.Latitude;
-                            address.Longitude = usAddress.GeoCode.Longitude;
+                            location.Latitude = usAddress.GeoCode.Latitude;
+                            location.Longitude = usAddress.GeoCode.Longitude;
 
                             return true;
                         }

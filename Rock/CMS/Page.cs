@@ -258,12 +258,12 @@ namespace Rock.Cms
 		public override string AuthEntity { get { return "Cms.Page"; } }
         
 		/// <summary>
-        /// Gets or sets the Block Instances.
+        /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
-        /// Collection of Block Instances.
+        /// Collection of Blocks.
         /// </value>
-		public virtual ICollection<BlockInstance> BlockInstances { get; set; }
+		public virtual ICollection<Block> Blocks { get; set; }
         
 		/// <summary>
         /// Gets or sets the Pages.
@@ -377,7 +377,7 @@ namespace Rock.Cms
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
-            MapBlockInstances( page, exportPage );
+            MapBlocks( page, exportPage );
             MapPageRoutes( page, exportPage );
 
             if ( page.Pages == null )
@@ -396,22 +396,22 @@ namespace Rock.Cms
         }
 
         /// <summary>
-        /// Maps the block instances to object graph for export.
+        /// Maps the blocks to object graph for export.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
-        private static void MapBlockInstances( Page page, dynamic exportPage )
+        private static void MapBlocks( Page page, dynamic exportPage )
         {
-            if ( page.BlockInstances == null )
+            if ( page.Blocks == null )
             {
                 return;
             }
 
-            exportPage.BlockInstances = new List<dynamic>();
+            exportPage.Blocks = new List<dynamic>();
 
-            foreach ( var blockInstance in page.BlockInstances )
+            foreach ( var block in page.Blocks )
             {
-                exportPage.BlockInstances.Add( blockInstance.ExportObject() );
+                exportPage.Blocks.Add( block.ExportObject() );
             }
         }
 

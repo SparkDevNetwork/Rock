@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web.UI;
 
-using Rock.Field;
 
 namespace Rock.Web.Cache
 {
@@ -22,87 +21,10 @@ namespace Rock.Web.Cache
     /// property of this metric object.
     /// </summary>
     [Serializable]
-    public class Metric
+    public class Metric : Rock.Core.MetricDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new Metric object
-        /// </summary>
-        private Metric() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the Type.
-		/// </summary>
-		public bool Type { get; set; }
-
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-        public string Category 
-        { 
-            get
-            {
-                return string.IsNullOrEmpty( category ) ? "Metrics" : category;
-            }
-
-            private set
-            {
-                if ( value == "Metrics" )
-                    category = null;
-                else
-                    category = value;
-            }
-        }
-        private string category;
-
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		public string Title { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Subtitle.
-		/// </summary>
-		public string Subtitle { get; set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the MinValue.
-		/// </summary>
-		public int MinValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the MaxValue.
-		/// </summary>
-		public int MaxValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the CollectionFrequency.
-		/// </summary>
-		public int CollectionFrequency { get; set; }
-
-		/// <summary>
-		/// Gets or sets the LastCollected date.
-		/// </summary>
-		public DateTime LastCollected { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Source.
-		/// </summary>
-		public string Source { get; set; }
-
-		/// <summary>
-		/// Gets or sets the SourceSQL.
-		/// </summary>
-		public string SourceSQL { get; set; }
+		private Metric() : base() { }
+		private Metric( Rock.Core.Metric model ) : base( model ) { }
 
         #region Static Methods
 
@@ -118,13 +40,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Metric Read( Rock.Core.Metric metricModel )
         {
-            Metric metric = Metric.CopyModel( metricModel );
-
             string cacheKey = Metric.CacheKey( metricModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, metric, new CacheItemPolicy() );
 
-            return metric;
+            ObjectCache cache = MemoryCache.Default;
+            Metric metric = cache[cacheKey] as Metric;
+
+			if ( metric != null )
+				return metric;
+			else
+			{
+				metric = Metric.CopyModel( metricModel );
+				cache.Set( cacheKey, metric, new CacheItemPolicy() );
+
+				return metric;
+			}
         }
 
         /// <summary>
@@ -167,22 +96,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static Metric CopyModel( Rock.Core.Metric metricModel )
         {
-            Metric metric = new Metric();
-            metric.Id = metricModel.Id;
-			metric.Type = metricModel.Type;
-			metric.Category = metricModel.Category;
-			metric.Title = metricModel.Title;
-			metric.Subtitle = metricModel.Subtitle;
-			metric.Description = metricModel.Description;
-			metric.MinValue = metricModel.MinValue;
-			metric.MaxValue = metricModel.MaxValue;
-			metric.CollectionFrequency = metricModel.CollectionFrequency;
-			metric.LastCollected = metricModel.LastCollected;
-			metric.Source = metricModel.Source;
-			metric.SourceSQL = metricModel.SourceSQL;
-			
-			// copy metric values?         
-
+			Metric metric = new Metric( metricModel );
             return metric;
         }
 

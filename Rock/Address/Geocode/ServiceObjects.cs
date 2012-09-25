@@ -23,33 +23,33 @@ namespace Rock.Address.Geocode
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+		/// <param name="location">The location.</param>
         /// <param name="result">The ServiceObjects result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Geocode( Rock.Crm.Address address, out string result )
+        public override bool Geocode( Rock.Crm.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 string licenseKey = AttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
-                Location_V3 location = client.GetBestMatch_V3(
+                Location_V3 location_match = client.GetBestMatch_V3(
                     string.Format("{0} {1}",
-                        address.Street1,
-                        address.Street2),
-                    address.City,
-                    address.State,
-                    address.Zip,
+                        location.Street1,
+                        location.Street2),
+                    location.City,
+                    location.State,
+                    location.Zip,
                     licenseKey );
 
-                result = location.Level;
+                result = location_match.Level;
 
-                if ( location.Level == "S" || location.Level == "P" )
+                if ( location_match.Level == "S" || location_match.Level == "P" )
                 {
-                    address.Latitude = double.Parse( location.Latitude );
-                    address.Longitude = double.Parse( location.Longitude );
+                    location.Latitude = double.Parse( location_match.Latitude );
+                    location.Longitude = double.Parse( location_match.Longitude );
 
                     return true;
                 }

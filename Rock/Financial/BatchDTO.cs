@@ -18,7 +18,7 @@ namespace Rock.Financial
 	/// <summary>
 	/// Data Transfer Object for Batch object
 	/// </summary>
-	public partial class BatchDto : Dto<Batch>
+	public partial class BatchDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -29,6 +29,12 @@ namespace Rock.Financial
 		public string Entity { get; set; }
 		public int? EntityId { get; set; }
 		public string ForeignReference { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -51,42 +57,50 @@ namespace Rock.Financial
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="batch"></param>
-		public override void CopyFromModel( Batch batch )
+		public void CopyFromModel( IModel model )
 		{
-			this.Name = batch.Name;
-			this.BatchDate = batch.BatchDate;
-			this.IsClosed = batch.IsClosed;
-			this.CampusId = batch.CampusId;
-			this.Entity = batch.Entity;
-			this.EntityId = batch.EntityId;
-			this.ForeignReference = batch.ForeignReference;
-			this.ModifiedDateTime = batch.ModifiedDateTime;
-			this.CreatedDateTime = batch.CreatedDateTime;
-			this.CreatedByPersonId = batch.CreatedByPersonId;
-			this.ModifiedByPersonId = batch.ModifiedByPersonId;
-			this.Id = batch.Id;
-			this.Guid = batch.Guid;
+			if ( model is Batch )
+			{
+				var batch = (Batch)model;
+				this.Name = batch.Name;
+				this.BatchDate = batch.BatchDate;
+				this.IsClosed = batch.IsClosed;
+				this.CampusId = batch.CampusId;
+				this.Entity = batch.Entity;
+				this.EntityId = batch.EntityId;
+				this.ForeignReference = batch.ForeignReference;
+				this.ModifiedDateTime = batch.ModifiedDateTime;
+				this.CreatedDateTime = batch.CreatedDateTime;
+				this.CreatedByPersonId = batch.CreatedByPersonId;
+				this.ModifiedByPersonId = batch.ModifiedByPersonId;
+				this.Id = batch.Id;
+				this.Guid = batch.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="batch"></param>
-		public override void CopyToModel ( Batch batch )
+		public void CopyToModel ( IModel model )
 		{
-			batch.Name = this.Name;
-			batch.BatchDate = this.BatchDate;
-			batch.IsClosed = this.IsClosed;
-			batch.CampusId = this.CampusId;
-			batch.Entity = this.Entity;
-			batch.EntityId = this.EntityId;
-			batch.ForeignReference = this.ForeignReference;
-			batch.ModifiedDateTime = this.ModifiedDateTime;
-			batch.CreatedDateTime = this.CreatedDateTime;
-			batch.CreatedByPersonId = this.CreatedByPersonId;
-			batch.ModifiedByPersonId = this.ModifiedByPersonId;
-			batch.Id = this.Id;
-			batch.Guid = this.Guid;
+			if ( model is Batch )
+			{
+				var batch = (Batch)model;
+				batch.Name = this.Name;
+				batch.BatchDate = this.BatchDate;
+				batch.IsClosed = this.IsClosed;
+				batch.CampusId = this.CampusId;
+				batch.Entity = this.Entity;
+				batch.EntityId = this.EntityId;
+				batch.ForeignReference = this.ForeignReference;
+				batch.ModifiedDateTime = this.ModifiedDateTime;
+				batch.CreatedDateTime = this.CreatedDateTime;
+				batch.CreatedByPersonId = this.CreatedByPersonId;
+				batch.ModifiedByPersonId = this.ModifiedByPersonId;
+				batch.Id = this.Id;
+				batch.Guid = this.Guid;
+			}
 		}
 	}
 }

@@ -7,6 +7,14 @@
   font-style: normal;
 }
 
+/* group class */
+.group:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
 
 /* Bootstrap Overrides */
 fieldset legend 
@@ -174,11 +182,6 @@ a.help-tip {
     color: #747474;
 }
 
-a.help-tip:hover 
-{
-    text-decoration: none;
-}
-
 a.help-tip::before 
 {
     font-family: "FontAwesome";
@@ -233,7 +236,7 @@ a.help-tip:hover span {
 }
 
 /* Icon Buttons */
-a i[class^="icon-"] 
+i[class^="icon-"] 
 {
     font-size: 18px;
     color: #747474;
@@ -307,53 +310,34 @@ span.cke_skin_kama {
     
 }
 
+/* Create Account Styling */
+.new-account .actions
+{
+    text-align: right;
+}
+
 /* Dialog Styling */
 #dialog 
 {
     overflow: hidden;    
 }
 
-#dialog #modal-scroll-container 
+#dialog .scroll-container 
 {
     width: 720px;
 }
 
-#dialog #modal-scroll-container .viewport 
-{
-    height: 380px;
-    width: 690px; 
-}
 
-#dialog #modal-scroll-container .overview 
+#dialog .scroll-container .overview 
 {
     width: 520px; 
 }
 
-#dialog #modal-scroll-container .thumb 
+#dialog .scroll-container .viewport 
 {
-    margin-left: -6px;
-    background-color: #ccc;
+    width: 690px; 
 }
 
-#dialog #modal-scroll-container .track
-{
-    width: 0;
-    background-color: #ddd;
-    border-radius: 4px;  
-    border-left: 1px solid #aaa;
-    border-right: 1px solid #fff;
-    padding: 0; 
-}
-
-#dialog #modal-scroll-container .end
-{
-    background-color: transparent; 
-}
-
-#dialog #modal-scroll-container .thumb:hover
-{
-    background-color: #bbb;
-}
 
 .modal-body.iframe 
 {
@@ -510,7 +494,7 @@ span.cke_skin_kama {
 div.filter-search {
 	border-radius: 4px;
 	border: 1px solid #747474;
-	width: 300px;
+	width: 340px;
 	float: right;
 	background-color: #e3e3e4;
 	height: 28px;
@@ -524,7 +508,7 @@ div.filter-search input {
 	float: left;
 	margin-left: 6px;
 	color: #666a73;
-	width: 150px
+	width: 200px
 }
 
 div.filter-search input:hover {
@@ -583,10 +567,10 @@ div.filter-search .dropdown dt
     font-size: 11px;
 }
 
-div.filter-search .dropdown dd ul, ul.ui-autocomplete.ui-menu 
+div.filter-search .dropdown dd ul, div.filter-search ul.ui-autocomplete.ui-menu 
 { 
-    background: #e3e3e4;
-    border-color: #747474;
+    background-color: rgba(90, 90, 90, 0.5);
+    border-color: rgba(0, 0, 0, 0.5);
     border-width: 0 1px 1px 1px; 
     border-style: solid;
     display: none;
@@ -594,36 +578,57 @@ div.filter-search .dropdown dd ul, ul.ui-autocomplete.ui-menu
     position: absolute; 
     left: 0px; 
     top: 4px; 
-    width: 120px;
     z-index: 90;
     border-radius: 0 0 4px 4px;
     margin-left: -3px;
     padding: 6px 0 12px 0;
+    color: #fff;
+    overflow: hidden;
+    max-height: 440px;
 }
 
-div.filter-search .dropdown dd ul li, ul.ui-autocomplete.ui-menu li
+div.filter-search .dropdown dd ul
+{
+    width: 120px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+div.filter-search ul.ui-autocomplete.ui-menu
+{
+    width: 250px;
+}
+
+div.filter-search .dropdown dd ul li, div.filter-search ul.ui-autocomplete.ui-menu li
 {
     display: block;
     cursor: pointer; 
-    color: #666a73;
     font-size: 11px;
     padding: 5px 10px;
 }
 
-.ui-autocomplete
+div.filter-search .ui-autocomplete
 {
     max-height: 200px;
 	overflow-y: auto;
 	/* prevent horizontal scrollbar */
 	overflow-x: hidden;
 	/* add padding to account for vertical scrollbar */
-	padding-right: 20px;
+	--padding-right: 20px;
 }
 
-ul.ui-autocomplete.ui-menu li a
+div.filter-search .dropdown dd ul liz, div.filter-search ul.ui-autocomplete.ui-menu li a
 {
     text-decoration: none;
-    color: #666a73;
+    color: #fff;
+    font-size: 12px;
+    padding: 5px;
+}
+
+div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete.ui-menu li a:hover
+{
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
 }
 
 /* jQuery Scrolling Capability */
@@ -633,12 +638,24 @@ ul.ui-autocomplete.ui-menu li a
     clear: both; 
 }
 
+.scroll-container .thumb 
+{
+    margin-left: -6px;
+    background-color: #ccc;
+}
+
+.scroll-container .thumb:hover
+{
+    background-color: #bbb;
+}
+
+
 .scroll-container .viewport 
 { 
-    width: 500px; 
-    height: 200px; 
+    width: 500px;  
     overflow: hidden; 
     position: relative; 
+    height: 380px;
 }
 
 .scroll-container .overview 
@@ -649,11 +666,6 @@ ul.ui-autocomplete.ui-menu li a
     top: 0; 
 }
 
-.scroll-container .thumb .end,
-.scroll-container .thumb 
-{ 
-    background-color: #003D5D; 
-}
 
 .scroll-container .scrollbar 
 { 
@@ -664,11 +676,14 @@ ul.ui-autocomplete.ui-menu li a
 
 .scroll-container .track 
 { 
-    background-color: #D8EEFD; 
     height: 100%; 
-    width:2px; 
-    position: relative; 
-    padding: 0 1px; 
+    position: relative;  
+    width: 0;
+    background-color: #ddd;
+    border-radius: 4px;  
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #fff;
+    padding: 0; 
 }
 
 .scroll-container .thumb 
@@ -687,6 +702,7 @@ ul.ui-autocomplete.ui-menu li a
     overflow: hidden; 
     height: 5px; 
     width: 13px; 
+    background-color: transparent; 
 }
 
 .scroll-container .disable

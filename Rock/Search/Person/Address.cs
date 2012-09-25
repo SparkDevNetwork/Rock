@@ -60,9 +60,9 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var addressService = new AddressService();
+            var service = new LocationService();
 
-            return addressService.Queryable().
+            return service.Queryable().
                 Where( a => a.Street1.Contains( searchterm ) ).
                 OrderBy( a => a.Street1 ).
                 Select( a => a.Street1 + " " + a.City ).Distinct();

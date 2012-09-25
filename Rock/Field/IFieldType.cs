@@ -22,7 +22,7 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
-        string FormatValue( Control parentControl, string value, bool condensed );
+		string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
