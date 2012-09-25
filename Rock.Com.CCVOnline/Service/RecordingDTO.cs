@@ -18,7 +18,7 @@ namespace Rock.Com.CCVOnline.Service
 	/// <summary>
 	/// Data Transfer Object for Recording object
 	/// </summary>
-	public partial class RecordingDto : Dto<Recording>
+	public partial class RecordingDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -32,6 +32,12 @@ namespace Rock.Com.CCVOnline.Service
 		public string StartResponse { get; set; }
 		public DateTime? StopTime { get; set; }
 		public string StopResponse { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -54,48 +60,56 @@ namespace Rock.Com.CCVOnline.Service
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="recording"></param>
-		public override void CopyFromModel( Recording recording )
+		public void CopyFromModel( IModel model )
 		{
-			this.Date = recording.Date;
-			this.CampusId = recording.CampusId;
-			this.Label = recording.Label;
-			this.App = recording.App;
-			this.StreamName = recording.StreamName;
-			this.RecordingName = recording.RecordingName;
-			this.StartTime = recording.StartTime;
-			this.StartResponse = recording.StartResponse;
-			this.StopTime = recording.StopTime;
-			this.StopResponse = recording.StopResponse;
-			this.CreatedDateTime = recording.CreatedDateTime;
-			this.ModifiedDateTime = recording.ModifiedDateTime;
-			this.CreatedByPersonId = recording.CreatedByPersonId;
-			this.ModifiedByPersonId = recording.ModifiedByPersonId;
-			this.Id = recording.Id;
-			this.Guid = recording.Guid;
+			if ( model is Recording )
+			{
+				var recording = (Recording)model;
+				this.Date = recording.Date;
+				this.CampusId = recording.CampusId;
+				this.Label = recording.Label;
+				this.App = recording.App;
+				this.StreamName = recording.StreamName;
+				this.RecordingName = recording.RecordingName;
+				this.StartTime = recording.StartTime;
+				this.StartResponse = recording.StartResponse;
+				this.StopTime = recording.StopTime;
+				this.StopResponse = recording.StopResponse;
+				this.CreatedDateTime = recording.CreatedDateTime;
+				this.ModifiedDateTime = recording.ModifiedDateTime;
+				this.CreatedByPersonId = recording.CreatedByPersonId;
+				this.ModifiedByPersonId = recording.ModifiedByPersonId;
+				this.Id = recording.Id;
+				this.Guid = recording.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="recording"></param>
-		public override void CopyToModel ( Recording recording )
+		public void CopyToModel ( IModel model )
 		{
-			recording.Date = this.Date;
-			recording.CampusId = this.CampusId;
-			recording.Label = this.Label;
-			recording.App = this.App;
-			recording.StreamName = this.StreamName;
-			recording.RecordingName = this.RecordingName;
-			recording.StartTime = this.StartTime;
-			recording.StartResponse = this.StartResponse;
-			recording.StopTime = this.StopTime;
-			recording.StopResponse = this.StopResponse;
-			recording.CreatedDateTime = this.CreatedDateTime;
-			recording.ModifiedDateTime = this.ModifiedDateTime;
-			recording.CreatedByPersonId = this.CreatedByPersonId;
-			recording.ModifiedByPersonId = this.ModifiedByPersonId;
-			recording.Id = this.Id;
-			recording.Guid = this.Guid;
+			if ( model is Recording )
+			{
+				var recording = (Recording)model;
+				recording.Date = this.Date;
+				recording.CampusId = this.CampusId;
+				recording.Label = this.Label;
+				recording.App = this.App;
+				recording.StreamName = this.StreamName;
+				recording.RecordingName = this.RecordingName;
+				recording.StartTime = this.StartTime;
+				recording.StartResponse = this.StartResponse;
+				recording.StopTime = this.StopTime;
+				recording.StopResponse = this.StopResponse;
+				recording.CreatedDateTime = this.CreatedDateTime;
+				recording.ModifiedDateTime = this.ModifiedDateTime;
+				recording.CreatedByPersonId = this.CreatedByPersonId;
+				recording.ModifiedByPersonId = this.ModifiedByPersonId;
+				recording.Id = this.Id;
+				recording.Guid = this.Guid;
+			}
 		}
 	}
 }

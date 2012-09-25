@@ -18,6 +18,8 @@ namespace Rock.Com.CCVOnline.Data
 
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+			Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
+
             modelBuilder.Configurations.Add( new Rock.Com.CCVOnline.Service.RecordingConfiguration() );
         }
     }
