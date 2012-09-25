@@ -1,4 +1,9 @@
-﻿
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -20,8 +25,16 @@ namespace Rock.Com.CCVOnline.Data
         {
 			Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
 
-            modelBuilder.Configurations.Add( new Rock.Com.CCVOnline.Service.RecordingConfiguration() );
+			ContextHelper.AddConfigurations(modelBuilder);
         }
     }
+
+	public static class ContextHelper
+	{
+		public static void AddConfigurations( DbModelBuilder modelBuilder )
+		{
+			modelBuilder.Configurations.Add( new Rock.Com.CCVOnline.Service.RecordingConfiguration() );
+		}
+	}
 }
 
