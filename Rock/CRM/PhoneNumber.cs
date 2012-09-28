@@ -51,6 +51,13 @@ namespace Rock.Crm
 		[DataMember]
 		public string Number { get; set; }
 
+		/// <summary>
+		/// Gets or sets the extension
+		/// </summary>
+		[MaxLength( 20 )]
+		[DataMember]
+		public string Extension { get; set; }
+
 		[DataMember]
 		public int? NumberTypeId { get; set; }
 
