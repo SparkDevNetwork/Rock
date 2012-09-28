@@ -13,10 +13,5 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-		/// <summary>
-		/// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
-		/// </summary>
-		public static Guid PERSON_PHONE_PRIMARY { get { return new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ); } }
-	
     }
 }

@@ -441,6 +441,10 @@
     <Compile Include="Migrations\201209242038385_AttributeQualifierValueNotRequired.Designer.cs">
       <DependentUpon>201209242038385_AttributeQualifierValueNotRequired.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209282122428_AddPhoneExtension.cs" />
+    <Compile Include="Migrations\201209282122428_AddPhoneExtension.Designer.cs">
+      <DependentUpon>201209282122428_AddPhoneExtension.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -787,6 +791,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209242038385_AttributeQualifierValueNotRequired.resx">
       <DependentUpon>201209242038385_AttributeQualifierValueNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209282122428_AddPhoneExtension.resx">
+      <DependentUpon>201209282122428_AddPhoneExtension.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
