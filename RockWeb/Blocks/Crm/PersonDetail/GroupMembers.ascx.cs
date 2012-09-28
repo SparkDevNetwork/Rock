@@ -69,15 +69,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 				int groupId = groupItem.Id;
 				foreach ( dynamic memberItem in service.Queryable()
 					.Where( m => m.GroupId == groupId && m.PersonId != Person.Id )
-					.OrderBy( m => m.GroupRole.Order )
 					.Select( m => new
 					{
 						Id = m.PersonId,
 						PhotoId = m.Person.PhotoId.HasValue ? m.Person.PhotoId.Value : 0,
 						Name = m.Person.NickName ?? m.Person.GivenName,
-						Role = m.GroupRole.Name
+						Role = m.GroupRole.Name,
+						Order = m.GroupRole.Order
 					}
-						) )
+						).ToList().OrderBy( m => m.Order) )
 				{
 					var li = new HtmlGenericControl( "li" );
 					ul.Controls.Add( li );

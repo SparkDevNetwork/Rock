@@ -8,6 +8,7 @@ using System.Net;
 using System.Web.Http;
 
 using Rock.Crm;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Crm
 {
@@ -47,6 +48,7 @@ namespace Rock.Rest.Crm
 		/// <param name="location"></param>
 		/// <returns></returns>
 		[HttpPut]
+		[Authenticate]
 		public LocationDto Geocode( LocationDto location )
 		{
 			var user = CurrentUser();
@@ -68,6 +70,7 @@ namespace Rock.Rest.Crm
 		/// <param name="location"></param>
 		/// <returns></returns>
 		[HttpPut]
+		[Authenticate]
 		public LocationDto Standardize( LocationDto location )
 		{
 			var user = CurrentUser();
