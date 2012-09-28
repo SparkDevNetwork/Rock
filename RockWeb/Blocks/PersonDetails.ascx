@@ -1,19 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonDetails.ascx.cs" Inherits="RockWeb.Blocks.PersonDetails" %>
 
-<script src="/RockWeb/Scripts/jquery.tagsinput.js"></script>
-<link href="/RockWeb/CSS/jquery.tagsinput.css" rel="stylesheet">
-
-<link href="/RockWeb/CSS/PersonDetailsCore.css" rel="stylesheet">
-<script src="/RockWeb/Scripts/tinyscrollbar.min.js"></script>
-
-
-
 <div id="person-profile" class="row-fluid">
     <div class="span3">
         <div class="bio-wrap group">
             <aside class="bio">             
                 <div class="content">
-                    <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />
+                    <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/jon.jpg") %>" alt="Jon Edmiston" />
 
                     <section class="group">
                         <span class="member-status">Member</span>
@@ -43,21 +35,21 @@
                     <ul class="group">
                         <li>
                             <a href="">
-                            <img src="/RockWeb/Assets/Mockup/heidi.jpg" />
+                            <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/heidi.jpg") %>" />
                             <h4>Heidi</h4>
                             <small>Wife</small>
                             </a>
                         </li>
                         <li>
                             <a href="">
-                            <img src="/RockWeb/Assets/Mockup/alex.jpg" />
+                            <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/alex.jpg") %>" />
                             <h4>Alex</h4>
                             <small>Son</small>
                             </a>
                         </li>
                         <li>
                             <a href="">
-                            <img src="/RockWeb/Assets/Mockup/adam.jpg" />
+                            <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/adam.jpg") %>" />
                             <h4>Adam</h4>
                             <small>Son</small>
                             </a>
@@ -65,14 +57,14 @@
                    
                         <li>
                             <a href="">
-                            <img src="/RockWeb/Assets/Mockup/rachael-sue.jpg" />
+                            <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/rachael-sue.jpg") %>" />
                             <h4>Rachael-Sue</h4>
                             <small>Pet</small>
                             </a>
                         </li>
                         <li>
                             <a href="">
-                            <img src="/RockWeb/Assets/Mockup/monica.jpg" />
+                            <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/monica.jpg") %>" />
                             <h4>Monica</h4>
                             <small>Pet</small>
                             </a>
@@ -335,7 +327,7 @@
                         $('#person-notes').tinyscrollbar({ size: 150 });
                         $('ul.ui-autocomplete').css('width', '300px');
                         $('#person-tags').tagsInput({
-                            autocomplete_url: '/rockweb/autocomplete-sample.html',
+                            autocomplete_url: rock.baseUrl + 'autocomplete-sample.html',
                             autoCompleteAppendTo: 'div.tag-wrap',
                             'height':'auto',
                             'width': '100%',
