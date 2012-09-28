@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class AddPhoneExtension : IMigrationMetadata
+    public sealed partial class AddPhoneFields : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddPhoneExtension));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddPhoneFields));
         
         string IMigrationMetadata.Id
         {
-            get { return "201209282122428_AddPhoneExtension"; }
+            get { return "201209282145041_AddPhoneFields"; }
         }
         
         string IMigrationMetadata.Source
