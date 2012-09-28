@@ -441,9 +441,9 @@
     <Compile Include="Migrations\201209242038385_AttributeQualifierValueNotRequired.Designer.cs">
       <DependentUpon>201209242038385_AttributeQualifierValueNotRequired.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201209282122428_AddPhoneExtension.cs" />
-    <Compile Include="Migrations\201209282122428_AddPhoneExtension.Designer.cs">
-      <DependentUpon>201209282122428_AddPhoneExtension.cs</DependentUpon>
+    <Compile Include="Migrations\201209282145041_AddPhoneFields.cs" />
+    <Compile Include="Migrations\201209282145041_AddPhoneFields.Designer.cs">
+      <DependentUpon>201209282145041_AddPhoneFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -792,8 +792,8 @@
     <EmbeddedResource Include="Migrations\201209242038385_AttributeQualifierValueNotRequired.resx">
       <DependentUpon>201209242038385_AttributeQualifierValueNotRequired.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201209282122428_AddPhoneExtension.resx">
-      <DependentUpon>201209282122428_AddPhoneExtension.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201209282145041_AddPhoneFields.resx">
+      <DependentUpon>201209282145041_AddPhoneFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

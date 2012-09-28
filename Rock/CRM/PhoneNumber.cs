@@ -58,9 +58,22 @@ namespace Rock.Crm
 		[DataMember]
 		public string Extension { get; set; }
 
+		/// <summary>
+		/// Type of phone number
+		/// </summary>
 		[DataMember]
 		public int? NumberTypeId { get; set; }
 
+		/// <summary>
+		/// Gets or sets whether the number has been opted in for SMS
+		/// </summary>
+		[Required]
+		[DataMember]
+		public bool IsMessagingEnabled { get; set; }
+
+		/// <summary>
+		/// The phone number type
+		/// </summary>
 		public virtual Core.DefinedValue NumberType { get; set; }
 
 		/// <summary>
