@@ -275,16 +275,25 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            HtmlContentService service = new HtmlContentService();
+            var HtmlService = new HtmlContentService();
+            var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-            var versions = service.GetContent( CurrentBlock.Id, EntityValue() ).
+			var personService = new Rock.Crm.PersonService();
+			var modifiedPersons = new Dictionary<int, string>();
+			foreach ( var personId in content.Where( c => c.ModifiedByPersonId.HasValue ).Select( c => c.ModifiedByPersonId ).Distinct() )
+			{
+				var modifiedPerson = personService.Get( personId.Value, true );
+				modifiedPersons.Add( personId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
+			}
+
+			var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
                     v.Content,
                     ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
-                    ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
+					ModifiedByPerson = v.ModifiedByPersonId.HasValue ? modifiedPersons[v.ModifiedByPersonId.Value] : string.Empty,
                     Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,

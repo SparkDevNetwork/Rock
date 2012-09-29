@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 				int attributeId = 0;
 				if (Int32.TryParse(keyAttributeId, out attributeId))
 				{
-					var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+					var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 					if ( attribute != null )
 					{
 						var li = new HtmlGenericControl( "li" );

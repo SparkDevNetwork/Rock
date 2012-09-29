@@ -27,7 +27,7 @@ namespace Rock.Core
 		public int? PageId { get; set; }
 		public DateTime ExceptionDate { get; set; }
 		public bool? HasInnerException { get; set; }
-		public int? PersonId { get; set; }
+		public int? CreatedByPersonId { get; set; }
 		public string StatusCode { get; set; }
 		public string ExceptionType { get; set; }
 		public string Description { get; set; }
@@ -72,7 +72,7 @@ namespace Rock.Core
 				this.PageId = exceptionLog.PageId;
 				this.ExceptionDate = exceptionLog.ExceptionDate;
 				this.HasInnerException = exceptionLog.HasInnerException;
-				this.PersonId = exceptionLog.PersonId;
+				this.CreatedByPersonId = exceptionLog.CreatedByPersonId;
 				this.StatusCode = exceptionLog.StatusCode;
 				this.ExceptionType = exceptionLog.ExceptionType;
 				this.Description = exceptionLog.Description;
@@ -102,7 +102,7 @@ namespace Rock.Core
 				exceptionLog.PageId = this.PageId;
 				exceptionLog.ExceptionDate = this.ExceptionDate;
 				exceptionLog.HasInnerException = this.HasInnerException;
-				exceptionLog.PersonId = this.PersonId;
+				exceptionLog.CreatedByPersonId = this.CreatedByPersonId;
 				exceptionLog.StatusCode = this.StatusCode;
 				exceptionLog.ExceptionType = this.ExceptionType;
 				exceptionLog.Description = this.Description;

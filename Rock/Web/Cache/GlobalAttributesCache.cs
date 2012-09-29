@@ -16,12 +16,12 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class GlobalAttributes
+    public class GlobalAttributesCache
     {
         /// <summary>
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
-        private GlobalAttributes() { }
+        private GlobalAttributesCache() { }
 
         /// <summary>
         /// Global Attribute Value for the specified key.
@@ -55,18 +55,18 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <returns></returns>
-        public static GlobalAttributes Read()
+        public static GlobalAttributesCache Read()
         {
-            string cacheKey = GlobalAttributes.CacheKey();
+            string cacheKey = GlobalAttributesCache.CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
-            GlobalAttributes globalAttributes = cache[cacheKey] as GlobalAttributes;
+            GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
 
             if ( globalAttributes != null )
                 return globalAttributes;
             else
             {
-                globalAttributes = new GlobalAttributes();
+                globalAttributes = new GlobalAttributesCache();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
                 var attributeService = new Rock.Core.AttributeService();
@@ -94,7 +94,7 @@ namespace Rock.Web.Cache
         public static void Flush()
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( GlobalAttributes.CacheKey() );
+            cache.Remove( GlobalAttributesCache.CacheKey() );
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string Value(string key)
         {
-            GlobalAttributes globalAttributes = Read();
+            GlobalAttributesCache globalAttributes = Read();
             return globalAttributes.AttributeValue( key );
         }
 

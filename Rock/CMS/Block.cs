@@ -169,22 +169,6 @@ namespace Rock.Cms
 		public virtual Page Page { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -261,8 +245,6 @@ namespace Rock.Cms
         {
 			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

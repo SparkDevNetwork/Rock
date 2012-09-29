@@ -14,10 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class FieldType : Rock.Core.FieldTypeDto
+    public class FieldTypeCache : Rock.Core.FieldTypeDto
     {
-        private FieldType() : base() { }
-		private FieldType( Rock.Core.FieldType model ) : base( model ) { }
+        private FieldTypeCache() : base() { }
+		private FieldTypeCache( Rock.Core.FieldType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the field 
@@ -37,12 +37,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static FieldType Read( int id )
+        public static FieldTypeCache Read( int id )
         {
-            string cacheKey = FieldType.CacheKey( id );
+            string cacheKey = FieldTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            FieldType fieldType = cache[cacheKey] as FieldType;
+            FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
             if ( fieldType != null )
                 return fieldType;
@@ -68,18 +68,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="fieldTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static FieldType Read( Rock.Core.FieldType fieldTypeModel )
+        public static FieldTypeCache Read( Rock.Core.FieldType fieldTypeModel )
         {
-            string cacheKey = FieldType.CacheKey( fieldTypeModel.Id );
+            string cacheKey = FieldTypeCache.CacheKey( fieldTypeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            FieldType fieldType = cache[cacheKey] as FieldType;
+            FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
 			if ( fieldType != null )
 				return fieldType;
 			else
 			{
-				fieldType = FieldType.CopyModel( fieldTypeModel );
+				fieldType = FieldTypeCache.CopyModel( fieldTypeModel );
 				cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 
 				return fieldType;
@@ -91,9 +91,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="fieldTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static FieldType CopyModel( Rock.Core.FieldType fieldTypeModel )
+        public static FieldTypeCache CopyModel( Rock.Core.FieldType fieldTypeModel )
         {
-			FieldType fieldType = new FieldType( fieldTypeModel );
+			FieldTypeCache fieldType = new FieldTypeCache( fieldTypeModel );
 			fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );
 
             return fieldType;
@@ -106,7 +106,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( FieldType.CacheKey( id ) );
+            cache.Remove( FieldTypeCache.CacheKey( id ) );
         }
 
         #endregion

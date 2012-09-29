@@ -16,7 +16,7 @@ namespace Rock.Communication
         public SendGridEmailProvider()
         {
             // load up parameters from global settings
-            var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
             if ( globalAttributes.AttributeValues.ContainsKey("SendGridUsername") )
                 _userName = globalAttributes.AttributeValues["SendGridUsername"].Value;

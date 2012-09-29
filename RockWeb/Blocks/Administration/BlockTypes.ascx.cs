@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Administration
                 _blockTypeService.Delete( blockType, CurrentPersonId );
                 _blockTypeService.Save( blockType, CurrentPersonId );
 
-                Rock.Web.Cache.BlockType.Flush( blockType.Id );
+                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
             }
 
             BindGrid();
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                Rock.Web.Cache.BlockType.Flush( blockTypeId );
+                Rock.Web.Cache.BlockTypeCache.Flush( blockTypeId );
                 blockType = _blockTypeService.Get( blockTypeId );
             }
 

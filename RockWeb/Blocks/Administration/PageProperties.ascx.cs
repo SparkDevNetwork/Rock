@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Web.Cache.Page _page = null;
+        private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
         private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
         
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
+                _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
                 {
@@ -171,10 +171,10 @@ namespace RockWeb.Blocks.Administration
                     if ( page.ParentPageId != parentPage )
                     {
                         if ( page.ParentPageId.HasValue )
-                            Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+                            Rock.Web.Cache.PageCache.Flush( page.ParentPageId.Value );
 
                         if ( parentPage != 0 )
-                            Rock.Web.Cache.Page.Flush( parentPage );
+                            Rock.Web.Cache.PageCache.Flush( parentPage );
                     }
 
                     page.Name = tbPageName.Text;
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                     _page.SaveAttributeValues( CurrentPersonId );
 
-                    Rock.Web.Cache.Page.Flush( _page.Id );
+                    Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
                 string script = "window.parent.closeModal()";

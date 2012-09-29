@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Web.Cache.Page _page = null;
+        private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
         private Rock.Cms.BlockService blockService = new Rock.Cms.BlockService();
 
@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administration
             CurrentPage.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
 
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-            _page = Rock.Web.Cache.Page.Read( pageId );
+            _page = Rock.Web.Cache.PageCache.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
             lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", CurrentPage.Layout );
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Administration
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-				Rock.Web.Cache.Page.FlushLayoutBlocks( _page.Layout );
+				Rock.Web.Cache.PageCache.FlushLayoutBlocks( _page.Layout );
 			}
 
             BindGrids();
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Security.Authorization.CopyAuthorization( _page, block, CurrentPersonId );
 
 			if (block.Layout != null)
-				Rock.Web.Cache.Page.FlushLayoutBlocks(_page.Layout);
+				Rock.Web.Cache.PageCache.FlushLayoutBlocks(_page.Layout);
 			else
 				_page.FlushBlocks();
 

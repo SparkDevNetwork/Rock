@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 					.Where( g => g.CampusId.HasValue)
 					.Select( g => g.CampusId)
 					.ToList())
-					campusNames.Add(Rock.Web.Cache.Campus.Read(campusId).Name);
+					campusNames.Add(Rock.Web.Cache.CampusCache.Read(campusId).Name);
 				lCampus.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
 			}
 

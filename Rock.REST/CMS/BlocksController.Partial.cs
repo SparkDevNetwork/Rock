@@ -56,13 +56,13 @@ namespace Rock.Rest.Cms
 				if ( model.IsValid )
 				{
 					if ( model.Layout != null && model.Layout != block.Layout )
-						Rock.Web.Cache.Page.FlushLayoutBlocks( model.Layout );
+						Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
 
 					if (block.Layout != null)
-						Rock.Web.Cache.Page.FlushLayoutBlocks( block.Layout);
+						Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout);
 					else
 					{
-						var page = Rock.Web.Cache.Page.Read( block.PageId.Value );
+						var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
 						page.FlushBlocks();
 					}
 

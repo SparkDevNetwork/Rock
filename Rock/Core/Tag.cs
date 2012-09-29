@@ -158,22 +158,6 @@ namespace Rock.Core
         /// </value>
 		public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
-		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
@@ -194,8 +178,6 @@ namespace Rock.Core
         public TagConfiguration()
         {
 			this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

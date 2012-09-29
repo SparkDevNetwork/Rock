@@ -39,13 +39,13 @@ namespace Rock.Web.UI
         /// The current page.  This value is read and cached by the RockRouteHandler
         /// and set by the layout's base class (Rock.Web.UI.Page) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.Page CurrentPage { get; set; }
+        public Rock.Web.Cache.PageCache CurrentPage { get; set; }
 
         /// <summary>
         /// The current block.  This value is read and cached by the layout's 
         /// base class (Rock.Web.UI.Page) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.Block CurrentBlock { get; set; }
+        public Rock.Web.Cache.BlockCache CurrentBlock { get; set; }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null

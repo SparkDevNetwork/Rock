@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Administration
 			Rock.Core.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
 			if ( metric != null )
 			{
-				Rock.Web.Cache.Metric.Flush( metric.Id );
+				Rock.Web.Cache.MetricCache.Flush( metric.Id );
 
 				metricService.Delete( metric, CurrentPersonId );
 				metricService.Save( metric, CurrentPersonId );
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Administration
 				}
 				else
 				{
-					Rock.Web.Cache.Metric.Flush( metricId );
+					Rock.Web.Cache.MetricCache.Flush( metricId );
 					metric = metricService.Get( metricId );
 				}
 
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Administration
 			Rock.Core.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
 			if ( metricValue != null )
 			{
-				Rock.Web.Cache.Metric.Flush( metricValue.Id );
+				Rock.Web.Cache.MetricCache.Flush( metricValue.Id );
 
 				metricValueService.Delete( metricValue, CurrentPersonId );
 				metricValueService.Save( metricValue, CurrentPersonId );
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Administration
 				}
 				else
 				{
-					Rock.Web.Cache.Metric.Flush( metricValueId );
+					Rock.Web.Cache.MetricCache.Flush( metricValueId );
 					metricValue = metricValueService.Get( metricValueId );
 				}
 
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Administration
 			
 			if ( metricModel != null )
 			{
-				var metric = Rock.Web.Cache.Metric.Read( metricModel );
+				var metric = Rock.Web.Cache.MetricCache.Read( metricModel );
 
 				lAction.Text = "Edit";
 				tbCategory.Text = metric.Category;
@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.Administration
 
 			if ( metricValueModel != null )
 			{
-				var metricValue = Rock.Web.Cache.MetricValue.Read( metricValueModel );
+				var metricValue = Rock.Web.Cache.MetricValueCache.Read( metricValueModel );
 				lValue.Text = "Edit";
 				tbValue.Text = metricValue.Value;
 				tbValueDescription.Text = metricValue.Description;

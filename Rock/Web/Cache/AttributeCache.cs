@@ -22,10 +22,10 @@ namespace Rock.Web.Cache
     /// property of this attribute object.
     /// </summary>
     [Serializable]
-    public class Attribute : Rock.Core.AttributeDto
+    public class AttributeCache : Rock.Core.AttributeDto
     {
-		private Attribute() : base() { }
-		private Attribute( Rock.Core.Attribute model ) : base( model ) { }
+		private AttributeCache() : base() { }
+		private AttributeCache( Rock.Core.Attribute model ) : base( model ) { }
 
         /// <summary>
         /// Gets the category.
@@ -52,9 +52,9 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public FieldType FieldType 
+        public FieldTypeCache FieldType 
         {
-            get { return FieldType.Read( FieldTypeId ); }
+            get { return FieldTypeCache.Read( FieldTypeId ); }
         }
 
 		/// <summary>
@@ -88,18 +88,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attributeModel">The attributeModel to cache</param>
         /// <returns></returns>
-        public static Attribute Read( Rock.Core.Attribute attributeModel )
+        public static AttributeCache Read( Rock.Core.Attribute attributeModel )
         {
-			string cacheKey = Attribute.CacheKey( attributeModel.Id );
+			string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
 			ObjectCache cache = MemoryCache.Default;
-			Attribute attribute = cache[cacheKey] as Attribute;
+			AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
 			if ( attribute != null )
 				return attribute;
 			else
 			{
-				attribute = Attribute.CopyModel( attributeModel );
+				attribute = AttributeCache.CopyModel( attributeModel );
 				cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
 				return attribute;
@@ -112,11 +112,11 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attribute model.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
-        public static Attribute Read( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        public static AttributeCache Read( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            Attribute attribute = Attribute.CopyModel( attributeModel, qualifiers );
+            AttributeCache attribute = AttributeCache.CopyModel( attributeModel, qualifiers );
 
-            string cacheKey = Attribute.CacheKey( attributeModel.Id );
+            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
             ObjectCache cache = MemoryCache.Default;
             cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
@@ -129,12 +129,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The id of the Attribute to read</param>
         /// <returns></returns>
-        public static Attribute Read( int id )
+        public static AttributeCache Read( int id )
         {
-            string cacheKey = Attribute.CacheKey( id );
+            string cacheKey = AttributeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Attribute attribute = cache[cacheKey] as Attribute;
+            AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
             if ( attribute != null )
                 return attribute;
@@ -144,7 +144,7 @@ namespace Rock.Web.Cache
                 Rock.Core.Attribute attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
-                    attribute = Attribute.CopyModel( attributeModel );
+                    attribute = AttributeCache.CopyModel( attributeModel );
 
                     cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
@@ -157,11 +157,11 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Copies the properties of a <see cref="Rock.Core.Attribute"/> object to a <see cref="Attribute"/> object/>
+        /// Copies the properties of a <see cref="Rock.Core.Attribute"/> object to a <see cref="AttributeCache"/> object/>
         /// </summary>
         /// <param name="attributeModel">The attribute model.</param>
         /// <returns></returns>
-        public static Attribute CopyModel( Rock.Core.Attribute attributeModel )
+        public static AttributeCache CopyModel( Rock.Core.Attribute attributeModel )
         {
             var qualifiers = new Dictionary<string, string>();
 
@@ -171,9 +171,9 @@ namespace Rock.Web.Cache
             return CopyModel( attributeModel, qualifiers );
         }
 
-        private static Attribute CopyModel( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        private static AttributeCache CopyModel( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            var attribute = new Attribute(attributeModel);
+            var attribute = new AttributeCache(attributeModel);
 
             attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -189,7 +189,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Attribute.CacheKey( id ) );
+            cache.Remove( AttributeCache.CacheKey( id ) );
         }
 
         #endregion

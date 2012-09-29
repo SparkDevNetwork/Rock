@@ -49,7 +49,7 @@ namespace Rock.Web.UI
         /// The current Rock page instance being requested.  This value is set 
         /// by the RockRouteHandler immediately after instantiating the page
         /// </summary>
-        public Rock.Web.Cache.Page CurrentPage 
+        public Rock.Web.Cache.PageCache CurrentPage 
         {
             get 
             { 
@@ -62,7 +62,7 @@ namespace Rock.Web.UI
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id);
             }
         }
-        private Rock.Web.Cache.Page _currentPage = null;
+        private Rock.Web.Cache.PageCache _currentPage = null;
 
         /// <summary>
         /// The Page Title controls on the page.
@@ -406,7 +406,7 @@ namespace Rock.Web.UI
                     }
 
                     // Load the blocks and insert them into page zones
-                    foreach ( Rock.Web.Cache.Block block in CurrentPage.Blocks )
+                    foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
                         // Get current user's permissions for the block instance
                         bool canConfig = block.IsAuthorized( "Configure", CurrentPerson );
@@ -770,7 +770,7 @@ namespace Rock.Web.UI
 
         // Adds the configuration html elements for editing a block
         private void AddBlockConfig( HtmlGenericContainer blockWrapper, Block blockControl, 
-            Rock.Web.Cache.Block block, bool canConfig, bool canEdit )
+            Rock.Web.Cache.BlockCache block, bool canConfig, bool canEdit )
         {
             if ( canConfig || canEdit )
             {

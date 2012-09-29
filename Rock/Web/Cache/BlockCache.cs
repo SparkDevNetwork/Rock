@@ -17,10 +17,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class Block : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class BlockCache : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-		private Block() : base() { }
-		private Block( Rock.Cms.Block model ) : base( model ) { }
+		private BlockCache() : base() { }
+		private BlockCache( Rock.Cms.Block model ) : base( model ) { }
 
         /// <summary>
         /// Gets the location of the block (Layout or Page)
@@ -37,17 +37,17 @@ namespace Rock.Web.Cache
         /// List of attributes associated with the Block.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
+        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
         {
             get
             {
-                SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.Attribute>>();
+                SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
 
                 foreach ( int id in AttributeIds )
                 {
-                    Rock.Web.Cache.Attribute attribute = Attribute.Read( id );
+                    Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     if ( !attributes.ContainsKey( attribute.Category ) )
-                        attributes.Add( attribute.Category, new List<Attribute>() );
+                        attributes.Add( attribute.Category, new List<AttributeCache>() );
 
                     attributes[attribute.Category].Add( attribute );
                 }
@@ -67,12 +67,12 @@ namespace Rock.Web.Cache
 		/// <summary>
 		/// Gets the page.
 		/// </summary>
-		public Page Page
+		public PageCache Page
 		{
 			get
 			{
 				if ( PageId.HasValue )
-					return Page.Read( PageId.Value );
+					return PageCache.Read( PageId.Value );
 				else
 					return null;
 			}
@@ -81,11 +81,11 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the block type
         /// </summary>
-        public BlockType BlockType
+        public BlockTypeCache BlockType
         {
             get
             {
-                return BlockType.Read( BlockTypeId );
+                return BlockTypeCache.Read( BlockTypeId );
             }
         }
 
@@ -155,18 +155,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="blockModel"></param>
         /// <returns></returns>
-        public static Block Read( Rock.Cms.Block blockModel )
+        public static BlockCache Read( Rock.Cms.Block blockModel )
         {
-			string cacheKey = Block.CacheKey( blockModel.Id );
+			string cacheKey = BlockCache.CacheKey( blockModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            Block block = cache[cacheKey] as Block;
+            BlockCache block = cache[cacheKey] as BlockCache;
 
 			if ( block != null )
 				return block;
 			else
 			{
-				block = Block.CopyModel( blockModel );
+				block = BlockCache.CopyModel( blockModel );
 				cache.Set( cacheKey, block, new CacheItemPolicy() );
 
 				return block;
@@ -179,12 +179,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static Block Read( int id )
+        public static BlockCache Read( int id )
         {
-            string cacheKey = Block.CacheKey( id );
+            string cacheKey = BlockCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Block block = cache[cacheKey] as Block;
+            BlockCache block = cache[cacheKey] as BlockCache;
 
             if ( block != null )
                 return block;
@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
                 {
                     Rock.Attribute.Helper.LoadAttributes( blockModel );
 
-                    block = Block.CopyModel( blockModel );
+                    block = BlockCache.CopyModel( blockModel );
 
                     cache.Set( cacheKey, block, new CacheItemPolicy() );
 
@@ -207,9 +207,9 @@ namespace Rock.Web.Cache
             }
         }
 
-        private static Block CopyModel ( Rock.Cms.Block blockModel )
+        private static BlockCache CopyModel ( Rock.Cms.Block blockModel )
         {
-            Block block = new Block(blockModel);
+            BlockCache block = new BlockCache(blockModel);
 
 			block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
             block.AttributeValues = blockModel.AttributeValues;
@@ -233,7 +233,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Block.CacheKey( id ) );
+            cache.Remove( BlockCache.CacheKey( id ) );
         }
 
         #endregion
