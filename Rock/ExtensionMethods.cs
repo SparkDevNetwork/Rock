@@ -174,7 +174,7 @@ namespace Rock
 			if ( !id.HasValue )
 				return string.Empty;
 			
-			var definedValue = Rock.Web.Cache.DefinedValue.Read( id.Value );
+			var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
 			if ( definedValue != null )
 				return definedValue.Name;
 			else

@@ -73,7 +73,7 @@ namespace Rock.Core
 		/// Person Id of the logged in person who experienced the exception..
 		/// </value>
 		[DataMember]
-		public int? PersonId { get; set; }
+		public int? CreatedByPersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Status Code.
@@ -176,14 +176,6 @@ namespace Rock.Core
 		public override string AuthEntity { get { return "Core.ExceptionLog"; } }
         
 		/// <summary>
-        /// Gets or sets the Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person Person { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -192,8 +184,6 @@ namespace Rock.Core
 		{
 			return Read<ExceptionLog>( id );
 		}
-
-
     }
 
     /// <summary>
@@ -206,7 +196,6 @@ namespace Rock.Core
         /// </summary>
         public ExceptionLogConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

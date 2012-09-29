@@ -19,10 +19,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class Site : SiteDto, Security.ISecured
+    public class SiteCache : SiteDto, Security.ISecured
     {
-        private Site() : base() { }
-		private Site( Rock.Cms.Site model ) : base( model ) { }
+        private SiteCache() : base() { }
+		private SiteCache( Rock.Cms.Site model ) : base( model ) { }
 
         /// <summary>
         /// Gets the attribute values.
@@ -33,14 +33,14 @@ namespace Rock.Web.Cache
         /// Gets a list of attributes associated with the site.  This object will not include values.
         /// To get values associated with the current site instance, use the AttributeValues
         /// </summary>
-        public List<Rock.Web.Cache.Attribute> Attributes
+        public List<Rock.Web.Cache.AttributeCache> Attributes
         {
             get
             {
-                List<Rock.Web.Cache.Attribute> attributes = new List<Rock.Web.Cache.Attribute>();
+                List<Rock.Web.Cache.AttributeCache> attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
-                    attributes.Add( Attribute.Read( id ) );
+                    attributes.Add( AttributeCache.Read( id ) );
 
                 return attributes;
             }
@@ -50,12 +50,12 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the default page.
         /// </summary>
-        public Page DefaultPage
+        public PageCache DefaultPage
         {
             get
             {
                 if ( DefaultPageId != null && DefaultPageId.Value != 0 )
-                    return Page.Read( DefaultPageId.Value );
+                    return PageCache.Read( DefaultPageId.Value );
                 else
                     return null;
             }
@@ -93,12 +93,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static Site Read( int id )
+        public static SiteCache Read( int id )
         {
-            string cacheKey = Site.CacheKey( id );
+            string cacheKey = SiteCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Site site = cache[cacheKey] as Site;
+            SiteCache site = cache[cacheKey] as SiteCache;
 
             if ( site != null )
                 return site;
@@ -108,7 +108,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
-					site = new Site( siteModel );
+					site = new SiteCache( siteModel );
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 
@@ -138,7 +138,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Site.CacheKey( id ) );
+            cache.Remove( SiteCache.CacheKey( id ) );
         }
 
         #endregion

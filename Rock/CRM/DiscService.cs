@@ -191,7 +191,7 @@ namespace Rock.Crm
 
             var discAttributes = person.Attributes["DISC"];
 
-            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            foreach (Rock.Web.Cache.AttributeCache attrib in discAttributes)
             {
                 attributeValueLookupResult = 0;
                 switch (attrib.Key)
@@ -263,7 +263,7 @@ namespace Rock.Crm
         {
             var discAttributes = person.Attributes["DISC"];
 
-            foreach (Rock.Web.Cache.Attribute attrib in discAttributes)
+            foreach (Rock.Web.Cache.AttributeCache attrib in discAttributes)
             {
                 switch (attrib.Key)
                 {

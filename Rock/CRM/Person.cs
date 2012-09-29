@@ -414,22 +414,6 @@ namespace Rock.Crm
 		/// </summary>
 		public virtual Cms.File Photo { get; set; }
 
-		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person ModifiedByPerson { get; set; }
-
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
         /// </summary>
@@ -548,8 +532,6 @@ namespace Rock.Crm
 			this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( false );
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 

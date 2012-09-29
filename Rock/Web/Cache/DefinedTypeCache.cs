@@ -14,10 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedType : Rock.Core.DefinedTypeDto
+    public class DefinedTypeCache : Rock.Core.DefinedTypeDto
     {
-        private DefinedType() : base() { }
-		private DefinedType( Rock.Core.DefinedType model ) : base( model ) { }
+        private DefinedTypeCache() : base() { }
+		private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -25,12 +25,12 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public FieldType FieldType
+        public FieldTypeCache FieldType
         {
             get 
             { 
                 if (FieldTypeId.HasValue)
-                    return FieldType.Read( FieldTypeId.Value );
+                    return FieldTypeCache.Read( FieldTypeId.Value );
                 return null;
             }
         }
@@ -48,12 +48,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static DefinedType Read( int id )
+        public static DefinedTypeCache Read( int id )
         {
-            string cacheKey = DefinedType.CacheKey( id );
+            string cacheKey = DefinedTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            DefinedType definedType = cache[cacheKey] as DefinedType;
+            DefinedTypeCache definedType = cache[cacheKey] as DefinedTypeCache;
 
             if ( definedType != null )
                 return definedType;
@@ -79,18 +79,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-        public static DefinedType Read( Rock.Core.DefinedType definedTypeModel )
+        public static DefinedTypeCache Read( Rock.Core.DefinedType definedTypeModel )
         {
-            string cacheKey = DefinedType.CacheKey( definedTypeModel.Id );
+            string cacheKey = DefinedTypeCache.CacheKey( definedTypeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            DefinedType definedType = cache[cacheKey] as DefinedType;
+            DefinedTypeCache definedType = cache[cacheKey] as DefinedTypeCache;
 
 			if ( definedType != null )
 				return definedType;
 			else
 			{
-				definedType = DefinedType.CopyModel( definedTypeModel );
+				definedType = DefinedTypeCache.CopyModel( definedTypeModel );
 				cache.Set( cacheKey, definedType, new CacheItemPolicy() );
 
 				return definedType;
@@ -102,9 +102,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-        public static DefinedType CopyModel( Rock.Core.DefinedType definedTypeModel )
+        public static DefinedTypeCache CopyModel( Rock.Core.DefinedType definedTypeModel )
         {
-            DefinedType definedType = new DefinedType(definedTypeModel);
+            DefinedTypeCache definedType = new DefinedTypeCache(definedTypeModel);
             return definedType;
         }
 
@@ -115,7 +115,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( DefinedType.CacheKey( id ) );
+            cache.Remove( DefinedTypeCache.CacheKey( id ) );
         }
 
         #endregion

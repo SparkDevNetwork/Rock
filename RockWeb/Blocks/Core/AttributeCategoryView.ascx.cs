@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Core
                 if ( cachedAttributes.ContainsKey( _category ) )
                     foreach ( var attributeId in cachedAttributes[_category] )
                     {
-                        var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+                        var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 						if ( attribute != null )
 						{
 							var li = new HtmlGenericControl("li");

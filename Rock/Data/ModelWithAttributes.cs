@@ -30,7 +30,7 @@ namespace Rock.Data
         /// The attributes.
         /// </value>
         [NotMapped]
-        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
+        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
         {
             get 
             {
@@ -43,7 +43,7 @@ namespace Rock.Data
             }
             set { _attributes = value; }
         }
-        private SortedDictionary<string, List<Rock.Web.Cache.Attribute>> _attributes;
+        private SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> _attributes;
 
         /// <summary>
         /// Dictionary of all attributes and their value.

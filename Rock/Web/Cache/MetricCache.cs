@@ -21,10 +21,10 @@ namespace Rock.Web.Cache
     /// property of this metric object.
     /// </summary>
     [Serializable]
-    public class Metric : Rock.Core.MetricDto
+    public class MetricCache : Rock.Core.MetricDto
     {
-		private Metric() : base() { }
-		private Metric( Rock.Core.Metric model ) : base( model ) { }
+		private MetricCache() : base() { }
+		private MetricCache( Rock.Core.Metric model ) : base( model ) { }
 
         #region Static Methods
 
@@ -38,18 +38,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="metricModel">The metricModel to cache</param>
         /// <returns></returns>
-        public static Metric Read( Rock.Core.Metric metricModel )
+        public static MetricCache Read( Rock.Core.Metric metricModel )
         {
-            string cacheKey = Metric.CacheKey( metricModel.Id );
+            string cacheKey = MetricCache.CacheKey( metricModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            Metric metric = cache[cacheKey] as Metric;
+            MetricCache metric = cache[cacheKey] as MetricCache;
 
 			if ( metric != null )
 				return metric;
 			else
 			{
-				metric = Metric.CopyModel( metricModel );
+				metric = MetricCache.CopyModel( metricModel );
 				cache.Set( cacheKey, metric, new CacheItemPolicy() );
 
 				return metric;
@@ -62,12 +62,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The id of the Metric to read</param>
         /// <returns></returns>
-        public static Metric Read( int id )
+        public static MetricCache Read( int id )
         {
-            string cacheKey = Metric.CacheKey( id );
+            string cacheKey = MetricCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Metric metric = cache[cacheKey] as Metric;
+            MetricCache metric = cache[cacheKey] as MetricCache;
 
             if ( metric != null )
                 return metric;
@@ -77,7 +77,7 @@ namespace Rock.Web.Cache
                 Rock.Core.Metric metricModel = metricService.Get( id );
                 if ( metricModel != null )
                 {
-                    metric = Metric.CopyModel( metricModel );
+                    metric = MetricCache.CopyModel( metricModel );
 
                     cache.Set( cacheKey, metric, new CacheItemPolicy() );
 
@@ -90,13 +90,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Copies the properties of a <see cref="Rock.Core.Metric"/> object to a <see cref="Metric"/> object/>
+        /// Copies the properties of a <see cref="Rock.Core.Metric"/> object to a <see cref="MetricCache"/> object/>
         /// </summary>
         /// <param name="metricModel">The metric model.</param>
         /// <returns></returns>
-        public static Metric CopyModel( Rock.Core.Metric metricModel )
+        public static MetricCache CopyModel( Rock.Core.Metric metricModel )
         {
-			Metric metric = new Metric( metricModel );
+			MetricCache metric = new MetricCache( metricModel );
             return metric;
         }
 
@@ -107,7 +107,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Metric.CacheKey( id ) );
+            cache.Remove( MetricCache.CacheKey( id ) );
         }
 
         #endregion

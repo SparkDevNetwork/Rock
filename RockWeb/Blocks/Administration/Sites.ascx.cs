@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
                 siteService.Delete( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                Rock.Web.Cache.SiteCache.Flush( site.Id );
             }
 
             BindGrid();
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Administration
                 if ( newSite )
                     Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                Rock.Web.Cache.SiteCache.Flush( site.Id );
 
                 BindGrid();
 

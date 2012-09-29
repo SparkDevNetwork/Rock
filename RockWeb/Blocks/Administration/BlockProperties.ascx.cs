@@ -12,7 +12,7 @@ namespace RockWeb.Blocks.Administration
 {
     public partial class BlockProperties : Rock.Web.UI.Block
     {
-        private Rock.Web.Cache.Block _block = null;
+        private Rock.Web.Cache.BlockCache _block = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                _block = Rock.Web.Cache.Block.Read( blockId );
+                _block = Rock.Web.Cache.BlockCache.Read( blockId );
 
                 if ( _block.IsAuthorized( "Configure", CurrentPerson ) )
                 {
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _block );
                     _block.SaveAttributeValues( CurrentPersonId );
 
-                    Rock.Web.Cache.Block.Flush( _block.Id );
+                    Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }
 
                 string script = "window.parent.closeModal()";

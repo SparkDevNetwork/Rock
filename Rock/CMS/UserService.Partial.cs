@@ -163,7 +163,7 @@ namespace Rock.Cms
             int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
 
-            Rock.Web.Cache.GlobalAttributes globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            Rock.Web.Cache.GlobalAttributesCache globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
             if ( !Int32.TryParse( globalAttributes.AttributeValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
                 passwordAttemptWindow = 0;
             if ( !Int32.TryParse( globalAttributes.AttributeValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )

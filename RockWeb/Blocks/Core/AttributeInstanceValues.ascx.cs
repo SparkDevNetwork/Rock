@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Core
         #region Fields
 
         protected Rock.Attribute.IHasAttributes _model;
-        protected Rock.Web.Cache.Attribute _attribute;
+        protected Rock.Web.Cache.AttributeCache _attribute;
         protected int? _currentPersonId;
 
         #endregion
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
         {
         }
 
-        public AttributeInstanceValues( Rock.Attribute.IHasAttributes model, Rock.Web.Cache.Attribute attribute, int? currentPersonId )
+        public AttributeInstanceValues( Rock.Attribute.IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, int? currentPersonId )
         {
             _model = model;
             _attribute = attribute;

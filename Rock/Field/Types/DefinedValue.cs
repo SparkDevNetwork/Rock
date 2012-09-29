@@ -31,7 +31,7 @@ namespace Rock.Field.Types
             {
                 try
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValue.Read( Int32.Parse( value ) );
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( Int32.Parse( value ) );
                     if ( definedValue != null )
                         return definedValue.Name;
                 }

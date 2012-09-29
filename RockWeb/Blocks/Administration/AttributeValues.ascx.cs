@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
             {
-                var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+                var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
                 AttributeValueService attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
@@ -141,14 +141,14 @@ namespace RockWeb.Blocks.Administration
                     attributeValueService.Add( attributeValue, CurrentPersonId );
                 }
 
-                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                 attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
 
                 attributeValueService.Save(attributeValue, CurrentPersonId);
 
-                Rock.Web.Cache.Attribute.Flush( attributeId );
+                Rock.Web.Cache.AttributeCache.Flush( attributeId );
                 if ( _entity == string.Empty && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
-                    Rock.Web.Cache.GlobalAttributes.Flush();
+                    Rock.Web.Cache.GlobalAttributesCache.Flush();
 
             }
 
@@ -167,8 +167,8 @@ namespace RockWeb.Blocks.Administration
                 {
                     int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
-                    var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
-                    var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
+                    var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                    var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldTypeId );
 
                     AttributeValueService attributeValueService = new AttributeValueService();
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int attributeId, bool setValues )
         {
-            var attribute = Rock.Web.Cache.Attribute.Read(attributeId);
+            var attribute = Rock.Web.Cache.AttributeCache.Read(attributeId);
 
             hfId.Value = attribute.Id.ToString();
             lCaption.Text = attribute.Name;
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Administration
             AttributeValueService attributeValueService = new AttributeValueService();
             var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
 
-            var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+            var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
 
             Control editControl = fieldType.Field.EditControl( attribute.QualifierValues );
             if ( setValues && attributeValue != null )

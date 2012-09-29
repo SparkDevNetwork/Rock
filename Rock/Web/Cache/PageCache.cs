@@ -23,12 +23,12 @@ namespace Rock.Web.Cache
 	/// This information will be cached by the engine
 	/// </summary>
     [Serializable]
-    public class Page : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class PageCache : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
 		#region Constructors
 
-		private Page() : base() { }
-		private Page( Rock.Cms.Page page ) : base( page ) { }
+		private PageCache() : base() { }
+		private PageCache( Rock.Cms.Page page ) : base( page ) { }
 
 		#endregion
 
@@ -84,17 +84,17 @@ namespace Rock.Web.Cache
         /// List of attributes associated with the page.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes
+        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
         {
             get
             {
-                SortedDictionary<string, List<Rock.Web.Cache.Attribute>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.Attribute>>();
+                SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
 
                 foreach ( int id in AttributeIds )
                 {
-                    Rock.Web.Cache.Attribute attribute = Attribute.Read( id );
+                    Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     if ( !attributes.ContainsKey( attribute.Category ) )
-                        attributes.Add( attribute.Category, new List<Attribute>() );
+                        attributes.Add( attribute.Category, new List<AttributeCache>() );
 
                     attributes[attribute.Category].Add( attribute );
                 }
@@ -122,12 +122,12 @@ namespace Rock.Web.Cache
 
 		/// Gets the parent <see cref="Page"/> object.
         /// </summary>
-        public Page ParentPage
+        public PageCache ParentPage
         {
             get
             {
                 if ( ParentPageId != null && ParentPageId.Value != 0 )
-                    return Page.Read( ParentPageId.Value );
+                    return PageCache.Read( ParentPageId.Value );
                 else
                     return null;
             }
@@ -136,30 +136,30 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
-        public Site Site
+        public SiteCache Site
         {
             get
             {
                 if ( SiteId != null && SiteId.Value != 0 )
-                    return Site.Read( SiteId.Value );
+                    return SiteCache.Read( SiteId.Value );
                 else
                     return null;
             }
         }
 
         /// <summary>
-        /// Gets a List of child <see cref="Page"/> objects.
+        /// Gets a List of child <see cref="PageCache"/> objects.
         /// </summary>
-        public List<Page> Pages
+        public List<PageCache> Pages
         {
             get
             {
-                List<Page> pages = new List<Page>();
+                List<PageCache> pages = new List<PageCache>();
 
                 if ( pageIds != null )
                 {
                     foreach ( int id in pageIds )
-                        pages.Add( Page.Read( id ) );
+                        pages.Add( PageCache.Read( id ) );
                 }
                 else
                 {
@@ -169,7 +169,7 @@ namespace Rock.Web.Cache
                     foreach ( Rock.Cms.Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
-                        pages.Add( Page.Read( page ) );
+                        pages.Add( PageCache.Read( page ) );
                     }
                 }
 
@@ -179,19 +179,19 @@ namespace Rock.Web.Cache
         private List<int> pageIds = null;
 
         /// <summary>
-        /// Gets a List of all the <see cref="Block"/> objects configured for the page and the page's layout.
+        /// Gets a List of all the <see cref="BlockCache"/> objects configured for the page and the page's layout.
         /// </summary>
-        public List<Block> Blocks
+        public List<BlockCache> Blocks
         {
             get
             {
-                List<Block> blocks = new List<Block>();
+                List<BlockCache> blocks = new List<BlockCache>();
 
                 if ( blockIds != null )
                 {
                     foreach ( int id in blockIds )
                     {
-                        Block block = Block.Read( id );
+                        BlockCache block = BlockCache.Read( id );
                         if ( block != null )
                             blocks.Add( block );
                     }
@@ -206,7 +206,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         Rock.Attribute.Helper.LoadAttributes( block );
-                        blocks.Add( Block.Read( block ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                     // Load Page Blocks
@@ -214,7 +214,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         Rock.Attribute.Helper.LoadAttributes( block );
-                        blocks.Add( Block.Read( block ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                 }
@@ -349,7 +349,7 @@ namespace Rock.Web.Cache
         /// <param name="item"></param>
         public void SaveSharedItem( string key, object item )
         {
-            string itemKey = string.Format("{0}:Item:{1}", Page.CacheKey( Id ), key);
+            string itemKey = string.Format("{0}:Item:{1}", PageCache.CacheKey( Id ), key);
             
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
@@ -366,7 +366,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public object GetSharedItem( string key )
         {
-            string itemKey = string.Format( "{0}:Item:{1}", Page.CacheKey( Id ), key );
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
 
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
@@ -500,18 +500,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="pageModel"></param>
         /// <returns></returns>
-        public static Page Read( Rock.Cms.Page pageModel )
+        public static PageCache Read( Rock.Cms.Page pageModel )
         {
-            string cacheKey = Page.CacheKey( pageModel.Id );
+            string cacheKey = PageCache.CacheKey( pageModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            Page page = cache[cacheKey] as Page;
+            PageCache page = cache[cacheKey] as PageCache;
 
 			if ( page != null )
 				return page;
 			else
 			{
-				page = Page.CopyModel( pageModel );
+				page = PageCache.CopyModel( pageModel );
 				cache.Set( cacheKey, page, new CacheItemPolicy() );
 
 				return page;
@@ -524,12 +524,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static Page Read( int id )
+        public static PageCache Read( int id )
         {
-            string cacheKey = Page.CacheKey( id );
+            string cacheKey = PageCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            Page page = cache[cacheKey] as Page;
+            PageCache page = cache[cacheKey] as PageCache;
 
             if ( page != null )
                 return page;
@@ -541,7 +541,7 @@ namespace Rock.Web.Cache
                 {
                     Rock.Attribute.Helper.LoadAttributes( pageModel );
 
-                    page = Page.CopyModel( pageModel );
+                    page = PageCache.CopyModel( pageModel );
  
                     cache.Set( cacheKey, page, new CacheItemPolicy() );
 
@@ -554,10 +554,10 @@ namespace Rock.Web.Cache
         }
 
         // Copies the Model object to the Cached object
-        private static Page CopyModel( Rock.Cms.Page pageModel )
+        private static PageCache CopyModel( Rock.Cms.Page pageModel )
         {
 			// Creates new object by copying properties of model
-            var page = new Rock.Web.Cache.Page(pageModel);
+            var page = new Rock.Web.Cache.PageCache(pageModel);
 
             if (pageModel.Attributes != null)
                 foreach ( var category in pageModel.Attributes )
@@ -582,7 +582,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( Page.CacheKey( id ) );
+            cache.Remove( PageCache.CacheKey( id ) );
         }
 
         /// <summary>
@@ -594,7 +594,7 @@ namespace Rock.Web.Cache
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
-                    Page page = cache[item.Key] as Page;
+                    PageCache page = cache[item.Key] as PageCache;
                     if ( page != null && page.Layout == layout )
                         cache.Remove( item.Key );
                 }
@@ -609,7 +609,7 @@ namespace Rock.Web.Cache
 			foreach ( var item in cache )
 				if ( item.Key.StartsWith( "Rock:Page:" ) )
 				{
-					Page page = cache[item.Key] as Page;
+					PageCache page = cache[item.Key] as PageCache;
 					if ( page != null && page.Layout == layout )
 						page.FlushBlocks();
 				}
@@ -732,7 +732,7 @@ namespace Rock.Web.Cache
                 pageElement.Add( childPagesElement );
 
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages)
-                foreach ( Page page in Pages )
+                foreach ( PageCache page in Pages )
                 {
                     XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
                     if ( childPageElement != null )

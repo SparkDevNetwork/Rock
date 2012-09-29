@@ -181,7 +181,7 @@ namespace RockWeb
 					string status = "500";
 
 					// determine if 404's should be tracked as exceptions
-					bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributes.Value( "Log404AsException" ) );
+					bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributesCache.Value( "Log404AsException" ) );
 
 					// set status to 404
 					if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
@@ -228,7 +228,7 @@ namespace RockWeb
 							mergeObjects.Add( values );
 
 							// get email addresses to send to
-							string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
+							string emailAddressesList = Rock.Web.Cache.GlobalAttributesCache.Value( "EmailExceptionsList" );
 							if ( emailAddressesList != null )
 							{
 								string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
@@ -278,20 +278,20 @@ namespace RockWeb
 
         private void SetSMTPParameters( Email email )
         {
-            email.Server = Rock.Web.Cache.GlobalAttributes.Value( "SMTPServer" );
+            email.Server = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPServer" );
 
             int port = 0;
-            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPPort" ), out port ) )
+            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPort" ), out port ) )
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = Rock.Web.Cache.GlobalAttributes.Value( "SMTPUserName" );
-            email.Password = Rock.Web.Cache.GlobalAttributes.Value( "SMTPPassword" );
+            email.UserName = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUserName" );
+            email.Password = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPassword" );
         }
 
         private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
@@ -358,7 +358,7 @@ namespace RockWeb
                 exceptionLog.ServerVariables = serverVars.ToString();
 
                 if (user != null)
-                    exceptionLog.PersonId = user.PersonId;
+					exceptionLog.CreatedByPersonId = user.PersonId;
 
                 service.Add( exceptionLog, null );
                 service.Save( exceptionLog, null );
@@ -467,17 +467,17 @@ namespace RockWeb
                 // Cache all the Field Types
                 var fieldTypeService = new Rock.Core.FieldTypeService();
                 foreach ( var fieldType in fieldTypeService.Queryable() )
-                    Rock.Web.Cache.FieldType.Read( fieldType );
+                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
 
                 // Cache all tha Defined Types
                 var definedTypeService = new Rock.Core.DefinedTypeService();
                 foreach ( var definedType in definedTypeService.Queryable() )
-                    Rock.Web.Cache.DefinedType.Read( definedType );
+                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
 
                 // Cache all the Defined Values
                 var definedValueService = new Rock.Core.DefinedValueService();
                 foreach ( var definedValue in definedValueService.Queryable() )
-                    Rock.Web.Cache.DefinedValue.Read( definedValue );
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
 
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
                 var qualifiers = new Dictionary<int, Dictionary<string, string>>();
@@ -492,9 +492,9 @@ namespace RockWeb
                 foreach ( var attribute in new Rock.Core.AttributeService().Queryable() )
                 {
                     if ( qualifiers.ContainsKey( attribute.Id ) )
-                        Rock.Web.Cache.Attribute.Read( attribute, qualifiers[attribute.Id] );
+                        Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
                     else
-                        Rock.Web.Cache.Attribute.Read( attribute, new Dictionary<string, string>() );
+                        Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
                 }
             }
         }
@@ -516,25 +516,25 @@ namespace RockWeb
             {
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.Id ) ) )
+                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
                 {
                     // Get the cached page
-                    var cachedPage = Rock.Web.Cache.Page.Read( page.Id );
+                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
                     // if the parent page has changed, flush the old parent page's list of child pages
                     if ( cachedPage.ParentPage != null && cachedPage.ParentPage.Id != page.ParentPageId )
                         cachedPage.ParentPage.FlushChildPages();
 
                     // Flush the updated page from cache
-                    Rock.Web.Cache.Page.Flush( page.Id );
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
                 }
 
                 // Check to see if updated page has a parent
                 if ( page.ParentPageId.HasValue )
                 {
                     // If the parent page is cached, flush it's list of child pages
-                    if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.ParentPageId.Value ) ) )
-                        Rock.Web.Cache.Page.Read( page.ParentPageId.Value ).FlushChildPages();
+                    if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.ParentPageId.Value ) ) )
+                        Rock.Web.Cache.PageCache.Read( page.ParentPageId.Value ).FlushChildPages();
                 }
             }
         }
@@ -552,17 +552,17 @@ namespace RockWeb
             {
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.Id ) ) )
+                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
                 {
                     // Get the cached page
-                    var cachedPage = Rock.Web.Cache.Page.Read( page.Id );
+                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
                     // if the parent page is not null, flush parent page's list of child pages
                     if ( cachedPage.ParentPage != null )
                         cachedPage.ParentPage.FlushChildPages();
 
                     // Flush the updated page from cache
-                    Rock.Web.Cache.Page.Flush( page.Id );
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
                 }
             }
         }
@@ -579,11 +579,11 @@ namespace RockWeb
             if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.Block.Flush( block.Id );
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
 
                 // Flush the block instance's parent page 
                 if ( block.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( block.PageId.Value );
+                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
             }
         }
 
@@ -599,11 +599,11 @@ namespace RockWeb
             if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.Block.Flush( block.Id );
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
 
                 // Flush the block instance's parent page 
                 if ( block.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( block.PageId.Value );
+                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
             }
         }
 

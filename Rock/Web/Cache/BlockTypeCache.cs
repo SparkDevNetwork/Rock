@@ -15,10 +15,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockType : Rock.Cms.BlockTypeDto
+    public class BlockTypeCache : Rock.Cms.BlockTypeDto
     {
-        private BlockType() : base() { }
-		private BlockType( Rock.Cms.BlockType blockType ) : base( blockType ) { }
+        private BlockTypeCache() : base() { }
+		private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
@@ -34,14 +34,14 @@ namespace Rock.Web.Cache
         /// List of attributes associated with the block type.  This object will not include values.
         /// To get values associated with the current block instance, use the AttributeValues
         /// </summary>
-        public List<Rock.Web.Cache.Attribute> Attributes
+        public List<Rock.Web.Cache.AttributeCache> Attributes
         {
             get
             {
-                List<Rock.Web.Cache.Attribute> attributes = new List<Rock.Web.Cache.Attribute>();
+                List<Rock.Web.Cache.AttributeCache> attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
-                    attributes.Add( Attribute.Read( id ) );
+                    attributes.Add( AttributeCache.Read( id ) );
 
                 return attributes;
             }
@@ -83,12 +83,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static BlockType Read( int id )
+        public static BlockTypeCache Read( int id )
         {
-            string cacheKey = BlockType.CacheKey( id );
+            string cacheKey = BlockTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            BlockType blockType = cache[cacheKey] as BlockType;
+            BlockTypeCache blockType = cache[cacheKey] as BlockTypeCache;
 
             if ( blockType != null )
                 return blockType;
@@ -98,7 +98,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
-					blockType = new BlockType(blockTypeModel);
+					blockType = new BlockTypeCache(blockTypeModel);
 
                     blockType.IsInstancePropertiesVerified = false;
 
@@ -138,7 +138,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( BlockType.CacheKey( id ) );
+            cache.Remove( BlockTypeCache.CacheKey( id ) );
         }
 
         #endregion
