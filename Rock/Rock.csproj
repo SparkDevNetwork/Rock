@@ -499,7 +499,7 @@
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
     <Compile Include="Security\Role.cs" />
-    <Compile Include="Web\Cache\CampuCache.cs">
+    <Compile Include="Web\Cache\CampusCache.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
