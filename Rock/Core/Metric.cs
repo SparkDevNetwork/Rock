@@ -111,7 +111,7 @@ namespace Rock.Core
 		/// CollectionFrequency.
 		/// </value>
 		[DataMember]
-		public int CollectionFrequencyId { get; set; }
+		public int? CollectionFrequencyId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the LastCollected Date Time.
@@ -188,40 +188,6 @@ namespace Rock.Core
 		public int? ModifiedByPersonId { get; set; }
 		
 		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Core.DTO.Metric"/> object.
-        /// </value>
-		public Rock.Core.MetricDto DataTransferObject
-		{
-			get 
-			{
-				Rock.Core.MetricDto dto = new Rock.Core.MetricDto();
-				dto.Id = this.Id;
-				dto.IsSystem = this.IsSystem;
-				dto.Type = this.Type;				
-				dto.Category = this.Category;
-				dto.Title = this.Title;
-				dto.Subtitle = this.Subtitle;
-				dto.Description = this.Description;
-				dto.MinValue = this.MinValue;
-				dto.MaxValue = this.MaxValue;
-				dto.CollectionFrequencyId = this.CollectionFrequencyId;
-				dto.LastCollected = this.LastCollected;
-				dto.Source = this.Source;
-				dto.SourceSQL = this.SourceSQL;
-				dto.Order = this.Order;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				dto.Guid = this.Guid;
-				return dto; 
-			}
-		}
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -230,7 +196,6 @@ namespace Rock.Core
 		{
 			return Read<Metric>( id );
 		}
-
 
         /// <summary>
         /// Gets the auth entity.
@@ -273,7 +238,7 @@ namespace Rock.Core
         /// </summary>
         public MetricConfiguration()
         {
-			//this.HasOptional( p => p.CollectionFrequencyId ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
+			this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
 		}
     }
 }
