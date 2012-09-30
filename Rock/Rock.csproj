@@ -449,6 +449,10 @@
     <Compile Include="Migrations\201209291219597_RemovePersonForeignKeys.Designer.cs">
       <DependentUpon>201209291219597_RemovePersonForeignKeys.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201209301248508_Metric3.cs" />
+    <Compile Include="Migrations\201209301248508_Metric3.Designer.cs">
+      <DependentUpon>201209301248508_Metric3.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -495,13 +499,11 @@
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
     <Compile Include="Security\Role.cs" />
-    <Compile Include="Web\Cache\CampuCaches.cs">
+    <Compile Include="Web\Cache\CampuCache.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedValue.cs" />
-    <Compile Include="Web\Cache\MetricValueCache.cs" />
-    <Compile Include="Web\Cache\MetricCache.cs" />
     <Compile Include="Web\Cache\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\FieldTypeCache.cs" />
     <Compile Include="Web\Cache\SiteCache.cs" />
@@ -801,6 +803,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209291219597_RemovePersonForeignKeys.resx">
       <DependentUpon>201209291219597_RemovePersonForeignKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201209301248508_Metric3.resx">
+      <DependentUpon>201209301248508_Metric3.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

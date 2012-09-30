@@ -14,6 +14,11 @@ namespace Rock.SystemGuid
     public static class DefinedType
     {
 		/// <summary>
+		/// Metric Collection Frequency
+		/// </summary>
+		public static Guid METRIC_COLLECTION_FREQUENCY { get { return new Guid( "526CB333-2C64-4486-8469-7F7EA9366254" ); } }
+		
+		/// <summary>
 		/// Guid for the types of Person Records (such as person, business, etc.)
 		/// </summary>
         public static Guid PERSON_RECORD_TYPE { get { return new Guid( "26be73a6-a9c5-4e94-ae00-3afdcf8c9275" ); } }

@@ -21,14 +21,12 @@ namespace RockWeb.Blocks.Administration
 	public partial class Metrics : Rock.Web.UI.Block
 	{
 		#region Fields
-		private const string definedTypeName = "Frequency";
 
 		private MetricService metricService = new MetricService();
 		private MetricValueService metricValueService = new MetricValueService();
 		private DefinedValueService definedValueService = new DefinedValueService();		
 		private bool _canConfigure = false;
 		
-
 		#endregion
 
 		#region Control Methods
@@ -126,8 +124,6 @@ namespace RockWeb.Blocks.Administration
 			Rock.Core.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
 			if ( metric != null )
 			{
-				Rock.Web.Cache.MetricCache.Flush( metric.Id );
-
 				metricService.Delete( metric, CurrentPersonId );
 				metricService.Save( metric, CurrentPersonId );
 			}
@@ -151,7 +147,6 @@ namespace RockWeb.Blocks.Administration
 				}
 				else
 				{
-					Rock.Web.Cache.MetricCache.Flush( metricId );
 					metric = metricService.Get( metricId );
 				}
 
@@ -207,8 +202,6 @@ namespace RockWeb.Blocks.Administration
 			Rock.Core.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
 			if ( metricValue != null )
 			{
-				Rock.Web.Cache.MetricCache.Flush( metricValue.Id );
-
 				metricValueService.Delete( metricValue, CurrentPersonId );
 				metricValueService.Save( metricValue, CurrentPersonId );
 			}
@@ -241,7 +234,6 @@ namespace RockWeb.Blocks.Administration
 				}
 				else
 				{
-					Rock.Web.Cache.MetricCache.Flush( metricValueId );
 					metricValue = metricValueService.Get( metricValueId );
 				}
 
@@ -321,7 +313,8 @@ namespace RockWeb.Blocks.Administration
 			using ( new Rock.Data.UnitOfWorkScope() )
 			{
 				definedValues = definedValueService.Queryable().
-					Where( definedValue => definedValue.DefinedType.Name == definedTypeName ).
+					Where( definedValue => definedValue.DefinedType.Guid == Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ).
+					OrderBy( v => v.Order).
 					ToList();
 			}
 
@@ -334,12 +327,10 @@ namespace RockWeb.Blocks.Administration
 		{
 			hfIdMetric.Value = metricId.ToString();
 
-			var metricModel = new Rock.Core.MetricService().Get( metricId );
-			
-			if ( metricModel != null )
-			{
-				var metric = Rock.Web.Cache.MetricCache.Read( metricModel );
+			var metric = new Rock.Core.MetricService().Get( metricId );
 
+			if ( metric != null )
+			{
 				lAction.Text = "Edit";
 				tbCategory.Text = metric.Category;
 				tbTitle.Text = metric.Title;
@@ -413,12 +404,11 @@ namespace RockWeb.Blocks.Administration
 		protected void ShowEditValue( int metricValueId )
 		{
 			hfIdValue.Value = metricValueId.ToString();
-			
-			var metricValueModel = new Rock.Core.MetricValueService().Get( metricValueId );
 
-			if ( metricValueModel != null )
+			var metricValue = new Rock.Core.MetricValueService().Get( metricValueId );
+
+			if ( metricValue != null )
 			{
-				var metricValue = Rock.Web.Cache.MetricValueCache.Read( metricValueModel );
 				lValue.Text = "Edit";
 				tbValue.Text = metricValue.Value;
 				tbValueDescription.Text = metricValue.Description;
