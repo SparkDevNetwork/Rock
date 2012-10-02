@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Block Types Found" AllowSorting="true" >
         <Columns>

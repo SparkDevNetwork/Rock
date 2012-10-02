@@ -2,7 +2,7 @@
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
     
     <asp:PlaceHolder ID="phContent" runat="server">
 
