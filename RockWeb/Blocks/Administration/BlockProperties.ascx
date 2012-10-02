@@ -2,7 +2,7 @@
 
 <div class="admin-dialog">
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <asp:PlaceHolder ID="phContent" runat="server">
 

@@ -6,9 +6,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Web.UI;
+using Rock;
 using Rock.Cms;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
 			string script = @"
         Sys.Application.add_load(function () {
             $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this page route?');
+                return confirm('Are you sure you want to delete this Page Route?');
                 });
         });
     ";
@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Administration
 			}
 
 			// check for duplicates
-			if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
+			if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
 			{
 				nbMessage.Text = "This route is already being used on another Page.";
 				nbMessage.Visible = true;
@@ -221,7 +221,17 @@ namespace RockWeb.Blocks.Administration
 		private void BindGrid()
 		{
 			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
-			List<PageRoute> pageRoutes = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
+			List<PageRoute> pageRoutes; 
+
+			SortProperty sortProperty = gPageRoutes.SortProperty;
+			if ( sortProperty != null )
+			{
+				pageRoutes = pageRouteService.Queryable().Sort( sortProperty ).ToList();
+			}
+			else
+			{
+				pageRoutes = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
+			}
 
 			gPageRoutes.DataSource = pageRoutes;
 			gPageRoutes.DataBind();
