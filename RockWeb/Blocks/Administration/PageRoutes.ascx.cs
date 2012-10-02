@@ -6,12 +6,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web.UI;
-
-using Rock.Web.UI.Controls;
 using Rock.Cms;
-
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -20,13 +19,6 @@ namespace RockWeb.Blocks.Administration
 	/// </summary>
 	public partial class PageRoutes : Rock.Web.UI.Block
 	{
-		#region Fields
-
-		Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
-		Rock.Cms.PageService pageService = new Rock.Cms.PageService();
-
-		#endregion
-
 		/// <summary>
 		/// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
 		/// </summary>
@@ -38,11 +30,8 @@ namespace RockWeb.Blocks.Administration
 			if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
 			{
 				gPageRoutes.DataKeyNames = new string[] { "id" };
-
-				// Open Question
-
-				//gPageRoutes.Actions.IsAddEnabled = true;
-				//gPageRoutes.Actions.AddClick += gSites_Add;
+				gPageRoutes.Actions.IsAddEnabled = true;
+				gPageRoutes.Actions.AddClick += gPageRoutes_Add;
 
 				gPageRoutes.GridRebind += gPageRoutes_GridRebind;
 			}
@@ -55,8 +44,6 @@ namespace RockWeb.Blocks.Administration
         });
     ";
 			this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gPageRoutes.ClientID ), script, true );
-
-
 		}
 
 		/// <summary>
@@ -88,6 +75,16 @@ namespace RockWeb.Blocks.Administration
 		#region Grid Events
 
 		/// <summary>
+		/// Handles the Add event of the gPageRoutes control.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+		protected void gPageRoutes_Add( object sender, EventArgs e )
+		{
+			ShowEdit( 0 );
+		}
+
+		/// <summary>
 		/// Handles the Edit event of the gPageRoutes control.
 		/// </summary>
 		/// <param name="sender">The source of the event.</param>
@@ -104,6 +101,7 @@ namespace RockWeb.Blocks.Administration
 		/// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
 		protected void gPageRoutes_Delete( object sender, RowEventArgs e )
 		{
+			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
 			Rock.Cms.PageRoute pageRoute = pageRouteService.Get( (int)gPageRoutes.DataKeys[e.RowIndex]["id"] );
 			if ( CurrentBlock != null )
 			{
@@ -147,6 +145,7 @@ namespace RockWeb.Blocks.Administration
 		protected void btnSave_Click( object sender, EventArgs e )
 		{
 			Rock.Cms.PageRoute pageRoute;
+			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
 
 			int pageRouteId = 0;
 			if ( !int.TryParse( hfPageRouteId.Value, out pageRouteId ) )
@@ -164,18 +163,52 @@ namespace RockWeb.Blocks.Administration
 				pageRoute = pageRouteService.Get( pageRouteId );
 			}
 
-			pageRoute.Route = tbRoute.Text;
-
+			pageRoute.Route = tbRoute.Text.Trim();
 			int selectedPageId = int.Parse( ddlPageName.SelectedValue );
 			pageRoute.PageId = selectedPageId;
-			//pageRoute.
 
-			pageRouteService.Save( pageRoute, CurrentPersonId );
+			// Validate that this can be created as a real Route
+			try
+			{
+				System.Web.Routing.Route testRoute = new System.Web.Routing.Route( tbRoute.Text, null );
+			}
+			catch ( Exception ex )
+			{
+				nbMessage.Text = ex.Message;
+				nbMessage.Visible = true;
+				return;
+			}
 
-			BindGrid();
+			// check for EmptyString
+			if ( string.IsNullOrWhiteSpace( pageRoute.Route ) )
+			{
+				nbMessage.Text = "Route cannot be blank.";
+				nbMessage.Visible = true;
+				return;
+			}
 
-			pnlDetails.Visible = false;
-			pnlList.Visible = true;
+			// check for duplicates
+			if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
+			{
+				nbMessage.Text = "This route is already being used on another Page.";
+				nbMessage.Visible = true;
+				return;
+			}
+
+			try
+			{
+				pageRouteService.Save( pageRoute, CurrentPersonId );
+				BindGrid();
+				pnlDetails.Visible = false;
+				pnlList.Visible = true;
+			}
+			catch ( Exception ex )
+			{
+				//TODO: Log Error
+
+				nbMessage.Text = "An unexpected error occurred.";
+				nbMessage.Visible = true;
+			}
 		}
 
 		#endregion
@@ -187,6 +220,7 @@ namespace RockWeb.Blocks.Administration
 		/// </summary>
 		private void BindGrid()
 		{
+			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
 			List<PageRoute> pageRoutes = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
 
 			gPageRoutes.DataSource = pageRoutes;
@@ -194,12 +228,42 @@ namespace RockWeb.Blocks.Administration
 		}
 
 		/// <summary>
+		/// 
+		/// </summary>
+		private class PageInfo
+		{
+			public int Id { get; set; }
+			public string Title { get; set; }
+			public string DropDownListText { get; set; }
+			public int pageDepth { get; set; }
+			public string pageHash { get; set; }
+		}
+
+		/// <summary>
 		/// Loads the drop downs.
 		/// </summary>
 		private void LoadDropDowns()
 		{
-			List<Rock.Cms.Page> pages = pageService.Queryable().OrderBy( p => p.Name ).ToList();
-			ddlPageName.DataSource = pages;
+			Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+			List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
+
+			List<PageInfo> pageNameList = new List<PageInfo>();
+
+			foreach ( Rock.Cms.Page page in allPages )
+			{
+				PageInfo pageInfo = new PageInfo { Id = page.Id, Title = page.Title, pageDepth = 0, pageHash = page.Title.PadRight( 100, ' ' ) };
+				pageNameList.Add( pageInfo );
+				Rock.Cms.Page parentPage = page.ParentPage;
+				while ( parentPage != null )
+				{
+					pageInfo.pageDepth++;
+					pageInfo.pageHash = parentPage.Title.PadRight( 100, ' ' ) + pageInfo.pageHash;
+					parentPage = parentPage.ParentPage;
+				}
+				pageInfo.DropDownListText = new string( '-', pageInfo.pageDepth ) + pageInfo.Title;
+			}
+
+			ddlPageName.DataSource = pageNameList.OrderBy( a => a.pageHash );
 			ddlPageName.DataBind();
 		}
 
@@ -212,13 +276,14 @@ namespace RockWeb.Blocks.Administration
 			pnlList.Visible = false;
 			pnlDetails.Visible = true;
 
+			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
 			Rock.Cms.PageRoute pageRoute = pageRouteService.Get( pageRouteId );
 
 			if ( pageRoute != null )
 			{
 				hfPageRouteId.Value = pageRoute.Id.ToString();
 
-				ddlPageName.SelectedValue = pageRoute.Page.Id.ToString();
+				ddlPageName.SelectedValue = pageRoute.PageId.ToString();
 				tbRoute.Text = pageRoute.Route;
 			}
 			else
