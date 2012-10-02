@@ -171,14 +171,6 @@ namespace Rock.Crm
 		public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person CreatedByPerson { get; set; }
-        
-		/// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
@@ -186,14 +178,6 @@ namespace Rock.Crm
         /// </value>
 		public virtual Person Person { get; set; }
         
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person ModifiedByPerson { get; set; }
-
     }
     
     /// <summary>
@@ -206,9 +190,7 @@ namespace Rock.Crm
         /// </summary>
         public EmailTemplateConfiguration()
         {
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
 			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

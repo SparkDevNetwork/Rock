@@ -39,7 +39,7 @@ namespace Rock.Rest.Core
 		[HttpPut]
 		public void Flush( int id )
 		{
-			Rock.Web.Cache.Attribute.Flush( id );
+			Rock.Web.Cache.AttributeCache.Flush( id );
 		}
 
 		/// <summary>
@@ -48,7 +48,7 @@ namespace Rock.Rest.Core
 		[HttpPut]
 		public void Flush()
 		{
-			Rock.Web.Cache.GlobalAttributes.Flush();
+			Rock.Web.Cache.GlobalAttributesCache.Flush();
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Block POCO Entity.
     /// </summary>
     [Table( "cmsBlock" )]
-    public partial class Block : ModelWithAttributes<Block>, IAuditable, IExportable
+    public partial class Block : ModelWithAttributes<Block>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -31,15 +31,54 @@ namespace Rock.Cms
 		public bool IsSystem { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Path.
+		/// Gets or sets the Page Id.
 		/// </summary>
 		/// <value>
-		/// Path.
+		/// Page Id.
+		/// </value>
+		[DataMember]
+		public int? PageId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Layout.
+		/// </summary>
+		/// <value>
+		/// Layout.
+		/// </value>
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Layout { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Block Type Id.
+		/// </summary>
+		/// <value>
+		/// Block Type Id.
 		/// </value>
 		[Required]
-		[MaxLength( 200 )]
 		[DataMember]
-		public string Path { get; set; }
+		public int BlockTypeId { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Zone.
+		/// </summary>
+		/// <value>
+		/// Zone.
+		/// </value>
+		[Required]
+		[MaxLength( 100 )]
+		[DataMember]
+		public string Zone { get; set; }
+		
+		/// <summary>
+		/// Gets or sets the Order.
+		/// </summary>
+		/// <value>
+		/// Order.
+		/// </value>
+		[Required]
+		[DataMember]
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -47,19 +86,21 @@ namespace Rock.Cms
 		/// <value>
 		/// Name.
 		/// </value>
-		[Required]
 		[MaxLength( 100 )]
+		[TrackChanges]
+		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
 		public string Name { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Description.
+		/// Gets or sets the Output Cache Duration.
 		/// </summary>
 		/// <value>
-		/// Description.
+		/// Output Cache Duration.
 		/// </value>
+		[Required]
 		[DataMember]
-		public string Description { get; set; }
+		public int OutputCacheDuration { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Created Date Time.
@@ -96,7 +137,7 @@ namespace Rock.Cms
 		/// </value>
 		[DataMember]
 		public int? ModifiedByPersonId { get; set; }
-		
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -104,29 +145,29 @@ namespace Rock.Cms
 		public override string AuthEntity { get { return "Cms.Block"; } }
         
 		/// <summary>
-        /// Gets or sets the Block Instances.
+        /// Gets or sets the Html Contents.
         /// </summary>
         /// <value>
-        /// Collection of Block Instances.
+        /// Collection of Html Contents.
         /// </value>
-		public virtual ICollection<BlockInstance> BlockInstances { get; set; }
+		public virtual ICollection<HtmlContent> HtmlContents { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
+        /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// A <see cref="BlockType"/> object.
         /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
+		public virtual BlockType BlockType { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Modified By Person.
+        /// Gets or sets the Page.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
+		public virtual Page Page { get; set; }
+        
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -137,37 +178,63 @@ namespace Rock.Cms
 			return Read<Block>( id );
 		}
 
+
         /// <summary>
-        /// Exports the object as JSON.
+        /// Gets the supported actions.
         /// </summary>
-        /// <returns></returns>
+        public override List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
         public object ExportObject()
         {
-            return this.ToDynamic();
+            dynamic exportObject = this.ToDynamic();
+
+            if (BlockType != null)
+            {
+                exportObject.BlockType = BlockType.ExportObject();
+            }
+
+            if (HtmlContents == null)
+            {
+                return exportObject;
+            }
+
+            exportObject.HtmlContents = new List<dynamic>();
+
+            foreach (var content in HtmlContents)
+            {
+                exportObject.HtmlContents.Add( content.ExportObject() );
+            }
+
+            return exportObject;
         }
 
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
         public void ImportJson(string data)
         {
-            throw new NotImplementedException();
+            
         }
-
     }
 
     /// <summary>
-    /// Block Configuration class.
+    /// Block Instance Configuration class.
     /// </summary>
     public partial class BlockConfiguration : EntityTypeConfiguration<Block>
     {
@@ -176,8 +243,8 @@ namespace Rock.Cms
         /// </summary>
         public BlockConfiguration()
         {
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
+			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
 		}
     }
 }

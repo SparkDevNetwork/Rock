@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for ExceptionLog object
 	/// </summary>
-	public partial class ExceptionLogDto : Dto<ExceptionLog>
+	public partial class ExceptionLogDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -27,7 +27,7 @@ namespace Rock.Core
 		public int? PageId { get; set; }
 		public DateTime ExceptionDate { get; set; }
 		public bool? HasInnerException { get; set; }
-		public int? PersonId { get; set; }
+		public int? CreatedByPersonId { get; set; }
 		public string StatusCode { get; set; }
 		public string ExceptionType { get; set; }
 		public string Description { get; set; }
@@ -38,6 +38,8 @@ namespace Rock.Core
 		public string QueryString { get; set; }
 		public string Form { get; set; }
 		public string Cookies { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -60,52 +62,60 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="exceptionLog"></param>
-		public override void CopyFromModel( ExceptionLog exceptionLog )
+		public void CopyFromModel( IModel model )
 		{
-			this.ParentId = exceptionLog.ParentId;
-			this.SiteId = exceptionLog.SiteId;
-			this.PageId = exceptionLog.PageId;
-			this.ExceptionDate = exceptionLog.ExceptionDate;
-			this.HasInnerException = exceptionLog.HasInnerException;
-			this.PersonId = exceptionLog.PersonId;
-			this.StatusCode = exceptionLog.StatusCode;
-			this.ExceptionType = exceptionLog.ExceptionType;
-			this.Description = exceptionLog.Description;
-			this.Source = exceptionLog.Source;
-			this.StackTrace = exceptionLog.StackTrace;
-			this.PageUrl = exceptionLog.PageUrl;
-			this.ServerVariables = exceptionLog.ServerVariables;
-			this.QueryString = exceptionLog.QueryString;
-			this.Form = exceptionLog.Form;
-			this.Cookies = exceptionLog.Cookies;
-			this.Id = exceptionLog.Id;
-			this.Guid = exceptionLog.Guid;
+			if ( model is ExceptionLog )
+			{
+				var exceptionLog = (ExceptionLog)model;
+				this.ParentId = exceptionLog.ParentId;
+				this.SiteId = exceptionLog.SiteId;
+				this.PageId = exceptionLog.PageId;
+				this.ExceptionDate = exceptionLog.ExceptionDate;
+				this.HasInnerException = exceptionLog.HasInnerException;
+				this.CreatedByPersonId = exceptionLog.CreatedByPersonId;
+				this.StatusCode = exceptionLog.StatusCode;
+				this.ExceptionType = exceptionLog.ExceptionType;
+				this.Description = exceptionLog.Description;
+				this.Source = exceptionLog.Source;
+				this.StackTrace = exceptionLog.StackTrace;
+				this.PageUrl = exceptionLog.PageUrl;
+				this.ServerVariables = exceptionLog.ServerVariables;
+				this.QueryString = exceptionLog.QueryString;
+				this.Form = exceptionLog.Form;
+				this.Cookies = exceptionLog.Cookies;
+				this.Id = exceptionLog.Id;
+				this.Guid = exceptionLog.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="exceptionLog"></param>
-		public override void CopyToModel ( ExceptionLog exceptionLog )
+		public void CopyToModel ( IModel model )
 		{
-			exceptionLog.ParentId = this.ParentId;
-			exceptionLog.SiteId = this.SiteId;
-			exceptionLog.PageId = this.PageId;
-			exceptionLog.ExceptionDate = this.ExceptionDate;
-			exceptionLog.HasInnerException = this.HasInnerException;
-			exceptionLog.PersonId = this.PersonId;
-			exceptionLog.StatusCode = this.StatusCode;
-			exceptionLog.ExceptionType = this.ExceptionType;
-			exceptionLog.Description = this.Description;
-			exceptionLog.Source = this.Source;
-			exceptionLog.StackTrace = this.StackTrace;
-			exceptionLog.PageUrl = this.PageUrl;
-			exceptionLog.ServerVariables = this.ServerVariables;
-			exceptionLog.QueryString = this.QueryString;
-			exceptionLog.Form = this.Form;
-			exceptionLog.Cookies = this.Cookies;
-			exceptionLog.Id = this.Id;
-			exceptionLog.Guid = this.Guid;
+			if ( model is ExceptionLog )
+			{
+				var exceptionLog = (ExceptionLog)model;
+				exceptionLog.ParentId = this.ParentId;
+				exceptionLog.SiteId = this.SiteId;
+				exceptionLog.PageId = this.PageId;
+				exceptionLog.ExceptionDate = this.ExceptionDate;
+				exceptionLog.HasInnerException = this.HasInnerException;
+				exceptionLog.CreatedByPersonId = this.CreatedByPersonId;
+				exceptionLog.StatusCode = this.StatusCode;
+				exceptionLog.ExceptionType = this.ExceptionType;
+				exceptionLog.Description = this.Description;
+				exceptionLog.Source = this.Source;
+				exceptionLog.StackTrace = this.StackTrace;
+				exceptionLog.PageUrl = this.PageUrl;
+				exceptionLog.ServerVariables = this.ServerVariables;
+				exceptionLog.QueryString = this.QueryString;
+				exceptionLog.Form = this.Form;
+				exceptionLog.Cookies = this.Cookies;
+				exceptionLog.Id = this.Id;
+				exceptionLog.Guid = this.Guid;
+			}
 		}
 	}
 }

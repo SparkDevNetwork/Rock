@@ -7,17 +7,20 @@
 using System;
 using System.Web.UI;
 
-using Rock.CRM;
+using Rock.Crm;
 
 namespace RockWeb.Blocks
 {
     public partial class PersonDetails : Rock.Web.UI.Block
     {
-        protected void Page_Load( object sender, EventArgs e )
-        {
-            
-        }
-
-        
+		protected override void OnInit( EventArgs e )
+		{
+			base.OnInit( e );
+			
+			Rock.Web.UI.Page.AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
+			Rock.Web.UI.Page.AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
+			Rock.Web.UI.Page.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+			Rock.Web.UI.Page.AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
+		}
     }
 }

@@ -65,6 +65,7 @@ namespace Rock.Groups
 					IsSystem = m.IsSystem,
 					ParentGroupId = m.ParentGroupId,
 					GroupTypeId = m.GroupTypeId,
+					CampusId = m.CampusId,
 					Name = m.Name,
 					Description = m.Description,
 					IsSecurityRole = m.IsSecurityRole,

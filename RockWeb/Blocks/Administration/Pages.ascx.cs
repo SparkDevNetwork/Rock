@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Web.Cache.Page _page = null;
+        private Rock.Web.Cache.PageCache _page = null;
         private Rock.Cms.PageService pageService = new Rock.Cms.PageService();
 
         #endregion
@@ -31,12 +31,12 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
+                _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page != null )
                     canConfigure = _page.IsAuthorized( "Configure", CurrentPerson );
                 else
-                    canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                    canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( canConfigure )
                 {
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
-                Rock.Web.Cache.Page.Flush( page.Id );
+                Rock.Web.Cache.PageCache.Flush( page.Id );
 
                 pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.SiteId = PageInstance.Site.Id;
+                    page.SiteId = CurrentPage.Site.Id;
                 }
 
                 page.Title = tbPageName.Text;
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.Text = _page.Layout;
                     else
-                        ddlLayout.Text = PageInstance.Layout;
+                        ddlLayout.Text = CurrentPage.Layout;
                 }
                 catch { }
 

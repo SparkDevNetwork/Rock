@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Administration
 			{
 				if ( nuGetService == null )
 				{
-					string packageSource = Rock.Web.Cache.GlobalAttributes.Value( "PackageSourceUrl" );
+					string packageSource = Rock.Web.Cache.GlobalAttributesCache.Value( "PackageSourceUrl" );
 					string siteRoot = Request.MapPath( "~/" );
 
 					nuGetService = new WebProjectManager( packageSource, siteRoot );
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Administration
 
 			this.viewing = ( hfViewing.Value == "available" ) ? ViewMode.Available : ViewMode.Installed;
 
-			if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
+			if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
 			{
 				if ( !Page.IsPostBack )
 				{

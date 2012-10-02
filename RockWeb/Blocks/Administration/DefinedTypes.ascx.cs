@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
 
                 entity = "Rock.Core.DefinedValue";
                 entityQualifierColumn = "DefinedTypeId";
-                canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Administration
 			
 			if ( type != null )
             {
-                Rock.Web.Cache.Attribute.Flush( type.Id );
+                Rock.Web.Cache.AttributeCache.Flush( type.Id );
 				
 				// if this DefinedType has DefinedValues, delete them
 				var hasDefinedValues = valueService
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
 
 			if ( value != null)
 			{
-				Rock.Web.Cache.Attribute.Flush( value.Id );
+				Rock.Web.Cache.AttributeCache.Flush( value.Id );
 
 				valueService.Delete( value, CurrentPersonId );
 				valueService.Save( value, CurrentPersonId );
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Core.Attribute attribute = attributeService.Get( (int)rGridAttribute.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
-                Rock.Web.Cache.Attribute.Flush( attribute.Id );
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
                 attributeService.Delete( attribute, CurrentPersonId );
                 attributeService.Save( attribute, CurrentPersonId );

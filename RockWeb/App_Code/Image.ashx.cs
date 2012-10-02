@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Drawing;
 using System.IO;
 using System.Web;
@@ -25,31 +26,74 @@ namespace RockWeb
     {
         public void ProcessRequest( HttpContext context )
         {
+            context.Response.Clear();
+
 			if ( context.Request.QueryString == null || context.Request.QueryString.Count == 0)
 			{
+				context.Response.StatusCode = 404;
+				context.Response.End();
 				return;
 			}
 
-            context.Response.Clear();
-
-			FileService fileService = new FileService();
 			string anID = context.Request.QueryString[0];
 			int id;
 
+			if (!int.TryParse( anID, out id))
+			{
+				context.Response.StatusCode = 404;
+				context.Response.End();
+				return;
+			}
+
 			try
 			{
-				// Fetch the file...
-                Rock.Cms.File file = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByEncryptedKey( anID );
+				FileService fileService = new FileService();
+				Rock.Cms.File file = null;
 
-				// is it cached?
 				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
 				string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
-				bool cached = FetchFromCache( file, physFilePath );
 
-				// Image resizing requested?
-				if ( !cached && WantsImageResizing( context ) )
+				// Is it cached
+				if (System.IO.File.Exists(physFilePath))
 				{
-					ResizeAndCache( context, file, physFilePath );
+					// When was file last modified
+					dynamic fileInfo = fileService
+						.Queryable()
+						.Where( f => f.Id == id )
+						.Select( f => new
+						{
+							MimeType = f.MimeType,
+							ModifiedDateTime = f.ModifiedDateTime
+						} )
+						.FirstOrDefault();
+						
+					file = new Rock.Cms.File();
+					file.MimeType = fileInfo.MimeType;
+					file.ModifiedDateTime = fileInfo.ModifiedDateTime;
+
+					// Is cached version newer?
+					if ( file.ModifiedDateTime.HasValue && file.ModifiedDateTime.Value < System.IO.File.GetCreationTime( physFilePath ) )
+						file.Data = FetchFromCache( physFilePath );
+				}
+
+				if (file == null || file.Data == null)
+				{
+					file = fileService.Get(id);
+
+					if ( file != null )
+					{
+						if ( WantsImageResizing( context ) )
+							Resize( context, file );
+
+						Cache( file, physFilePath );
+					}
+				}
+
+				if ( file == null || file.Data == null )
+				{
+					context.Response.StatusCode = 404;
+					context.Response.End();
+					return;
 				}
 
 				// Post process
@@ -64,14 +108,16 @@ namespace RockWeb
 			}
         }
 
-		private static void ResizeAndCache( HttpContext context, Rock.Cms.File file, string physFilePath )
+		private static void Resize( HttpContext context, Rock.Cms.File file )
 		{
 			ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
 			MemoryStream resizedStream = new MemoryStream();
 			ImageBuilder.Current.Build( new MemoryStream( file.Data ), resizedStream, settings );
 			file.Data = resizedStream.GetBuffer();
+		}
 
-			// now cache the file for later use
+		private static void Cache( Rock.Cms.File file, string physFilePath )
+		{
 			try
 			{
 				using ( BinaryWriter binWriter = new BinaryWriter( System.IO.File.Open( physFilePath, FileMode.Create ) ) )
@@ -82,23 +128,20 @@ namespace RockWeb
 			catch { /* do nothing, not critical if this fails, although TODO: log */ }
 		}
 
-		private static bool FetchFromCache( Rock.Cms.File file, string physFilePath )
+		private static byte[] FetchFromCache( string physFilePath )
 		{
-			bool cached = false;
-			if ( System.IO.File.Exists( physFilePath ) && file.CreatedDateTime < System.IO.File.GetCreationTime( physFilePath ) )
+			try
 			{
-				try
+				byte[] data;
+				using ( BinaryReader binReader = new BinaryReader( System.IO.File.Open( physFilePath, FileMode.Open, FileAccess.Read, System.IO.FileShare.Read ) ) )
 				{
-					using ( BinaryReader binReader = new BinaryReader( System.IO.File.Open( physFilePath, FileMode.Open, FileAccess.Read, System.IO.FileShare.Read ) ) )
-					{
-						file.Data = System.IO.File.ReadAllBytes( physFilePath );
-					}
-					cached = true;
+					data = System.IO.File.ReadAllBytes( physFilePath );
 				}
-				catch { /* ok, so we'll just skip using the cache, but TODO: log this */}
-
+				return data;
 			}
-			return cached;
+			catch { /* ok, so we'll just skip using the cache, but TODO: log this */}
+
+			return null;
 		}
 
 		/// <summary>

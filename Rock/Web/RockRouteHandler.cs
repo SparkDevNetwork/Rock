@@ -54,9 +54,9 @@ namespace Rock.Web
                 if ( sites == null )
                     sites = new Dictionary<string, int>();
 
-                Rock.Web.Cache.Site site = null;
+                Rock.Web.Cache.SiteCache site = null;
                 if ( sites.ContainsKey( host ) )
-                    site = Rock.Web.Cache.Site.Read( sites[host] );
+                    site = Rock.Web.Cache.SiteCache.Read( sites[host] );
                 else
                 {
                     Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
@@ -64,7 +64,7 @@ namespace Rock.Web
                     if ( siteDomain != null )
                     {
                         sites.Add( host, siteDomain.SiteId );
-                        site = Rock.Web.Cache.Site.Read( siteDomain.SiteId );
+                        site = Rock.Web.Cache.SiteCache.Read( siteDomain.SiteId );
                     }
                 }
 
@@ -77,11 +77,11 @@ namespace Rock.Web
                     throw new SystemException( "Invalid Site Configuration" );
 			}
 
-            Rock.Web.Cache.Page page = null;
+            Rock.Web.Cache.PageCache page = null;
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
-                page = Rock.Web.Cache.Page.Read( Convert.ToInt32( pageId ) );
+                page = Rock.Web.Cache.PageCache.Read( Convert.ToInt32( pageId ) );
                 if ( page == null )
                 {
                     return new HttpHandlerError( 404 );
@@ -95,14 +95,14 @@ namespace Rock.Web
 
                 // Return the page using the cached route
                 Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.Page ) );
-                cmsPage.PageInstance = page;
+                cmsPage.CurrentPage = page;
                 return cmsPage;
             }
             else
             {
                 string theme = "RockCms";
                 string layout = "Default";
-                string layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                 if ( page != null )
                 {
@@ -111,18 +111,18 @@ namespace Rock.Web
 
                     theme = page.Site.Theme;
                     layout = page.Layout;
-                    layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                     page.LayoutPath = layoutPath;
                 }
                 else
-                    page = Cache.Page.Read( new Cms.Page() );
+                    page = Cache.PageCache.Read( new Cms.Page() );
 
                 try
                 {
                     // Return the page for the selected theme and layout
                     Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
                 catch ( System.Web.HttpException )
@@ -140,14 +140,14 @@ namespace Rock.Web
                     }
 
                     // Build the path to the aspx file to
-                    layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                     if ( page != null )
                         page.LayoutPath = layoutPath;
 
                     // Return the default layout and/or theme
                     Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
             }

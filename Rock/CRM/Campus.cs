@@ -116,6 +116,6 @@ namespace Rock.Crm
         /// </summary>
         public CampusConfiguration()
         {
-        }
+		}
     }
 }

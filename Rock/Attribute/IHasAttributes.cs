@@ -25,7 +25,7 @@ namespace Rock.Attribute
         /// <value>
         /// The attributes.
         /// </value>
-        SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
+        SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.
@@ -43,6 +43,6 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
+        Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
     }
 }

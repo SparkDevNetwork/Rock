@@ -67,7 +67,7 @@ namespace Rock.Core
 					PageId = m.PageId,
 					ExceptionDate = m.ExceptionDate,
 					HasInnerException = m.HasInnerException,
-					PersonId = m.PersonId,
+					CreatedByPersonId = m.CreatedByPersonId,
 					StatusCode = m.StatusCode,
 					ExceptionType = m.ExceptionType,
 					Description = m.Description,

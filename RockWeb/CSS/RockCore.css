@@ -310,6 +310,12 @@ span.cke_skin_kama {
     
 }
 
+/* Create Account Styling */
+.new-account .actions
+{
+    text-align: right;
+}
+
 /* Dialog Styling */
 #dialog 
 {
@@ -619,7 +625,7 @@ div.filter-search .dropdown dd ul liz, div.filter-search ul.ui-autocomplete.ui-m
     padding: 5px;
 }
 
-div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete.ui-menu li a:hover
+div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete.ui-menu li a.ui-state-hover
 {
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 4px;

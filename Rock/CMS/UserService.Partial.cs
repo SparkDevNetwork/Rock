@@ -47,19 +47,10 @@ namespace Rock.Cms
 		/// <returns>User object.</returns>
 	    public User GetByUserName( string userName )
         {
-            // Because this query is run on every page request, and the associated person is always needed, 
-            // we're loading the Person property immediately, rather than defering to a lazy-load
-            var efRepository = Repository as EFRepository<User>;
-            if ( efRepository != null )
-            {
-                var rockContext = efRepository.Context as RockContext;
-                if (rockContext != null)
-                {
-                    return rockContext.Users.Include( "Person" ).FirstOrDefault( t => t.UserName == userName );
-                }
-            }
-
-            return Repository.FirstOrDefault( t => t.UserName == userName );
+			return Repository
+				.AsQueryable( "Person" )
+				.Where( u => u.UserName == userName )
+				.FirstOrDefault();
         }
 
         /// <summary>
@@ -172,7 +163,7 @@ namespace Rock.Cms
             int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
 
-            Rock.Web.Cache.GlobalAttributes globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            Rock.Web.Cache.GlobalAttributesCache globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
             if ( !Int32.TryParse( globalAttributes.AttributeValue( "PasswordAttemptWindow" ), out passwordAttemptWindow ) )
                 passwordAttemptWindow = 0;
             if ( !Int32.TryParse( globalAttributes.AttributeValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )

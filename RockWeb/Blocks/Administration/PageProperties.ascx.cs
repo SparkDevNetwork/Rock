@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Web.Cache.Page _page = null;
+        private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
         private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
         
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
+                _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
                 {
@@ -59,14 +59,14 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
                     List<string> blockContexts = new List<string>();
-                    foreach ( var blockInstance in _page.BlockInstances )
+                    foreach ( var block in _page.Blocks )
                     {
-                        var block = TemplateControl.LoadControl( blockInstance.Block.Path ) as Rock.Web.UI.Block;
-                        if ( block != null )
+                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as Rock.Web.UI.Block;
+                        if ( blockControl != null )
                         {
-                            block.PageInstance = _page;
-                            block.BlockInstance = blockInstance;
-                            foreach ( var context in block.RequiredContext )
+                            blockControl.CurrentPage = _page;
+                            blockControl.CurrentBlock = block;
+                            foreach ( var context in blockControl.RequiredContext )
                                 if ( !blockContexts.Contains( context ) )
                                     blockContexts.Add( context );
                         }
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Administration
                 cbMenuIcon.Checked = _page.MenuDisplayIcon;
                 cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
                 cbRequiresEncryption.Checked = _page.RequiresEncryption;
-                cbEnableViewState.Checked = _page.EnableViewstate;
+                cbEnableViewState.Checked = _page.EnableViewState;
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
@@ -171,10 +171,10 @@ namespace RockWeb.Blocks.Administration
                     if ( page.ParentPageId != parentPage )
                     {
                         if ( page.ParentPageId.HasValue )
-                            Rock.Web.Cache.Page.Flush( page.ParentPageId.Value );
+                            Rock.Web.Cache.PageCache.Flush( page.ParentPageId.Value );
 
                         if ( parentPage != 0 )
-                            Rock.Web.Cache.Page.Flush( parentPage );
+                            Rock.Web.Cache.PageCache.Flush( parentPage );
                     }
 
                     page.Name = tbPageName.Text;
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                     _page.SaveAttributeValues( CurrentPersonId );
 
-                    Rock.Web.Cache.Page.Flush( _page.Id );
+                    Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
                 string script = "window.parent.closeModal()";

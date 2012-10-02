@@ -255,22 +255,6 @@ namespace Rock.Financial
         public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-        /// <summary>
         /// Gets the auth entity.
         /// </summary>
         public override string AuthEntity { get { return "Financial.Transaction"; } }
@@ -292,8 +276,6 @@ namespace Rock.Financial
             this.HasOptional(t => t.CreditCardType).WithMany().HasForeignKey(t => t.CreditCardTypeId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.Gateway).WithMany(g => g.Transactions).HasForeignKey(t => t.GatewayId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.SourceType).WithMany().HasForeignKey(t => t.SourceTypeId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

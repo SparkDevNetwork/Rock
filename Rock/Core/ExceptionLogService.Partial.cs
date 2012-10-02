@@ -31,10 +31,10 @@ namespace Rock.Core
 		/// </summary>
 		/// <param name="personId">Person Id.</param>
 		/// <returns>An enumerable list of ExceptionLog objects.</returns>
-	    public IEnumerable<ExceptionLog> GetByPersonId( int? personId )
-        {
-            return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
-        }
+		//public IEnumerable<ExceptionLog> GetByPersonId( int? personId )
+		//{
+		//	return Repository.Find( t => ( t.CreatedByPersonId == personId || ( personId == null && t.PersonId == null ) ) );
+		//}
 		
 		/// <summary>
 		/// Gets Exception Logs by Site Id

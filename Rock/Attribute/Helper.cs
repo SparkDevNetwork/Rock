@@ -48,10 +48,10 @@ namespace Rock.Attribute
 
                 foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
                 {
-                    var blockInstanceProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
-                    attributesUpdated = UpdateAttribute( blockInstanceProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                    var blockProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
+                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
 
-                    existingKeys.Add( blockInstanceProperty.Key );
+                    existingKeys.Add( blockProperty.Key );
                 }
 
                 Core.AttributeService attributeService = new Core.AttributeService();
@@ -134,7 +134,7 @@ namespace Rock.Attribute
                 if ( attribute.Id == 0 )
                     attributeService.Add( attribute, currentPersonId );
                 else
-                    Rock.Web.Cache.Attribute.Flush( attribute.Id );
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
                 attributeService.Save( attribute, currentPersonId );
 
@@ -150,7 +150,7 @@ namespace Rock.Attribute
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-			var attributes = new Dictionary<int, Rock.Web.Cache.Attribute>();
+			var attributes = new Dictionary<int, Rock.Web.Cache.AttributeCache>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
             Type entityType = entity.GetType();
@@ -171,22 +171,22 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
                     properties[attribute.EntityQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
-					attributes.Add(attribute.Id, Rock.Web.Cache.Attribute.Read(attribute));
+					attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
 				}
 			}
 
-			var categorizedAttributes = new SortedDictionary<string, List<Web.Cache.Attribute>>();
-			var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>>();
+			var categorizedAttributes = new SortedDictionary<string, List<Web.Cache.AttributeCache>>();
+			var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>>();
 
 			foreach ( var attribute in attributes )
 			{
 				// Categorize the attributes
                 if ( !categorizedAttributes.ContainsKey( attribute.Value.Category ) )
-                    categorizedAttributes.Add( attribute.Value.Category, new List<Web.Cache.Attribute>() );
+                    categorizedAttributes.Add( attribute.Value.Category, new List<Web.Cache.AttributeCache>() );
                 categorizedAttributes[attribute.Value.Category].Add( attribute.Value );
 
 				// Add a placeholder for this item's value for each attribute
-				attributeValues.Add( attribute.Value.Key, new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Value.Name, new List<Rock.Web.Cache.AttributeValue>() ) );
+				attributeValues.Add( attribute.Value.Key, new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>( attribute.Value.Name, new List<Rock.Core.AttributeValueDto>() ) );
 			}
 
 			// Read this item's value(s) for each attribute 
@@ -198,14 +198,14 @@ namespace Rock.Attribute
 					Key = v.Attribute.Key
 				} ) )
 			{
-				attributeValues[item.Key].Value.Add( new Rock.Web.Cache.AttributeValue( item.Value ) );
+				attributeValues[item.Key].Value.Add( new Rock.Core.AttributeValueDto( item.Value ) );
 			}
 
 			// Look for any attributes that don't have a value and create a default value entry
 			foreach ( var attributeEntry in attributes )
 				if ( attributeValues[attributeEntry.Value.Key].Value.Count == 0 )
 				{
-					var attributeValue = new Rock.Web.Cache.AttributeValue();
+					var attributeValue = new Rock.Core.AttributeValueDto();
 					attributeValue.AttributeId = attributeEntry.Value.Id;
 					attributeValue.Value = attributeEntry.Value.DefaultValue;
 					attributeValues[attributeEntry.Value.Key].Value.Add( attributeValue );
@@ -234,7 +234,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.Attribute attribute, string newValue, int? personId )
+        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
 
@@ -253,9 +253,9 @@ namespace Rock.Attribute
             attributeValueService.Save( attributeValue, personId );
 
             model.AttributeValues[attribute.Key] =
-                new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>(
+                new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>(
                     attribute.Name,
-                    new List<Rock.Web.Cache.AttributeValue>() { new Rock.Web.Cache.AttributeValue( attributeValue ) } );
+                    new List<Rock.Core.AttributeValueDto>() { new Rock.Core.AttributeValueDto( attributeValue ) } );
 
         }
 
@@ -266,7 +266,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.Attribute attribute, List<Rock.Web.Cache.AttributeValue> newValues, int? personId )
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Core.AttributeValueDto> newValues, int? personId )
         {
             Core.AttributeValueService attributeValueService = new Core.AttributeValueService();
 
@@ -296,7 +296,7 @@ namespace Rock.Attribute
                 {
                     if ( attributeValue.Value != newValues[i].Value )
                         attributeValue.Value = newValues[i].Value;
-                    newValues[i] = new Web.Cache.AttributeValue( attributeValue );
+                    newValues[i] = new Rock.Core.AttributeValueDto( attributeValue );
                 }
 
                 attributeValueService.Save( attributeValue, personId );
@@ -306,7 +306,7 @@ namespace Rock.Attribute
             }
 
             model.AttributeValues[attribute.Key] = 
-                new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, newValues );
+                new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>( attribute.Name, newValues );
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace Rock.Attribute
 
                     legend.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : "Attributes";
 
-                    foreach ( Rock.Web.Cache.Attribute attribute in category.Value )
+                    foreach ( Rock.Web.Cache.AttributeCache attribute in category.Value )
                         if ( !exclude.Contains( attribute.Name ) )
                         {
                             HtmlGenericControl div = new HtmlGenericControl( "div" );
@@ -441,9 +441,9 @@ namespace Rock.Attribute
                         Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Id.ToString() ) );
                         if ( control != null )
                         {
-                            var value = new Rock.Web.Cache.AttributeValue();
+                            var value = new Rock.Core.AttributeValueDto();
                             value.Value = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
-                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>( attribute.Name, new List<Rock.Web.Cache.AttributeValue>() { value } );
+                            item.AttributeValues[attribute.Key] = new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>( attribute.Name, new List<Rock.Core.AttributeValueDto>() { value } );
                         }
                     }
         }

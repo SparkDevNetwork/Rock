@@ -18,7 +18,7 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for HtmlContent object
 	/// </summary>
-	public partial class HtmlContentDto : Dto<HtmlContent>
+	public partial class HtmlContentDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -29,8 +29,14 @@ namespace Rock.Cms
 		public bool IsApproved { get; set; }
 		public int? ApprovedByPersonId { get; set; }
 		public DateTime? ApprovedDateTime { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
 		public DateTime? StartDateTime { get; set; }
 		public DateTime? ExpireDateTime { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -53,46 +59,54 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="htmlContent"></param>
-		public override void CopyFromModel( HtmlContent htmlContent )
+		public void CopyFromModel( IModel model )
 		{
-			this.BlockId = htmlContent.BlockId;
-			this.EntityValue = htmlContent.EntityValue;
-			this.Version = htmlContent.Version;
-			this.Content = htmlContent.Content;
-			this.IsApproved = htmlContent.IsApproved;
-			this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
-			this.ApprovedDateTime = htmlContent.ApprovedDateTime;
-			this.CreatedDateTime = htmlContent.CreatedDateTime;
-			this.ModifiedDateTime = htmlContent.ModifiedDateTime;
-			this.CreatedByPersonId = htmlContent.CreatedByPersonId;
-			this.ModifiedByPersonId = htmlContent.ModifiedByPersonId;
-			this.StartDateTime = htmlContent.StartDateTime;
-			this.ExpireDateTime = htmlContent.ExpireDateTime;
-			this.Id = htmlContent.Id;
-			this.Guid = htmlContent.Guid;
+			if ( model is HtmlContent )
+			{
+				var htmlContent = (HtmlContent)model;
+				this.BlockId = htmlContent.BlockId;
+				this.EntityValue = htmlContent.EntityValue;
+				this.Version = htmlContent.Version;
+				this.Content = htmlContent.Content;
+				this.IsApproved = htmlContent.IsApproved;
+				this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
+				this.ApprovedDateTime = htmlContent.ApprovedDateTime;
+				this.CreatedDateTime = htmlContent.CreatedDateTime;
+				this.ModifiedDateTime = htmlContent.ModifiedDateTime;
+				this.CreatedByPersonId = htmlContent.CreatedByPersonId;
+				this.ModifiedByPersonId = htmlContent.ModifiedByPersonId;
+				this.StartDateTime = htmlContent.StartDateTime;
+				this.ExpireDateTime = htmlContent.ExpireDateTime;
+				this.Id = htmlContent.Id;
+				this.Guid = htmlContent.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="htmlContent"></param>
-		public override void CopyToModel ( HtmlContent htmlContent )
+		public void CopyToModel ( IModel model )
 		{
-			htmlContent.BlockId = this.BlockId;
-			htmlContent.EntityValue = this.EntityValue;
-			htmlContent.Version = this.Version;
-			htmlContent.Content = this.Content;
-			htmlContent.IsApproved = this.IsApproved;
-			htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
-			htmlContent.ApprovedDateTime = this.ApprovedDateTime;
-			htmlContent.CreatedDateTime = this.CreatedDateTime;
-			htmlContent.ModifiedDateTime = this.ModifiedDateTime;
-			htmlContent.CreatedByPersonId = this.CreatedByPersonId;
-			htmlContent.ModifiedByPersonId = this.ModifiedByPersonId;
-			htmlContent.StartDateTime = this.StartDateTime;
-			htmlContent.ExpireDateTime = this.ExpireDateTime;
-			htmlContent.Id = this.Id;
-			htmlContent.Guid = this.Guid;
+			if ( model is HtmlContent )
+			{
+				var htmlContent = (HtmlContent)model;
+				htmlContent.BlockId = this.BlockId;
+				htmlContent.EntityValue = this.EntityValue;
+				htmlContent.Version = this.Version;
+				htmlContent.Content = this.Content;
+				htmlContent.IsApproved = this.IsApproved;
+				htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
+				htmlContent.ApprovedDateTime = this.ApprovedDateTime;
+				htmlContent.CreatedDateTime = this.CreatedDateTime;
+				htmlContent.ModifiedDateTime = this.ModifiedDateTime;
+				htmlContent.CreatedByPersonId = this.CreatedByPersonId;
+				htmlContent.ModifiedByPersonId = this.ModifiedByPersonId;
+				htmlContent.StartDateTime = this.StartDateTime;
+				htmlContent.ExpireDateTime = this.ExpireDateTime;
+				htmlContent.Id = this.Id;
+				htmlContent.Guid = this.Guid;
+			}
 		}
 	}
 }

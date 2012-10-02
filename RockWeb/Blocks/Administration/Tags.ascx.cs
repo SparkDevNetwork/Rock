@@ -73,11 +73,11 @@ namespace RockWeb.Blocks.Administration
 				if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
 					_entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-				_canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+				_canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
 				if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
 				{
-					Rock.Data.IModel model = PageInstance.GetCurrentContext( "Rock.Crm.Person" );
+					Rock.Data.IModel model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
 					if ( model != null )
 						_ownerId = model.Id;
 					else
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Administration
                 }});
         }});
     ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
                 }
                 else
                 {

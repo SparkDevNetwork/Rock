@@ -191,7 +191,7 @@ namespace Rock.Communication
             string result = content;
 
             // Get the global attributes and recursively resolve any that include other global attributes
-            var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
             Dictionary<string, string> globalAttributeValues = new Dictionary<string, string>();
             foreach ( KeyValuePair<string, KeyValuePair<string, string>> kvp in globalAttributes.AttributeValues )
                 globalAttributeValues.Add( kvp.Key, ResolveGlobalAttributes( kvp.Value.Value, globalAttributes.AttributeValues ) );

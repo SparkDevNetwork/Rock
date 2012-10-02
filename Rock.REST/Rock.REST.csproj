@@ -80,9 +80,9 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="Cms\AuthsController.cs" />
-    <Compile Include="Cms\BlockInstancesController.cs" />
     <Compile Include="Cms\BlocksController.cs" />
-    <Compile Include="Cms\BlockInstancesController.Partial.cs" />
+    <Compile Include="Cms\BlocksController.Partial.cs" />
+    <Compile Include="Cms\BlockTypesController.cs" />
     <Compile Include="Cms\FilesController.cs" />
     <Compile Include="Cms\HtmlContentsController.cs" />
     <Compile Include="Cms\PageContextsController.cs" />
@@ -108,9 +108,9 @@
     <Compile Include="Core\ServiceLogsController.cs" />
     <Compile Include="Core\TaggedItemsController.Partial.cs" />
     <Compile Include="Core\TagsController.cs" />
-    <Compile Include="Crm\AddressesController.cs" />
     <Compile Include="Crm\CampusController.cs" />
-    <Compile Include="Crm\AddressesController.Partial.cs" />
+    <Compile Include="Crm\LocationsController.cs" />
+    <Compile Include="Crm\LocationsController.Partial.cs" />
     <Compile Include="Crm\EmailTemplatesController.cs" />
     <Compile Include="Crm\PeopleController.cs" />
     <Compile Include="Crm\PersonMergedsController.cs" />

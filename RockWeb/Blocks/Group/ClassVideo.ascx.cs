@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Group
         }}
 
     }});
-", BlockInstance.Id, hfVideoUrl.ClientID );
+", CurrentBlock.Id, hfVideoUrl.ClientID );
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), "setVideo", script, true );
         }
 

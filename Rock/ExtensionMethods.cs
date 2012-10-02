@@ -73,7 +73,10 @@ namespace Rock
         /// <returns></returns>
         public static string SplitCase( this string str )
         {
-            return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+			if ( str == null )
+				return null;
+
+			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str )
         {
-            char[] delimiter = new char[] {','};
+			char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
@@ -96,7 +99,10 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
-            int count, position0, position1;
+			if ( str == null )
+				return null;
+
+			int count, position0, position1;
             count = position0 = position1 = 0;
             string upperString = str.ToUpper();
             string upperPattern = oldValue.ToUpper();
@@ -118,13 +124,30 @@ namespace Rock
             return new string( chars, 0, count );
         }
 
+		/// <summary>
+		/// Adds escape character for quotes in a string
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
         public static string EscapeQuotes( this string str )
         {
-            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+			if ( str == null )
+				return null;
+
+			return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
         }
 
+		/// <summary>
+		/// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
+		/// </summary>
+		/// <param name="str"></param>
+		/// <param name="maxLength"></param>
+		/// <returns></returns>
         public static string Ellipsis( this string str, int maxLength )
         {
+			if ( str == null )
+				return null;
+
             if (str.Length <= maxLength)
                 return str;
 
@@ -151,7 +174,7 @@ namespace Rock
 			if ( !id.HasValue )
 				return string.Empty;
 			
-			var definedValue = Rock.Web.Cache.DefinedValue.Read( id.Value );
+			var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
 			if ( definedValue != null )
 				return definedValue.Name;
 			else
@@ -211,7 +234,7 @@ namespace Rock
         /// <returns></returns>
         public static int TotalMonths( this DateTime end, DateTime start )
         {
-            return ( start.Year * 12 + start.Month ) - ( end.Year * 12 + end.Month );
+            return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
 
         /// <summary>
@@ -222,7 +245,7 @@ namespace Rock
         /// <returns></returns>
         public static int TotalYears( this DateTime end, DateTime start )
         {
-            return ( start.Year) - ( end.Year);
+            return (end.Year) - (start.Year);
         }
 
         /// <summary>
@@ -230,53 +253,75 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTime? dateTime )
-        {
+		public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
+		{
             if ( dateTime.HasValue )
             {
-                string direction = "Ago";
-                TimeSpan timeSpan = DateTime.Now.Subtract( dateTime.Value );
-                if ( timeSpan.TotalMilliseconds < 0 )
-                {
-                    direction = "From Now";
-                    timeSpan = timeSpan.Negate();
-                }
+				return ToElapsedString( dateTime.Value, condensed, includeTime );
+			}
+			else
+				return string.Empty;
+		}
 
-                string duration = "";
+		/// <summary>
+		/// Returns a friendly elapsed time string.
+		/// </summary>
+		/// <param name="dateTime">The date time.</param>
+		/// <returns></returns>
+		public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
+		{
+			DateTime start = dateTime;
+			DateTime end = DateTime.Now;
 
-                // Less than one second
-                if ( timeSpan.TotalSeconds <= 1 )
-                    duration = "1 Second";
+			string direction = " Ago";
+			TimeSpan timeSpan = end.Subtract( start );
+			if ( timeSpan.TotalMilliseconds < 0 )
+			{
+				direction = " From Now";
+				start = end;
+				end = dateTime;
+				timeSpan = timeSpan.Negate();
+			}
 
-                else if ( timeSpan.TotalSeconds < 60 )
-                    duration = string.Format( "{0:N0} Seconds", Math.Truncate( timeSpan.TotalSeconds ) );
-                else if ( timeSpan.TotalMinutes <= 1 )
-                    duration = "1 Minute";
-                else if ( timeSpan.TotalMinutes < 60 )
-                    duration = string.Format( "{0:N0} Minutes", Math.Truncate( timeSpan.TotalMinutes ) );
-                else if ( timeSpan.TotalHours <= 1 )
-                    duration = "1 Hour";
-                else if ( timeSpan.TotalHours < 24 )
-                    duration = string.Format( "{0:N0} Hours", Math.Truncate( timeSpan.TotalHours ) );
-                else if ( timeSpan.TotalDays <= 1 )
-                    duration = "1 Day";
-                else if ( timeSpan.TotalDays < 31 )
-                    duration = string.Format( "{0:N0} Days", Math.Truncate( timeSpan.TotalDays ) );
-                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 1 )
-                    duration = "1 Month";
-                else if ( DateTime.Now.TotalMonths( dateTime.Value ) <= 18 )
-                    duration = string.Format( "{0:N0} Months", DateTime.Now.TotalMonths( dateTime.Value ) );
-                else if ( DateTime.Now.TotalYears( dateTime.Value ) <= 1 )
-                    duration = "1 Year";
-                else
-                    duration = string.Format( "{0:N0} Years", DateTime.Now.TotalYears( dateTime.Value ) );
+			string duration = "";
 
-                return duration + " " + direction;
-            }
-            else
-                return string.Empty;
+			if ( timeSpan.TotalHours < 24 && includeTime )
+			{
+				// Less than one second
+				if ( timeSpan.TotalSeconds <= 1 )
+					duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
 
-        }
+				else if ( timeSpan.TotalSeconds < 60 )
+					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
+				else if ( timeSpan.TotalMinutes <= 1 )
+					duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
+				else if ( timeSpan.TotalMinutes < 60 )
+					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
+				else if ( timeSpan.TotalHours <= 1 )
+					duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
+				else if ( timeSpan.TotalHours < 24 )
+					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
+			}
+
+			if ( duration == "" )
+			{
+				if ( timeSpan.TotalDays <= 1 )
+					duration = string.Format( "1{0}", condensed ? "day" : " Day" );
+				else if ( timeSpan.TotalDays < 31 )
+					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
+				else if ( end.TotalMonths( start ) <= 1 )
+					duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
+				else if ( end.TotalMonths( start ) <= 18 )
+					duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
+				else if ( end.TotalYears( start ) <= 1 )
+					duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
+				else
+					duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
+			}
+
+			return "(" + duration + (condensed ? "" : direction) + ")";
+
+		}
 
         #endregion
 

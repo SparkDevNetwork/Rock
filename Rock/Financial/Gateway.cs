@@ -114,22 +114,6 @@ namespace Rock.Financial
         [DataMember]
         public int? ModifiedByPersonId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -151,8 +135,6 @@ namespace Rock.Financial
         /// </summary>
         public GatewayConfiguration()
         {
-            this.HasOptional(g => g.CreatedByPerson).WithMany().HasForeignKey(g => g.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(g => g.ModifiedByPerson).WithMany().HasForeignKey(g => g.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

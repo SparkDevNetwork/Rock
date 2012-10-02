@@ -70,7 +70,7 @@ namespace Rock.Core
 					Description = m.Description,
 					MinValue = m.MinValue,
 					MaxValue = m.MaxValue,
-					CollectionFrequency = m.CollectionFrequency,
+					CollectionFrequencyId = m.CollectionFrequencyId,
 					LastCollected = m.LastCollected,
 					Source = m.Source,
 					SourceSQL = m.SourceSQL,

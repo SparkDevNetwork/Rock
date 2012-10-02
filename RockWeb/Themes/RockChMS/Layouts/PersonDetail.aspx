@@ -1,13 +1,19 @@
 ﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
 
+<script runat="server">
+
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+        AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
+        AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
+        AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+        AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
+    }
+    
+</script>
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-
-    <script src="/RockWeb/Scripts/jquery.tagsinput.js"></script>
-    <link href="/RockWeb/CSS/jquery.tagsinput.css" rel="stylesheet">
-
-    <link href="/RockWeb/CSS/PersonDetailsCore.css" rel="stylesheet">
-    <script src="/RockWeb/Scripts/tinyscrollbar.min.js"></script>
 
     <script type="text/javascript">
 
@@ -16,7 +22,6 @@
         });
 
     </script>
-
 
     <div id="page-frame">
         <header id="page-header" class="navbar navbar-fixed-top">

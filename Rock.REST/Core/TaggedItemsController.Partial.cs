@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Core;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Core
 {
@@ -35,17 +36,20 @@ namespace Rock.Rest.Core
 				} );
 		}
 
+		[Authenticate]
 		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name )
 		{
 			return Post( entity, ownerId, entityId, name, string.Empty, string.Empty );
 		}
 
+		[Authenticate]
 		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier )
 		{
 			return Post( entity, ownerId, entityId, name, entityQualifier, string.Empty );
 		}
 
-		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name , string entityQualifier, string entityQualifierValue)
+		[Authenticate]
+		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
 		{
 			var user = CurrentUser();
 			if ( user != null )
@@ -85,16 +89,19 @@ namespace Rock.Rest.Core
 			throw new HttpResponseException( HttpStatusCode.Unauthorized );
 		}
 
+		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name )
 		{
 			Delete( entity, ownerId, entityId, name, string.Empty, string.Empty );
 		}
 
+		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier )
 		{
 			Delete( entity, ownerId, entityId, name, entityQualifier, string.Empty );
 		}
 
+		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
 		{
 			var user = CurrentUser();
@@ -104,6 +111,9 @@ namespace Rock.Rest.Core
 				{
 					var tagService = new TagService();
 					var taggedItemService = new TaggedItemService();
+
+					if ( name.Contains( '^' ) )
+						name = name.Split( '^' )[0];
 
 					var tag = tagService.GetByEntityAndName( entity, entityQualifier, entityQualifierValue, ownerId, name );
 					if ( tag == null )

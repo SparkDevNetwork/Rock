@@ -270,7 +270,9 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t/// <summary>" );
             sb.AppendFormat( "\t/// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t/// </summary>" );
-            sb.AppendFormat( "\tpublic partial class {0}Dto : Dto<{0}>" + Environment.NewLine, type.Name );
+			//sb.AppendLine( "\t[Serializable]" );
+			sb.AppendFormat( "\tpublic partial class {0}Dto : IDto" + Environment.NewLine, type.Name );
+			// : Dto<{0}>
             sb.AppendLine( "\t{" );
 
             sb.AppendLine( "" );
@@ -304,22 +306,30 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// Copies the model property values to the DTO properties" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-            sb.AppendFormat( "\t\tpublic override void CopyFromModel( {0} {1} )" + Environment.NewLine, type.Name, lcName );
-            sb.AppendLine( "\t\t{" );
+			sb.AppendLine( "\t\tpublic void CopyFromModel( IModel model )" );
+			sb.AppendLine( "\t\t{" );
+			sb.AppendFormat( "\t\t\tif ( model is {0} )" + Environment.NewLine, type.Name );
+            sb.AppendLine( "\t\t\t{" );
+			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name);
             foreach ( var property in properties )
-                sb.AppendFormat( "\t\t\tthis.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
-            sb.AppendLine( "\t\t}" );
+                sb.AppendFormat( "\t\t\t\tthis.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
+			sb.AppendLine( "\t\t\t}" );
+			sb.AppendLine( "\t\t}" );
             sb.AppendLine( "" );
 
             sb.AppendLine( "\t\t/// <summary>" );
             sb.AppendLine( "\t\t/// Copies the DTO property values to the model properties" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-            sb.AppendFormat( "\t\tpublic override void CopyToModel ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
+			sb.AppendLine( "\t\tpublic void CopyToModel ( IModel model )" );
             sb.AppendLine( "\t\t{" );
-            foreach ( var property in properties )
-                sb.AppendFormat( "\t\t\t{1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
-            sb.AppendLine( "\t\t}" );
+			sb.AppendFormat( "\t\t\tif ( model is {0} )" + Environment.NewLine, type.Name );
+			sb.AppendLine( "\t\t\t{" );
+			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
+			foreach ( var property in properties )
+                sb.AppendFormat( "\t\t\t\t{1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
+			sb.AppendLine( "\t\t\t}" );
+			sb.AppendLine( "\t\t}" );
 
             sb.AppendLine( "\t}" );
             sb.AppendLine( "}" );
@@ -495,6 +505,8 @@ namespace Rock.CodeGeneration
         /// <returns></returns>
         private bool BaseDtoProperty( string propertyName )
         {
+			return false;
+
             if ( propertyName == "Id" ) return true;
             if ( propertyName == "Guid" ) return true;
             if ( propertyName == "CreatedDateTime" ) return true;

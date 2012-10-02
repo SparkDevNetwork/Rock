@@ -42,17 +42,17 @@ namespace RockWeb.Blocks.Cms
             XslCompiledTransform xslTransformer = new XslCompiledTransform();
             xslTransformer.Load( Server.MapPath( AttributeValue("XSLTFile") ) );
 
-            Rock.Web.Cache.Page rootPage;
+            Rock.Web.Cache.PageCache rootPage;
 			if ( AttributeValue( ROOT_PAGE ) != string.Empty )
             {
 				int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
                 if ( pageId == -1 )
-                    rootPage = PageInstance;
+                    rootPage = CurrentPage;
                 else
-                    rootPage = Rock.Web.Cache.Page.Read( pageId );
+                    rootPage = Rock.Web.Cache.PageCache.Read( pageId );
             }
             else
-                rootPage = PageInstance;
+                rootPage = CurrentPage;
 
 			int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
 

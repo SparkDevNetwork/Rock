@@ -18,7 +18,7 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for Auth object
 	/// </summary>
-	public partial class AuthDto : Dto<Auth>
+	public partial class AuthDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -30,6 +30,12 @@ namespace Rock.Cms
 		public SpecialRole SpecialRole { get; set; }
 		public int? PersonId { get; set; }
 		public int? GroupId { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -52,44 +58,52 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="auth"></param>
-		public override void CopyFromModel( Auth auth )
+		public void CopyFromModel( IModel model )
 		{
-			this.EntityType = auth.EntityType;
-			this.EntityId = auth.EntityId;
-			this.Order = auth.Order;
-			this.Action = auth.Action;
-			this.AllowOrDeny = auth.AllowOrDeny;
-			this.SpecialRole = auth.SpecialRole;
-			this.PersonId = auth.PersonId;
-			this.GroupId = auth.GroupId;
-			this.CreatedDateTime = auth.CreatedDateTime;
-			this.ModifiedDateTime = auth.ModifiedDateTime;
-			this.CreatedByPersonId = auth.CreatedByPersonId;
-			this.ModifiedByPersonId = auth.ModifiedByPersonId;
-			this.Id = auth.Id;
-			this.Guid = auth.Guid;
+			if ( model is Auth )
+			{
+				var auth = (Auth)model;
+				this.EntityType = auth.EntityType;
+				this.EntityId = auth.EntityId;
+				this.Order = auth.Order;
+				this.Action = auth.Action;
+				this.AllowOrDeny = auth.AllowOrDeny;
+				this.SpecialRole = auth.SpecialRole;
+				this.PersonId = auth.PersonId;
+				this.GroupId = auth.GroupId;
+				this.CreatedDateTime = auth.CreatedDateTime;
+				this.ModifiedDateTime = auth.ModifiedDateTime;
+				this.CreatedByPersonId = auth.CreatedByPersonId;
+				this.ModifiedByPersonId = auth.ModifiedByPersonId;
+				this.Id = auth.Id;
+				this.Guid = auth.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="auth"></param>
-		public override void CopyToModel ( Auth auth )
+		public void CopyToModel ( IModel model )
 		{
-			auth.EntityType = this.EntityType;
-			auth.EntityId = this.EntityId;
-			auth.Order = this.Order;
-			auth.Action = this.Action;
-			auth.AllowOrDeny = this.AllowOrDeny;
-			auth.SpecialRole = this.SpecialRole;
-			auth.PersonId = this.PersonId;
-			auth.GroupId = this.GroupId;
-			auth.CreatedDateTime = this.CreatedDateTime;
-			auth.ModifiedDateTime = this.ModifiedDateTime;
-			auth.CreatedByPersonId = this.CreatedByPersonId;
-			auth.ModifiedByPersonId = this.ModifiedByPersonId;
-			auth.Id = this.Id;
-			auth.Guid = this.Guid;
+			if ( model is Auth )
+			{
+				var auth = (Auth)model;
+				auth.EntityType = this.EntityType;
+				auth.EntityId = this.EntityId;
+				auth.Order = this.Order;
+				auth.Action = this.Action;
+				auth.AllowOrDeny = this.AllowOrDeny;
+				auth.SpecialRole = this.SpecialRole;
+				auth.PersonId = this.PersonId;
+				auth.GroupId = this.GroupId;
+				auth.CreatedDateTime = this.CreatedDateTime;
+				auth.ModifiedDateTime = this.ModifiedDateTime;
+				auth.CreatedByPersonId = this.CreatedByPersonId;
+				auth.ModifiedByPersonId = this.ModifiedByPersonId;
+				auth.Id = this.Id;
+				auth.Guid = this.Guid;
+			}
 		}
 	}
 }
