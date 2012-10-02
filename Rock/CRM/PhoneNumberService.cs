@@ -65,6 +65,8 @@ namespace Rock.Crm
 					IsSystem = m.IsSystem,
 					PersonId = m.PersonId,
 					Number = m.Number,
+					NumberTypeId = m.NumberTypeId,
+					IsUnlisted = m.IsUnlisted,
 					Description = m.Description,
 					CreatedDateTime = m.CreatedDateTime,
 					ModifiedDateTime = m.ModifiedDateTime,

@@ -111,22 +111,6 @@ namespace Rock.Cms
         /// </value>
 		public virtual Page Page { get; set; }
         
-		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
         public object ExportObject()
         {
             return this.ToDynamic();
@@ -155,8 +139,6 @@ namespace Rock.Cms
         public PageRouteConfiguration()
         {
 			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

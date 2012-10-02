@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for DefinedValue object
 	/// </summary>
-	public partial class DefinedValueDto : Dto<DefinedValue>
+	public partial class DefinedValueDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -27,6 +27,12 @@ namespace Rock.Core
 		public int Order { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -49,38 +55,46 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="definedValue"></param>
-		public override void CopyFromModel( DefinedValue definedValue )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = definedValue.IsSystem;
-			this.DefinedTypeId = definedValue.DefinedTypeId;
-			this.Order = definedValue.Order;
-			this.Name = definedValue.Name;
-			this.Description = definedValue.Description;
-			this.CreatedDateTime = definedValue.CreatedDateTime;
-			this.ModifiedDateTime = definedValue.ModifiedDateTime;
-			this.CreatedByPersonId = definedValue.CreatedByPersonId;
-			this.ModifiedByPersonId = definedValue.ModifiedByPersonId;
-			this.Id = definedValue.Id;
-			this.Guid = definedValue.Guid;
+			if ( model is DefinedValue )
+			{
+				var definedValue = (DefinedValue)model;
+				this.IsSystem = definedValue.IsSystem;
+				this.DefinedTypeId = definedValue.DefinedTypeId;
+				this.Order = definedValue.Order;
+				this.Name = definedValue.Name;
+				this.Description = definedValue.Description;
+				this.CreatedDateTime = definedValue.CreatedDateTime;
+				this.ModifiedDateTime = definedValue.ModifiedDateTime;
+				this.CreatedByPersonId = definedValue.CreatedByPersonId;
+				this.ModifiedByPersonId = definedValue.ModifiedByPersonId;
+				this.Id = definedValue.Id;
+				this.Guid = definedValue.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="definedValue"></param>
-		public override void CopyToModel ( DefinedValue definedValue )
+		public void CopyToModel ( IModel model )
 		{
-			definedValue.IsSystem = this.IsSystem;
-			definedValue.DefinedTypeId = this.DefinedTypeId;
-			definedValue.Order = this.Order;
-			definedValue.Name = this.Name;
-			definedValue.Description = this.Description;
-			definedValue.CreatedDateTime = this.CreatedDateTime;
-			definedValue.ModifiedDateTime = this.ModifiedDateTime;
-			definedValue.CreatedByPersonId = this.CreatedByPersonId;
-			definedValue.ModifiedByPersonId = this.ModifiedByPersonId;
-			definedValue.Id = this.Id;
-			definedValue.Guid = this.Guid;
+			if ( model is DefinedValue )
+			{
+				var definedValue = (DefinedValue)model;
+				definedValue.IsSystem = this.IsSystem;
+				definedValue.DefinedTypeId = this.DefinedTypeId;
+				definedValue.Order = this.Order;
+				definedValue.Name = this.Name;
+				definedValue.Description = this.Description;
+				definedValue.CreatedDateTime = this.CreatedDateTime;
+				definedValue.ModifiedDateTime = this.ModifiedDateTime;
+				definedValue.CreatedByPersonId = this.CreatedByPersonId;
+				definedValue.ModifiedByPersonId = this.ModifiedByPersonId;
+				definedValue.Id = this.Id;
+				definedValue.Guid = this.Guid;
+			}
 		}
 	}
 }

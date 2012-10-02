@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gSites.DataKeyNames = new string[] { "id" };
                 gSites.Actions.IsAddEnabled = true;
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -85,12 +85,12 @@ namespace RockWeb.Blocks.Administration
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
             Rock.Cms.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
-            if ( BlockInstance != null )
+            if ( CurrentBlock != null )
             {
                 siteService.Delete( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                Rock.Web.Cache.SiteCache.Flush( site.Id );
             }
 
             BindGrid();
@@ -166,9 +166,9 @@ namespace RockWeb.Blocks.Administration
                 siteService.Save( site, CurrentPersonId );
 
                 if ( newSite )
-                    Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
+                    Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                Rock.Web.Cache.SiteCache.Flush( site.Id );
 
                 BindGrid();
 
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Administration
                 lAction.Text = "Add";
                 tbSiteName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
-                ddlTheme.Text = PageInstance.Site.Theme;
+                ddlTheme.Text = CurrentPage.Site.Theme;
                 tbSiteDomains.Text = string.Empty;
                 tbFaviconUrl.Text = string.Empty;
                 tbAppleTouchIconUrl.Text = string.Empty;

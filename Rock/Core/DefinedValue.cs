@@ -121,22 +121,6 @@ namespace Rock.Core
 		public virtual DefinedType DefinedType { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -145,7 +129,6 @@ namespace Rock.Core
 		{
 			return Read<DefinedValue>( id );
 		}
-
 
 		/// <summary>
 		/// Gets the parent authority.
@@ -168,8 +151,6 @@ namespace Rock.Core
         public DefinedValueConfiguration()
         {
 			this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

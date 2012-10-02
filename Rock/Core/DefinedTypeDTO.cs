@@ -18,7 +18,7 @@ namespace Rock.Core
 	/// <summary>
 	/// Data Transfer Object for DefinedType object
 	/// </summary>
-	public partial class DefinedTypeDto : Dto<DefinedType>
+	public partial class DefinedTypeDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -28,6 +28,12 @@ namespace Rock.Core
 		public string Category { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -50,40 +56,48 @@ namespace Rock.Core
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="definedType"></param>
-		public override void CopyFromModel( DefinedType definedType )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = definedType.IsSystem;
-			this.FieldTypeId = definedType.FieldTypeId;
-			this.Order = definedType.Order;
-			this.Category = definedType.Category;
-			this.Name = definedType.Name;
-			this.Description = definedType.Description;
-			this.CreatedDateTime = definedType.CreatedDateTime;
-			this.ModifiedDateTime = definedType.ModifiedDateTime;
-			this.CreatedByPersonId = definedType.CreatedByPersonId;
-			this.ModifiedByPersonId = definedType.ModifiedByPersonId;
-			this.Id = definedType.Id;
-			this.Guid = definedType.Guid;
+			if ( model is DefinedType )
+			{
+				var definedType = (DefinedType)model;
+				this.IsSystem = definedType.IsSystem;
+				this.FieldTypeId = definedType.FieldTypeId;
+				this.Order = definedType.Order;
+				this.Category = definedType.Category;
+				this.Name = definedType.Name;
+				this.Description = definedType.Description;
+				this.CreatedDateTime = definedType.CreatedDateTime;
+				this.ModifiedDateTime = definedType.ModifiedDateTime;
+				this.CreatedByPersonId = definedType.CreatedByPersonId;
+				this.ModifiedByPersonId = definedType.ModifiedByPersonId;
+				this.Id = definedType.Id;
+				this.Guid = definedType.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="definedType"></param>
-		public override void CopyToModel ( DefinedType definedType )
+		public void CopyToModel ( IModel model )
 		{
-			definedType.IsSystem = this.IsSystem;
-			definedType.FieldTypeId = this.FieldTypeId;
-			definedType.Order = this.Order;
-			definedType.Category = this.Category;
-			definedType.Name = this.Name;
-			definedType.Description = this.Description;
-			definedType.CreatedDateTime = this.CreatedDateTime;
-			definedType.ModifiedDateTime = this.ModifiedDateTime;
-			definedType.CreatedByPersonId = this.CreatedByPersonId;
-			definedType.ModifiedByPersonId = this.ModifiedByPersonId;
-			definedType.Id = this.Id;
-			definedType.Guid = this.Guid;
+			if ( model is DefinedType )
+			{
+				var definedType = (DefinedType)model;
+				definedType.IsSystem = this.IsSystem;
+				definedType.FieldTypeId = this.FieldTypeId;
+				definedType.Order = this.Order;
+				definedType.Category = this.Category;
+				definedType.Name = this.Name;
+				definedType.Description = this.Description;
+				definedType.CreatedDateTime = this.CreatedDateTime;
+				definedType.ModifiedDateTime = this.ModifiedDateTime;
+				definedType.CreatedByPersonId = this.CreatedByPersonId;
+				definedType.ModifiedByPersonId = this.ModifiedByPersonId;
+				definedType.Id = this.Id;
+				definedType.Guid = this.Guid;
+			}
 		}
 	}
 }

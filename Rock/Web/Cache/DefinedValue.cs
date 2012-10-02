@@ -14,19 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedValue
+    public class DefinedValueCache : Rock.Core.DefinedValueDto
     {
-        /// <summary>
-        /// Use Static Read() method to instantiate a new DefinedValue object
-        /// </summary>
-        private DefinedValue() { }
-
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        public int Id { get; private set; }
-
-        private int DefinedTypeId { get; set; }
+		private DefinedValueCache() : base() { }
+		private DefinedValueCache( Rock.Core.DefinedValue model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -34,25 +25,10 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
-        public DefinedType DefinedType
+        public DefinedTypeCache DefinedType
         {
-            get { return DefinedType.Read( DefinedTypeId ); }
+			get { return DefinedTypeCache.Read( DefinedTypeId ); }
         }
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        public string Description { get; private set; }
 
         #region Static Methods
 
@@ -67,12 +43,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static DefinedValue Read( int id )
+        public static DefinedValueCache Read( int id )
         {
-            string cacheKey = DefinedValue.CacheKey( id );
+            string cacheKey = DefinedValueCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
-            DefinedValue definedValue = cache[cacheKey] as DefinedValue;
+            DefinedValueCache definedValue = cache[cacheKey] as DefinedValueCache;
 
             if ( definedValue != null )
                 return definedValue;
@@ -98,18 +74,18 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
         /// <returns></returns>
-        public static DefinedValue Read( Rock.Core.DefinedValue definedValueModel )
+        public static DefinedValueCache Read( Rock.Core.DefinedValue definedValueModel )
         {
-            string cacheKey = DefinedValue.CacheKey( definedValueModel.Id );
+            string cacheKey = DefinedValueCache.CacheKey( definedValueModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            DefinedValue definedValue = cache[cacheKey] as DefinedValue;
+            DefinedValueCache definedValue = cache[cacheKey] as DefinedValueCache;
 
 			if ( definedValue != null )
 				return definedValue;
 			else
 			{
-				definedValue = DefinedValue.CopyModel( definedValueModel );
+				definedValue = DefinedValueCache.CopyModel( definedValueModel );
 				cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
 
 				return definedValue;
@@ -121,15 +97,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
         /// <returns></returns>
-        public static DefinedValue CopyModel( Rock.Core.DefinedValue definedValueModel )
+        public static DefinedValueCache CopyModel( Rock.Core.DefinedValue definedValueModel )
         {
-            DefinedValue definedValue = new DefinedValue();
-            definedValue.Id = definedValueModel.Id;
-            definedValue.Order = definedValueModel.Order;
-            definedValue.Name = definedValueModel.Name;
-            definedValue.Description = definedValueModel.Description;
-            definedValue.DefinedTypeId = definedValueModel.DefinedTypeId;
-
+			DefinedValueCache definedValue = new DefinedValueCache( definedValueModel );
             return definedValue;
         }
 
@@ -140,7 +110,7 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             ObjectCache cache = MemoryCache.Default;
-            cache.Remove( DefinedValue.CacheKey( id ) );
+            cache.Remove( DefinedValueCache.CacheKey( id ) );
         }
 
         #endregion

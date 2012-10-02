@@ -29,7 +29,16 @@ namespace Rock.Groups
 		[Required]
 		[DataMember]
 		public bool IsSystem { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Group Type Id.
+		/// </summary>
+		/// <value>
+		/// Group Type Id.
+		/// </value>
+		[DataMember]
+		public int? GroupTypeId { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Name.
 		/// </summary>
@@ -110,39 +119,14 @@ namespace Rock.Groups
         /// </summary>
 		[NotMapped]
 		public override string AuthEntity { get { return "Groups.GroupRole"; } }
-        
-		/// <summary>
-        /// Gets or sets the Group Types.
-        /// </summary>
-        /// <value>
-        /// Collection of Group Types.
-        /// </value>
-		public virtual ICollection<GroupType> GroupTypes { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Members.
-        /// </summary>
-        /// <value>
-        /// Collection of Members.
-        /// </value>
-		public virtual ICollection<Member> Members { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
 
+		/// <summary>
+		/// Gets or sets the Group Type.
+		/// </summary>
+		/// <value>
+		/// A <see cref="GroupType"/> object.
+		/// </value>
+		public virtual GroupType GroupType { get; set; }
     }
 
     /// <summary>
@@ -155,9 +139,7 @@ namespace Rock.Groups
         /// </summary>
         public GroupRoleConfiguration()
         {
-			this.HasMany( p => p.GroupTypes ).WithMany( c => c.GroupRoles ).Map( m => { m.MapLeftKey( "GroupRoleId" ); m.MapRightKey( "GroupTypeId" ); m.ToTable( "groupsGroupTypeRole" ); } );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
 		}
     }
 }

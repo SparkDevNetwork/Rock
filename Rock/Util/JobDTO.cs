@@ -18,7 +18,7 @@ namespace Rock.Util
 	/// <summary>
 	/// Data Transfer Object for Job object
 	/// </summary>
-	public partial class JobDto : Dto<Job>
+	public partial class JobDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -37,6 +37,12 @@ namespace Rock.Util
 		public string LastRunSchedulerName { get; set; }
 		public string NotificationEmails { get; set; }
 		public JobNotificationStatus NotificationStatus { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -59,58 +65,66 @@ namespace Rock.Util
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="job"></param>
-		public override void CopyFromModel( Job job )
+		public void CopyFromModel( IModel model )
 		{
-			this.IsSystem = job.IsSystem;
-			this.IsActive = job.IsActive;
-			this.Name = job.Name;
-			this.Description = job.Description;
-			this.Assemby = job.Assemby;
-			this.Class = job.Class;
-			this.CronExpression = job.CronExpression;
-			this.LastSuccessfulRun = job.LastSuccessfulRun;
-			this.LastRunDate = job.LastRunDate;
-			this.LastRunDuration = job.LastRunDuration;
-			this.LastStatus = job.LastStatus;
-			this.LastStatusMessage = job.LastStatusMessage;
-			this.LastRunSchedulerName = job.LastRunSchedulerName;
-			this.NotificationEmails = job.NotificationEmails;
-			this.NotificationStatus = job.NotificationStatus;
-			this.CreatedDateTime = job.CreatedDateTime;
-			this.ModifiedDateTime = job.ModifiedDateTime;
-			this.CreatedByPersonId = job.CreatedByPersonId;
-			this.ModifiedByPersonId = job.ModifiedByPersonId;
-			this.Id = job.Id;
-			this.Guid = job.Guid;
+			if ( model is Job )
+			{
+				var job = (Job)model;
+				this.IsSystem = job.IsSystem;
+				this.IsActive = job.IsActive;
+				this.Name = job.Name;
+				this.Description = job.Description;
+				this.Assemby = job.Assemby;
+				this.Class = job.Class;
+				this.CronExpression = job.CronExpression;
+				this.LastSuccessfulRun = job.LastSuccessfulRun;
+				this.LastRunDate = job.LastRunDate;
+				this.LastRunDuration = job.LastRunDuration;
+				this.LastStatus = job.LastStatus;
+				this.LastStatusMessage = job.LastStatusMessage;
+				this.LastRunSchedulerName = job.LastRunSchedulerName;
+				this.NotificationEmails = job.NotificationEmails;
+				this.NotificationStatus = job.NotificationStatus;
+				this.CreatedDateTime = job.CreatedDateTime;
+				this.ModifiedDateTime = job.ModifiedDateTime;
+				this.CreatedByPersonId = job.CreatedByPersonId;
+				this.ModifiedByPersonId = job.ModifiedByPersonId;
+				this.Id = job.Id;
+				this.Guid = job.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="job"></param>
-		public override void CopyToModel ( Job job )
+		public void CopyToModel ( IModel model )
 		{
-			job.IsSystem = this.IsSystem;
-			job.IsActive = this.IsActive;
-			job.Name = this.Name;
-			job.Description = this.Description;
-			job.Assemby = this.Assemby;
-			job.Class = this.Class;
-			job.CronExpression = this.CronExpression;
-			job.LastSuccessfulRun = this.LastSuccessfulRun;
-			job.LastRunDate = this.LastRunDate;
-			job.LastRunDuration = this.LastRunDuration;
-			job.LastStatus = this.LastStatus;
-			job.LastStatusMessage = this.LastStatusMessage;
-			job.LastRunSchedulerName = this.LastRunSchedulerName;
-			job.NotificationEmails = this.NotificationEmails;
-			job.NotificationStatus = this.NotificationStatus;
-			job.CreatedDateTime = this.CreatedDateTime;
-			job.ModifiedDateTime = this.ModifiedDateTime;
-			job.CreatedByPersonId = this.CreatedByPersonId;
-			job.ModifiedByPersonId = this.ModifiedByPersonId;
-			job.Id = this.Id;
-			job.Guid = this.Guid;
+			if ( model is Job )
+			{
+				var job = (Job)model;
+				job.IsSystem = this.IsSystem;
+				job.IsActive = this.IsActive;
+				job.Name = this.Name;
+				job.Description = this.Description;
+				job.Assemby = this.Assemby;
+				job.Class = this.Class;
+				job.CronExpression = this.CronExpression;
+				job.LastSuccessfulRun = this.LastSuccessfulRun;
+				job.LastRunDate = this.LastRunDate;
+				job.LastRunDuration = this.LastRunDuration;
+				job.LastStatus = this.LastStatus;
+				job.LastStatusMessage = this.LastStatusMessage;
+				job.LastRunSchedulerName = this.LastRunSchedulerName;
+				job.NotificationEmails = this.NotificationEmails;
+				job.NotificationStatus = this.NotificationStatus;
+				job.CreatedDateTime = this.CreatedDateTime;
+				job.ModifiedDateTime = this.ModifiedDateTime;
+				job.CreatedByPersonId = this.CreatedByPersonId;
+				job.ModifiedByPersonId = this.ModifiedByPersonId;
+				job.Id = this.Id;
+				job.Guid = this.Guid;
+			}
 		}
 	}
 }

@@ -17,11 +17,11 @@ namespace Rock.Address
         /// Abstract method for standardizing the specified address.  Derived classes should implement
         /// this method to standardize the address.
         /// </summary>
-        /// <param name="address">The address.</param>
+		/// <param name="location">The location.</param>
         /// <param name="result">The result code unique to the service.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public abstract bool Standardize( Rock.Crm.Address address, out string result );
+		public abstract bool Standardize( Rock.Crm.Location location, out string result );
     }
 }

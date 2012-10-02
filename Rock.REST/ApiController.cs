@@ -12,12 +12,13 @@ using System.ServiceModel.Channels;
 using System.Web.Http;
 
 using Rock.Data;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
 	public abstract class ApiController<T, D> : ApiController
 		where T : Rock.Data.Model<T>
-		where D : Rock.Data.Dto<T>, new()
+		where D : Rock.Data.IDto, new()
 	{
 		private Service<T, D> _service;
 
@@ -45,6 +46,7 @@ namespace Rock.Rest
 		}
 
 		// POST api/<controller> (insert)
+		[Authenticate]
 		public virtual HttpResponseMessage Post( [FromBody]D value )
 		{
 			var user = CurrentUser();
@@ -71,6 +73,7 @@ namespace Rock.Rest
 		}
 
 		// PUT api/<controller>/5  (update)
+		[Authenticate]
 		public virtual void Put( int id, [FromBody]D value )
 		{
 			var user = CurrentUser();
@@ -94,6 +97,7 @@ namespace Rock.Rest
 		}
 
 		// DELETE api/<controller>/5
+		[Authenticate]
 		public virtual void Delete( int id )
 		{
 			var user = CurrentUser();

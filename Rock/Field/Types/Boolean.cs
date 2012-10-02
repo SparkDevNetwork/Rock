@@ -24,7 +24,7 @@ namespace Rock.Field.Types
         /// <param name="value">Information about the value</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, bool condensed )
+		public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value ) )
                 return condensed ? "Y" : "Yes";

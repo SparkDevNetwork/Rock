@@ -151,113 +151,113 @@ namespace RockWeb
         }
 
         // default error handling
-        protected void Application_Error( object sender, EventArgs e )
-        {
-            // log error
-            System.Web.HttpContext context = HttpContext.Current;
-            System.Exception ex = Context.Server.GetLastError();
+		protected void Application_Error( object sender, EventArgs e )
+		{
+			// log error
+			System.Web.HttpContext context = HttpContext.Current;
+			System.Exception ex = Context.Server.GetLastError();
 
-            if ( ex != null )
-            {
-                bool logException = true;
+			if ( ex != null )
+			{
+				bool logException = true;
 
-                // string to send a message to the error page to prevent infinite loops
-                // of error reporting from incurring if there is an exception on the error page
-                string errorQueryParm = "?error=1";
+				// string to send a message to the error page to prevent infinite loops
+				// of error reporting from incurring if there is an exception on the error page
+				string errorQueryParm = "?error=1";
 
-                if ( context.Request.Url.ToString().Contains( "?error=1" ) )
-                {
-                    errorQueryParm = "?error=2";
-                }
-                else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
-                {
-                    // something really bad is occurring stop logging errors as we're in an infinate loop
-                    logException = false;
-                }
+				if ( context.Request.Url.ToString().Contains( "?error=1" ) )
+				{
+					errorQueryParm = "?error=2";
+				}
+				else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
+				{
+					// something really bad is occurring stop logging errors as we're in an infinate loop
+					logException = false;
+				}
 
 
-                if ( logException )
-                {
-                    string status = "500";
+				if ( logException )
+				{
+					string status = "500";
 
-                    // determine if 404's should be tracked as exceptions
-                    bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributes.Value( "Log404AsException" ) );
+					// determine if 404's should be tracked as exceptions
+					bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributesCache.Value( "Log404AsException" ) );
 
-                    // set status to 404
-                    if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
-                    {
-                        status = "404";
-                    }
+					// set status to 404
+					if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
+					{
+						status = "404";
+					}
 
-                    if ( status == "500" || track404 )
-                    {
-                        LogError( ex, -1, status, context );
-                        context.Server.ClearError();
+					if ( status == "500" || track404 )
+					{
+						LogError( ex, -1, status, context );
+						context.Server.ClearError();
 
-                        string errorPage = string.Empty;
+						string errorPage = string.Empty;
 
-                        // determine error page based on the site
-                        SiteService service = new SiteService();
-                        Site site = null;
-                        string siteName = string.Empty;
+						// determine error page based on the site
+						SiteService service = new SiteService();
+						Site site = null;
+						string siteName = string.Empty;
 
-                        if ( context.Items["Rock:SiteId"] != null )
-                        {
-                            int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+						if ( context.Items["Rock:SiteId"] != null )
+						{
+							int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
 
-                            // load site
-                            site = service.Get( siteId );
+							// load site
+							site = service.Get( siteId );
 
-                            siteName = site.Name;
-                            errorPage = site.ErrorPage;
-                        }
+							siteName = site.Name;
+							errorPage = site.ErrorPage;
+						}
 
-                        // store exception in session
-                        Session["Exception"] = ex;
+						// store exception in session
+						Session["Exception"] = ex;
 
-                        // email notifications if 500 error
-                        if ( status == "500" )
-                        {
-                            // setup merge codes for email
-                            var mergeObjects = new List<object>();
+						// email notifications if 500 error
+						if ( status == "500" )
+						{
+							// setup merge codes for email
+							var mergeObjects = new List<object>();
 
-                            var values = new Dictionary<string, string>();
+							var values = new Dictionary<string, string>();
 
-                            string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
-                            values.Add( "ExceptionDetails", exceptionDetails );
-                            mergeObjects.Add( values );
+							string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
+							values.Add( "ExceptionDetails", exceptionDetails );
+							mergeObjects.Add( values );
 
-                            // get email addresses to send to
-                            string emailAddressesList = Rock.Web.Cache.GlobalAttributes.Value( "EmailExceptionsList" );
-                            if ( emailAddressesList != null )
-                            {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+							// get email addresses to send to
+							string emailAddressesList = Rock.Web.Cache.GlobalAttributesCache.Value( "EmailExceptionsList" );
+							if ( emailAddressesList != null )
+							{
+								string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                var recipients = new Dictionary<string, List<object>>();
+								var recipients = new Dictionary<string, List<object>>();
 
-                                foreach ( string emailAddress in emailAddresses )
-                                {
-                                    recipients.Add( emailAddress, mergeObjects );
-                                }
+								foreach ( string emailAddress in emailAddresses )
+								{
+									recipients.Add( emailAddress, mergeObjects );
+								}
 
-                                if ( recipients.Count > 0 )
-                                {
-                                    Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                                    SetSMTPParameters( email );  //TODO move this set up to the email object
-                                    email.Send( recipients );
-                                }
-                            }
-                        }
+								if ( recipients.Count > 0 )
+								{
+									Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+									SetSMTPParameters( email );  //TODO move this set up to the email object
+									email.Send( recipients );
+								}
+							}
+						}
 
-                        // redirect to error page
-                        if ( errorPage != null && errorPage != string.Empty )
-                            Response.Redirect( errorPage + errorQueryParm );
-                        else
-                            Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
-                    }
-                }
-            }
-        }
+						// redirect to error page
+						if ( errorPage != null && errorPage != string.Empty )
+							Response.Redirect( errorPage + errorQueryParm );
+						else
+							Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
+					}
+				}
+			}
+		}
 
         private string FormatException( Exception ex, string exLevel )
         {
@@ -278,20 +278,20 @@ namespace RockWeb
 
         private void SetSMTPParameters( Email email )
         {
-            email.Server = Rock.Web.Cache.GlobalAttributes.Value( "SMTPServer" );
+            email.Server = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPServer" );
 
             int port = 0;
-            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPPort" ), out port ) )
+            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPort" ), out port ) )
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = Rock.Web.Cache.GlobalAttributes.Value( "SMTPUserName" );
-            email.Password = Rock.Web.Cache.GlobalAttributes.Value( "SMTPPassword" );
+            email.UserName = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUserName" );
+            email.Password = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPassword" );
         }
 
         private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
@@ -358,7 +358,7 @@ namespace RockWeb
                 exceptionLog.ServerVariables = serverVars.ToString();
 
                 if (user != null)
-                    exceptionLog.PersonId = user.PersonId;
+					exceptionLog.CreatedByPersonId = user.PersonId;
 
                 service.Add( exceptionLog, null );
                 service.Save( exceptionLog, null );
@@ -408,7 +408,7 @@ namespace RockWeb
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
         {
             //filters.Add( new System.Web.Http.AuthorizeAttribute() );
-            filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
+            //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
 			filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 
@@ -429,7 +429,9 @@ namespace RockWeb
 
             
 			// Add any custom api routes
-			foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Rest.IHasCustomRoutes ) ) )
+			foreach ( var type in Rock.Reflection.FindTypes( 
+				typeof( Rock.Rest.IHasCustomRoutes ), 
+				new System.IO.DirectoryInfo(Server.MapPath("~/bin")) ) )
 			{
 				var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
 				if ( controller != null )
@@ -452,8 +454,8 @@ namespace RockWeb
 
         private void AddEventHandlers()
         {
-            Rock.Cms.BlockInstance.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( BlockInstance_Updated );
-            Rock.Cms.BlockInstance.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( BlockInstance_Deleting );
+            Rock.Cms.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
+            Rock.Cms.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
             Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
             Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
         }
@@ -465,17 +467,17 @@ namespace RockWeb
                 // Cache all the Field Types
                 var fieldTypeService = new Rock.Core.FieldTypeService();
                 foreach ( var fieldType in fieldTypeService.Queryable() )
-                    Rock.Web.Cache.FieldType.Read( fieldType );
+                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
 
                 // Cache all tha Defined Types
                 var definedTypeService = new Rock.Core.DefinedTypeService();
                 foreach ( var definedType in definedTypeService.Queryable() )
-                    Rock.Web.Cache.DefinedType.Read( definedType );
+                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
 
                 // Cache all the Defined Values
                 var definedValueService = new Rock.Core.DefinedValueService();
                 foreach ( var definedValue in definedValueService.Queryable() )
-                    Rock.Web.Cache.DefinedValue.Read( definedValue );
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
 
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
                 var qualifiers = new Dictionary<int, Dictionary<string, string>>();
@@ -490,9 +492,9 @@ namespace RockWeb
                 foreach ( var attribute in new Rock.Core.AttributeService().Queryable() )
                 {
                     if ( qualifiers.ContainsKey( attribute.Id ) )
-                        Rock.Web.Cache.Attribute.Read( attribute, qualifiers[attribute.Id] );
+                        Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
                     else
-                        Rock.Web.Cache.Attribute.Read( attribute, new Dictionary<string, string>() );
+                        Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
                 }
             }
         }
@@ -514,25 +516,25 @@ namespace RockWeb
             {
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.Id ) ) )
+                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
                 {
                     // Get the cached page
-                    var cachedPage = Rock.Web.Cache.Page.Read( page.Id );
+                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
                     // if the parent page has changed, flush the old parent page's list of child pages
                     if ( cachedPage.ParentPage != null && cachedPage.ParentPage.Id != page.ParentPageId )
                         cachedPage.ParentPage.FlushChildPages();
 
                     // Flush the updated page from cache
-                    Rock.Web.Cache.Page.Flush( page.Id );
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
                 }
 
                 // Check to see if updated page has a parent
                 if ( page.ParentPageId.HasValue )
                 {
                     // If the parent page is cached, flush it's list of child pages
-                    if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.ParentPageId.Value ) ) )
-                        Rock.Web.Cache.Page.Read( page.ParentPageId.Value ).FlushChildPages();
+                    if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.ParentPageId.Value ) ) )
+                        Rock.Web.Cache.PageCache.Read( page.ParentPageId.Value ).FlushChildPages();
                 }
             }
         }
@@ -550,58 +552,58 @@ namespace RockWeb
             {
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.Page.CacheKey( page.Id ) ) )
+                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
                 {
                     // Get the cached page
-                    var cachedPage = Rock.Web.Cache.Page.Read( page.Id );
+                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
                     // if the parent page is not null, flush parent page's list of child pages
                     if ( cachedPage.ParentPage != null )
                         cachedPage.ParentPage.FlushChildPages();
 
                     // Flush the updated page from cache
-                    Rock.Web.Cache.Page.Flush( page.Id );
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
                 }
             }
         }
 
         /// <summary>
-        /// Flushes a block instance and it's parent page from cache whenever it is updated
+        /// Flushes a block and it's parent page from cache whenever it is updated
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        void BlockInstance_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
+        void Block_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the update block instance
-            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
-            if ( blockInstance != null )
+            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.BlockInstance.Flush( blockInstance.Id );
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
 
                 // Flush the block instance's parent page 
-                if ( blockInstance.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( blockInstance.PageId.Value );
+                if ( block.PageId.HasValue )
+                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
             }
         }
 
         /// <summary>
-        /// Flushes a block instance and it's parent page from cache whenever it is being deleted
+        /// Flushes a block and it's parent page from cache whenever it is being deleted
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        void BlockInstance_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
+        void Block_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted block instance
-            Rock.Cms.BlockInstance blockInstance = e.Model as Rock.Cms.BlockInstance;
-            if ( blockInstance != null )
+            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            if ( block != null )
             {
                 // Flush the block instance from cache
-                Rock.Web.Cache.BlockInstance.Flush( blockInstance.Id );
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
 
                 // Flush the block instance's parent page 
-                if ( blockInstance.PageId.HasValue )
-                    Rock.Web.Cache.Page.Flush( blockInstance.PageId.Value );
+                if ( block.PageId.HasValue )
+                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
             }
         }
 

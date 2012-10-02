@@ -3,12 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Groups;
@@ -71,14 +69,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 				int groupId = groupItem.Id;
 				foreach ( dynamic memberItem in service.Queryable()
 					.Where( m => m.GroupId == groupId && m.PersonId != Person.Id )
-					.OrderBy( m => m.GroupRole.Order )
 					.Select( m => new
 					{
 						Id = m.PersonId,
+						PhotoId = m.Person.PhotoId.HasValue ? m.Person.PhotoId.Value : 0,
 						Name = m.Person.NickName ?? m.Person.GivenName,
-						Role = m.GroupRole.Name
+						Role = m.GroupRole.Name,
+						Order = m.GroupRole.Order
 					}
-						) )
+						).ToList().OrderBy( m => m.Order) )
 				{
 					var li = new HtmlGenericControl( "li" );
 					ul.Controls.Add( li );
@@ -86,6 +85,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 					var anchor = new HtmlAnchor();
 					li.Controls.Add( anchor );
 					anchor.HRef = string.Format( "~/Person/{0}", memberItem.Id );
+
+					if ( memberItem.PhotoId != 0 )
+					{
+						var img = new HtmlImage();
+						anchor.Controls.Add( img );
+						img.Src = string.Format( "~/image.ashx?id={0}&maxwidth=38&maxheight=38", memberItem.PhotoId );
+					}
 
 					var h4 = new HtmlGenericControl( "h4" );
 					anchor.Controls.Add( h4 );

@@ -47,10 +47,44 @@ namespace Rock.Crm
 		/// Number.
 		/// </value>
 		[Required]
-		[MaxLength( 100 )]
+		[MaxLength( 20 )]
 		[DataMember]
 		public string Number { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the extension
+		/// </summary>
+		[MaxLength( 20 )]
+		[DataMember]
+		public string Extension { get; set; }
+
+		/// <summary>
+		/// Type of phone number
+		/// </summary>
+		[DataMember]
+		public int? NumberTypeId { get; set; }
+
+		/// <summary>
+		/// Gets or sets whether the number has been opted in for SMS
+		/// </summary>
+		[Required]
+		[DataMember]
+		public bool IsMessagingEnabled { get; set; }
+
+		/// <summary>
+		/// The phone number type
+		/// </summary>
+		public virtual Core.DefinedValue NumberType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the whether the number is unlisted or not.
+		/// </summary>
+		/// <value>
+		/// IsUnlisted.
+		/// </value>
+		[DataMember]
+		public bool IsUnlisted { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Description.
 		/// </summary>
@@ -111,22 +145,6 @@ namespace Rock.Crm
 		public virtual Person Person { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Person"/> object.
-        /// </value>
-		public virtual Person ModifiedByPerson { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -134,6 +152,25 @@ namespace Rock.Crm
 		public static PhoneNumber Read( int id )
 		{
 			return Read<PhoneNumber>( id );
+		}
+
+		/// <summary>
+		/// Formats a phone number
+		/// </summary>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		public static string FormattedNumber( string number )
+		{
+			number = new System.Text.RegularExpressions.Regex( @"\D" ).Replace( number, string.Empty );
+			number = number.TrimStart( '1' );
+			if ( number.Length == 7 )
+				return Convert.ToInt64( number ).ToString( "###\\.####" );
+			if ( number.Length == 10 )
+				return Convert.ToInt64( number ).ToString( "###\\.###\\.####" );
+			if ( number.Length > 10 )
+				return Convert.ToInt64( number )
+					.ToString( "###\\.###\\.#### " + new String( '#', ( number.Length - 10 ) ) );
+			return number;
 		}
 
 
@@ -150,8 +187,7 @@ namespace Rock.Crm
         public PhoneNumberConfiguration()
         {
 			this.HasRequired( p => p.Person ).WithMany( p => p.PhoneNumbers ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
+			this.HasOptional( p => p.NumberType ).WithMany().HasForeignKey( p => p.NumberTypeId ).WillCascadeOnDelete( false );
 		}
     }
 }

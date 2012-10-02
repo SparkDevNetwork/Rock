@@ -29,14 +29,14 @@ namespace Rock.Address.Standardize
         /// The StrikeIron address verification will also attempt to geocode the address.  If this 
         /// geocode is succesful, the Geocode information of the address will be updated also.
         /// </remarks>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Standardize( Rock.Crm.Address address, out string result )
+        public override bool Standardize( Rock.Crm.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
                 registeredUser.UserID = AttributeValue("UserID");
@@ -50,12 +50,12 @@ namespace Rock.Address.Standardize
                 SIWsOutputOfUSAddress verifyResult;
                 SubscriptionInfo info = client.VerifyAddressUSA(
                     licenseInfo,
-                    address.Street1,
-                    address.Street2,
+                    location.Street1,
+                    location.Street2,
                     string.Format("{0} {1} {2}", 
-                        address.City,
-                        address.State,
-                        address.Zip),
+                        location.City,
+                        location.State,
+                        location.Zip),
                     string.Empty,
                     string.Empty,
                     CasingEnum.PROPER,
@@ -71,20 +71,20 @@ namespace Rock.Address.Standardize
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            address.Street1 = usAddress.AddressLine1;
-                            address.Street2 = usAddress.AddressLine2;
-                            address.City = usAddress.City;
-                            address.State = usAddress.State;
-                            address.Zip = usAddress.ZIPPlus4;
+                            location.Street1 = usAddress.AddressLine1;
+                            location.Street2 = usAddress.AddressLine2;
+                            location.City = usAddress.City;
+                            location.State = usAddress.State;
+                            location.Zip = usAddress.ZIPPlus4;
 
                             if ( usAddress.GeoCode != null )
                             {
-                                address.GeocodeService = "StrikeIron";
-                                address.GeocodeResult = "200";
-                                address.GeocodeDate = DateTime.Now;
+                                location.GeocodeService = "StrikeIron";
+                                location.GeocodeResult = "200";
+                                location.GeocodeDate = DateTime.Now;
 
-                                address.Latitude = usAddress.GeoCode.Latitude;
-                                address.Longitude = usAddress.GeoCode.Longitude;
+                                location.Latitude = usAddress.GeoCode.Latitude;
+                                location.Longitude = usAddress.GeoCode.Longitude;
                             }
 
                             return true;

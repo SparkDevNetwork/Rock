@@ -23,7 +23,7 @@ namespace Rock.Field.Types
         /// <param name="value">Information about the value</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, bool condensed )
+		public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return string.Format( "<a href='{0}image.ashx?{1}' target='_blank'>Image</a>",
                 parentControl.ResolveUrl( "~" ),

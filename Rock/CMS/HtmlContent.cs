@@ -152,9 +152,9 @@ namespace Rock.Cms
         /// Gets or sets the Block.
         /// </summary>
         /// <value>
-        /// A <see cref="BlockInstance"/> object.
+        /// A <see cref="Block"/> object.
         /// </value>
-		public virtual BlockInstance Block { get; set; }
+		public virtual Block Block { get; set; }
         
 		/// <summary>
         /// Gets or sets the Approved By Person.
@@ -165,22 +165,6 @@ namespace Rock.Cms
 		public virtual Crm.Person ApprovedByPerson { get; set; }
         
 		/// <summary>
-        /// Gets or sets the Created By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Crm.Person"/> object.
-        /// </value>
-		public virtual Crm.Person ModifiedByPerson { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -189,7 +173,6 @@ namespace Rock.Cms
 		{
 			return Read<HtmlContent>( id );
 		}
-
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -242,8 +225,6 @@ namespace Rock.Cms
         {
 			this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
 			this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
 		}
     }
 }

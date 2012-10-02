@@ -45,7 +45,7 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <div class="row">
+        <div class="row-fluid">
 
             <div class="span6">
 

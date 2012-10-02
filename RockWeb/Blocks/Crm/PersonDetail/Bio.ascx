@@ -3,13 +3,14 @@
 <aside class="bio">             
     <div class="content">
 
+        <asp:PlaceHolder ID="phImage" runat="server"></asp:PlaceHolder>
 <%--        <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />--%>
 
         <section class="group">
             <span class="member-status"><asp:Literal ID="lPersonStatus" runat="server" /></span>
             <span class="record-status<%= (RecordStatus == "Inactive" ? " inactive" : "") %>"><%= RecordStatus %></span>
 
-            <span class="campus">TODO: Campus</span>
+            <span class="campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></span>
             <span class="area">TODO: Area</span>
         </section>
 

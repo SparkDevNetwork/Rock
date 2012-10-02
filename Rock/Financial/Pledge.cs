@@ -143,23 +143,7 @@ namespace Rock.Financial
         [DataMember]
         public int? ModifiedByPersonId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-		/// <summary>
+ 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -188,8 +172,6 @@ namespace Rock.Financial
             this.HasOptional(p => p.Person).WithMany(p => p.Pledges).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.Fund).WithMany(f => f.Pledges).HasForeignKey(p => p.FundId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.FrequencyType).WithMany().HasForeignKey(p => p.FrequencyTypeId).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

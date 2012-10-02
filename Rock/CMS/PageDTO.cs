@@ -18,7 +18,7 @@ namespace Rock.Cms
 	/// <summary>
 	/// Data Transfer Object for Page object
 	/// </summary>
-	public partial class PageDto : Dto<Page>
+	public partial class PageDto : IDto
 	{
 
 #pragma warning disable 1591
@@ -38,7 +38,13 @@ namespace Rock.Cms
 		public int OutputCacheDuration { get; set; }
 		public string Description { get; set; }
 		public bool IncludeAdminFooter { get; set; }
+		public DateTime? CreatedDateTime { get; set; }
+		public DateTime? ModifiedDateTime { get; set; }
+		public int? CreatedByPersonId { get; set; }
+		public int? ModifiedByPersonId { get; set; }
 		public string IconUrl { get; set; }
+		public int Id { get; set; }
+		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
 		/// <summary>
@@ -61,62 +67,70 @@ namespace Rock.Cms
 		/// Copies the model property values to the DTO properties
 		/// </summary>
 		/// <param name="page"></param>
-		public override void CopyFromModel( Page page )
+		public void CopyFromModel( IModel model )
 		{
-			this.Name = page.Name;
-			this.Title = page.Title;
-			this.IsSystem = page.IsSystem;
-			this.ParentPageId = page.ParentPageId;
-			this.SiteId = page.SiteId;
-			this.Layout = page.Layout;
-			this.RequiresEncryption = page.RequiresEncryption;
-			this.EnableViewState = page.EnableViewState;
-			this.MenuDisplayDescription = page.MenuDisplayDescription;
-			this.MenuDisplayIcon = page.MenuDisplayIcon;
-			this.MenuDisplayChildPages = page.MenuDisplayChildPages;
-			this.DisplayInNavWhen = page.DisplayInNavWhen;
-			this.Order = page.Order;
-			this.OutputCacheDuration = page.OutputCacheDuration;
-			this.Description = page.Description;
-			this.IncludeAdminFooter = page.IncludeAdminFooter;
-			this.CreatedDateTime = page.CreatedDateTime;
-			this.ModifiedDateTime = page.ModifiedDateTime;
-			this.CreatedByPersonId = page.CreatedByPersonId;
-			this.ModifiedByPersonId = page.ModifiedByPersonId;
-			this.IconUrl = page.IconUrl;
-			this.Id = page.Id;
-			this.Guid = page.Guid;
+			if ( model is Page )
+			{
+				var page = (Page)model;
+				this.Name = page.Name;
+				this.Title = page.Title;
+				this.IsSystem = page.IsSystem;
+				this.ParentPageId = page.ParentPageId;
+				this.SiteId = page.SiteId;
+				this.Layout = page.Layout;
+				this.RequiresEncryption = page.RequiresEncryption;
+				this.EnableViewState = page.EnableViewState;
+				this.MenuDisplayDescription = page.MenuDisplayDescription;
+				this.MenuDisplayIcon = page.MenuDisplayIcon;
+				this.MenuDisplayChildPages = page.MenuDisplayChildPages;
+				this.DisplayInNavWhen = page.DisplayInNavWhen;
+				this.Order = page.Order;
+				this.OutputCacheDuration = page.OutputCacheDuration;
+				this.Description = page.Description;
+				this.IncludeAdminFooter = page.IncludeAdminFooter;
+				this.CreatedDateTime = page.CreatedDateTime;
+				this.ModifiedDateTime = page.ModifiedDateTime;
+				this.CreatedByPersonId = page.CreatedByPersonId;
+				this.ModifiedByPersonId = page.ModifiedByPersonId;
+				this.IconUrl = page.IconUrl;
+				this.Id = page.Id;
+				this.Guid = page.Guid;
+			}
 		}
 
 		/// <summary>
 		/// Copies the DTO property values to the model properties
 		/// </summary>
 		/// <param name="page"></param>
-		public override void CopyToModel ( Page page )
+		public void CopyToModel ( IModel model )
 		{
-			page.Name = this.Name;
-			page.Title = this.Title;
-			page.IsSystem = this.IsSystem;
-			page.ParentPageId = this.ParentPageId;
-			page.SiteId = this.SiteId;
-			page.Layout = this.Layout;
-			page.RequiresEncryption = this.RequiresEncryption;
-			page.EnableViewState = this.EnableViewState;
-			page.MenuDisplayDescription = this.MenuDisplayDescription;
-			page.MenuDisplayIcon = this.MenuDisplayIcon;
-			page.MenuDisplayChildPages = this.MenuDisplayChildPages;
-			page.DisplayInNavWhen = this.DisplayInNavWhen;
-			page.Order = this.Order;
-			page.OutputCacheDuration = this.OutputCacheDuration;
-			page.Description = this.Description;
-			page.IncludeAdminFooter = this.IncludeAdminFooter;
-			page.CreatedDateTime = this.CreatedDateTime;
-			page.ModifiedDateTime = this.ModifiedDateTime;
-			page.CreatedByPersonId = this.CreatedByPersonId;
-			page.ModifiedByPersonId = this.ModifiedByPersonId;
-			page.IconUrl = this.IconUrl;
-			page.Id = this.Id;
-			page.Guid = this.Guid;
+			if ( model is Page )
+			{
+				var page = (Page)model;
+				page.Name = this.Name;
+				page.Title = this.Title;
+				page.IsSystem = this.IsSystem;
+				page.ParentPageId = this.ParentPageId;
+				page.SiteId = this.SiteId;
+				page.Layout = this.Layout;
+				page.RequiresEncryption = this.RequiresEncryption;
+				page.EnableViewState = this.EnableViewState;
+				page.MenuDisplayDescription = this.MenuDisplayDescription;
+				page.MenuDisplayIcon = this.MenuDisplayIcon;
+				page.MenuDisplayChildPages = this.MenuDisplayChildPages;
+				page.DisplayInNavWhen = this.DisplayInNavWhen;
+				page.Order = this.Order;
+				page.OutputCacheDuration = this.OutputCacheDuration;
+				page.Description = this.Description;
+				page.IncludeAdminFooter = this.IncludeAdminFooter;
+				page.CreatedDateTime = this.CreatedDateTime;
+				page.ModifiedDateTime = this.ModifiedDateTime;
+				page.CreatedByPersonId = this.CreatedByPersonId;
+				page.ModifiedByPersonId = this.ModifiedByPersonId;
+				page.IconUrl = this.IconUrl;
+				page.Id = this.Id;
+				page.Guid = this.Guid;
+			}
 		}
 	}
 }

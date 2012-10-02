@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -70,7 +71,7 @@ namespace RockWeb.Blocks.Administration
                         _entityId = entityIdint;
                 }
 
-                _canConfigure = PageInstance.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
@@ -97,7 +98,7 @@ namespace RockWeb.Blocks.Administration
                 }});
         }});
     ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", BlockInstance.Id ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
 
                     // Create the dropdown list for listing the available field types
                     var fieldTypeService = new Rock.Core.FieldTypeService();
@@ -137,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
                 {
-                    var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+                    var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
                     AttributeValueService attributeValueService = new AttributeValueService();
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
@@ -149,14 +150,14 @@ namespace RockWeb.Blocks.Administration
                         attributeValueService.Add( attributeValue, CurrentPersonId );
                     }
 
-                    var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+                    var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                     attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
 
                     attributeValueService.Save( attributeValue, CurrentPersonId );
 
-                    Rock.Web.Cache.Attribute.Flush( attributeId );
+                    Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     if ( _entity == string.Empty && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
-                        Rock.Web.Cache.GlobalAttributes.Flush();
+                        Rock.Web.Cache.GlobalAttributesCache.Flush();
 
                 }
 
@@ -204,7 +205,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Core.Attribute attribute = attributeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
-                Rock.Web.Cache.Attribute.Flush( attribute.Id );
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
                 attributeService.Delete( attribute, CurrentPersonId );
                 attributeService.Save( attribute, CurrentPersonId );
@@ -229,9 +230,8 @@ namespace RockWeb.Blocks.Administration
             {
                 int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
-                AttributeService attributeService = new AttributeService();
-                var attribute = attributeService.Get( attributeId );
-                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldTypeId );
+                var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldTypeId );
 
                 if ( _setValues )
                 {
@@ -241,16 +241,16 @@ namespace RockWeb.Blocks.Administration
                         AttributeValueService attributeValueService = new AttributeValueService();
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace(attributeValue.Value))
-                            lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, true );
+                            lValue.Text = fieldType.Field.FormatValue( lValue, attributeValue.Value, attribute.QualifierValues, true );
                         else
-                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, true ) );
+                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                     }
                 }
                 else
                 {
                     Literal lDefaultValue = e.Row.FindControl( "lDefaultValue" ) as Literal;
                     if ( lDefaultValue != null )
-                        lDefaultValue.Text = fieldType.Field.FormatValue( lDefaultValue, attribute.DefaultValue, true ); 
+                        lDefaultValue.Text = fieldType.Field.FormatValue( lDefaultValue, attribute.DefaultValue, attribute.QualifierValues, true ); 
                 }
 
             }
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeId != 0 )
             {
-                var attribute = Rock.Web.Cache.Attribute.Read ( attributeId );
+                var attribute = Rock.Web.Cache.AttributeCache.Read ( attributeId );
                 BuildConfigControls( attribute.QualifierValues );
             }
             else
@@ -295,7 +295,7 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    Rock.Web.Cache.Attribute.Flush( attributeId );
+                    Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     attribute = attributeService.Get( attributeId );
                 }
 
@@ -305,31 +305,30 @@ namespace RockWeb.Blocks.Administration
                 attribute.Description = tbDescription.Text;
                 attribute.FieldTypeId = Int32.Parse(ddlFieldType.SelectedValue);
 
-                var fieldType = Rock.Web.Cache.FieldType.Read(attribute.FieldTypeId);
+                var fieldType = Rock.Web.Cache.FieldTypeCache.Read(attribute.FieldTypeId);
 
                 foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
                     attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
                 attribute.AttributeQualifiers.Clear();
 
-                List<Control> configControls = new List<Control>();
-                foreach ( var key in fieldType.Field.ConfigurationKeys() )
-                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
-
-                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
-                {
-                    AttributeQualifier qualifier = new AttributeQualifier();
-                    qualifier.Key = configValue.Key;
-                    qualifier.Value = configValue.Value.Value;
-                    attribute.AttributeQualifiers.Add( qualifier );
-                }
-
-                attribute.DefaultValue = tbDefaultValue.Text;
+				List<Control> configControls = new List<Control>();
+				foreach ( var key in fieldType.Field.ConfigurationKeys() )
+					configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+				foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
+				{
+					AttributeQualifier qualifier = new AttributeQualifier();
+					qualifier.IsSystem = false;
+					qualifier.Key = configValue.Key;
+					qualifier.Value = configValue.Value.Value ?? string.Empty;
+					attribute.AttributeQualifiers.Add( qualifier );
+				}
+				
+				attribute.DefaultValue = tbDefaultValue.Text;
                 attribute.IsMultiValue = cbMultiValue.Checked;
                 attribute.IsRequired = cbRequired.Checked;
 
                 attributeService.Save( attribute, CurrentPersonId );
-
-            }
+			}
 
             BindGrid();
 
@@ -396,7 +395,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeModel != null )
             {
-                var attribute = Rock.Web.Cache.Attribute.Read(attributeModel);
+                var attribute = Rock.Web.Cache.AttributeCache.Read(attributeModel);
 
                 lAction.Text = "Edit";
                 hfId.Value = attribute.Id.ToString();
@@ -443,7 +442,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BuildConfigControls(Dictionary<string, Rock.Field.ConfigurationValue> qualifierValues)
         {
-            var fieldType = Rock.Web.Cache.FieldType.Read( Int32.Parse( ddlFieldType.SelectedValue ) );
+            var fieldType = Rock.Web.Cache.FieldTypeCache.Read( Int32.Parse( ddlFieldType.SelectedValue ) );
             if ( fieldType != null )
             {
                 phFieldTypeQualifiers.Controls.Clear();
@@ -452,15 +451,22 @@ namespace RockWeb.Blocks.Administration
                 int i = 0;
                 foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
                 {
-                    Label lbl = new Label();
-                    phFieldTypeQualifiers.Controls.Add( lbl );
+					var ctrlGroup = new HtmlGenericControl( "div" );
+					phFieldTypeQualifiers.Controls.Add( ctrlGroup );
+					ctrlGroup.AddCssClass( "control-group" );
+
+                    var lbl = new Label();
+                    ctrlGroup.Controls.Add( lbl );
+					lbl.AddCssClass( "control-label" );
                     lbl.Text = configValue.Value.Name;
 
-                    Control control = configControls[i];
-                    phFieldTypeQualifiers.Controls.Add( control );
-                    control.ID = "configControl_" + configValue.Key;
+					var ctrls = new HtmlGenericControl( "div" );
+					ctrlGroup.Controls.Add( ctrls );
+					ctrls.AddCssClass( "controls" );
 
-                    phFieldTypeQualifiers.Controls.Add( new LiteralControl( "<br/>" ) );
+                    Control control = configControls[i];
+                    ctrls.Controls.Add( control );
+                    control.ID = "configControl_" + configValue.Key;
 
                     i++;
                 }
@@ -474,7 +480,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( _setValues )
             {
-                var attribute = Rock.Web.Cache.Attribute.Read( attributeId );
+                var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
                 hfIdValues.Value = attribute.Id.ToString();
                 lCaption.Text = attribute.Name;
@@ -482,7 +488,7 @@ namespace RockWeb.Blocks.Administration
                 AttributeValueService attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
 
-                var fieldType = Rock.Web.Cache.FieldType.Read( attribute.FieldType.Id );
+                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
 
                 Control editControl = fieldType.Field.EditControl( attribute.QualifierValues );
                 if ( setValues && attributeValue != null )

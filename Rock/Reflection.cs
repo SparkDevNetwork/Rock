@@ -24,9 +24,9 @@ namespace Rock
         /// </summary>
         /// <param name="baseType">base type.</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes ( Type baseType )
+        public static SortedDictionary<string, Type> FindTypes ( Type baseType, DirectoryInfo directory = null )
         {
-            return FindTypes( baseType, false );
+            return FindTypes( baseType, false, directory );
         }
 
         /// <summary>
@@ -35,29 +35,31 @@ namespace Rock
         /// <param name="baseType">base type.</param>
         /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType )
+        public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo directory = null )
         {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
 
             if ( includeBaseType )
                 types.Add( ClassName( baseType ), baseType );
 
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            FileInfo executingFile = new FileInfo( executingAssembly.Location );
-
-            Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
-            assemblies.Add( executingAssembly.Location.ToLower(), executingAssembly );
+			Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
+			
+			Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            assemblies.Add( executingAssembly.FullName.ToLower(), executingAssembly );
 
             foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies() )
-                if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.Location  ) )
+                if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.FullName.ToLower()  ) )
                     assemblies.Add( assembly.FullName.ToLower(), assembly );
 
-            foreach ( FileInfo fileInfo in executingFile.Directory.GetFiles( "rock.*.dll" ) )
-                if ( !assemblies.Keys.Contains( fileInfo.FullName.ToLower() ) )
-                {
-                    Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
-                    assemblies.Add( fileInfo.FullName.ToLower(), fileAssembly );
-                }
+			if ( directory != null )
+			{
+				foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
+				{
+					Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
+					if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
+						assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
+				}
+			}
 
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
                 foreach ( KeyValuePair<string, Type> typeEntry in SearchAssembly( assemblyEntry.Value, baseType ) )
