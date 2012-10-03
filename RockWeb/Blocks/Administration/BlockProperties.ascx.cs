@@ -55,14 +55,6 @@ namespace RockWeb.Blocks.Administration
             base.OnLoad( e );
         }
 
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
-
-            if ( Page.IsPostBack && !Page.IsValid )
-                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
-        }
-
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             if ( Page.IsValid )
@@ -87,6 +79,9 @@ namespace RockWeb.Blocks.Administration
                 string script = "window.parent.closeModal()";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
+			else
+				Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
+
         }
 
         private void DisplayError( string message )
