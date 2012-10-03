@@ -4,11 +4,11 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gPageRoutes" runat="server" EmptyDataText="No Page Routes Found" AllowSorting="true" >
+            <Rock:Grid ID="gPageRoutes" runat="server" EmptyDataText="No Page Routes Found" AllowSorting="true">
                 <Columns>
-                    <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route"/>
-                    <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name"/>
-                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem"/>
+                    <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
+                    <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name" />
+                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                     <Rock:EditField OnClick="gPageRoutes_Edit" />
                     <Rock:DeleteField OnClick="gPageRoutes_Delete" />
                 </Columns>
@@ -21,19 +21,11 @@
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
 
-            <div class="row-fluid">
-
-                <div class="span6">
-
-                    <fieldset>
-                        <legend>Page Route</legend>
-                        <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" />
-                        <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
-                    </fieldset>
-
-                </div>
-
-            </div>
+            <fieldset>
+                <legend>Page Route</legend>
+                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" />
+                <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
+            </fieldset>
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
