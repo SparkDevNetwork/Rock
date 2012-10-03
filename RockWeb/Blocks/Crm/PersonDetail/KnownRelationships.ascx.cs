@@ -11,7 +11,7 @@ using Rock.Crm;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-	public partial class KnownRelationships : Rock.Web.UI.PersonBlock
+    public partial class KnownRelationships : Rock.Web.UI.PersonBlock
     {
         protected void Page_Load( object sender, EventArgs e )
         {

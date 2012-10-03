@@ -8,8 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.TeleAtlas.Authentication {
-    
+namespace Rock.TeleAtlas.Authentication
+{
+
+#pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://ezlocate.na.teleatlas.com/Authentication.wsdl", ConfigurationName="TeleAtlas.Authentication.AuthenticationPortType")]

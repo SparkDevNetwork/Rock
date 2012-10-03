@@ -15,74 +15,74 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for PersonViewed object
-	/// </summary>
-	public partial class PersonViewedDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PersonViewed object
+    /// </summary>
+    public partial class PersonViewedDto : IDto
+    {
 
 #pragma warning disable 1591
-		public int? ViewerPersonId { get; set; }
-		public int? TargetPersonId { get; set; }
-		public DateTime? ViewDateTime { get; set; }
-		public string IpAddress { get; set; }
-		public string Source { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int? ViewerPersonId { get; set; }
+        public int? TargetPersonId { get; set; }
+        public DateTime? ViewDateTime { get; set; }
+        public string IpAddress { get; set; }
+        public string Source { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PersonViewedDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PersonViewedDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="personViewed"></param>
-		public PersonViewedDto ( PersonViewed personViewed )
-		{
-			CopyFromModel( personViewed );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the model
+        /// </summary>
+        /// <param name="personViewed"></param>
+        public PersonViewedDto ( PersonViewed personViewed )
+        {
+            CopyFromModel( personViewed );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="personViewed"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is PersonViewed )
-			{
-				var personViewed = (PersonViewed)model;
-				this.ViewerPersonId = personViewed.ViewerPersonId;
-				this.TargetPersonId = personViewed.TargetPersonId;
-				this.ViewDateTime = personViewed.ViewDateTime;
-				this.IpAddress = personViewed.IpAddress;
-				this.Source = personViewed.Source;
-				this.Id = personViewed.Id;
-				this.Guid = personViewed.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IModel model )
+        {
+            if ( model is PersonViewed )
+            {
+                var personViewed = (PersonViewed)model;
+                this.ViewerPersonId = personViewed.ViewerPersonId;
+                this.TargetPersonId = personViewed.TargetPersonId;
+                this.ViewDateTime = personViewed.ViewDateTime;
+                this.IpAddress = personViewed.IpAddress;
+                this.Source = personViewed.Source;
+                this.Id = personViewed.Id;
+                this.Guid = personViewed.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="personViewed"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is PersonViewed )
-			{
-				var personViewed = (PersonViewed)model;
-				personViewed.ViewerPersonId = this.ViewerPersonId;
-				personViewed.TargetPersonId = this.TargetPersonId;
-				personViewed.ViewDateTime = this.ViewDateTime;
-				personViewed.IpAddress = this.IpAddress;
-				personViewed.Source = this.Source;
-				personViewed.Id = this.Id;
-				personViewed.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the model properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IModel model )
+        {
+            if ( model is PersonViewed )
+            {
+                var personViewed = (PersonViewed)model;
+                personViewed.ViewerPersonId = this.ViewerPersonId;
+                personViewed.TargetPersonId = this.TargetPersonId;
+                personViewed.ViewDateTime = this.ViewDateTime;
+                personViewed.IpAddress = this.IpAddress;
+                personViewed.Source = this.Source;
+                personViewed.Id = this.Id;
+                personViewed.Guid = this.Guid;
+            }
+        }
+    }
 }

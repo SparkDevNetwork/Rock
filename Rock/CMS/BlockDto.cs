@@ -15,95 +15,95 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for Block object
-	/// </summary>
-	public partial class BlockDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Block object
+    /// </summary>
+    public partial class BlockDto : IDto
+    {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int? PageId { get; set; }
-		public string Layout { get; set; }
-		public int BlockTypeId { get; set; }
-		public string Zone { get; set; }
-		public int Order { get; set; }
-		public string Name { get; set; }
-		public int OutputCacheDuration { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? PageId { get; set; }
+        public string Layout { get; set; }
+        public int BlockTypeId { get; set; }
+        public string Zone { get; set; }
+        public int Order { get; set; }
+        public string Name { get; set; }
+        public int OutputCacheDuration { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
+        public int? CreatedByPersonId { get; set; }
+        public int? ModifiedByPersonId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public BlockDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public BlockDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="block"></param>
-		public BlockDto ( Block block )
-		{
-			CopyFromModel( block );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the model
+        /// </summary>
+        /// <param name="block"></param>
+        public BlockDto ( Block block )
+        {
+            CopyFromModel( block );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="block"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is Block )
-			{
-				var block = (Block)model;
-				this.IsSystem = block.IsSystem;
-				this.PageId = block.PageId;
-				this.Layout = block.Layout;
-				this.BlockTypeId = block.BlockTypeId;
-				this.Zone = block.Zone;
-				this.Order = block.Order;
-				this.Name = block.Name;
-				this.OutputCacheDuration = block.OutputCacheDuration;
-				this.CreatedDateTime = block.CreatedDateTime;
-				this.ModifiedDateTime = block.ModifiedDateTime;
-				this.CreatedByPersonId = block.CreatedByPersonId;
-				this.ModifiedByPersonId = block.ModifiedByPersonId;
-				this.Id = block.Id;
-				this.Guid = block.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IModel model )
+        {
+            if ( model is Block )
+            {
+                var block = (Block)model;
+                this.IsSystem = block.IsSystem;
+                this.PageId = block.PageId;
+                this.Layout = block.Layout;
+                this.BlockTypeId = block.BlockTypeId;
+                this.Zone = block.Zone;
+                this.Order = block.Order;
+                this.Name = block.Name;
+                this.OutputCacheDuration = block.OutputCacheDuration;
+                this.CreatedDateTime = block.CreatedDateTime;
+                this.ModifiedDateTime = block.ModifiedDateTime;
+                this.CreatedByPersonId = block.CreatedByPersonId;
+                this.ModifiedByPersonId = block.ModifiedByPersonId;
+                this.Id = block.Id;
+                this.Guid = block.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="block"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is Block )
-			{
-				var block = (Block)model;
-				block.IsSystem = this.IsSystem;
-				block.PageId = this.PageId;
-				block.Layout = this.Layout;
-				block.BlockTypeId = this.BlockTypeId;
-				block.Zone = this.Zone;
-				block.Order = this.Order;
-				block.Name = this.Name;
-				block.OutputCacheDuration = this.OutputCacheDuration;
-				block.CreatedDateTime = this.CreatedDateTime;
-				block.ModifiedDateTime = this.ModifiedDateTime;
-				block.CreatedByPersonId = this.CreatedByPersonId;
-				block.ModifiedByPersonId = this.ModifiedByPersonId;
-				block.Id = this.Id;
-				block.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the model properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IModel model )
+        {
+            if ( model is Block )
+            {
+                var block = (Block)model;
+                block.IsSystem = this.IsSystem;
+                block.PageId = this.PageId;
+                block.Layout = this.Layout;
+                block.BlockTypeId = this.BlockTypeId;
+                block.Zone = this.Zone;
+                block.Order = this.Order;
+                block.Name = this.Name;
+                block.OutputCacheDuration = this.OutputCacheDuration;
+                block.CreatedDateTime = this.CreatedDateTime;
+                block.ModifiedDateTime = this.ModifiedDateTime;
+                block.CreatedByPersonId = this.CreatedByPersonId;
+                block.ModifiedByPersonId = this.ModifiedByPersonId;
+                block.Id = this.Id;
+                block.Guid = this.Guid;
+            }
+        }
+    }
 }

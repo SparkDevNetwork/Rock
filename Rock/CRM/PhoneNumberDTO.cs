@@ -15,89 +15,89 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for PhoneNumber object
-	/// </summary>
-	public partial class PhoneNumberDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PhoneNumber object
+    /// </summary>
+    public partial class PhoneNumberDto : IDto
+    {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int PersonId { get; set; }
-		public string Number { get; set; }
-		public int? NumberTypeId { get; set; }
-		public bool IsUnlisted { get; set; }
-		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int PersonId { get; set; }
+        public string Number { get; set; }
+        public int? NumberTypeId { get; set; }
+        public bool IsUnlisted { get; set; }
+        public string Description { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
+        public int? CreatedByPersonId { get; set; }
+        public int? ModifiedByPersonId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PhoneNumberDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PhoneNumberDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="phoneNumber"></param>
-		public PhoneNumberDto ( PhoneNumber phoneNumber )
-		{
-			CopyFromModel( phoneNumber );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the model
+        /// </summary>
+        /// <param name="phoneNumber"></param>
+        public PhoneNumberDto ( PhoneNumber phoneNumber )
+        {
+            CopyFromModel( phoneNumber );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="phoneNumber"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is PhoneNumber )
-			{
-				var phoneNumber = (PhoneNumber)model;
-				this.IsSystem = phoneNumber.IsSystem;
-				this.PersonId = phoneNumber.PersonId;
-				this.Number = phoneNumber.Number;
-				this.NumberTypeId = phoneNumber.NumberTypeId;
-				this.IsUnlisted = phoneNumber.IsUnlisted;
-				this.Description = phoneNumber.Description;
-				this.CreatedDateTime = phoneNumber.CreatedDateTime;
-				this.ModifiedDateTime = phoneNumber.ModifiedDateTime;
-				this.CreatedByPersonId = phoneNumber.CreatedByPersonId;
-				this.ModifiedByPersonId = phoneNumber.ModifiedByPersonId;
-				this.Id = phoneNumber.Id;
-				this.Guid = phoneNumber.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IModel model )
+        {
+            if ( model is PhoneNumber )
+            {
+                var phoneNumber = (PhoneNumber)model;
+                this.IsSystem = phoneNumber.IsSystem;
+                this.PersonId = phoneNumber.PersonId;
+                this.Number = phoneNumber.Number;
+                this.NumberTypeId = phoneNumber.NumberTypeId;
+                this.IsUnlisted = phoneNumber.IsUnlisted;
+                this.Description = phoneNumber.Description;
+                this.CreatedDateTime = phoneNumber.CreatedDateTime;
+                this.ModifiedDateTime = phoneNumber.ModifiedDateTime;
+                this.CreatedByPersonId = phoneNumber.CreatedByPersonId;
+                this.ModifiedByPersonId = phoneNumber.ModifiedByPersonId;
+                this.Id = phoneNumber.Id;
+                this.Guid = phoneNumber.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="phoneNumber"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is PhoneNumber )
-			{
-				var phoneNumber = (PhoneNumber)model;
-				phoneNumber.IsSystem = this.IsSystem;
-				phoneNumber.PersonId = this.PersonId;
-				phoneNumber.Number = this.Number;
-				phoneNumber.NumberTypeId = this.NumberTypeId;
-				phoneNumber.IsUnlisted = this.IsUnlisted;
-				phoneNumber.Description = this.Description;
-				phoneNumber.CreatedDateTime = this.CreatedDateTime;
-				phoneNumber.ModifiedDateTime = this.ModifiedDateTime;
-				phoneNumber.CreatedByPersonId = this.CreatedByPersonId;
-				phoneNumber.ModifiedByPersonId = this.ModifiedByPersonId;
-				phoneNumber.Id = this.Id;
-				phoneNumber.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the model properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IModel model )
+        {
+            if ( model is PhoneNumber )
+            {
+                var phoneNumber = (PhoneNumber)model;
+                phoneNumber.IsSystem = this.IsSystem;
+                phoneNumber.PersonId = this.PersonId;
+                phoneNumber.Number = this.Number;
+                phoneNumber.NumberTypeId = this.NumberTypeId;
+                phoneNumber.IsUnlisted = this.IsUnlisted;
+                phoneNumber.Description = this.Description;
+                phoneNumber.CreatedDateTime = this.CreatedDateTime;
+                phoneNumber.ModifiedDateTime = this.ModifiedDateTime;
+                phoneNumber.CreatedByPersonId = this.CreatedByPersonId;
+                phoneNumber.ModifiedByPersonId = this.ModifiedByPersonId;
+                phoneNumber.Id = this.Id;
+                phoneNumber.Guid = this.Guid;
+            }
+        }
+    }
 }

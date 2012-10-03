@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
     [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [Rock.Attribute.Property( 3, "Allow Setting of Values", "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
     [Rock.Attribute.Property( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
-    public partial class Attributes : Rock.Web.UI.Block
+    public partial class Attributes : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -311,24 +311,24 @@ namespace RockWeb.Blocks.Administration
                     attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
                 attribute.AttributeQualifiers.Clear();
 
-				List<Control> configControls = new List<Control>();
-				foreach ( var key in fieldType.Field.ConfigurationKeys() )
-					configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
-				foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
-				{
-					AttributeQualifier qualifier = new AttributeQualifier();
-					qualifier.IsSystem = false;
-					qualifier.Key = configValue.Key;
-					qualifier.Value = configValue.Value.Value ?? string.Empty;
-					attribute.AttributeQualifiers.Add( qualifier );
-				}
-				
-				attribute.DefaultValue = tbDefaultValue.Text;
+                List<Control> configControls = new List<Control>();
+                foreach ( var key in fieldType.Field.ConfigurationKeys() )
+                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
+                {
+                    AttributeQualifier qualifier = new AttributeQualifier();
+                    qualifier.IsSystem = false;
+                    qualifier.Key = configValue.Key;
+                    qualifier.Value = configValue.Value.Value ?? string.Empty;
+                    attribute.AttributeQualifiers.Add( qualifier );
+                }
+                
+                attribute.DefaultValue = tbDefaultValue.Text;
                 attribute.IsMultiValue = cbMultiValue.Checked;
                 attribute.IsRequired = cbRequired.Checked;
 
                 attributeService.Save( attribute, CurrentPersonId );
-			}
+            }
 
             BindGrid();
 
@@ -451,18 +451,18 @@ namespace RockWeb.Blocks.Administration
                 int i = 0;
                 foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
                 {
-					var ctrlGroup = new HtmlGenericControl( "div" );
-					phFieldTypeQualifiers.Controls.Add( ctrlGroup );
-					ctrlGroup.AddCssClass( "control-group" );
+                    var ctrlGroup = new HtmlGenericControl( "div" );
+                    phFieldTypeQualifiers.Controls.Add( ctrlGroup );
+                    ctrlGroup.AddCssClass( "control-group" );
 
                     var lbl = new Label();
                     ctrlGroup.Controls.Add( lbl );
-					lbl.AddCssClass( "control-label" );
+                    lbl.AddCssClass( "control-label" );
                     lbl.Text = configValue.Value.Name;
 
-					var ctrls = new HtmlGenericControl( "div" );
-					ctrlGroup.Controls.Add( ctrls );
-					ctrls.AddCssClass( "controls" );
+                    var ctrls = new HtmlGenericControl( "div" );
+                    ctrlGroup.Controls.Add( ctrls );
+                    ctrls.AddCssClass( "controls" );
 
                     Control control = configControls[i];
                     ctrls.Controls.Add( control );

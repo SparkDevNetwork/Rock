@@ -8,8 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.TeleAtlas.Geocoding {
-    
+namespace Rock.TeleAtlas.Geocoding
+{
+
+#pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.wsdl", ConfigurationName="TeleAtlas.Geocoding.GeocodingPortType")]

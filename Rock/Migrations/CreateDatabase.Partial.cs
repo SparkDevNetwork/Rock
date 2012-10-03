@@ -93,20 +93,20 @@ namespace Rock.Migrations
             Sql( @"
 -- Procedure
 CREATE PROCEDURE dbo.cmsFile_sp_getByID
-	@Id int,
-	@Guid uniqueidentifier
+    @Id int,
+    @Guid uniqueidentifier
 AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-	IF @Id > 0
-	BEGIN
-		SELECT Data, FileName, MimeType FROM cmsFile WHERE Id = @Id
-	END
-	ELSE
-	BEGIN
-		SELECT Data, FileName, MimeType FROM cmsFile WHERE [Guid] = @Guid
-	END
+    IF @Id > 0
+    BEGIN
+        SELECT Data, FileName, MimeType FROM cmsFile WHERE Id = @Id
+    END
+    ELSE
+    BEGIN
+        SELECT Data, FileName, MimeType FROM cmsFile WHERE [Guid] = @Guid
+    END
 END
 ");
 
@@ -514,8 +514,8 @@ SET IDENTITY_INSERT cmsPage OFF
 
 PRINT 'Add default page to site'
 UPDATE cmsSite
-	SET DefaultPageId = 12
-	WHERE Id = 1
+    SET DefaultPageId = 12
+    WHERE Id = 1
 
 -- cmsPageRoute --
 PRINT 'Importing cmsPageRoute'
@@ -1007,6 +1007,9 @@ SET IDENTITY_INSERT cmsHtmlContent OFF
             
         }
 
+        /// <summary>
+        /// Deletes the data.
+        /// </summary>
         public void DeleteData()
         {
         }

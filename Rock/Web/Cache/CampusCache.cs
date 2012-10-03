@@ -11,14 +11,14 @@ using System.Runtime.Caching;
 namespace Rock.Web.Cache
 {
     /// <summary>
-	/// Information about a campus that is required by the rendering engine.
-	/// This information will be cached by the engine
-	/// </summary>
+    /// Information about a campus that is required by the rendering engine.
+    /// This information will be cached by the engine
+    /// </summary>
     [Serializable]
     public class CampusCache : Rock.Crm.CampusDto
     {
-		private CampusCache() : base() { }
-		private CampusCache( Rock.Crm.Campus model ) : base( model) { }
+        private CampusCache() : base() { }
+        private CampusCache( Rock.Crm.Campus model ) : base( model) { }
 
         #region Static Methods
 
@@ -44,15 +44,15 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
-			if ( campus != null )
-				return campus;
-			else
-			{
-				campus = CampusCache.CopyModel( campusModel );
-				cache.Set( cacheKey, campus, new CacheItemPolicy() );
+            if ( campus != null )
+                return campus;
+            else
+            {
+                campus = CampusCache.CopyModel( campusModel );
+                cache.Set( cacheKey, campus, new CacheItemPolicy() );
 
-				return campus;
-			}
+                return campus;
+            }
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Rock.Web.Cache
         // Copies the Model object to the Cached object
         private static CampusCache CopyModel( Rock.Crm.Campus campusModel )
         {
-			// Creates new object by copying properties of model
+            // Creates new object by copying properties of model
             var campus = new Rock.Web.Cache.CampusCache(campusModel);
             return campus;
         }
@@ -106,8 +106,8 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( CampusCache.CacheKey( id ) );
-		}
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

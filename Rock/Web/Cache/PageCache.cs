@@ -15,24 +15,25 @@ using System.Xml.Linq;
 
 using Rock.Cms;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace Rock.Web.Cache
 {
     /// <summary>
-	/// Information about a page that is required by the rendering engine.
-	/// This information will be cached by the engine
-	/// </summary>
+    /// Information about a page that is required by the rendering engine.
+    /// This information will be cached by the engine
+    /// </summary>
     [Serializable]
     public class PageCache : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-		#region Constructors
+        #region Constructors
 
-		private PageCache() : base() { }
-		private PageCache( Rock.Cms.Page page ) : base( page ) { }
+        private PageCache() : base() { }
+        private PageCache( Rock.Cms.Page page ) : base( page ) { }
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets the route id.
@@ -71,7 +72,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( Id, -1 ), null, null );
+                return Rock.Web.UI.RockPage.BuildUrl( new Rock.Web.UI.PageReference( Id, -1 ), null, null );
             }
         }
 
@@ -113,15 +114,19 @@ namespace Rock.Web.Cache
         private List<int> AttributeIds = new List<int>();
 
         /// <summary>
-		/// Gets or sets the layout path for the page
-		/// </summary>
-		/// <value>
-		/// The layout path.
-		/// </value>
-		public string LayoutPath { get; set; }
-
-		/// Gets the parent <see cref="Page"/> object.
+        /// Gets or sets the layout path for the page
         /// </summary>
+        /// <value>
+        /// The layout path.
+        /// </value>
+        public string LayoutPath { get; set; }
+
+        /// <summary>
+        /// Gets the parent page.
+        /// </summary>
+        /// <value>
+        /// The parent page.
+        /// </value>
         public PageCache ParentPage
         {
             get
@@ -243,9 +248,9 @@ namespace Rock.Web.Cache
 
         #endregion
 
-		#region Public Methods
+        #region Public Methods
 
-		/// <summary>
+        /// <summary>
         /// Saves the attribute values for the page
         /// </summary>
         /// <param name="personId">The person id.</param>
@@ -263,10 +268,10 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// <c>true</c> or <c>false</c> value of whether the page can be displayed in a navigation menu 
-        /// based on the <see cref="DisplayInNavWhen"/> property value and the security of the currently logged in user
+        ///   <c>true</c> or <c>false</c> value of whether the page can be displayed in a navigation menu
+        /// based on the <see cref="DisplayInNavWhen" /> property value and the security of the currently logged in user
         /// </summary>
-        /// <param name="user">The current user.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
         public bool DisplayInNav( Rock.Crm.Person person )
         {
@@ -386,7 +391,7 @@ namespace Rock.Web.Cache
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddCSSLink( System.Web.UI.Page page, string href )
         {
-            Rock.Web.UI.Page.AddCSSLink( page, href );
+            RockPage.AddCSSLink( page, href );
         }
 
         /// <summary>
@@ -397,7 +402,7 @@ namespace Rock.Web.Cache
         /// <param name="mediaType">MediaType to use in the css link.</param>
         public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
         {
-            Rock.Web.UI.Page.AddCSSLink( page, href, mediaType );
+            RockPage.AddCSSLink( page, href, mediaType );
         }
 
         /// <summary>
@@ -407,7 +412,7 @@ namespace Rock.Web.Cache
         /// <param name="htmlMeta">The HTML meta tag.</param>
         public void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
         {
-            Rock.Web.UI.Page.AddMetaTag( page, htmlMeta );
+            RockPage.AddMetaTag( page, htmlMeta );
         }
 
         /// <summary>
@@ -415,7 +420,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
         {
-            Rock.Web.UI.Page.AddHtmlLink( page, htmlLink );
+            RockPage.AddHtmlLink( page, htmlLink );
         }
 
         /// <summary>
@@ -425,7 +430,7 @@ namespace Rock.Web.Cache
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddScriptLink( System.Web.UI.Page page, string path )
         {
-            Rock.Web.UI.Page.AddScriptLink( page, path );
+            RockPage.AddScriptLink( page, path );
         }
 
         /// <summary>
@@ -435,7 +440,7 @@ namespace Rock.Web.Cache
         /// <param name="parms">Dictionary of parameters</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms )
         {
-            return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, null );
+            return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, null );
         }
 
         /// <summary>
@@ -446,7 +451,7 @@ namespace Rock.Web.Cache
         /// <param name="queryString">Querystring to include paramters from</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
-            return Rock.Web.UI.Page.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, queryString );
+            return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, queryString );
         }
 
         /// <summary>
@@ -456,7 +461,7 @@ namespace Rock.Web.Cache
         /// <param name="parms">Dictionary of parameters</param>
         public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms )
         {
-            return Rock.Web.UI.Page.BuildUrl( pageRef, parms, null );
+            return RockPage.BuildUrl( pageRef, parms, null );
         }
 
         /// <summary>
@@ -467,7 +472,7 @@ namespace Rock.Web.Cache
         /// <param name="queryString">Querystring to include paramters from</param>
         public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
         {
-            return Rock.Web.UI.Page.BuildUrl( pageRef, parms, queryString );
+            return RockPage.BuildUrl( pageRef, parms, queryString );
         }
 
         #endregion
@@ -507,15 +512,15 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             PageCache page = cache[cacheKey] as PageCache;
 
-			if ( page != null )
-				return page;
-			else
-			{
-				page = PageCache.CopyModel( pageModel );
-				cache.Set( cacheKey, page, new CacheItemPolicy() );
+            if ( page != null )
+                return page;
+            else
+            {
+                page = PageCache.CopyModel( pageModel );
+                cache.Set( cacheKey, page, new CacheItemPolicy() );
 
-				return page;
-			}
+                return page;
+            }
         }
 
         /// <summary>
@@ -556,7 +561,7 @@ namespace Rock.Web.Cache
         // Copies the Model object to the Cached object
         private static PageCache CopyModel( Rock.Cms.Page pageModel )
         {
-			// Creates new object by copying properties of model
+            // Creates new object by copying properties of model
             var page = new Rock.Web.Cache.PageCache(pageModel);
 
             if (pageModel.Attributes != null)
@@ -600,20 +605,20 @@ namespace Rock.Web.Cache
                 }
         }
 
-		/// <summary>
-		/// Flushes the block instances for all the pages that use a specific layout.
-		/// </summary>
-		public static void FlushLayoutBlocks( string layout )
-		{
-			ObjectCache cache = MemoryCache.Default;
-			foreach ( var item in cache )
-				if ( item.Key.StartsWith( "Rock:Page:" ) )
-				{
-					PageCache page = cache[item.Key] as PageCache;
-					if ( page != null && page.Layout == layout )
-						page.FlushBlocks();
-				}
-		}
+        /// <summary>
+        /// Flushes the block instances for all the pages that use a specific layout.
+        /// </summary>
+        public static void FlushLayoutBlocks( string layout )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            foreach ( var item in cache )
+                if ( item.Key.StartsWith( "Rock:Page:" ) )
+                {
+                    PageCache page = cache[item.Key] as PageCache;
+                    if ( page != null && page.Layout == layout )
+                        page.FlushBlocks();
+                }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -682,6 +687,10 @@ namespace Rock.Web.Cache
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );
@@ -717,15 +726,15 @@ namespace Rock.Web.Cache
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
-				XElement pageElement = new XElement( "page",
-					new XAttribute( "id", this.Id ),
-					new XAttribute( "title", this.Title ?? this.Name ),
+                XElement pageElement = new XElement( "page",
+                    new XAttribute( "id", this.Id ),
+                    new XAttribute( "title", this.Title ?? this.Name ),
                     new XAttribute( "url", this.Url),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
-					new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
-					new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
-					new XElement( "description", this.Description ?? "" ),
-					new XElement( "icon-url", this.IconUrl ?? "" ) );
+                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
+                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
+                    new XElement( "description", this.Description ?? "" ),
+                    new XElement( "icon-url", this.IconUrl ?? "" ) );
 
                 XElement childPagesElement = new XElement( "pages" );
 

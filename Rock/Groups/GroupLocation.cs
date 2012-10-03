@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Groups
 {
     /// <summary>
-	/// GroupLocation POCO class.
+    /// GroupLocation POCO class.
     /// </summary>
     [Table("groupGroupLocation")]
     public partial class GroupLocation
@@ -65,28 +65,28 @@ namespace Rock.Groups
         /// </value>
         public virtual Rock.Crm.Location Location { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Location Type.
-		/// </summary>
-		/// <value>
-		/// A <see cref="Core.DefinedValue"/> object.
-		/// </value>
-		public virtual Core.DefinedValue LocationType { get; set; }
-	}
+        /// <summary>
+        /// Gets or sets the Location Type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Core.DefinedValue"/> object.
+        /// </value>
+        public virtual Core.DefinedValue LocationType { get; set; }
+    }
 
     /// <summary>
-	/// GroupLocation Configuration class
+    /// GroupLocation Configuration class
     /// </summary>
     public partial class GroupLocationConfiguration : EntityTypeConfiguration<GroupLocation>
     {
         /// <summary>
-		/// Initializes a new instance of the <see cref="GroupLocationConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="GroupLocationConfiguration"/> class.
         /// </summary>
-		public GroupLocationConfiguration()
-		{
-			this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
-			this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
-			this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );
-		}
+        public GroupLocationConfiguration()
+        {
+            this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
+            this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
+            this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );
+        }
     }
 }

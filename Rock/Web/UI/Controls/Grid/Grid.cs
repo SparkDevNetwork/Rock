@@ -160,7 +160,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.Page.AddCSSLink( Page, "~/CSS/grid.css" );
+            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
             PagerTemplate pagerTemplate = new PagerTemplate();
             pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
@@ -350,7 +350,7 @@ namespace Rock.Web.UI.Controls
             // send the spreadsheet to the browser
             this.Page.EnableViewState = false;
             this.Page.Response.Clear();
-            //this.Page.Response.ContentType = "application/vnd.ms-excel";
+            //this.RockPage.Response.ContentType = "application/vnd.ms-excel";
             this.Page.Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             this.Page.Response.AppendHeader( "Content-Disposition", "attachment; filename=" + filename );
 
@@ -641,7 +641,7 @@ namespace Rock.Web.UI.Controls
     #region Event Handlers
 
     /// <summary>
-    /// Items Per Page Event Argument
+    /// Items Per RockPage Event Argument
     /// </summary>
     internal class NumericalEventArgs : EventArgs
     {
@@ -816,7 +816,7 @@ namespace Rock.Web.UI.Controls
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
 
-            // Page Status
+            // RockPage Status
             //HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
             //divStatus.Attributes.Add( "class", "page-status" );
             //divPagination.Controls.Add( divStatus );
@@ -845,14 +845,14 @@ namespace Rock.Web.UI.Controls
             PageLink[0].Text = "&larr; Previous";
             PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
 
-            // Items Per Page
+            // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
             divPagination.Controls.Add( divSize );
 
-			//Label lblPageSize = new Label();
-			//lblPageSize.Text = "Items per page:";
-			//divSize.Controls.Add( lblPageSize );
+            //Label lblPageSize = new Label();
+            //lblPageSize.Text = "Items per page:";
+            //divSize.Controls.Add( lblPageSize );
 
             HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
             divSizeOptions.Attributes.Add( "class", "page-size-options" );
@@ -877,41 +877,41 @@ namespace Rock.Web.UI.Controls
             ItemLink[3].Text = "All";
        }
 
-		/// <summary>
-		/// Set the Page Navigation Display
-		/// </summary>
-		/// <param name="pageCount">The number of total pages</param>
-		/// <param name="pageIndex">The current page index</param>
-		/// <param name="pageSize">The number of items on each page</param>
-		public void SetNavigation( int pageCount, int pageIndex, int pageSize )
+        /// <summary>
+        /// Set the RockPage Navigation Display
+        /// </summary>
+        /// <param name="pageCount">The number of total pages</param>
+        /// <param name="pageIndex">The current page index</param>
+        /// <param name="pageSize">The number of items on each page</param>
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize )
         {
             //// Set status
             //if (lStatus != null)
-            //    lStatus.Text = string.Format( "Page {0:N0} of {1:N0}", pageIndex+1, pageCount );
+            //    lStatus.Text = string.Format( "RockPage {0:N0} of {1:N0}", pageIndex+1, pageCount );
 
             // Set navigation controls
             if ( NavigationPanel != null )
             {
                 if ( pageCount > 1 )
                 {
-					int totalGroups = (int)( ( pageCount - 1 ) / 10 );
-					int currentGroup = (int)( pageIndex / 10 );
+                    int totalGroups = (int)( ( pageCount - 1 ) / 10 );
+                    int currentGroup = (int)( pageIndex / 10 );
 
-					int prevPageIndex = 0;
+                    int prevPageIndex = 0;
                     if ( pageIndex <= 0 )
                     {
                         PageLinkListItem[0].Attributes["class"] = "prev disabled";
-						PageLink[0].Enabled = false;
+                        PageLink[0].Enabled = false;
                     }
                     else
                     {
-						prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
+                        prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
                         PageLinkListItem[0].Attributes["class"] = "prev";
                         PageLink[0].Enabled = true;
                     }
-					PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
+                    PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
 
-					int nextPageIndex = pageIndex;
+                    int nextPageIndex = pageIndex;
                     if ( pageIndex >= pageCount - 1)
                     {
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
@@ -919,17 +919,17 @@ namespace Rock.Web.UI.Controls
                     }
                     else
                     {
-						nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
+                        nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
-					PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
+                    PageLink[PageLinkListItem.Length - 1].Attributes["page-index"] = nextPageIndex.ToString();
 
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
                     {
-						int currentPage = currentGroup + ( i - 1 );
+                        int currentPage = currentGroup + ( i - 1 );
 
                         HtmlGenericControl li = PageLinkListItem[i];
                         LinkButton lb = PageLink[i];

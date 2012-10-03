@@ -17,7 +17,7 @@ namespace Rock.Web.Cache
     public class DefinedTypeCache : Rock.Core.DefinedTypeDto
     {
         private DefinedTypeCache() : base() { }
-		private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model ) { }
+        private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -86,15 +86,15 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             DefinedTypeCache definedType = cache[cacheKey] as DefinedTypeCache;
 
-			if ( definedType != null )
-				return definedType;
-			else
-			{
-				definedType = DefinedTypeCache.CopyModel( definedTypeModel );
-				cache.Set( cacheKey, definedType, new CacheItemPolicy() );
+            if ( definedType != null )
+                return definedType;
+            else
+            {
+                definedType = DefinedTypeCache.CopyModel( definedTypeModel );
+                cache.Set( cacheKey, definedType, new CacheItemPolicy() );
 
-				return definedType;
-			}
+                return definedType;
+            }
         }
 
         /// <summary>

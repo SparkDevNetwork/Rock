@@ -16,7 +16,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Roles : Rock.Web.UI.Block
+    public partial class Roles : Rock.Web.UI.RockBlock
     {
         private bool _canConfigure = false;
 

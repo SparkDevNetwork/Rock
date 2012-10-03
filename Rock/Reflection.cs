@@ -23,17 +23,19 @@ namespace Rock
         /// will not be included in the result
         /// </summary>
         /// <param name="baseType">base type.</param>
+        /// <param name="directory">The directory.</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes ( Type baseType, DirectoryInfo directory = null )
+        public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo directory = null )
         {
             return FindTypes( baseType, false, directory );
         }
 
         /// <summary>
-        /// Finds the all the types that implement or inherit from the baseType.  
+        /// Finds the all the types that implement or inherit from the baseType.
         /// </summary>
         /// <param name="baseType">base type.</param>
         /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
+        /// <param name="directory">The directory.</param>
         /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo directory = null )
         {
@@ -42,33 +44,39 @@ namespace Rock
             if ( includeBaseType )
                 types.Add( ClassName( baseType ), baseType );
 
-			Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
-			
-			Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
+
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
             assemblies.Add( executingAssembly.FullName.ToLower(), executingAssembly );
 
             foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies() )
-                if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.FullName.ToLower()  ) )
+                if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
                     assemblies.Add( assembly.FullName.ToLower(), assembly );
 
-			if ( directory != null )
-			{
-				foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
-				{
-					Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
-					if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
-						assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
-				}
-			}
+            if ( directory != null )
+            {
+                foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
+                {
+                    Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
+                    if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
+                        assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
+                }
+            }
 
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
                 foreach ( KeyValuePair<string, Type> typeEntry in SearchAssembly( assemblyEntry.Value, baseType ) )
-                    if (!types.Keys.Contains(typeEntry.Key))
+                    if ( !types.Keys.Contains( typeEntry.Key ) )
                         types.Add( typeEntry.Key, typeEntry.Value );
 
             return types;
         }
 
+        /// <summary>
+        /// Searches the assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="baseType">Type of the base.</param>
+        /// <returns></returns>
         public static Dictionary<string, Type> SearchAssembly( Assembly assembly, Type baseType )
         {
             Dictionary<string, Type> types = new Dictionary<string, Type>();
@@ -115,25 +123,25 @@ namespace Rock
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        public static string ClassName(Type type)
+        public static string ClassName( Type type )
         {
-            object[] attributes = type.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), true);
-            if (attributes.Length > 0)
-                return ((System.ComponentModel.DescriptionAttribute)attributes[0]).Description;
+            object[] attributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), true );
+            if ( attributes.Length > 0 )
+                return ( (System.ComponentModel.DescriptionAttribute)attributes[0] ).Description;
 
             return type.ToString();
         }
 
-		/// <summary>
-		/// Returnes the Description Attribute value for a given type
-		/// </summary>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		public static string GetDescription( Type type )
-		{
-			foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
-				return ( (DescriptionAttribute)descriptionAttribute ).Description;
-			return null;
-		}
+        /// <summary>
+        /// Returnes the Description Attribute value for a given type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string GetDescription( Type type )
+        {
+            foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
+                return ( (DescriptionAttribute)descriptionAttribute ).Description;
+            return null;
+        }
     }
 }
