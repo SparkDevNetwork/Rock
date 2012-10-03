@@ -453,6 +453,10 @@
     <Compile Include="Migrations\201209301248508_Metric3.Designer.cs">
       <DependentUpon>201209301248508_Metric3.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210022114138_AddPageRoutePage.cs" />
+    <Compile Include="Migrations\201210022114138_AddPageRoutePage.Designer.cs">
+      <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -806,6 +810,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201209301248508_Metric3.resx">
       <DependentUpon>201209301248508_Metric3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210022114138_AddPageRoutePage.resx">
+      <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
