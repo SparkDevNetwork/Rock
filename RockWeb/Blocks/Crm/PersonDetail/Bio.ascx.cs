@@ -30,9 +30,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 			if ( Person.PhotoId.HasValue )
 			{
+				var imgLink = new HtmlAnchor();
+				phImage.Controls.Add( imgLink );
+				imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+				imgLink.Target = "_blank";
+
 				var img = new HtmlImage();
-				phImage.Controls.Add( img );
-				img.Src = string.Format( "~/image.ashx?id={0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
+				imgLink.Controls.Add( img );
+				img.Src = string.Format( "~/image.ashx?{0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
 				img.Alt = Person.FullName;
 			}
 

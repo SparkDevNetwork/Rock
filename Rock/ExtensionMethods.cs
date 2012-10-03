@@ -79,15 +79,21 @@ namespace Rock
 			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
-        /// <summary>
-        /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str )
+		/// <summary>
+		/// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
+		/// </summary>
+		/// <param name="str">The string.</param>
+		/// <param name="splitOnWhitespace">if set to <c>true</c> string will also be split on any type of whitespace.</param>
+		/// <returns></returns>
+        public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
+			if (str == null)
+				return new string[0];
+
+			string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
+
 			char[] delimiter = new char[] { ',' };
-            return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+            return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
         /// <summary>

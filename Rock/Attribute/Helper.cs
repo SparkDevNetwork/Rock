@@ -203,6 +203,7 @@ namespace Rock.Attribute
 
 			// Look for any attributes that don't have a value and create a default value entry
 			foreach ( var attributeEntry in attributes )
+			{
 				if ( attributeValues[attributeEntry.Value.Key].Value.Count == 0 )
 				{
 					var attributeValue = new Rock.Core.AttributeValueDto();
@@ -210,6 +211,21 @@ namespace Rock.Attribute
 					attributeValue.Value = attributeEntry.Value.DefaultValue;
 					attributeValues[attributeEntry.Value.Key].Value.Add( attributeValue );
 				}
+				else
+				{
+					if ( !String.IsNullOrWhiteSpace( attributeEntry.Value.DefaultValue ) )
+					{
+						foreach ( var value in attributeValues[attributeEntry.Value.Key].Value )
+						{
+							if ( String.IsNullOrWhiteSpace( value.Value ) )
+							{
+								value.Value = attributeEntry.Value.DefaultValue;
+							}
+
+						}
+					}
+				}
+			}
 
             entity.Attributes = categorizedAttributes;
             entity.AttributeValues = attributeValues;

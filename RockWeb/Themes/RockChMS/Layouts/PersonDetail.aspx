@@ -105,12 +105,6 @@
 
     </div>
     
-
-    
-    
-                
-
-
     <script>
         /* script to manage header lock */
         $(document).ready(function () {
@@ -146,6 +140,24 @@
                 $('#page-title').css('margin-top', 0);
             }
         }
+
+        $('ul.addresses li').live({
+            mouseenter:
+                function () {
+                    var actionsDiv = $('div.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                },
+            mouseleave:
+                function () {
+                    var actionsDiv = $('div.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                }
+        });
+
 	</script>
             
 </asp:Content>
