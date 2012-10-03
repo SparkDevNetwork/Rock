@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Routing;
 using System.Web.UI;
 using Rock;
 using Rock.Cms;
@@ -32,7 +33,6 @@ namespace RockWeb.Blocks.Administration
 				gPageRoutes.DataKeyNames = new string[] { "id" };
 				gPageRoutes.Actions.IsAddEnabled = true;
 				gPageRoutes.Actions.AddClick += gPageRoutes_Add;
-
 				gPageRoutes.GridRebind += gPageRoutes_GridRebind;
 			}
 
@@ -144,8 +144,8 @@ namespace RockWeb.Blocks.Administration
 		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
 		protected void btnSave_Click( object sender, EventArgs e )
 		{
-			Rock.Cms.PageRoute pageRoute;
-			Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
+			PageRoute pageRoute;
+			PageRouteService pageRouteService = new PageRouteService();
 
 			int pageRouteId = 0;
 			if ( !int.TryParse( hfPageRouteId.Value, out pageRouteId ) )
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administration
 
 			if ( pageRouteId == 0 )
 			{
-				pageRoute = new Rock.Cms.PageRoute();
+				pageRoute = new PageRoute();
 				pageRouteService.Add( pageRoute, CurrentPersonId );
 			}
 			else
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Administration
 			// Validate that this can be created as a real Route
 			try
 			{
-				System.Web.Routing.Route testRoute = new System.Web.Routing.Route( tbRoute.Text, null );
+				Route testRoute = new Route( tbRoute.Text, null );
 			}
 			catch ( Exception ex )
 			{
@@ -195,20 +195,10 @@ namespace RockWeb.Blocks.Administration
 				return;
 			}
 
-			try
-			{
-				pageRouteService.Save( pageRoute, CurrentPersonId );
-				BindGrid();
-				pnlDetails.Visible = false;
-				pnlList.Visible = true;
-			}
-			catch ( Exception ex )
-			{
-				//TODO: Log Error
-
-				nbMessage.Text = "An unexpected error occurred.";
-				nbMessage.Visible = true;
-			}
+			pageRouteService.Save( pageRoute, CurrentPersonId );
+			BindGrid();
+			pnlDetails.Visible = false;
+			pnlList.Visible = true;
 		}
 
 		#endregion
