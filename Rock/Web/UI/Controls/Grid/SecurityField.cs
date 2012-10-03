@@ -82,8 +82,9 @@ namespace Rock.Web.UI.Controls
         public string EntityType { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityFieldTemplate"/> class.
+        /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
         /// </summary>
+        /// <param name="page">The page.</param>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="title">The title.</param>
         public SecurityFieldTemplate(System.Web.UI.Page page, string entityType, string title )

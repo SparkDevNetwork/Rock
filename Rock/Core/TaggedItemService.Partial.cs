@@ -11,29 +11,44 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// MetricValue POCO Service class
-	/// </summary>
+    /// <summary>
+    /// MetricValue POCO Service class
+    /// </summary>
     public partial class TaggedItemService
     {
-		public IQueryable<TaggedItem> GetByEntity( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId, int entityId )
+        /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="ownerId">The owner id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public IQueryable<TaggedItem> GetByEntity( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId, int entityId )
         {
-			return Repository.AsQueryable()
-				.Where( t => t.Tag.Entity == entity &&
-					( t.Tag.EntityQualifierColumn == entityQualifierColumn || (t.Tag.EntityQualifierColumn == null && entityQualifierColumn == null)) &&
-					( t.Tag.EntityQualifierValue == entityQualifierValue || (t.Tag.EntityQualifierValue == null && entityQualifierValue == null)) &&
-					( t.Tag.OwnerId == null || ( ownerId.HasValue && t.Tag.OwnerId == ownerId ) ) &&
-					t.EntityId == entityId
-					)
-				.OrderBy( t => t.Tag.Name);
+            return Repository.AsQueryable()
+                .Where( t => t.Tag.Entity == entity &&
+                    ( t.Tag.EntityQualifierColumn == entityQualifierColumn || (t.Tag.EntityQualifierColumn == null && entityQualifierColumn == null)) &&
+                    ( t.Tag.EntityQualifierValue == entityQualifierValue || (t.Tag.EntityQualifierValue == null && entityQualifierValue == null)) &&
+                    ( t.Tag.OwnerId == null || ( ownerId.HasValue && t.Tag.OwnerId == ownerId ) ) &&
+                    t.EntityId == entityId
+                    )
+                .OrderBy( t => t.Tag.Name);
         }
 
-		public TaggedItem GetByTag( int tagId, int entityId )
-		{
-			return Repository.AsQueryable()
-				.Where( t => t.TagId == tagId && t.EntityId == entityId)
-				.FirstOrDefault();
-		}
+        /// <summary>
+        /// Gets the by tag.
+        /// </summary>
+        /// <param name="tagId">The tag id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public TaggedItem GetByTag( int tagId, int entityId )
+        {
+            return Repository.AsQueryable()
+                .Where( t => t.TagId == tagId && t.EntityId == entityId)
+                .FirstOrDefault();
+        }
 
     }
 }

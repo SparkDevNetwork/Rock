@@ -23,14 +23,14 @@ namespace Rock.Data
         /// <returns></returns>
         IQueryable<T> AsQueryable();
 
-		/// <summary>
-		/// Gets an <see cref="IQueryable{T}"/> list of all models, 
-		/// with optional eager loading of properties specified in includes
-		/// </summary>
-		/// <returns></returns>
-		IQueryable<T> AsQueryable( string includes );
+        /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models, 
+        /// with optional eager loading of properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<T> AsQueryable( string includes );
 
-		/// <summary>
+        /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> list of all models.
         /// </summary>
         /// <returns></returns>

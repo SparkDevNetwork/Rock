@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Security
         "The account has been deleted." )]
     [Rock.Attribute.Property( 5, "Invalid", "InvalidCaption", "Captions", "", false,
         "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
-    public partial class ConfirmAccount : Rock.Web.UI.Block
+    public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserService userService = null;
         private User user = null;
@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.

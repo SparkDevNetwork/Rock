@@ -1,7 +1,7 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class AddDefinedValuesPage : DbMigration
     {
         public override void Up()

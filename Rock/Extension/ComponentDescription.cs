@@ -63,15 +63,23 @@ namespace Rock.Extension
             // property of this class
             var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
             if ( descAttributes != null )
+            {
                 foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
+                {
                     Description = descAttribute.Description;
+                }
+            }
 
             // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
             // otherwise default to true
             if ( service.Value.AttributeValues.ContainsKey( "Active" ) )
+            {
                 IsActive = bool.Parse( service.Value.AttributeValues["Active"].Value[0].Value );
+            }
             else
+            {
                 IsActive = true;
+            }
         }
     }
 }

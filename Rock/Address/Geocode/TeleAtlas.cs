@@ -24,7 +24,7 @@ namespace Rock.Address.Geocode
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-		/// <param name="location">The location.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
@@ -37,17 +37,17 @@ namespace Rock.Address.Geocode
 
                 int encryptedId;
                 int rc = aptc.requestChallenge( AttributeValue( "UserID" ), 0, out encryptedId );
-                if ( rc == 0)
+                if ( rc == 0 )
                 {
-                    int key = elfHash(AttributeValue("Password"));
-				    int unencryptedChallenge = encryptedId ^ key;
-				    int permutedChallenge = permute(unencryptedChallenge);
-				    int response = permutedChallenge ^ key;
+                    int key = elfHash( AttributeValue( "Password" ) );
+                    int unencryptedChallenge = encryptedId ^ key;
+                    int permutedChallenge = permute( unencryptedChallenge );
+                    int response = permutedChallenge ^ key;
 
                     int cred;
 
                     rc = aptc.answerChallenge( response, encryptedId, out cred );
-                    if (rc == 0 )
+                    if ( rc == 0 )
                     {
                         var addressParts = new Rock.TeleAtlas.Geocoding.NameValue[5];
                         addressParts[0] = NameValue( "Addr", string.Format( "{0} {1}", location.Street1, location.Street2 ) );
@@ -59,7 +59,7 @@ namespace Rock.Address.Geocode
                         var gptc = new Rock.TeleAtlas.Geocoding.GeocodingPortTypeClient();
 
                         Rock.TeleAtlas.Geocoding.Geocode returnedGeocode;
-                        rc = gptc.findAddress( AttributeValue("EZLocateService"), addressParts, cred, out returnedGeocode );
+                        rc = gptc.findAddress( AttributeValue( "EZLocateService" ), addressParts, cred, out returnedGeocode );
                         if ( rc == 0 )
                         {
                             if ( returnedGeocode.resultCode == 0 )
@@ -132,14 +132,14 @@ namespace Rock.Address.Geocode
                 }
             }
 
-            return ( int )result;
+            return (int)result;
         }
 
         private int permute( int inputValue )
         {
             long result = inputValue;
             result *= 39371;
-            return ( int )( result % 0x3fffffff );
+            return (int)( result % 0x3fffffff );
         }
 
         private int makeKey( string account )

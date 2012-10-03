@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockCms/Layouts/Site.Master" 
-    AutoEventWireup="true" Inherits="Rock.Web.UI.Page" %>
+    AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
@@ -13,19 +13,19 @@
 
     <div id="page-frame">
         <header class="topbar topbar-inner">
-		    <section class="container">
-			    <div class="row">
-				    <div class="three columns">
+            <section class="container">
+                <div class="row">
+                    <div class="three columns">
                         <a class='logo'>Home</a>
 
-				    </div>
-				    <div class="five columns offset-by-four content">
+                    </div>
+                    <div class="five columns offset-by-four content">
 
-					    <Rock:Zone ID="zHeader" Name="Header" runat="server" />
+                        <Rock:Zone ID="zHeader" Name="Header" runat="server" />
 
-					    <div class="filter-search">
-						    <input id="search-words">
-						    <div class="filter">
+                        <div class="filter-search">
+                            <input id="search-words">
+                            <div class="filter">
                                 <dl class="dropdown">
                                     <dt>Name</dt>
                                     <dd>
@@ -40,8 +40,8 @@
                                 </dl>
                                 <input type="hidden" name="hSearchFilter" value="Name" id="hSearchFilter" />
                             </div>
-					    </div>
-				    </div>
+                        </div>
+                    </div>
                     <script>
                         // show options when clicked
                         $(".dropdown dt").click(function () {
@@ -56,32 +56,32 @@
                             $("#hSearchFilter").val( text );
                         }); 
                     </script>
-				
-				
-			    </div>
-			    <div class="row">
-				    <nav class="twelve columns">
-					    <Rock:Zone ID="Menu" runat="server" />
+                
+                
+                </div>
+                <div class="row">
+                    <nav class="twelve columns">
+                        <Rock:Zone ID="Menu" runat="server" />
 
-					    <a href="" id="header-lock">Lock</a>
-				    </nav>
-			    </div>
-		    </section>
-	    </header>            
+                        <a href="" id="header-lock">Lock</a>
+                    </nav>
+                </div>
+            </section>
+        </header>            
     
         <div id="content">        
             <section id="page-title">
-		        <div class="row">	
+                <div class="row">    
                     <div class="four columns">
-			            <h1><Rock:PageTitle runat="server" /></h1>
+                        <h1><Rock:PageTitle runat="server" /></h1>
                     </div>
                     <div class="six columns">
                         <Rock:Zone ID="PageTitleBar" runat="server" />
                     </div>
-		        </div>
-	        </section>
+                </div>
+            </section>
 
-	        <section id="core-content" class="row container">     
+            <section id="core-content" class="row container">     
   
                 <Rock:Zone ID="ContentLeft" runat="server" />                       
                 <Rock:Zone ID="ContentRight" runat="server" />
@@ -93,13 +93,13 @@
                 <Rock:Zone ID="LowerContent" runat="server" />
                         
             </section>
-	    </div>
+        </div>
 
-	    <footer>
-		    <div class="row">
-		        <Rock:Zone ID="Footer" runat="server" />
-		    </div>
-	    </footer>   
+        <footer>
+            <div class="row">
+                <Rock:Zone ID="Footer" runat="server" />
+            </div>
+        </footer>   
     </div>
     <script>
         /* script to manage header lock */
@@ -126,7 +126,7 @@
         });
 
         
-	</script>
+    </script>
             
 </asp:Content>
 

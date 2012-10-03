@@ -15,95 +15,95 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Data Transfer Object for MetricValue object
-	/// </summary>
-	public partial class MetricValueDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for MetricValue object
+    /// </summary>
+    public partial class MetricValueDto : IDto
+    {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int MetricId { get; set; }
-		public string Value { get; set; }
-		public string Description { get; set; }
-		public string xValue { get; set; }
-		public bool isDateBased { get; set; }
-		public string Label { get; set; }
-		public int Order { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int MetricId { get; set; }
+        public string Value { get; set; }
+        public string Description { get; set; }
+        public string xValue { get; set; }
+        public bool isDateBased { get; set; }
+        public string Label { get; set; }
+        public int Order { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
+        public int? CreatedByPersonId { get; set; }
+        public int? ModifiedByPersonId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public MetricValueDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public MetricValueDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="metricValue"></param>
-		public MetricValueDto ( MetricValue metricValue )
-		{
-			CopyFromModel( metricValue );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the model
+        /// </summary>
+        /// <param name="metricValue"></param>
+        public MetricValueDto ( MetricValue metricValue )
+        {
+            CopyFromModel( metricValue );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="metricValue"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is MetricValue )
-			{
-				var metricValue = (MetricValue)model;
-				this.IsSystem = metricValue.IsSystem;
-				this.MetricId = metricValue.MetricId;
-				this.Value = metricValue.Value;
-				this.Description = metricValue.Description;
-				this.xValue = metricValue.xValue;
-				this.isDateBased = metricValue.isDateBased;
-				this.Label = metricValue.Label;
-				this.Order = metricValue.Order;
-				this.CreatedDateTime = metricValue.CreatedDateTime;
-				this.ModifiedDateTime = metricValue.ModifiedDateTime;
-				this.CreatedByPersonId = metricValue.CreatedByPersonId;
-				this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
-				this.Id = metricValue.Id;
-				this.Guid = metricValue.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IModel model )
+        {
+            if ( model is MetricValue )
+            {
+                var metricValue = (MetricValue)model;
+                this.IsSystem = metricValue.IsSystem;
+                this.MetricId = metricValue.MetricId;
+                this.Value = metricValue.Value;
+                this.Description = metricValue.Description;
+                this.xValue = metricValue.xValue;
+                this.isDateBased = metricValue.isDateBased;
+                this.Label = metricValue.Label;
+                this.Order = metricValue.Order;
+                this.CreatedDateTime = metricValue.CreatedDateTime;
+                this.ModifiedDateTime = metricValue.ModifiedDateTime;
+                this.CreatedByPersonId = metricValue.CreatedByPersonId;
+                this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
+                this.Id = metricValue.Id;
+                this.Guid = metricValue.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="metricValue"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is MetricValue )
-			{
-				var metricValue = (MetricValue)model;
-				metricValue.IsSystem = this.IsSystem;
-				metricValue.MetricId = this.MetricId;
-				metricValue.Value = this.Value;
-				metricValue.Description = this.Description;
-				metricValue.xValue = this.xValue;
-				metricValue.isDateBased = this.isDateBased;
-				metricValue.Label = this.Label;
-				metricValue.Order = this.Order;
-				metricValue.CreatedDateTime = this.CreatedDateTime;
-				metricValue.ModifiedDateTime = this.ModifiedDateTime;
-				metricValue.CreatedByPersonId = this.CreatedByPersonId;
-				metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
-				metricValue.Id = this.Id;
-				metricValue.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the model properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IModel model )
+        {
+            if ( model is MetricValue )
+            {
+                var metricValue = (MetricValue)model;
+                metricValue.IsSystem = this.IsSystem;
+                metricValue.MetricId = this.MetricId;
+                metricValue.Value = this.Value;
+                metricValue.Description = this.Description;
+                metricValue.xValue = this.xValue;
+                metricValue.isDateBased = this.isDateBased;
+                metricValue.Label = this.Label;
+                metricValue.Order = this.Order;
+                metricValue.CreatedDateTime = this.CreatedDateTime;
+                metricValue.ModifiedDateTime = this.ModifiedDateTime;
+                metricValue.CreatedByPersonId = this.CreatedByPersonId;
+                metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
+                metricValue.Id = this.Id;
+                metricValue.Guid = this.Guid;
+            }
+        }
+    }
 }

@@ -20,163 +20,163 @@ namespace Rock.Cms
     [Table( "cmsBlock" )]
     public partial class Block : ModelWithAttributes<Block>, IAuditable, IOrdered, IExportable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Page Id.
-		/// </summary>
-		/// <value>
-		/// Page Id.
-		/// </value>
-		[DataMember]
-		public int? PageId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Layout.
-		/// </summary>
-		/// <value>
-		/// Layout.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Layout { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Block Type Id.
-		/// </summary>
-		/// <value>
-		/// Block Type Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int BlockTypeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Zone.
-		/// </summary>
-		/// <value>
-		/// Zone.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Zone { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[MaxLength( 100 )]
-		[TrackChanges]
-		[Required( ErrorMessage = "Name is required" )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Output Cache Duration.
-		/// </summary>
-		/// <value>
-		/// Output Cache Duration.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int OutputCacheDuration { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        [DataMember]
+        public int? PageId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Layout.
+        /// </summary>
+        /// <value>
+        /// Layout.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Layout { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Block Type Id.
+        /// </summary>
+        /// <value>
+        /// Block Type Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int BlockTypeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Zone.
+        /// </summary>
+        /// <value>
+        /// Zone.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Zone { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [MaxLength( 100 )]
+        [TrackChanges]
+        [Required( ErrorMessage = "Name is required" )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Output Cache Duration.
+        /// </summary>
+        /// <value>
+        /// Output Cache Duration.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int OutputCacheDuration { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Block"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Cms.Block"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
         /// <value>
         /// Collection of Html Contents.
         /// </value>
-		public virtual ICollection<HtmlContent> HtmlContents { get; set; }
+        public virtual ICollection<HtmlContent> HtmlContents { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
         /// A <see cref="BlockType"/> object.
         /// </value>
-		public virtual BlockType BlockType { get; set; }
+        public virtual BlockType BlockType { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+        public virtual Page Page { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Block Read( int id )
-		{
-			return Read<Block>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Block Read( int id )
+        {
+            return Read<Block>( id );
+        }
 
 
         /// <summary>
@@ -198,11 +198,19 @@ namespace Rock.Cms
             return this.Name;
         }
 
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
         public object ExportObject()
         {
             dynamic exportObject = this.ToDynamic();
@@ -227,6 +235,10 @@ namespace Rock.Cms
             return exportObject;
         }
 
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
         public void ImportJson(string data)
         {
             
@@ -243,8 +255,8 @@ namespace Rock.Cms
         /// </summary>
         public BlockConfiguration()
         {
-			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
+            this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+        }
     }
 }

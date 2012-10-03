@@ -6,11 +6,14 @@
 
 namespace Rock.Transactions
 {
-	/// <summary>
-	/// Represents a Transaction class
-	/// </summary>
+    /// <summary>
+    /// Represents a Transaction class
+    /// </summary>
     public interface ITransaction
     {
+        /// <summary>
+        /// Executes this instance.
+        /// </summary>
         void Execute();
     }
 

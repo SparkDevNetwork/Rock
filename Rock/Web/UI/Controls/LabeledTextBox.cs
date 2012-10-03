@@ -16,7 +16,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
     public class LabeledTextBox : TextBox
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected Label label;
+        
+        /// <summary>
+        /// 
+        /// </summary>
         protected RequiredFieldValidator validator;
 
         /// <summary>

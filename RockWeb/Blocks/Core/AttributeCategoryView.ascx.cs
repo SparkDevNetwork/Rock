@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Core
     [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [Rock.Attribute.Property( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
-	public partial class AttributeCategoryView : Rock.Web.UI.ContextBlock
+    public partial class AttributeCategoryView : Rock.Web.UI.ContextBlock
     {
         protected string _category = string.Empty;
 
@@ -80,22 +80,22 @@ namespace RockWeb.Blocks.Core
                     foreach ( var attributeId in cachedAttributes[_category] )
                     {
                         var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-						if ( attribute != null )
-						{
-							var li = new HtmlGenericControl("li");
-							ulAttributes.Controls.Add(li);
-							li.Controls.Add(new LiteralControl(attribute.Name));
+                        if ( attribute != null )
+                        {
+                            var li = new HtmlGenericControl("li");
+                            ulAttributes.Controls.Add(li);
+                            li.Controls.Add(new LiteralControl(attribute.Name));
 
-							li.Controls.Add( new LiteralControl( ": " ) );
+                            li.Controls.Add( new LiteralControl( ": " ) );
 
-							var span = new HtmlGenericControl("span");
-							li.Controls.Add(span);
-							span.AddCssClass("value");
+                            var span = new HtmlGenericControl("span");
+                            li.Controls.Add(span);
+                            span.AddCssClass("value");
 
-							var values = model.AttributeValues[attribute.Key].Value;
-							if (values != null && values.Count > 0)
-								span.Controls.Add(new LiteralControl(attribute.FieldType.Field.FormatValue(span, values[0].Value, attribute.QualifierValues, false)));
-						}
+                            var values = model.AttributeValues[attribute.Key].Value;
+                            if (values != null && values.Count > 0)
+                                span.Controls.Add(new LiteralControl(attribute.FieldType.Field.FormatValue(span, values[0].Value, attribute.QualifierValues, false)));
+                        }
                     }
             }
         }

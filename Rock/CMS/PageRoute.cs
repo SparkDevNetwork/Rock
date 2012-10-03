@@ -20,120 +20,120 @@ namespace Rock.Cms
     [Table( "cmsPageRoute" )]
     public partial class PageRoute : ModelWithAttributes<PageRoute>, IAuditable, IExportable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Page Id.
-		/// </summary>
-		/// <value>
-		/// Page Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int PageId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Route.
-		/// </summary>
-		/// <value>
-		/// Route.
-		/// </value>
-		[Required]
-		[MaxLength( 200 )]
-		[DataMember]
-		public string Route { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int PageId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Route.
+        /// </summary>
+        /// <value>
+        /// Route.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string Route { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonId { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static PageRoute Read( int id )
-		{
-			return Read<PageRoute>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static PageRoute Read( int id )
+        {
+            return Read<PageRoute>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Cms.PageRoute"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Cms.PageRoute"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+        public virtual Page Page { get; set; }
 
-		/// <summary>
-		/// Exports the object.
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
         public object ExportObject()
         {
             return this.ToDynamic();
         }
 
-		/// <summary>
-		/// Exports the object as JSON.
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
-		/// <summary>
-		/// Imports the object from JSON.
-		/// </summary>
-		/// <param name="data">The data.</param>
-		/// <exception cref="System.NotImplementedException"></exception>
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson(string data)
         {
             throw new NotImplementedException();
@@ -151,7 +151,7 @@ namespace Rock.Cms
         /// </summary>
         public PageRouteConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+        }
     }
 }

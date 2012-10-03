@@ -17,6 +17,10 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:SearchField runat=server></{0}:SearchField>" )]
     public class SearchField : TextBox
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -73,6 +77,10 @@ namespace Rock.Web.UI.Controls
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), "search-field-" + this.ID.ToString(), script, true );
         }
 
+        /// <summary>
+        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
             HiddenField hfFilter = new HiddenField();

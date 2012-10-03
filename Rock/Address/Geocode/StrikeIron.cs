@@ -24,7 +24,7 @@ namespace Rock.Address.Geocode
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-		/// <param name="location">The location.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully

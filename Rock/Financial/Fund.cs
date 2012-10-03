@@ -229,15 +229,15 @@ namespace Rock.Financial
         [DataMember]
         public int? ModifiedByPersonId { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Fund Read( int id )
-		{
-			return Read<Fund>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Fund Read( int id )
+        {
+            return Read<Fund>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.

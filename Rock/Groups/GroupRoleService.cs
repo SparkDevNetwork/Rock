@@ -17,62 +17,63 @@ using Rock.Data;
 
 namespace Rock.Groups
 {
-	/// <summary>
-	/// GroupRole Service class
-	/// </summary>
-	public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GroupRoleService"/> class
-		/// </summary>
-		public GroupRoleService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// GroupRole Service class
+    /// </summary>
+    public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// </summary>
+        public GroupRoleService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GroupRoleService"/> class
-		/// </summary>
-		public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// </summary>
+        public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override GroupRole CreateNew()
-		{
-			return new GroupRole();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override GroupRole CreateNew()
+        {
+            return new GroupRole();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<GroupRoleDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<GroupRoleDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<GroupRoleDto> QueryableDto( IQueryable<GroupRole> items )
-		{
-			return items.Select( m => new GroupRoleDto()
-				{
-					IsSystem = m.IsSystem,
-					GroupTypeId = m.GroupTypeId,
-					Name = m.Name,
-					Description = m.Description,
-					Order = m.Order,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<GroupRoleDto> QueryableDto( IQueryable<GroupRole> items )
+        {
+            return items.Select( m => new GroupRoleDto()
+                {
+                    IsSystem = m.IsSystem,
+                    GroupTypeId = m.GroupTypeId,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Order = m.Order,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

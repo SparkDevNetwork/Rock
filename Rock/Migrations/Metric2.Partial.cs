@@ -7,9 +7,9 @@ namespace Rock.Migrations
 {
     public partial class Metric2
     {
-		/// <summary>
-		/// Adds the metric data.
-		/// </summary>
+        /// <summary>
+        /// Adds the metric data.
+        /// </summary>
         public void DataUp()
         {
             Sql( @"
@@ -62,7 +62,7 @@ DECLARE @ParentId int
 SElECT @ParentId = [Id] FROM [cmsPage] WHERE [Guid] = '0B213645-FA4E-44A5-8E4C-B2D8EF054985'
 
 INSERT INTO [cmsPage] ([Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-VALUES ('Metrics	','Metrics',	0,@ParentId,1,'Default',0,1,1,0,0,0,8,0,'Settings for displaying and changing metrics and values.',1,'2012-09-17 15:39:10.007','2012-09-17 15:39:10.007',@AdminId,@AdminId,'84DB9BA0-2725-40A5-A3CA-9A1C043C31B0')
+VALUES ('Metrics    ','Metrics',    0,@ParentId,1,'Default',0,1,1,0,0,0,8,0,'Settings for displaying and changing metrics and values.',1,'2012-09-17 15:39:10.007','2012-09-17 15:39:10.007',@AdminId,@AdminId,'84DB9BA0-2725-40A5-A3CA-9A1C043C31B0')
 
 DECLARE @PageId int
 SELECT @PageId = [Id] FROM [cmsPage] WHERE [Guid] = '84DB9BA0-2725-40A5-A3CA-9A1C043C31B0'
@@ -70,13 +70,13 @@ DECLARE @BlockId int
 SELECT @BlockId = [Id] FROM [cmsBlock] WHERE [Guid] = 'CCD4F459-2E0A-40C6-8DE3-AD512AE9CA74'
 
 INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-VALUES(0,@PageId,@BlockId,'Content',0,'Metrics',	0,'2012-09-17 15:39:10.007','2012-09-17 15:39:10.007',@AdminID,@AdminId,'9126CFA2-9B26-4FBB-BB87-F76514221DBE')
+VALUES(0,@PageId,@BlockId,'Content',0,'Metrics',    0,'2012-09-17 15:39:10.007','2012-09-17 15:39:10.007',@AdminID,@AdminId,'9126CFA2-9B26-4FBB-BB87-F76514221DBE')
 " );
         }
 
-		/// <summary>
-		/// Deletes the metric data.
-		/// </summary>
+        /// <summary>
+        /// Deletes the metric data.
+        /// </summary>
         public void DataDown()
         {
             Sql( @"
