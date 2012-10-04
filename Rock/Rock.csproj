@@ -485,6 +485,7 @@
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
     <Compile Include="SystemGuid\BlockType.cs" />
+    <Compile Include="SystemGuid\GroupRole.cs" />
     <Compile Include="SystemGuid\DefinedValue.cs" />
     <Compile Include="SystemGuid\GroupType.cs" />
     <Compile Include="SystemGuid\FieldType.cs" />
