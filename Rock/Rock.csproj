@@ -457,6 +457,10 @@
     <Compile Include="Migrations\201210022114138_AddPageRoutePage.Designer.cs">
       <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210032052400_UpdatePersonDetail.cs" />
+    <Compile Include="Migrations\201210032052400_UpdatePersonDetail.Designer.cs">
+      <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -813,6 +817,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210022114138_AddPageRoutePage.resx">
       <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210032052400_UpdatePersonDetail.resx">
+      <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
