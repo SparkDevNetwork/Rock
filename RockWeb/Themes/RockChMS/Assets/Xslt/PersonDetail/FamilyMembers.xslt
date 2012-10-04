@@ -25,11 +25,11 @@
                   <xsl:attribute name="href">
                     <xsl:value-of select="@id"/>
                   </xsl:attribute>
-                  <img>
-                    <xsl:attribute name="src">
-                      ../image.ashx?id=<xsl:value-of select="@photo-id"/>&#38;maxwidth=38&#38;maxheight=38
-                    </xsl:attribute>
-                  </img>
+                  <xsl:if test="@photo-id!='0'">
+                    <img>
+                      <xsl:attribute name="src">../image.ashx?id=<xsl:value-of select="@photo-id"/>&#38;maxwidth=38&#38;maxheight=38</xsl:attribute>
+                    </img>
+                  </xsl:if>                    
                   <h4>
                     <xsl:value-of select="@first-name"/>
                   </h4>

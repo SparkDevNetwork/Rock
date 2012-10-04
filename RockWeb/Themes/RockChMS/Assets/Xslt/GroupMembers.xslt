@@ -26,7 +26,7 @@
                     <xsl:value-of select="@id"/>
                   </xsl:attribute>
                   <xsl:choose>
-                    <xsl:when test="@photo-id!=''">
+                    <xsl:when test="@photo-id!='0'">
                       <i class="icon-user photo"></i>
                     </xsl:when>
                     <xsl:otherwise>
