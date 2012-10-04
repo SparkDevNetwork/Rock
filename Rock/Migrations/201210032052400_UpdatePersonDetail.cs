@@ -80,14 +80,14 @@ namespace Rock.Migrations
 
 			// Implied Relationships
 			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "B84EB1CB-E719-4444-B739-B0112AA20BBA", "129A76BE-374B-44BE-98D0-32B5FED07331" );
-			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "19EAAFBB-0669-4BC7-B69C-4DADB904BA8B", "" );
+			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "19EAAFBB-0669-4BC7-B69C-4DADB904BA8B", "CB9A0E14-6FCF-4C07-A49A-D7873F45E196" );
 			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "BD82A9CA-BB0C-47B4-90FD-3A8D4FDBDCEA", "False" );
 			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "0504FB69-C7EE-432F-B232-A705AACD4858", "False" );
 			AddBlockAttributeValue( "72DD0749-1298-4C12-A336-9E1F49852BD4", "69A88BCD-02DA-4600-AE9B-ADF30D41EE58", "PersonDetail/ImpliedRelationships.xslt" );
 
 			// Known Relationships
 			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "B84EB1CB-E719-4444-B739-B0112AA20BBA", "C8D76E72-21EC-4651-AC57-4DA6B82575C4" );
-			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "19EAAFBB-0669-4BC7-B69C-4DADB904BA8B", "" );
+			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "19EAAFBB-0669-4BC7-B69C-4DADB904BA8B", "7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42" );
 			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "BD82A9CA-BB0C-47B4-90FD-3A8D4FDBDCEA", "False" );
 			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "0504FB69-C7EE-432F-B232-A705AACD4858", "False" );
 			AddBlockAttributeValue( "192B987F-94C0-4FA6-8795-FF1CEE89FDB0", "69A88BCD-02DA-4600-AE9B-ADF30D41EE58", "GroupMembers.xslt" );
@@ -100,12 +100,24 @@ namespace Rock.Migrations
 	SET @KnownRelationshipGroupTypeId = SCOPE_IDENTITY()
 	UPDATE [coreAttributeValue] SET [Value] = CAST(@KnownRelationshipGroupTypeId as varchar) WHERE [Value] = 'C8D76E72-21EC-4651-AC57-4DA6B82575C4' 
 
+	DECLARE @KnownRelationshipOwnerRoleId int
+	INSERT INTO [groupsGroupRole] ([IsSystem],[Name],[Description],[Order],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid],[GroupTypeId])
+		VALUES(1,'Owner','Owner of Known Relationships',0,GETDATE(),GETDATE(),1,1,'7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42',@KnownRelationshipGroupTypeId)
+	SET @KnownRelationshipOwnerRoleId = SCOPE_IDENTITY()
+	UPDATE [coreAttributeValue] SET [Value] = CAST(@KnownRelationshipOwnerRoleId as varchar) WHERE [Value] = '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42' 
+
 	-- Add Implied Relationships Group Type
 	DECLARE @ImpliedRelationshipGroupTypeId int
 	INSERT INTO [groupsGroupType] ([IsSystem],[Name],[Description],[DefaultGroupRoleId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
 		VALUES(1,'Implied Relationships','System discovered relationships',NULL,GETDATE(),GETDATE(),1,1,'8C0E5852-F08F-4327-9AA5-87800A6AB53E')
 	SET @ImpliedRelationshipGroupTypeId = SCOPE_IDENTITY()
 	UPDATE [coreAttributeValue] SET [Value] = CAST(@ImpliedRelationshipGroupTypeId as varchar) WHERE [Value] = '129A76BE-374B-44BE-98D0-32B5FED07331' 
+
+	DECLARE @ImpliedRelationshipOwnerRoleId int
+	INSERT INTO [groupsGroupRole] ([IsSystem],[Name],[Description],[Order],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid],[GroupTypeId])
+		VALUES(1,'Owner','Owner of Implied Relationships',0,GETDATE(),GETDATE(),1,1,'CB9A0E14-6FCF-4C07-A49A-D7873F45E196',@ImpliedRelationshipGroupTypeId)
+	SET @KnownRelationshipOwnerRoleId = SCOPE_IDENTITY()
+	UPDATE [coreAttributeValue] SET [Value] = CAST(@ImpliedRelationshipOwnerRoleId as varchar) WHERE [Value] = 'CB9A0E14-6FCF-4C07-A49A-D7873F45E196' 
 
 	-- Update the name/description on the GroupMembers block
 	UPDATE [cmsBlockType] SET 
