@@ -46,26 +46,9 @@ namespace Rock.Web.UI
 		/// <returns></returns>
 		protected IEnumerable<Group> PersonGroups(Guid groupTypeGuid)
 		{
-			string itemKey = "RockGroups:" + groupTypeGuid.ToString();
-
-			var groups = Context.Items[itemKey] as IEnumerable<Group>;
-			if ( groups != null )
-				return groups;
-
-			if ( Person == null )
-				return null;
-
-			var service = new MemberService();
-			groups = service.Queryable()
-				.Where( m =>
-					m.PersonId == Person.Id &&
-					m.Group.GroupType.Guid == groupTypeGuid )
-				.Select( m => m.Group )
-				.OrderByDescending( g => g.Name );
-
-			Context.Items.Add( itemKey, groups );
-
-			return groups;
+			var service = new GroupTypeService();
+			int groupTypeId = service.Queryable().Where( g => g.Guid == groupTypeGuid ).Select( g => g.Id ).FirstOrDefault();
+			return PersonGroups( groupTypeId );
 		}
 
 		/// <summary>
