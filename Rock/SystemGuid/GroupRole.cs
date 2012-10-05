@@ -26,5 +26,12 @@ namespace Rock.SystemGuid
 		/// </value>
 		public static Guid GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER { get { return new Guid( "CB9A0E14-6FCF-4C07-A49A-D7873F45E196" ); } }
 
+		/// <summary>
+		/// Gets the Implied Relationships related role.
+		/// </summary>
+		/// <value>
+		/// The role Guid.
+		/// </value>
+		public static Guid GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED { get { return new Guid( "FEA75948-97CB-4DE9-8A0D-43FA2646F55B" ); } }
     }
 }
