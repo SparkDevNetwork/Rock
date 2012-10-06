@@ -31,7 +31,7 @@ namespace Rock.Cms
         [TrackChanges]
         [DataMember]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Title.
         /// </summary>
@@ -41,7 +41,7 @@ namespace Rock.Cms
         [MaxLength( 100 )]
         [DataMember]
         public string Title { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the IsSystem.
         /// </summary>
@@ -51,7 +51,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Parent Page Id.
         /// </summary>
@@ -60,7 +60,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public int? ParentPageId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Site Id.
         /// </summary>
@@ -69,7 +69,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public int? SiteId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Layout.
         /// </summary>
@@ -79,7 +79,7 @@ namespace Rock.Cms
         [MaxLength( 100 )]
         [DataMember]
         public string Layout { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Requires Encryption.
         /// </summary>
@@ -89,7 +89,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool RequiresEncryption { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Enable View State.
         /// </summary>
@@ -104,7 +104,7 @@ namespace Rock.Cms
             set { _enableViewState = value; }
         }
         private bool _enableViewState = true;
-        
+
         /// <summary>
         /// Gets or sets the Menu Display Description.
         /// </summary>
@@ -114,7 +114,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool MenuDisplayDescription { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Menu Display Icon.
         /// </summary>
@@ -124,7 +124,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool MenuDisplayIcon { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Menu Display Child Pages.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool MenuDisplayChildPages { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Display In Nav When.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Output Cache Duration.
         /// </summary>
@@ -169,7 +169,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public int OutputCacheDuration { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -178,7 +178,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Include Admin Footer.
         /// </summary>
@@ -193,7 +193,7 @@ namespace Rock.Cms
             set { _includeAdminFooter = value; }
         }
         private bool _includeAdminFooter = true;
-        
+
         /// <summary>
         /// Gets or sets the Created Date Time.
         /// </summary>
@@ -202,7 +202,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public DateTime? CreatedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Modified Date Time.
         /// </summary>
@@ -211,7 +211,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public DateTime? ModifiedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Created By Person Id.
         /// </summary>
@@ -220,7 +220,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public int? CreatedByPersonId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Modified By Person Id.
         /// </summary>
@@ -240,7 +240,7 @@ namespace Rock.Cms
             return Read<Page>( id );
         }
 
-        
+
         /// <summary>
         /// Gets or sets the Icon Url.
         /// </summary>
@@ -250,13 +250,13 @@ namespace Rock.Cms
         [MaxLength( 150 )]
         [DataMember]
         public string IconUrl { get; set; }
-        
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
         public override string AuthEntity { get { return "Cms.Page"; } }
-        
+
         /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
@@ -264,7 +264,7 @@ namespace Rock.Cms
         /// Collection of Blocks.
         /// </value>
         public virtual ICollection<Block> Blocks { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
@@ -272,7 +272,7 @@ namespace Rock.Cms
         /// Collection of Pages.
         /// </value>
         public virtual ICollection<Page> Pages { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Page Routes.
         /// </summary>
@@ -296,7 +296,7 @@ namespace Rock.Cms
         /// Collection of Sites.
         /// </value>
         public virtual ICollection<Site> Sites { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Parent Page.
         /// </summary>
@@ -304,7 +304,7 @@ namespace Rock.Cms
         /// A <see cref="Page"/> object.
         /// </value>
         public virtual Page ParentPage { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Site.
         /// </summary>
@@ -312,7 +312,7 @@ namespace Rock.Cms
         /// A <see cref="Site"/> object.
         /// </value>
         public virtual Site Site { get; set; }
-        
+
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
@@ -330,6 +330,60 @@ namespace Rock.Cms
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Pages the sort hash.
+        /// </summary>
+        /// <returns></returns>
+        public string PageSortHash
+        {
+            get
+            {
+                string result = Title.PadRight( 100, ' ' );
+                var _parentPage = ParentPage;
+                while ( _parentPage != null )
+                {
+                    result = _parentPage.Title.PadRight( 100, ' ' ) + result;
+                    _parentPage = _parentPage.ParentPage;
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Pages the depth.
+        /// </summary>
+        /// <returns></returns>
+        public int PageDepth
+        {
+            get
+            {
+                int result = 0;
+                var _parentPage = ParentPage;
+                while ( _parentPage != null )
+                {
+                    result++;
+                    _parentPage = _parentPage.ParentPage;
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets the drop down list text.
+        /// </summary>
+        /// <value>
+        /// The drop down list text.
+        /// </value>
+        public string DropDownListText
+        {
+            get
+            {
+                return new string( '-', PageDepth ) + Title;
+            }
         }
 
         /// <summary>
@@ -357,7 +411,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public static dynamic MapPagesRecursive( Page page )
         {
-            dynamic exportPage = new PageDto(page).ToDynamic();
+            dynamic exportPage = new PageDto( page ).ToDynamic();
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
@@ -413,7 +467,7 @@ namespace Rock.Cms
 
             exportPage.PageRoutes = new List<dynamic>();
 
-            foreach (var pageRoute in page.PageRoutes)
+            foreach ( var pageRoute in page.PageRoutes )
             {
                 exportPage.PageRoutes.Add( pageRoute.ExportObject() );
             }
@@ -440,8 +494,8 @@ namespace Rock.Cms
         /// </summary>
         public PageConfiguration()
         {
-            this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
         }
     }
 

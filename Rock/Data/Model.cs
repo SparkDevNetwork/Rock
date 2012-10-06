@@ -104,7 +104,7 @@ namespace Rock.Data
             {
                 var valContext = new ValidationContext( this, serviceProvider: null, items: null );
                 ValidationResults = new List<ValidationResult>();
-                return Validator.TryValidateObject( this, valContext, ValidationResults );
+                return Validator.TryValidateObject( this, valContext, ValidationResults, true );
             }
         }
 
