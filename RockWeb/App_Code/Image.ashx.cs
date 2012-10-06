@@ -24,6 +24,10 @@ namespace RockWeb
     /// </summary>
     public class Image : IHttpHandler
     {
+        /// <summary>
+        /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public void ProcessRequest( HttpContext context )
         {
             context.Response.Clear();
@@ -73,7 +77,9 @@ namespace RockWeb
 
                     // Is cached version newer?
                     if ( file.ModifiedDateTime.HasValue && file.ModifiedDateTime.Value < System.IO.File.GetCreationTime( physFilePath ) )
+                    {
                         file.Data = FetchFromCache( physFilePath );
+                    }
                 }
 
                 if (file == null || file.Data == null)
@@ -83,7 +89,9 @@ namespace RockWeb
                     if ( file != null )
                     {
                         if ( WantsImageResizing( context ) )
+                        {
                             Resize( context, file );
+                        }
 
                         Cache( file, physFilePath );
                     }
@@ -108,6 +116,11 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Resizes the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="file">The file.</param>
         private static void Resize( HttpContext context, Rock.Cms.File file )
         {
             ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
@@ -116,6 +129,11 @@ namespace RockWeb
             file.Data = resizedStream.GetBuffer();
         }
 
+        /// <summary>
+        /// Caches the specified file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="physFilePath">The phys file path.</param>
         private static void Cache( Rock.Cms.File file, string physFilePath )
         {
             try
@@ -128,6 +146,11 @@ namespace RockWeb
             catch { /* do nothing, not critical if this fails, although TODO: log */ }
         }
 
+        /// <summary>
+        /// Fetches from cache.
+        /// </summary>
+        /// <param name="physFilePath">The phys file path.</param>
+        /// <returns></returns>
         private static byte[] FetchFromCache( string physFilePath )
         {
             try
@@ -154,6 +177,11 @@ namespace RockWeb
             return context.Request.QueryString.Count > 1;
         }
 
+        /// <summary>
+        /// Sends the file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="file">The file.</param>
         private static void SendFile( HttpContext context, Rock.Cms.File file )
         {
             context.Response.ContentType = file.MimeType;
@@ -162,6 +190,10 @@ namespace RockWeb
             context.Response.Flush();
         }
 
+        /// <summary>
+        /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
+        /// </summary>
+        /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
         public bool IsReusable
         {
             get

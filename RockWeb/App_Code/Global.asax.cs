@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -65,7 +66,7 @@ namespace RockWeb
 
                 // create scheduler
                 sf = new StdSchedulerFactory();
-                sched = sf.GetScheduler();  
+                sched = sf.GetScheduler();
 
                 // get list of active jobs
                 JobService jobService = new JobService();
@@ -84,7 +85,7 @@ namespace RockWeb
                         string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assemby, ex.Message );
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
-                        
+
                         jobService.Save( job, null );
                     }
                 }
@@ -142,13 +143,19 @@ namespace RockWeb
                 {
                     while ( RockQueue.TransactionQueue.Count != 0 )
                     {
-                        ITransaction transaction = ( ITransaction )RockQueue.TransactionQueue.Dequeue();
+                        ITransaction transaction = (ITransaction)RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
                     }
                 }
                 catch ( Exception ex )
                 {
-                    // TODO log exception
+                    try
+                    {
+                        EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ), EventLogEntryType.Error );
+                    }
+                    catch
+                    {
+                    }
                 }
 
                 Global.QueueInUse = false;
@@ -308,7 +315,7 @@ namespace RockWeb
         private string FormatException( Exception ex, string exLevel )
         {
             string message = string.Empty;
-            
+
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
             message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
 
@@ -381,12 +388,12 @@ namespace RockWeb
 
                 exceptionLog.ExceptionType = ex.GetType().Name;
                 exceptionLog.PageUrl = context.Request.RawUrl;
-                
+
                 exceptionLog.QueryString = context.Request.QueryString.ToString();
 
                 // write cookies
                 StringBuilder cookies = new StringBuilder();
-                cookies.Append("<table class=\"cookies\">");
+                cookies.Append( "<table class=\"cookies\">" );
 
                 foreach ( string cookie in context.Request.Cookies )
                     cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + context.Request.Cookies[cookie].Value + "</td></tr>" );
@@ -414,7 +421,7 @@ namespace RockWeb
                 cookies.Append( "</table>" );
                 exceptionLog.ServerVariables = serverVars.ToString();
 
-                if (user != null)
+                if ( user != null )
                     exceptionLog.CreatedByPersonId = user.PersonId;
 
                 service.Add( exceptionLog, null );
@@ -425,10 +432,17 @@ namespace RockWeb
                     LogError( ex.InnerException, exceptionLog.Id, status, context );
 
             }
-            catch ( Exception exception )
+            catch ( Exception )
             {
                 // if you get an exception while logging an exception I guess you're hosed...
-            }            
+                try
+                {
+                    EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.LogError(): {0}", ex.Message ), EventLogEntryType.Error );
+                }
+                catch
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -453,7 +467,9 @@ namespace RockWeb
             if ( runJobsInContext )
             {
                 if ( sched != null )
+                {
                     sched.Shutdown();
+                }
             }
 
             // process the transaction queue
@@ -495,7 +511,7 @@ namespace RockWeb
             PageRouteService pageRouteService = new PageRouteService();
 
             // find each page that has defined a custom routes.
-            foreach ( PageRoute pageRoute in pageRouteService.Queryable())
+            foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
                 // Create the custom route and save the page id in the DataTokens collection
                 Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
@@ -505,11 +521,11 @@ namespace RockWeb
                 routes.Add( route );
             }
 
-            
+
             // Add any custom api routes
-            foreach ( var type in Rock.Reflection.FindTypes( 
-                typeof( Rock.Rest.IHasCustomRoutes ), 
-                new System.IO.DirectoryInfo(Server.MapPath("~/bin")) ) )
+            foreach ( var type in Rock.Reflection.FindTypes(
+                typeof( Rock.Rest.IHasCustomRoutes ),
+                new System.IO.DirectoryInfo( Server.MapPath( "~/bin" ) ) ) )
             {
                 var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
                 if ( controller != null )
@@ -538,7 +554,7 @@ namespace RockWeb
             Rock.Cms.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
             Rock.Cms.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
             Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
-            Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting ); 
+            Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting );
         }
 
         /// <summary>

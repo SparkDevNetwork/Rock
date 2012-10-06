@@ -11,6 +11,7 @@ using System.Web.Routing;
 using System.Web.UI;
 using Rock;
 using Rock.Cms;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -18,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public partial class PageRoutes : Rock.Web.UI.RockBlock
+    public partial class PageRoutes : RockBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -101,8 +102,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Delete( object sender, RowEventArgs e )
         {
-            Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
-            Rock.Cms.PageRoute pageRoute = pageRouteService.Get( (int)gPageRoutes.DataKeys[e.RowIndex]["id"] );
+            PageRouteService pageRouteService = new PageRouteService();
+            PageRoute pageRoute = pageRouteService.Get( (int)gPageRoutes.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
             {
                 pageRouteService.Delete( pageRoute, CurrentPersonId );
@@ -167,31 +168,17 @@ namespace RockWeb.Blocks.Administration
             int selectedPageId = int.Parse( ddlPageName.SelectedValue );
             pageRoute.PageId = selectedPageId;
 
-            // Validate that this can be created as a real Route
-            try
-            {
-                Route testRoute = new Route( tbRoute.Text, null );
-            }
-            catch ( Exception ex )
-            {
-                nbMessage.Text = ex.Message;
-                nbMessage.Visible = true;
-                return;
-            }
-
-            // check for EmptyString
-            if ( string.IsNullOrWhiteSpace( pageRoute.Route ) )
-            {
-                nbMessage.Text = "Route cannot be blank.";
-                nbMessage.Visible = true;
-                return;
-            }
-
             // check for duplicates
             if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
             {
-                nbMessage.Text = "This route is already being used on another Page.";
+                nbMessage.Text = "This route is already being used on another page.";
                 nbMessage.Visible = true;
+                return;
+            }
+
+            if ( !pageRoute.IsValid )
+            {
+                // Controls will render the error messages                    
                 return;
             }
 
@@ -210,8 +197,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
-            List<PageRoute> pageRoutes; 
+            PageRouteService pageRouteService = new PageRouteService();
+            List<PageRoute> pageRoutes;
 
             SortProperty sortProperty = gPageRoutes.SortProperty;
             if ( sortProperty != null )
@@ -244,26 +231,9 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+            PageService pageService = new PageService();
             List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
-
-            List<PageInfo> pageNameList = new List<PageInfo>();
-
-            foreach ( Rock.Cms.Page page in allPages )
-            {
-                PageInfo pageInfo = new PageInfo { Id = page.Id, Title = page.Title, pageDepth = 0, pageHash = page.Title.PadRight( 100, ' ' ) };
-                pageNameList.Add( pageInfo );
-                Rock.Cms.Page parentPage = page.ParentPage;
-                while ( parentPage != null )
-                {
-                    pageInfo.pageDepth++;
-                    pageInfo.pageHash = parentPage.Title.PadRight( 100, ' ' ) + pageInfo.pageHash;
-                    parentPage = parentPage.ParentPage;
-                }
-                pageInfo.DropDownListText = new string( '-', pageInfo.pageDepth ) + pageInfo.Title;
-            }
-
-            ddlPageName.DataSource = pageNameList.OrderBy( a => a.pageHash );
+            ddlPageName.DataSource = allPages.OrderBy( a => a.PageSortHash );
             ddlPageName.DataBind();
         }
 

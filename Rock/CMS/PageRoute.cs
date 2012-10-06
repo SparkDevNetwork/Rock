@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -29,7 +28,7 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Page Id.
         /// </summary>
@@ -39,18 +38,19 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public int PageId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Route.
         /// </summary>
         /// <value>
         /// Route.
         /// </value>
+        [Route]
         [Required]
         [MaxLength( 200 )]
         [DataMember]
         public string Route { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Created Date Time.
         /// </summary>
@@ -59,7 +59,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public DateTime? CreatedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Modified Date Time.
         /// </summary>
@@ -68,7 +68,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public DateTime? ModifiedDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Created By Person Id.
         /// </summary>
@@ -77,7 +77,7 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public int? CreatedByPersonId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Modified By Person Id.
         /// </summary>
@@ -102,7 +102,7 @@ namespace Rock.Cms
         /// </summary>
         [NotMapped]
         public override string AuthEntity { get { return "Cms.PageRoute"; } }
-        
+
         /// <summary>
         /// Gets or sets the Page.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="data">The data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson(string data)
+        public void ImportJson( string data )
         {
             throw new NotImplementedException();
         }
@@ -151,7 +151,7 @@ namespace Rock.Cms
         /// </summary>
         public PageRouteConfiguration()
         {
-            this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
 }

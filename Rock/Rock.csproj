@@ -215,6 +215,7 @@
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
+    <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
@@ -456,6 +457,10 @@
     <Compile Include="Migrations\201210022114138_AddPageRoutePage.cs" />
     <Compile Include="Migrations\201210022114138_AddPageRoutePage.Designer.cs">
       <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210042044531_UniqueGuids.cs" />
+    <Compile Include="Migrations\201210042044531_UniqueGuids.Designer.cs">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
@@ -813,6 +818,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210022114138_AddPageRoutePage.resx">
       <DependentUpon>201210022114138_AddPageRoutePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210042044531_UniqueGuids.resx">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

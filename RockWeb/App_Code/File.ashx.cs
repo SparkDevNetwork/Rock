@@ -17,7 +17,6 @@ namespace RockWeb
     /// </summary>
     public class File : IHttpAsyncHandler
     {
-
         public File()
         {
         }
@@ -43,11 +42,11 @@ namespace RockWeb
                 int id = -1;
                 Guid guid = new Guid();
 
-                if ( ! ( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
+                if ( !( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
                 {
                     throw new Exception( "file id key must be a guid or an int" );
                 }
-                
+
                 SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
@@ -55,7 +54,7 @@ namespace RockWeb
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add( new SqlParameter( "@Id", id ) );
                 cmd.Parameters.Add( new SqlParameter( "@Guid", guid ) );
-                
+
                 // store our Command to be later retrieved by EndProcessRequest
                 context.Items.Add( "cmd", cmd );
 
@@ -110,11 +109,20 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public void ProcessRequest( HttpContext context )
         {
             throw new NotImplementedException( "The method or operation is not implemented. This is an asynchronous file handler." );
         }
 
+        /// <summary>
+        /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
+        /// </summary>
+        /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
         public bool IsReusable
         {
             get
