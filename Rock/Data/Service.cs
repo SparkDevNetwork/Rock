@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Core;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -149,30 +151,135 @@ namespace Rock.Data
         //    return null;
         //}
 
-        /// <summary>
-        /// Adds the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public bool Add( T item, int? personId )
-        {
-            bool cancel = false;
-            item.RaiseAddingEvent( out cancel, personId );
-            if ( !cancel )
-            {
-                _repository.Add( item );
-                return true;
-            }
-            else
-                return false;
-        }
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( T entity )
+		{
+			return _repository.DateCreated( entity );
+		}
 
-        /// <summary>
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+		{
+			return _repository.DateCreated( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( T entity )
+		{
+			return _repository.DateLastModified( entity );
+		}
+
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+		{
+			return _repository.DateLastModified( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( T entity )
+		{
+			return _repository.CreatedByPersonId( entity );
+		}
+
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+		{
+			return _repository.CreatedByPersonId( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( T entity )
+		{
+			return _repository.LastModifiedByPersonId( entity );
+		}
+
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+		{
+			return _repository.LastModifiedByPersonId( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( T entity )
+		{
+			return _repository.Audits( entity );
+		}
+
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+		{
+			return _repository.Audits( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// Adds the specified item.
+		/// </summary>
+		/// <param name="item">The item.</param>
+		/// <param name="personId">The person id.</param>
+		/// <returns></returns>
+		public virtual bool Add( T item, int? personId )
+		{
+			bool cancel = false;
+			item.RaiseAddingEvent( out cancel, personId );
+			if ( !cancel )
+			{
+				_repository.Add( item );
+				return true;
+			}
+			else
+				return false;
+		}
+
+		/// <summary>
         /// Attaches the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Attach( T item )
+        public virtual void Attach( T item )
         {
             _repository.Attach( item );
         }
@@ -183,7 +290,7 @@ namespace Rock.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public bool Delete( T item, int? personId )
+		public virtual bool Delete( T item, int? personId )
         {
             bool cancel = false;
             item.RaiseDeletingEvent( out cancel, personId );
@@ -201,19 +308,28 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
-        public void Save( T item, int? personId )
+		public virtual void Save( T item, int? personId )
         {
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            var entityChanges = _repository.Save( personId );
-            if ( entityChanges != null && entityChanges.Count > 0 )
+			var audits = new List<Core.AuditDto>();
+            var entityChanges = _repository.Save( personId, audits );
+
+			if ( entityChanges != null && entityChanges.Count > 0 )
             {
                 var transaction = new Rock.Transactions.EntityChangeTransaction();
                 transaction.Changes = entityChanges;
                 transaction.PersonId = personId;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+
+			if ( audits != null && audits.Count > 0 )
+			{
+				var transaction = new Rock.Transactions.AuditTransaction();
+				transaction.Audits = audits;
+				Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+			}
         }
 
         /// <summary>
@@ -223,7 +339,7 @@ namespace Rock.Data
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
         /// <param name="personId">The person id.</param>
-        public void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
+		public virtual void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
         {
             T movedItem = items[oldIndex];
             items.RemoveAt( oldIndex );

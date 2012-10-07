@@ -64,8 +64,6 @@ namespace Rock.Crm
 				{
 					CurrentId = m.CurrentId,
 					CurrentGuid = m.CurrentGuid,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

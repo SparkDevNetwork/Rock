@@ -36,10 +36,6 @@ namespace Rock.Core
 		public string DefaultValue { get; set; }
 		public bool IsMultiValue { get; set; }
 		public bool IsRequired { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -83,10 +79,6 @@ namespace Rock.Core
 				this.DefaultValue = attribute.DefaultValue;
 				this.IsMultiValue = attribute.IsMultiValue;
 				this.IsRequired = attribute.IsRequired;
-				this.CreatedDateTime = attribute.CreatedDateTime;
-				this.ModifiedDateTime = attribute.ModifiedDateTime;
-				this.CreatedByPersonId = attribute.CreatedByPersonId;
-				this.ModifiedByPersonId = attribute.ModifiedByPersonId;
 				this.Id = attribute.Id;
 				this.Guid = attribute.Guid;
 			}
@@ -115,10 +107,6 @@ namespace Rock.Core
 				attribute.DefaultValue = this.DefaultValue;
 				attribute.IsMultiValue = this.IsMultiValue;
 				attribute.IsRequired = this.IsRequired;
-				attribute.CreatedDateTime = this.CreatedDateTime;
-				attribute.ModifiedDateTime = this.ModifiedDateTime;
-				attribute.CreatedByPersonId = this.CreatedByPersonId;
-				attribute.ModifiedByPersonId = this.ModifiedByPersonId;
 				attribute.Id = this.Id;
 				attribute.Guid = this.Guid;
 			}

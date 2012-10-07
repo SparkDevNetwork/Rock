@@ -28,10 +28,6 @@ namespace Rock.Core
 		public string Category { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -67,10 +63,6 @@ namespace Rock.Core
 				this.Category = definedType.Category;
 				this.Name = definedType.Name;
 				this.Description = definedType.Description;
-				this.CreatedDateTime = definedType.CreatedDateTime;
-				this.ModifiedDateTime = definedType.ModifiedDateTime;
-				this.CreatedByPersonId = definedType.CreatedByPersonId;
-				this.ModifiedByPersonId = definedType.ModifiedByPersonId;
 				this.Id = definedType.Id;
 				this.Guid = definedType.Guid;
 			}
@@ -91,10 +83,6 @@ namespace Rock.Core
 				definedType.Category = this.Category;
 				definedType.Name = this.Name;
 				definedType.Description = this.Description;
-				definedType.CreatedDateTime = this.CreatedDateTime;
-				definedType.ModifiedDateTime = this.ModifiedDateTime;
-				definedType.CreatedByPersonId = this.CreatedByPersonId;
-				definedType.ModifiedByPersonId = this.ModifiedByPersonId;
 				definedType.Id = this.Id;
 				definedType.Guid = this.Guid;
 			}

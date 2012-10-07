@@ -67,10 +67,6 @@ namespace Rock.Financial
 					ApiUrl = m.ApiUrl,
 					ApiKey = m.ApiKey,
 					ApiSecret = m.ApiSecret,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

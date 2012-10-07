@@ -75,10 +75,6 @@ namespace Rock.Core
 					Source = m.Source,
 					SourceSQL = m.SourceSQL,
 					Order = m.Order,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

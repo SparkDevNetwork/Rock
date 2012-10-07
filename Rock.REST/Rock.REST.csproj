@@ -96,6 +96,7 @@
     <Compile Include="Core\AttributesController.cs" />
     <Compile Include="Core\AttributeValuesController.cs" />
     <Compile Include="Core\AttributesController.Partial.cs" />
+    <Compile Include="Core\AuditsController.cs" />
     <Compile Include="Core\TaggedItemsController.cs" />
     <Compile Include="Core\TagsController.Partial.cs" />
     <Compile Include="Core\DefinedTypesController.cs" />

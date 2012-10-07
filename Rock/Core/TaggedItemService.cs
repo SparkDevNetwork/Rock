@@ -65,10 +65,6 @@ namespace Rock.Core
 					IsSystem = m.IsSystem,
 					TagId = m.TagId,
 					EntityId = m.EntityId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

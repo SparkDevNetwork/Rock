@@ -20,7 +20,7 @@ namespace Rock.Cms
     /// Auth POCO Entity.
     /// </summary>
     [Table( "cmsAuth" )]
-    public partial class Auth : Model<Auth>, IAuditable, IOrdered
+    public partial class Auth : Model<Auth>, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the Entity Type.
@@ -102,42 +102,6 @@ namespace Rock.Cms
 		[DataMember]
 		public int? GroupId { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>

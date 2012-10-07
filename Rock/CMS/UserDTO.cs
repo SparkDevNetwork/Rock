@@ -37,10 +37,6 @@ namespace Rock.Cms
 		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
 		public string ApiKey { get; set; }
 		public int? PersonId { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -85,10 +81,6 @@ namespace Rock.Cms
 				this.FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart;
 				this.ApiKey = user.ApiKey;
 				this.PersonId = user.PersonId;
-				this.CreatedDateTime = user.CreatedDateTime;
-				this.ModifiedDateTime = user.ModifiedDateTime;
-				this.CreatedByPersonId = user.CreatedByPersonId;
-				this.ModifiedByPersonId = user.ModifiedByPersonId;
 				this.Id = user.Id;
 				this.Guid = user.Guid;
 			}
@@ -118,10 +110,6 @@ namespace Rock.Cms
 				user.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
 				user.ApiKey = this.ApiKey;
 				user.PersonId = this.PersonId;
-				user.CreatedDateTime = this.CreatedDateTime;
-				user.ModifiedDateTime = this.ModifiedDateTime;
-				user.CreatedByPersonId = this.CreatedByPersonId;
-				user.ModifiedByPersonId = this.ModifiedByPersonId;
 				user.Id = this.Id;
 				user.Guid = this.Guid;
 			}

@@ -27,10 +27,6 @@ namespace Rock.Core
 		public string Description { get; set; }
 		public string Assembly { get; set; }
 		public string Class { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,10 +61,6 @@ namespace Rock.Core
 				this.Description = fieldType.Description;
 				this.Assembly = fieldType.Assembly;
 				this.Class = fieldType.Class;
-				this.CreatedDateTime = fieldType.CreatedDateTime;
-				this.ModifiedDateTime = fieldType.ModifiedDateTime;
-				this.CreatedByPersonId = fieldType.CreatedByPersonId;
-				this.ModifiedByPersonId = fieldType.ModifiedByPersonId;
 				this.Id = fieldType.Id;
 				this.Guid = fieldType.Guid;
 			}
@@ -88,10 +80,6 @@ namespace Rock.Core
 				fieldType.Description = this.Description;
 				fieldType.Assembly = this.Assembly;
 				fieldType.Class = this.Class;
-				fieldType.CreatedDateTime = this.CreatedDateTime;
-				fieldType.ModifiedDateTime = this.ModifiedDateTime;
-				fieldType.CreatedByPersonId = this.CreatedByPersonId;
-				fieldType.ModifiedByPersonId = this.ModifiedByPersonId;
 				fieldType.Id = this.Id;
 				fieldType.Guid = this.Guid;
 			}

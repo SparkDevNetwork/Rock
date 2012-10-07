@@ -26,10 +26,6 @@ namespace Rock.Core
 		public int AttributeId { get; set; }
 		public string Key { get; set; }
 		public string Value { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -63,10 +59,6 @@ namespace Rock.Core
 				this.AttributeId = attributeQualifier.AttributeId;
 				this.Key = attributeQualifier.Key;
 				this.Value = attributeQualifier.Value;
-				this.CreatedDateTime = attributeQualifier.CreatedDateTime;
-				this.ModifiedDateTime = attributeQualifier.ModifiedDateTime;
-				this.CreatedByPersonId = attributeQualifier.CreatedByPersonId;
-				this.ModifiedByPersonId = attributeQualifier.ModifiedByPersonId;
 				this.Id = attributeQualifier.Id;
 				this.Guid = attributeQualifier.Guid;
 			}
@@ -85,10 +77,6 @@ namespace Rock.Core
 				attributeQualifier.AttributeId = this.AttributeId;
 				attributeQualifier.Key = this.Key;
 				attributeQualifier.Value = this.Value;
-				attributeQualifier.CreatedDateTime = this.CreatedDateTime;
-				attributeQualifier.ModifiedDateTime = this.ModifiedDateTime;
-				attributeQualifier.CreatedByPersonId = this.CreatedByPersonId;
-				attributeQualifier.ModifiedByPersonId = this.ModifiedByPersonId;
 				attributeQualifier.Id = this.Id;
 				attributeQualifier.Guid = this.Guid;
 			}

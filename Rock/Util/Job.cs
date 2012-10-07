@@ -18,7 +18,7 @@ namespace Rock.Util
     /// Job POCO Entity.
     /// </summary>
     [Table( "utilJob" )]
-    public partial class Job : Model<Job>, IAuditable
+    public partial class Job : Model<Job>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -167,42 +167,6 @@ namespace Rock.Util
 		[DataMember]
         public JobNotificationStatus NotificationStatus { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>

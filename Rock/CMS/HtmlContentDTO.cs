@@ -29,10 +29,6 @@ namespace Rock.Cms
 		public bool IsApproved { get; set; }
 		public int? ApprovedByPersonId { get; set; }
 		public DateTime? ApprovedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public DateTime? StartDateTime { get; set; }
 		public DateTime? ExpireDateTime { get; set; }
 		public int Id { get; set; }
@@ -71,10 +67,6 @@ namespace Rock.Cms
 				this.IsApproved = htmlContent.IsApproved;
 				this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
 				this.ApprovedDateTime = htmlContent.ApprovedDateTime;
-				this.CreatedDateTime = htmlContent.CreatedDateTime;
-				this.ModifiedDateTime = htmlContent.ModifiedDateTime;
-				this.CreatedByPersonId = htmlContent.CreatedByPersonId;
-				this.ModifiedByPersonId = htmlContent.ModifiedByPersonId;
 				this.StartDateTime = htmlContent.StartDateTime;
 				this.ExpireDateTime = htmlContent.ExpireDateTime;
 				this.Id = htmlContent.Id;
@@ -98,10 +90,6 @@ namespace Rock.Cms
 				htmlContent.IsApproved = this.IsApproved;
 				htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
 				htmlContent.ApprovedDateTime = this.ApprovedDateTime;
-				htmlContent.CreatedDateTime = this.CreatedDateTime;
-				htmlContent.ModifiedDateTime = this.ModifiedDateTime;
-				htmlContent.CreatedByPersonId = this.CreatedByPersonId;
-				htmlContent.ModifiedByPersonId = this.ModifiedByPersonId;
 				htmlContent.StartDateTime = this.StartDateTime;
 				htmlContent.ExpireDateTime = this.ExpireDateTime;
 				htmlContent.Id = this.Id;
