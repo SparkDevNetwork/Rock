@@ -3,7 +3,7 @@ namespace Rock.Migrations
 	/// <summary>
 	/// 
 	/// </summary>
-	public partial class AddPageRoutePage : RockMigration
+	public partial class AddPageRoutePage : RockMigration_1
 	{
 		/// <summary>
 		/// Operations to be performed during the upgrade process.

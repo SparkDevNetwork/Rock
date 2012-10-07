@@ -38,10 +38,6 @@ namespace Rock.Cms
 		public int OutputCacheDuration { get; set; }
 		public string Description { get; set; }
 		public bool IncludeAdminFooter { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public string IconUrl { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
@@ -88,10 +84,6 @@ namespace Rock.Cms
 				this.OutputCacheDuration = page.OutputCacheDuration;
 				this.Description = page.Description;
 				this.IncludeAdminFooter = page.IncludeAdminFooter;
-				this.CreatedDateTime = page.CreatedDateTime;
-				this.ModifiedDateTime = page.ModifiedDateTime;
-				this.CreatedByPersonId = page.CreatedByPersonId;
-				this.ModifiedByPersonId = page.ModifiedByPersonId;
 				this.IconUrl = page.IconUrl;
 				this.Id = page.Id;
 				this.Guid = page.Guid;
@@ -123,10 +115,6 @@ namespace Rock.Cms
 				page.OutputCacheDuration = this.OutputCacheDuration;
 				page.Description = this.Description;
 				page.IncludeAdminFooter = this.IncludeAdminFooter;
-				page.CreatedDateTime = this.CreatedDateTime;
-				page.ModifiedDateTime = this.ModifiedDateTime;
-				page.CreatedByPersonId = this.CreatedByPersonId;
-				page.ModifiedByPersonId = this.ModifiedByPersonId;
 				page.IconUrl = this.IconUrl;
 				page.Id = this.Id;
 				page.Guid = this.Guid;

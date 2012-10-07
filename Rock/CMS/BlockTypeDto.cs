@@ -26,10 +26,6 @@ namespace Rock.Cms
 		public string Path { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -63,10 +59,6 @@ namespace Rock.Cms
 				this.Path = blockType.Path;
 				this.Name = blockType.Name;
 				this.Description = blockType.Description;
-				this.CreatedDateTime = blockType.CreatedDateTime;
-				this.ModifiedDateTime = blockType.ModifiedDateTime;
-				this.CreatedByPersonId = blockType.CreatedByPersonId;
-				this.ModifiedByPersonId = blockType.ModifiedByPersonId;
 				this.Id = blockType.Id;
 				this.Guid = blockType.Guid;
 			}
@@ -85,10 +77,6 @@ namespace Rock.Cms
 				blockType.Path = this.Path;
 				blockType.Name = this.Name;
 				blockType.Description = this.Description;
-				blockType.CreatedDateTime = this.CreatedDateTime;
-				blockType.ModifiedDateTime = this.ModifiedDateTime;
-				blockType.CreatedByPersonId = this.CreatedByPersonId;
-				blockType.ModifiedByPersonId = this.ModifiedByPersonId;
 				blockType.Id = this.Id;
 				blockType.Guid = this.Guid;
 			}

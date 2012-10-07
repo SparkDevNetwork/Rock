@@ -26,10 +26,6 @@ namespace Rock.Groups
 		public string Name { get; set; }
 		public string Description { get; set; }
 		public int? DefaultGroupRoleId { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -63,10 +59,6 @@ namespace Rock.Groups
 				this.Name = groupType.Name;
 				this.Description = groupType.Description;
 				this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
-				this.CreatedDateTime = groupType.CreatedDateTime;
-				this.ModifiedDateTime = groupType.ModifiedDateTime;
-				this.CreatedByPersonId = groupType.CreatedByPersonId;
-				this.ModifiedByPersonId = groupType.ModifiedByPersonId;
 				this.Id = groupType.Id;
 				this.Guid = groupType.Guid;
 			}
@@ -85,10 +77,6 @@ namespace Rock.Groups
 				groupType.Name = this.Name;
 				groupType.Description = this.Description;
 				groupType.DefaultGroupRoleId = this.DefaultGroupRoleId;
-				groupType.CreatedDateTime = this.CreatedDateTime;
-				groupType.ModifiedDateTime = this.ModifiedDateTime;
-				groupType.CreatedByPersonId = this.CreatedByPersonId;
-				groupType.ModifiedByPersonId = this.ModifiedByPersonId;
 				groupType.Id = this.Id;
 				groupType.Guid = this.Guid;
 			}

@@ -67,9 +67,6 @@ namespace Rock.Cms
 					Entity = m.Entity,
 					IdParameter = m.IdParameter,
 					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

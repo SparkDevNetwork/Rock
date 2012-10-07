@@ -30,10 +30,6 @@ namespace Rock.Crm
 		public bool IsMessagingEnabled { get; set; }
 		public bool IsUnlisted { get; set; }
 		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -71,10 +67,6 @@ namespace Rock.Crm
 				this.IsMessagingEnabled = phoneNumber.IsMessagingEnabled;
 				this.IsUnlisted = phoneNumber.IsUnlisted;
 				this.Description = phoneNumber.Description;
-				this.CreatedDateTime = phoneNumber.CreatedDateTime;
-				this.ModifiedDateTime = phoneNumber.ModifiedDateTime;
-				this.CreatedByPersonId = phoneNumber.CreatedByPersonId;
-				this.ModifiedByPersonId = phoneNumber.ModifiedByPersonId;
 				this.Id = phoneNumber.Id;
 				this.Guid = phoneNumber.Guid;
 			}
@@ -97,10 +89,6 @@ namespace Rock.Crm
 				phoneNumber.IsMessagingEnabled = this.IsMessagingEnabled;
 				phoneNumber.IsUnlisted = this.IsUnlisted;
 				phoneNumber.Description = this.Description;
-				phoneNumber.CreatedDateTime = this.CreatedDateTime;
-				phoneNumber.ModifiedDateTime = this.ModifiedDateTime;
-				phoneNumber.CreatedByPersonId = this.CreatedByPersonId;
-				phoneNumber.ModifiedByPersonId = this.ModifiedByPersonId;
 				phoneNumber.Id = this.Id;
 				phoneNumber.Guid = this.Guid;
 			}

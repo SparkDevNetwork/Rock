@@ -66,10 +66,6 @@ namespace Rock.Cms
 					Path = m.Path,
 					Name = m.Name,
 					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

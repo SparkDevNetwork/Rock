@@ -69,10 +69,6 @@ namespace Rock.Financial
 					EndDate = m.EndDate,
 					FrequencyTypeId = m.FrequencyTypeId,
 					FrequencyAmount = m.FrequencyAmount,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

@@ -66,10 +66,6 @@ namespace Rock.Groups
 					GroupId = m.GroupId,
 					PersonId = m.PersonId,
 					GroupRoleId = m.GroupRoleId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

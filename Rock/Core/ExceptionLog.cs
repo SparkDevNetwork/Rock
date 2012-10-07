@@ -17,6 +17,7 @@ namespace Rock.Core
     /// <summary>
     /// Exception Log POCO Entity.
     /// </summary>
+	[NotAudited]
     [Table( "coreExceptionLog" )]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
@@ -56,7 +57,24 @@ namespace Rock.Core
 		[Required]
 		[DataMember]
 		public DateTime ExceptionDate { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		[DataMember]
+		public int? CreatedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Created Person.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Person"/> object.
+		/// </value>
+		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Has Inner Exception.
 		/// </summary>
@@ -65,15 +83,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public bool? HasInnerException { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id of the logged in person who experienced the exception..
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Status Code.
@@ -207,6 +216,7 @@ namespace Rock.Core
         /// </summary>
         public ExceptionLogConfiguration()
         {
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
 		}
     }
 }

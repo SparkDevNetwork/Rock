@@ -64,10 +64,6 @@ namespace Rock.Crm
 				{
 					IsSystem = m.IsSystem,
 					Name = m.Name,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

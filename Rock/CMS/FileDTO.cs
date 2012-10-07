@@ -28,11 +28,8 @@ namespace Rock.Cms
 		public string Url { get; set; }
 		public string FileName { get; set; }
 		public string MimeType { get; set; }
+		public DateTimeOffset? LastModifiedTime { get; set; }
 		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -68,11 +65,8 @@ namespace Rock.Cms
 				this.Url = file.Url;
 				this.FileName = file.FileName;
 				this.MimeType = file.MimeType;
+				this.LastModifiedTime = file.LastModifiedTime;
 				this.Description = file.Description;
-				this.CreatedDateTime = file.CreatedDateTime;
-				this.ModifiedDateTime = file.ModifiedDateTime;
-				this.CreatedByPersonId = file.CreatedByPersonId;
-				this.ModifiedByPersonId = file.ModifiedByPersonId;
 				this.Id = file.Id;
 				this.Guid = file.Guid;
 			}
@@ -93,11 +87,8 @@ namespace Rock.Cms
 				file.Url = this.Url;
 				file.FileName = this.FileName;
 				file.MimeType = this.MimeType;
+				file.LastModifiedTime = this.LastModifiedTime;
 				file.Description = this.Description;
-				file.CreatedDateTime = this.CreatedDateTime;
-				file.ModifiedDateTime = this.ModifiedDateTime;
-				file.CreatedByPersonId = this.CreatedByPersonId;
-				file.ModifiedByPersonId = this.ModifiedByPersonId;
 				file.Id = this.Id;
 				file.Guid = this.Guid;
 			}

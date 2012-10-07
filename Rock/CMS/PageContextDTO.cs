@@ -27,9 +27,6 @@ namespace Rock.Cms
 		public string Entity { get; set; }
 		public string IdParameter { get; set; }
 		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -64,9 +61,6 @@ namespace Rock.Cms
 				this.Entity = pageContext.Entity;
 				this.IdParameter = pageContext.IdParameter;
 				this.CreatedDateTime = pageContext.CreatedDateTime;
-				this.ModifiedDateTime = pageContext.ModifiedDateTime;
-				this.CreatedByPersonId = pageContext.CreatedByPersonId;
-				this.ModifiedByPersonId = pageContext.ModifiedByPersonId;
 				this.Id = pageContext.Id;
 				this.Guid = pageContext.Guid;
 			}
@@ -86,9 +80,6 @@ namespace Rock.Cms
 				pageContext.Entity = this.Entity;
 				pageContext.IdParameter = this.IdParameter;
 				pageContext.CreatedDateTime = this.CreatedDateTime;
-				pageContext.ModifiedDateTime = this.ModifiedDateTime;
-				pageContext.CreatedByPersonId = this.CreatedByPersonId;
-				pageContext.ModifiedByPersonId = this.ModifiedByPersonId;
 				pageContext.Id = this.Id;
 				pageContext.Guid = this.Guid;
 			}

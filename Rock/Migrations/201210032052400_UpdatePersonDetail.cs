@@ -3,7 +3,7 @@ namespace Rock.Migrations
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class UpdatePersonDetail : RockMigration
+    public partial class UpdatePersonDetail : RockMigration_1
     {
         public override void Up()
         {

@@ -25,10 +25,6 @@ namespace Rock.Cms
 		public bool IsSystem { get; set; }
 		public int PageId { get; set; }
 		public string Route { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -61,10 +57,6 @@ namespace Rock.Cms
 				this.IsSystem = pageRoute.IsSystem;
 				this.PageId = pageRoute.PageId;
 				this.Route = pageRoute.Route;
-				this.CreatedDateTime = pageRoute.CreatedDateTime;
-				this.ModifiedDateTime = pageRoute.ModifiedDateTime;
-				this.CreatedByPersonId = pageRoute.CreatedByPersonId;
-				this.ModifiedByPersonId = pageRoute.ModifiedByPersonId;
 				this.Id = pageRoute.Id;
 				this.Guid = pageRoute.Guid;
 			}
@@ -82,10 +74,6 @@ namespace Rock.Cms
 				pageRoute.IsSystem = this.IsSystem;
 				pageRoute.PageId = this.PageId;
 				pageRoute.Route = this.Route;
-				pageRoute.CreatedDateTime = this.CreatedDateTime;
-				pageRoute.ModifiedDateTime = this.ModifiedDateTime;
-				pageRoute.CreatedByPersonId = this.CreatedByPersonId;
-				pageRoute.ModifiedByPersonId = this.ModifiedByPersonId;
 				pageRoute.Id = this.Id;
 				pageRoute.Guid = this.Guid;
 			}

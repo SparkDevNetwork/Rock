@@ -45,17 +45,13 @@ namespace Rock.Migrations
 					[Guid])
 				VALUES(
 					{0},'{1}','{2}','{3}'
-					'{4}','{5}',{6},{7},
-					'{8}')
+					GETDATE(),GETDATE(),1,1,
+					'{4}')
 ",
 					block.IsSystem.Bit(),
 					block.Path,
 					block.Name,
 					block.Description,
-					block.CreatedDateTime,
-					block.ModifiedDateTime,
-					block.CreatedByPersonId,
-					block.ModifiedByPersonId,
 					block.Guid ) );
 		}
 
@@ -75,10 +71,6 @@ namespace Rock.Migrations
 			block.IsSystem = true;
 			block.Name = name;
 			block.Description = description;
-			block.CreatedDateTime = DateTime.Now;
-			block.ModifiedDateTime = DateTime.Now;
-			block.CreatedByPersonId = 1;
-			block.ModifiedByPersonId = 1;
 			block.Guid = guid;
 
 			return block;
@@ -139,8 +131,8 @@ namespace Rock.Migrations
 					'{1}','{2}',{3},@ParentPageId,{4},'{5}',
 					{6},{7},{8},{9},{10},{11},
 					@Order,{12},'{13}',{14},
-					'{15}','{16}',{17},{18},
-					'{19}','{20}')
+					GETDATE(),GETDATE(),1,1,
+					'{15}','{16}')
 ",
 					parentPageGuid,
 					page.Name,
@@ -157,10 +149,6 @@ namespace Rock.Migrations
 					page.OutputCacheDuration,
 					page.Description,
 					page.IncludeAdminFooter.Bit(),
-					page.CreatedDateTime,
-					page.ModifiedDateTime,
-					page.CreatedByPersonId,
-					page.ModifiedByPersonId,
 					page.IconUrl,
 					page.Guid ) );
 		}
@@ -189,10 +177,6 @@ namespace Rock.Migrations
 			page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
 			page.Description = description;
 			page.IncludeAdminFooter = true;
-			page.CreatedDateTime = DateTime.Now;
-			page.ModifiedDateTime = DateTime.Now;
-			page.CreatedByPersonId = 1;
-			page.ModifiedByPersonId = 1;
 			page.Guid = guid;
 
 			return page;
@@ -283,8 +267,8 @@ namespace Rock.Migrations
 				VALUES(
 					{1},@PageId,{2},@BlockId,'{3}',
 					{4},'{5}',{6},
-					'{7}','{8}',{9},{10},
-					'{11}')
+					GETDATE(),GETDATE(),1,1,
+					'{7}')
 				SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
 					blockGuid,
@@ -294,10 +278,6 @@ namespace Rock.Migrations
 					blockInstance.Order,
 					blockInstance.Name,
 					blockInstance.OutputCacheDuration,
-					blockInstance.CreatedDateTime,
-					blockInstance.ModifiedDateTime,
-					blockInstance.CreatedByPersonId,
-					blockInstance.ModifiedByPersonId,
 					blockInstance.Guid );
 
 			// If adding a layout block, give edit/configuration authorization to admin role
@@ -330,10 +310,6 @@ namespace Rock.Migrations
 			blockInstance.IsSystem = true;
 			blockInstance.Zone = "Content";
 			blockInstance.Name = name;
-			blockInstance.CreatedDateTime = DateTime.Now;
-			blockInstance.ModifiedDateTime = DateTime.Now;
-			blockInstance.CreatedByPersonId = 1;
-			blockInstance.ModifiedByPersonId = 1;
 			blockInstance.Guid = guid;
 
 			return blockInstance;
@@ -399,8 +375,8 @@ namespace Rock.Migrations
 					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},{7},'{8}',{9},{10},
-					'{11}','{12}',{13},{14},
-					'{15}')
+					GETDATE(),GETDATE(),1,1,
+					'{11}')
 ",
 					blockGuid,
 					fieldTypeGuid,
@@ -413,10 +389,6 @@ namespace Rock.Migrations
 					attribute.DefaultValue,
 					attribute.IsMultiValue.Bit(),
 					attribute.IsRequired.Bit(),
-					attribute.CreatedDateTime,
-					attribute.ModifiedDateTime,
-					attribute.CreatedByPersonId,
-					attribute.ModifiedByPersonId,
 					attribute.Guid )
 			);
 		}
@@ -440,10 +412,6 @@ namespace Rock.Migrations
 			attribute.Category = category;
 			attribute.Description = description;
 			attribute.Order = order;
-			attribute.CreatedDateTime = DateTime.Now;
-			attribute.ModifiedDateTime = DateTime.Now;
-			attribute.CreatedByPersonId = 1;
-			attribute.ModifiedByPersonId = 1;
 			attribute.Guid = guid;
 
 			return attribute;

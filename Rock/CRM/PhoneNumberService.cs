@@ -70,10 +70,6 @@ namespace Rock.Crm
 					IsMessagingEnabled = m.IsMessagingEnabled,
 					IsUnlisted = m.IsUnlisted,
 					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Payment Gateway POCO class.
     /// </summary>
     [Table("financialGateway")]
-    public partial class Gateway : Model<Gateway>, IAuditable
+    public partial class Gateway : Model<Gateway>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -77,42 +77,6 @@ namespace Rock.Financial
         /// The transactions.
         /// </value>
         public virtual ICollection<Transaction> Transactions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
 
 		/// <summary>
 		/// Gets the auth entity.

@@ -63,16 +63,16 @@ namespace RockWeb
 						.Select( f => new
 						{
 							MimeType = f.MimeType,
-							ModifiedDateTime = f.ModifiedDateTime
+							LastModifiedTime = f.LastModifiedTime
 						} )
 						.FirstOrDefault();
 						
 					file = new Rock.Cms.File();
 					file.MimeType = fileInfo.MimeType;
-					file.ModifiedDateTime = fileInfo.ModifiedDateTime;
+					file.LastModifiedTime = fileInfo.LastModifiedTime;
 
 					// Is cached version newer?
-					if ( file.ModifiedDateTime.HasValue && file.ModifiedDateTime.Value < System.IO.File.GetCreationTime( physFilePath ) )
+					if ( file.LastModifiedTime.HasValue && file.LastModifiedTime.Value.CompareTo( new DateTimeOffset( System.IO.File.GetCreationTime( physFilePath ) ) ) <= 0 )
 						file.Data = FetchFromCache( physFilePath );
 				}
 

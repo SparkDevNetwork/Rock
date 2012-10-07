@@ -19,7 +19,7 @@ namespace Rock.Financial
     /// Transaction POCO class.
     /// </summary>
     [Table("financialTransaction")]
-    public partial class Transaction : Model<Transaction>, IAuditable
+    public partial class Transaction : Model<Transaction>
     {
         /// <summary>
         /// Gets or sets the description.
@@ -217,42 +217,6 @@ namespace Rock.Financial
         /// </value>
         public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Fund> Funds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
         /// Gets the auth entity.

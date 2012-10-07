@@ -30,10 +30,6 @@ namespace Rock.Core
 		public bool isDateBased { get; set; }
 		public string Label { get; set; }
 		public int Order { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -71,10 +67,6 @@ namespace Rock.Core
 				this.isDateBased = metricValue.isDateBased;
 				this.Label = metricValue.Label;
 				this.Order = metricValue.Order;
-				this.CreatedDateTime = metricValue.CreatedDateTime;
-				this.ModifiedDateTime = metricValue.ModifiedDateTime;
-				this.CreatedByPersonId = metricValue.CreatedByPersonId;
-				this.ModifiedByPersonId = metricValue.ModifiedByPersonId;
 				this.Id = metricValue.Id;
 				this.Guid = metricValue.Guid;
 			}
@@ -97,10 +89,6 @@ namespace Rock.Core
 				metricValue.isDateBased = this.isDateBased;
 				metricValue.Label = this.Label;
 				metricValue.Order = this.Order;
-				metricValue.CreatedDateTime = this.CreatedDateTime;
-				metricValue.ModifiedDateTime = this.ModifiedDateTime;
-				metricValue.CreatedByPersonId = this.CreatedByPersonId;
-				metricValue.ModifiedByPersonId = this.ModifiedByPersonId;
 				metricValue.Id = this.Id;
 				metricValue.Guid = this.Guid;
 			}

@@ -25,10 +25,6 @@ namespace Rock.Cms
 		public bool IsSystem { get; set; }
 		public int SiteId { get; set; }
 		public string Domain { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -61,10 +57,6 @@ namespace Rock.Cms
 				this.IsSystem = siteDomain.IsSystem;
 				this.SiteId = siteDomain.SiteId;
 				this.Domain = siteDomain.Domain;
-				this.CreatedDateTime = siteDomain.CreatedDateTime;
-				this.ModifiedDateTime = siteDomain.ModifiedDateTime;
-				this.CreatedByPersonId = siteDomain.CreatedByPersonId;
-				this.ModifiedByPersonId = siteDomain.ModifiedByPersonId;
 				this.Id = siteDomain.Id;
 				this.Guid = siteDomain.Guid;
 			}
@@ -82,10 +74,6 @@ namespace Rock.Cms
 				siteDomain.IsSystem = this.IsSystem;
 				siteDomain.SiteId = this.SiteId;
 				siteDomain.Domain = this.Domain;
-				siteDomain.CreatedDateTime = this.CreatedDateTime;
-				siteDomain.ModifiedDateTime = this.ModifiedDateTime;
-				siteDomain.CreatedByPersonId = this.CreatedByPersonId;
-				siteDomain.ModifiedByPersonId = this.ModifiedByPersonId;
 				siteDomain.Id = this.Id;
 				siteDomain.Guid = this.Guid;
 			}

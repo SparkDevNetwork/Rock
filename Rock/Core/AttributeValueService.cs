@@ -67,10 +67,6 @@ namespace Rock.Core
 					EntityId = m.EntityId,
 					Order = m.Order,
 					Value = m.Value,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

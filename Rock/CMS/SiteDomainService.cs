@@ -65,10 +65,6 @@ namespace Rock.Cms
 					IsSystem = m.IsSystem,
 					SiteId = m.SiteId,
 					Domain = m.Domain,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

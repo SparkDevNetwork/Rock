@@ -37,10 +37,6 @@ namespace Rock.Util
 		public string LastRunSchedulerName { get; set; }
 		public string NotificationEmails { get; set; }
 		public JobNotificationStatus NotificationStatus { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -85,10 +81,6 @@ namespace Rock.Util
 				this.LastRunSchedulerName = job.LastRunSchedulerName;
 				this.NotificationEmails = job.NotificationEmails;
 				this.NotificationStatus = job.NotificationStatus;
-				this.CreatedDateTime = job.CreatedDateTime;
-				this.ModifiedDateTime = job.ModifiedDateTime;
-				this.CreatedByPersonId = job.CreatedByPersonId;
-				this.ModifiedByPersonId = job.ModifiedByPersonId;
 				this.Id = job.Id;
 				this.Guid = job.Guid;
 			}
@@ -118,10 +110,6 @@ namespace Rock.Util
 				job.LastRunSchedulerName = this.LastRunSchedulerName;
 				job.NotificationEmails = this.NotificationEmails;
 				job.NotificationStatus = this.NotificationStatus;
-				job.CreatedDateTime = this.CreatedDateTime;
-				job.ModifiedDateTime = this.ModifiedDateTime;
-				job.CreatedByPersonId = this.CreatedByPersonId;
-				job.ModifiedByPersonId = this.ModifiedByPersonId;
 				job.Id = this.Id;
 				job.Guid = this.Guid;
 			}

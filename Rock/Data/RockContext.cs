@@ -117,7 +117,15 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.AttributeValue> AttributeValues { get; set; }
 
-        /// <summary>
+		/// <summary>
+		/// Gets or sets the Attribute Values.
+		/// </summary>
+		/// <value>
+		/// the Attribute Values.
+		/// </value>
+		public DbSet<Rock.Core.Audit> Audits { get; set; }
+
+		/// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -387,6 +395,7 @@ namespace Rock.Data
 			modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
 			modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
 			modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
+			modelBuilder.Configurations.Add( new Rock.Core.AuditConfiguration() );
 			modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
 			modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
 			modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
