@@ -116,6 +116,17 @@ namespace Rock.Core
         {
             get { return new Security.GenericEntity( "Global" ); }
         }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.EntityId.HasValue ? this.EntityId.ToString() : "";
+		}
     }
 
     /// <summary>

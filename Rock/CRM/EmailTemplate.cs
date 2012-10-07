@@ -177,7 +177,17 @@ namespace Rock.Crm
         /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person Person { get; set; }
-        
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Title;
+		}
     }
     
     /// <summary>
