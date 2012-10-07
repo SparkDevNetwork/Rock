@@ -30,10 +30,6 @@ namespace Rock.Cms
 		public SpecialRole SpecialRole { get; set; }
 		public int? PersonId { get; set; }
 		public int? GroupId { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -71,10 +67,6 @@ namespace Rock.Cms
 				this.SpecialRole = auth.SpecialRole;
 				this.PersonId = auth.PersonId;
 				this.GroupId = auth.GroupId;
-				this.CreatedDateTime = auth.CreatedDateTime;
-				this.ModifiedDateTime = auth.ModifiedDateTime;
-				this.CreatedByPersonId = auth.CreatedByPersonId;
-				this.ModifiedByPersonId = auth.ModifiedByPersonId;
 				this.Id = auth.Id;
 				this.Guid = auth.Guid;
 			}
@@ -97,10 +89,6 @@ namespace Rock.Cms
 				auth.SpecialRole = this.SpecialRole;
 				auth.PersonId = this.PersonId;
 				auth.GroupId = this.GroupId;
-				auth.CreatedDateTime = this.CreatedDateTime;
-				auth.ModifiedDateTime = this.ModifiedDateTime;
-				auth.CreatedByPersonId = this.CreatedByPersonId;
-				auth.ModifiedByPersonId = this.ModifiedByPersonId;
 				auth.Id = this.Id;
 				auth.Guid = this.Guid;
 			}

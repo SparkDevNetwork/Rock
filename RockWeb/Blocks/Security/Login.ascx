@@ -18,14 +18,11 @@
     </fieldset>
 
     <div class="alt-authentication">
-        
-        <asp:PlaceHolder ID="phFacebookLogin" runat="server">
-            <!-- Facebook -->
-            <div class="facebook-login">
+        <asp:PlaceHolder ID="phExternalLogins" runat="server">
+<%--            <div class="facebook-login">
                 <asp:LinkButton ID="lbFacebookLogin" runat="server" OnClick="lbFacebookLogin_Click" CausesValidation="false"><img src="<%= Page.ResolveUrl("~/Assets/Images/facebook-login.png") %>" style="border:none" /></asp:LinkButton>
-            </div>
+            </div>--%>
         </asp:PlaceHolder>
-
     </div>
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message warning"/>

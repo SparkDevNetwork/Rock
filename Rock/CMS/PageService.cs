@@ -78,10 +78,6 @@ namespace Rock.Cms
 					OutputCacheDuration = m.OutputCacheDuration,
 					Description = m.Description,
 					IncludeAdminFooter = m.IncludeAdminFooter,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					IconUrl = m.IconUrl,
 					Id = m.Id,
 					Guid = m.Guid,				});

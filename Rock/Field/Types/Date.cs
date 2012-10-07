@@ -14,12 +14,12 @@ using Rock;
 
 namespace Rock.Field.Types
 {
-    /// <summary>
-    /// Field used to save and dispaly a text value
-    /// </summary>
-    [Serializable]
-    public class Date : FieldType
-    {
+	/// <summary>
+	/// Field used to save and dispaly a text value
+	/// </summary>
+	[Serializable]
+	public class Date : FieldType
+	{
 		/// <summary>
 		/// Formats date display
 		/// </summary>
@@ -31,10 +31,10 @@ namespace Rock.Field.Types
 		{
 			string formattedValue = string.Empty;
 
-			DateTime dateValue = DateTime.MinValue;
-			if ( DateTime.TryParse( value, out dateValue ) )
+			DateTimeOffset dateValue = DateTimeOffset.MinValue;
+			if ( DateTimeOffset.TryParse( value, out dateValue ) )
 			{
-				formattedValue = dateValue.ToShortDateString();
+				formattedValue = dateValue.DateTime.ToShortDateString();
 
 				if ( configurationValues != null &&
 					configurationValues.ContainsKey( "format" ) &&
@@ -46,7 +46,7 @@ namespace Rock.Field.Types
 					}
 					catch
 					{
-						formattedValue = dateValue.ToShortDateString();
+						formattedValue = dateValue.DateTime.ToShortDateString();
 					}
 				}
 
@@ -127,11 +127,11 @@ namespace Rock.Field.Types
 					values["format"].Value = ( (TextBox)controls[i] ).Text;
 				i++;
 				if ( controls[i] != null && controls[i] is HtmlGenericControl &&
-					controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox)
+					controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox )
 					values["displayDiff"].Value = ( (CheckBox)controls[i].Controls[0] ).Checked.ToString();
 			}
 
 			return values;
 		}
-    }
+	}
 }

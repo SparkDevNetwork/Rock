@@ -69,10 +69,6 @@ namespace Rock.Financial
 					Entity = m.Entity,
 					EntityId = m.EntityId,
 					ForeignReference = m.ForeignReference,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

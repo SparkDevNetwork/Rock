@@ -32,10 +32,6 @@ namespace Rock.Crm
 		public string Bcc { get; set; }
 		public string Subject { get; set; }
 		public string Body { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -75,10 +71,6 @@ namespace Rock.Crm
 				this.Bcc = emailTemplate.Bcc;
 				this.Subject = emailTemplate.Subject;
 				this.Body = emailTemplate.Body;
-				this.CreatedDateTime = emailTemplate.CreatedDateTime;
-				this.ModifiedDateTime = emailTemplate.ModifiedDateTime;
-				this.CreatedByPersonId = emailTemplate.CreatedByPersonId;
-				this.ModifiedByPersonId = emailTemplate.ModifiedByPersonId;
 				this.Id = emailTemplate.Id;
 				this.Guid = emailTemplate.Guid;
 			}
@@ -103,10 +95,6 @@ namespace Rock.Crm
 				emailTemplate.Bcc = this.Bcc;
 				emailTemplate.Subject = this.Subject;
 				emailTemplate.Body = this.Body;
-				emailTemplate.CreatedDateTime = this.CreatedDateTime;
-				emailTemplate.ModifiedDateTime = this.ModifiedDateTime;
-				emailTemplate.CreatedByPersonId = this.CreatedByPersonId;
-				emailTemplate.ModifiedByPersonId = this.ModifiedByPersonId;
 				emailTemplate.Id = this.Id;
 				emailTemplate.Guid = this.Guid;
 			}

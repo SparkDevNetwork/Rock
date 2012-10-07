@@ -76,10 +76,6 @@ namespace Rock.Financial
 					FundTypeId = m.FundTypeId,
 					Entity = m.Entity,
 					EntityId = m.EntityId,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

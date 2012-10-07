@@ -57,7 +57,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 					m.Group.GroupTypeId == GroupTypeId &&
 					( filterRoles.Count == 0 || filterRoles.Contains( m.GroupRoleId ) )
 				)
-				.OrderByDescending( m => m.Group.CreatedDateTime )
 				.Select( m => new
 				{
 					Id = m.GroupId,

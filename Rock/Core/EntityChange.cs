@@ -17,6 +17,7 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change POCO Entity.
     /// </summary>
+	[NotAudited]
     [Table( "coreEntityChange" )]
     public partial class EntityChange : Model<EntityChange>
     {
@@ -108,7 +109,15 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Created Person.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Person"/> object.
+		/// </value>
+		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -147,6 +156,7 @@ namespace Rock.Core
         /// </summary>
         public EntityChangeConfiguration()
         {
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
 		}
     }
 }

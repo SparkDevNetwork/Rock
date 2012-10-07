@@ -77,10 +77,6 @@ namespace Rock.Util
 					LastRunSchedulerName = m.LastRunSchedulerName,
 					NotificationEmails = m.NotificationEmails,
 					NotificationStatus = m.NotificationStatus,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

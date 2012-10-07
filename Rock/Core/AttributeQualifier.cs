@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Attribute Qualifier POCO Entity.
     /// </summary>
     [Table( "coreAttributeQualifier" )]
-    public partial class AttributeQualifier : Entity<AttributeQualifier>, IAuditable
+    public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -59,42 +59,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public string Value { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.

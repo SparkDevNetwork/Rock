@@ -69,10 +69,6 @@ namespace Rock.Groups
 					Name = m.Name,
 					Description = m.Description,
 					IsSecurityRole = m.IsSecurityRole,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

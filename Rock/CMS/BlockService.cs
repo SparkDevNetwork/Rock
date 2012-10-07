@@ -70,10 +70,6 @@ namespace Rock.Cms
 					Order = m.Order,
 					Name = m.Name,
 					OutputCacheDuration = m.OutputCacheDuration,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

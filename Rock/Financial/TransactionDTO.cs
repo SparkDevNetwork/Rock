@@ -36,10 +36,6 @@ namespace Rock.Financial
 		public int? GatewayId { get; set; }
 		public int? SourceTypeId { get; set; }
 		public string Summary { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -83,10 +79,6 @@ namespace Rock.Financial
 				this.GatewayId = transaction.GatewayId;
 				this.SourceTypeId = transaction.SourceTypeId;
 				this.Summary = transaction.Summary;
-				this.ModifiedDateTime = transaction.ModifiedDateTime;
-				this.CreatedDateTime = transaction.CreatedDateTime;
-				this.CreatedByPersonId = transaction.CreatedByPersonId;
-				this.ModifiedByPersonId = transaction.ModifiedByPersonId;
 				this.Id = transaction.Id;
 				this.Guid = transaction.Guid;
 			}
@@ -115,10 +107,6 @@ namespace Rock.Financial
 				transaction.GatewayId = this.GatewayId;
 				transaction.SourceTypeId = this.SourceTypeId;
 				transaction.Summary = this.Summary;
-				transaction.ModifiedDateTime = this.ModifiedDateTime;
-				transaction.CreatedDateTime = this.CreatedDateTime;
-				transaction.CreatedByPersonId = this.CreatedByPersonId;
-				transaction.ModifiedByPersonId = this.ModifiedByPersonId;
 				transaction.Id = this.Id;
 				transaction.Guid = this.Guid;
 			}

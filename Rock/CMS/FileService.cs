@@ -68,11 +68,8 @@ namespace Rock.Cms
 					Url = m.Url,
 					FileName = m.FileName,
 					MimeType = m.MimeType,
+					LastModifiedTime = m.LastModifiedTime,
 					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

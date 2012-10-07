@@ -70,10 +70,6 @@ namespace Rock.Cms
 					SpecialRole = m.SpecialRole,
 					PersonId = m.PersonId,
 					GroupId = m.GroupId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

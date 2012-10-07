@@ -13,340 +13,517 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using Rock;
+using Rock.Core;
+
 namespace Rock.Data
 {
-    /// <summary>
-    /// Repository for working with the Entity Framework
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class EFRepository<T> : IRepository<T>, IDisposable
-        where T : Rock.Data.Entity<T>
-    {
-        private bool IsDisposed;
-        private DbContext _context;
+	/// <summary>
+	/// Repository for working with the Entity Framework
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public class EFRepository<T> : IRepository<T>, IDisposable
+		where T : Rock.Data.Entity<T>
+	{
+		private bool IsDisposed;
+		private DbContext _context;
 
-        /// <summary>
-        /// Gets the context.
-        /// </summary>
-        internal DbContext Context
-        {
-            get
-            {
-                if ( UnitOfWorkScope.CurrentObjectContext != null )
-                    return UnitOfWorkScope.CurrentObjectContext;
+		/// <summary>
+		/// Gets the context.
+		/// </summary>
+		internal DbContext Context
+		{
+			get
+			{
+				if ( UnitOfWorkScope.CurrentObjectContext != null )
+					return UnitOfWorkScope.CurrentObjectContext;
 
-                if ( _context == null )
-                    _context = new RockContext();
+				if ( _context == null )
+					_context = new RockContext();
 
-                return _context;
-            }
-        }
+				return _context;
+			}
+		}
 
-        internal DbSet<T> _objectSet;
+		internal DbSet<T> _objectSet;
+		internal DbSet<Audit> _auditSet;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
-        /// </summary>
-        public EFRepository() :
-            this( new RockContext() )
-        { }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
+		/// </summary>
+		public EFRepository() :
+			this( new RockContext() )
+		{ }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
-        /// </summary>
-        /// <param name="objectContext">The object context.</param>
-        public EFRepository( DbContext objectContext )
-        {
-            IsDisposed = false;
-            _context = objectContext;
-            _objectSet = Context.Set<T>();
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
+		/// </summary>
+		/// <param name="objectContext">The object context.</param>
+		public EFRepository( DbContext objectContext )
+		{
+			IsDisposed = false;
+			_context = objectContext;
+			_objectSet = Context.Set<T>();
+			_auditSet = Context.Set<Audit>();
+		}
 
-        /// <summary>
-        /// An <see cref="IQueryable{T}"/> list of entitities
-        /// </summary>
-        /// <returns></returns>
-        public virtual IQueryable<T> AsQueryable()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-        {
-            return _objectSet;
-        }
+		/// <summary>
+		/// An <see cref="IQueryable{T}"/> list of entitities
+		/// </summary>
+		/// <returns></returns>
+		public virtual IQueryable<T> AsQueryable()
+		{
+			return _objectSet;
+		}
 
 		/// <summary>
 		/// An <see cref="IQueryable{T}"/> list of entitities
 		/// with a eager load of includes properties
 		/// </summary>
 		/// <returns></returns>
-		public virtual IQueryable<T> AsQueryable(string includes)
+		public virtual IQueryable<T> AsQueryable( string includes )
 		{
 			DbQuery<T> value = _objectSet;
-			if (!String.IsNullOrEmpty(includes))
-				foreach(var include in includes.SplitDelimitedValues())
-					value = value.Include(include);
+			if ( !String.IsNullOrEmpty( includes ) )
+				foreach ( var include in includes.SplitDelimitedValues() )
+					value = value.Include( include );
 			return value;
 		}
 
 		/// <summary>
-        /// An <see cref="IEnumerable{T}"/> list of all entities
-        /// </summary>
-        /// <returns></returns>
-        public virtual IEnumerable<T> GetAll()
-        {
-            return _objectSet.ToList();
-        }
+		/// An <see cref="IEnumerable{T}"/> list of all entities
+		/// </summary>
+		/// <returns></returns>
+		public virtual IEnumerable<T> GetAll()
+		{
+			return _objectSet.ToList();
+		}
 
-        /// <summary>
-        /// An <see cref="IEnumerable{T}"/> list of all entities that match the where clause
-        /// </summary>
-        /// <param name="where">
-        /// <example>An example where clause: <c>t => t.Id == id</c></example>
-        /// </param>
-        /// <returns></returns>
-        public virtual IEnumerable<T> Find( Expression<Func<T, bool>> where )
-        {
-            return _objectSet.Where( where );
-        }
+		/// <summary>
+		/// An <see cref="IEnumerable{T}"/> list of all entities that match the where clause
+		/// </summary>
+		/// <param name="where">
+		/// <example>An example where clause: <c>t => t.Id == id</c></example>
+		/// </param>
+		/// <returns></returns>
+		public virtual IEnumerable<T> Find( Expression<Func<T, bool>> where )
+		{
+			return _objectSet.Where( where );
+		}
 
-        /// <summary>
-        /// Gets the only entity that matches the where clause
-        /// </summary>
-        /// <remarks>If more than one entity matches the where clause, and exception occurs</remarks>
-        /// <param name="where">
-        /// <example>An example where clause: <c>t => t.Id == id</c></example>
-        /// </param>
-        /// <returns></returns>
-        public virtual T Single( Expression<Func<T, bool>> where )
-        {
-            return _objectSet.Single( where );
-        }
+		/// <summary>
+		/// Gets the only entity that matches the where clause
+		/// </summary>
+		/// <remarks>If more than one entity matches the where clause, and exception occurs</remarks>
+		/// <param name="where">
+		/// <example>An example where clause: <c>t => t.Id == id</c></example>
+		/// </param>
+		/// <returns></returns>
+		public virtual T Single( Expression<Func<T, bool>> where )
+		{
+			return _objectSet.Single( where );
+		}
 
-        /// <summary>
-        /// Get's the first entity that matches the where clause
-        /// </summary>
-        /// <remarks>If an entity that matches the where clause does not exist, an exception occurs</remarks>
-        /// <param name="where">
-        /// <example>An example where clause: <c>t => t.Id == id</c></example>
-        /// </param>
-        /// <returns></returns>
-        public virtual T First( Expression<Func<T, bool>> where )
-        {
-            return _objectSet.First( where );
-        }
+		/// <summary>
+		/// Get's the first entity that matches the where clause
+		/// </summary>
+		/// <remarks>If an entity that matches the where clause does not exist, an exception occurs</remarks>
+		/// <param name="where">
+		/// <example>An example where clause: <c>t => t.Id == id</c></example>
+		/// </param>
+		/// <returns></returns>
+		public virtual T First( Expression<Func<T, bool>> where )
+		{
+			return _objectSet.First( where );
+		}
 
-        /// <summary>
-        /// Get's the first entity that matches the where clause
-        /// </summary>
-        /// <remarks>If an entity that matches the where clause does not exist, a null value is returned</remarks>
-        /// <param name="where">
-        /// <example>An example where clause: <c>t => t.Id == id</c></example>
-        /// </param>
-        /// <returns></returns>
-        public virtual T FirstOrDefault( Expression<Func<T, bool>> where )
-        {
-            return _objectSet.FirstOrDefault( where );
-        }
+		/// <summary>
+		/// Get's the first entity that matches the where clause
+		/// </summary>
+		/// <remarks>If an entity that matches the where clause does not exist, a null value is returned</remarks>
+		/// <param name="where">
+		/// <example>An example where clause: <c>t => t.Id == id</c></example>
+		/// </param>
+		/// <returns></returns>
+		public virtual T FirstOrDefault( Expression<Func<T, bool>> where )
+		{
+			return _objectSet.FirstOrDefault( where );
+		}
 
-        /// <summary>
-        /// Adds the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        public virtual void Add( T entity )
-        {
-            _objectSet.Add( entity );
-        }
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( T entity )
+		{
+			return DateCreated( entity.EntityTypeName, entity.Id );
+		}
 
-        /// <summary>
-        /// Attaches the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        public virtual void Attach( T entity )
-        {
-            _objectSet.Attach( entity );
-        }
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+		{
+			return _auditSet
+				.Where( a =>
+					a.EntityType == entityTypeName &&
+					a.EntityId == entityId &&
+					a.AuditType == AuditType.Add
+				)
+				.OrderByDescending( a => a.DateTime )
+				.Select( a => a.DateTime )
+				.FirstOrDefault();
+		}
 
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        public virtual void Delete( T entity )
-        {
-            _objectSet.Remove( entity );
-        }
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( T entity )
+		{
+			return DateLastModified( entity.EntityTypeName, entity.Id );
+		}
 
-        /// <summary>
-        /// Saves the entity and returns a list of any entity changes that 
-        /// need to be logged
-        /// </summary>
-        /// <param name="PersonId">The id of the person making the change</param>
-        /// <returns></returns>
-        public List<Rock.Core.EntityChange> Save( int? PersonId )
-        {
-            var entityChanges = new List<Core.EntityChange>();
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+		{
+			return _auditSet
+				.Where( a =>
+					a.EntityType == entityTypeName &&
+					a.EntityId == entityId &&
+					( a.AuditType == AuditType.Modify && a.AuditType == AuditType.Add )
+				)
+				.OrderByDescending( a => a.DateTime )
+				.Select( a => a.DateTime )
+				.FirstOrDefault();
+		}
 
-            Context.ChangeTracker.DetectChanges();
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( T entity )
+		{
+			return CreatedByPersonId( entity.EntityTypeName, entity.Id );
+		}
 
-            List<object> addedEntities = new List<object>();
-            List<object> deletedEntities = new List<object>();
-            List<object> modifiedEntities = new List<object>();
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+		{
+			return _auditSet
+				.Where( a =>
+					a.EntityType == entityTypeName &&
+					a.EntityId == entityId &&
+					a.AuditType == AuditType.Add
+				)
+				.OrderByDescending( a => a.DateTime )
+				.Select( a => a.PersonId )
+				.FirstOrDefault();
+		}
 
-            var contextAdapter = ( ( IObjectContextAdapter )Context );
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( T entity )
+		{
+			return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
+		}
 
-            foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
-                System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
-            {
-                switch ( entry.State )
-                {
-                    case System.Data.EntityState.Added:
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+		{
+			return _auditSet
+				.Where( a =>
+					a.EntityType == entityTypeName &&
+					a.EntityId == entityId &&
+					( a.AuditType == AuditType.Modify || a.AuditType == AuditType.Add )
+				)
+				.OrderByDescending( a => a.DateTime )
+				.Select( a => a.PersonId )
+				.FirstOrDefault();
+		}
 
-                        entityChanges.Concat( GetEntityChanges( entry.Entity, PersonId ) );
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( T entity )
+		{
+			return Audits( entity.EntityTypeName, entity.Id );
+		}
 
-                        addedEntities.Add( entry.Entity );
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+		{
+			return _auditSet
+				.Where( a =>
+					a.EntityType == entityTypeName &&
+					a.EntityId == entityId
+				);
+		}
 
-                        if ( entry.Entity is IAuditable )
-                        {
-                            IAuditable auditable = ( IAuditable )entry.Entity;
-                            auditable.CreatedByPersonId = PersonId;
-                            auditable.CreatedDateTime = DateTime.Now;
-                            auditable.ModifiedByPersonId = PersonId;
-                            auditable.ModifiedDateTime = DateTime.Now;
-                        }
-                        break;
+		/// <summary>
+		/// Adds the specified entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		public virtual void Add( T entity )
+		{
+			_objectSet.Add( entity );
+		}
 
-                    case System.Data.EntityState.Deleted:
-                        deletedEntities.Add( entry.Entity );
-                        break;
+		/// <summary>
+		/// Attaches the specified entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		public virtual void Attach( T entity )
+		{
+			_objectSet.Attach( entity );
+		}
 
-                    case System.Data.EntityState.Modified:
+		/// <summary>
+		/// Deletes the specified entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		public virtual void Delete( T entity )
+		{
+			_objectSet.Remove( entity );
+		}
 
-                        var model = entry.Entity as Entity<T>;
-                        if ( model != null )
-                        {
-                            bool cancel = false;
-                            model.RaiseUpdatingEvent( out cancel, PersonId );
-                            if ( cancel )
-                            {
-                                contextAdapter.ObjectContext.Detach( entry );
-                            }
-                            else
-                            {
-                                entityChanges.AddRange( GetEntityChanges( model, PersonId ) );
+		/// <summary>
+		/// Saves the entity and returns a list of any entity changes that
+		/// need to be logged
+		/// </summary>
+		/// <param name="PersonId">The id of the person making the change</param>
+		/// <param name="audits">The audits.</param>
+		/// <returns></returns>
+		public List<Rock.Core.EntityChange> Save( int? PersonId, List<Rock.Core.AuditDto> audits )
+		{
+			var entityChanges = new List<Core.EntityChange>();
 
-                                modifiedEntities.Add( entry.Entity );
+			Context.ChangeTracker.DetectChanges();
 
-                                if ( model is IAuditable )
-                                {
-                                    IAuditable auditable = ( IAuditable )model;
-                                    auditable.ModifiedByPersonId = PersonId;
-                                    auditable.ModifiedDateTime = DateTime.Now;
-                                }
-                            }
-                        }
+			List<object> addedEntities = new List<object>();
+			List<object> deletedEntities = new List<object>();
+			List<object> modifiedEntities = new List<object>();
 
-                        break;
-                }
-            }
+			var contextAdapter = ( (IObjectContextAdapter)Context );
 
-            Context.SaveChanges();
+			foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
+				System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
+			{
+				var rockEntity = entry.Entity as Entity<T>;
+				var audit = new Rock.Core.AuditDto();
 
-            foreach ( object modifiedEntity in addedEntities )
-            {
-                var model = modifiedEntity as Entity<T>;
-                if ( model != null )
-                    model.RaiseAddedEvent( PersonId );
-            }
+				switch ( entry.State )
+				{
+					case System.Data.EntityState.Added:
+						addedEntities.Add( entry.Entity );
+						audit.AuditType = AuditType.Add;
+						break;
 
-            foreach ( object deletedEntity in deletedEntities )
-            {
-				var model = deletedEntity as Entity<T>;
-                if ( model != null )
-                    model.RaiseDeletedEvent( PersonId );
-            }
+					case System.Data.EntityState.Deleted:
+						deletedEntities.Add( entry.Entity );
+						audit.AuditType = AuditType.Delete;
+						break;
 
-            foreach ( object modifiedEntity in modifiedEntities )
-            {
+					case System.Data.EntityState.Modified:
+
+						if ( rockEntity != null )
+						{
+							bool cancel = false;
+							rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
+							if ( cancel )
+							{
+								contextAdapter.ObjectContext.Detach( entry );
+							}
+							else
+							{
+								modifiedEntities.Add( entry.Entity );
+								audit.AuditType = AuditType.Modify;
+							}
+						}
+
+						break;
+				}
+
+				if ( rockEntity != null )
+				{
+					Type rockEntityType = rockEntity.GetType();
+					if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
+						rockEntityType = rockEntityType.BaseType;
+
+					if ( AuditClass( rockEntityType ) )
+					{
+						var dbEntity = Context.Entry( entry.Entity );
+
+						var modifiedProperties = new List<string>();
+						PropertyInfo[] properties = rockEntityType.GetProperties();
+
+						foreach ( PropertyInfo propInfo in properties )
+						{
+							if ( AuditProperty( propInfo ) )
+							{
+								var dbPropertyEntry = dbEntity.Property( propInfo.Name );
+								if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+									modifiedProperties.Add( propInfo.Name );
+							}
+						}
+
+						if ( modifiedProperties.Count > 0 )
+						{
+							audit.DateTime = DateTimeOffset.Now;
+							audit.PersonId = PersonId;
+							audit.EntityType = rockEntity.EntityTypeName;
+							audit.EntityId = rockEntity.Id;
+							audit.EntityName = rockEntity.ToString().Ellipsis( 195 );
+							audit.Properties = modifiedProperties.AsDelimited( ";" );
+							audits.Add( audit );
+						}
+					}
+				}
+			}
+
+			Context.SaveChanges();
+
+			foreach ( object modifiedEntity in addedEntities )
+			{
 				var model = modifiedEntity as Entity<T>;
-                if ( model != null )
-                    model.RaiseUpdatedEvent( PersonId );
-            }
+				if ( model != null )
+					model.RaiseAddedEvent( PersonId );
+			}
 
-            return entityChanges;
-        }
+			foreach ( object deletedEntity in deletedEntities )
+			{
+				var model = deletedEntity as Entity<T>;
+				if ( model != null )
+					model.RaiseDeletedEvent( PersonId );
+			}
 
-        private List<Rock.Core.EntityChange> GetEntityChanges( object entity, int? personId )
-        {
-            List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
+			foreach ( object modifiedEntity in modifiedEntities )
+			{
+				var model = modifiedEntity as Entity<T>;
+				if ( model != null )
+					model.RaiseUpdatedEvent( PersonId );
+			}
 
-            // Do not track changes on the 'EntityChange' entity type. 
-            if ( !( entity is Rock.Core.EntityChange ) )
-            {
-                Type entityType = entity.GetType();
-                if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
-                    entityType = entityType.BaseType;
+			return entityChanges;
+		}
 
-                Guid changeSet = Guid.NewGuid();
+		private bool AuditClass( Type baseType )
+		{
+			var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
+			return ( attribute == null );
+		}
 
-                // Look for properties that have the "TrackChanges" attribute
-                foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
-                {
-                    object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
-                    if ( customAttributes.Length > 0 )
-                    {
-                        var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
-                        var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
-                            Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
+		private bool AuditProperty( PropertyInfo propertyInfo )
+		{
+			if (propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
+				propertyInfo.GetCustomAttribute( typeof( System.Runtime.Serialization.DataMemberAttribute ) ) != null )
+				return true;
+			return false;
+		}
 
-                        string currentValueStr = currentValue == null ? string.Empty : currentValue.ToString();
-                        string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
+		private List<Rock.Core.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
+		{
+			List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
 
-                        if ( currentValueStr != originalValueStr )
-                        {
-                            if ( entityChanges == null )
-                                entityChanges = new List<Core.EntityChange>();
+			// Do not track changes on the 'EntityChange' entity type. 
+			if ( !( entity is Rock.Core.EntityChange ) )
+			{
+				Guid changeSet = Guid.NewGuid();
 
-                            Rock.Core.EntityChange change = new Core.EntityChange();
-                            change.ChangeSet = changeSet;
-                            change.ChangeType = Context.Entry( entity ).State.ToString();
-                            change.EntityType = entityType.Name;
-                            change.Property = propInfo.Name;
-                            change.OriginalValue = originalValueStr;
-                            change.CurrentValue = currentValueStr;
-                            change.CreatedByPersonId = personId;
-                            change.CreatedDateTime = DateTime.Now;
+				// Look for properties that have the "TrackChanges" attribute
+				foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
+				{
+					object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
+					if ( customAttributes.Length > 0 )
+					{
+						var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
+						var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
+							Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
 
-                            entityChanges.Add( change );
-                        }
-                    }
-                }
-            }
+						string currentValueStr = currentValue == null ? string.Empty : currentValue.ToString();
+						string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
 
-            return entityChanges;
-        }
+						if ( currentValueStr != originalValueStr )
+						{
+							if ( entityChanges == null )
+								entityChanges = new List<Core.EntityChange>();
 
-        /// <summary>
-        /// Dispose object
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+							Rock.Core.EntityChange change = new Core.EntityChange();
+							change.ChangeSet = changeSet;
+							change.ChangeType = Context.Entry( entity ).State.ToString();
+							change.EntityType = baseType.Name;
+							change.Property = propInfo.Name;
+							change.OriginalValue = originalValueStr;
+							change.CurrentValue = currentValueStr;
+							change.CreatedByPersonId = personId;
+							change.CreatedDateTime = DateTime.Now;
 
-        /// <summary>
-        /// Dispose
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                {
-                    if (_context != null)
-                        _context.Dispose();
-                }
+							entityChanges.Add( change );
+						}
+					}
+				}
+			}
 
-                _context = null;
-                IsDisposed = true;
-            }
-        }
-    }
+			return entityChanges;
+		}
+
+		/// <summary>
+		/// Dispose object
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose( true );
+			GC.SuppressFinalize( this );
+		}
+
+		/// <summary>
+		/// Dispose
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected virtual void Dispose( bool disposing )
+		{
+			if ( !IsDisposed )
+			{
+				if ( disposing )
+				{
+					if ( _context != null )
+						_context.Dispose();
+				}
+
+				_context = null;
+				IsDisposed = true;
+			}
+		}
+	}
 }

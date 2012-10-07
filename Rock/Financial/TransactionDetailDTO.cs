@@ -27,10 +27,6 @@ namespace Rock.Financial
 		public string EntityId { get; set; }
 		public decimal Amount { get; set; }
 		public string Summary { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,10 +61,6 @@ namespace Rock.Financial
 				this.EntityId = transactionDetail.EntityId;
 				this.Amount = transactionDetail.Amount;
 				this.Summary = transactionDetail.Summary;
-				this.ModifiedDateTime = transactionDetail.ModifiedDateTime;
-				this.CreatedDateTime = transactionDetail.CreatedDateTime;
-				this.CreatedByPersonId = transactionDetail.CreatedByPersonId;
-				this.ModifiedByPersonId = transactionDetail.ModifiedByPersonId;
 				this.Id = transactionDetail.Id;
 				this.Guid = transactionDetail.Guid;
 			}
@@ -88,10 +80,6 @@ namespace Rock.Financial
 				transactionDetail.EntityId = this.EntityId;
 				transactionDetail.Amount = this.Amount;
 				transactionDetail.Summary = this.Summary;
-				transactionDetail.ModifiedDateTime = this.ModifiedDateTime;
-				transactionDetail.CreatedDateTime = this.CreatedDateTime;
-				transactionDetail.CreatedByPersonId = this.CreatedByPersonId;
-				transactionDetail.ModifiedByPersonId = this.ModifiedByPersonId;
 				transactionDetail.Id = this.Id;
 				transactionDetail.Guid = this.Guid;
 			}

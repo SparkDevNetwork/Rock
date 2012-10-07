@@ -25,10 +25,6 @@ namespace Rock.Core
 		public bool IsSystem { get; set; }
 		public int TagId { get; set; }
 		public int? EntityId { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -61,10 +57,6 @@ namespace Rock.Core
 				this.IsSystem = taggedItem.IsSystem;
 				this.TagId = taggedItem.TagId;
 				this.EntityId = taggedItem.EntityId;
-				this.CreatedDateTime = taggedItem.CreatedDateTime;
-				this.ModifiedDateTime = taggedItem.ModifiedDateTime;
-				this.CreatedByPersonId = taggedItem.CreatedByPersonId;
-				this.ModifiedByPersonId = taggedItem.ModifiedByPersonId;
 				this.Id = taggedItem.Id;
 				this.Guid = taggedItem.Guid;
 			}
@@ -82,10 +74,6 @@ namespace Rock.Core
 				taggedItem.IsSystem = this.IsSystem;
 				taggedItem.TagId = this.TagId;
 				taggedItem.EntityId = this.EntityId;
-				taggedItem.CreatedDateTime = this.CreatedDateTime;
-				taggedItem.ModifiedDateTime = this.ModifiedDateTime;
-				taggedItem.CreatedByPersonId = this.CreatedByPersonId;
-				taggedItem.ModifiedByPersonId = this.ModifiedByPersonId;
 				taggedItem.Id = this.Id;
 				taggedItem.Guid = this.Guid;
 			}

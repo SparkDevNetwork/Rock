@@ -17,8 +17,9 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change POCO Entity.
     /// </summary>
+	[NotAudited]
     [Table( "coreAudit" )]
-    public partial class Audit : Model<EntityChange>
+    public partial class Audit : Entity<Audit>
     {
 		/// <summary>
 		/// Gets or sets the Entity Type.
@@ -40,68 +41,88 @@ namespace Rock.Core
 		[Required]
 		[DataMember]
 		public int EntityId { get; set; }
-		
+
 		/// <summary>
-		/// Gets or sets the Property.
+		/// Gets or sets the Entity Name.
 		/// </summary>
 		/// <value>
-		/// Property.
+		/// Entity Name.
 		/// </value>
 		[Required]
-		[MaxLength( 100 )]
+		[MaxLength( 200 )]
 		[DataMember]
-		public string Property { get; set; }
+		public string EntityName { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Original Value.
+		/// Type of change: 0:Add, 1:Modify, 2:Delete
 		/// </summary>
 		/// <value>
 		/// Original Value.
 		/// </value>
+		[Required]
 		[DataMember]
-		public string OriginalValue { get; set; }
+		public AuditType AuditType { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Current Value.
+		/// Gets or sets the properties modified.
 		/// </summary>
 		/// <value>
-		/// Current Value.
+		/// Properties.
 		/// </value>
 		[DataMember]
-		public string CurrentValue { get; set; }
+		public string Properties { get; set; }
+
+		/// <summary>
+		/// Gets or sets the Date Time.
+		/// </summary>
+		/// <value>
+		/// Date Time.
+		/// </value>
+		[DataMember]
+		public DateTimeOffset? DateTime { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
+		/// Gets or sets the Person Id.
 		/// </summary>
 		/// <value>
-		/// Created Date Time.
+		/// Person Id.
 		/// </value>
 		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
+		public int? PersonId { get; set; }
+
 		/// <summary>
-		/// Gets or sets the Created By Person Id.
+		/// Gets or sets the Person.
 		/// </summary>
 		/// <value>
-		/// Created By Person Id.
+		/// A <see cref="Person"/> object.
 		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-        /// <summary>
+		public virtual Rock.Crm.Person Person { get; set; }
+
+		/// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.EntityChange"; } }
+		public override string EntityTypeName { get { return "Core.Audit"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
-		public static EntityChange Read( int id )
+		public static Audit Read( int id )
 		{
-			return Read<EntityChange>( id );
+			return Read<Audit>( id );
+		}
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.EntityName;
 		}
 
     }
@@ -109,13 +130,37 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change Configuration class.
     /// </summary>
-    public partial class EntityChangeConfiguration : EntityTypeConfiguration<EntityChange>
+    public partial class AuditConfiguration : EntityTypeConfiguration<Audit>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityChangeConfiguration"/> class.
         /// </summary>
-        public EntityChangeConfiguration()
+		public AuditConfiguration()
         {
+			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
 		}
     }
+
+	/// <summary>
+	/// Type of audit done to an entity
+	/// </summary>
+	public enum AuditType
+	{
+		/// <summary>
+		/// Add
+		/// </summary>
+		Add = 0,
+
+		/// <summary>
+		/// Modify
+		/// </summary>
+		Modify = 1,
+
+		/// <summary>
+		/// Delete
+		/// </summary>
+		Delete = 2
+	}
+
+
 }

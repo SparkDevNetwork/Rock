@@ -40,10 +40,6 @@ namespace Rock.Crm
 		public string GeocodeService { get; set; }
 		public string GeocodeResult { get; set; }
 		public DateTime? GeocodeDate { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -91,10 +87,6 @@ namespace Rock.Crm
 				this.GeocodeService = location.GeocodeService;
 				this.GeocodeResult = location.GeocodeResult;
 				this.GeocodeDate = location.GeocodeDate;
-				this.CreatedDateTime = location.CreatedDateTime;
-				this.ModifiedDateTime = location.ModifiedDateTime;
-				this.CreatedByPersonId = location.CreatedByPersonId;
-				this.ModifiedByPersonId = location.ModifiedByPersonId;
 				this.Id = location.Id;
 				this.Guid = location.Guid;
 			}
@@ -127,10 +119,6 @@ namespace Rock.Crm
 				location.GeocodeService = this.GeocodeService;
 				location.GeocodeResult = this.GeocodeResult;
 				location.GeocodeDate = this.GeocodeDate;
-				location.CreatedDateTime = this.CreatedDateTime;
-				location.ModifiedDateTime = this.ModifiedDateTime;
-				location.CreatedByPersonId = this.CreatedByPersonId;
-				location.ModifiedByPersonId = this.ModifiedByPersonId;
 				location.Id = this.Id;
 				location.Guid = this.Guid;
 			}
