@@ -27,10 +27,6 @@ namespace Rock.Financial
 		public string ApiUrl { get; set; }
 		public string ApiKey { get; set; }
 		public string ApiSecret { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,10 +61,6 @@ namespace Rock.Financial
 				this.ApiUrl = gateway.ApiUrl;
 				this.ApiKey = gateway.ApiKey;
 				this.ApiSecret = gateway.ApiSecret;
-				this.ModifiedDateTime = gateway.ModifiedDateTime;
-				this.CreatedDateTime = gateway.CreatedDateTime;
-				this.CreatedByPersonId = gateway.CreatedByPersonId;
-				this.ModifiedByPersonId = gateway.ModifiedByPersonId;
 				this.Id = gateway.Id;
 				this.Guid = gateway.Guid;
 			}
@@ -88,10 +80,6 @@ namespace Rock.Financial
 				gateway.ApiUrl = this.ApiUrl;
 				gateway.ApiKey = this.ApiKey;
 				gateway.ApiSecret = this.ApiSecret;
-				gateway.ModifiedDateTime = this.ModifiedDateTime;
-				gateway.CreatedDateTime = this.CreatedDateTime;
-				gateway.CreatedByPersonId = this.CreatedByPersonId;
-				gateway.ModifiedByPersonId = this.ModifiedByPersonId;
 				gateway.Id = this.Id;
 				gateway.Guid = this.Guid;
 			}

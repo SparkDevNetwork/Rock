@@ -77,10 +77,6 @@ namespace Rock.Cms
 					FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
 					ApiKey = m.ApiKey,
 					PersonId = m.PersonId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

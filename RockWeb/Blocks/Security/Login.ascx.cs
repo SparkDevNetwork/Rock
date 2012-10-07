@@ -9,13 +9,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.Security;
 
 using Facebook;
 
+using Rock;
 using Rock.Cms;
 using Rock.Crm;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Security
 {
@@ -31,18 +34,48 @@ namespace RockWeb.Blocks.Security
         {
             pnlMessage.Visible = false;
 
-            // Determine if Facebook login enabled
-            string facebookAppId = CurrentPage.Site.FacebookAppId;
-            string facebookAppSecret = CurrentPage.Site.FacebookAppSecret;
-            bool facebookEnabled = Convert.ToBoolean( AttributeValue( "FacebookEnabled" ) );
+			// Check if returning from third-party authentication
+			foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+			{
+				var component = serviceEntry.Value.Value;
+				if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+				{
+					string loginTypeName = component.GetType().Name;
 
-            // disable the facebook login button if it's not able to be used
-            if ( !facebookEnabled ||  facebookAppId == "" || facebookAppSecret == "")
-                phFacebookLogin.Visible = false;
-            
-            // Check for Facebook query string params. If exists, assume it's a redirect back from Facebook.
-            if ( Request.QueryString["code"] != null )
-                ProcessOAuth( Request.QueryString["code"], Request.QueryString["state"] );
+					if ( component.IsReturningFromAuthentication( Request ) )
+					{
+						string userName = string.Empty;
+						string returnUrl = string.Empty;
+						if ( component.Authenticate( Request, out userName, out returnUrl ) )
+						{
+							LoginUser( userName, returnUrl, false );
+							break;
+						}
+					}
+
+					var div = new HtmlGenericControl( "div" );
+					phExternalLogins.Controls.Add( div );
+					div.AddCssClass( loginTypeName + "-login" );
+
+					LinkButton lbLogin = new LinkButton();
+					div.Controls.Add( lbLogin );
+					lbLogin.ID = "lb" + loginTypeName + "Login";
+					lbLogin.Click += lbLogin_Click;
+					lbLogin.CausesValidation = false;
+
+					if ( !String.IsNullOrWhiteSpace( component.ImageUrl() ) )
+					{
+						HtmlImage img = new HtmlImage();
+						lbLogin.Controls.Add( img );
+						img.Attributes.Add( "style", "border:none" );
+						img.Src = Page.ResolveUrl( component.ImageUrl() );
+					}
+					else
+					{
+						lbLogin.Text = loginTypeName;
+					}
+				}
+			}
         }
 
         /// <summary>
@@ -52,32 +85,76 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnLogin_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+			bool valid = false;
+			
+			if ( Page.IsValid )
             {
-                if ( Rock.Cms.UserService.Validate( tbUserName.Text, tbPassword.Text ) )
-                {
-                    Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, cbRememberMe.Checked, false);
-
-                    string returnUrl = Request.QueryString["returnurl"];
-                    if ( returnUrl != null )
-                    {
-                        returnUrl = returnUrl.ToLower();
-
-                        if ( returnUrl.Contains( "changepassword" ) ||
-                            returnUrl.Contains( "confirmaccount" ) ||
-                            returnUrl.Contains( "forgotusername" ) ||
-                            returnUrl.Contains( "newaccount" ) )
-                            returnUrl = FormsAuthentication.DefaultUrl;
-                    }
-
-                    Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
-                }
-                else
-                    DisplayError( "Invalid Login Information" );
+				var userService = new UserService();
+				var user = userService.GetByUserName(tbUserName.Text);
+				if (user != null)
+				{
+					foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+					{
+						var component = serviceEntry.Value.Value;
+						if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+						{
+							// TODO: Authentication type needs to be implemented a bit different 
+							string componentName = component.GetType().FullName;
+							if (
+								( user.AuthenticationType == AuthenticationType.Database && componentName == "Rock.Security.Authentication.Database" ) ||
+								( user.AuthenticationType == AuthenticationType.ActiveDirectory && componentName == "Rock.Security.Authentication.ActiveDirectory" )
+							)
+							{
+								if ( component.Authenticate( user, tbPassword.Text ) )
+								{
+									valid = true;
+									string returnUrl = Request.QueryString["returnurl"];
+									LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
+								}
+							}
+						}
+					}
+				}
             }
+
+			if ( !valid )
+			{
+				DisplayError( "Invalid Login Information" );
+			}
         }
 
-        /// <summary>
+		/// <summary>
+		/// Handles the Click event of the lbLogin control.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+		/// <exception cref="System.NotImplementedException"></exception>
+		void lbLogin_Click( object sender, EventArgs e )
+		{
+			if (sender is LinkButton)
+			{
+				LinkButton lb = (LinkButton)sender;
+
+				foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+				{
+					var component = serviceEntry.Value.Value;
+					if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+					{
+						string loginTypeName = component.GetType().Name;
+						if (lb.ID == "lb" + loginTypeName + "Login")
+						{
+							string uri = component.ExternalUrl( Request );
+							if ( !String.IsNullOrWhiteSpace( uri ) )
+							{
+								Response.Redirect( uri, true );
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
         /// Handles the Click event of the btnLogin control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -108,144 +185,23 @@ namespace RockWeb.Blocks.Security
             pnlMessage.Visible = true;
         }
 
-        /// <summary>
-        /// Redirects to Facebook w/ necessary permissions required to gain user approval.
-        /// </summary>
-        /// <param name="sender">Trigger object of event</param>
-        /// <param name="e">Arguments passed in</param>
-        protected void lbFacebookLogin_Click( object sender, EventArgs e )
-        {
-            var returnUrl = Request.QueryString["returnurl"];
-            var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-            oAuthClient.AppId = CurrentPage.Site.FacebookAppId;
-            oAuthClient.AppSecret = CurrentPage.Site.FacebookAppSecret;
+		private void LoginUser(string userName, string returnUrl, bool rememberMe)
+		{
+			Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
-            // setup some facebook connection settings
-            var settings = new Dictionary<string, object>
-            {
-                { "display", "popup" },
-                { "scope", "user_birthday,email,read_stream,read_friendlists"},
-                { "state", returnUrl ?? FormsAuthentication.DefaultUrl}
-            };
+			if ( returnUrl != null )
+			{
+				returnUrl = returnUrl.ToLower();
 
-            // Grab publically available information. No special permissions needed for authentication.
-            var loginUri = oAuthClient.GetLoginUrl( settings );
-            Response.Redirect( loginUri.AbsoluteUri );
-        }
+				if ( returnUrl.Contains( "changepassword" ) ||
+					returnUrl.Contains( "confirmaccount" ) ||
+					returnUrl.Contains( "forgotusername" ) ||
+					returnUrl.Contains( "newaccount" ) )
+					returnUrl = FormsAuthentication.DefaultUrl;
+			}
 
-        /// <summary>
-        /// Awaits permission of facebook user and will issue authenication cookie if successful.
-        /// </summary>
-        /// <param name="code">Facebook authorization code</param>
-        /// <param name="state">Redirect url</param>
-        private void ProcessOAuth( string code, string state )
-        {
-            FacebookOAuthResult oAuthResult;
-
-            if ( FacebookOAuthResult.TryParse( Request.Url, out oAuthResult ) && oAuthResult.IsSuccess )
-            {
-                try
-                {
-                    // create client to read response
-                    var oAuthClient = new FacebookOAuthClient( FacebookApplication.Current ) { RedirectUri = new Uri( GetOAuthRedirectUrl() ) };
-                    oAuthClient.AppId = CurrentPage.Site.FacebookAppId;
-                    oAuthClient.AppSecret = CurrentPage.Site.FacebookAppSecret;
-                    dynamic tokenResult = oAuthClient.ExchangeCodeForAccessToken( code );
-                    string accessToken = tokenResult.access_token;
-
-                    FacebookClient fbClient = new FacebookClient( accessToken );
-                    dynamic me = fbClient.Get( "me" );
-                    string facebookId = "FACEBOOK_" + me.id.ToString();
-
-                    // query for matching id in the user table 
-                    UserService userService = new UserService();
-                    var user = userService.GetByUserName( facebookId ); 
-
-                    // if not user was found see if we can find a match in the person table
-                    if ( user == null )
-                    {
-                        try
-                        {
-                            // determine if we can find a match and if so add an user login record
-
-                            // get properties from Facebook dynamic object
-                            string lastName = me.last_name.ToString();
-                            string firstName = me.first_name.ToString();
-                            string email = me.email.ToString();
-
-                            var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && ( u.GivenName == firstName || u.NickName == firstName ) && u.Email == email );
-
-                            if ( person != null )
-                            {
-                                // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
-
-                                if ( person.BirthDay == null )
-                                {
-                                    person.BirthDate = birthdate;
-                                    personService.Save( person, person.Id );
-                                }
-
-                            }
-                            else
-                            {
-                                person = new Person();
-                                person.GivenName = me.first_name.ToString();
-                                person.LastName = me.last_name.ToString();
-                                person.Email = me.email.ToString();
-
-                                if (me.gender.ToString() == "male")
-                                    person.Gender = Gender.Male;
-                                if (me.gender.ToString() == "female")
-                                    person.Gender = Gender.Female;
-
-                                person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
-
-                                personService.Add( person, null );
-                                personService.Save( person, null );
-                            }
-
-                            user = userService.Create( person, AuthenticationType.Facebook, facebookId, "fb", true, person.Id );
-                        }
-                        catch ( Exception ex )
-                        {
-                            string msg = ex.Message;
-                            // TODO: probably should report something...
-                        }
-
-                        // TODO: Show label indicating inability to find user corresponding to facebook id
-                    }
-
-                    // update user record noting the login datetime
-                    user.LastLoginDate = DateTime.Now;
-                    user.LastActivityDate = DateTime.Now;
-                    userService.Save( user, user.PersonId );
-
-                    Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
-
-                    if ( state != null )
-                        Response.Redirect( state );
-
-                }
-                catch ( FacebookOAuthException oae )
-                {
-                    string msg = oae.Message;
-                    // TODO: Add error handeling
-                    // Error validating verification code. (usually from wrong return url very picky with formatting)
-                    // Error validating client secret.
-                    // Error validating application.
-                }
-            }
-        }
-
-        private string GetOAuthRedirectUrl()
-        {
-            Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
-            return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
-        }
-
-
+			Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
+		}
     }
 
     // helpful links

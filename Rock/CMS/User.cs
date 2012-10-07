@@ -21,7 +21,7 @@ namespace Rock.Cms
     /// User POCO Entity.
     /// </summary>
     [Table( "cmsUser" )]
-    public partial class User : Model<User>, IAuditable
+    public partial class User : Model<User>
     {
 		/// <summary>
 		/// Gets or sets the User Name.
@@ -95,6 +95,7 @@ namespace Rock.Cms
 		/// <value>
 		/// Last Activity Date.
 		/// </value>
+		[NotAudited]
 		[DataMember]
 		public DateTime? LastActivityDate { get; set; }
 		
@@ -189,42 +190,6 @@ namespace Rock.Cms
 		[DataMember]
 		public int? PersonId { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>

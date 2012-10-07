@@ -29,10 +29,6 @@ namespace Rock.Financial
 		public DateTime EndDate { get; set; }
 		public int? FrequencyTypeId { get; set; }
 		public decimal? FrequencyAmount { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -69,10 +65,6 @@ namespace Rock.Financial
 				this.EndDate = pledge.EndDate;
 				this.FrequencyTypeId = pledge.FrequencyTypeId;
 				this.FrequencyAmount = pledge.FrequencyAmount;
-				this.ModifiedDateTime = pledge.ModifiedDateTime;
-				this.CreatedDateTime = pledge.CreatedDateTime;
-				this.CreatedByPersonId = pledge.CreatedByPersonId;
-				this.ModifiedByPersonId = pledge.ModifiedByPersonId;
 				this.Id = pledge.Id;
 				this.Guid = pledge.Guid;
 			}
@@ -94,10 +86,6 @@ namespace Rock.Financial
 				pledge.EndDate = this.EndDate;
 				pledge.FrequencyTypeId = this.FrequencyTypeId;
 				pledge.FrequencyAmount = this.FrequencyAmount;
-				pledge.ModifiedDateTime = this.ModifiedDateTime;
-				pledge.CreatedDateTime = this.CreatedDateTime;
-				pledge.CreatedByPersonId = this.CreatedByPersonId;
-				pledge.ModifiedByPersonId = this.ModifiedByPersonId;
 				pledge.Id = this.Id;
 				pledge.Guid = this.Guid;
 			}

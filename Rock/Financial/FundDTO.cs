@@ -36,10 +36,6 @@ namespace Rock.Financial
 		public int? FundTypeId { get; set; }
 		public string Entity { get; set; }
 		public int? EntityId { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -83,10 +79,6 @@ namespace Rock.Financial
 				this.FundTypeId = fund.FundTypeId;
 				this.Entity = fund.Entity;
 				this.EntityId = fund.EntityId;
-				this.ModifiedDateTime = fund.ModifiedDateTime;
-				this.CreatedDateTime = fund.CreatedDateTime;
-				this.CreatedByPersonId = fund.CreatedByPersonId;
-				this.ModifiedByPersonId = fund.ModifiedByPersonId;
 				this.Id = fund.Id;
 				this.Guid = fund.Guid;
 			}
@@ -115,10 +107,6 @@ namespace Rock.Financial
 				fund.FundTypeId = this.FundTypeId;
 				fund.Entity = this.Entity;
 				fund.EntityId = this.EntityId;
-				fund.ModifiedDateTime = this.ModifiedDateTime;
-				fund.CreatedDateTime = this.CreatedDateTime;
-				fund.CreatedByPersonId = this.CreatedByPersonId;
-				fund.ModifiedByPersonId = this.ModifiedByPersonId;
 				fund.Id = this.Id;
 				fund.Guid = this.Guid;
 			}

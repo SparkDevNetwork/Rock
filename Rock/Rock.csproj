@@ -60,6 +60,9 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
+    <Reference Include="Facebook">
+      <HintPath>..\packages\Facebook.5.0.25.0\lib\net40-client\Facebook.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -83,6 +86,8 @@
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.Services" />
     <Reference Include="System.Data.Services.Client" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
@@ -110,6 +115,7 @@
     <Compile Include="Cms\BlockService.Partial.cs" />
     <Compile Include="Cms\BlockTypeService.Partial.cs" />
     <Compile Include="Cms\BlockTypeService.cs" />
+    <Compile Include="Cms\FileService.Partial.cs" />
     <Compile Include="Cms\FileDto.cs" />
     <Compile Include="Cms\FileService.cs" />
     <Compile Include="Cms\HtmlContentDto.cs" />
@@ -146,6 +152,11 @@
     <Compile Include="Core\AttributeValueDto.cs" />
     <Compile Include="Core\AttributeValueService.cs" />
     <Compile Include="Core\AttributeValueService.Partial.cs" />
+    <Compile Include="Core\Audit.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\AuditDto.cs" />
+    <Compile Include="Core\AuditService.cs" />
     <Compile Include="Core\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -210,6 +221,7 @@
     <Compile Include="Crm\PhoneNumberService.cs" />
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
+    <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
@@ -462,12 +474,17 @@
     <Compile Include="Migrations\201210032052400_UpdatePersonDetail.Designer.cs">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210072211380_AddAuditFunctionality.cs" />
+    <Compile Include="Migrations\201210072211380_AddAuditFunctionality.Designer.cs">
+      <DependentUpon>201210072211380_AddAuditFunctionality.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\RockMigration.cs">
+    <Compile Include="Migrations\RockMigration_1.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\RockMigration_0.cs" />
@@ -480,8 +497,15 @@
     <Compile Include="Search\SearchComponent.cs" />
     <Compile Include="Search\SearchContainer.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
+    <Compile Include="Security\Authentication\ActiveDirectory.cs" />
+    <Compile Include="Security\ExternalAuthentication\Facebook.cs" />
+    <Compile Include="Security\Authentication\Database.cs" />
+    <Compile Include="Security\ExternalAuthenticationComponent.cs" />
+    <Compile Include="Security\ExternalAuthenticationContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="Security\AuthenticationComponent.cs" />
+    <Compile Include="Security\AuthenticationContainer.cs" />
     <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
@@ -493,6 +517,7 @@
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
+    <Compile Include="Transactions\AuditTransaction.cs" />
     <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
@@ -587,7 +612,6 @@
     <Compile Include="Jobs\TestJob.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Data\IOrdered.cs" />
-    <Compile Include="Data\IAuditable.cs" />
     <Compile Include="Data\Entity.cs" />
     <Compile Include="Data\Model.cs">
       <SubType>Code</SubType>
@@ -822,7 +846,11 @@
     <EmbeddedResource Include="Migrations\201210032052400_UpdatePersonDetail.resx">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210072211380_AddAuditFunctionality.resx">
+      <DependentUpon>201210072211380_AddAuditFunctionality.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

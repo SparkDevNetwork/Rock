@@ -70,10 +70,6 @@ namespace Rock.Core
 					isDateBased = m.isDateBased,
 					Label = m.Label,
 					Order = m.Order,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

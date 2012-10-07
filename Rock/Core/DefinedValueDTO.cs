@@ -27,10 +27,6 @@ namespace Rock.Core
 		public int Order { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,10 +61,6 @@ namespace Rock.Core
 				this.Order = definedValue.Order;
 				this.Name = definedValue.Name;
 				this.Description = definedValue.Description;
-				this.CreatedDateTime = definedValue.CreatedDateTime;
-				this.ModifiedDateTime = definedValue.ModifiedDateTime;
-				this.CreatedByPersonId = definedValue.CreatedByPersonId;
-				this.ModifiedByPersonId = definedValue.ModifiedByPersonId;
 				this.Id = definedValue.Id;
 				this.Guid = definedValue.Guid;
 			}
@@ -88,10 +80,6 @@ namespace Rock.Core
 				definedValue.Order = this.Order;
 				definedValue.Name = this.Name;
 				definedValue.Description = this.Description;
-				definedValue.CreatedDateTime = this.CreatedDateTime;
-				definedValue.ModifiedDateTime = this.ModifiedDateTime;
-				definedValue.CreatedByPersonId = this.CreatedByPersonId;
-				definedValue.ModifiedByPersonId = this.ModifiedByPersonId;
 				definedValue.Id = this.Id;
 				definedValue.Guid = this.Guid;
 			}

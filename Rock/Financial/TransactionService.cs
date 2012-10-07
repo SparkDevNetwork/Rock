@@ -76,10 +76,6 @@ namespace Rock.Financial
 					GatewayId = m.GatewayId,
 					SourceTypeId = m.SourceTypeId,
 					Summary = m.Summary,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

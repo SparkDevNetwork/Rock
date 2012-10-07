@@ -30,10 +30,6 @@ namespace Rock.Cms
 		public int Order { get; set; }
 		public string Name { get; set; }
 		public int OutputCacheDuration { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -71,10 +67,6 @@ namespace Rock.Cms
 				this.Order = block.Order;
 				this.Name = block.Name;
 				this.OutputCacheDuration = block.OutputCacheDuration;
-				this.CreatedDateTime = block.CreatedDateTime;
-				this.ModifiedDateTime = block.ModifiedDateTime;
-				this.CreatedByPersonId = block.CreatedByPersonId;
-				this.ModifiedByPersonId = block.ModifiedByPersonId;
 				this.Id = block.Id;
 				this.Guid = block.Guid;
 			}
@@ -97,10 +89,6 @@ namespace Rock.Cms
 				block.Order = this.Order;
 				block.Name = this.Name;
 				block.OutputCacheDuration = this.OutputCacheDuration;
-				block.CreatedDateTime = this.CreatedDateTime;
-				block.ModifiedDateTime = this.ModifiedDateTime;
-				block.CreatedByPersonId = this.CreatedByPersonId;
-				block.ModifiedByPersonId = this.ModifiedByPersonId;
 				block.Id = this.Id;
 				block.Guid = this.Guid;
 			}

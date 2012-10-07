@@ -34,10 +34,6 @@ namespace Rock.Cms
 		public string LoginPageReference { get; set; }
 		public string RegistrationPageReference { get; set; }
 		public string ErrorPage { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -79,10 +75,6 @@ namespace Rock.Cms
 				this.LoginPageReference = site.LoginPageReference;
 				this.RegistrationPageReference = site.RegistrationPageReference;
 				this.ErrorPage = site.ErrorPage;
-				this.CreatedDateTime = site.CreatedDateTime;
-				this.ModifiedDateTime = site.ModifiedDateTime;
-				this.CreatedByPersonId = site.CreatedByPersonId;
-				this.ModifiedByPersonId = site.ModifiedByPersonId;
 				this.Id = site.Id;
 				this.Guid = site.Guid;
 			}
@@ -109,10 +101,6 @@ namespace Rock.Cms
 				site.LoginPageReference = this.LoginPageReference;
 				site.RegistrationPageReference = this.RegistrationPageReference;
 				site.ErrorPage = this.ErrorPage;
-				site.CreatedDateTime = this.CreatedDateTime;
-				site.ModifiedDateTime = this.ModifiedDateTime;
-				site.CreatedByPersonId = this.CreatedByPersonId;
-				site.ModifiedByPersonId = this.ModifiedByPersonId;
 				site.Id = this.Id;
 				site.Guid = this.Guid;
 			}

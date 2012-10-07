@@ -46,10 +46,6 @@ namespace Rock.Crm
 		public bool DoNotEmail { get; set; }
 		public string SystemNote { get; set; }
 		public int? ViewedCount { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -103,10 +99,6 @@ namespace Rock.Crm
 				this.DoNotEmail = person.DoNotEmail;
 				this.SystemNote = person.SystemNote;
 				this.ViewedCount = person.ViewedCount;
-				this.CreatedDateTime = person.CreatedDateTime;
-				this.ModifiedDateTime = person.ModifiedDateTime;
-				this.CreatedByPersonId = person.CreatedByPersonId;
-				this.ModifiedByPersonId = person.ModifiedByPersonId;
 				this.Id = person.Id;
 				this.Guid = person.Guid;
 			}
@@ -145,10 +137,6 @@ namespace Rock.Crm
 				person.DoNotEmail = this.DoNotEmail;
 				person.SystemNote = this.SystemNote;
 				person.ViewedCount = this.ViewedCount;
-				person.CreatedDateTime = this.CreatedDateTime;
-				person.ModifiedDateTime = this.ModifiedDateTime;
-				person.CreatedByPersonId = this.CreatedByPersonId;
-				person.ModifiedByPersonId = this.ModifiedByPersonId;
 				person.Id = this.Id;
 				person.Guid = this.Guid;
 			}

@@ -35,10 +35,6 @@ namespace Rock.Core
 		public string Source { get; set; }
 		public string SourceSQL { get; set; }
 		public int Order { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -81,10 +77,6 @@ namespace Rock.Core
 				this.Source = metric.Source;
 				this.SourceSQL = metric.SourceSQL;
 				this.Order = metric.Order;
-				this.CreatedDateTime = metric.CreatedDateTime;
-				this.ModifiedDateTime = metric.ModifiedDateTime;
-				this.CreatedByPersonId = metric.CreatedByPersonId;
-				this.ModifiedByPersonId = metric.ModifiedByPersonId;
 				this.Id = metric.Id;
 				this.Guid = metric.Guid;
 			}
@@ -112,10 +104,6 @@ namespace Rock.Core
 				metric.Source = this.Source;
 				metric.SourceSQL = this.SourceSQL;
 				metric.Order = this.Order;
-				metric.CreatedDateTime = this.CreatedDateTime;
-				metric.ModifiedDateTime = this.ModifiedDateTime;
-				metric.CreatedByPersonId = this.CreatedByPersonId;
-				metric.ModifiedByPersonId = this.ModifiedByPersonId;
 				metric.Id = this.Id;
 				metric.Guid = this.Guid;
 			}

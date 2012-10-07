@@ -80,10 +80,6 @@ namespace Rock.Crm
 					GeocodeService = m.GeocodeService,
 					GeocodeResult = m.GeocodeResult,
 					GeocodeDate = m.GeocodeDate,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
 					Id = m.Id,
 					Guid = m.Guid,				});
 		}

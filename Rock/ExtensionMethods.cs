@@ -203,14 +203,14 @@ namespace Rock
 
 		#endregion
 
-		#region DateTime Extensions
+		#region DateTimeOffset Extensions
 
 		/// <summary>
 		/// Returns the age at the current date
 		/// </summary>
 		/// <param name="start"></param>
 		/// <returns></returns>
-		public static int Age( this DateTime? start )
+		public static int Age( this DateTimeOffset? start )
 		{
 			if ( start.HasValue )
 				return start.Value.Age();
@@ -223,7 +223,7 @@ namespace Rock
 		/// </summary>
 		/// <param name="start"></param>
 		/// <returns></returns>
-		public static int Age( this DateTime start )
+		public static int Age( this DateTimeOffset start )
 		{
 			var now = DateTime.Today;
 			int age = now.Year - start.Year;
@@ -238,7 +238,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalMonths( this DateTime end, DateTime start )
+        public static int TotalMonths( this DateTimeOffset end, DateTimeOffset start )
         {
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
@@ -249,7 +249,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalYears( this DateTime end, DateTime start )
+		public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
         {
             return (end.Year) - (start.Year);
         }
@@ -259,7 +259,7 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-		public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
+		public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
 		{
             if ( dateTime.HasValue )
             {
@@ -274,10 +274,10 @@ namespace Rock
 		/// </summary>
 		/// <param name="dateTime">The date time.</param>
 		/// <returns></returns>
-		public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
+		public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
 		{
-			DateTime start = dateTime;
-			DateTime end = DateTime.Now;
+			DateTimeOffset start = dateTime;
+			DateTimeOffset end = DateTimeOffset.Now;
 
 			string direction = " Ago";
 			TimeSpan timeSpan = end.Subtract( start );

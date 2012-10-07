@@ -24,8 +24,6 @@ namespace Rock.Crm
 #pragma warning disable 1591
 		public int CurrentId { get; set; }
 		public Guid CurrentGuid { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -57,8 +55,6 @@ namespace Rock.Crm
 				var personMerged = (PersonMerged)model;
 				this.CurrentId = personMerged.CurrentId;
 				this.CurrentGuid = personMerged.CurrentGuid;
-				this.CreatedDateTime = personMerged.CreatedDateTime;
-				this.CreatedByPersonId = personMerged.CreatedByPersonId;
 				this.Id = personMerged.Id;
 				this.Guid = personMerged.Guid;
 			}
@@ -75,8 +71,6 @@ namespace Rock.Crm
 				var personMerged = (PersonMerged)model;
 				personMerged.CurrentId = this.CurrentId;
 				personMerged.CurrentGuid = this.CurrentGuid;
-				personMerged.CreatedDateTime = this.CreatedDateTime;
-				personMerged.CreatedByPersonId = this.CreatedByPersonId;
 				personMerged.Id = this.Id;
 				personMerged.Guid = this.Guid;
 			}

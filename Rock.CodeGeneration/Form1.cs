@@ -218,8 +218,8 @@ namespace Rock.CodeGeneration
 			sb.AppendLine( "\t\t{" );
 			sb.AppendFormat( "\t\t\treturn items.Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t\t\t{" );
-            foreach ( var property in properties )
-                sb.AppendFormat( "\t\t\t\t\t{0} = m.{0}," + Environment.NewLine, property.Key );
+			foreach ( var property in properties )
+				sb.AppendFormat( "\t\t\t\t\t{0} = m.{0}," + Environment.NewLine, property.Key );
             sb.Remove( sb.Length - 1, 1 );
             sb.AppendLine( "\t\t\t\t});" );
             sb.AppendLine( "\t\t}" );
@@ -311,8 +311,8 @@ namespace Rock.CodeGeneration
 			sb.AppendFormat( "\t\t\tif ( model is {0} )" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t\t{" );
 			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
-            foreach ( var property in properties )
-                sb.AppendFormat( "\t\t\t\tthis.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
+			foreach ( var property in properties )
+				sb.AppendFormat( "\t\t\t\tthis.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
 			sb.AppendLine( "\t\t\t}" );
 			sb.AppendLine( "\t\t}" );
             sb.AppendLine( "" );
@@ -327,7 +327,7 @@ namespace Rock.CodeGeneration
 			sb.AppendLine( "\t\t\t{" );
 			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
 			foreach ( var property in properties )
-                sb.AppendFormat( "\t\t\t\t{1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
+				sb.AppendFormat( "\t\t\t\t{1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
 			sb.AppendLine( "\t\t\t}" );
 			sb.AppendLine( "\t\t}" );
 

@@ -19,7 +19,7 @@ namespace Rock.Crm
     /// Person POCO Entity.
     /// </summary>
     [Table( "crmPerson" )]
-    public partial class Person : Model<Person>, IAuditable
+    public partial class Person : Model<Person>
     {
 		/// <summary>
 		/// The Entity Type used for saving user values
@@ -253,42 +253,6 @@ namespace Rock.Crm
 		[DataMember]
 		public int? ViewedCount { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>

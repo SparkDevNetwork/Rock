@@ -29,10 +29,6 @@ namespace Rock.Financial
 		public string Entity { get; set; }
 		public int? EntityId { get; set; }
 		public string ForeignReference { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
 		public int Id { get; set; }
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -69,10 +65,6 @@ namespace Rock.Financial
 				this.Entity = batch.Entity;
 				this.EntityId = batch.EntityId;
 				this.ForeignReference = batch.ForeignReference;
-				this.ModifiedDateTime = batch.ModifiedDateTime;
-				this.CreatedDateTime = batch.CreatedDateTime;
-				this.CreatedByPersonId = batch.CreatedByPersonId;
-				this.ModifiedByPersonId = batch.ModifiedByPersonId;
 				this.Id = batch.Id;
 				this.Guid = batch.Guid;
 			}
@@ -94,10 +86,6 @@ namespace Rock.Financial
 				batch.Entity = this.Entity;
 				batch.EntityId = this.EntityId;
 				batch.ForeignReference = this.ForeignReference;
-				batch.ModifiedDateTime = this.ModifiedDateTime;
-				batch.CreatedDateTime = this.CreatedDateTime;
-				batch.CreatedByPersonId = this.CreatedByPersonId;
-				batch.ModifiedByPersonId = this.ModifiedByPersonId;
 				batch.Id = this.Id;
 				batch.Guid = this.Guid;
 			}
