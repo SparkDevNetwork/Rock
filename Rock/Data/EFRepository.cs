@@ -20,7 +20,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class EFRepository<T> : IRepository<T>, IDisposable
-        where T : Rock.Data.Model<T>
+        where T : Rock.Data.Entity<T>
     {
         private bool IsDisposed;
         private DbContext _context;
@@ -217,7 +217,7 @@ namespace Rock.Data
 
                     case System.Data.EntityState.Modified:
 
-                        var model = entry.Entity as Model<T>;
+                        var model = entry.Entity as Entity<T>;
                         if ( model != null )
                         {
                             bool cancel = false;
@@ -249,21 +249,21 @@ namespace Rock.Data
 
             foreach ( object modifiedEntity in addedEntities )
             {
-                var model = modifiedEntity as Model<T>;
+                var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                     model.RaiseAddedEvent( PersonId );
             }
 
             foreach ( object deletedEntity in deletedEntities )
             {
-                var model = deletedEntity as Model<T>;
+				var model = deletedEntity as Entity<T>;
                 if ( model != null )
                     model.RaiseDeletedEvent( PersonId );
             }
 
             foreach ( object modifiedEntity in modifiedEntities )
             {
-                var model = modifiedEntity as Model<T>;
+				var model = modifiedEntity as Entity<T>;
                 if ( model != null )
                     model.RaiseUpdatedEvent( PersonId );
             }

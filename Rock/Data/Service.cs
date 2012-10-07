@@ -14,7 +14,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Model<T>
+    public class Service<T> where T : Rock.Data.Entity<T>
     {
         private IRepository<T> _repository;
         /// <summary>
@@ -250,7 +250,7 @@ namespace Rock.Data
     }
 
     public class Service<T, D> : Service<T>
-        where T : Rock.Data.Model<T>
+        where T : Rock.Data.Entity<T>
         where D : Rock.Data.IDto
     {
         public Service() : base() { }

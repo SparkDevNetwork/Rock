@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Pledge POCO class.
     /// </summary>
     [Table("financialPledge")]
-    public partial class Pledge : ModelWithAttributes<Pledge>, IAuditable
+    public partial class Pledge : Model<Pledge>, IAuditable
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -156,7 +156,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.TransactionDetail"; } }
+        public override string EntityTypeName { get { return "Financial.TransactionDetail"; } }
     }
 
     /// <summary>

@@ -16,7 +16,7 @@ namespace Rock.Financial
     /// PersonAccountLookup POCO class.
     /// </summary>
     [Table("financialPersonAccountLookup")]
-    public partial class PersonAccountLookup : ModelWithAttributes<PersonAccountLookup>
+    public partial class PersonAccountLookup : Model<PersonAccountLookup>
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -58,7 +58,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.PersonAccountLookup"; } }
+        public override string EntityTypeName { get { return "Financial.PersonAccountLookup"; } }
     }
 
     /// <summary>

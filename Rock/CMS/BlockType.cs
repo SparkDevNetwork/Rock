@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Block Type POCO Entity.
     /// </summary>
     [Table( "cmsBlockType" )]
-    public partial class BlockType : ModelWithAttributes<BlockType>, IAuditable, IExportable
+    public partial class BlockType : Model<BlockType>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -101,7 +101,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.BlockType"; } }
+		public override string EntityTypeName { get { return "Cms.BlockType"; } }
         
 		/// <summary>
         /// Gets or sets the Blocks.

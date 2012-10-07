@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "cmsHtmlContent" )]
-    public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable, IExportable
+    public partial class HtmlContent : Model<HtmlContent>, IAuditable, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Block Id.
@@ -146,7 +146,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.HtmlContent"; } }
+		public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
         
 		/// <summary>
         /// Gets or sets the Block.

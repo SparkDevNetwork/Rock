@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Service Log POCO Entity.
     /// </summary>
     [Table( "coreServiceLog" )]
-    public partial class ServiceLog : ModelWithAttributes<ServiceLog>
+    public partial class ServiceLog : Model<ServiceLog>
     {
 		/// <summary>
 		/// Gets or sets the Time.
@@ -82,7 +82,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.ServiceLog"; } }
+		public override string EntityTypeName { get { return "Core.ServiceLog"; } }
 
 		/// <summary>
 		/// Static Method to return an object based on the id

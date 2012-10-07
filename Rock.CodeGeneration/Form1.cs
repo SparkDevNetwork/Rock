@@ -28,8 +28,8 @@ namespace Rock.CodeGeneration
 
         private void btnLoad_Click( object sender, EventArgs e )
         {
-			var modelInterface = typeof( Rock.Data.IModel );
-			rockAssembly = modelInterface.Assembly;
+			var entityInterface = typeof( Rock.Data.IEntity );
+			rockAssembly = entityInterface.Assembly;
 			FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
 
 			ofdAssembly.InitialDirectory = fi.DirectoryName;
@@ -50,7 +50,7 @@ namespace Rock.CodeGeneration
 					foreach ( Type type in assembly.GetTypes() )
 						if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
 							foreach ( Type interfaceType in type.GetInterfaces() )
-								if ( interfaceType == modelInterface )
+								if ( interfaceType == entityInterface )
 									cblModels.Items.Add( type );
 				}
 
@@ -293,7 +293,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "" );
 
             sb.AppendLine( "\t\t/// <summary>" );
-            sb.AppendLine( "\t\t/// Instantiates a new DTO object from the model" );
+            sb.AppendLine( "\t\t/// Instantiates a new DTO object from the entity" );
             sb.AppendLine( "\t\t/// </summary>" );
             sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
             sb.AppendFormat( "\t\tpublic {0}Dto ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
@@ -305,12 +305,12 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "\t\t/// <summary>" );
             sb.AppendLine( "\t\t/// Copies the model property values to the DTO properties" );
             sb.AppendLine( "\t\t/// </summary>" );
-            sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-			sb.AppendLine( "\t\tpublic void CopyFromModel( IModel model )" );
+			sb.AppendLine( "\t\t/// <param name=\"model\">The model</param>" );
+			sb.AppendLine( "\t\tpublic void CopyFromModel( IEntity model )" );
 			sb.AppendLine( "\t\t{" );
 			sb.AppendFormat( "\t\t\tif ( model is {0} )" + Environment.NewLine, type.Name );
             sb.AppendLine( "\t\t\t{" );
-			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name);
+			sb.AppendFormat( "\t\t\t\tvar {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
             foreach ( var property in properties )
                 sb.AppendFormat( "\t\t\t\tthis.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
 			sb.AppendLine( "\t\t\t}" );
@@ -318,10 +318,10 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "" );
 
             sb.AppendLine( "\t\t/// <summary>" );
-            sb.AppendLine( "\t\t/// Copies the DTO property values to the model properties" );
+            sb.AppendLine( "\t\t/// Copies the DTO property values to the entity properties" );
             sb.AppendLine( "\t\t/// </summary>" );
-            sb.AppendFormat( "\t\t/// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-			sb.AppendLine( "\t\tpublic void CopyToModel ( IModel model )" );
+            sb.AppendLine( "\t\t/// <param name=\"model\">The model</param>");
+			sb.AppendLine( "\t\tpublic void CopyToModel ( IEntity model )" );
             sb.AppendLine( "\t\t{" );
 			sb.AppendFormat( "\t\t\tif ( model is {0} )" + Environment.NewLine, type.Name );
 			sb.AppendLine( "\t\t\t{" );

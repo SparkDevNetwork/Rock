@@ -18,7 +18,7 @@ namespace Rock.Util
     /// Job POCO Entity.
     /// </summary>
     [Table( "utilJob" )]
-    public partial class Job : ModelWithAttributes<Job>, IAuditable
+    public partial class Job : Model<Job>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -217,7 +217,7 @@ namespace Rock.Util
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Util.Job"; } }
+		public override string EntityTypeName { get { return "Util.Job"; } }
         
     }
 

@@ -12,7 +12,7 @@ namespace Rock.Data
     /// <summary>
     /// Static class to support factory method implementation.
     /// </summary>
-    public class RepositoryFactory<T> where T : Model<T>
+    public class RepositoryFactory<T> where T : Entity<T>
     {
         /// <summary>
         /// Finds a repository object based on app settings in web/app.config file.

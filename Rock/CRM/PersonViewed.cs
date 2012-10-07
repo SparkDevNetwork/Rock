@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Person Viewed POCO Entity.
     /// </summary>
     [Table( "crmPersonViewed" )]
-    public partial class PersonViewed : ModelWithAttributes<PersonViewed>
+    public partial class PersonViewed : Model<PersonViewed>
     {
 		/// <summary>
 		/// Gets or sets the Viewer Person Id.
@@ -71,7 +71,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.PersonViewed"; } }
+		public override string EntityTypeName { get { return "Crm.PersonViewed"; } }
         
 		/// <summary>
         /// Gets or sets the Viewer Person.

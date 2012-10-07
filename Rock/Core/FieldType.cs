@@ -117,21 +117,12 @@ namespace Rock.Core
 		{
 			return Read<FieldType>( id );
 		}
-
-		
+				
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.FieldType"; } }
-        
-		/// <summary>
-        /// Gets or sets the Attributes.
-        /// </summary>
-        /// <value>
-        /// Collection of Attributes.
-        /// </value>
-		public virtual ICollection<Attribute> Attributes { get; set; }
+		public override string EntityTypeName { get { return "Core.FieldType"; } }
         
 		/// <summary>
         /// Gets or sets the Defined Types.

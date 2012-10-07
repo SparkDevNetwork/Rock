@@ -25,7 +25,9 @@ namespace Rock.Crm
 		public bool IsSystem { get; set; }
 		public int PersonId { get; set; }
 		public string Number { get; set; }
+		public string Extension { get; set; }
 		public int? NumberTypeId { get; set; }
+		public bool IsMessagingEnabled { get; set; }
 		public bool IsUnlisted { get; set; }
 		public string Description { get; set; }
 		public DateTime? CreatedDateTime { get; set; }
@@ -44,7 +46,7 @@ namespace Rock.Crm
 		}
 
 		/// <summary>
-		/// Instantiates a new DTO object from the model
+		/// Instantiates a new DTO object from the entity
 		/// </summary>
 		/// <param name="phoneNumber"></param>
 		public PhoneNumberDto ( PhoneNumber phoneNumber )
@@ -55,8 +57,8 @@ namespace Rock.Crm
 		/// <summary>
 		/// Copies the model property values to the DTO properties
 		/// </summary>
-		/// <param name="phoneNumber"></param>
-		public void CopyFromModel( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyFromModel( IEntity model )
 		{
 			if ( model is PhoneNumber )
 			{
@@ -64,7 +66,9 @@ namespace Rock.Crm
 				this.IsSystem = phoneNumber.IsSystem;
 				this.PersonId = phoneNumber.PersonId;
 				this.Number = phoneNumber.Number;
+				this.Extension = phoneNumber.Extension;
 				this.NumberTypeId = phoneNumber.NumberTypeId;
+				this.IsMessagingEnabled = phoneNumber.IsMessagingEnabled;
 				this.IsUnlisted = phoneNumber.IsUnlisted;
 				this.Description = phoneNumber.Description;
 				this.CreatedDateTime = phoneNumber.CreatedDateTime;
@@ -77,10 +81,10 @@ namespace Rock.Crm
 		}
 
 		/// <summary>
-		/// Copies the DTO property values to the model properties
+		/// Copies the DTO property values to the entity properties
 		/// </summary>
-		/// <param name="phoneNumber"></param>
-		public void CopyToModel ( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyToModel ( IEntity model )
 		{
 			if ( model is PhoneNumber )
 			{
@@ -88,7 +92,9 @@ namespace Rock.Crm
 				phoneNumber.IsSystem = this.IsSystem;
 				phoneNumber.PersonId = this.PersonId;
 				phoneNumber.Number = this.Number;
+				phoneNumber.Extension = this.Extension;
 				phoneNumber.NumberTypeId = this.NumberTypeId;
+				phoneNumber.IsMessagingEnabled = this.IsMessagingEnabled;
 				phoneNumber.IsUnlisted = this.IsUnlisted;
 				phoneNumber.Description = this.Description;
 				phoneNumber.CreatedDateTime = this.CreatedDateTime;

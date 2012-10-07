@@ -211,6 +211,7 @@
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
     <Compile Include="Data\IDto.cs" />
+    <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
@@ -587,9 +588,8 @@
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\IAuditable.cs" />
-    <Compile Include="Data\IModel.cs" />
-    <Compile Include="Data\Model.cs" />
-    <Compile Include="Data\ModelWithAttributes.cs">
+    <Compile Include="Data\Entity.cs" />
+    <Compile Include="Data\Model.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\TrackChangesAttribute.cs" />

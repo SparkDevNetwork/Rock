@@ -350,14 +350,14 @@ namespace Rock.Web.UI
                 else
                 {
                     // Set current models (context)
-                    CurrentPage.Context = new Dictionary<string, Data.KeyModel>();
+                    CurrentPage.Context = new Dictionary<string, Data.KeyEntity>();
                     try 
                     {
                         foreach ( var pageContext in CurrentPage.PageContexts )
                         {
                             int contextId = 0;
                             if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
-                                CurrentPage.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                                CurrentPage.Context.Add( pageContext.Key, new Data.KeyEntity( contextId ) );
                         }
 
                         char[] delim = new char[1] { ',' };
@@ -366,7 +366,7 @@ namespace Rock.Web.UI
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
                             string[] parts = contextItem.Split('|');
                             if (parts.Length == 2)
-                                CurrentPage.Context.Add(parts[0], new Data.KeyModel(parts[1]));
+                                CurrentPage.Context.Add(parts[0], new Data.KeyEntity(parts[1]));
                         }
 
                     }

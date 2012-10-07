@@ -10,7 +10,7 @@ namespace Rock.Data
 	{
 		int Id { get; set; }
 		Guid Guid { get; set; }
-		void CopyFromModel( IModel model );
-		void CopyToModel( IModel model );
+		void CopyFromModel( IEntity model );
+		void CopyToModel( IEntity model );
 	}
 }

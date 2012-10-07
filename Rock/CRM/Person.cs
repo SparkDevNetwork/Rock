@@ -19,7 +19,7 @@ namespace Rock.Crm
     /// Person POCO Entity.
     /// </summary>
     [Table( "crmPerson" )]
-    public partial class Person : ModelWithAttributes<Person>, IAuditable
+    public partial class Person : Model<Person>, IAuditable
     {
 		/// <summary>
 		/// The Entity Type used for saving user values
@@ -303,7 +303,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.Person"; } }
+		public override string EntityTypeName { get { return "Crm.Person"; } }
         
 		/// <summary>
         /// Gets or sets the Users.

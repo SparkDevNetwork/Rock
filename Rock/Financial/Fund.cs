@@ -19,7 +19,7 @@ namespace Rock.Financial
     /// Fund POCO class.
     /// </summary>
     [Table("financialFund")]
-    public partial class Fund : ModelWithAttributes<Fund>, IAuditable
+    public partial class Fund : Model<Fund>, IAuditable
     {
         /// <summary>
         /// Gets or sets the name.
@@ -242,7 +242,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.Fund"; } }
+        public override string EntityTypeName { get { return "Financial.Fund"; } }
     }
 
     /// <summary>

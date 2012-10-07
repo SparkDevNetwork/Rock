@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Phone Number POCO Entity.
     /// </summary>
     [Table( "crmPhoneNumber" )]
-    public partial class PhoneNumber : ModelWithAttributes<PhoneNumber>, IAuditable
+    public partial class PhoneNumber : Model<PhoneNumber>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -134,7 +134,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.PhoneNumber"; } }
+		public override string EntityTypeName { get { return "Crm.PhoneNumber"; } }
         
 		/// <summary>
         /// Gets or sets the Person.

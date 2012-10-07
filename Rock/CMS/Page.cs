@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
-    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered, IExportable
+    public partial class Page : Model<Page>, IAuditable, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Name.
@@ -255,7 +255,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Page"; } }
+		public override string EntityTypeName { get { return "Cms.Page"; } }
         
 		/// <summary>
         /// Gets or sets the Blocks.

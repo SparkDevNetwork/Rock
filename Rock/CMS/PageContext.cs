@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "cmsPageContext" )]
-    public partial class PageContext : ModelWithAttributes<PageContext>, IAuditable
+    public partial class PageContext : Model<PageContext>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -102,7 +102,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.PageContext"; } }
+		public override string EntityTypeName { get { return "Cms.PageContext"; } }
         
 		/// <summary>
         /// Gets or sets the Page.

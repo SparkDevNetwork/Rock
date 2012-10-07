@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Person Trail POCO Entity.
     /// </summary>
     [Table( "crmPersonMerged" )]
-    public partial class PersonMerged : ModelWithAttributes<PersonMerged>
+    public partial class PersonMerged : Model<PersonMerged>
     {
 		/// <summary>
 		/// Gets or sets the Current Id.
@@ -62,7 +62,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.PersonMerged"; } }
+		public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.

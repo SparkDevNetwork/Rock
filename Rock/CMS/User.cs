@@ -21,7 +21,7 @@ namespace Rock.Cms
     /// User POCO Entity.
     /// </summary>
     [Table( "cmsUser" )]
-    public partial class User : ModelWithAttributes<User>, IAuditable
+    public partial class User : Model<User>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the User Name.
@@ -229,7 +229,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.User"; } }
+		public override string EntityTypeName { get { return "Cms.User"; } }
         
 		/// <summary>
         /// Gets or sets the Person.

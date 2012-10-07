@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Batch POCO class.
     /// </summary>
     [Table("financialBatch")]
-    public partial class Batch : ModelWithAttributes<Batch>, IAuditable
+    public partial class Batch : Model<Batch>, IAuditable
     {
         /// <summary>
         /// Gets or sets the name.
@@ -145,7 +145,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.Batch"; } }
+        public override string EntityTypeName { get { return "Financial.Batch"; } }
     }
 
     /// <summary>

@@ -19,7 +19,7 @@ namespace Rock.Crm
     /// Campus POCO Entity.
     /// </summary>
     [Table( "crmCampus" )]
-    public partial class Campus : ModelWithAttributes<Campus>, IAuditable
+    public partial class Campus : Model<Campus>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -81,7 +81,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string AuthEntity { get { return "Crm.Campus"; } }
+        public override string EntityTypeName { get { return "Crm.Campus"; } }
 
 		/// <summary>
 		/// Static Method to return an object based on the id

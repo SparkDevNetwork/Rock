@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Site Domain POCO Entity.
     /// </summary>
     [Table( "cmsSiteDomain" )]
-    public partial class SiteDomain : ModelWithAttributes<SiteDomain>, IAuditable
+    public partial class SiteDomain : Model<SiteDomain>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -91,7 +91,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.SiteDomain"; } }
+		public override string EntityTypeName { get { return "Cms.SiteDomain"; } }
         
 		/// <summary>
         /// Gets or sets the Site.
