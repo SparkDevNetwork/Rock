@@ -151,6 +151,16 @@ namespace Rock.Groups
         /// </value>
 		public virtual GroupRole DefaultGroupRole { get; set; }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Name;
+		}
     }
 
     /// <summary>

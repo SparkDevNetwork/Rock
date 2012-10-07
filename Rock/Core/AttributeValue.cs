@@ -126,6 +126,11 @@ namespace Rock.Core
 		{
 			return Read<AttributeValue>( id );
 		}
+
+		public override string ToString()
+		{
+			return this.Value;
+		}
     }
 
     /// <summary>

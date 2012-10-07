@@ -163,7 +163,7 @@ namespace Rock.Cms
         /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ApprovedByPerson { get; set; }
-        
+
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -174,7 +174,7 @@ namespace Rock.Cms
 			return Read<HtmlContent>( id );
 		}
 
-        /// <summary>
+		/// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>

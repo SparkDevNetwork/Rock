@@ -236,6 +236,17 @@ namespace Rock.Core
         /// A <see cref="FieldType"/> object.
         /// </value>
 		public virtual FieldType FieldType { get; set; }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Key;
+		}
 }
 
     /// <summary>

@@ -168,6 +168,14 @@ namespace Rock.Cms
         /// </value>
 		public virtual Page Page { get; set; }
         
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        public override List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
+
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -178,16 +186,7 @@ namespace Rock.Cms
 			return Read<Block>( id );
 		}
 
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        public override List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
-        }
-
-        /// <summary>
+		/// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>

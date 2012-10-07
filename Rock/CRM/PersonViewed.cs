@@ -99,6 +99,18 @@ namespace Rock.Crm
 			return Read<PersonViewed>( id );
 		}
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			if (ViewerPerson != null && TargetPerson != null)
+				return string.Format("{0} Viewed {1}", ViewerPerson.FullName, TargetPerson.FullName);
+			return string.Empty;
+		}
     }
 
     /// <summary>
