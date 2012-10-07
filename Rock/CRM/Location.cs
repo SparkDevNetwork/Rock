@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Location POCO Entity.
     /// </summary>
     [Table( "crmLocation" )]
-    public partial class Location : ModelWithAttributes<Location>, IAuditable
+    public partial class Location : Model<Location>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the Raw.
@@ -244,7 +244,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.Location"; } }
+		public override string EntityTypeName { get { return "Crm.Location"; } }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

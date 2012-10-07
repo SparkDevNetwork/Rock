@@ -43,7 +43,7 @@ namespace Rock.Financial
 		}
 
 		/// <summary>
-		/// Instantiates a new DTO object from the model
+		/// Instantiates a new DTO object from the entity
 		/// </summary>
 		/// <param name="gateway"></param>
 		public GatewayDto ( Gateway gateway )
@@ -54,8 +54,8 @@ namespace Rock.Financial
 		/// <summary>
 		/// Copies the model property values to the DTO properties
 		/// </summary>
-		/// <param name="gateway"></param>
-		public void CopyFromModel( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyFromModel( IEntity model )
 		{
 			if ( model is Gateway )
 			{
@@ -75,10 +75,10 @@ namespace Rock.Financial
 		}
 
 		/// <summary>
-		/// Copies the DTO property values to the model properties
+		/// Copies the DTO property values to the entity properties
 		/// </summary>
-		/// <param name="gateway"></param>
-		public void CopyToModel ( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyToModel ( IEntity model )
 		{
 			if ( model is Gateway )
 			{

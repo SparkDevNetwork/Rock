@@ -21,7 +21,7 @@ namespace Rock.Web.UI
 		/// <summary>
 		/// The current entity (context item)
 		/// </summary>
-		protected Rock.Data.IModel Entity { get; private set; }
+		protected Rock.Data.IEntity Entity { get; private set; }
 
 		/// <summary>
 		/// Gets a list of any context entities that the block requires.

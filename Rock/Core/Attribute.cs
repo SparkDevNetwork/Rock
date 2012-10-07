@@ -19,7 +19,7 @@ namespace Rock.Core
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "coreAttribute" )]
-    public partial class Attribute : Model<Attribute>, IAuditable, IOrdered
+    public partial class Attribute : Entity<Attribute>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -206,13 +206,12 @@ namespace Rock.Core
 		{
 			return Read<Attribute>( id );
 		}
-
-		
+				
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.Attribute"; } }
+		public override string EntityTypeName { get { return "Core.Attribute"; } }
         
 		/// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -237,15 +236,7 @@ namespace Rock.Core
         /// A <see cref="FieldType"/> object.
         /// </value>
 		public virtual FieldType FieldType { get; set; }
-        
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
-        }
-    }
+}
 
     /// <summary>
     /// Attribute Configuration class.
@@ -257,7 +248,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeConfiguration()
         {
-			this.HasRequired( p => p.FieldType ).WithMany( p => p.Attributes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
 		}
     }
 }

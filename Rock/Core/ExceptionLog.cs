@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Exception Log POCO Entity.
     /// </summary>
     [Table( "coreExceptionLog" )]
-    public partial class ExceptionLog : ModelWithAttributes<ExceptionLog>
+    public partial class ExceptionLog : Model<ExceptionLog>
     {
 		/// <summary>
 		/// Gets or sets the Parent Id.
@@ -173,7 +173,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.ExceptionLog"; } }
+		public override string EntityTypeName { get { return "Core.ExceptionLog"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id

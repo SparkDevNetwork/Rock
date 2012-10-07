@@ -126,7 +126,7 @@ namespace RockWeb
                         transaction.Execute();
                     }
                 }
-                catch ( Exception ex )
+                catch 
                 {
                     // TODO log exception
                 }
@@ -368,7 +368,7 @@ namespace RockWeb
                     LogError( ex.InnerException, exceptionLog.Id, status, context );
 
             }
-            catch ( Exception exception )
+            catch 
             {
                 // if you get an exception while logging an exception I guess you're hosed...
             }            

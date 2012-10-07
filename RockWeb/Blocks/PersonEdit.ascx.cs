@@ -26,7 +26,7 @@ namespace RockWeb.Blocks
 
         protected void Page_Load( object sender, EventArgs e )
         {
-            Person person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+            person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
             if (person == null)
             {
                 PersonService personService = new PersonService();

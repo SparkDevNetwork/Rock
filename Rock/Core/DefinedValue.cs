@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Defined Value POCO Entity.
     /// </summary>
     [Table( "coreDefinedValue" )]
-    public partial class DefinedValue : ModelWithAttributes<DefinedValue>, IAuditable, IOrdered
+    public partial class DefinedValue : Model<DefinedValue>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -110,7 +110,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.DefinedValue"; } }
+		public override string EntityTypeName { get { return "Core.DefinedValue"; } }
         
 		/// <summary>
         /// Gets or sets the Defined Type.

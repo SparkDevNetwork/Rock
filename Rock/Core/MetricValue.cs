@@ -140,7 +140,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.MetricValue"; } }
+		public override string EntityTypeName { get { return "Core.MetricValue"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id

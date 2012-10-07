@@ -44,7 +44,7 @@ namespace Rock.Core
 		}
 
 		/// <summary>
-		/// Instantiates a new DTO object from the model
+		/// Instantiates a new DTO object from the entity
 		/// </summary>
 		/// <param name="definedType"></param>
 		public DefinedTypeDto ( DefinedType definedType )
@@ -55,8 +55,8 @@ namespace Rock.Core
 		/// <summary>
 		/// Copies the model property values to the DTO properties
 		/// </summary>
-		/// <param name="definedType"></param>
-		public void CopyFromModel( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyFromModel( IEntity model )
 		{
 			if ( model is DefinedType )
 			{
@@ -77,10 +77,10 @@ namespace Rock.Core
 		}
 
 		/// <summary>
-		/// Copies the DTO property values to the model properties
+		/// Copies the DTO property values to the entity properties
 		/// </summary>
-		/// <param name="definedType"></param>
-		public void CopyToModel ( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyToModel ( IEntity model )
 		{
 			if ( model is DefinedType )
 			{

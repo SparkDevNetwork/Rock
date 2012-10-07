@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Payment Gateway POCO class.
     /// </summary>
     [Table("financialGateway")]
-    public partial class Gateway : ModelWithAttributes<Gateway>, IAuditable
+    public partial class Gateway : Model<Gateway>, IAuditable
     {
         /// <summary>
         /// Gets or sets the name.
@@ -113,6 +113,12 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         public int? ModifiedByPersonId { get; set; }
+
+		/// <summary>
+		/// Gets the auth entity.
+		/// </summary>
+		[NotMapped]
+		public override string EntityTypeName { get { return "Financial.Gateway"; } }
 
 		/// <summary>
 		/// Static Method to return an object based on the id

@@ -17,30 +17,9 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change POCO Entity.
     /// </summary>
-    [Table( "coreEntityChange" )]
-    public partial class EntityChange : Model<EntityChange>
+    [Table( "coreAudit" )]
+    public partial class Audit : Model<EntityChange>
     {
-		/// <summary>
-		/// Gets or sets the Change Set.
-		/// </summary>
-		/// <value>
-		/// Change Set.
-		/// </value>
-		[Required]
-		[DataMember]
-		public Guid ChangeSet { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Change Type.
-		/// </summary>
-		/// <value>
-		/// Change Type.
-		/// </value>
-		[Required]
-		[MaxLength( 10 )]
-		[DataMember]
-		public string ChangeType { get; set; }
-		
 		/// <summary>
 		/// Gets or sets the Entity Type.
 		/// </summary>
@@ -113,7 +92,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.EntityChange"; } }
+		public override string AuthEntity { get { return "Core.EntityChange"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id

@@ -25,7 +25,7 @@ namespace Rock.Core
     /// Metric POCO Entity.
     /// </summary>
     [Table( "coreMetric" )]
-    public partial class Metric : ModelWithAttributes<Metric>, IAuditable, IOrdered
+    public partial class Metric : Model<Metric>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -201,7 +201,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.Metric"; } }
+		public override string EntityTypeName { get { return "Core.Metric"; } }
         
 		/// <summary>
         /// Gets or sets the Metric Values.

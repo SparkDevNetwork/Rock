@@ -234,12 +234,12 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
-        internal Dictionary<string, Rock.Data.KeyModel> Context
+        internal Dictionary<string, Rock.Data.KeyEntity> Context
         {
             get { return _context; }
             set { _context = value; }
         }
-        private Dictionary<string, Data.KeyModel> _context;
+        private Dictionary<string, Data.KeyEntity> _context;
 
         #endregion
 
@@ -286,13 +286,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public Rock.Data.IModel GetCurrentContext( string entity )
+        public Rock.Data.IEntity GetCurrentContext( string entity )
         {
             if ( this.Context.ContainsKey( entity ) )
             {
                 var keyModel = this.Context[entity];
 
-                if ( keyModel.Model == null )
+                if ( keyModel.Entity == null )
                 {
                     Type serviceType = typeof( Rock.Data.Service<> );
                     Type[] modelType = { Type.GetType( entity ) };
@@ -302,19 +302,19 @@ namespace Rock.Web.Cache
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
                         MethodInfo getMethod = service.GetMethod( "Get" );
-                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IModel;
+                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
                     {
                         MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                        keyModel.Model = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IModel;
+                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
                     }
 
-                    if ( keyModel.Model is Rock.Attribute.IHasAttributes )
-                        Rock.Attribute.Helper.LoadAttributes( keyModel.Model as Rock.Attribute.IHasAttributes );
+                    if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
+                        Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
                 }
 
-                return keyModel.Model;
+                return keyModel.Entity;
             }
 
             return null;
@@ -569,7 +569,7 @@ namespace Rock.Web.Cache
                 foreach ( var pageContext in pageModel.PageContexts )
                     page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
-            page.AuthEntity = pageModel.AuthEntity;
+            page.EntityTypeName = pageModel.EntityTypeName;
             page.SupportedActions = pageModel.SupportedActions;
 
             return page;
@@ -636,7 +636,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string AuthEntity { get; set; }
+        public string EntityTypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to

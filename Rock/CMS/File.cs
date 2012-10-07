@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// File POCO Entity.
     /// </summary>
     [Table( "cmsFile" )]
-    public partial class File : ModelWithAttributes<File>, IAuditable
+    public partial class File : Model<File>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the Temporary.
@@ -130,7 +130,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.File"; } }
+		public override string EntityTypeName { get { return "Cms.File"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id

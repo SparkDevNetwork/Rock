@@ -17,7 +17,7 @@ namespace Rock.Financial
     /// TransactionDetail POCO class.
     /// </summary>
     [Table("financialTransactionDetail")]
-    public partial class TransactionDetail : ModelWithAttributes<TransactionDetail>, IAuditable
+    public partial class TransactionDetail : Model<TransactionDetail>, IAuditable
     {
         /// <summary>
         /// Gets or sets the transaction id.
@@ -123,7 +123,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.TransactionDetail"; } }
+        public override string EntityTypeName { get { return "Financial.TransactionDetail"; } }
     }
 
     /// <summary>

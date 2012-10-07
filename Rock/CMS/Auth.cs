@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Auth POCO Entity.
     /// </summary>
     [Table( "cmsAuth" )]
-    public partial class Auth : ModelWithAttributes<Auth>, IAuditable, IOrdered
+    public partial class Auth : Model<Auth>, IAuditable, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the Entity Type.
@@ -140,7 +140,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Auth"; } }
+		public override string EntityTypeName { get { return "Cms.Auth"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id

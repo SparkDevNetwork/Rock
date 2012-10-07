@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Attribute Qualifier POCO Entity.
     /// </summary>
     [Table( "coreAttributeQualifier" )]
-    public partial class AttributeQualifier : Model<AttributeQualifier>, IAuditable
+    public partial class AttributeQualifier : Entity<AttributeQualifier>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -100,7 +100,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.AttributeQualifier"; } }
+		public override string EntityTypeName { get { return "Core.AttributeQualifier"; } }
         
 		/// <summary>
         /// Gets or sets the Attribute.

@@ -45,7 +45,7 @@ namespace Rock.Groups
 		}
 
 		/// <summary>
-		/// Instantiates a new DTO object from the model
+		/// Instantiates a new DTO object from the entity
 		/// </summary>
 		/// <param name="group"></param>
 		public GroupDto ( Group group )
@@ -56,8 +56,8 @@ namespace Rock.Groups
 		/// <summary>
 		/// Copies the model property values to the DTO properties
 		/// </summary>
-		/// <param name="group"></param>
-		public void CopyFromModel( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyFromModel( IEntity model )
 		{
 			if ( model is Group )
 			{
@@ -79,10 +79,10 @@ namespace Rock.Groups
 		}
 
 		/// <summary>
-		/// Copies the DTO property values to the model properties
+		/// Copies the DTO property values to the entity properties
 		/// </summary>
-		/// <param name="group"></param>
-		public void CopyToModel ( IModel model )
+		/// <param name="model">The model</param>
+		public void CopyToModel ( IEntity model )
 		{
 			if ( model is Group )
 			{

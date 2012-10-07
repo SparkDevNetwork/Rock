@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Attribute Value POCO Entity.
     /// </summary>
     [Table( "coreAttributeValue" )]
-    public partial class AttributeValue : Model<AttributeValue>, IAuditable
+    public partial class AttributeValue : Entity<AttributeValue>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -107,7 +107,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.AttributeValue"; } }
+		public override string EntityTypeName { get { return "Core.AttributeValue"; } }
         
 		/// <summary>
         /// Gets or sets the Attribute.
@@ -126,15 +126,6 @@ namespace Rock.Core
 		{
 			return Read<AttributeValue>( id );
 		}
-
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
-        }
     }
 
     /// <summary>

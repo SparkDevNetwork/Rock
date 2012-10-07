@@ -14,7 +14,7 @@ using Rock.Data;
 
 namespace Rock.Tests.Fakes
 {
-    public class FakeRepository<T> : IRepository<T> where T : Model<T>
+    public class FakeRepository<T> : IRepository<T> where T : Entity<T>
     {
         private static IQueryable<T> db; 
 

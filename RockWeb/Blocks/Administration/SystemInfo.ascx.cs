@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Administration
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
             foreach ( KeyValuePair<string, object> cachItem in cache.AsQueryable().ToList() )
             {
-                int size = 0;
+                //int size = 0;
 
 				//try
 				//{

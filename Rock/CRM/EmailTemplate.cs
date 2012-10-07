@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Email Template POCO Entity.
     /// </summary>
     [Table( "crmEmailTemplate" )]
-    public partial class EmailTemplate : ModelWithAttributes<EmailTemplate>, IAuditable
+    public partial class EmailTemplate : Model<EmailTemplate>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -168,7 +168,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
+		public override string EntityTypeName { get { return "Crm.EmailTemplate"; } }
         
 		/// <summary>
         /// Gets or sets the Person.

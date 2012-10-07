@@ -18,7 +18,7 @@ namespace Rock.Groups
     /// Group POCO Entity.
     /// </summary>
     [Table( "groupsGroup" )]
-    public partial class Group : ModelWithAttributes<Group>, IAuditable
+    public partial class Group : Model<Group>, IAuditable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -138,7 +138,7 @@ namespace Rock.Groups
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Groups.Group"; } }
+		public override string EntityTypeName { get { return "Groups.Group"; } }
         
 		/// <summary>
         /// Gets or sets the Groups.
