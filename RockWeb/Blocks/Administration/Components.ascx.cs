@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// of the attributes specified in each class
     /// </summary>
     [Rock.Attribute.Property( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
-    public partial class Components : Rock.Web.UI.Block
+    public partial class Components : Rock.Web.UI.RockBlock
     {
         #region Private Variables
 

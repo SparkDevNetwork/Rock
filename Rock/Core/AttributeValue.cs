@@ -20,112 +20,112 @@ namespace Rock.Core
     [Table( "coreAttributeValue" )]
     public partial class AttributeValue : Model<AttributeValue>, IAuditable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Attribute Id.
-		/// </summary>
-		/// <value>
-		/// Attribute Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int AttributeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		[DataMember]
-		public int? EntityId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[DataMember]
-		public int? Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Value.
-		/// </summary>
-		/// <value>
-		/// Value.
-		/// </value>
-		[DataMember]
-		public string Value { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Attribute Id.
+        /// </summary>
+        /// <value>
+        /// Attribute Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int AttributeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [DataMember]
+        public int? Order { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        /// <value>
+        /// Value.
+        /// </value>
+        [DataMember]
+        public string Value { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Core.AttributeValue"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Core.AttributeValue"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
         /// <value>
         /// A <see cref="Attribute"/> object.
         /// </value>
-		public virtual Attribute Attribute { get; set; }
+        public virtual Attribute Attribute { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static AttributeValue Read( int id )
-		{
-			return Read<AttributeValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static AttributeValue Read( int id )
+        {
+            return Read<AttributeValue>( id );
+        }
 
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeValueConfiguration()
         {
-			this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
+        }
     }
 }

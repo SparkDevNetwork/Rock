@@ -11,17 +11,17 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Site POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Site POCO Service class
+    /// </summary>
     public partial class SiteService : Service<Site, SiteDto>
     {
-		/// <summary>
-		/// Gets Sites by Default Page Id
-		/// </summary>
-		/// <param name="defaultPageId">Default Page Id.</param>
-		/// <returns>An enumerable list of Site objects.</returns>
-	    public IEnumerable<Site> GetByDefaultPageId( int? defaultPageId )
+        /// <summary>
+        /// Gets Sites by Default Page Id
+        /// </summary>
+        /// <param name="defaultPageId">Default Page Id.</param>
+        /// <returns>An enumerable list of Site objects.</returns>
+        public IEnumerable<Site> GetByDefaultPageId( int? defaultPageId )
         {
             return Repository.Find( t => ( t.DefaultPageId == defaultPageId || ( defaultPageId == null && t.DefaultPageId == null ) ) );
         }

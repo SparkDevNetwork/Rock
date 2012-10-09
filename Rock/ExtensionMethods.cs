@@ -79,12 +79,12 @@ namespace Rock
 			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
-		/// <summary>
-		/// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
-		/// </summary>
-		/// <param name="str">The string.</param>
-		/// <param name="splitOnWhitespace">if set to <c>true</c> string will also be split on any type of whitespace.</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="whitespace">if set to <c>true</c> [whitespace].</param>
+        /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
 			if (str == null)
@@ -170,11 +170,11 @@ namespace Rock
 
 		#region Int Extensions
 
-		/// <summary>
-		/// Gets the Defined Value name associated with this id
-		/// </summary>
-		/// <param name="field"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Gets the Defined Value name associated with this id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
 		public static string DefinedValue( this int? id )
 		{
 			if ( !id.HasValue )
@@ -258,6 +258,8 @@ namespace Rock
         /// Returns a friendly elapsed time string.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
 		public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
 		{
@@ -269,11 +271,13 @@ namespace Rock
 				return string.Empty;
 		}
 
-		/// <summary>
-		/// Returns a friendly elapsed time string.
-		/// </summary>
-		/// <param name="dateTime">The date time.</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Returns a friendly elapsed time string.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
+        /// <returns></returns>
 		public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
 		{
 			DateTime start = dateTime;
@@ -493,6 +497,7 @@ namespace Rock
         /// Joins a dictionary of items
         /// </summary>
         /// <param name="items">The items.</param>
+        /// <param name="delimter">The delimter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
         {

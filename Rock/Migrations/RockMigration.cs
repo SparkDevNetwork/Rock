@@ -9,7 +9,8 @@ using Rock.Cms;
 
 namespace Rock.Migrations
 {
-	/// <summary>
+#pragma warning disable 1591
+    /// <summary>
 	/// Custom Migration methods
 	/// </summary>
 	public abstract class RockMigration : DbMigration

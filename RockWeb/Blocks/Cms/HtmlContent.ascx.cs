@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Cms
     [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
 
-    public partial class HtmlContent : Rock.Web.UI.Block
+    public partial class HtmlContent : Rock.Web.UI.RockBlock
     {
         #region Private Global Variables
 
@@ -278,22 +278,22 @@ namespace RockWeb.Blocks.Cms
             var HtmlService = new HtmlContentService();
             var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-			var personService = new Rock.Crm.PersonService();
-			var modifiedPersons = new Dictionary<int, string>();
-			foreach ( var personId in content.Where( c => c.ModifiedByPersonId.HasValue ).Select( c => c.ModifiedByPersonId ).Distinct() )
-			{
-				var modifiedPerson = personService.Get( personId.Value, true );
-				modifiedPersons.Add( personId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
-			}
+            var personService = new Rock.Crm.PersonService();
+            var modifiedPersons = new Dictionary<int, string>();
+            foreach ( var personId in content.Where( c => c.ModifiedByPersonId.HasValue ).Select( c => c.ModifiedByPersonId ).Distinct() )
+            {
+                var modifiedPerson = personService.Get( personId.Value, true );
+                modifiedPersons.Add( personId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
+            }
 
-			var versions = content.
+            var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
                     v.Content,
                     ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
-					ModifiedByPerson = v.ModifiedByPersonId.HasValue ? modifiedPersons[v.ModifiedByPersonId.Value] : string.Empty,
+                    ModifiedByPerson = v.ModifiedByPersonId.HasValue ? modifiedPersons[v.ModifiedByPersonId.Value] : string.Empty,
                     Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,

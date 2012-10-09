@@ -12,37 +12,37 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Block Type POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Block Type POCO Service class
+    /// </summary>
     public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
     {
-		/// <summary>
-		/// Gets Block Type by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Block Type object.</returns>
-		public BlockType GetByGuid( Guid guid )
-		{
-			return Repository.FirstOrDefault( t => t.Guid == guid );
-		}
+        /// <summary>
+        /// Gets Block Type by Guid
+        /// </summary>
+        /// <param name="guid">Guid.</param>
+        /// <returns>Block Type object.</returns>
+        public BlockType GetByGuid( Guid guid )
+        {
+            return Repository.FirstOrDefault( t => t.Guid == guid );
+        }
 
-		/// <summary>
-		/// Gets Blocks by Name
-		/// </summary>
-		/// <param name="name">Name.</param>
-		/// <returns>An enumerable list of Block Type objects.</returns>
-	    public IEnumerable<BlockType> GetByName( string name )
+        /// <summary>
+        /// Gets Blocks by Name
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <returns>An enumerable list of Block Type objects.</returns>
+        public IEnumerable<BlockType> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }
-		
-		/// <summary>
-		/// Gets Blocks by Path
-		/// </summary>
-		/// <param name="path">Path.</param>
-		/// <returns>An enumerable list of Block Type objects.</returns>
-	    public IEnumerable<BlockType> GetByPath( string path )
+        
+        /// <summary>
+        /// Gets Blocks by Path
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <returns>An enumerable list of Block Type objects.</returns>
+        public IEnumerable<BlockType> GetByPath( string path )
         {
             return Repository.Find( t => t.Path == path );
         }
@@ -72,7 +72,7 @@ namespace Rock.Cms
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
             string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
             
-			// Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
+            // Determine the virtual path (it will be either "~/Blocks/" or "~/Plugins/")
             string virtualPath = string.Format( "~/{0}/", folder );
 
             // search for all blocks under the physical path 

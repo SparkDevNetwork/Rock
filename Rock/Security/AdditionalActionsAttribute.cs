@@ -13,7 +13,7 @@ namespace Rock.Security
     /// <summary>
     /// A class Attribute that can be used by objects that implement ISecured to add additional supported actions
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true )]
     public class AdditionalActionsAttribute : System.Attribute
     {
         /// <summary>

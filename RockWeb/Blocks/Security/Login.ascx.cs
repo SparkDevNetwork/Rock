@@ -20,10 +20,10 @@ using Rock.Crm;
 namespace RockWeb.Blocks.Security
 {
     [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
-    public partial class Login : Rock.Web.UI.Block
+    public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>
-        /// Handles the Load event of the Page control.
+        /// Handles the Load event of the RockPage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>

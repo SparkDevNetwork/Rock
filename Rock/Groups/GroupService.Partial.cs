@@ -11,58 +11,58 @@ using Rock.Data;
 
 namespace Rock.Groups
 {
-	/// <summary>
-	/// Group POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Group POCO Service class
+    /// </summary>
     public partial class GroupService : Service<Group, GroupDto>
     {
-		/// <summary>
-		/// Gets Groups by Group Type Id
-		/// </summary>
-		/// <param name="groupTypeId">Group Type Id.</param>
-		/// <returns>An enumerable list of Group objects.</returns>
-	    public IEnumerable<Group> GetByGroupTypeId( int groupTypeId )
+        /// <summary>
+        /// Gets Groups by Group Type Id
+        /// </summary>
+        /// <param name="groupTypeId">Group Type Id.</param>
+        /// <returns>An enumerable list of Group objects.</returns>
+        public IEnumerable<Group> GetByGroupTypeId( int groupTypeId )
         {
             return Repository.Find( t => t.GroupTypeId == groupTypeId );
         }
-		
-		/// <summary>
-		/// Gets Group by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>Group object.</returns>
-	    public Group GetByGuid( Guid guid )
+        
+        /// <summary>
+        /// Gets Group by Guid
+        /// </summary>
+        /// <param name="guid">Guid.</param>
+        /// <returns>Group object.</returns>
+        public Group GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
-		
-		/// <summary>
-		/// Gets Groups by Is Security Role
-		/// </summary>
-		/// <param name="isSecurityRole">Is Security Role.</param>
-		/// <returns>An enumerable list of Group objects.</returns>
-	    public IEnumerable<Group> GetByIsSecurityRole( bool isSecurityRole )
+        
+        /// <summary>
+        /// Gets Groups by Is Security Role
+        /// </summary>
+        /// <param name="isSecurityRole">Is Security Role.</param>
+        /// <returns>An enumerable list of Group objects.</returns>
+        public IEnumerable<Group> GetByIsSecurityRole( bool isSecurityRole )
         {
             return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
         }
-		
-		/// <summary>
-		/// Gets Groups by Parent Group Id
-		/// </summary>
-		/// <param name="parentGroupId">Parent Group Id.</param>
-		/// <returns>An enumerable list of Group objects.</returns>
-	    public IEnumerable<Group> GetByParentGroupId( int? parentGroupId )
+        
+        /// <summary>
+        /// Gets Groups by Parent Group Id
+        /// </summary>
+        /// <param name="parentGroupId">Parent Group Id.</param>
+        /// <returns>An enumerable list of Group objects.</returns>
+        public IEnumerable<Group> GetByParentGroupId( int? parentGroupId )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets Groups by Parent Group Id And Name
-		/// </summary>
-		/// <param name="parentGroupId">Parent Group Id.</param>
-		/// <param name="name">Name.</param>
-		/// <returns>An enumerable list of Group objects.</returns>
-	    public IEnumerable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
+        
+        /// <summary>
+        /// Gets Groups by Parent Group Id And Name
+        /// </summary>
+        /// <param name="parentGroupId">Parent Group Id.</param>
+        /// <param name="name">Name.</param>
+        /// <returns>An enumerable list of Group objects.</returns>
+        public IEnumerable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }

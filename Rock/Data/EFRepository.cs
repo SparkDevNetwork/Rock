@@ -22,7 +22,14 @@ namespace Rock.Data
     public class EFRepository<T> : IRepository<T>, IDisposable
         where T : Rock.Data.Model<T>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         private bool IsDisposed;
+
+        /// <summary>
+        /// 
+        /// </summary>
         private DbContext _context;
 
         /// <summary>
@@ -42,6 +49,9 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         internal DbSet<T> _objectSet;
 
         /// <summary>
@@ -66,26 +76,26 @@ namespace Rock.Data
         /// An <see cref="IQueryable{T}"/> list of entitities
         /// </summary>
         /// <returns></returns>
-        public virtual IQueryable<T> AsQueryable()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+        public virtual IQueryable<T> AsQueryable()
         {
             return _objectSet;
         }
 
-		/// <summary>
-		/// An <see cref="IQueryable{T}"/> list of entitities
-		/// with a eager load of includes properties
-		/// </summary>
-		/// <returns></returns>
-		public virtual IQueryable<T> AsQueryable(string includes)
-		{
-			DbQuery<T> value = _objectSet;
-			if (!String.IsNullOrEmpty(includes))
-				foreach(var include in includes.SplitDelimitedValues())
-					value = value.Include(include);
-			return value;
-		}
+        /// <summary>
+        /// An <see cref="IQueryable{T}"/> list of entitities
+        /// with a eager load of includes properties
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<T> AsQueryable( string includes )
+        {
+            DbQuery<T> value = _objectSet;
+            if ( !String.IsNullOrEmpty( includes ) )
+                foreach ( var include in includes.SplitDelimitedValues() )
+                    value = value.Include( include );
+            return value;
+        }
 
-		/// <summary>
+        /// <summary>
         /// An <see cref="IEnumerable{T}"/> list of all entities
         /// </summary>
         /// <returns></returns>
@@ -188,7 +198,7 @@ namespace Rock.Data
             List<object> deletedEntities = new List<object>();
             List<object> modifiedEntities = new List<object>();
 
-            var contextAdapter = ( ( IObjectContextAdapter )Context );
+            var contextAdapter = ( (IObjectContextAdapter)Context );
 
             foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
                 System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
@@ -203,7 +213,7 @@ namespace Rock.Data
 
                         if ( entry.Entity is IAuditable )
                         {
-                            IAuditable auditable = ( IAuditable )entry.Entity;
+                            IAuditable auditable = (IAuditable)entry.Entity;
                             auditable.CreatedByPersonId = PersonId;
                             auditable.CreatedDateTime = DateTime.Now;
                             auditable.ModifiedByPersonId = PersonId;
@@ -234,7 +244,7 @@ namespace Rock.Data
 
                                 if ( model is IAuditable )
                                 {
-                                    IAuditable auditable = ( IAuditable )model;
+                                    IAuditable auditable = (IAuditable)model;
                                     auditable.ModifiedByPersonId = PersonId;
                                     auditable.ModifiedDateTime = DateTime.Now;
                                 }
@@ -251,26 +261,38 @@ namespace Rock.Data
             {
                 var model = modifiedEntity as Model<T>;
                 if ( model != null )
+                {
                     model.RaiseAddedEvent( PersonId );
+                }
             }
 
             foreach ( object deletedEntity in deletedEntities )
             {
                 var model = deletedEntity as Model<T>;
                 if ( model != null )
+                {
                     model.RaiseDeletedEvent( PersonId );
+                }
             }
 
             foreach ( object modifiedEntity in modifiedEntities )
             {
                 var model = modifiedEntity as Model<T>;
                 if ( model != null )
+                {
                     model.RaiseUpdatedEvent( PersonId );
+                }
             }
 
             return entityChanges;
         }
 
+        /// <summary>
+        /// Gets the entity changes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
         private List<Rock.Core.EntityChange> GetEntityChanges( object entity, int? personId )
         {
             List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
@@ -280,7 +302,9 @@ namespace Rock.Data
             {
                 Type entityType = entity.GetType();
                 if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                {
                     entityType = entityType.BaseType;
+                }
 
                 Guid changeSet = Guid.NewGuid();
 
@@ -300,7 +324,9 @@ namespace Rock.Data
                         if ( currentValueStr != originalValueStr )
                         {
                             if ( entityChanges == null )
+                            {
                                 entityChanges = new List<Core.EntityChange>();
+                            }
 
                             Rock.Core.EntityChange change = new Core.EntityChange();
                             change.ChangeSet = changeSet;
@@ -326,22 +352,24 @@ namespace Rock.Data
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Dispose( true );
+            GC.SuppressFinalize( this );
         }
 
         /// <summary>
         /// Dispose
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose( bool disposing )
         {
-            if (!IsDisposed)
+            if ( !IsDisposed )
             {
-                if (disposing)
+                if ( disposing )
                 {
-                    if (_context != null)
+                    if ( _context != null )
+                    {
                         _context.Dispose();
+                    }
                 }
 
                 _context = null;

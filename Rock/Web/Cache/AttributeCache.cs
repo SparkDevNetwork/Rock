@@ -24,27 +24,27 @@ namespace Rock.Web.Cache
     [Serializable]
     public class AttributeCache : Rock.Core.AttributeDto
     {
-		private AttributeCache() : base() { }
-		private AttributeCache( Rock.Core.Attribute model ) : base( model ) { }
+        private AttributeCache() : base() { }
+        private AttributeCache( Rock.Core.Attribute model ) : base( model ) { }
 
-        /// <summary>
-        /// Gets the category.
-        /// </summary>
-		//public override string Category 
-		//{ 
-		//	get
-		//	{
-		//		return string.IsNullOrEmpty( base.Category ) ? "Attributes" : base.Category;
-		//	}
+        // <summary>
+        // Gets the category.
+        // </summary>
+        //public override string Category 
+        //{ 
+        //    get
+        //    {
+        //        return string.IsNullOrEmpty( base.Category ) ? "Attributes" : base.Category;
+        //    }
 
-		//	private set
-		//	{
-		//		if ( value == "Attributes" )
-		//			base.Category = null;
-		//		else
-		//			base.Category = value;
-		//	}
-		//}
+        //    private set
+        //    {
+        //        if ( value == "Attributes" )
+        //            base.Category = null;
+        //        else
+        //            base.Category = value;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the type of the field.
@@ -57,10 +57,10 @@ namespace Rock.Web.Cache
             get { return FieldTypeCache.Read( FieldTypeId ); }
         }
 
-		/// <summary>
-		/// Gets the qualifier values if any have been defined for the attribute
-		/// </summary>
-		public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
+        /// <summary>
+        /// Gets the qualifier values if any have been defined for the attribute
+        /// </summary>
+        public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -90,20 +90,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Rock.Core.Attribute attributeModel )
         {
-			string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
+            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
-			ObjectCache cache = MemoryCache.Default;
-			AttributeCache attribute = cache[cacheKey] as AttributeCache;
+            ObjectCache cache = MemoryCache.Default;
+            AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
-			if ( attribute != null )
-				return attribute;
-			else
-			{
-				attribute = AttributeCache.CopyModel( attributeModel );
-				cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+            if ( attribute != null )
+                return attribute;
+            else
+            {
+                attribute = AttributeCache.CopyModel( attributeModel );
+                cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
-				return attribute;
-			}
+                return attribute;
+            }
         }
 
         /// <summary>

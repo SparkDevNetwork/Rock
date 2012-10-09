@@ -16,7 +16,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
-    public partial class PersonSearch : Rock.Web.UI.Block
+    public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Control Methods
 

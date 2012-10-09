@@ -8,9 +8,9 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
-	/// <summary>
-	/// Entity Framework Context
-	/// </summary>
+    /// <summary>
+    /// Entity Framework Context
+    /// </summary>
     internal partial class RockContext : DbContext
     {
         /// <summary>
@@ -157,21 +157,21 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Defined Types.
-		/// </summary>
-		/// <value>
-		/// the Defined Types.
-		/// </value>
-		public DbSet<Rock.Core.Metric> Metrics { get; set; }
+        /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
+        public DbSet<Rock.Core.Metric> Metrics { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Defined Values.
-		/// </summary>
-		/// <value>
-		/// the Defined Values.
-		/// </value>
-		public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
+        public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
 
         /// <summary>
         /// Gets or sets the Service Logs.
@@ -181,23 +181,23 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Tags.
-		/// </summary>
-		/// <value>
-		/// the Tags.
-		/// </value>
-		public DbSet<Rock.Core.Tag> Tags { get; set; }
+        /// <summary>
+        /// Gets or sets the Tags.
+        /// </summary>
+        /// <value>
+        /// the Tags.
+        /// </value>
+        public DbSet<Rock.Core.Tag> Tags { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Tagged Items.
-		/// </summary>
-		/// <value>
-		/// the Tagged Items.
-		/// </value>
-		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+        /// <summary>
+        /// Gets or sets the Tagged Items.
+        /// </summary>
+        /// <value>
+        /// the Tagged Items.
+        /// </value>
+        public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Location.
         /// </summary>
         /// <value>
@@ -277,15 +277,15 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Group Locations.
-		/// </summary>
-		/// <value>
-		/// the Group Locations.
-		/// </value>
-		public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
+        /// <summary>
+        /// Gets or sets the Group Locations.
+        /// </summary>
+        /// <value>
+        /// the Group Locations.
+        /// </value>
+        public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
@@ -364,58 +364,65 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
-			ContextHelper.AddConfigurations( modelBuilder );
-		}
+            ContextHelper.AddConfigurations( modelBuilder );
+        }
     }
 
-	public static class ContextHelper
-	{
-		public static void AddConfigurations(DbModelBuilder modelBuilder)
-		{
-			modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ContextHelper
+    {
+        /// <summary>
+        /// Adds the configurations.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
+        public static void AddConfigurations( DbModelBuilder modelBuilder )
+        {
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-			modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.PageRouteConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.SiteConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.SiteDomainConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Cms.UserConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.TransactionConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Groups.GroupLocationConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
-			modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
-		}
-	}
+            modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.PageRouteConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.SiteConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.SiteDomainConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.UserConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Groups.GroupLocationConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
+        }
+    }
 }
 
