@@ -58,7 +58,7 @@ namespace RockWeb
 				string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
 
 				// Is it cached
-				if (System.IO.File.Exists(physFilePath))
+				if ( System.IO.File.Exists( physFilePath ) )
 				{
 					// When was file last modified
 					dynamic fileInfo = fileService
@@ -70,7 +70,7 @@ namespace RockWeb
 							LastModifiedTime = f.LastModifiedTime
 						} )
 						.FirstOrDefault();
-						
+
 					file = new Rock.Cms.File();
 					file.MimeType = fileInfo.MimeType;
 					file.LastModifiedTime = fileInfo.LastModifiedTime;
@@ -80,9 +80,9 @@ namespace RockWeb
 						file.Data = FetchFromCache( physFilePath );
 				}
 
-				if (file == null || file.Data == null)
+				if ( file == null || file.Data == null )
 				{
-					file = fileService.Get(id);
+					file = fileService.Get( id );
 
 					if ( file != null )
 					{
@@ -103,8 +103,9 @@ namespace RockWeb
 				// Post process
 				SendFile( context, file );
 			}
-			catch ( Exception ex )
+			catch
 			{
+			}
         }
 
         /// <summary>

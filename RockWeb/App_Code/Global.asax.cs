@@ -147,7 +147,7 @@ namespace RockWeb
                         transaction.Execute();
                     }
                 }
-                catch 
+                catch (Exception ex)
                 {
                     try
                     {
