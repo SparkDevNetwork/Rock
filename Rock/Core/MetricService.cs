@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Metric Service class
-	/// </summary>
-	public partial class MetricService : Service<Metric, MetricDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MetricService"/> class
-		/// </summary>
-		public MetricService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Metric Service class
+    /// </summary>
+    public partial class MetricService : Service<Metric, MetricDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// </summary>
+        public MetricService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MetricService"/> class
-		/// </summary>
-		public MetricService(IRepository<Metric> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// </summary>
+        public MetricService(IRepository<Metric> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Metric CreateNew()
-		{
-			return new Metric();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Metric CreateNew()
+        {
+            return new Metric();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<MetricDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<MetricDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -76,7 +76,8 @@ namespace Rock.Core
 					SourceSQL = m.SourceSQL,
 					Order = m.Order,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

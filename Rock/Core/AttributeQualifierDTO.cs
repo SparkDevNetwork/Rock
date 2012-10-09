@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Data Transfer Object for AttributeQualifier object
-	/// </summary>
-	public partial class AttributeQualifierDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for AttributeQualifier object
+    /// </summary>
+    public partial class AttributeQualifierDto : IDto
+    {
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
@@ -30,12 +30,12 @@ namespace Rock.Core
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public AttributeQualifierDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public AttributeQualifierDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

@@ -88,21 +88,21 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.FieldType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
         /// Collection of Defined Types.
         /// </value>
-		public virtual ICollection<DefinedType> DefinedTypes { get; set; }
+        public virtual ICollection<DefinedType> DefinedTypes { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Metrics.
-		/// </summary>
-		/// <value>
-		/// Collection of Metrics.
-		/// </value>
-		//public virtual ICollection<Metric> Metrics { get; set; }
+        // <summary>
+        // Gets or sets the Metrics.
+        // </summary>
+        // <value>
+        // Collection of Metrics.
+        // </value>
+        //public virtual ICollection<Metric> Metrics { get; set; }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -127,6 +127,6 @@ namespace Rock.Core
         /// </summary>
         public FieldTypeConfiguration()
         {
-		}
+        }
     }
 }

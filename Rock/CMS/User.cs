@@ -23,25 +23,25 @@ namespace Rock.Cms
     [Table( "cmsUser" )]
     public partial class User : Model<User>
     {
-		/// <summary>
-		/// Gets or sets the User Name.
-		/// </summary>
-		/// <value>
-		/// User Name.
-		/// </value>
-		[Required]
-		[MaxLength( 255 )]
-		[DataMember]
-		public string UserName { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Authentication Type.
-		/// </summary>
-		/// <value>
-		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
-		/// </value>
-		[Required]
-		[DataMember]
+        /// <summary>
+        /// Gets or sets the User Name.
+        /// </summary>
+        /// <value>
+        /// User Name.
+        /// </value>
+        [Required]
+        [MaxLength( 255 )]
+        [DataMember]
+        public string UserName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Authentication Type.
+        /// </summary>
+        /// <value>
+        /// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
+        /// </value>
+        [Required]
+        [DataMember]
         public AuthenticationType AuthenticationType
         {
             get { return _AuthenticationType; }
@@ -49,25 +49,25 @@ namespace Rock.Cms
         }
         private AuthenticationType _AuthenticationType = AuthenticationType.Database;
 
-		/// <summary>
-		/// Gets or sets the Password.
-		/// </summary>
-		/// <value>
-		/// Password.
-		/// </value>
-		[Required]
-		[MaxLength( 128 )]
-		[DataMember]
-		public string Password { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the is confirmed.
-		/// </summary>
-		/// <value>
-		/// Is confirmed.
-		/// </value>
-		[DataMember]
-		public bool? IsConfirmed { get; set; }
+        /// <summary>
+        /// Gets or sets the Password.
+        /// </summary>
+        /// <value>
+        /// Password.
+        /// </value>
+        [Required]
+        [MaxLength( 128 )]
+        [DataMember]
+        public string Password { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the is confirmed.
+        /// </summary>
+        /// <value>
+        /// Is confirmed.
+        /// </value>
+        [DataMember]
+        public bool? IsConfirmed { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
@@ -196,23 +196,23 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.User"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person Person { get; set; }
+        public virtual Crm.Person Person { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static User Read( int id )
-		{
-			return Read<User>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static User Read( int id )
+        {
+            return Read<User>( id );
+        }
 
 
         /// <summary>
@@ -296,8 +296,8 @@ namespace Rock.Cms
         /// </summary>
         public UserConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-		}
+            this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+        }
     }
 
     /// <summary>

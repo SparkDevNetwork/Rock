@@ -21,105 +21,105 @@ namespace Rock.Core
     [Table( "coreAttribute" )]
     public partial class Attribute : Entity<Attribute>, IOrdered
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Field Type Id.
-		/// </summary>
-		/// <value>
-		/// Field Type Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int FieldTypeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity.
-		/// </summary>
-		/// <value>
-		/// Entity.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Entity { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityQualifierColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		[MaxLength( 200 )]
-		[DataMember]
-		public string EntityQualifierValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Key.
-		/// </summary>
-		/// <value>
-		/// Key.
-		/// </value>
-		[Required]
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Key { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Category.
-		/// </summary>
-		/// <value>
-		/// Category.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Category { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Field Type Id.
+        /// </summary>
+        /// <value>
+        /// Field Type Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int FieldTypeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Entity { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Column.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Column.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string EntityQualifierColumn { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Value.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Value.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityQualifierValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        /// <value>
+        /// Key.
+        /// </value>
+        [Required]
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Key { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Category { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
 		public int Order { get; set; }
 		
 		/// <summary>
@@ -177,23 +177,23 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.Attribute"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
-		public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
+        public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute Values.
         /// </summary>
         /// <value>
         /// Collection of Attribute Values.
         /// </value>
-		public virtual ICollection<AttributeValue> AttributeValues { get; set; }
+        public virtual ICollection<AttributeValue> AttributeValues { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Field Type.
         /// </summary>
         /// <value>

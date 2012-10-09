@@ -105,15 +105,15 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.File"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static File Read( int id )
-		{
-			return Read<File>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static File Read( int id )
+        {
+            return Read<File>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -138,6 +138,6 @@ namespace Rock.Cms
         /// </summary>
         public FileConfiguration()
         {
-		}
+        }
     }
 }

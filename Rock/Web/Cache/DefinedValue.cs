@@ -16,8 +16,8 @@ namespace Rock.Web.Cache
     [Serializable]
     public class DefinedValueCache : Rock.Core.DefinedValueDto
     {
-		private DefinedValueCache() : base() { }
-		private DefinedValueCache( Rock.Core.DefinedValue model ) : base( model ) { }
+        private DefinedValueCache() : base() { }
+        private DefinedValueCache( Rock.Core.DefinedValue model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -27,7 +27,7 @@ namespace Rock.Web.Cache
         /// </value>
         public DefinedTypeCache DefinedType
         {
-			get { return DefinedTypeCache.Read( DefinedTypeId ); }
+            get { return DefinedTypeCache.Read( DefinedTypeId ); }
         }
 
         #region Static Methods
@@ -81,15 +81,15 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             DefinedValueCache definedValue = cache[cacheKey] as DefinedValueCache;
 
-			if ( definedValue != null )
-				return definedValue;
-			else
-			{
-				definedValue = DefinedValueCache.CopyModel( definedValueModel );
-				cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
+            if ( definedValue != null )
+                return definedValue;
+            else
+            {
+                definedValue = DefinedValueCache.CopyModel( definedValueModel );
+                cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
 
-				return definedValue;
-			}
+                return definedValue;
+            }
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache CopyModel( Rock.Core.DefinedValue definedValueModel )
         {
-			DefinedValueCache definedValue = new DefinedValueCache( definedValueModel );
+            DefinedValueCache definedValue = new DefinedValueCache( definedValueModel );
             return definedValue;
         }
 

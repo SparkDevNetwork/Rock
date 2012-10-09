@@ -23,7 +23,7 @@ namespace Rock.Address.Standardize
         /// <summary>
         /// Standardizes the address
         /// </summary>
-		/// <param name="location">The location.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The AddressCheck result code</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully

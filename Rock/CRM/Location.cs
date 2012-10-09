@@ -20,103 +20,103 @@ namespace Rock.Crm
     [Table( "crmLocation" )]
     public partial class Location : Model<Location>
     {
-		/// <summary>
-		/// Gets or sets the Raw.
-		/// </summary>
-		/// <value>
-		/// Raw.
-		/// </value>
-		[MaxLength( 400 )]
-		[DataMember]
-		public string Raw { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Street 1.
-		/// </summary>
-		/// <value>
-		/// Street 1.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Street1 { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Street 2.
-		/// </summary>
-		/// <value>
-		/// Street 2.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Street2 { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the City.
-		/// </summary>
-		/// <value>
-		/// City.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string City { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the State.
-		/// </summary>
-		/// <value>
-		/// State.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string State { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Country.
-		/// </summary>
-		/// <value>
-		/// Country.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Country { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Zip.
-		/// </summary>
-		/// <value>
-		/// Zip.
-		/// </value>
-		[MaxLength( 10 )]
-		[DataMember]
-		public string Zip { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Latitude.
-		/// </summary>
-		/// <value>
-		/// Latitude.
-		/// </value>
-		[DataMember]
-		public double? Latitude { get; set; }
+        /// <summary>
+        /// Gets or sets the Raw.
+        /// </summary>
+        /// <value>
+        /// Raw.
+        /// </value>
+        [MaxLength( 400 )]
+        [DataMember]
+        public string Raw { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Street 1.
+        /// </summary>
+        /// <value>
+        /// Street 1.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Street1 { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Street 2.
+        /// </summary>
+        /// <value>
+        /// Street 2.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Street2 { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the City.
+        /// </summary>
+        /// <value>
+        /// City.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string City { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the State.
+        /// </summary>
+        /// <value>
+        /// State.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string State { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Country.
+        /// </summary>
+        /// <value>
+        /// Country.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Country { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Zip.
+        /// </summary>
+        /// <value>
+        /// Zip.
+        /// </value>
+        [MaxLength( 10 )]
+        [DataMember]
+        public string Zip { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Latitude.
+        /// </summary>
+        /// <value>
+        /// Latitude.
+        /// </value>
+        [DataMember]
+        public double? Latitude { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Longitude.
-		/// </summary>
-		/// <value>
-		/// Longitude.
-		/// </value>
-		[DataMember]
-		public double? Longitude { get; set; }
+        /// <summary>
+        /// Gets or sets the Longitude.
+        /// </summary>
+        /// <value>
+        /// Longitude.
+        /// </value>
+        [DataMember]
+        public double? Longitude { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Parcel Id.
-		/// </summary>
-		/// <value>
-		/// Parcel Id.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string ParcelId { get; set; }
+        /// <summary>
+        /// Gets or sets the Parcel Id.
+        /// </summary>
+        /// <value>
+        /// Parcel Id.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string ParcelId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Standardize Attempt.
@@ -233,6 +233,6 @@ namespace Rock.Crm
         /// </summary>
         public LocationConfiguration()
         {
-		}
+        }
     }
 }

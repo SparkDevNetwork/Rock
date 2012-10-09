@@ -11,38 +11,38 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Auth POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Auth POCO Service class
+    /// </summary>
     public partial class AuthService : Service<Auth, AuthDto>
     {
-		/// <summary>
-		/// Gets Auths by Entity Type And Entity Id
-		/// </summary>
-		/// <param name="entityType">Entity Type.</param>
-		/// <param name="entityId">Entity Id.</param>
-		/// <returns>An enumerable list of Auth objects.</returns>
-	    public IEnumerable<Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
+        /// <summary>
+        /// Gets Auths by Entity Type And Entity Id
+        /// </summary>
+        /// <param name="entityType">Entity Type.</param>
+        /// <param name="entityId">Entity Id.</param>
+        /// <returns>An enumerable list of Auth objects.</returns>
+        public IEnumerable<Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
         {
             return Repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Auths by Group Id
-		/// </summary>
-		/// <param name="groupId">Group Id.</param>
-		/// <returns>An enumerable list of Auth objects.</returns>
-	    public IEnumerable<Auth> GetByGroupId( int? groupId )
+        
+        /// <summary>
+        /// Gets Auths by Group Id
+        /// </summary>
+        /// <param name="groupId">Group Id.</param>
+        /// <returns>An enumerable list of Auth objects.</returns>
+        public IEnumerable<Auth> GetByGroupId( int? groupId )
         {
             return Repository.Find( t => ( t.GroupId == groupId || ( groupId == null && t.GroupId == null ) ) ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Auths by Person Id
-		/// </summary>
-		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of Auth objects.</returns>
-	    public IEnumerable<Auth> GetByPersonId( int? personId )
+        
+        /// <summary>
+        /// Gets Auths by Person Id
+        /// </summary>
+        /// <param name="personId">Person Id.</param>
+        /// <returns>An enumerable list of Auth objects.</returns>
+        public IEnumerable<Auth> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) ).OrderBy( t => t.Order );
         }

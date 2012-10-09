@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Location Service class
-	/// </summary>
-	public partial class LocationService : Service<Location, LocationDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LocationService"/> class
-		/// </summary>
-		public LocationService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Location Service class
+    /// </summary>
+    public partial class LocationService : Service<Location, LocationDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// </summary>
+        public LocationService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LocationService"/> class
-		/// </summary>
-		public LocationService(IRepository<Location> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// </summary>
+        public LocationService(IRepository<Location> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Location CreateNew()
-		{
-			return new Location();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Location CreateNew()
+        {
+            return new Location();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<LocationDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<LocationDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -81,7 +81,8 @@ namespace Rock.Crm
 					GeocodeResult = m.GeocodeResult,
 					GeocodeDate = m.GeocodeDate,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

@@ -15,25 +15,25 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Data Transfer Object for PersonAccountLookup object
-	/// </summary>
-	public partial class PersonAccountLookupDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PersonAccountLookup object
+    /// </summary>
+    public partial class PersonAccountLookupDto : IDto
+    {
 
 #pragma warning disable 1591
-		public int? PersonId { get; set; }
-		public string Account { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int? PersonId { get; set; }
+        public string Account { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PersonAccountLookupDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PersonAccountLookupDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

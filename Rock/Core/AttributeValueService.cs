@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// AttributeValue Service class
-	/// </summary>
-	public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AttributeValueService"/> class
-		/// </summary>
-		public AttributeValueService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// AttributeValue Service class
+    /// </summary>
+    public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueService"/> class
+        /// </summary>
+        public AttributeValueService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AttributeValueService"/> class
-		/// </summary>
-		public AttributeValueService(IRepository<AttributeValue> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueService"/> class
+        /// </summary>
+        public AttributeValueService(IRepository<AttributeValue> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override AttributeValue CreateNew()
-		{
-			return new AttributeValue();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override AttributeValue CreateNew()
+        {
+            return new AttributeValue();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AttributeValueDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<AttributeValueDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -68,7 +68,8 @@ namespace Rock.Core
 					Order = m.Order,
 					Value = m.Value,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

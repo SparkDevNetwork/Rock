@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for Auth object
-	/// </summary>
-	public partial class AuthDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Auth object
+    /// </summary>
+    public partial class AuthDto : IDto
+    {
 
 #pragma warning disable 1591
 		public string EntityType { get; set; }
@@ -34,12 +34,12 @@ namespace Rock.Cms
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public AuthDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public AuthDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

@@ -76,31 +76,31 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.DefinedValue"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Defined Type.
         /// </summary>
         /// <value>
         /// A <see cref="DefinedType"/> object.
         /// </value>
-		public virtual DefinedType DefinedType { get; set; }
+        public virtual DefinedType DefinedType { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static DefinedValue Read( int id )
-		{
-			return Read<DefinedValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static DefinedValue Read( int id )
+        {
+            return Read<DefinedValue>( id );
+        }
 
-		/// <summary>
-		/// Gets the parent authority.
-		/// </summary>
-		public override Security.ISecured ParentAuthority
-		{
-			get { return new Security.GenericEntity( "Global" ); }
-		}
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -124,7 +124,7 @@ namespace Rock.Core
         /// </summary>
         public DefinedValueConfiguration()
         {
-			this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
+        }
     }
 }

@@ -9,7 +9,7 @@ using System.Web.Security;
 
 namespace RockWeb.Blocks.Security
 {
-    public partial class LoginStatus : Rock.Web.UI.Block
+    public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         string action = string.Empty;
 

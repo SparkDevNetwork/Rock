@@ -17,7 +17,7 @@ namespace Rock.Web.Cache
     public class FieldTypeCache : Rock.Core.FieldTypeDto
     {
         private FieldTypeCache() : base() { }
-		private FieldTypeCache( Rock.Core.FieldType model ) : base( model ) { }
+        private FieldTypeCache( Rock.Core.FieldType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the field 
@@ -75,15 +75,15 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             FieldTypeCache fieldType = cache[cacheKey] as FieldTypeCache;
 
-			if ( fieldType != null )
-				return fieldType;
-			else
-			{
-				fieldType = FieldTypeCache.CopyModel( fieldTypeModel );
-				cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
+            if ( fieldType != null )
+                return fieldType;
+            else
+            {
+                fieldType = FieldTypeCache.CopyModel( fieldTypeModel );
+                cache.Set( cacheKey, fieldType, new CacheItemPolicy() );
 
-				return fieldType;
-			}
+                return fieldType;
+            }
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static FieldTypeCache CopyModel( Rock.Core.FieldType fieldTypeModel )
         {
-			FieldTypeCache fieldType = new FieldTypeCache( fieldTypeModel );
-			fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );
+            FieldTypeCache fieldType = new FieldTypeCache( fieldTypeModel );
+            fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );
 
             return fieldType;
         }

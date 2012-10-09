@@ -20,36 +20,36 @@ namespace Rock.Cms
     [Table( "cmsPageContext" )]
     public partial class PageContext : Model<PageContext>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Page Id.
-		/// </summary>
-		/// <value>
-		/// Page Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int PageId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity.
-		/// </summary>
-		/// <value>
-		/// Entity.
-		/// </value>
-		[Required]
-		[MaxLength( 200 )]
-		[DataMember]
-		public string Entity { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int PageId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the page parameter that contains the entity's id.
@@ -77,23 +77,23 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.PageContext"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+        public virtual Page Page { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static PageContext Read( int id )
-		{
-			return Read<PageContext>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static PageContext Read( int id )
+        {
+            return Read<PageContext>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -117,7 +117,7 @@ namespace Rock.Cms
         /// </summary>
         public PageContextConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
+        }
     }
 }

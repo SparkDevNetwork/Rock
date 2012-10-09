@@ -1,7 +1,7 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class PersonMerge : DbMigration
     {
         public override void Up()
@@ -22,64 +22,64 @@ SET @NewGuid = (SELECT [Guid] FROM crmPerson WHERE [Id] = @NewId)
 IF @OldGuid IS NOT NULL AND @NewGuid IS NOT NULL
 BEGIN
 
-	BEGIN TRANSACTION
+    BEGIN TRANSACTION
 
-	INSERT INTO crmPersonMerged ([Id], [Guid], [CurrentId], [CurrentGuid])
-	VALUES (@OldId, @OldGuid, @NewId, @NewGuid)
+    INSERT INTO crmPersonMerged ([Id], [Guid], [CurrentId], [CurrentGuid])
+    VALUES (@OldId, @OldGuid, @NewId, @NewGuid)
 
-	DECLARE @Sql varchar(max)
+    DECLARE @Sql varchar(max)
 
-	DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
-	SELECT 
-		' UPDATE ' + tso.name +
-		' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
-		' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
-	FROM sys.foreign_key_columns kc
-	INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
-	INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
-	INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
-	INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
-	INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
-	WHERE so.name = 'crmPerson'
-	AND rac.name = 'Id'
+    DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
+    SELECT 
+        ' UPDATE ' + tso.name +
+        ' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
+        ' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
+    FROM sys.foreign_key_columns kc
+    INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
+    INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
+    INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
+    INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
+    INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
+    WHERE so.name = 'crmPerson'
+    AND rac.name = 'Id'
 
-	OPEN ForeignKeyCursor
+    OPEN ForeignKeyCursor
 
-	FETCH NEXT
-	FROM ForeignKeyCursor
-	INTO @Sql
+    FETCH NEXT
+    FROM ForeignKeyCursor
+    INTO @Sql
 
-	WHILE (@@FETCH_STATUS <> -1)
-	BEGIN
+    WHILE (@@FETCH_STATUS <> -1)
+    BEGIN
 
-		IF (@@FETCH_STATUS = 0)
-		BEGIN
+        IF (@@FETCH_STATUS = 0)
+        BEGIN
 
-			EXEC(@Sql)
-			
-		END
-		
-		FETCH NEXT
-		FROM ForeignKeyCursor
-		INTO @Sql
+            EXEC(@Sql)
+            
+        END
+        
+        FETCH NEXT
+        FROM ForeignKeyCursor
+        INTO @Sql
 
-	END
+    END
 
-	CLOSE ForeignKeyCursor
-	DEALLOCATE ForeignKeyCursor
+    CLOSE ForeignKeyCursor
+    DEALLOCATE ForeignKeyCursor
 
-	DELETE crmPerson
-	WHERE [Id] = @OldId
-	
-	-- Delete any remaining Attribute Values
-	DELETE AV
-	FROM [coreAttribute] A
-	INNER JOIN [coreAttributeValue] AV
-		ON AV.[AttributeId] = A.[Id]
-		AND AV.[EntityId] = @OldId
-	WHERE A.[Entity] = 'Rock.CRM.Person'
-	
-	COMMIT TRANSACTION
+    DELETE crmPerson
+    WHERE [Id] = @OldId
+    
+    -- Delete any remaining Attribute Values
+    DELETE AV
+    FROM [coreAttribute] A
+    INNER JOIN [coreAttributeValue] AV
+        ON AV.[AttributeId] = A.[Id]
+        AND AV.[EntityId] = @OldId
+    WHERE A.[Entity] = 'Rock.CRM.Person'
+    
+    COMMIT TRANSACTION
 
 END
 " );

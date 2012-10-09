@@ -55,23 +55,23 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.TaggedItem"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Tag
         /// </summary>
         /// <value>
         /// A <see cref="Tag"/> object.
         /// </value>
-		public virtual Tag Tag { get; set; }
+        public virtual Tag Tag { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static AttributeValue Read( int id )
-		{
-			return Read<AttributeValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static AttributeValue Read( int id )
+        {
+            return Read<AttributeValue>( id );
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -101,9 +101,9 @@ namespace Rock.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueConfiguration"/> class.
         /// </summary>
-		public TaggeedItemConfiguration()
+        public TaggeedItemConfiguration()
         {
-			this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
+        }
     }
 }

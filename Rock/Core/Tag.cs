@@ -20,83 +20,83 @@ namespace Rock.Core
     [Table( "coreTag" )]
     public partial class Tag : Model<Tag>, IOrdered
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity.
-		/// </summary>
-		/// <value>
-		/// Entity.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Entity { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityQualifierColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		[MaxLength( 200 )]
-		[DataMember]
-		public string EntityQualifierValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Entity { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Column.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Column.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string EntityQualifierColumn { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Value.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Value.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityQualifierValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Owner Person Id.
-		/// </summary>
-		/// <value>
-		/// Owner Id.
-		/// </value>
-		[DataMember]
-		public int? OwnerId { get; set; }
+        /// <summary>
+        /// Gets or sets the Owner Person Id.
+        /// </summary>
+        /// <value>
+        /// Owner Id.
+        /// </value>
+        [DataMember]
+        public int? OwnerId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Owner Person.
-		/// </summary>
-		/// <value>
-		/// A <see cref="Crm.Person"/> object.
-		/// </value>
-		public virtual Crm.Person Owner { get; set; }
+        /// <summary>
+        /// Gets or sets the Owner Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Crm.Person"/> object.
+        /// </value>
+        public virtual Crm.Person Owner { get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -114,13 +114,13 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.Tag"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
-		public virtual ICollection<TaggedItem> TaggedItems { get; set; }
+        public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
         /// <summary>
         /// Gets the parent authority.
@@ -152,7 +152,7 @@ namespace Rock.Core
         /// </summary>
         public TagConfiguration()
         {
-			this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
-		}
+            this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
+        }
     }
 }

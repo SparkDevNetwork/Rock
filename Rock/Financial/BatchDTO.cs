@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Data Transfer Object for Batch object
-	/// </summary>
-	public partial class BatchDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Batch object
+    /// </summary>
+    public partial class BatchDto : IDto
+    {
 
 #pragma warning disable 1591
 		public string Name { get; set; }
@@ -33,12 +33,12 @@ namespace Rock.Financial
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public BatchDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public BatchDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

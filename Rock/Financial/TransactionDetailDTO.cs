@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Data Transfer Object for TransactionDetail object
-	/// </summary>
-	public partial class TransactionDetailDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for TransactionDetail object
+    /// </summary>
+    public partial class TransactionDetailDto : IDto
+    {
 
 #pragma warning disable 1591
 		public int? TransactionId { get; set; }
@@ -31,12 +31,12 @@ namespace Rock.Financial
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public TransactionDetailDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public TransactionDetailDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

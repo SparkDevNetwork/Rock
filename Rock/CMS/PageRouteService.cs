@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// PageRoute Service class
-	/// </summary>
-	public partial class PageRouteService : Service<PageRoute, PageRouteDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageRouteService"/> class
-		/// </summary>
-		public PageRouteService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// PageRoute Service class
+    /// </summary>
+    public partial class PageRouteService : Service<PageRoute, PageRouteDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// </summary>
+        public PageRouteService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageRouteService"/> class
-		/// </summary>
-		public PageRouteService(IRepository<PageRoute> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// </summary>
+        public PageRouteService(IRepository<PageRoute> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override PageRoute CreateNew()
-		{
-			return new PageRoute();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override PageRoute CreateNew()
+        {
+            return new PageRoute();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageRouteDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PageRouteDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -66,7 +66,8 @@ namespace Rock.Cms
 					PageId = m.PageId,
 					Route = m.Route,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

@@ -20,24 +20,24 @@ namespace Rock.Groups
     [Table( "groupsGroupRole" )]
     public partial class GroupRole : Model<GroupRole>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Group Type Id.
-		/// </summary>
-		/// <value>
-		/// Group Type Id.
-		/// </value>
-		[DataMember]
-		public int? GroupTypeId { get; set; }
+        /// <summary>
+        /// Gets or sets the Group Type Id.
+        /// </summary>
+        /// <value>
+        /// Group Type Id.
+        /// </value>
+        [DataMember]
+        public int? GroupTypeId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Name.
@@ -114,7 +114,7 @@ namespace Rock.Groups
         /// </summary>
         public GroupRoleConfiguration()
         {
-			this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
-		}
+            this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
+        }
     }
 }

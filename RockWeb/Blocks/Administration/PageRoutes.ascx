@@ -23,7 +23,7 @@
 
             <fieldset>
                 <legend>Page Route</legend>
-                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" />
+                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title" />
                 <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
             </fieldset>
 

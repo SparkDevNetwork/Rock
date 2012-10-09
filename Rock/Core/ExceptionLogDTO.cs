@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Data Transfer Object for ExceptionLog object
-	/// </summary>
-	public partial class ExceptionLogDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for ExceptionLog object
+    /// </summary>
+    public partial class ExceptionLogDto : IDto
+    {
 
 #pragma warning disable 1591
 		public int? ParentId { get; set; }
@@ -42,12 +42,12 @@ namespace Rock.Core
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public ExceptionLogDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public ExceptionLogDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

@@ -13,44 +13,44 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// User POCO Service class
-	/// </summary>
+    /// <summary>
+    /// User POCO Service class
+    /// </summary>
     public partial class UserService : Service<User, UserDto>
     {
         private const string VALIDATION_KEY = "D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2";
 
         /// <summary>
-		/// Gets Users by Api Key
-		/// </summary>
-		/// <param name="apiKey">Api Key.</param>
-		/// <returns>An enumerable list of User objects.</returns>
-	    public IEnumerable<User> GetByApiKey( string apiKey )
+        /// Gets Users by Api Key
+        /// </summary>
+        /// <param name="apiKey">Api Key.</param>
+        /// <returns>An enumerable list of User objects.</returns>
+        public IEnumerable<User> GetByApiKey( string apiKey )
         {
             return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets Users by Person Id
-		/// </summary>
-		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of User objects.</returns>
-	    public IEnumerable<User> GetByPersonId( int? personId )
+        
+        /// <summary>
+        /// Gets Users by Person Id
+        /// </summary>
+        /// <param name="personId">Person Id.</param>
+        /// <returns>An enumerable list of User objects.</returns>
+        public IEnumerable<User> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets User by User Name
-		/// </summary>
-		/// <param name="userName">User Name.</param>
-		/// <returns>User object.</returns>
-	    public User GetByUserName( string userName )
+        
+        /// <summary>
+        /// Gets User by User Name
+        /// </summary>
+        /// <param name="userName">User Name.</param>
+        /// <returns>User object.</returns>
+        public User GetByUserName( string userName )
         {
-			return Repository
-				.AsQueryable( "Person" )
-				.Where( u => u.UserName == userName )
-				.FirstOrDefault();
+            return Repository
+                .AsQueryable( "Person" )
+                .Where( u => u.UserName == userName )
+                .FirstOrDefault();
         }
 
         /// <summary>

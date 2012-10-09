@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -46,6 +45,7 @@ namespace Rock.Cms
 		/// <value>
 		/// Route.
 		/// </value>
+        [Route]
 		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
@@ -73,7 +73,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+        public virtual Page Page { get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -95,21 +95,21 @@ namespace Rock.Cms
             return this.ToDynamic();
         }
 
-		/// <summary>
-		/// Exports the object as JSON.
-		/// </summary>
-		/// <returns></returns>
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
-		/// <summary>
-		/// Imports the object from JSON.
-		/// </summary>
-		/// <param name="data">The data.</param>
-		/// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson(string data)
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void ImportJson( string data )
         {
             throw new NotImplementedException();
         }
@@ -126,7 +126,7 @@ namespace Rock.Cms
         /// </summary>
         public PageRouteConfiguration()
         {
-			this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
+        }
     }
 }

@@ -19,41 +19,41 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-	[Rock.Attribute.Property( 0, "Entity", "Entity", "Entity Name", false, "" )]
-	[Rock.Attribute.Property( 1, "Entity Qualifier Column", "Entity", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-	[Rock.Attribute.Property( 2, "Entity Qualifier Value", "Entity", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-	[Rock.Attribute.Property( 3, "Global Tags", "GlobalTags", "Entity", "Edit global tags (vs. personal tags)?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-	[System.ComponentModel.Description( "Block for administrating the tags for a given entity type" )]
-	public partial class Tags : Rock.Web.UI.Block
+    [Rock.Attribute.Property( 0, "Entity", "Entity", "Entity Name", false, "" )]
+    [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Entity", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Entity", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [Rock.Attribute.Property( 3, "Global Tags", "GlobalTags", "Entity", "Edit global tags (vs. personal tags)?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
+    [System.ComponentModel.Description( "Block for administrating the tags for a given entity type" )]
+    public partial class Tags : Rock.Web.UI.RockBlock
     {
         #region Fields
 
-		protected string _entity = string.Empty;
-		protected string _entityQualifierColumn = string.Empty;
-		protected string _entityQualifierValue = string.Empty;
-		protected int? _ownerId;
-		
-		private bool _canConfigure = false;
+        protected string _entity = string.Empty;
+        protected string _entityQualifierColumn = string.Empty;
+        protected string _entityQualifierValue = string.Empty;
+        protected int? _ownerId;
+        
+        private bool _canConfigure = false;
 
         #endregion
 
-		/// <summary>
-		/// Gets a list of any context entities that the block requires.
-		/// </summary>
-		public override List<string> RequiredContext
-		{
-			get 
-			{
-				var requiredContext = base.RequiredContext;
+        /// <summary>
+        /// Gets a list of any context entities that the block requires.
+        /// </summary>
+        public override List<string> RequiredContext
+        {
+            get 
+            {
+                var requiredContext = base.RequiredContext;
 
-				if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
-					requiredContext.Add( "Rock.Crm.Person" );
+                if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
+                    requiredContext.Add( "Rock.Crm.Person" );
 
-				return requiredContext;
-			}
-		}
+                return requiredContext;
+            }
+        }
 
-		#region Control Methods
+        #region Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
-					rGrid.GridReorder += rGrid_GridReorder;
+                    rGrid.GridReorder += rGrid_GridReorder;
                     rGrid.GridRebind += rGrid_GridRebind;
 
                     string script = string.Format( @"
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Administration
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
             var tagService = new Rock.Core.TagService();
-			var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
 
             if ( tag != null )
             {
@@ -149,32 +149,32 @@ namespace RockWeb.Blocks.Administration
             ShowEdit( 0 );
         }
 
-		void rGrid_GridReorder( object sender, GridReorderEventArgs e )
-		{
-			var tagService = new Rock.Core.TagService();
-			var queryable = tagService.Queryable().
-				Where( t => t.Entity == _entity &&
-					( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-					( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
-
-			if ( _ownerId.HasValue )
-				queryable = queryable.Where( t => t.OwnerId == _ownerId.Value );
-			else
-				queryable = queryable.Where( t => t.OwnerId == null );
-
-			var items = queryable
-				.OrderBy( t => t.Order )
-				.ToList();
-
-			tagService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
-
-			BindGrid();
-		}
-
-		void rGrid_GridRebind( object sender, EventArgs e )
+        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-			BindGrid();
-		}
+            var tagService = new Rock.Core.TagService();
+            var queryable = tagService.Queryable().
+                Where( t => t.Entity == _entity &&
+                    ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+
+            if ( _ownerId.HasValue )
+                queryable = queryable.Where( t => t.OwnerId == _ownerId.Value );
+            else
+                queryable = queryable.Where( t => t.OwnerId == null );
+
+            var items = queryable
+                .OrderBy( t => t.Order )
+                .ToList();
+
+            tagService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
+
+            BindGrid();
+        }
+
+        void rGrid_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
@@ -191,21 +191,21 @@ namespace RockWeb.Blocks.Administration
                 if ( tagId == 0 )
                 {
                     tag = new Rock.Core.Tag();
-					tag.IsSystem = false;
-					tag.Entity = _entity;
-					tag.EntityQualifierColumn = _entityQualifierColumn;
-					tag.EntityQualifierValue = _entityQualifierValue;
-					tag.OwnerId = _ownerId;
-					tagService.Add( tag, CurrentPersonId );
+                    tag.IsSystem = false;
+                    tag.Entity = _entity;
+                    tag.EntityQualifierColumn = _entityQualifierColumn;
+                    tag.EntityQualifierValue = _entityQualifierValue;
+                    tag.OwnerId = _ownerId;
+                    tagService.Add( tag, CurrentPersonId );
                 }
                 else
                 {
-					tag = tagService.Get( tagId );
+                    tag = tagService.Get( tagId );
                 }
 
                 tag.Name = tbName.Text;
 
-				tagService.Save( tag, CurrentPersonId );
+                tagService.Save( tag, CurrentPersonId );
 
             }
 
@@ -227,15 +227,15 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-			var queryable = new Rock.Core.TagService().Queryable().
-				Where( t => t.Entity == _entity &&
-					( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-					( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
-					
-			if (_ownerId.HasValue)
-				queryable = queryable.Where(t => t.OwnerId == _ownerId.Value);
-			else
-				queryable = queryable.Where(t => t.OwnerId == null);
+            var queryable = new Rock.Core.TagService().Queryable().
+                Where( t => t.Entity == _entity &&
+                    ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+                    
+            if (_ownerId.HasValue)
+                queryable = queryable.Where(t => t.OwnerId == _ownerId.Value);
+            else
+                queryable = queryable.Where(t => t.OwnerId == null);
 
             rGrid.DataSource = queryable.OrderBy( t => t.Order ).ToList();
             rGrid.DataBind();
@@ -245,10 +245,10 @@ namespace RockWeb.Blocks.Administration
         {
             var tag =  new Rock.Core.TagService().Get( tagId );
 
-			if ( tag != null )
+            if ( tag != null )
             {
                 lAction.Text = "Edit";
-				hfId.Value = tag.Id.ToString();
+                hfId.Value = tag.Id.ToString();
 
                 tbName.Text = tag.Name;
             }

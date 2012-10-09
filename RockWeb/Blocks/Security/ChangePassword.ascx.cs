@@ -21,10 +21,10 @@ namespace RockWeb.Blocks.Security
         "The User Name/Password combination is not valid." )]
     [Rock.Attribute.Property( 2, "Success", "SuccessCaption", "Captions", "", false,
         "Your password has been changed" )]
-    public partial class ChangePassword : Rock.Web.UI.Block
+    public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         protected override void OnLoad( EventArgs e )
         {

@@ -8,9 +8,9 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
-	/// <summary>
-	/// Entity Framework Context
-	/// </summary>
+    /// <summary>
+    /// Entity Framework Context
+    /// </summary>
     internal partial class RockContext : DbContext
     {
         /// <summary>
@@ -165,21 +165,21 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Defined Types.
-		/// </summary>
-		/// <value>
-		/// the Defined Types.
-		/// </value>
-		public DbSet<Rock.Core.Metric> Metrics { get; set; }
+        /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
+        public DbSet<Rock.Core.Metric> Metrics { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Defined Values.
-		/// </summary>
-		/// <value>
-		/// the Defined Values.
-		/// </value>
-		public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
+        public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
 
         /// <summary>
         /// Gets or sets the Service Logs.
@@ -189,23 +189,23 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Tags.
-		/// </summary>
-		/// <value>
-		/// the Tags.
-		/// </value>
-		public DbSet<Rock.Core.Tag> Tags { get; set; }
+        /// <summary>
+        /// Gets or sets the Tags.
+        /// </summary>
+        /// <value>
+        /// the Tags.
+        /// </value>
+        public DbSet<Rock.Core.Tag> Tags { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Tagged Items.
-		/// </summary>
-		/// <value>
-		/// the Tagged Items.
-		/// </value>
-		public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+        /// <summary>
+        /// Gets or sets the Tagged Items.
+        /// </summary>
+        /// <value>
+        /// the Tagged Items.
+        /// </value>
+        public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Location.
         /// </summary>
         /// <value>
@@ -285,15 +285,15 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Group Locations.
-		/// </summary>
-		/// <value>
-		/// the Group Locations.
-		/// </value>
-		public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
+        /// <summary>
+        /// Gets or sets the Group Locations.
+        /// </summary>
+        /// <value>
+        /// the Group Locations.
+        /// </value>
+        public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
@@ -372,12 +372,19 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
-			ContextHelper.AddConfigurations( modelBuilder );
-		}
+            ContextHelper.AddConfigurations( modelBuilder );
+        }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public static class ContextHelper
 	{
+        /// <summary>
+        /// Adds the configurations.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
 		public static void AddConfigurations(DbModelBuilder modelBuilder)
 		{
 			modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();

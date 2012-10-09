@@ -15,29 +15,29 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Data Transfer Object for ServiceLog object
-	/// </summary>
-	public partial class ServiceLogDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for ServiceLog object
+    /// </summary>
+    public partial class ServiceLogDto : IDto
+    {
 
 #pragma warning disable 1591
-		public DateTime? Time { get; set; }
-		public string Input { get; set; }
-		public string Type { get; set; }
-		public string Name { get; set; }
-		public string Result { get; set; }
-		public bool Success { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public DateTime? Time { get; set; }
+        public string Input { get; set; }
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string Result { get; set; }
+        public bool Success { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public ServiceLogDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public ServiceLogDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

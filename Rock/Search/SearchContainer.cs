@@ -14,8 +14,14 @@ using Rock.Extension;
 
 namespace Rock.Search
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SearchContainer : Container<SearchComponent, IComponentData>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         private static SearchContainer instance;
 
         /// <summary>
@@ -31,6 +37,9 @@ namespace Rock.Search
             }
         }
 
+        /// <summary>
+        /// Prevents a default instance of the <see cref="SearchContainer" /> class from being created.
+        /// </summary>
         private SearchContainer()
         {
             Refresh();

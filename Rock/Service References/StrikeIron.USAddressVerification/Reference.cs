@@ -8,8 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.StrikeIron.USAddressVerification {
-    
+namespace Rock.StrikeIron.USAddressVerification
+{
+
+#pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.strikeiron.com", ConfigurationName="StrikeIron.USAddressVerification.USAddressVerificationSoap")]

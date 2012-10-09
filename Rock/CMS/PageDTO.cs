@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for Page object
-	/// </summary>
-	public partial class PageDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Page object
+    /// </summary>
+    public partial class PageDto : IDto
+    {
 
 #pragma warning disable 1591
 		public string Name { get; set; }
@@ -43,12 +43,12 @@ namespace Rock.Cms
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PageDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PageDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity
