@@ -68,17 +68,6 @@ namespace RockWeb.Blocks.Administration
                     rGridAttribute.GridRebind += new GridRebindEventHandler( rGridAttribute_GridRebind );
                     rGridAttribute.Actions.IsAddEnabled = true;
                     rGridAttribute.Actions.ClientAddScript = "editAttribute(0)";
-
-                    string script = string.Format( @"
-                        Sys.Application.add_load(function () {{
-                            $('td.grid-icon-cell.delete a').click(function(){{
-                                return confirm('Are you sure you want to delete this setting?');
-                            }});
-                        }});
-                    ", rGridType.ClientID );
-
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGridValue.ClientID ), script, true );
-
                 }
                 else
                 {

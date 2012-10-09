@@ -41,16 +41,6 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
                     modalDetails.SaveClick += modalDetails_SaveClick;
-
-                    string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this block type?');
-                }});
-        }});
-    ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
-
                 }
                 else
                 {

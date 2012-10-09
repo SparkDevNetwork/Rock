@@ -78,13 +78,38 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object showActionRow = this.ViewState["ShowActionRow"];
-                return ( ( showActionRow == null ) || ( ( bool )showActionRow ) );
+                return ( ( showActionRow == null ) || ( (bool)showActionRow ) );
             }
             set
             {
                 bool showActionRow = this.ShowActionRow;
                 if ( value != showActionRow )
+                {
                     this.ViewState["ShowActionRow"] = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the row item.
+        /// </summary>
+        /// <value>
+        /// The name of the row item.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        Description( "Item Text" )
+        ]
+        public string RowItemText
+        {
+            get
+            {
+                object rowItemText = this.ViewState["RowItemText"];
+                return ( rowItemText as string );
+            }
+            set
+            {
+                this.ViewState["RowItemText"] = value;
             }
         }
 
@@ -104,7 +129,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object showActionExcelExport = this.ViewState["ShowActionExcelExport"];
-                return ( ( showActionExcelExport == null ) || ( ( bool )showActionExcelExport ) );
+                return ( ( showActionExcelExport == null ) || ( (bool)showActionExcelExport ) );
             }
             set
             {
@@ -122,6 +147,8 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["SortProperty"] as SortProperty; }
             private set { ViewState["SortProperty"] = value; }
         }
+
+
 
         #endregion
 
@@ -200,19 +227,19 @@ namespace Rock.Web.UI.Controls
             {
                 excel.Workbook.Properties.Title = "Rock ChMS Export";
             }
- 
+
             // add author info
             Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
-            if (user != null)
+            if ( user != null )
                 excel.Workbook.Properties.Author = user.Person.FullName;
             else
                 excel.Workbook.Properties.Author = "Rock ChMS";
-             
+
             // add the page that created this
             excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
 
             ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
-             
+
             // write data to worksheet there are three supported data sources
             // DataTables, DataViews and ILists
 
@@ -222,11 +249,11 @@ namespace Rock.Web.UI.Controls
             if ( this.DataSource is DataTable || this.DataSource is DataView )
             {
                 DataTable data = null;
-                
+
                 if ( this.DataSource is DataTable )
-                    data = ( DataTable )this.DataSource;
+                    data = (DataTable)this.DataSource;
                 else if ( this.DataSource is DataView )
-                    data = ( ( DataView )this.DataSource ).Table;
+                    data = ( (DataView)this.DataSource ).Table;
 
                 // print headings
                 foreach ( DataColumn column in data.Columns )
@@ -234,13 +261,13 @@ namespace Rock.Web.UI.Controls
                     worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
                     columnCounter++;
                 }
-                
+
                 // print data
                 foreach ( DataRow row in data.Rows )
                 {
-                    for (int i = 0; i < data.Columns.Count; i++)
+                    for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[ rowCounter, i ].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -255,7 +282,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // get access to the List<> and its properties
-                IList data = ( IList )this.DataSource;
+                IList data = (IList)this.DataSource;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
                 IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
 
@@ -337,7 +364,7 @@ namespace Rock.Web.UI.Controls
             worksheet.Cells[3, 1, rowCounter, columnCounter].AutoFilter = true;
 
             // add alternating highlights
-            
+
 
             // set some footer text
             worksheet.HeaderFooter.OddHeader.CenteredText = title;
@@ -440,7 +467,7 @@ namespace Rock.Web.UI.Controls
                 if ( dataKey != null )
                 {
                     string key = dataKey.ToString();
-                    e.Row.Attributes.Add("datakey",key);
+                    e.Row.Attributes.Add( "datakey", key );
                 }
             }
         }
@@ -469,7 +496,7 @@ namespace Rock.Web.UI.Controls
         ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
         protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
         {
-            int result = base.CreateChildControls(dataSource, dataBinding);
+            int result = base.CreateChildControls( dataSource, dataBinding );
 
             if ( _table != null && _table.Parent != null )
             {
@@ -575,7 +602,7 @@ namespace Rock.Web.UI.Controls
             else
                 base.RaisePostBackEvent( eventArgument );
         }
-        
+
         #endregion
 
         #region Events
@@ -810,7 +837,7 @@ namespace Rock.Web.UI.Controls
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
-        public void InstantiateIn(Control container)
+        public void InstantiateIn( Control container )
         {
             HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
             divPagination.Attributes.Add( "class", "pagination" );
@@ -875,7 +902,7 @@ namespace Rock.Web.UI.Controls
             ItemLink[1].Text = "100";
             ItemLink[2].Text = "1,000";
             ItemLink[3].Text = "All";
-       }
+        }
 
         /// <summary>
         /// Set the RockPage Navigation Display
@@ -912,7 +939,7 @@ namespace Rock.Web.UI.Controls
                     PageLink[0].Attributes["page-index"] = prevPageIndex.ToString();
 
                     int nextPageIndex = pageIndex;
-                    if ( pageIndex >= pageCount - 1)
+                    if ( pageIndex >= pageCount - 1 )
                     {
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
                         PageLink[PageLinkListItem.Length - 1].Enabled = false;
@@ -990,7 +1017,7 @@ namespace Rock.Web.UI.Controls
         void lbItems_Click( object sender, EventArgs e )
         {
             LinkButton lbItems = sender as LinkButton;
-            if ( lbItems != null && ItemsPerPageClick != null)
+            if ( lbItems != null && ItemsPerPageClick != null )
             {
                 int itemsPerPage = ALL_ITEMS_SIZE;
 
@@ -1028,21 +1055,21 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Dispose( true );
+            GC.SuppressFinalize( this );
         }
 
         /// <summary>
         /// Dispose
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose( bool disposing )
         {
-            if (!IsDisposed)
+            if ( !IsDisposed )
             {
-                if (disposing)
+                if ( disposing )
                 {
-                    if (NavigationPanel != null)
+                    if ( NavigationPanel != null )
                         NavigationPanel.Dispose();
                 }
 

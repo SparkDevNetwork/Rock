@@ -7,7 +7,7 @@
 
     <asp:Panel ID="pnlList" runat="server">
 
-        <Rock:Grid ID="rGrid" runat="server" >
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />

@@ -34,15 +34,6 @@ namespace RockWeb.Blocks.Administration
                 gCampuses.GridRebind += gCampuses_GridRebind;
             }
 
-            string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this campus?');
-                });
-        });
-    ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gCampuses.ClientID ), script, true );
-
             base.OnInit( e );
         }
 
