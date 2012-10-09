@@ -54,33 +54,33 @@ namespace Rock.Core
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<ExceptionLogDto> QueryableDto( IQueryable<ExceptionLog> items )
-		{
-			return items.Select( m => new ExceptionLogDto()
-				{
-					ParentId = m.ParentId,
-					SiteId = m.SiteId,
-					PageId = m.PageId,
-					ExceptionDate = m.ExceptionDate,
-					CreatedByPersonId = m.CreatedByPersonId,
-					HasInnerException = m.HasInnerException,
-					StatusCode = m.StatusCode,
-					ExceptionType = m.ExceptionType,
-					Description = m.Description,
-					Source = m.Source,
-					StackTrace = m.StackTrace,
-					PageUrl = m.PageUrl,
-					ServerVariables = m.ServerVariables,
-					QueryString = m.QueryString,
-					Form = m.Form,
-					Cookies = m.Cookies,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<ExceptionLogDto> QueryableDto( IQueryable<ExceptionLog> items )
+        {
+            return items.Select( m => new ExceptionLogDto()
+                {
+                    ParentId = m.ParentId,
+                    SiteId = m.SiteId,
+                    PageId = m.PageId,
+                    ExceptionDate = m.ExceptionDate,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    HasInnerException = m.HasInnerException,
+                    StatusCode = m.StatusCode,
+                    ExceptionType = m.ExceptionType,
+                    Description = m.Description,
+                    Source = m.Source,
+                    StackTrace = m.StackTrace,
+                    PageUrl = m.PageUrl,
+                    ServerVariables = m.ServerVariables,
+                    QueryString = m.QueryString,
+                    Form = m.Form,
+                    Cookies = m.Cookies,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

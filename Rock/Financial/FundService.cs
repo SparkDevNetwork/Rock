@@ -54,31 +54,31 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<FundDto> QueryableDto( IQueryable<Fund> items )
-		{
-			return items.Select( m => new FundDto()
-				{
-					Name = m.Name,
-					PublicName = m.PublicName,
-					Description = m.Description,
-					ParentFundId = m.ParentFundId,
-					IsTaxDeductible = m.IsTaxDeductible,
-					Order = m.Order,
-					IsActive = m.IsActive,
-					StartDate = m.StartDate,
-					EndDate = m.EndDate,
-					IsPledgable = m.IsPledgable,
-					GlCode = m.GlCode,
-					FundTypeId = m.FundTypeId,
-					Entity = m.Entity,
-					EntityId = m.EntityId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<FundDto> QueryableDto( IQueryable<Fund> items )
+        {
+            return items.Select( m => new FundDto()
+                {
+                    Name = m.Name,
+                    PublicName = m.PublicName,
+                    Description = m.Description,
+                    ParentFundId = m.ParentFundId,
+                    IsTaxDeductible = m.IsTaxDeductible,
+                    Order = m.Order,
+                    IsActive = m.IsActive,
+                    StartDate = m.StartDate,
+                    EndDate = m.EndDate,
+                    IsPledgable = m.IsPledgable,
+                    GlCode = m.GlCode,
+                    FundTypeId = m.FundTypeId,
+                    Entity = m.Entity,
+                    EntityId = m.EntityId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

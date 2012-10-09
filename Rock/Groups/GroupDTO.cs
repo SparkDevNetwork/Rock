@@ -22,15 +22,15 @@ namespace Rock.Groups
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int? ParentGroupId { get; set; }
-		public int GroupTypeId { get; set; }
-		public int? CampusId { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public bool IsSecurityRole { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? ParentGroupId { get; set; }
+        public int GroupTypeId { get; set; }
+        public int? CampusId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsSecurityRole { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -40,55 +40,55 @@ namespace Rock.Groups
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="group"></param>
-		public GroupDto ( Group group )
-		{
-			CopyFromModel( group );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="group"></param>
+        public GroupDto ( Group group )
+        {
+            CopyFromModel( group );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is Group )
-			{
-				var group = (Group)model;
-				this.IsSystem = group.IsSystem;
-				this.ParentGroupId = group.ParentGroupId;
-				this.GroupTypeId = group.GroupTypeId;
-				this.CampusId = group.CampusId;
-				this.Name = group.Name;
-				this.Description = group.Description;
-				this.IsSecurityRole = group.IsSecurityRole;
-				this.Id = group.Id;
-				this.Guid = group.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is Group )
+            {
+                var group = (Group)model;
+                this.IsSystem = group.IsSystem;
+                this.ParentGroupId = group.ParentGroupId;
+                this.GroupTypeId = group.GroupTypeId;
+                this.CampusId = group.CampusId;
+                this.Name = group.Name;
+                this.Description = group.Description;
+                this.IsSecurityRole = group.IsSecurityRole;
+                this.Id = group.Id;
+                this.Guid = group.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is Group )
-			{
-				var group = (Group)model;
-				group.IsSystem = this.IsSystem;
-				group.ParentGroupId = this.ParentGroupId;
-				group.GroupTypeId = this.GroupTypeId;
-				group.CampusId = this.CampusId;
-				group.Name = this.Name;
-				group.Description = this.Description;
-				group.IsSecurityRole = this.IsSecurityRole;
-				group.Id = this.Id;
-				group.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is Group )
+            {
+                var group = (Group)model;
+                group.IsSystem = this.IsSystem;
+                group.ParentGroupId = this.ParentGroupId;
+                group.GroupTypeId = this.GroupTypeId;
+                group.CampusId = this.CampusId;
+                group.Name = this.Name;
+                group.Description = this.Description;
+                group.IsSecurityRole = this.IsSecurityRole;
+                group.Id = this.Id;
+                group.Guid = this.Guid;
+            }
+        }
+    }
 }

@@ -14,11 +14,11 @@ using Rock.Core;
 
 namespace Rock.Rest.Core
 {
-	/// <summary>
-	/// Audits REST API
-	/// </summary>
-	public partial class AuditsController : Rock.Rest.ApiController<Rock.Core.Audit, Rock.Core.AuditDto>
-	{
-		public AuditsController() : base( new Rock.Core.AuditService() ) { } 
-	}
+    /// <summary>
+    /// Audits REST API
+    /// </summary>
+    public partial class AuditsController : Rock.Rest.ApiController<Rock.Core.Audit, Rock.Core.AuditDto>
+    {
+        public AuditsController() : base( new Rock.Core.AuditService() ) { } 
+    }
 }

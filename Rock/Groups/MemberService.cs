@@ -54,21 +54,21 @@ namespace Rock.Groups
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<MemberDto> QueryableDto( IQueryable<Member> items )
-		{
-			return items.Select( m => new MemberDto()
-				{
-					IsSystem = m.IsSystem,
-					GroupId = m.GroupId,
-					PersonId = m.PersonId,
-					GroupRoleId = m.GroupRoleId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<MemberDto> QueryableDto( IQueryable<Member> items )
+        {
+            return items.Select( m => new MemberDto()
+                {
+                    IsSystem = m.IsSystem,
+                    GroupId = m.GroupId,
+                    PersonId = m.PersonId,
+                    GroupRoleId = m.GroupRoleId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

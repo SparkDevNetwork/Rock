@@ -22,13 +22,13 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int DefinedTypeId { get; set; }
-		public int Order { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int DefinedTypeId { get; set; }
+        public int Order { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -38,51 +38,51 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="definedValue"></param>
-		public DefinedValueDto ( DefinedValue definedValue )
-		{
-			CopyFromModel( definedValue );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="definedValue"></param>
+        public DefinedValueDto ( DefinedValue definedValue )
+        {
+            CopyFromModel( definedValue );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is DefinedValue )
-			{
-				var definedValue = (DefinedValue)model;
-				this.IsSystem = definedValue.IsSystem;
-				this.DefinedTypeId = definedValue.DefinedTypeId;
-				this.Order = definedValue.Order;
-				this.Name = definedValue.Name;
-				this.Description = definedValue.Description;
-				this.Id = definedValue.Id;
-				this.Guid = definedValue.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is DefinedValue )
+            {
+                var definedValue = (DefinedValue)model;
+                this.IsSystem = definedValue.IsSystem;
+                this.DefinedTypeId = definedValue.DefinedTypeId;
+                this.Order = definedValue.Order;
+                this.Name = definedValue.Name;
+                this.Description = definedValue.Description;
+                this.Id = definedValue.Id;
+                this.Guid = definedValue.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is DefinedValue )
-			{
-				var definedValue = (DefinedValue)model;
-				definedValue.IsSystem = this.IsSystem;
-				definedValue.DefinedTypeId = this.DefinedTypeId;
-				definedValue.Order = this.Order;
-				definedValue.Name = this.Name;
-				definedValue.Description = this.Description;
-				definedValue.Id = this.Id;
-				definedValue.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is DefinedValue )
+            {
+                var definedValue = (DefinedValue)model;
+                definedValue.IsSystem = this.IsSystem;
+                definedValue.DefinedTypeId = this.DefinedTypeId;
+                definedValue.Order = this.Order;
+                definedValue.Name = this.Name;
+                definedValue.Description = this.Description;
+                definedValue.Id = this.Id;
+                definedValue.Guid = this.Guid;
+            }
+        }
+    }
 }

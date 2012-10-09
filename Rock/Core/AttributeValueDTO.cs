@@ -22,13 +22,13 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int AttributeId { get; set; }
-		public int? EntityId { get; set; }
-		public int? Order { get; set; }
-		public string Value { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int AttributeId { get; set; }
+        public int? EntityId { get; set; }
+        public int? Order { get; set; }
+        public string Value { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -38,51 +38,51 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="attributeValue"></param>
-		public AttributeValueDto ( AttributeValue attributeValue )
-		{
-			CopyFromModel( attributeValue );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="attributeValue"></param>
+        public AttributeValueDto ( AttributeValue attributeValue )
+        {
+            CopyFromModel( attributeValue );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is AttributeValue )
-			{
-				var attributeValue = (AttributeValue)model;
-				this.IsSystem = attributeValue.IsSystem;
-				this.AttributeId = attributeValue.AttributeId;
-				this.EntityId = attributeValue.EntityId;
-				this.Order = attributeValue.Order;
-				this.Value = attributeValue.Value;
-				this.Id = attributeValue.Id;
-				this.Guid = attributeValue.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is AttributeValue )
+            {
+                var attributeValue = (AttributeValue)model;
+                this.IsSystem = attributeValue.IsSystem;
+                this.AttributeId = attributeValue.AttributeId;
+                this.EntityId = attributeValue.EntityId;
+                this.Order = attributeValue.Order;
+                this.Value = attributeValue.Value;
+                this.Id = attributeValue.Id;
+                this.Guid = attributeValue.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is AttributeValue )
-			{
-				var attributeValue = (AttributeValue)model;
-				attributeValue.IsSystem = this.IsSystem;
-				attributeValue.AttributeId = this.AttributeId;
-				attributeValue.EntityId = this.EntityId;
-				attributeValue.Order = this.Order;
-				attributeValue.Value = this.Value;
-				attributeValue.Id = this.Id;
-				attributeValue.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is AttributeValue )
+            {
+                var attributeValue = (AttributeValue)model;
+                attributeValue.IsSystem = this.IsSystem;
+                attributeValue.AttributeId = this.AttributeId;
+                attributeValue.EntityId = this.EntityId;
+                attributeValue.Order = this.Order;
+                attributeValue.Value = this.Value;
+                attributeValue.Id = this.Id;
+                attributeValue.Guid = this.Guid;
+            }
+        }
+    }
 }

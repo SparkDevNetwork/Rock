@@ -54,25 +54,25 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
-		{
-			return items.Select( m => new AuthDto()
-				{
-					EntityType = m.EntityType,
-					EntityId = m.EntityId,
-					Order = m.Order,
-					Action = m.Action,
-					AllowOrDeny = m.AllowOrDeny,
-					SpecialRole = m.SpecialRole,
-					PersonId = m.PersonId,
-					GroupId = m.GroupId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
+        {
+            return items.Select( m => new AuthDto()
+                {
+                    EntityType = m.EntityType,
+                    EntityId = m.EntityId,
+                    Order = m.Order,
+                    Action = m.Action,
+                    AllowOrDeny = m.AllowOrDeny,
+                    SpecialRole = m.SpecialRole,
+                    PersonId = m.PersonId,
+                    GroupId = m.GroupId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

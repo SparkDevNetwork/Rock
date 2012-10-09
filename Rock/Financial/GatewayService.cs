@@ -54,22 +54,22 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<GatewayDto> QueryableDto( IQueryable<Gateway> items )
-		{
-			return items.Select( m => new GatewayDto()
-				{
-					Name = m.Name,
-					Description = m.Description,
-					ApiUrl = m.ApiUrl,
-					ApiKey = m.ApiKey,
-					ApiSecret = m.ApiSecret,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<GatewayDto> QueryableDto( IQueryable<Gateway> items )
+        {
+            return items.Select( m => new GatewayDto()
+                {
+                    Name = m.Name,
+                    Description = m.Description,
+                    ApiUrl = m.ApiUrl,
+                    ApiKey = m.ApiKey,
+                    ApiSecret = m.ApiSecret,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

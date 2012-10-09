@@ -54,22 +54,22 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
-		{
-			return items.Select( m => new PageContextDto()
-				{
-					IsSystem = m.IsSystem,
-					PageId = m.PageId,
-					Entity = m.Entity,
-					IdParameter = m.IdParameter,
-					CreatedDateTime = m.CreatedDateTime,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
+        {
+            return items.Select( m => new PageContextDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PageId = m.PageId,
+                    Entity = m.Entity,
+                    IdParameter = m.IdParameter,
+                    CreatedDateTime = m.CreatedDateTime,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

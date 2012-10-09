@@ -22,13 +22,13 @@ namespace Rock.Financial
     {
 
 #pragma warning disable 1591
-		public int? TransactionId { get; set; }
-		public string Entity { get; set; }
-		public string EntityId { get; set; }
-		public decimal Amount { get; set; }
-		public string Summary { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int? TransactionId { get; set; }
+        public string Entity { get; set; }
+        public string EntityId { get; set; }
+        public decimal Amount { get; set; }
+        public string Summary { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -38,51 +38,51 @@ namespace Rock.Financial
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="transactionDetail"></param>
-		public TransactionDetailDto ( TransactionDetail transactionDetail )
-		{
-			CopyFromModel( transactionDetail );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="transactionDetail"></param>
+        public TransactionDetailDto ( TransactionDetail transactionDetail )
+        {
+            CopyFromModel( transactionDetail );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is TransactionDetail )
-			{
-				var transactionDetail = (TransactionDetail)model;
-				this.TransactionId = transactionDetail.TransactionId;
-				this.Entity = transactionDetail.Entity;
-				this.EntityId = transactionDetail.EntityId;
-				this.Amount = transactionDetail.Amount;
-				this.Summary = transactionDetail.Summary;
-				this.Id = transactionDetail.Id;
-				this.Guid = transactionDetail.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is TransactionDetail )
+            {
+                var transactionDetail = (TransactionDetail)model;
+                this.TransactionId = transactionDetail.TransactionId;
+                this.Entity = transactionDetail.Entity;
+                this.EntityId = transactionDetail.EntityId;
+                this.Amount = transactionDetail.Amount;
+                this.Summary = transactionDetail.Summary;
+                this.Id = transactionDetail.Id;
+                this.Guid = transactionDetail.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is TransactionDetail )
-			{
-				var transactionDetail = (TransactionDetail)model;
-				transactionDetail.TransactionId = this.TransactionId;
-				transactionDetail.Entity = this.Entity;
-				transactionDetail.EntityId = this.EntityId;
-				transactionDetail.Amount = this.Amount;
-				transactionDetail.Summary = this.Summary;
-				transactionDetail.Id = this.Id;
-				transactionDetail.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is TransactionDetail )
+            {
+                var transactionDetail = (TransactionDetail)model;
+                transactionDetail.TransactionId = this.TransactionId;
+                transactionDetail.Entity = this.Entity;
+                transactionDetail.EntityId = this.EntityId;
+                transactionDetail.Amount = this.Amount;
+                transactionDetail.Summary = this.Summary;
+                transactionDetail.Id = this.Id;
+                transactionDetail.Guid = this.Guid;
+            }
+        }
+    }
 }

@@ -54,34 +54,34 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
-		{
-			return items.Select( m => new PageDto()
-				{
-					Name = m.Name,
-					Title = m.Title,
-					IsSystem = m.IsSystem,
-					ParentPageId = m.ParentPageId,
-					SiteId = m.SiteId,
-					Layout = m.Layout,
-					RequiresEncryption = m.RequiresEncryption,
-					EnableViewState = m.EnableViewState,
-					MenuDisplayDescription = m.MenuDisplayDescription,
-					MenuDisplayIcon = m.MenuDisplayIcon,
-					MenuDisplayChildPages = m.MenuDisplayChildPages,
-					DisplayInNavWhen = m.DisplayInNavWhen,
-					Order = m.Order,
-					OutputCacheDuration = m.OutputCacheDuration,
-					Description = m.Description,
-					IncludeAdminFooter = m.IncludeAdminFooter,
-					IconUrl = m.IconUrl,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
+        {
+            return items.Select( m => new PageDto()
+                {
+                    Name = m.Name,
+                    Title = m.Title,
+                    IsSystem = m.IsSystem,
+                    ParentPageId = m.ParentPageId,
+                    SiteId = m.SiteId,
+                    Layout = m.Layout,
+                    RequiresEncryption = m.RequiresEncryption,
+                    EnableViewState = m.EnableViewState,
+                    MenuDisplayDescription = m.MenuDisplayDescription,
+                    MenuDisplayIcon = m.MenuDisplayIcon,
+                    MenuDisplayChildPages = m.MenuDisplayChildPages,
+                    DisplayInNavWhen = m.DisplayInNavWhen,
+                    Order = m.Order,
+                    OutputCacheDuration = m.OutputCacheDuration,
+                    Description = m.Description,
+                    IncludeAdminFooter = m.IncludeAdminFooter,
+                    IconUrl = m.IconUrl,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -54,27 +54,27 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
-		{
-			return items.Select( m => new EmailTemplateDto()
-				{
-					IsSystem = m.IsSystem,
-					PersonId = m.PersonId,
-					Category = m.Category,
-					Title = m.Title,
-					From = m.From,
-					To = m.To,
-					Cc = m.Cc,
-					Bcc = m.Bcc,
-					Subject = m.Subject,
-					Body = m.Body,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
+        {
+            return items.Select( m => new EmailTemplateDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PersonId = m.PersonId,
+                    Category = m.Category,
+                    Title = m.Title,
+                    From = m.From,
+                    To = m.To,
+                    Cc = m.Cc,
+                    Bcc = m.Bcc,
+                    Subject = m.Subject,
+                    Body = m.Body,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

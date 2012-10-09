@@ -22,11 +22,11 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int SiteId { get; set; }
-		public string Domain { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int SiteId { get; set; }
+        public string Domain { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -36,47 +36,47 @@ namespace Rock.Cms
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="siteDomain"></param>
-		public SiteDomainDto ( SiteDomain siteDomain )
-		{
-			CopyFromModel( siteDomain );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="siteDomain"></param>
+        public SiteDomainDto ( SiteDomain siteDomain )
+        {
+            CopyFromModel( siteDomain );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is SiteDomain )
-			{
-				var siteDomain = (SiteDomain)model;
-				this.IsSystem = siteDomain.IsSystem;
-				this.SiteId = siteDomain.SiteId;
-				this.Domain = siteDomain.Domain;
-				this.Id = siteDomain.Id;
-				this.Guid = siteDomain.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is SiteDomain )
+            {
+                var siteDomain = (SiteDomain)model;
+                this.IsSystem = siteDomain.IsSystem;
+                this.SiteId = siteDomain.SiteId;
+                this.Domain = siteDomain.Domain;
+                this.Id = siteDomain.Id;
+                this.Guid = siteDomain.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is SiteDomain )
-			{
-				var siteDomain = (SiteDomain)model;
-				siteDomain.IsSystem = this.IsSystem;
-				siteDomain.SiteId = this.SiteId;
-				siteDomain.Domain = this.Domain;
-				siteDomain.Id = this.Id;
-				siteDomain.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is SiteDomain )
+            {
+                var siteDomain = (SiteDomain)model;
+                siteDomain.IsSystem = this.IsSystem;
+                siteDomain.SiteId = this.SiteId;
+                siteDomain.Domain = this.Domain;
+                siteDomain.Id = this.Id;
+                siteDomain.Guid = this.Guid;
+            }
+        }
+    }
 }

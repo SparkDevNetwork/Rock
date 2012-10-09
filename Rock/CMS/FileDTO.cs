@@ -22,16 +22,16 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-		public bool IsTemporary { get; set; }
-		public bool IsSystem { get; set; }
-		public Byte[] Data { get; set; }
-		public string Url { get; set; }
-		public string FileName { get; set; }
-		public string MimeType { get; set; }
-		public DateTimeOffset? LastModifiedTime { get; set; }
-		public string Description { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsTemporary { get; set; }
+        public bool IsSystem { get; set; }
+        public Byte[] Data { get; set; }
+        public string Url { get; set; }
+        public string FileName { get; set; }
+        public string MimeType { get; set; }
+        public DateTimeOffset? LastModifiedTime { get; set; }
+        public string Description { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -41,57 +41,57 @@ namespace Rock.Cms
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="file"></param>
-		public FileDto ( File file )
-		{
-			CopyFromModel( file );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="file"></param>
+        public FileDto ( File file )
+        {
+            CopyFromModel( file );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is File )
-			{
-				var file = (File)model;
-				this.IsTemporary = file.IsTemporary;
-				this.IsSystem = file.IsSystem;
-				this.Data = file.Data;
-				this.Url = file.Url;
-				this.FileName = file.FileName;
-				this.MimeType = file.MimeType;
-				this.LastModifiedTime = file.LastModifiedTime;
-				this.Description = file.Description;
-				this.Id = file.Id;
-				this.Guid = file.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is File )
+            {
+                var file = (File)model;
+                this.IsTemporary = file.IsTemporary;
+                this.IsSystem = file.IsSystem;
+                this.Data = file.Data;
+                this.Url = file.Url;
+                this.FileName = file.FileName;
+                this.MimeType = file.MimeType;
+                this.LastModifiedTime = file.LastModifiedTime;
+                this.Description = file.Description;
+                this.Id = file.Id;
+                this.Guid = file.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is File )
-			{
-				var file = (File)model;
-				file.IsTemporary = this.IsTemporary;
-				file.IsSystem = this.IsSystem;
-				file.Data = this.Data;
-				file.Url = this.Url;
-				file.FileName = this.FileName;
-				file.MimeType = this.MimeType;
-				file.LastModifiedTime = this.LastModifiedTime;
-				file.Description = this.Description;
-				file.Id = this.Id;
-				file.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is File )
+            {
+                var file = (File)model;
+                file.IsTemporary = this.IsTemporary;
+                file.IsSystem = this.IsSystem;
+                file.Data = this.Data;
+                file.Url = this.Url;
+                file.FileName = this.FileName;
+                file.MimeType = this.MimeType;
+                file.LastModifiedTime = this.LastModifiedTime;
+                file.Description = this.Description;
+                file.Id = this.Id;
+                file.Guid = this.Guid;
+            }
+        }
+    }
 }

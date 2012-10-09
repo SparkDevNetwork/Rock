@@ -54,24 +54,24 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<BatchDto> QueryableDto( IQueryable<Batch> items )
-		{
-			return items.Select( m => new BatchDto()
-				{
-					Name = m.Name,
-					BatchDate = m.BatchDate,
-					IsClosed = m.IsClosed,
-					CampusId = m.CampusId,
-					Entity = m.Entity,
-					EntityId = m.EntityId,
-					ForeignReference = m.ForeignReference,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<BatchDto> QueryableDto( IQueryable<Batch> items )
+        {
+            return items.Select( m => new BatchDto()
+                {
+                    Name = m.Name,
+                    BatchDate = m.BatchDate,
+                    IsClosed = m.IsClosed,
+                    CampusId = m.CampusId,
+                    Entity = m.Entity,
+                    EntityId = m.EntityId,
+                    ForeignReference = m.ForeignReference,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -42,59 +42,59 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="entityChange"></param>
-		public EntityChangeDto ( EntityChange entityChange )
-		{
-			CopyFromModel( entityChange );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="entityChange"></param>
+        public EntityChangeDto ( EntityChange entityChange )
+        {
+            CopyFromModel( entityChange );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is EntityChange )
-			{
-				var entityChange = (EntityChange)model;
-				this.ChangeSet = entityChange.ChangeSet;
-				this.ChangeType = entityChange.ChangeType;
-				this.EntityType = entityChange.EntityType;
-				this.EntityId = entityChange.EntityId;
-				this.Property = entityChange.Property;
-				this.OriginalValue = entityChange.OriginalValue;
-				this.CurrentValue = entityChange.CurrentValue;
-				this.CreatedDateTime = entityChange.CreatedDateTime;
-				this.CreatedByPersonId = entityChange.CreatedByPersonId;
-				this.Id = entityChange.Id;
-				this.Guid = entityChange.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is EntityChange )
+            {
+                var entityChange = (EntityChange)model;
+                this.ChangeSet = entityChange.ChangeSet;
+                this.ChangeType = entityChange.ChangeType;
+                this.EntityType = entityChange.EntityType;
+                this.EntityId = entityChange.EntityId;
+                this.Property = entityChange.Property;
+                this.OriginalValue = entityChange.OriginalValue;
+                this.CurrentValue = entityChange.CurrentValue;
+                this.CreatedDateTime = entityChange.CreatedDateTime;
+                this.CreatedByPersonId = entityChange.CreatedByPersonId;
+                this.Id = entityChange.Id;
+                this.Guid = entityChange.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is EntityChange )
-			{
-				var entityChange = (EntityChange)model;
-				entityChange.ChangeSet = this.ChangeSet;
-				entityChange.ChangeType = this.ChangeType;
-				entityChange.EntityType = this.EntityType;
-				entityChange.EntityId = this.EntityId;
-				entityChange.Property = this.Property;
-				entityChange.OriginalValue = this.OriginalValue;
-				entityChange.CurrentValue = this.CurrentValue;
-				entityChange.CreatedDateTime = this.CreatedDateTime;
-				entityChange.CreatedByPersonId = this.CreatedByPersonId;
-				entityChange.Id = this.Id;
-				entityChange.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is EntityChange )
+            {
+                var entityChange = (EntityChange)model;
+                entityChange.ChangeSet = this.ChangeSet;
+                entityChange.ChangeType = this.ChangeType;
+                entityChange.EntityType = this.EntityType;
+                entityChange.EntityId = this.EntityId;
+                entityChange.Property = this.Property;
+                entityChange.OriginalValue = this.OriginalValue;
+                entityChange.CurrentValue = this.CurrentValue;
+                entityChange.CreatedDateTime = this.CreatedDateTime;
+                entityChange.CreatedByPersonId = this.CreatedByPersonId;
+                entityChange.Id = this.Id;
+                entityChange.Guid = this.Guid;
+            }
+        }
+    }
 }

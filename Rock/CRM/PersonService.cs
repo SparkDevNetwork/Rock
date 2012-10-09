@@ -54,41 +54,41 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
-		{
-			return items.Select( m => new PersonDto()
-				{
-					IsSystem = m.IsSystem,
-					RecordTypeId = m.RecordTypeId,
-					RecordStatusId = m.RecordStatusId,
-					RecordStatusReasonId = m.RecordStatusReasonId,
-					PersonStatusId = m.PersonStatusId,
-					TitleId = m.TitleId,
-					GivenName = m.GivenName,
-					NickName = m.NickName,
-					LastName = m.LastName,
-					SuffixId = m.SuffixId,
-					PhotoId = m.PhotoId,
-					BirthDay = m.BirthDay,
-					BirthMonth = m.BirthMonth,
-					BirthYear = m.BirthYear,
-					Gender = m.Gender,
-					MaritalStatusId = m.MaritalStatusId,
-					AnniversaryDate = m.AnniversaryDate,
-					GraduationDate = m.GraduationDate,
-					Email = m.Email,
-					IsEmailActive = m.IsEmailActive,
-					EmailNote = m.EmailNote,
-					DoNotEmail = m.DoNotEmail,
-					SystemNote = m.SystemNote,
-					ViewedCount = m.ViewedCount,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
+        {
+            return items.Select( m => new PersonDto()
+                {
+                    IsSystem = m.IsSystem,
+                    RecordTypeId = m.RecordTypeId,
+                    RecordStatusId = m.RecordStatusId,
+                    RecordStatusReasonId = m.RecordStatusReasonId,
+                    PersonStatusId = m.PersonStatusId,
+                    TitleId = m.TitleId,
+                    GivenName = m.GivenName,
+                    NickName = m.NickName,
+                    LastName = m.LastName,
+                    SuffixId = m.SuffixId,
+                    PhotoId = m.PhotoId,
+                    BirthDay = m.BirthDay,
+                    BirthMonth = m.BirthMonth,
+                    BirthYear = m.BirthYear,
+                    Gender = m.Gender,
+                    MaritalStatusId = m.MaritalStatusId,
+                    AnniversaryDate = m.AnniversaryDate,
+                    GraduationDate = m.GraduationDate,
+                    Email = m.Email,
+                    IsEmailActive = m.IsEmailActive,
+                    EmailNote = m.EmailNote,
+                    DoNotEmail = m.DoNotEmail,
+                    SystemNote = m.SystemNote,
+                    ViewedCount = m.ViewedCount,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

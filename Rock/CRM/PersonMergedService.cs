@@ -54,19 +54,19 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PersonMergedDto> QueryableDto( IQueryable<PersonMerged> items )
-		{
-			return items.Select( m => new PersonMergedDto()
-				{
-					CurrentId = m.CurrentId,
-					CurrentGuid = m.CurrentGuid,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PersonMergedDto> QueryableDto( IQueryable<PersonMerged> items )
+        {
+            return items.Select( m => new PersonMergedDto()
+                {
+                    CurrentId = m.CurrentId,
+                    CurrentGuid = m.CurrentGuid,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

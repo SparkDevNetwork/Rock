@@ -54,35 +54,35 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
-		{
-			return items.Select( m => new LocationDto()
-				{
-					Raw = m.Raw,
-					Street1 = m.Street1,
-					Street2 = m.Street2,
-					City = m.City,
-					State = m.State,
-					Country = m.Country,
-					Zip = m.Zip,
-					Latitude = m.Latitude,
-					Longitude = m.Longitude,
-					ParcelId = m.ParcelId,
-					StandardizeAttempt = m.StandardizeAttempt,
-					StandardizeService = m.StandardizeService,
-					StandardizeResult = m.StandardizeResult,
-					StandardizeDate = m.StandardizeDate,
-					GeocodeAttempt = m.GeocodeAttempt,
-					GeocodeService = m.GeocodeService,
-					GeocodeResult = m.GeocodeResult,
-					GeocodeDate = m.GeocodeDate,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
+        {
+            return items.Select( m => new LocationDto()
+                {
+                    Raw = m.Raw,
+                    Street1 = m.Street1,
+                    Street2 = m.Street2,
+                    City = m.City,
+                    State = m.State,
+                    Country = m.Country,
+                    Zip = m.Zip,
+                    Latitude = m.Latitude,
+                    Longitude = m.Longitude,
+                    ParcelId = m.ParcelId,
+                    StandardizeAttempt = m.StandardizeAttempt,
+                    StandardizeService = m.StandardizeService,
+                    StandardizeResult = m.StandardizeResult,
+                    StandardizeDate = m.StandardizeDate,
+                    GeocodeAttempt = m.GeocodeAttempt,
+                    GeocodeService = m.GeocodeService,
+                    GeocodeResult = m.GeocodeResult,
+                    GeocodeDate = m.GeocodeDate,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

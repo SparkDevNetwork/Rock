@@ -17,60 +17,61 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Audit Service class
-	/// </summary>
-	public partial class AuditService : Service<Audit, AuditDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AuditService"/> class
-		/// </summary>
-		public AuditService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Audit Service class
+    /// </summary>
+    public partial class AuditService : Service<Audit, AuditDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuditService"/> class
+        /// </summary>
+        public AuditService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AuditService"/> class
-		/// </summary>
-		public AuditService(IRepository<Audit> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuditService"/> class
+        /// </summary>
+        public AuditService(IRepository<Audit> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Audit CreateNew()
-		{
-			return new Audit();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Audit CreateNew()
+        {
+            return new Audit();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<AuditDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<AuditDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<AuditDto> QueryableDto( IQueryable<Audit> items )
-		{
-			return items.Select( m => new AuditDto()
-				{
-					EntityType = m.EntityType,
-					EntityId = m.EntityId,
-					Properties = m.Properties,
-					EntityName = m.EntityName,
-					AuditType = m.AuditType,
-					DateTime = m.DateTime,
-					PersonId = m.PersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<AuditDto> QueryableDto( IQueryable<Audit> items )
+        {
+            return items.Select( m => new AuditDto()
+                {
+                    EntityType = m.EntityType,
+                    EntityId = m.EntityId,
+                    EntityName = m.EntityName,
+                    AuditType = m.AuditType,
+                    Properties = m.Properties,
+                    DateTime = m.DateTime,
+                    PersonId = m.PersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

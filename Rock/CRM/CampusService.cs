@@ -54,19 +54,19 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<CampusDto> QueryableDto( IQueryable<Campus> items )
-		{
-			return items.Select( m => new CampusDto()
-				{
-					IsSystem = m.IsSystem,
-					Name = m.Name,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<CampusDto> QueryableDto( IQueryable<Campus> items )
+        {
+            return items.Select( m => new CampusDto()
+                {
+                    IsSystem = m.IsSystem,
+                    Name = m.Name,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

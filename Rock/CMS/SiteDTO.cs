@@ -22,20 +22,20 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public string Theme { get; set; }
-		public int? DefaultPageId { get; set; }
-		public string FaviconUrl { get; set; }
-		public string AppleTouchIconUrl { get; set; }
-		public string FacebookAppId { get; set; }
-		public string FacebookAppSecret { get; set; }
-		public string LoginPageReference { get; set; }
-		public string RegistrationPageReference { get; set; }
-		public string ErrorPage { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Theme { get; set; }
+        public int? DefaultPageId { get; set; }
+        public string FaviconUrl { get; set; }
+        public string AppleTouchIconUrl { get; set; }
+        public string FacebookAppId { get; set; }
+        public string FacebookAppSecret { get; set; }
+        public string LoginPageReference { get; set; }
+        public string RegistrationPageReference { get; set; }
+        public string ErrorPage { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -45,65 +45,65 @@ namespace Rock.Cms
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="site"></param>
-		public SiteDto ( Site site )
-		{
-			CopyFromModel( site );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="site"></param>
+        public SiteDto ( Site site )
+        {
+            CopyFromModel( site );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is Site )
-			{
-				var site = (Site)model;
-				this.IsSystem = site.IsSystem;
-				this.Name = site.Name;
-				this.Description = site.Description;
-				this.Theme = site.Theme;
-				this.DefaultPageId = site.DefaultPageId;
-				this.FaviconUrl = site.FaviconUrl;
-				this.AppleTouchIconUrl = site.AppleTouchIconUrl;
-				this.FacebookAppId = site.FacebookAppId;
-				this.FacebookAppSecret = site.FacebookAppSecret;
-				this.LoginPageReference = site.LoginPageReference;
-				this.RegistrationPageReference = site.RegistrationPageReference;
-				this.ErrorPage = site.ErrorPage;
-				this.Id = site.Id;
-				this.Guid = site.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is Site )
+            {
+                var site = (Site)model;
+                this.IsSystem = site.IsSystem;
+                this.Name = site.Name;
+                this.Description = site.Description;
+                this.Theme = site.Theme;
+                this.DefaultPageId = site.DefaultPageId;
+                this.FaviconUrl = site.FaviconUrl;
+                this.AppleTouchIconUrl = site.AppleTouchIconUrl;
+                this.FacebookAppId = site.FacebookAppId;
+                this.FacebookAppSecret = site.FacebookAppSecret;
+                this.LoginPageReference = site.LoginPageReference;
+                this.RegistrationPageReference = site.RegistrationPageReference;
+                this.ErrorPage = site.ErrorPage;
+                this.Id = site.Id;
+                this.Guid = site.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is Site )
-			{
-				var site = (Site)model;
-				site.IsSystem = this.IsSystem;
-				site.Name = this.Name;
-				site.Description = this.Description;
-				site.Theme = this.Theme;
-				site.DefaultPageId = this.DefaultPageId;
-				site.FaviconUrl = this.FaviconUrl;
-				site.AppleTouchIconUrl = this.AppleTouchIconUrl;
-				site.FacebookAppId = this.FacebookAppId;
-				site.FacebookAppSecret = this.FacebookAppSecret;
-				site.LoginPageReference = this.LoginPageReference;
-				site.RegistrationPageReference = this.RegistrationPageReference;
-				site.ErrorPage = this.ErrorPage;
-				site.Id = this.Id;
-				site.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is Site )
+            {
+                var site = (Site)model;
+                site.IsSystem = this.IsSystem;
+                site.Name = this.Name;
+                site.Description = this.Description;
+                site.Theme = this.Theme;
+                site.DefaultPageId = this.DefaultPageId;
+                site.FaviconUrl = this.FaviconUrl;
+                site.AppleTouchIconUrl = this.AppleTouchIconUrl;
+                site.FacebookAppId = this.FacebookAppId;
+                site.FacebookAppSecret = this.FacebookAppSecret;
+                site.LoginPageReference = this.LoginPageReference;
+                site.RegistrationPageReference = this.RegistrationPageReference;
+                site.ErrorPage = this.ErrorPage;
+                site.Id = this.Id;
+                site.Guid = this.Guid;
+            }
+        }
+    }
 }

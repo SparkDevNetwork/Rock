@@ -54,22 +54,22 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<TransactionDetailDto> QueryableDto( IQueryable<TransactionDetail> items )
-		{
-			return items.Select( m => new TransactionDetailDto()
-				{
-					TransactionId = m.TransactionId,
-					Entity = m.Entity,
-					EntityId = m.EntityId,
-					Amount = m.Amount,
-					Summary = m.Summary,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<TransactionDetailDto> QueryableDto( IQueryable<TransactionDetail> items )
+        {
+            return items.Select( m => new TransactionDetailDto()
+                {
+                    TransactionId = m.TransactionId,
+                    Entity = m.Entity,
+                    EntityId = m.EntityId,
+                    Amount = m.Amount,
+                    Summary = m.Summary,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

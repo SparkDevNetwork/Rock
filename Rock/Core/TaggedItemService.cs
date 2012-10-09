@@ -54,20 +54,20 @@ namespace Rock.Core
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
-		{
-			return items.Select( m => new TaggedItemDto()
-				{
-					IsSystem = m.IsSystem,
-					TagId = m.TagId,
-					EntityId = m.EntityId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
+        {
+            return items.Select( m => new TaggedItemDto()
+                {
+                    IsSystem = m.IsSystem,
+                    TagId = m.TagId,
+                    EntityId = m.EntityId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

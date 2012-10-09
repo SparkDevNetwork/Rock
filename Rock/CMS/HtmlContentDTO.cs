@@ -22,17 +22,17 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-		public int BlockId { get; set; }
-		public string EntityValue { get; set; }
-		public int Version { get; set; }
-		public string Content { get; set; }
-		public bool IsApproved { get; set; }
-		public int? ApprovedByPersonId { get; set; }
-		public DateTime? ApprovedDateTime { get; set; }
-		public DateTime? StartDateTime { get; set; }
-		public DateTime? ExpireDateTime { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int BlockId { get; set; }
+        public string EntityValue { get; set; }
+        public int Version { get; set; }
+        public string Content { get; set; }
+        public bool IsApproved { get; set; }
+        public int? ApprovedByPersonId { get; set; }
+        public DateTime? ApprovedDateTime { get; set; }
+        public DateTime? StartDateTime { get; set; }
+        public DateTime? ExpireDateTime { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -42,59 +42,59 @@ namespace Rock.Cms
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="htmlContent"></param>
-		public HtmlContentDto ( HtmlContent htmlContent )
-		{
-			CopyFromModel( htmlContent );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="htmlContent"></param>
+        public HtmlContentDto ( HtmlContent htmlContent )
+        {
+            CopyFromModel( htmlContent );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is HtmlContent )
-			{
-				var htmlContent = (HtmlContent)model;
-				this.BlockId = htmlContent.BlockId;
-				this.EntityValue = htmlContent.EntityValue;
-				this.Version = htmlContent.Version;
-				this.Content = htmlContent.Content;
-				this.IsApproved = htmlContent.IsApproved;
-				this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
-				this.ApprovedDateTime = htmlContent.ApprovedDateTime;
-				this.StartDateTime = htmlContent.StartDateTime;
-				this.ExpireDateTime = htmlContent.ExpireDateTime;
-				this.Id = htmlContent.Id;
-				this.Guid = htmlContent.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is HtmlContent )
+            {
+                var htmlContent = (HtmlContent)model;
+                this.BlockId = htmlContent.BlockId;
+                this.EntityValue = htmlContent.EntityValue;
+                this.Version = htmlContent.Version;
+                this.Content = htmlContent.Content;
+                this.IsApproved = htmlContent.IsApproved;
+                this.ApprovedByPersonId = htmlContent.ApprovedByPersonId;
+                this.ApprovedDateTime = htmlContent.ApprovedDateTime;
+                this.StartDateTime = htmlContent.StartDateTime;
+                this.ExpireDateTime = htmlContent.ExpireDateTime;
+                this.Id = htmlContent.Id;
+                this.Guid = htmlContent.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is HtmlContent )
-			{
-				var htmlContent = (HtmlContent)model;
-				htmlContent.BlockId = this.BlockId;
-				htmlContent.EntityValue = this.EntityValue;
-				htmlContent.Version = this.Version;
-				htmlContent.Content = this.Content;
-				htmlContent.IsApproved = this.IsApproved;
-				htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
-				htmlContent.ApprovedDateTime = this.ApprovedDateTime;
-				htmlContent.StartDateTime = this.StartDateTime;
-				htmlContent.ExpireDateTime = this.ExpireDateTime;
-				htmlContent.Id = this.Id;
-				htmlContent.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is HtmlContent )
+            {
+                var htmlContent = (HtmlContent)model;
+                htmlContent.BlockId = this.BlockId;
+                htmlContent.EntityValue = this.EntityValue;
+                htmlContent.Version = this.Version;
+                htmlContent.Content = this.Content;
+                htmlContent.IsApproved = this.IsApproved;
+                htmlContent.ApprovedByPersonId = this.ApprovedByPersonId;
+                htmlContent.ApprovedDateTime = this.ApprovedDateTime;
+                htmlContent.StartDateTime = this.StartDateTime;
+                htmlContent.ExpireDateTime = this.ExpireDateTime;
+                htmlContent.Id = this.Id;
+                htmlContent.Guid = this.Guid;
+            }
+        }
+    }
 }

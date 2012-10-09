@@ -14,11 +14,11 @@ using Rock.Financial;
 
 namespace Rock.Rest.Financial
 {
-	/// <summary>
-	/// Transactions REST API
-	/// </summary>
-	public partial class TransactionsController : Rock.Rest.ApiController<Rock.Financial.Transaction, Rock.Financial.TransactionDto>
-	{
-		public TransactionsController() : base( new Rock.Financial.TransactionService() ) { } 
-	}
+    /// <summary>
+    /// Transactions REST API
+    /// </summary>
+    public partial class TransactionsController : Rock.Rest.ApiController<Rock.Financial.Transaction, Rock.Financial.TransactionDto>
+    {
+        public TransactionsController() : base( new Rock.Financial.TransactionService() ) { } 
+    }
 }

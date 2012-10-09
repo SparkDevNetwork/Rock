@@ -54,31 +54,31 @@ namespace Rock.Core
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<AttributeDto> QueryableDto( IQueryable<Attribute> items )
-		{
-			return items.Select( m => new AttributeDto()
-				{
-					IsSystem = m.IsSystem,
-					FieldTypeId = m.FieldTypeId,
-					Entity = m.Entity,
-					EntityQualifierColumn = m.EntityQualifierColumn,
-					EntityQualifierValue = m.EntityQualifierValue,
-					Key = m.Key,
-					Name = m.Name,
-					Category = m.Category,
-					Description = m.Description,
-					Order = m.Order,
-					IsGridColumn = m.IsGridColumn,
-					DefaultValue = m.DefaultValue,
-					IsMultiValue = m.IsMultiValue,
-					IsRequired = m.IsRequired,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<AttributeDto> QueryableDto( IQueryable<Attribute> items )
+        {
+            return items.Select( m => new AttributeDto()
+                {
+                    IsSystem = m.IsSystem,
+                    FieldTypeId = m.FieldTypeId,
+                    Entity = m.Entity,
+                    EntityQualifierColumn = m.EntityQualifierColumn,
+                    EntityQualifierValue = m.EntityQualifierValue,
+                    Key = m.Key,
+                    Name = m.Name,
+                    Category = m.Category,
+                    Description = m.Description,
+                    Order = m.Order,
+                    IsGridColumn = m.IsGridColumn,
+                    DefaultValue = m.DefaultValue,
+                    IsMultiValue = m.IsMultiValue,
+                    IsRequired = m.IsRequired,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

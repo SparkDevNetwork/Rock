@@ -38,51 +38,51 @@ namespace Rock.Crm
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="personViewed"></param>
-		public PersonViewedDto ( PersonViewed personViewed )
-		{
-			CopyFromModel( personViewed );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="personViewed"></param>
+        public PersonViewedDto ( PersonViewed personViewed )
+        {
+            CopyFromModel( personViewed );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is PersonViewed )
-			{
-				var personViewed = (PersonViewed)model;
-				this.ViewerPersonId = personViewed.ViewerPersonId;
-				this.TargetPersonId = personViewed.TargetPersonId;
-				this.ViewDateTime = personViewed.ViewDateTime;
-				this.IpAddress = personViewed.IpAddress;
-				this.Source = personViewed.Source;
-				this.Id = personViewed.Id;
-				this.Guid = personViewed.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is PersonViewed )
+            {
+                var personViewed = (PersonViewed)model;
+                this.ViewerPersonId = personViewed.ViewerPersonId;
+                this.TargetPersonId = personViewed.TargetPersonId;
+                this.ViewDateTime = personViewed.ViewDateTime;
+                this.IpAddress = personViewed.IpAddress;
+                this.Source = personViewed.Source;
+                this.Id = personViewed.Id;
+                this.Guid = personViewed.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is PersonViewed )
-			{
-				var personViewed = (PersonViewed)model;
-				personViewed.ViewerPersonId = this.ViewerPersonId;
-				personViewed.TargetPersonId = this.TargetPersonId;
-				personViewed.ViewDateTime = this.ViewDateTime;
-				personViewed.IpAddress = this.IpAddress;
-				personViewed.Source = this.Source;
-				personViewed.Id = this.Id;
-				personViewed.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is PersonViewed )
+            {
+                var personViewed = (PersonViewed)model;
+                personViewed.ViewerPersonId = this.ViewerPersonId;
+                personViewed.TargetPersonId = this.TargetPersonId;
+                personViewed.ViewDateTime = this.ViewDateTime;
+                personViewed.IpAddress = this.IpAddress;
+                personViewed.Source = this.Source;
+                personViewed.Id = this.Id;
+                personViewed.Guid = this.Guid;
+            }
+        }
+    }
 }
