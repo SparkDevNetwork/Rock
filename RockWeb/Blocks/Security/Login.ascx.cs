@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Security
 			foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
 			{
 				var component = serviceEntry.Value.Value;
-				if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+				if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
 				{
 					string loginTypeName = component.GetType().Name;
 
@@ -96,23 +96,25 @@ namespace RockWeb.Blocks.Security
 					foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
 					{
 						var component = serviceEntry.Value.Value;
-						if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
-						{
-							// TODO: Authentication type needs to be implemented a bit different 
-							string componentName = component.GetType().FullName;
-							if (
-								( user.AuthenticationType == AuthenticationType.Database && componentName == "Rock.Security.Authentication.Database" ) ||
-								( user.AuthenticationType == AuthenticationType.ActiveDirectory && componentName == "Rock.Security.Authentication.ActiveDirectory" )
-							)
-							{
-								if ( component.Authenticate( user, tbPassword.Text ) )
-								{
-									valid = true;
-									string returnUrl = Request.QueryString["returnurl"];
-									LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-								}
-							}
-						}
+						string componentName = component.GetType().FullName;
+
+                        if ( componentName == "Rock.Security.Authentication.Database" ||
+                            ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) ) )
+                        {
+                            // TODO: Authentication type needs to be implemented a bit different 
+                            if (
+                                ( user.AuthenticationType == AuthenticationType.Database && componentName == "Rock.Security.Authentication.Database" ) ||
+                                ( user.AuthenticationType == AuthenticationType.ActiveDirectory && componentName == "Rock.Security.Authentication.ActiveDirectory" )
+                            )
+                            {
+                                if ( component.Authenticate( user, tbPassword.Text ) )
+                                {
+                                    valid = true;
+                                    string returnUrl = Request.QueryString["returnurl"];
+                                    LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
+                                }
+                            }
+                        }
 					}
 				}
             }
