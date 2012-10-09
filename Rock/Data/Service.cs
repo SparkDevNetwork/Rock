@@ -130,11 +130,11 @@ namespace Rock.Data
             }
         }
 
-        // <summary>
-        // Gets the current model from the page instance context.
-        // </summary>
-        // <param name="rockContext">The rock context.</param>
-        // <returns></returns>
+        /// <summary>
+        /// Gets the current model from the page instance context.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         //public T GetCurrent( Rock.Web.Cache.RockPage pageInstance )
         //{
         //    string key = typeof( T ).FullName;
