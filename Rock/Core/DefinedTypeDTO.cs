@@ -22,14 +22,14 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int? FieldTypeId { get; set; }
-		public int Order { get; set; }
-		public string Category { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? FieldTypeId { get; set; }
+        public int Order { get; set; }
+        public string Category { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -39,53 +39,53 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="definedType"></param>
-		public DefinedTypeDto ( DefinedType definedType )
-		{
-			CopyFromModel( definedType );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="definedType"></param>
+        public DefinedTypeDto ( DefinedType definedType )
+        {
+            CopyFromModel( definedType );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is DefinedType )
-			{
-				var definedType = (DefinedType)model;
-				this.IsSystem = definedType.IsSystem;
-				this.FieldTypeId = definedType.FieldTypeId;
-				this.Order = definedType.Order;
-				this.Category = definedType.Category;
-				this.Name = definedType.Name;
-				this.Description = definedType.Description;
-				this.Id = definedType.Id;
-				this.Guid = definedType.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is DefinedType )
+            {
+                var definedType = (DefinedType)model;
+                this.IsSystem = definedType.IsSystem;
+                this.FieldTypeId = definedType.FieldTypeId;
+                this.Order = definedType.Order;
+                this.Category = definedType.Category;
+                this.Name = definedType.Name;
+                this.Description = definedType.Description;
+                this.Id = definedType.Id;
+                this.Guid = definedType.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is DefinedType )
-			{
-				var definedType = (DefinedType)model;
-				definedType.IsSystem = this.IsSystem;
-				definedType.FieldTypeId = this.FieldTypeId;
-				definedType.Order = this.Order;
-				definedType.Category = this.Category;
-				definedType.Name = this.Name;
-				definedType.Description = this.Description;
-				definedType.Id = this.Id;
-				definedType.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is DefinedType )
+            {
+                var definedType = (DefinedType)model;
+                definedType.IsSystem = this.IsSystem;
+                definedType.FieldTypeId = this.FieldTypeId;
+                definedType.Order = this.Order;
+                definedType.Category = this.Category;
+                definedType.Name = this.Name;
+                definedType.Description = this.Description;
+                definedType.Id = this.Id;
+                definedType.Guid = this.Guid;
+            }
+        }
+    }
 }

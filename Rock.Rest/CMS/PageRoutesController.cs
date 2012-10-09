@@ -14,11 +14,11 @@ using Rock.Cms;
 
 namespace Rock.Rest.Cms
 {
-	/// <summary>
-	/// PageRoutes REST API
-	/// </summary>
-	public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Cms.PageRoute, Rock.Cms.PageRouteDto>
-	{
-		public PageRoutesController() : base( new Rock.Cms.PageRouteService() ) { } 
-	}
+    /// <summary>
+    /// PageRoutes REST API
+    /// </summary>
+    public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Cms.PageRoute, Rock.Cms.PageRouteDto>
+    {
+        public PageRoutesController() : base( new Rock.Cms.PageRouteService() ) { } 
+    }
 }

@@ -54,32 +54,32 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
-		{
-			return items.Select( m => new UserDto()
-				{
-					UserName = m.UserName,
-					AuthenticationType = m.AuthenticationType,
-					Password = m.Password,
-					IsConfirmed = m.IsConfirmed,
-					LastActivityDate = m.LastActivityDate,
-					LastLoginDate = m.LastLoginDate,
-					LastPasswordChangedDate = m.LastPasswordChangedDate,
-					CreationDate = m.CreationDate,
-					IsOnLine = m.IsOnLine,
-					IsLockedOut = m.IsLockedOut,
-					LastLockedOutDate = m.LastLockedOutDate,
-					FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
-					FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
-					ApiKey = m.ApiKey,
-					PersonId = m.PersonId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
+        {
+            return items.Select( m => new UserDto()
+                {
+                    UserName = m.UserName,
+                    AuthenticationType = m.AuthenticationType,
+                    Password = m.Password,
+                    IsConfirmed = m.IsConfirmed,
+                    LastActivityDate = m.LastActivityDate,
+                    LastLoginDate = m.LastLoginDate,
+                    LastPasswordChangedDate = m.LastPasswordChangedDate,
+                    CreationDate = m.CreationDate,
+                    IsOnLine = m.IsOnLine,
+                    IsLockedOut = m.IsLockedOut,
+                    LastLockedOutDate = m.LastLockedOutDate,
+                    FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
+                    FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
+                    ApiKey = m.ApiKey,
+                    PersonId = m.PersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

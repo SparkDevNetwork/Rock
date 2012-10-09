@@ -54,32 +54,32 @@ namespace Rock.Util
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<JobDto> QueryableDto( IQueryable<Job> items )
-		{
-			return items.Select( m => new JobDto()
-				{
-					IsSystem = m.IsSystem,
-					IsActive = m.IsActive,
-					Name = m.Name,
-					Description = m.Description,
-					Assemby = m.Assemby,
-					Class = m.Class,
-					CronExpression = m.CronExpression,
-					LastSuccessfulRun = m.LastSuccessfulRun,
-					LastRunDate = m.LastRunDate,
-					LastRunDuration = m.LastRunDuration,
-					LastStatus = m.LastStatus,
-					LastStatusMessage = m.LastStatusMessage,
-					LastRunSchedulerName = m.LastRunSchedulerName,
-					NotificationEmails = m.NotificationEmails,
-					NotificationStatus = m.NotificationStatus,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<JobDto> QueryableDto( IQueryable<Job> items )
+        {
+            return items.Select( m => new JobDto()
+                {
+                    IsSystem = m.IsSystem,
+                    IsActive = m.IsActive,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Assemby = m.Assemby,
+                    Class = m.Class,
+                    CronExpression = m.CronExpression,
+                    LastSuccessfulRun = m.LastSuccessfulRun,
+                    LastRunDate = m.LastRunDate,
+                    LastRunDuration = m.LastRunDuration,
+                    LastStatus = m.LastStatus,
+                    LastStatusMessage = m.LastStatusMessage,
+                    LastRunSchedulerName = m.LastRunSchedulerName,
+                    NotificationEmails = m.NotificationEmails,
+                    NotificationStatus = m.NotificationStatus,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

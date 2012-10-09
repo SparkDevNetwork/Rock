@@ -54,25 +54,25 @@ namespace Rock.Crm
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
-		{
-			return items.Select( m => new PhoneNumberDto()
-				{
-					IsSystem = m.IsSystem,
-					PersonId = m.PersonId,
-					Number = m.Number,
-					Extension = m.Extension,
-					NumberTypeId = m.NumberTypeId,
-					IsMessagingEnabled = m.IsMessagingEnabled,
-					IsUnlisted = m.IsUnlisted,
-					Description = m.Description,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
+        {
+            return items.Select( m => new PhoneNumberDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PersonId = m.PersonId,
+                    Number = m.Number,
+                    Extension = m.Extension,
+                    NumberTypeId = m.NumberTypeId,
+                    IsMessagingEnabled = m.IsMessagingEnabled,
+                    IsUnlisted = m.IsUnlisted,
+                    Description = m.Description,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

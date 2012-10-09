@@ -14,11 +14,11 @@ using Rock.Groups;
 
 namespace Rock.Rest.Groups
 {
-	/// <summary>
-	/// GroupRoles REST API
-	/// </summary>
-	public partial class GroupRolesController : Rock.Rest.ApiController<Rock.Groups.GroupRole, Rock.Groups.GroupRoleDto>
-	{
-		public GroupRolesController() : base( new Rock.Groups.GroupRoleService() ) { } 
-	}
+    /// <summary>
+    /// GroupRoles REST API
+    /// </summary>
+    public partial class GroupRolesController : Rock.Rest.ApiController<Rock.Groups.GroupRole, Rock.Groups.GroupRoleDto>
+    {
+        public GroupRolesController() : base( new Rock.Groups.GroupRoleService() ) { } 
+    }
 }

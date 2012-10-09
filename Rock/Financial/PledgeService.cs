@@ -54,24 +54,24 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PledgeDto> QueryableDto( IQueryable<Pledge> items )
-		{
-			return items.Select( m => new PledgeDto()
-				{
-					PersonId = m.PersonId,
-					FundId = m.FundId,
-					Amount = m.Amount,
-					StartDate = m.StartDate,
-					EndDate = m.EndDate,
-					FrequencyTypeId = m.FrequencyTypeId,
-					FrequencyAmount = m.FrequencyAmount,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PledgeDto> QueryableDto( IQueryable<Pledge> items )
+        {
+            return items.Select( m => new PledgeDto()
+                {
+                    PersonId = m.PersonId,
+                    FundId = m.FundId,
+                    Amount = m.Amount,
+                    StartDate = m.StartDate,
+                    EndDate = m.EndDate,
+                    FrequencyTypeId = m.FrequencyTypeId,
+                    FrequencyAmount = m.FrequencyAmount,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

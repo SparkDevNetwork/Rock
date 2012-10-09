@@ -22,15 +22,15 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public string Entity { get; set; }
-		public string EntityQualifierColumn { get; set; }
-		public string EntityQualifierValue { get; set; }
-		public string Name { get; set; }
-		public int Order { get; set; }
-		public int? OwnerId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public string Entity { get; set; }
+        public string EntityQualifierColumn { get; set; }
+        public string EntityQualifierValue { get; set; }
+        public string Name { get; set; }
+        public int Order { get; set; }
+        public int? OwnerId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -40,55 +40,55 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="tag"></param>
-		public TagDto ( Tag tag )
-		{
-			CopyFromModel( tag );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="tag"></param>
+        public TagDto ( Tag tag )
+        {
+            CopyFromModel( tag );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is Tag )
-			{
-				var tag = (Tag)model;
-				this.IsSystem = tag.IsSystem;
-				this.Entity = tag.Entity;
-				this.EntityQualifierColumn = tag.EntityQualifierColumn;
-				this.EntityQualifierValue = tag.EntityQualifierValue;
-				this.Name = tag.Name;
-				this.Order = tag.Order;
-				this.OwnerId = tag.OwnerId;
-				this.Id = tag.Id;
-				this.Guid = tag.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is Tag )
+            {
+                var tag = (Tag)model;
+                this.IsSystem = tag.IsSystem;
+                this.Entity = tag.Entity;
+                this.EntityQualifierColumn = tag.EntityQualifierColumn;
+                this.EntityQualifierValue = tag.EntityQualifierValue;
+                this.Name = tag.Name;
+                this.Order = tag.Order;
+                this.OwnerId = tag.OwnerId;
+                this.Id = tag.Id;
+                this.Guid = tag.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is Tag )
-			{
-				var tag = (Tag)model;
-				tag.IsSystem = this.IsSystem;
-				tag.Entity = this.Entity;
-				tag.EntityQualifierColumn = this.EntityQualifierColumn;
-				tag.EntityQualifierValue = this.EntityQualifierValue;
-				tag.Name = this.Name;
-				tag.Order = this.Order;
-				tag.OwnerId = this.OwnerId;
-				tag.Id = this.Id;
-				tag.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is Tag )
+            {
+                var tag = (Tag)model;
+                tag.IsSystem = this.IsSystem;
+                tag.Entity = this.Entity;
+                tag.EntityQualifierColumn = this.EntityQualifierColumn;
+                tag.EntityQualifierValue = this.EntityQualifierValue;
+                tag.Name = this.Name;
+                tag.Order = this.Order;
+                tag.OwnerId = this.OwnerId;
+                tag.Id = this.Id;
+                tag.Guid = this.Guid;
+            }
+        }
+    }
 }

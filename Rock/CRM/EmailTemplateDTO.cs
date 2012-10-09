@@ -22,18 +22,18 @@ namespace Rock.Crm
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int? PersonId { get; set; }
-		public string Category { get; set; }
-		public string Title { get; set; }
-		public string From { get; set; }
-		public string To { get; set; }
-		public string Cc { get; set; }
-		public string Bcc { get; set; }
-		public string Subject { get; set; }
-		public string Body { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? PersonId { get; set; }
+        public string Category { get; set; }
+        public string Title { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string Cc { get; set; }
+        public string Bcc { get; set; }
+        public string Subject { get; set; }
+        public string Body { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -43,61 +43,61 @@ namespace Rock.Crm
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="emailTemplate"></param>
-		public EmailTemplateDto ( EmailTemplate emailTemplate )
-		{
-			CopyFromModel( emailTemplate );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="emailTemplate"></param>
+        public EmailTemplateDto ( EmailTemplate emailTemplate )
+        {
+            CopyFromModel( emailTemplate );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is EmailTemplate )
-			{
-				var emailTemplate = (EmailTemplate)model;
-				this.IsSystem = emailTemplate.IsSystem;
-				this.PersonId = emailTemplate.PersonId;
-				this.Category = emailTemplate.Category;
-				this.Title = emailTemplate.Title;
-				this.From = emailTemplate.From;
-				this.To = emailTemplate.To;
-				this.Cc = emailTemplate.Cc;
-				this.Bcc = emailTemplate.Bcc;
-				this.Subject = emailTemplate.Subject;
-				this.Body = emailTemplate.Body;
-				this.Id = emailTemplate.Id;
-				this.Guid = emailTemplate.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is EmailTemplate )
+            {
+                var emailTemplate = (EmailTemplate)model;
+                this.IsSystem = emailTemplate.IsSystem;
+                this.PersonId = emailTemplate.PersonId;
+                this.Category = emailTemplate.Category;
+                this.Title = emailTemplate.Title;
+                this.From = emailTemplate.From;
+                this.To = emailTemplate.To;
+                this.Cc = emailTemplate.Cc;
+                this.Bcc = emailTemplate.Bcc;
+                this.Subject = emailTemplate.Subject;
+                this.Body = emailTemplate.Body;
+                this.Id = emailTemplate.Id;
+                this.Guid = emailTemplate.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is EmailTemplate )
-			{
-				var emailTemplate = (EmailTemplate)model;
-				emailTemplate.IsSystem = this.IsSystem;
-				emailTemplate.PersonId = this.PersonId;
-				emailTemplate.Category = this.Category;
-				emailTemplate.Title = this.Title;
-				emailTemplate.From = this.From;
-				emailTemplate.To = this.To;
-				emailTemplate.Cc = this.Cc;
-				emailTemplate.Bcc = this.Bcc;
-				emailTemplate.Subject = this.Subject;
-				emailTemplate.Body = this.Body;
-				emailTemplate.Id = this.Id;
-				emailTemplate.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is EmailTemplate )
+            {
+                var emailTemplate = (EmailTemplate)model;
+                emailTemplate.IsSystem = this.IsSystem;
+                emailTemplate.PersonId = this.PersonId;
+                emailTemplate.Category = this.Category;
+                emailTemplate.Title = this.Title;
+                emailTemplate.From = this.From;
+                emailTemplate.To = this.To;
+                emailTemplate.Cc = this.Cc;
+                emailTemplate.Bcc = this.Bcc;
+                emailTemplate.Subject = this.Subject;
+                emailTemplate.Body = this.Body;
+                emailTemplate.Id = this.Id;
+                emailTemplate.Guid = this.Guid;
+            }
+        }
+    }
 }

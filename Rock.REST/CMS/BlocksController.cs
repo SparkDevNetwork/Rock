@@ -14,11 +14,11 @@ using Rock.Cms;
 
 namespace Rock.Rest.Cms
 {
-	/// <summary>
-	/// Blocks REST API
-	/// </summary>
-	public partial class BlocksController : Rock.Rest.ApiController<Rock.Cms.Block, Rock.Cms.BlockDto>
-	{
-		public BlocksController() : base( new Rock.Cms.BlockService() ) { } 
-	}
+    /// <summary>
+    /// Blocks REST API
+    /// </summary>
+    public partial class BlocksController : Rock.Rest.ApiController<Rock.Cms.Block, Rock.Cms.BlockDto>
+    {
+        public BlocksController() : base( new Rock.Cms.BlockService() ) { } 
+    }
 }

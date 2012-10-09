@@ -22,13 +22,13 @@ namespace Rock.Groups
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int? GroupTypeId { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public int? Order { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int? GroupTypeId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int? Order { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -38,51 +38,51 @@ namespace Rock.Groups
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="groupRole"></param>
-		public GroupRoleDto ( GroupRole groupRole )
-		{
-			CopyFromModel( groupRole );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="groupRole"></param>
+        public GroupRoleDto ( GroupRole groupRole )
+        {
+            CopyFromModel( groupRole );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is GroupRole )
-			{
-				var groupRole = (GroupRole)model;
-				this.IsSystem = groupRole.IsSystem;
-				this.GroupTypeId = groupRole.GroupTypeId;
-				this.Name = groupRole.Name;
-				this.Description = groupRole.Description;
-				this.Order = groupRole.Order;
-				this.Id = groupRole.Id;
-				this.Guid = groupRole.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is GroupRole )
+            {
+                var groupRole = (GroupRole)model;
+                this.IsSystem = groupRole.IsSystem;
+                this.GroupTypeId = groupRole.GroupTypeId;
+                this.Name = groupRole.Name;
+                this.Description = groupRole.Description;
+                this.Order = groupRole.Order;
+                this.Id = groupRole.Id;
+                this.Guid = groupRole.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is GroupRole )
-			{
-				var groupRole = (GroupRole)model;
-				groupRole.IsSystem = this.IsSystem;
-				groupRole.GroupTypeId = this.GroupTypeId;
-				groupRole.Name = this.Name;
-				groupRole.Description = this.Description;
-				groupRole.Order = this.Order;
-				groupRole.Id = this.Id;
-				groupRole.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is GroupRole )
+            {
+                var groupRole = (GroupRole)model;
+                groupRole.IsSystem = this.IsSystem;
+                groupRole.GroupTypeId = this.GroupTypeId;
+                groupRole.Name = this.Name;
+                groupRole.Description = this.Description;
+                groupRole.Order = this.Order;
+                groupRole.Id = this.Id;
+                groupRole.Guid = this.Guid;
+            }
+        }
+    }
 }

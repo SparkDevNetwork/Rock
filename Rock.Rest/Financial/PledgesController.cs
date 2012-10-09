@@ -14,11 +14,11 @@ using Rock.Financial;
 
 namespace Rock.Rest.Financial
 {
-	/// <summary>
-	/// Pledges REST API
-	/// </summary>
-	public partial class PledgesController : Rock.Rest.ApiController<Rock.Financial.Pledge, Rock.Financial.PledgeDto>
-	{
-		public PledgesController() : base( new Rock.Financial.PledgeService() ) { } 
-	}
+    /// <summary>
+    /// Pledges REST API
+    /// </summary>
+    public partial class PledgesController : Rock.Rest.ApiController<Rock.Financial.Pledge, Rock.Financial.PledgeDto>
+    {
+        public PledgesController() : base( new Rock.Financial.PledgeService() ) { } 
+    }
 }

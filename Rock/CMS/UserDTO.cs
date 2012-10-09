@@ -22,23 +22,23 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-		public string UserName { get; set; }
-		public AuthenticationType AuthenticationType { get; set; }
-		public string Password { get; set; }
-		public bool? IsConfirmed { get; set; }
-		public DateTime? LastActivityDate { get; set; }
-		public DateTime? LastLoginDate { get; set; }
-		public DateTime? LastPasswordChangedDate { get; set; }
-		public DateTime? CreationDate { get; set; }
-		public bool? IsOnLine { get; set; }
-		public bool? IsLockedOut { get; set; }
-		public DateTime? LastLockedOutDate { get; set; }
-		public int? FailedPasswordAttemptCount { get; set; }
-		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
-		public string ApiKey { get; set; }
-		public int? PersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public string UserName { get; set; }
+        public AuthenticationType AuthenticationType { get; set; }
+        public string Password { get; set; }
+        public bool? IsConfirmed { get; set; }
+        public DateTime? LastActivityDate { get; set; }
+        public DateTime? LastLoginDate { get; set; }
+        public DateTime? LastPasswordChangedDate { get; set; }
+        public DateTime? CreationDate { get; set; }
+        public bool? IsOnLine { get; set; }
+        public bool? IsLockedOut { get; set; }
+        public DateTime? LastLockedOutDate { get; set; }
+        public int? FailedPasswordAttemptCount { get; set; }
+        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+        public string ApiKey { get; set; }
+        public int? PersonId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -48,71 +48,71 @@ namespace Rock.Cms
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="user"></param>
-		public UserDto ( User user )
-		{
-			CopyFromModel( user );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="user"></param>
+        public UserDto ( User user )
+        {
+            CopyFromModel( user );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is User )
-			{
-				var user = (User)model;
-				this.UserName = user.UserName;
-				this.AuthenticationType = user.AuthenticationType;
-				this.Password = user.Password;
-				this.IsConfirmed = user.IsConfirmed;
-				this.LastActivityDate = user.LastActivityDate;
-				this.LastLoginDate = user.LastLoginDate;
-				this.LastPasswordChangedDate = user.LastPasswordChangedDate;
-				this.CreationDate = user.CreationDate;
-				this.IsOnLine = user.IsOnLine;
-				this.IsLockedOut = user.IsLockedOut;
-				this.LastLockedOutDate = user.LastLockedOutDate;
-				this.FailedPasswordAttemptCount = user.FailedPasswordAttemptCount;
-				this.FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart;
-				this.ApiKey = user.ApiKey;
-				this.PersonId = user.PersonId;
-				this.Id = user.Id;
-				this.Guid = user.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is User )
+            {
+                var user = (User)model;
+                this.UserName = user.UserName;
+                this.AuthenticationType = user.AuthenticationType;
+                this.Password = user.Password;
+                this.IsConfirmed = user.IsConfirmed;
+                this.LastActivityDate = user.LastActivityDate;
+                this.LastLoginDate = user.LastLoginDate;
+                this.LastPasswordChangedDate = user.LastPasswordChangedDate;
+                this.CreationDate = user.CreationDate;
+                this.IsOnLine = user.IsOnLine;
+                this.IsLockedOut = user.IsLockedOut;
+                this.LastLockedOutDate = user.LastLockedOutDate;
+                this.FailedPasswordAttemptCount = user.FailedPasswordAttemptCount;
+                this.FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart;
+                this.ApiKey = user.ApiKey;
+                this.PersonId = user.PersonId;
+                this.Id = user.Id;
+                this.Guid = user.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is User )
-			{
-				var user = (User)model;
-				user.UserName = this.UserName;
-				user.AuthenticationType = this.AuthenticationType;
-				user.Password = this.Password;
-				user.IsConfirmed = this.IsConfirmed;
-				user.LastActivityDate = this.LastActivityDate;
-				user.LastLoginDate = this.LastLoginDate;
-				user.LastPasswordChangedDate = this.LastPasswordChangedDate;
-				user.CreationDate = this.CreationDate;
-				user.IsOnLine = this.IsOnLine;
-				user.IsLockedOut = this.IsLockedOut;
-				user.LastLockedOutDate = this.LastLockedOutDate;
-				user.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
-				user.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
-				user.ApiKey = this.ApiKey;
-				user.PersonId = this.PersonId;
-				user.Id = this.Id;
-				user.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is User )
+            {
+                var user = (User)model;
+                user.UserName = this.UserName;
+                user.AuthenticationType = this.AuthenticationType;
+                user.Password = this.Password;
+                user.IsConfirmed = this.IsConfirmed;
+                user.LastActivityDate = this.LastActivityDate;
+                user.LastLoginDate = this.LastLoginDate;
+                user.LastPasswordChangedDate = this.LastPasswordChangedDate;
+                user.CreationDate = this.CreationDate;
+                user.IsOnLine = this.IsOnLine;
+                user.IsLockedOut = this.IsLockedOut;
+                user.LastLockedOutDate = this.LastLockedOutDate;
+                user.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
+                user.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
+                user.ApiKey = this.ApiKey;
+                user.PersonId = this.PersonId;
+                user.Id = this.Id;
+                user.Guid = this.Guid;
+            }
+        }
+    }
 }

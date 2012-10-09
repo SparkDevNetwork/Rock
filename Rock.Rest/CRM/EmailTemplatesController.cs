@@ -14,11 +14,11 @@ using Rock.Crm;
 
 namespace Rock.Rest.Crm
 {
-	/// <summary>
-	/// EmailTemplates REST API
-	/// </summary>
-	public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Crm.EmailTemplate, Rock.Crm.EmailTemplateDto>
-	{
-		public EmailTemplatesController() : base( new Rock.Crm.EmailTemplateService() ) { } 
-	}
+    /// <summary>
+    /// EmailTemplates REST API
+    /// </summary>
+    public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Crm.EmailTemplate, Rock.Crm.EmailTemplateDto>
+    {
+        public EmailTemplatesController() : base( new Rock.Crm.EmailTemplateService() ) { } 
+    }
 }

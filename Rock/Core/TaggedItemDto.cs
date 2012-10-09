@@ -22,11 +22,11 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int TagId { get; set; }
-		public int? EntityId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int TagId { get; set; }
+        public int? EntityId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -36,47 +36,47 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="taggedItem"></param>
-		public TaggedItemDto ( TaggedItem taggedItem )
-		{
-			CopyFromModel( taggedItem );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="taggedItem"></param>
+        public TaggedItemDto ( TaggedItem taggedItem )
+        {
+            CopyFromModel( taggedItem );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is TaggedItem )
-			{
-				var taggedItem = (TaggedItem)model;
-				this.IsSystem = taggedItem.IsSystem;
-				this.TagId = taggedItem.TagId;
-				this.EntityId = taggedItem.EntityId;
-				this.Id = taggedItem.Id;
-				this.Guid = taggedItem.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is TaggedItem )
+            {
+                var taggedItem = (TaggedItem)model;
+                this.IsSystem = taggedItem.IsSystem;
+                this.TagId = taggedItem.TagId;
+                this.EntityId = taggedItem.EntityId;
+                this.Id = taggedItem.Id;
+                this.Guid = taggedItem.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is TaggedItem )
-			{
-				var taggedItem = (TaggedItem)model;
-				taggedItem.IsSystem = this.IsSystem;
-				taggedItem.TagId = this.TagId;
-				taggedItem.EntityId = this.EntityId;
-				taggedItem.Id = this.Id;
-				taggedItem.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is TaggedItem )
+            {
+                var taggedItem = (TaggedItem)model;
+                taggedItem.IsSystem = this.IsSystem;
+                taggedItem.TagId = this.TagId;
+                taggedItem.EntityId = this.EntityId;
+                taggedItem.Id = this.Id;
+                taggedItem.Guid = this.Guid;
+            }
+        }
+    }
 }

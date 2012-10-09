@@ -54,25 +54,25 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
-		{
-			return items.Select( m => new FileDto()
-				{
-					IsTemporary = m.IsTemporary,
-					IsSystem = m.IsSystem,
-					Data = m.Data,
-					Url = m.Url,
-					FileName = m.FileName,
-					MimeType = m.MimeType,
-					LastModifiedTime = m.LastModifiedTime,
-					Description = m.Description,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
+        {
+            return items.Select( m => new FileDto()
+                {
+                    IsTemporary = m.IsTemporary,
+                    IsSystem = m.IsSystem,
+                    Data = m.Data,
+                    Url = m.Url,
+                    FileName = m.FileName,
+                    MimeType = m.MimeType,
+                    LastModifiedTime = m.LastModifiedTime,
+                    Description = m.Description,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

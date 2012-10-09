@@ -22,15 +22,15 @@ namespace Rock.Financial
     {
 
 #pragma warning disable 1591
-		public int? PersonId { get; set; }
-		public int? FundId { get; set; }
-		public decimal Amount { get; set; }
-		public DateTime StartDate { get; set; }
-		public DateTime EndDate { get; set; }
-		public int? FrequencyTypeId { get; set; }
-		public decimal? FrequencyAmount { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int? PersonId { get; set; }
+        public int? FundId { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int? FrequencyTypeId { get; set; }
+        public decimal? FrequencyAmount { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -40,55 +40,55 @@ namespace Rock.Financial
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="pledge"></param>
-		public PledgeDto ( Pledge pledge )
-		{
-			CopyFromModel( pledge );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="pledge"></param>
+        public PledgeDto ( Pledge pledge )
+        {
+            CopyFromModel( pledge );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is Pledge )
-			{
-				var pledge = (Pledge)model;
-				this.PersonId = pledge.PersonId;
-				this.FundId = pledge.FundId;
-				this.Amount = pledge.Amount;
-				this.StartDate = pledge.StartDate;
-				this.EndDate = pledge.EndDate;
-				this.FrequencyTypeId = pledge.FrequencyTypeId;
-				this.FrequencyAmount = pledge.FrequencyAmount;
-				this.Id = pledge.Id;
-				this.Guid = pledge.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is Pledge )
+            {
+                var pledge = (Pledge)model;
+                this.PersonId = pledge.PersonId;
+                this.FundId = pledge.FundId;
+                this.Amount = pledge.Amount;
+                this.StartDate = pledge.StartDate;
+                this.EndDate = pledge.EndDate;
+                this.FrequencyTypeId = pledge.FrequencyTypeId;
+                this.FrequencyAmount = pledge.FrequencyAmount;
+                this.Id = pledge.Id;
+                this.Guid = pledge.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is Pledge )
-			{
-				var pledge = (Pledge)model;
-				pledge.PersonId = this.PersonId;
-				pledge.FundId = this.FundId;
-				pledge.Amount = this.Amount;
-				pledge.StartDate = this.StartDate;
-				pledge.EndDate = this.EndDate;
-				pledge.FrequencyTypeId = this.FrequencyTypeId;
-				pledge.FrequencyAmount = this.FrequencyAmount;
-				pledge.Id = this.Id;
-				pledge.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is Pledge )
+            {
+                var pledge = (Pledge)model;
+                pledge.PersonId = this.PersonId;
+                pledge.FundId = this.FundId;
+                pledge.Amount = this.Amount;
+                pledge.StartDate = this.StartDate;
+                pledge.EndDate = this.EndDate;
+                pledge.FrequencyTypeId = this.FrequencyTypeId;
+                pledge.FrequencyAmount = this.FrequencyAmount;
+                pledge.Id = this.Id;
+                pledge.Guid = this.Guid;
+            }
+        }
+    }
 }

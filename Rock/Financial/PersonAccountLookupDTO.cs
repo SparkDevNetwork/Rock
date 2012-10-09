@@ -35,45 +35,45 @@ namespace Rock.Financial
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="personAccountLookup"></param>
-		public PersonAccountLookupDto ( PersonAccountLookup personAccountLookup )
-		{
-			CopyFromModel( personAccountLookup );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="personAccountLookup"></param>
+        public PersonAccountLookupDto ( PersonAccountLookup personAccountLookup )
+        {
+            CopyFromModel( personAccountLookup );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is PersonAccountLookup )
-			{
-				var personAccountLookup = (PersonAccountLookup)model;
-				this.PersonId = personAccountLookup.PersonId;
-				this.Account = personAccountLookup.Account;
-				this.Id = personAccountLookup.Id;
-				this.Guid = personAccountLookup.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is PersonAccountLookup )
+            {
+                var personAccountLookup = (PersonAccountLookup)model;
+                this.PersonId = personAccountLookup.PersonId;
+                this.Account = personAccountLookup.Account;
+                this.Id = personAccountLookup.Id;
+                this.Guid = personAccountLookup.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is PersonAccountLookup )
-			{
-				var personAccountLookup = (PersonAccountLookup)model;
-				personAccountLookup.PersonId = this.PersonId;
-				personAccountLookup.Account = this.Account;
-				personAccountLookup.Id = this.Id;
-				personAccountLookup.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is PersonAccountLookup )
+            {
+                var personAccountLookup = (PersonAccountLookup)model;
+                personAccountLookup.PersonId = this.PersonId;
+                personAccountLookup.Account = this.Account;
+                personAccountLookup.Id = this.Id;
+                personAccountLookup.Guid = this.Guid;
+            }
+        }
+    }
 }

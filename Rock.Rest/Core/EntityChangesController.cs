@@ -14,11 +14,11 @@ using Rock.Core;
 
 namespace Rock.Rest.Core
 {
-	/// <summary>
-	/// EntityChanges REST API
-	/// </summary>
-	public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Core.EntityChange, Rock.Core.EntityChangeDto>
-	{
-		public EntityChangesController() : base( new Rock.Core.EntityChangeService() ) { } 
-	}
+    /// <summary>
+    /// EntityChanges REST API
+    /// </summary>
+    public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Core.EntityChange, Rock.Core.EntityChangeDto>
+    {
+        public EntityChangesController() : base( new Rock.Core.EntityChangeService() ) { } 
+    }
 }

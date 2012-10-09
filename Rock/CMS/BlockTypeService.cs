@@ -54,21 +54,21 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<BlockTypeDto> QueryableDto( IQueryable<BlockType> items )
-		{
-			return items.Select( m => new BlockTypeDto()
-				{
-					IsSystem = m.IsSystem,
-					Path = m.Path,
-					Name = m.Name,
-					Description = m.Description,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<BlockTypeDto> QueryableDto( IQueryable<BlockType> items )
+        {
+            return items.Select( m => new BlockTypeDto()
+                {
+                    IsSystem = m.IsSystem,
+                    Path = m.Path,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -54,26 +54,26 @@ namespace Rock.Cms
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<HtmlContentDto> QueryableDto( IQueryable<HtmlContent> items )
-		{
-			return items.Select( m => new HtmlContentDto()
-				{
-					BlockId = m.BlockId,
-					EntityValue = m.EntityValue,
-					Version = m.Version,
-					Content = m.Content,
-					IsApproved = m.IsApproved,
-					ApprovedByPersonId = m.ApprovedByPersonId,
-					ApprovedDateTime = m.ApprovedDateTime,
-					StartDateTime = m.StartDateTime,
-					ExpireDateTime = m.ExpireDateTime,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<HtmlContentDto> QueryableDto( IQueryable<HtmlContent> items )
+        {
+            return items.Select( m => new HtmlContentDto()
+                {
+                    BlockId = m.BlockId,
+                    EntityValue = m.EntityValue,
+                    Version = m.Version,
+                    Content = m.Content,
+                    IsApproved = m.IsApproved,
+                    ApprovedByPersonId = m.ApprovedByPersonId,
+                    ApprovedDateTime = m.ApprovedDateTime,
+                    StartDateTime = m.StartDateTime,
+                    ExpireDateTime = m.ExpireDateTime,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -54,22 +54,22 @@ namespace Rock.Core
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<AttributeValueDto> QueryableDto( IQueryable<AttributeValue> items )
-		{
-			return items.Select( m => new AttributeValueDto()
-				{
-					IsSystem = m.IsSystem,
-					AttributeId = m.AttributeId,
-					EntityId = m.EntityId,
-					Order = m.Order,
-					Value = m.Value,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<AttributeValueDto> QueryableDto( IQueryable<AttributeValue> items )
+        {
+            return items.Select( m => new AttributeValueDto()
+                {
+                    IsSystem = m.IsSystem,
+                    AttributeId = m.AttributeId,
+                    EntityId = m.EntityId,
+                    Order = m.Order,
+                    Value = m.Value,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

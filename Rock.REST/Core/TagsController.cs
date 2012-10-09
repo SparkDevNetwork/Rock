@@ -14,11 +14,11 @@ using Rock.Core;
 
 namespace Rock.Rest.Core
 {
-	/// <summary>
-	/// Tags REST API
-	/// </summary>
-	public partial class TagsController : Rock.Rest.ApiController<Rock.Core.Tag, Rock.Core.TagDto>
-	{
-		public TagsController() : base( new Rock.Core.TagService() ) { } 
-	}
+    /// <summary>
+    /// Tags REST API
+    /// </summary>
+    public partial class TagsController : Rock.Rest.ApiController<Rock.Core.Tag, Rock.Core.TagDto>
+    {
+        public TagsController() : base( new Rock.Core.TagService() ) { } 
+    }
 }

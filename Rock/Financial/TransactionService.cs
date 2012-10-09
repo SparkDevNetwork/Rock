@@ -54,31 +54,31 @@ namespace Rock.Financial
             return QueryableDto( this.Queryable() );
         }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<TransactionDto> QueryableDto( IQueryable<Transaction> items )
-		{
-			return items.Select( m => new TransactionDto()
-				{
-					Description = m.Description,
-					TransactionDate = m.TransactionDate,
-					Entity = m.Entity,
-					EntityId = m.EntityId,
-					BatchId = m.BatchId,
-					CurrencyTypeId = m.CurrencyTypeId,
-					CreditCardTypeId = m.CreditCardTypeId,
-					Amount = m.Amount,
-					RefundTransactionId = m.RefundTransactionId,
-					TransactionImageId = m.TransactionImageId,
-					TransactionCode = m.TransactionCode,
-					GatewayId = m.GatewayId,
-					SourceTypeId = m.SourceTypeId,
-					Summary = m.Summary,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<TransactionDto> QueryableDto( IQueryable<Transaction> items )
+        {
+            return items.Select( m => new TransactionDto()
+                {
+                    Description = m.Description,
+                    TransactionDate = m.TransactionDate,
+                    Entity = m.Entity,
+                    EntityId = m.EntityId,
+                    BatchId = m.BatchId,
+                    CurrencyTypeId = m.CurrencyTypeId,
+                    CreditCardTypeId = m.CreditCardTypeId,
+                    Amount = m.Amount,
+                    RefundTransactionId = m.RefundTransactionId,
+                    TransactionImageId = m.TransactionImageId,
+                    TransactionCode = m.TransactionCode,
+                    GatewayId = m.GatewayId,
+                    SourceTypeId = m.SourceTypeId,
+                    Summary = m.Summary,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

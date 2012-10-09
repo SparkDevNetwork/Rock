@@ -22,12 +22,12 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int AttributeId { get; set; }
-		public string Key { get; set; }
-		public string Value { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int AttributeId { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
@@ -37,49 +37,49 @@ namespace Rock.Core
         {
         }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the entity
-		/// </summary>
-		/// <param name="attributeQualifier"></param>
-		public AttributeQualifierDto ( AttributeQualifier attributeQualifier )
-		{
-			CopyFromModel( attributeQualifier );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="attributeQualifier"></param>
+        public AttributeQualifierDto ( AttributeQualifier attributeQualifier )
+        {
+            CopyFromModel( attributeQualifier );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyFromModel( IEntity model )
-		{
-			if ( model is AttributeQualifier )
-			{
-				var attributeQualifier = (AttributeQualifier)model;
-				this.IsSystem = attributeQualifier.IsSystem;
-				this.AttributeId = attributeQualifier.AttributeId;
-				this.Key = attributeQualifier.Key;
-				this.Value = attributeQualifier.Value;
-				this.Id = attributeQualifier.Id;
-				this.Guid = attributeQualifier.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is AttributeQualifier )
+            {
+                var attributeQualifier = (AttributeQualifier)model;
+                this.IsSystem = attributeQualifier.IsSystem;
+                this.AttributeId = attributeQualifier.AttributeId;
+                this.Key = attributeQualifier.Key;
+                this.Value = attributeQualifier.Value;
+                this.Id = attributeQualifier.Id;
+                this.Guid = attributeQualifier.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the entity properties
-		/// </summary>
-		/// <param name="model">The model</param>
-		public void CopyToModel ( IEntity model )
-		{
-			if ( model is AttributeQualifier )
-			{
-				var attributeQualifier = (AttributeQualifier)model;
-				attributeQualifier.IsSystem = this.IsSystem;
-				attributeQualifier.AttributeId = this.AttributeId;
-				attributeQualifier.Key = this.Key;
-				attributeQualifier.Value = this.Value;
-				attributeQualifier.Id = this.Id;
-				attributeQualifier.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is AttributeQualifier )
+            {
+                var attributeQualifier = (AttributeQualifier)model;
+                attributeQualifier.IsSystem = this.IsSystem;
+                attributeQualifier.AttributeId = this.AttributeId;
+                attributeQualifier.Key = this.Key;
+                attributeQualifier.Value = this.Value;
+                attributeQualifier.Id = this.Id;
+                attributeQualifier.Guid = this.Guid;
+            }
+        }
+    }
 }

@@ -14,11 +14,11 @@ using Rock.Financial;
 
 namespace Rock.Rest.Financial
 {
-	/// <summary>
-	/// PersonAccountLookups REST API
-	/// </summary>
-	public partial class PersonAccountLookupsController : Rock.Rest.ApiController<Rock.Financial.PersonAccountLookup, Rock.Financial.PersonAccountLookupDto>
-	{
-		public PersonAccountLookupsController() : base( new Rock.Financial.PersonAccountLookupService() ) { } 
-	}
+    /// <summary>
+    /// PersonAccountLookups REST API
+    /// </summary>
+    public partial class PersonAccountLookupsController : Rock.Rest.ApiController<Rock.Financial.PersonAccountLookup, Rock.Financial.PersonAccountLookupDto>
+    {
+        public PersonAccountLookupsController() : base( new Rock.Financial.PersonAccountLookupService() ) { } 
+    }
 }
