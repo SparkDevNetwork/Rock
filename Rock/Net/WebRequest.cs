@@ -1,4 +1,10 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,8 +14,20 @@ using System.Text;
 
 namespace Rock.Net
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class WebRequest
     {
+        /// <summary>
+        /// Sends the specified request URI string.
+        /// </summary>
+        /// <param name="requestUriString">The request URI string.</param>
+        /// <param name="method">The method.</param>
+        /// <param name="queryStringData">The query string data.</param>
+        /// <param name="formData">The form data.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
         public static WebResponse Send( string requestUriString, string method, Dictionary<string, string> queryStringData, Dictionary<string, string> formData )
         {
             string uri = requestUriString;
@@ -48,6 +66,11 @@ namespace Rock.Net
             }
         }
 
+        /// <summary>
+        /// Gets the response string.
+        /// </summary>
+        /// <param name="responseStream">The response stream.</param>
+        /// <returns></returns>
         static private string GetResponseString(Stream responseStream)
         {
             Stream receiveStream = responseStream;
@@ -69,11 +92,32 @@ namespace Rock.Net
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class WebResponse
     {
+        /// <summary>
+        /// Gets the HTTP status code.
+        /// </summary>
+        /// <value>
+        /// The HTTP status code.
+        /// </value>
         public HttpStatusCode HttpStatusCode { get; internal set; }
+        
+        /// <summary>
+        /// Gets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
         public string Message { get; internal set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebResponse" /> class.
+        /// </summary>
+        /// <param name="httpStatusCode">The HTTP status code.</param>
+        /// <param name="message">The message.</param>
         internal WebResponse( HttpStatusCode httpStatusCode, string message )
         {
             HttpStatusCode = httpStatusCode;

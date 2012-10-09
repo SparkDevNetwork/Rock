@@ -10,17 +10,17 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Phone Number POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Phone Number POCO Service class
+    /// </summary>
     public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
     {
-		/// <summary>
-		/// Gets Phone Numbers by Person Id
-		/// </summary>
-		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of PhoneNumber objects.</returns>
-	    public IEnumerable<PhoneNumber> GetByPersonId( int personId )
+        /// <summary>
+        /// Gets Phone Numbers by Person Id
+        /// </summary>
+        /// <param name="personId">Person Id.</param>
+        /// <returns>An enumerable list of PhoneNumber objects.</returns>
+        public IEnumerable<PhoneNumber> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );
         }

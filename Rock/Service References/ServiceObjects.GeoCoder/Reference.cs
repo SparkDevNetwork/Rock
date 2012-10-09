@@ -8,8 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.ServiceObjects.GeoCoder {
-    
+namespace Rock.ServiceObjects.GeoCoder
+{
+
+#pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.serviceobjects.com/", ConfigurationName="ServiceObjects.GeoCoder.DOTSGeoCoderSoap")]

@@ -21,9 +21,10 @@ namespace Rock.Field.Types
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="setValue"></param>
-        /// <returns></returns>
+        /// <param name="configurationValues"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             DropDownList ddl = new DropDownList();
@@ -39,7 +40,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
-        /// <param name="control"></param>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
@@ -48,6 +50,12 @@ namespace Rock.Field.Types
             return null;
         }
 
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             if ( control != null && control is DropDownList )

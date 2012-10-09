@@ -11,27 +11,27 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Email Template POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Email Template POCO Service class
+    /// </summary>
     public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
     {
-		/// <summary>
-		/// Gets Email Template by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>EmailTemplate object.</returns>
-	    public EmailTemplate GetByGuid( Guid guid )
+        /// <summary>
+        /// Gets Email Template by Guid
+        /// </summary>
+        /// <param name="guid">Guid.</param>
+        /// <returns>EmailTemplate object.</returns>
+        public EmailTemplate GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
-		
-		/// <summary>
-		/// Gets Email Templates by Person Id
-		/// </summary>
-		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of EmailTemplate objects.</returns>
-	    public IEnumerable<EmailTemplate> GetByPersonId( int? personId )
+        
+        /// <summary>
+        /// Gets Email Templates by Person Id
+        /// </summary>
+        /// <param name="personId">Person Id.</param>
+        /// <returns>An enumerable list of EmailTemplate objects.</returns>
+        public IEnumerable<EmailTemplate> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }

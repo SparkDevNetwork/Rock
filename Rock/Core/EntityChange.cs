@@ -20,110 +20,110 @@ namespace Rock.Core
     [Table( "coreEntityChange" )]
     public partial class EntityChange : ModelWithAttributes<EntityChange>
     {
-		/// <summary>
-		/// Gets or sets the Change Set.
-		/// </summary>
-		/// <value>
-		/// Change Set.
-		/// </value>
-		[Required]
-		[DataMember]
-		public Guid ChangeSet { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Change Type.
-		/// </summary>
-		/// <value>
-		/// Change Type.
-		/// </value>
-		[Required]
-		[MaxLength( 10 )]
-		[DataMember]
-		public string ChangeType { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Type.
-		/// </summary>
-		/// <value>
-		/// Entity Type.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string EntityType { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int EntityId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Property.
-		/// </summary>
-		/// <value>
-		/// Property.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Property { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Original Value.
-		/// </summary>
-		/// <value>
-		/// Original Value.
-		/// </value>
-		[DataMember]
-		public string OriginalValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Current Value.
-		/// </summary>
-		/// <value>
-		/// Current Value.
-		/// </value>
-		[DataMember]
-		public string CurrentValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Change Set.
+        /// </summary>
+        /// <value>
+        /// Change Set.
+        /// </value>
+        [Required]
+        [DataMember]
+        public Guid ChangeSet { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Change Type.
+        /// </summary>
+        /// <value>
+        /// Change Type.
+        /// </value>
+        [Required]
+        [MaxLength( 10 )]
+        [DataMember]
+        public string ChangeType { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Type.
+        /// </summary>
+        /// <value>
+        /// Entity Type.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string EntityType { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int EntityId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Property.
+        /// </summary>
+        /// <value>
+        /// Property.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Property { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Original Value.
+        /// </summary>
+        /// <value>
+        /// Original Value.
+        /// </value>
+        [DataMember]
+        public string OriginalValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Current Value.
+        /// </summary>
+        /// <value>
+        /// Current Value.
+        /// </value>
+        [DataMember]
+        public string CurrentValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Core.EntityChange"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Core.EntityChange"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static EntityChange Read( int id )
-		{
-			return Read<EntityChange>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static EntityChange Read( int id )
+        {
+            return Read<EntityChange>( id );
+        }
 
     }
     
@@ -137,6 +137,6 @@ namespace Rock.Core
         /// </summary>
         public EntityChangeConfiguration()
         {
-		}
+        }
     }
 }

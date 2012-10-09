@@ -11,17 +11,17 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Person Trail POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Person Trail POCO Service class
+    /// </summary>
     public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
     {
-		/// <summary>
-		/// Gets Person Trails by Current Id
-		/// </summary>
-		/// <param name="currentId">Current Id.</param>
-		/// <returns>An enumerable list of PersonMerged objects.</returns>
-	    public IEnumerable<PersonMerged> GetByCurrentId( int currentId )
+        /// <summary>
+        /// Gets Person Trails by Current Id
+        /// </summary>
+        /// <param name="currentId">Current Id.</param>
+        /// <returns>An enumerable list of PersonMerged objects.</returns>
+        public IEnumerable<PersonMerged> GetByCurrentId( int currentId )
         {
             return Repository.Find( t => t.CurrentId == currentId );
         }
@@ -29,7 +29,7 @@ namespace Rock.Crm
         /// <summary>
         /// Get's the current person Guid
         /// </summary>
-        /// <param name="guid">The GUID.</param>
+        /// <param name="publicKey">The public key.</param>
         /// <returns></returns>
         public string Current( string publicKey )
         {

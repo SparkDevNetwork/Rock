@@ -17,63 +17,64 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// PhoneNumber Service class
-	/// </summary>
-	public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PhoneNumberService"/> class
-		/// </summary>
-		public PhoneNumberService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// PhoneNumber Service class
+    /// </summary>
+    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
+        /// </summary>
+        public PhoneNumberService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PhoneNumberService"/> class
-		/// </summary>
-		public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
+        /// </summary>
+        public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override PhoneNumber CreateNew()
-		{
-			return new PhoneNumber();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override PhoneNumber CreateNew()
+        {
+            return new PhoneNumber();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PhoneNumberDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PhoneNumberDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
-		{
-			return items.Select( m => new PhoneNumberDto()
-				{
-					IsSystem = m.IsSystem,
-					PersonId = m.PersonId,
-					Number = m.Number,
-					NumberTypeId = m.NumberTypeId,
-					IsUnlisted = m.IsUnlisted,
-					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
+        {
+            return items.Select( m => new PhoneNumberDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PersonId = m.PersonId,
+                    Number = m.Number,
+                    NumberTypeId = m.NumberTypeId,
+                    IsUnlisted = m.IsUnlisted,
+                    Description = m.Description,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

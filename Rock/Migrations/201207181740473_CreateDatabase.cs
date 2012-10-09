@@ -1,9 +1,15 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class CreateDatabase : DbMigration
     {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
         public override void Up()
         {
             CreateTable(
@@ -1035,7 +1041,10 @@ namespace Rock.Migrations
             AddData();
             
         }
-        
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
         public override void Down()
         {
             DeleteData();

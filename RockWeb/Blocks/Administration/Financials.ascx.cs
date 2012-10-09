@@ -8,7 +8,7 @@ using Rock.Core;
 using Rock.Financial;
 
 
-public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
+public partial class Blocks_Administration_Financials : Rock.Web.UI.RockBlock
 {
     private TransactionService transactionService = new TransactionService();
     private FundService fundService = new FundService();
@@ -29,7 +29,7 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.Block
     {
         if (!Page.IsPostBack && _canConfigure)
         {
-            Rock.Web.UI.Page.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
             LoadDropDowns();
             BindGrid();
         }

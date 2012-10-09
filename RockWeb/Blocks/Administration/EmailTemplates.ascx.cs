@@ -17,7 +17,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the emailTemplates that are available for a specific entity
     /// </summary>
-    public partial class EmailTemplates : Rock.Web.UI.Block
+    public partial class EmailTemplates : Rock.Web.UI.RockBlock
     {
         #region Fields
 

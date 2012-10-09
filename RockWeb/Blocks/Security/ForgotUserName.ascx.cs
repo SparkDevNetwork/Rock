@@ -24,9 +24,9 @@ namespace RockWeb.Blocks.Security
         "There are not any accounts for the email address you entered" )]
     [Rock.Attribute.Property( 2, "Success", "SuccessCaption", "Captions", "", false,
         "Your user name has been sent to the email address you entered" )]
-    public partial class ForgotUserName : Rock.Web.UI.Block
+    public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         protected override void OnLoad( EventArgs e )
         {

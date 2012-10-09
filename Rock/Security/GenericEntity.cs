@@ -80,6 +80,10 @@ namespace Rock.Security
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );

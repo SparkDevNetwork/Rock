@@ -2,7 +2,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class ChangeAddressToLocation : DbMigration
     {
         public override void Up()
@@ -42,60 +42,60 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonId)
                 .Index(t => t.ModifiedByPersonId);
             
-			Sql( @"
-				SET IDENTITY_INSERT crmLocation ON
-				INSERT INTO [crmLocation] (
-					 [Id]
-					,[Raw]
-					,[Street1]
-					,[Street2]
-					,[City]
-					,[State]
-					,[Country]
-					,[Zip]
-					,[Latitude]
-					,[Longitude]
-					,[ParcelId]
-					,[StandardizeAttempt]
-					,[StandardizeService]
-					,[StandardizeResult]
-					,[StandardizeDate]
-					,[GeocodeAttempt]
-					,[GeocodeService]
-					,[GeocodeResult]
-					,[GeocodeDate]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid] )
-				SELECT
-					 [Id]
-					,[Raw]
-					,[Street1]
-					,[Street2]
-					,[City]
-					,[State]
-					,[Country]
-					,[Zip]
-					,[Latitude]
-					,[Longitude]
-					,NULL
-					,[StandardizeAttempt]
-					,[StandardizeService]
-					,[StandardizeResult]
-					,[StandardizeDate]
-					,[GeocodeAttempt]
-					,[GeocodeService]
-					,[GeocodeResult]
-					,[GeocodeDate]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid]
-				FROM [crmAddress]
-				SET IDENTITY_INSERT crmLocation OFF
+            Sql( @"
+                SET IDENTITY_INSERT crmLocation ON
+                INSERT INTO [crmLocation] (
+                     [Id]
+                    ,[Raw]
+                    ,[Street1]
+                    ,[Street2]
+                    ,[City]
+                    ,[State]
+                    ,[Country]
+                    ,[Zip]
+                    ,[Latitude]
+                    ,[Longitude]
+                    ,[ParcelId]
+                    ,[StandardizeAttempt]
+                    ,[StandardizeService]
+                    ,[StandardizeResult]
+                    ,[StandardizeDate]
+                    ,[GeocodeAttempt]
+                    ,[GeocodeService]
+                    ,[GeocodeResult]
+                    ,[GeocodeDate]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid] )
+                SELECT
+                     [Id]
+                    ,[Raw]
+                    ,[Street1]
+                    ,[Street2]
+                    ,[City]
+                    ,[State]
+                    ,[Country]
+                    ,[Zip]
+                    ,[Latitude]
+                    ,[Longitude]
+                    ,NULL
+                    ,[StandardizeAttempt]
+                    ,[StandardizeService]
+                    ,[StandardizeResult]
+                    ,[StandardizeDate]
+                    ,[GeocodeAttempt]
+                    ,[GeocodeService]
+                    ,[GeocodeResult]
+                    ,[GeocodeDate]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid]
+                FROM [crmAddress]
+                SET IDENTITY_INSERT crmLocation OFF
 " );
 
             DropForeignKey("crmAddress", "CreatedByPersonId", "crmPerson");
@@ -142,58 +142,58 @@ namespace Rock.Migrations
             AddForeignKey("crmAddress", "ModifiedByPersonId", "crmPerson", "Id");
             AddForeignKey("crmAddress", "CreatedByPersonId", "crmPerson", "Id");
 
-			Sql( @"
-				SET IDENTITY_INSERT crmAddress ON
-				INSERT INTO [crmAddress] (
-					 [Id]
-					,[Raw]
-					,[Street1]
-					,[Street2]
-					,[City]
-					,[State]
-					,[Country]
-					,[Zip]
-					,[Latitude]
-					,[Longitude]
-					,[StandardizeAttempt]
-					,[StandardizeService]
-					,[StandardizeResult]
-					,[StandardizeDate]
-					,[GeocodeAttempt]
-					,[GeocodeService]
-					,[GeocodeResult]
-					,[GeocodeDate]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid] )
-				SELECT
-					 [Id]
-					,[Raw]
-					,[Street1]
-					,[Street2]
-					,[City]
-					,[State]
-					,[Country]
-					,[Zip]
-					,[Latitude]
-					,[Longitude]
-					,[StandardizeAttempt]
-					,[StandardizeService]
-					,[StandardizeResult]
-					,[StandardizeDate]
-					,[GeocodeAttempt]
-					,[GeocodeService]
-					,[GeocodeResult]
-					,[GeocodeDate]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid]
-				FROM [crmLocation]
-				SET IDENTITY_INSERT crmAddress OFF
+            Sql( @"
+                SET IDENTITY_INSERT crmAddress ON
+                INSERT INTO [crmAddress] (
+                     [Id]
+                    ,[Raw]
+                    ,[Street1]
+                    ,[Street2]
+                    ,[City]
+                    ,[State]
+                    ,[Country]
+                    ,[Zip]
+                    ,[Latitude]
+                    ,[Longitude]
+                    ,[StandardizeAttempt]
+                    ,[StandardizeService]
+                    ,[StandardizeResult]
+                    ,[StandardizeDate]
+                    ,[GeocodeAttempt]
+                    ,[GeocodeService]
+                    ,[GeocodeResult]
+                    ,[GeocodeDate]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid] )
+                SELECT
+                     [Id]
+                    ,[Raw]
+                    ,[Street1]
+                    ,[Street2]
+                    ,[City]
+                    ,[State]
+                    ,[Country]
+                    ,[Zip]
+                    ,[Latitude]
+                    ,[Longitude]
+                    ,[StandardizeAttempt]
+                    ,[StandardizeService]
+                    ,[StandardizeResult]
+                    ,[StandardizeDate]
+                    ,[GeocodeAttempt]
+                    ,[GeocodeService]
+                    ,[GeocodeResult]
+                    ,[GeocodeDate]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid]
+                FROM [crmLocation]
+                SET IDENTITY_INSERT crmAddress OFF
 " );
 
             DropIndex("dbo.crmLocation", new[] { "ModifiedByPersonId" });

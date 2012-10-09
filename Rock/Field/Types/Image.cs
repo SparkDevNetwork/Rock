@@ -21,9 +21,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-		public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return string.Format( "<a href='{0}image.ashx?{1}' target='_blank'>Image</a>",
                 parentControl.ResolveUrl( "~" ),
@@ -33,8 +34,7 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="value">The current value</param>
-        /// <param name="setValue">Should the control's value be set</param>
+        /// <param name="configurationValues"></param>
         /// <returns>
         /// The control
         /// </returns>
@@ -46,7 +46,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
-        /// <param name="control"></param>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {

@@ -17,60 +17,61 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// TaggedItem Service class
-	/// </summary>
-	public partial class TaggedItemService : Service<TaggedItem, TaggedItemDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TaggedItemService"/> class
-		/// </summary>
-		public TaggedItemService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// TaggedItem Service class
+    /// </summary>
+    public partial class TaggedItemService : Service<TaggedItem, TaggedItemDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaggedItemService"/> class
+        /// </summary>
+        public TaggedItemService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TaggedItemService"/> class
-		/// </summary>
-		public TaggedItemService(IRepository<TaggedItem> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaggedItemService"/> class
+        /// </summary>
+        public TaggedItemService(IRepository<TaggedItem> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override TaggedItem CreateNew()
-		{
-			return new TaggedItem();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override TaggedItem CreateNew()
+        {
+            return new TaggedItem();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TaggedItemDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<TaggedItemDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
-		{
-			return items.Select( m => new TaggedItemDto()
-				{
-					IsSystem = m.IsSystem,
-					TagId = m.TagId,
-					EntityId = m.EntityId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
+        {
+            return items.Select( m => new TaggedItemDto()
+                {
+                    IsSystem = m.IsSystem,
+                    TagId = m.TagId,
+                    EntityId = m.EntityId,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

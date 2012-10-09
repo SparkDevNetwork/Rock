@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class PageProperties : Rock.Web.UI.Block
+    public partial class PageProperties : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Administration
                     List<string> blockContexts = new List<string>();
                     foreach ( var block in _page.Blocks )
                     {
-                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as Rock.Web.UI.Block;
+                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as Rock.Web.UI.RockBlock;
                         if ( blockControl != null )
                         {
                             blockControl.CurrentPage = _page;
