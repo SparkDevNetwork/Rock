@@ -36,15 +36,6 @@ namespace RockWeb.Blocks.Administration
                 gPageRoutes.Actions.AddClick += gPageRoutes_Add;
                 gPageRoutes.GridRebind += gPageRoutes_GridRebind;
             }
-
-            string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this Page Route?');
-                });
-        });
-    ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gPageRoutes.ClientID ), script, true );
         }
 
         /// <summary>

@@ -15,7 +15,7 @@
         </fieldset>
         </div>
 
-        <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyText="No Metrics Found" >
+        <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyText="No Metrics Found" RowItemText="value" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />

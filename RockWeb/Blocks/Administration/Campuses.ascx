@@ -5,7 +5,7 @@
 
     <asp:Panel ID="pnlList" runat="server">
         
-        <Rock:Grid ID="gCampuses" runat="server" EmptyDataText="No Campuses Found">
+        <Rock:Grid ID="gCampuses" runat="server" EmptyDataText="No Campuses Found" RowItemText="campus">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <Rock:EditField OnClick="gCampuses_Edit" />

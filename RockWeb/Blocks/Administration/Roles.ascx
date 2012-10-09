@@ -14,7 +14,7 @@
         </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" >
+        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="role" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />

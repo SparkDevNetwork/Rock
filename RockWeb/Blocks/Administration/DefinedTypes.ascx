@@ -257,7 +257,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found">
+        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found" RowItemText="setting">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:TemplateField HeaderText="Name" showHeader="true" ItemStyle-Width="35%">

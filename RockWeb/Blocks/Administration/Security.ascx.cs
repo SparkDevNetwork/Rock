@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             // Read parameter values
-            string entityName = Rock.Security.Authorization.DecodeEntityTypeName(PageParameter( "EntityType" ));
+            string entityName = Rock.Security.Authorization.DecodeEntityTypeName( PageParameter( "EntityType" ) );
             int entityId = Convert.ToInt32( PageParameter( "EntityId" ) );
 
             // Get object type
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
                 rGrid.DataKeyNames = new string[] { "id" };
                 rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                 rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
-                rGrid.RowDataBound += new GridViewRowEventHandler(rGrid_RowDataBound);
+                rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
                 rGrid.ShowHeaderWhenEmpty = false;
                 rGrid.EmptyDataText = string.Empty;
                 rGrid.ShowActionRow = false;
@@ -69,17 +69,14 @@ namespace RockWeb.Blocks.Administration
                 rGridParentRules.ShowActionRow = false;
 
                 BindRoles();
-
+                
                 string script = string.Format( @"
-    Sys.Application.add_load(function () {{
-        $('#{0} td.grid-icon-cell.delete a').click(function(){{
-            return confirm('Are you sure you want to delete this role/user?');
-            }});
-        $('#modal-popup div.modal-header h3 small', window.parent.document).html('{1}');
-    }});
-", rGrid.ClientID, iSecured.ToString() );
+                    Sys.Application.add_load(function () {{
+                        $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
+                    }});
+                ", iSecured.ToString() );
 
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
+                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
             }
 
             base.OnInit( e );
@@ -91,7 +88,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                if (!Page.IsPostBack)
+                if ( !Page.IsPostBack )
                     BindGrid();
             }
             else
@@ -102,7 +99,7 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Visible = true;
             }
 
-            
+
             base.OnLoad( e );
         }
 
@@ -126,15 +123,15 @@ namespace RockWeb.Blocks.Administration
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                Rock.Security.AuthRule authRule = ( Rock.Security.AuthRule )e.Row.DataItem;
-                RadioButtonList rbl = ( RadioButtonList )e.Row.FindControl( "rblAllowDeny" );
+                Rock.Security.AuthRule authRule = (Rock.Security.AuthRule)e.Row.DataItem;
+                RadioButtonList rbl = (RadioButtonList)e.Row.FindControl( "rblAllowDeny" );
                 rbl.SelectedValue = authRule.AllowOrDeny;
             }
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Cms.Auth auth = authService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
                 authService.Delete( auth, CurrentPersonId );
@@ -171,11 +168,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void rblAllowDeny_SelectedIndexChanged( object sender, EventArgs e )
         {
-            RadioButtonList rblAllowDeny = ( RadioButtonList )sender;
+            RadioButtonList rblAllowDeny = (RadioButtonList)sender;
             GridViewRow selectedRow = rblAllowDeny.NamingContainer as GridViewRow;
             if ( selectedRow != null )
             {
-                int id = ( int )rGrid.DataKeys[selectedRow.RowIndex]["id"];
+                int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
                 Rock.Cms.Auth auth = authService.Get( id );
                 if ( auth != null )
@@ -224,15 +221,15 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( ListItem li in cblRoleActionList.Items )
             {
-                if (li.Selected)
+                if ( li.Selected )
                 {
                     bool actionUpdated = false;
                     bool alreadyExists = false;
 
                     Rock.Cms.SpecialRole specialRole = Rock.Cms.SpecialRole.None;
-                    int? groupId = Int32.Parse(ddlRoles.SelectedValue);
+                    int? groupId = Int32.Parse( ddlRoles.SelectedValue );
 
-                    switch(groupId)
+                    switch ( groupId )
                     {
                         case -1: specialRole = Rock.Cms.SpecialRole.AllUsers; break;
                         case -2: specialRole = Rock.Cms.SpecialRole.AllAuthenticatedUsers; break;
@@ -240,7 +237,7 @@ namespace RockWeb.Blocks.Administration
                         default: specialRole = Rock.Cms.SpecialRole.None; break;
                     }
 
-                    if (groupId < 0)
+                    if ( groupId < 0 )
                         groupId = null;
 
                     foreach ( Rock.Security.AuthRule rule in
@@ -306,7 +303,7 @@ namespace RockWeb.Blocks.Administration
                     int personId = Int32.Parse( li.Value );
 
                     foreach ( Rock.Security.AuthRule auth in existingAuths )
-                        if ( auth.PersonId.HasValue && auth.PersonId.Value == personId)
+                        if ( auth.PersonId.HasValue && auth.PersonId.Value == personId )
                         {
                             alreadyExists = true;
                             break;
@@ -348,14 +345,14 @@ namespace RockWeb.Blocks.Administration
         {
             rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.AuthEntity, iSecured.Id, CurrentAction ); ;
             rGrid.DataBind();
-            
+
             List<Rock.Security.AuthRule> parentRules = new List<Rock.Security.AuthRule>();
             AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();
         }
 
-        private void AddParentRules(List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action)
+        private void AddParentRules( List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action )
         {
             if ( parent != null )
             {
@@ -374,12 +371,12 @@ namespace RockWeb.Blocks.Administration
         {
             ddlRoles.Items.Clear();
 
-            ddlRoles.Items.Add(new ListItem("[All Users]", "-1"));
-            ddlRoles.Items.Add(new ListItem("[All Authenticated Users]", "-2"));
-            ddlRoles.Items.Add(new ListItem("[All Un-Authenticated Users]", "-3"));
+            ddlRoles.Items.Add( new ListItem( "[All Users]", "-1" ) );
+            ddlRoles.Items.Add( new ListItem( "[All Authenticated Users]", "-2" ) );
+            ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
-            foreach(var role in Rock.Security.Role.AllRoles())
-                ddlRoles.Items.Add(new ListItem(role.Name, role.Id.ToString()));
+            foreach ( var role in Rock.Security.Role.AllRoles() )
+                ddlRoles.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
         }
 
         protected string GetTabClass( object action )
