@@ -41,15 +41,6 @@ namespace RockWeb.Blocks.Administration
 
             SecurityField securityField = gSites.Columns[3] as SecurityField;
             securityField.EntityType = typeof( Rock.Cms.Site );
-
-            string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this site?');
-                });
-        });
-    ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gSites.ClientID ), script, true );
         }
 
         /// <summary>
