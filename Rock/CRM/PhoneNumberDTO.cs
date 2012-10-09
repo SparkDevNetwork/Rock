@@ -25,7 +25,9 @@ namespace Rock.Crm
         public bool IsSystem { get; set; }
         public int PersonId { get; set; }
         public string Number { get; set; }
+        public string Extension { get; set; }
         public int? NumberTypeId { get; set; }
+        public bool IsMessagingEnabled { get; set; }
         public bool IsUnlisted { get; set; }
         public string Description { get; set; }
         public DateTime? CreatedDateTime { get; set; }
@@ -64,7 +66,9 @@ namespace Rock.Crm
                 this.IsSystem = phoneNumber.IsSystem;
                 this.PersonId = phoneNumber.PersonId;
                 this.Number = phoneNumber.Number;
+                this.Extension = phoneNumber.Extension;
                 this.NumberTypeId = phoneNumber.NumberTypeId;
+                this.IsMessagingEnabled = phoneNumber.IsMessagingEnabled;
                 this.IsUnlisted = phoneNumber.IsUnlisted;
                 this.Description = phoneNumber.Description;
                 this.CreatedDateTime = phoneNumber.CreatedDateTime;
@@ -88,7 +92,9 @@ namespace Rock.Crm
                 phoneNumber.IsSystem = this.IsSystem;
                 phoneNumber.PersonId = this.PersonId;
                 phoneNumber.Number = this.Number;
+                phoneNumber.Extension = this.Extension;
                 phoneNumber.NumberTypeId = this.NumberTypeId;
+                phoneNumber.IsMessagingEnabled = this.IsMessagingEnabled;
                 phoneNumber.IsUnlisted = this.IsUnlisted;
                 phoneNumber.Description = this.Description;
                 phoneNumber.CreatedDateTime = this.CreatedDateTime;
