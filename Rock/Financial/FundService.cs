@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Fund Service class
-	/// </summary>
-	public partial class FundService : Service<Fund, FundDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FundService"/> class
-		/// </summary>
-		public FundService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Fund Service class
+    /// </summary>
+    public partial class FundService : Service<Fund, FundDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FundService"/> class
+        /// </summary>
+        public FundService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FundService"/> class
-		/// </summary>
-		public FundService(IRepository<Fund> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FundService"/> class
+        /// </summary>
+        public FundService(IRepository<Fund> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Fund CreateNew()
-		{
-			return new Fund();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Fund CreateNew()
+        {
+            return new Fund();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FundDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<FundDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -77,7 +77,8 @@ namespace Rock.Financial
 					Entity = m.Entity,
 					EntityId = m.EntityId,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

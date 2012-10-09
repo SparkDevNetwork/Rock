@@ -124,15 +124,15 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.EntityChange"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static EntityChange Read( int id )
-		{
-			return Read<EntityChange>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static EntityChange Read( int id )
+        {
+            return Read<EntityChange>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.

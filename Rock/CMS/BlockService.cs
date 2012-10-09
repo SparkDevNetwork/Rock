@@ -71,7 +71,8 @@ namespace Rock.Cms
 					Name = m.Name,
 					OutputCacheDuration = m.OutputCacheDuration,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

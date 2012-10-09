@@ -145,29 +145,29 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.Site"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>
         /// Collection of Pages.
         /// </value>
-		public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Page> Pages { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Site Domains.
         /// </summary>
         /// <value>
         /// Collection of Site Domains.
         /// </value>
-		public virtual ICollection<SiteDomain> SiteDomains { get; set; }
+        public virtual ICollection<SiteDomain> SiteDomains { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Default Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page DefaultPage { get; set; }
+        public virtual Page DefaultPage { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -201,7 +201,7 @@ namespace Rock.Cms
         /// </summary>
         public SiteConfiguration()
         {
-			this.HasOptional( p => p.DefaultPage ).WithMany( p => p.Sites ).HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
-		}
+            this.HasOptional( p => p.DefaultPage ).WithMany( p => p.Sites ).HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+        }
     }
 }

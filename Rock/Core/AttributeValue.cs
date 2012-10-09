@@ -73,23 +73,23 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.AttributeValue"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
         /// <value>
         /// A <see cref="Attribute"/> object.
         /// </value>
-		public virtual Attribute Attribute { get; set; }
+        public virtual Attribute Attribute { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static AttributeValue Read( int id )
-		{
-			return Read<AttributeValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static AttributeValue Read( int id )
+        {
+            return Read<AttributeValue>( id );
+        }
 
 		public override string ToString()
 		{
@@ -107,7 +107,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeValueConfiguration()
         {
-			this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
+        }
     }
 }

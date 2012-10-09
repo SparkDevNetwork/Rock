@@ -114,17 +114,17 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Html Contents.
         /// </value>
-		public virtual ICollection<HtmlContent> HtmlContents { get; set; }
-        
-		/// <summary>
+        public virtual ICollection<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
         /// A <see cref="BlockType"/> object.
         /// </value>
-		public virtual BlockType BlockType { get; set; }
-        
-		/// <summary>
+        public virtual BlockType BlockType { get; set; }
+
+        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
@@ -161,28 +161,36 @@ namespace Rock.Cms
             return this.Name;
         }
 
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
         public object ExportObject()
         {
             dynamic exportObject = this.ToDynamic();
 
-            if (BlockType != null)
+            if ( BlockType != null )
             {
                 exportObject.BlockType = BlockType.ExportObject();
             }
 
-            if (HtmlContents == null)
+            if ( HtmlContents == null )
             {
                 return exportObject;
             }
 
             exportObject.HtmlContents = new List<dynamic>();
 
-            foreach (var content in HtmlContents)
+            foreach ( var content in HtmlContents )
             {
                 exportObject.HtmlContents.Add( content.ExportObject() );
             }
@@ -190,9 +198,13 @@ namespace Rock.Cms
             return exportObject;
         }
 
-        public void ImportJson(string data)
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        public void ImportJson( string data )
         {
-            
+
         }
     }
 
@@ -206,8 +218,8 @@ namespace Rock.Cms
         /// </summary>
         public BlockConfiguration()
         {
-			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
+        }
     }
 }

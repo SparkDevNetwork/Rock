@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Person Service class
-	/// </summary>
-	public partial class PersonService : Service<Person, PersonDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PersonService"/> class
-		/// </summary>
-		public PersonService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Person Service class
+    /// </summary>
+    public partial class PersonService : Service<Person, PersonDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonService"/> class
+        /// </summary>
+        public PersonService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PersonService"/> class
-		/// </summary>
-		public PersonService(IRepository<Person> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonService"/> class
+        /// </summary>
+        public PersonService(IRepository<Person> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Person CreateNew()
-		{
-			return new Person();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Person CreateNew()
+        {
+            return new Person();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PersonDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -87,7 +87,8 @@ namespace Rock.Crm
 					SystemNote = m.SystemNote,
 					ViewedCount = m.ViewedCount,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

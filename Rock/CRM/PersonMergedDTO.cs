@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for PersonMerged object
-	/// </summary>
-	public partial class PersonMergedDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PersonMerged object
+    /// </summary>
+    public partial class PersonMergedDto : IDto
+    {
 
 #pragma warning disable 1591
 		public int CurrentId { get; set; }
@@ -28,12 +28,12 @@ namespace Rock.Crm
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PersonMergedDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PersonMergedDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for Location object
-	/// </summary>
-	public partial class LocationDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Location object
+    /// </summary>
+    public partial class LocationDto : IDto
+    {
 
 #pragma warning disable 1591
 		public string Raw { get; set; }
@@ -44,12 +44,12 @@ namespace Rock.Crm
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public LocationDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public LocationDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

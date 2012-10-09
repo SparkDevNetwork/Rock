@@ -18,14 +18,14 @@ namespace Rock.Web.Cache
     public class BlockTypeCache : Rock.Cms.BlockTypeDto
     {
         private BlockTypeCache() : base() { }
-		private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
+        private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
         /// verified for the block type.  If not, Rock will create and/or update the attributes associated with the block.
         /// </summary>
         /// <value>
-        /// 	<c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
+        ///     <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
         public bool IsInstancePropertiesVerified { get; internal set; }
 
@@ -98,7 +98,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
-					blockType = new BlockTypeCache(blockTypeModel);
+                    blockType = new BlockTypeCache(blockTypeModel);
 
                     blockType.IsInstancePropertiesVerified = false;
 

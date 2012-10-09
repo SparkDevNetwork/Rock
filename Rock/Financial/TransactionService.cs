@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Transaction Service class
-	/// </summary>
-	public partial class TransactionService : Service<Transaction, TransactionDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TransactionService"/> class
-		/// </summary>
-		public TransactionService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Transaction Service class
+    /// </summary>
+    public partial class TransactionService : Service<Transaction, TransactionDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionService"/> class
+        /// </summary>
+        public TransactionService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TransactionService"/> class
-		/// </summary>
-		public TransactionService(IRepository<Transaction> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionService"/> class
+        /// </summary>
+        public TransactionService(IRepository<Transaction> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Transaction CreateNew()
-		{
-			return new Transaction();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Transaction CreateNew()
+        {
+            return new Transaction();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TransactionDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<TransactionDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -77,7 +77,8 @@ namespace Rock.Financial
 					SourceTypeId = m.SourceTypeId,
 					Summary = m.Summary,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

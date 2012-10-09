@@ -11,7 +11,7 @@ namespace Rock.Web.UI
 	/// <summary>
 	/// A Block used on the person detail page
 	/// </summary>
-	public class PersonBlock : Block
+	public class PersonBlock : RockBlock
 	{
 		/// <summary>
 		/// The current person being viewed
@@ -31,6 +31,10 @@ namespace Rock.Web.UI
 			}
 		}
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
 		protected override void OnInit( EventArgs e )
 		{
 			base.OnInit( e );

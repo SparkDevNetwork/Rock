@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for Campus object
-	/// </summary>
-	public partial class CampusDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Campus object
+    /// </summary>
+    public partial class CampusDto : IDto
+    {
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
@@ -28,12 +28,12 @@ namespace Rock.Crm
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public CampusDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public CampusDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

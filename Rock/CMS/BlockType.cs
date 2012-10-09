@@ -67,23 +67,23 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.BlockType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
         /// Collection of Blocks.
         /// </value>
-		public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static BlockType Read( int id )
-		{
-			return Read<BlockType>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static BlockType Read( int id )
+        {
+            return Read<BlockType>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -135,6 +135,6 @@ namespace Rock.Cms
         /// </summary>
         public BlockTypeConfiguration()
         {
-		}
+        }
     }
 }

@@ -25,9 +25,9 @@ namespace RockWeb.Blocks.Cms
 	[Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
 	[Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
 
-	public partial class HtmlContent : Rock.Web.UI.Block
-	{
-		#region Private Global Variables
+    public partial class HtmlContent : Rock.Web.UI.RockBlock
+    {
+        #region Private Global Variables
 
 		bool _supportVersioning = false;
 		bool _requireApproval = false;

@@ -23,9 +23,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-		public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
@@ -49,7 +50,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
-			var configKeys = base.ConfigurationKeys();
+            var configKeys = base.ConfigurationKeys();
             configKeys.Add( "definedtype" );
             return configKeys;
         }
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
-			var controls = base.ConfigurationControls();
+            var controls = base.ConfigurationControls();
 
             DropDownList ddl = new DropDownList();
 

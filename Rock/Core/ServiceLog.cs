@@ -20,79 +20,79 @@ namespace Rock.Core
     [Table( "coreServiceLog" )]
     public partial class ServiceLog : Model<ServiceLog>
     {
-		/// <summary>
-		/// Gets or sets the Time.
-		/// </summary>
-		/// <value>
-		/// Time.
-		/// </value>
-		[DataMember]
-		public DateTime? Time { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Input.
-		/// </summary>
-		/// <value>
-		/// Input.
-		/// </value>
-		[DataMember]
-		public string Input { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Type.
-		/// </summary>
-		/// <value>
-		/// Type.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Type { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Result.
-		/// </summary>
-		/// <value>
-		/// Result.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Result { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Success.
-		/// </summary>
-		/// <value>
-		/// Success.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool Success { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Time.
+        /// </summary>
+        /// <value>
+        /// Time.
+        /// </value>
+        [DataMember]
+        public DateTime? Time { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Input.
+        /// </summary>
+        /// <value>
+        /// Input.
+        /// </value>
+        [DataMember]
+        public string Input { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Type.
+        /// </summary>
+        /// <value>
+        /// Type.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Type { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Result.
+        /// </summary>
+        /// <value>
+        /// Result.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Result { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Success.
+        /// </summary>
+        /// <value>
+        /// Success.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool Success { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.ServiceLog"; } }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static ServiceLog Read( int id )
-		{
-			return Read<ServiceLog>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static ServiceLog Read( int id )
+        {
+            return Read<ServiceLog>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -117,6 +117,6 @@ namespace Rock.Core
         /// </summary>
         public ServiceLogConfiguration()
         {
-		}
+        }
     }
 }

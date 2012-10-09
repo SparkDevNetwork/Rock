@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// PersonMerged Service class
-	/// </summary>
-	public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PersonMergedService"/> class
-		/// </summary>
-		public PersonMergedService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// PersonMerged Service class
+    /// </summary>
+    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// </summary>
+        public PersonMergedService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PersonMergedService"/> class
-		/// </summary>
-		public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// </summary>
+        public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override PersonMerged CreateNew()
-		{
-			return new PersonMerged();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override PersonMerged CreateNew()
+        {
+            return new PersonMerged();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PersonMergedDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PersonMergedDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -65,7 +65,8 @@ namespace Rock.Crm
 					CurrentId = m.CurrentId,
 					CurrentGuid = m.CurrentGuid,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

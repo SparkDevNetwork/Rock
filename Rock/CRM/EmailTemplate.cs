@@ -134,7 +134,7 @@ namespace Rock.Crm
 		[NotMapped]
 		public override string EntityTypeName { get { return "Crm.EmailTemplate"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
@@ -164,7 +164,7 @@ namespace Rock.Crm
         /// </summary>
         public EmailTemplateConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-		}
+            this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+        }
     }
 }

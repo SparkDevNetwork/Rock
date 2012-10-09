@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// FieldType Service class
-	/// </summary>
-	public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldTypeService"/> class
-		/// </summary>
-		public FieldTypeService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// FieldType Service class
+    /// </summary>
+    public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldTypeService"/> class
+        /// </summary>
+        public FieldTypeService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FieldTypeService"/> class
-		/// </summary>
-		public FieldTypeService(IRepository<FieldType> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldTypeService"/> class
+        /// </summary>
+        public FieldTypeService(IRepository<FieldType> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override FieldType CreateNew()
-		{
-			return new FieldType();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override FieldType CreateNew()
+        {
+            return new FieldType();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FieldTypeDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<FieldTypeDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -68,7 +68,8 @@ namespace Rock.Core
 					Assembly = m.Assembly,
 					Class = m.Class,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

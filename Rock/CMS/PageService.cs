@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Page Service class
-	/// </summary>
-	public partial class PageService : Service<Page, PageDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageService"/> class
-		/// </summary>
-		public PageService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Page Service class
+    /// </summary>
+    public partial class PageService : Service<Page, PageDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageService"/> class
+        /// </summary>
+        public PageService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageService"/> class
-		/// </summary>
-		public PageService(IRepository<Page> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageService"/> class
+        /// </summary>
+        public PageService(IRepository<Page> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Page CreateNew()
-		{
-			return new Page();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Page CreateNew()
+        {
+            return new Page();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PageDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -80,7 +80,8 @@ namespace Rock.Cms
 					IncludeAdminFooter = m.IncludeAdminFooter,
 					IconUrl = m.IconUrl,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

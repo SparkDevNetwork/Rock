@@ -54,17 +54,17 @@ namespace Rock.Data
             return _repository.AsQueryable();
         }
 
-		/// <summary>
-		/// Gets an <see cref="IQueryable{T}"/> list of all models
-		/// with eager loading of properties specified in includes
-		/// </summary>
-		/// <returns></returns>
-		public IQueryable<T> Queryable(string includes)
-		{
-			return _repository.AsQueryable(includes);
-		}
+        /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models
+        /// with eager loading of properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> Queryable( string includes )
+        {
+            return _repository.AsQueryable( includes );
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets the model with the id value
         /// </summary>
         /// <param name="id">id</param>
@@ -80,9 +80,11 @@ namespace Rock.Data
         /// <returns></returns>
         public bool TryGet( int id, out T item )
         {
-            item = Get(id);
-            if (item == null)
+            item = Get( id );
+            if ( item == null )
+            {
                 return false;
+            }
             return true;
         }
 
@@ -115,7 +117,9 @@ namespace Rock.Data
                     T model = Get( id );
 
                     if ( model != null && model.Guid.CompareTo( guid ) == 0 )
+                    {
                         return model;
+                    }
                 }
 
                 return null;
@@ -126,15 +130,15 @@ namespace Rock.Data
             }
         }
 
-        /// <summary>
-        /// Gets the current model from the page instance context.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        //public T GetCurrent( Rock.Web.Cache.Page pageInstance )
+        // <summary>
+        // Gets the current model from the page instance context.
+        // </summary>
+        // <param name="rockContext">The rock context.</param>
+        // <returns></returns>
+        //public T GetCurrent( Rock.Web.Cache.RockPage pageInstance )
         //{
         //    string key = typeof( T ).FullName;
-            
+
         //    if ( pageInstance.Context.ContainsKey( key ) )
         //    {
         //        var keyModel = pageInstance.Context[key];
@@ -272,7 +276,9 @@ namespace Rock.Data
 				return true;
 			}
 			else
+            {
 				return false;
+            }
 		}
 
 		/// <summary>
@@ -300,7 +306,9 @@ namespace Rock.Data
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         /// <summary>
@@ -365,11 +373,24 @@ namespace Rock.Data
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="D"></typeparam>
     public class Service<T, D> : Service<T>
         where T : Rock.Data.Entity<T>
         where D : Rock.Data.IDto
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service{D}" /> class.
+        /// </summary>
         public Service() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service{D}" /> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
         public Service( IRepository<T> repository ) : base( repository ) { }
 
         /// <summary>
@@ -381,6 +402,11 @@ namespace Rock.Data
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Creates the new.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public virtual T CreateNew()
         {
             throw new System.NotImplementedException();

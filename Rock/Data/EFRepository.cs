@@ -25,7 +25,14 @@ namespace Rock.Data
 	public class EFRepository<T> : IRepository<T>, IDisposable
 		where T : Rock.Data.Entity<T>
 	{
+        /// <summary>
+        /// 
+        /// </summary>
 		private bool IsDisposed;
+
+        /// <summary>
+        /// 
+        /// </summary>
 		private DbContext _context;
 
 		/// <summary>
@@ -45,6 +52,9 @@ namespace Rock.Data
 			}
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
 		internal DbSet<T> _objectSet;
 		internal DbSet<Audit> _auditSet;
 
@@ -452,6 +462,12 @@ namespace Rock.Data
 			return false;
 		}
 
+        /// <summary>
+        /// Gets the entity changes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
 		private List<Rock.Core.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
 		{
 			List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
@@ -518,7 +534,9 @@ namespace Rock.Data
 				if ( disposing )
 				{
 					if ( _context != null )
+                    {
 						_context.Dispose();
+                    }
 				}
 
 				_context = null;

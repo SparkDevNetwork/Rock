@@ -85,31 +85,31 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.DefinedType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Defined Values.
         /// </summary>
         /// <value>
         /// Collection of Defined Values.
         /// </value>
-		public virtual ICollection<DefinedValue> DefinedValues { get; set; }
+        public virtual ICollection<DefinedValue> DefinedValues { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Field Type.
         /// </summary>
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
-		public virtual FieldType FieldType { get; set; }
+        public virtual FieldType FieldType { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static DefinedType Read( int id )
-		{
-			return Read<DefinedType>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static DefinedType Read( int id )
+        {
+            return Read<DefinedType>( id );
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -141,7 +141,7 @@ namespace Rock.Core
         /// </summary>
         public DefinedTypeConfiguration()
         {
-			this.HasOptional( p => p.FieldType ).WithMany( p => p.DefinedTypes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
-		}
+            this.HasOptional( p => p.FieldType ).WithMany( p => p.DefinedTypes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+        }
     }
 }

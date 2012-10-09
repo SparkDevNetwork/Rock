@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Groups
 {
-	/// <summary>
-	/// Data Transfer Object for Member object
-	/// </summary>
-	public partial class MemberDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Member object
+    /// </summary>
+    public partial class MemberDto : IDto
+    {
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
@@ -30,12 +30,12 @@ namespace Rock.Groups
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public MemberDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public MemberDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

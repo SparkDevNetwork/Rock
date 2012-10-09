@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// ExceptionLog Service class
-	/// </summary>
-	public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ExceptionLogService"/> class
-		/// </summary>
-		public ExceptionLogService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// ExceptionLog Service class
+    /// </summary>
+    public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
+        /// </summary>
+        public ExceptionLogService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ExceptionLogService"/> class
-		/// </summary>
-		public ExceptionLogService(IRepository<ExceptionLog> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
+        /// </summary>
+        public ExceptionLogService(IRepository<ExceptionLog> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override ExceptionLog CreateNew()
-		{
-			return new ExceptionLog();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override ExceptionLog CreateNew()
+        {
+            return new ExceptionLog();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<ExceptionLogDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<ExceptionLogDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -79,7 +79,8 @@ namespace Rock.Core
 					Form = m.Form,
 					Cookies = m.Cookies,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

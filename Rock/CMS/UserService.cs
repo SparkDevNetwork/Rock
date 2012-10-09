@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// User Service class
-	/// </summary>
-	public partial class UserService : Service<User, UserDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UserService"/> class
-		/// </summary>
-		public UserService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// User Service class
+    /// </summary>
+    public partial class UserService : Service<User, UserDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class
+        /// </summary>
+        public UserService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UserService"/> class
-		/// </summary>
-		public UserService(IRepository<User> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class
+        /// </summary>
+        public UserService(IRepository<User> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override User CreateNew()
-		{
-			return new User();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override User CreateNew()
+        {
+            return new User();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<UserDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<UserDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -78,7 +78,8 @@ namespace Rock.Cms
 					ApiKey = m.ApiKey,
 					PersonId = m.PersonId,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Pledge Service class
-	/// </summary>
-	public partial class PledgeService : Service<Pledge, PledgeDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PledgeService"/> class
-		/// </summary>
-		public PledgeService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Pledge Service class
+    /// </summary>
+    public partial class PledgeService : Service<Pledge, PledgeDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PledgeService"/> class
+        /// </summary>
+        public PledgeService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PledgeService"/> class
-		/// </summary>
-		public PledgeService(IRepository<Pledge> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PledgeService"/> class
+        /// </summary>
+        public PledgeService(IRepository<Pledge> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Pledge CreateNew()
-		{
-			return new Pledge();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Pledge CreateNew()
+        {
+            return new Pledge();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PledgeDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PledgeDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -70,7 +70,8 @@ namespace Rock.Financial
 					FrequencyTypeId = m.FrequencyTypeId,
 					FrequencyAmount = m.FrequencyAmount,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

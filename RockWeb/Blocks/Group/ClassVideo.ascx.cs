@@ -16,7 +16,7 @@ namespace RockWeb.Blocks.Group
     [Rock.Attribute.Property( 2, "Group Role", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.Field.Types.Integer" )]
     [Rock.Attribute.Property( 3, "Duration Attribute Key", "Behavior", "The key of the duration attribute", false, "Duration" )]
     [Rock.Attribute.Property( 3, "Video Attribute Key", "Behavior", "The key of the video attribute", false, "Video" )]
-    public partial class ClassVideo : Rock.Web.UI.Block
+    public partial class ClassVideo : Rock.Web.UI.RockBlock
     {
         GroupService groupService = new GroupService();
 

@@ -76,29 +76,29 @@ namespace Rock.Groups
 		[NotMapped]
 		public override string EntityTypeName { get { return "Groups.Member"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person Person { get; set; }
+        public virtual Crm.Person Person { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
-		public virtual Group Group { get; set; }
+        public virtual Group Group { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group Role.
         /// </summary>
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-		public virtual GroupRole GroupRole { get; set; }
+        public virtual GroupRole GroupRole { get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -124,9 +124,9 @@ namespace Rock.Groups
         /// </summary>
         public MemberConfiguration()
         {
-			this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-			this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
-			this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
+        }
     }
 }

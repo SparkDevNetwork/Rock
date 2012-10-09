@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// EmailTemplate Service class
-	/// </summary>
-	public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
-		/// </summary>
-		public EmailTemplateService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// EmailTemplate Service class
+    /// </summary>
+    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// </summary>
+        public EmailTemplateService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="EmailTemplateService"/> class
-		/// </summary>
-		public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
+        /// </summary>
+        public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override EmailTemplate CreateNew()
-		{
-			return new EmailTemplate();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override EmailTemplate CreateNew()
+        {
+            return new EmailTemplate();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<EmailTemplateDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<EmailTemplateDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -73,7 +73,8 @@ namespace Rock.Crm
 					Subject = m.Subject,
 					Body = m.Body,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

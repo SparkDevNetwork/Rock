@@ -15,28 +15,28 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Data Transfer Object for PersonViewed object
-	/// </summary>
-	public partial class PersonViewedDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PersonViewed object
+    /// </summary>
+    public partial class PersonViewedDto : IDto
+    {
 
 #pragma warning disable 1591
-		public int? ViewerPersonId { get; set; }
-		public int? TargetPersonId { get; set; }
-		public DateTime? ViewDateTime { get; set; }
-		public string IpAddress { get; set; }
-		public string Source { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public int? ViewerPersonId { get; set; }
+        public int? TargetPersonId { get; set; }
+        public DateTime? ViewDateTime { get; set; }
+        public string IpAddress { get; set; }
+        public string Source { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PersonViewedDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PersonViewedDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

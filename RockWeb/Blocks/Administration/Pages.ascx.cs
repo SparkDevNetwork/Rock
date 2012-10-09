@@ -14,8 +14,8 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Pages : Rock.Web.UI.Block
-	{
+    public partial class Pages : Rock.Web.UI.RockBlock
+    {
         #region Fields
 
         private bool canConfigure = false;

@@ -66,23 +66,23 @@ namespace Rock.Core
 		[NotMapped]
 		public override string EntityTypeName { get { return "Core.AttributeQualifier"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
         /// <value>
         /// A <see cref="Attribute"/> object.
         /// </value>
-		public virtual Attribute Attribute { get; set; }
+        public virtual Attribute Attribute { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static AttributeQualifier Read( int id )
-		{
-			return Read<AttributeQualifier>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static AttributeQualifier Read( int id )
+        {
+            return Read<AttributeQualifier>( id );
+        }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -106,7 +106,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeQualifierConfiguration()
         {
-			this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeQualifiers ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeQualifiers ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
+        }
     }
 }

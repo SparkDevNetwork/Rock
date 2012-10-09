@@ -228,6 +228,7 @@
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
+    <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
@@ -474,9 +475,9 @@
     <Compile Include="Migrations\201210032052400_UpdatePersonDetail.Designer.cs">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201210072211380_AddAuditFunctionality.cs" />
-    <Compile Include="Migrations\201210072211380_AddAuditFunctionality.Designer.cs">
-      <DependentUpon>201210072211380_AddAuditFunctionality.cs</DependentUpon>
+    <Compile Include="Migrations\201210042044531_UniqueGuids.cs" />
+    <Compile Include="Migrations\201210042044531_UniqueGuids.Designer.cs">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -846,8 +847,8 @@
     <EmbeddedResource Include="Migrations\201210032052400_UpdatePersonDetail.resx">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210072211380_AddAuditFunctionality.resx">
-      <DependentUpon>201210072211380_AddAuditFunctionality.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210042044531_UniqueGuids.resx">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

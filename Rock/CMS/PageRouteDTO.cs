@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for PageRoute object
-	/// </summary>
-	public partial class PageRouteDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for PageRoute object
+    /// </summary>
+    public partial class PageRouteDto : IDto
+    {
 
 #pragma warning disable 1591
 		public bool IsSystem { get; set; }
@@ -29,12 +29,12 @@ namespace Rock.Cms
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public PageRouteDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public PageRouteDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

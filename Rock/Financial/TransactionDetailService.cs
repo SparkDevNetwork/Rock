@@ -17,42 +17,42 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// TransactionDetail Service class
-	/// </summary>
-	public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TransactionDetailService"/> class
-		/// </summary>
-		public TransactionDetailService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// TransactionDetail Service class
+    /// </summary>
+    public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionDetailService"/> class
+        /// </summary>
+        public TransactionDetailService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="TransactionDetailService"/> class
-		/// </summary>
-		public TransactionDetailService(IRepository<TransactionDetail> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionDetailService"/> class
+        /// </summary>
+        public TransactionDetailService(IRepository<TransactionDetail> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override TransactionDetail CreateNew()
-		{
-			return new TransactionDetail();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override TransactionDetail CreateNew()
+        {
+            return new TransactionDetail();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<TransactionDetailDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<TransactionDetailDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
 		/// <summary>
 		/// Query DTO objects
@@ -68,7 +68,8 @@ namespace Rock.Financial
 					Amount = m.Amount,
 					Summary = m.Summary,
 					Id = m.Id,
-					Guid = m.Guid,				});
+					Guid = m.Guid,
+				});
 		}
 	}
 }

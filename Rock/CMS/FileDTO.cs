@@ -15,11 +15,11 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for File object
-	/// </summary>
-	public partial class FileDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for File object
+    /// </summary>
+    public partial class FileDto : IDto
+    {
 
 #pragma warning disable 1591
 		public bool IsTemporary { get; set; }
@@ -34,12 +34,12 @@ namespace Rock.Cms
 		public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public FileDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public FileDto ()
+        {
+        }
 
 		/// <summary>
 		/// Instantiates a new DTO object from the entity

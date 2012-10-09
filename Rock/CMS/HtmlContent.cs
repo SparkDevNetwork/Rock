@@ -112,15 +112,15 @@ namespace Rock.Cms
 		[NotMapped]
 		public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Block.
         /// </summary>
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
-		public virtual Block Block { get; set; }
+        public virtual Block Block { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Approved By Person.
         /// </summary>
         /// <value>
@@ -187,8 +187,8 @@ namespace Rock.Cms
         /// </summary>
         public HtmlContentConfiguration()
         {
-			this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+            this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
+        }
     }
 }
