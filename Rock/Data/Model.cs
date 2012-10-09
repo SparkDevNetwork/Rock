@@ -19,8 +19,9 @@ namespace Rock.Data
     /// <summary>
     /// Base class that all models need to inherit from
     /// </summary>
-    [DataServiceKey("Id")]
-    [IgnoreProperties(new[] { "ParentAuthority", "SupportedActions", "AuthEntity" })]
+    /// <typeparam name="T"></typeparam>
+    [DataServiceKey( "Id" )]
+    [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity" } )]
     [DataContract]
     public abstract class Model<T> : IModel
     {
@@ -41,10 +42,15 @@ namespace Rock.Data
         /// The GUID.
         /// </value>
         [DataMember]
-        public Guid Guid { 
+        public Guid Guid
+        {
             get { return _guid; }
             set { _guid = value; }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
         private Guid _guid = Guid.NewGuid();
 
         /// <summary>
@@ -60,16 +66,22 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Gets the context key.
+        /// </summary>
+        /// <value>
+        /// The context key.
+        /// </value>
         [NotMapped]
         public string ContextKey
         {
             get
             {
-                string identifier = 
-                    typeof(T).FullName + "|" +
-                    this.Id.ToString() + ">" + 
+                string identifier =
+                    typeof( T ).FullName + "|" +
+                    this.Id.ToString() + ">" +
                     this.Guid.ToString();
-                return System.Web.HttpUtility.UrlEncode(Rock.Security.Encryption.EncryptString( identifier ));
+                return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
             }
         }
 
@@ -77,11 +89,7 @@ namespace Rock.Data
         /// Gets the validation results.
         /// </summary>
         [NotMapped]
-        public List<ValidationResult> ValidationResults
-        {
-            get { return _validationResults; }
-        }
-        private List<ValidationResult> _validationResults;
+        public List<ValidationResult> ValidationResults { get; internal set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -95,20 +103,20 @@ namespace Rock.Data
             get
             {
                 var valContext = new ValidationContext( this, serviceProvider: null, items: null );
-                _validationResults = new List<ValidationResult>();
-                return Validator.TryValidateObject( this, valContext, _validationResults );
+                ValidationResults = new List<ValidationResult>();
+                return Validator.TryValidateObject( this, valContext, ValidationResults, true );
             }
         }
 
         /// <summary>
         /// Static method to return an object based on the id
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="P"></typeparam>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static T Read<T>( int id ) where T : Model<T>
+        public static P Read<P>( int id ) where P : Model<P>
         {
-            return new Service<T>().Get( id );
+            return new Service<P>().Get( id );
         }
 
         #region ISecured implementation
@@ -119,14 +127,26 @@ namespace Rock.Data
         /// qualified name of the class.
         /// </summary>
         [NotMapped]
-        public virtual string AuthEntity { get { return string.Empty; } }
+        public virtual string AuthEntity
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
         [NotMapped]
-        public virtual Security.ISecured ParentAuthority { get { return null; } }
+        public virtual Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// A list of actions that this class supports.
@@ -134,7 +154,7 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Configure"  }; }
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
         }
 
         /// <summary>
@@ -149,17 +169,19 @@ namespace Rock.Data
         {
             return Security.Authorization.Authorized( this, action, person );
         }
-
+        
+        /*
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="username">The user name.</param>
         /// <returns></returns>
-        //public virtual bool Authorized( string action, string username )
-        //{
-        //    return Security.Authorization.Authorized( this, action, username );
-        //}
+        public virtual bool Authorized( string action, string username )
+        {
+            return Security.Authorization.Authorized( this, action, username );
+        }
+        */
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -167,11 +189,15 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public virtual bool IsAllowedByDefault (string action)
+        public virtual bool IsAllowedByDefault( string action )
         {
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return ( from action in SupportedActions
@@ -195,7 +221,9 @@ namespace Rock.Data
         protected virtual void OnAdding( ModelUpdatingEventArgs e )
         {
             if ( Adding != null )
+            {
                 Adding( this, e );
+            }
         }
 
         /// <summary>
@@ -222,7 +250,9 @@ namespace Rock.Data
         protected virtual void OnAdded( ModelUpdatedEventArgs e )
         {
             if ( Added != null )
+            {
                 Added( this, e );
+            }
         }
 
         /// <summary>
@@ -246,7 +276,9 @@ namespace Rock.Data
         protected virtual void OnDeleting( ModelUpdatingEventArgs e )
         {
             if ( Deleting != null )
+            {
                 Deleting( this, e );
+            }
         }
 
         /// <summary>
@@ -273,14 +305,16 @@ namespace Rock.Data
         protected virtual void OnDeleted( ModelUpdatedEventArgs e )
         {
             if ( Deleted != null )
+            {
                 Deleted( this, e );
+            }
         }
 
         /// <summary>
         /// Raises the deleted event.
         /// </summary>
         /// <param name="personId">The person id.</param>
-        public virtual void RaiseDeletedEvent(int? personId)
+        public virtual void RaiseDeletedEvent( int? personId )
         {
             OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
         }
@@ -297,7 +331,9 @@ namespace Rock.Data
         protected virtual void OnUpdating( ModelUpdatingEventArgs e )
         {
             if ( Updating != null )
+            {
                 Updating( this, e );
+            }
         }
 
         /// <summary>
@@ -324,7 +360,9 @@ namespace Rock.Data
         protected virtual void OnUpdated( ModelUpdatedEventArgs e )
         {
             if ( Updated != null )
+            {
                 Updated( this, e );
+            }
         }
 
         /// <summary>
@@ -371,23 +409,33 @@ namespace Rock.Data
     /// </summary>
     public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
     {
-        private bool cancel = false;
         /// <summary>
         /// Gets or sets a value indicating whether event should be cancelled.
         /// </summary>
         /// <value>
         ///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
         /// </value>
-        public bool Cancel 
-        { 
-            get { return cancel; }
-            set 
-            { 
-                if (value == true)
-                    cancel = true;
+        public bool Cancel
+        {
+            get
+            {
+                return cancel;
             }
 
+            set
+            {
+                if ( value == true )
+                {
+                    cancel = true;
+                }
+            }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private bool cancel = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
         /// </summary>
@@ -404,15 +452,43 @@ namespace Rock.Data
     /// </summary>
     internal class KeyModel
     {
+        /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
         public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model.
+        /// </summary>
+        /// <value>
+        /// The model.
+        /// </value>
         public IModel Model { get; set; }
 
-        public KeyModel( int id ) 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyModel" /> class.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        public KeyModel( int id )
         {
             Id = id;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KeyModel" /> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
         public KeyModel( string key )
         {
             Key = key;

@@ -17,60 +17,61 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// PageRoute Service class
-	/// </summary>
-	public partial class PageRouteService : Service<PageRoute, PageRouteDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageRouteService"/> class
-		/// </summary>
-		public PageRouteService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// PageRoute Service class
+    /// </summary>
+    public partial class PageRouteService : Service<PageRoute, PageRouteDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// </summary>
+        public PageRouteService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageRouteService"/> class
-		/// </summary>
-		public PageRouteService(IRepository<PageRoute> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageRouteService"/> class
+        /// </summary>
+        public PageRouteService(IRepository<PageRoute> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override PageRoute CreateNew()
-		{
-			return new PageRoute();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override PageRoute CreateNew()
+        {
+            return new PageRoute();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageRouteDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PageRouteDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PageRouteDto> QueryableDto( IQueryable<PageRoute> items )
-		{
-			return items.Select( m => new PageRouteDto()
-				{
-					IsSystem = m.IsSystem,
-					PageId = m.PageId,
-					Route = m.Route,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PageRouteDto> QueryableDto( IQueryable<PageRoute> items )
+        {
+            return items.Select( m => new PageRouteDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PageId = m.PageId,
+                    Route = m.Route,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

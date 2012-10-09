@@ -5,7 +5,6 @@
 //
 
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Services;
 
@@ -14,9 +13,12 @@ namespace Rock.Data
     /// <summary>
     /// Represents a model with attributes. 
     /// </summary>
-    [IgnoreProperties(new[] { "AttributeValues" })]
+    [IgnoreProperties( new[] { "AttributeValues" } )]
     public class ModelWithAttributes<T> : Model<T>, Rock.Attribute.IHasAttributes
     {
+        /// <summary>
+        /// 
+        /// </summary>
         private bool _attributesLoaded = false;
 
         // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
@@ -32,14 +34,14 @@ namespace Rock.Data
         [NotMapped]
         public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
         {
-            get 
+            get
             {
                 if ( _attributes == null && !_attributesLoaded )
                 {
                     Attribute.Helper.LoadAttributes( this );
                     _attributesLoaded = true;
                 }
-                return _attributes; 
+                return _attributes;
             }
             set { _attributes = value; }
         }
@@ -54,14 +56,14 @@ namespace Rock.Data
         [NotMapped]
         public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues
         {
-            get 
+            get
             {
                 if ( _attributeValues == null && !_attributesLoaded )
                 {
                     Attribute.Helper.LoadAttributes( this );
                     _attributesLoaded = true;
                 }
-                return _attributeValues; 
+                return _attributeValues;
             }
             set { _attributeValues = value; }
         }

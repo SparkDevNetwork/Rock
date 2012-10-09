@@ -14,7 +14,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Security : Rock.Web.UI.Block
+    public partial class Security : Rock.Web.UI.RockBlock
     {
         #region Fields
 

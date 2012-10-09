@@ -8,13 +8,26 @@ using NuGet;
 
 namespace Rock.Services.NuGet
 {
-	public class RockPackagePathResolver : DefaultPackagePathResolver
-	{
-		public RockPackagePathResolver( IFileSystem fileSystem ) : base( fileSystem, useSideBySidePaths: true ) { }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class RockPackagePathResolver : DefaultPackagePathResolver
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockPackagePathResolver" /> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        public RockPackagePathResolver( IFileSystem fileSystem ) : base( fileSystem, useSideBySidePaths: true ) { }
 
-		public override string GetPackageDirectory( string packageId, SemanticVersion version )
-		{
-			return string.Empty;
-		}
-	}
+        /// <summary>
+        /// Gets the package directory.
+        /// </summary>
+        /// <param name="packageId">The package id.</param>
+        /// <param name="version">The version.</param>
+        /// <returns></returns>
+        public override string GetPackageDirectory( string packageId, SemanticVersion version )
+        {
+            return string.Empty;
+        }
+    }
 }

@@ -11,37 +11,37 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Location POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Location POCO Service class
+    /// </summary>
     public partial class LocationService : Service<Location, LocationDto>
     {
-		/// <summary>
-		/// Gets Location by Raw
-		/// </summary>
-		/// <param name="raw">Raw.</param>
-		/// <returns>Location object.</returns>
-	    public Location GetByRaw( string raw )
+        /// <summary>
+        /// Gets Location by Raw
+        /// </summary>
+        /// <param name="raw">Raw.</param>
+        /// <returns>Location object.</returns>
+        public Location GetByRaw( string raw )
         {
             return Repository.FirstOrDefault( t => ( t.Raw == raw || ( raw == null && t.Raw == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets Location by Street 1 And Street 2 And City And State And Zip
-		/// </summary>
-		/// <param name="street1">Street 1.</param>
-		/// <param name="street2">Street 2.</param>
-		/// <param name="city">City.</param>
-		/// <param name="state">State.</param>
-		/// <param name="zip">Zip.</param>
-		/// <returns>Location object.</returns>
-	    public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
+        
+        /// <summary>
+        /// Gets Location by Street 1 And Street 2 And City And State And Zip
+        /// </summary>
+        /// <param name="street1">Street 1.</param>
+        /// <param name="street2">Street 2.</param>
+        /// <param name="city">City.</param>
+        /// <param name="state">State.</param>
+        /// <param name="zip">Zip.</param>
+        /// <returns>Location object.</returns>
+        public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
         {
             return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
         }
 
         /// <summary>
-        /// Standardizes the specified <see cref="Rock.Crm.LocationDTO"/>
+        /// Standardizes the specified location.
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
@@ -97,7 +97,7 @@ namespace Rock.Crm
         }
 
         /// <summary>
-		/// Geocodes the specified <see cref="Rock.Crm.LocationDTO"/>
+        /// Geocodes the specified location.
         /// </summary>
         /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>

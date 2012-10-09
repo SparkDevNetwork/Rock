@@ -16,10 +16,10 @@ namespace RockWeb.Blocks.Cms
     [Rock.Attribute.Property( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
     [Rock.Attribute.Property( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [Rock.Attribute.Property( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
-    public partial class PageXslt : Rock.Web.UI.Block
+    public partial class PageXslt : Rock.Web.UI.RockBlock
     {
-		private static readonly string ROOT_PAGE = "RootPage";
-		private static readonly string NUM_LEVELS = "NumberofLevels";
+        private static readonly string ROOT_PAGE = "RootPage";
+        private static readonly string NUM_LEVELS = "NumberofLevels";
 
         protected override void OnInit( EventArgs e )
         {
@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Cms
 
             this.AttributesUpdated += PageXslt_AttributesUpdated;
             //this.AddAttributeUpdateTrigger( upContent );
-			//upContent.ContentTemplateContainer.Controls.Add( )
+            //upContent.ContentTemplateContainer.Controls.Add( )
 
             TransformXml();
         }
@@ -43,9 +43,9 @@ namespace RockWeb.Blocks.Cms
             xslTransformer.Load( Server.MapPath( AttributeValue("XSLTFile") ) );
 
             Rock.Web.Cache.PageCache rootPage;
-			if ( AttributeValue( ROOT_PAGE ) != string.Empty )
+            if ( AttributeValue( ROOT_PAGE ) != string.Empty )
             {
-				int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
+                int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
                 if ( pageId == -1 )
                     rootPage = CurrentPage;
                 else
@@ -54,9 +54,9 @@ namespace RockWeb.Blocks.Cms
             else
                 rootPage = CurrentPage;
 
-			int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
+            int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
 
-			XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson );
+            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );

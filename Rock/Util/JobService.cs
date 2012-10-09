@@ -17,72 +17,73 @@ using Rock.Data;
 
 namespace Rock.Util
 {
-	/// <summary>
-	/// Job Service class
-	/// </summary>
-	public partial class JobService : Service<Job, JobDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="JobService"/> class
-		/// </summary>
-		public JobService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Job Service class
+    /// </summary>
+    public partial class JobService : Service<Job, JobDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobService"/> class
+        /// </summary>
+        public JobService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="JobService"/> class
-		/// </summary>
-		public JobService(IRepository<Job> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobService"/> class
+        /// </summary>
+        public JobService(IRepository<Job> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Job CreateNew()
-		{
-			return new Job();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Job CreateNew()
+        {
+            return new Job();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<JobDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<JobDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<JobDto> QueryableDto( IQueryable<Job> items )
-		{
-			return items.Select( m => new JobDto()
-				{
-					IsSystem = m.IsSystem,
-					IsActive = m.IsActive,
-					Name = m.Name,
-					Description = m.Description,
-					Assemby = m.Assemby,
-					Class = m.Class,
-					CronExpression = m.CronExpression,
-					LastSuccessfulRun = m.LastSuccessfulRun,
-					LastRunDate = m.LastRunDate,
-					LastRunDuration = m.LastRunDuration,
-					LastStatus = m.LastStatus,
-					LastStatusMessage = m.LastStatusMessage,
-					LastRunSchedulerName = m.LastRunSchedulerName,
-					NotificationEmails = m.NotificationEmails,
-					NotificationStatus = m.NotificationStatus,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<JobDto> QueryableDto( IQueryable<Job> items )
+        {
+            return items.Select( m => new JobDto()
+                {
+                    IsSystem = m.IsSystem,
+                    IsActive = m.IsActive,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Assemby = m.Assemby,
+                    Class = m.Class,
+                    CronExpression = m.CronExpression,
+                    LastSuccessfulRun = m.LastSuccessfulRun,
+                    LastRunDate = m.LastRunDate,
+                    LastRunDuration = m.LastRunDuration,
+                    LastStatus = m.LastStatus,
+                    LastStatusMessage = m.LastStatusMessage,
+                    LastRunSchedulerName = m.LastRunSchedulerName,
+                    NotificationEmails = m.NotificationEmails,
+                    NotificationStatus = m.NotificationStatus,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

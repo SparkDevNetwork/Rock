@@ -14,7 +14,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-	public partial class BlockTypes : Rock.Web.UI.Block
+    public partial class BlockTypes : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     Control control = LoadControl( blockType.Path );
-                    if ( control is Rock.Web.UI.Block )
+                    if ( control is Rock.Web.UI.RockBlock )
                     {
                         blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path ).SplitCase();
                         blockType.Description = Rock.Reflection.GetDescription(control.GetType()) ?? string.Empty;

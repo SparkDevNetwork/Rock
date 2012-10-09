@@ -33,19 +33,19 @@ namespace Rock.Web
             int routeId = -1;
 
             // Pages using the default routing URL will have the page id in the RouteData.Values collection
-			if ( requestContext.RouteData.Values["PageId"] != null )
-			{
-				pageId = (string)requestContext.RouteData.Values["PageId"];
-			}
-			// Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
-			else if ( requestContext.RouteData.DataTokens["PageId"] != null )
-			{
-				pageId = (string)requestContext.RouteData.DataTokens["PageId"];
-				routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
-			}
-			// If page has not been specified get the site by the domain and use the site's default page
-			else
-			{
+            if ( requestContext.RouteData.Values["PageId"] != null )
+            {
+                pageId = (string)requestContext.RouteData.Values["PageId"];
+            }
+            // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
+            else if ( requestContext.RouteData.DataTokens["PageId"] != null )
+            {
+                pageId = (string)requestContext.RouteData.DataTokens["PageId"];
+                routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+            }
+            // If page has not been specified get the site by the domain and use the site's default page
+            else
+            {
                 string host = requestContext.HttpContext.Request.Url.Host;
                 string cacheKey = "Rock:DomainSites";
 
@@ -75,7 +75,7 @@ namespace Rock.Web
 
                 if ( string.IsNullOrEmpty( pageId ) )
                     throw new SystemException( "Invalid Site Configuration" );
-			}
+            }
 
             Rock.Web.Cache.PageCache page = null;
 
@@ -94,7 +94,7 @@ namespace Rock.Web
                 page.RouteId = routeId;
 
                 // Return the page using the cached route
-                Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.Page ) );
+                Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.RockPage ) );
                 cmsPage.CurrentPage = page;
                 return cmsPage;
             }
@@ -121,7 +121,7 @@ namespace Rock.Web
                 try
                 {
                     // Return the page for the selected theme and layout
-                    Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
+                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                     cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
@@ -146,7 +146,7 @@ namespace Rock.Web
                         page.LayoutPath = layoutPath;
 
                     // Return the default layout and/or theme
-                    Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
+                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                     cmsPage.CurrentPage = page;
                     return cmsPage;
                 }

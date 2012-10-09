@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets a value indicating whether [display required indicator].
         /// </summary>
         /// <value>
-        /// 	<c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        ///     <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
         /// </value>
         [
         Bindable( true ),
@@ -59,10 +59,10 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            Rock.Web.UI.Page.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            Rock.Web.UI.Page.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.upload.min.js" );
-            Rock.Web.UI.Page.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            Rock.Web.UI.Page.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
+            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.upload.min.js" );
+            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
+            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             string script = string.Format( @"
     $(document).ready(function() {{

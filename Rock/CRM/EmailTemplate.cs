@@ -20,163 +20,163 @@ namespace Rock.Crm
     [Table( "crmEmailTemplate" )]
     public partial class EmailTemplate : ModelWithAttributes<EmailTemplate>, IAuditable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id.
-		/// </value>
-		[DataMember]
-		public int? PersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Category.
-		/// </summary>
-		/// <value>
-		/// Category.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Category { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		/// <value>
-		/// Title.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Title { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the From.
-		/// </summary>
-		/// <value>
-		/// From.
-		/// </value>
-		[MaxLength( 200 )]
-		[DataMember]
-		public string From { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the To.
-		/// </summary>
-		/// <value>
-		/// To.
-		/// </value>
-		[DataMember]
-		public string To { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Cc.
-		/// </summary>
-		/// <value>
-		/// Cc.
-		/// </value>
-		[DataMember]
-		public string Cc { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Bcc.
-		/// </summary>
-		/// <value>
-		/// Bcc.
-		/// </value>
-		[DataMember]
-		public string Bcc { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Subject.
-		/// </summary>
-		/// <value>
-		/// Subject.
-		/// </value>
-		[Required]
-		[MaxLength( 200 )]
-		[DataMember]
-		public string Subject { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Body.
-		/// </summary>
-		/// <value>
-		/// Body.
-		/// </value>
-		[Required]
-		[DataMember]
-		public string Body { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        [DataMember]
+        public int? PersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Category { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Title { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the From.
+        /// </summary>
+        /// <value>
+        /// From.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string From { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the To.
+        /// </summary>
+        /// <value>
+        /// To.
+        /// </value>
+        [DataMember]
+        public string To { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Cc.
+        /// </summary>
+        /// <value>
+        /// Cc.
+        /// </value>
+        [DataMember]
+        public string Cc { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Bcc.
+        /// </summary>
+        /// <value>
+        /// Bcc.
+        /// </value>
+        [DataMember]
+        public string Bcc { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Subject.
+        /// </summary>
+        /// <value>
+        /// Subject.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string Subject { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Body.
+        /// </summary>
+        /// <value>
+        /// Body.
+        /// </value>
+        [Required]
+        [DataMember]
+        public string Body { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonId { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static EmailTemplate Read( int id )
-		{
-			return Read<EmailTemplate>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static EmailTemplate Read( int id )
+        {
+            return Read<EmailTemplate>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-		public virtual Person Person { get; set; }
+        public virtual Person Person { get; set; }
         
     }
     
@@ -190,7 +190,7 @@ namespace Rock.Crm
         /// </summary>
         public EmailTemplateConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-		}
+            this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+        }
     }
 }

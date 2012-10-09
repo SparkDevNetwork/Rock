@@ -11,17 +11,17 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Page Route POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Page Route POCO Service class
+    /// </summary>
     public partial class PageRouteService : Service<PageRoute, PageRouteDto>
     {
-		/// <summary>
-		/// Gets Page Routes by Page Id
-		/// </summary>
-		/// <param name="pageId">Page Id.</param>
-		/// <returns>An enumerable list of PageRoute objects.</returns>
-	    public IEnumerable<PageRoute> GetByPageId( int pageId )
+        /// <summary>
+        /// Gets Page Routes by Page Id
+        /// </summary>
+        /// <param name="pageId">Page Id.</param>
+        /// <returns>An enumerable list of PageRoute objects.</returns>
+        public IEnumerable<PageRoute> GetByPageId( int pageId )
         {
             return Repository.Find( t => t.PageId == pageId );
         }

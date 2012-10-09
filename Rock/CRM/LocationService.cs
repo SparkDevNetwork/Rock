@@ -17,75 +17,76 @@ using Rock.Data;
 
 namespace Rock.Crm
 {
-	/// <summary>
-	/// Location Service class
-	/// </summary>
-	public partial class LocationService : Service<Location, LocationDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LocationService"/> class
-		/// </summary>
-		public LocationService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Location Service class
+    /// </summary>
+    public partial class LocationService : Service<Location, LocationDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// </summary>
+        public LocationService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="LocationService"/> class
-		/// </summary>
-		public LocationService(IRepository<Location> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// </summary>
+        public LocationService(IRepository<Location> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Location CreateNew()
-		{
-			return new Location();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Location CreateNew()
+        {
+            return new Location();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<LocationDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<LocationDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
-		{
-			return items.Select( m => new LocationDto()
-				{
-					Raw = m.Raw,
-					Street1 = m.Street1,
-					Street2 = m.Street2,
-					City = m.City,
-					State = m.State,
-					Country = m.Country,
-					Zip = m.Zip,
-					Latitude = m.Latitude,
-					Longitude = m.Longitude,
-					ParcelId = m.ParcelId,
-					StandardizeAttempt = m.StandardizeAttempt,
-					StandardizeService = m.StandardizeService,
-					StandardizeResult = m.StandardizeResult,
-					StandardizeDate = m.StandardizeDate,
-					GeocodeAttempt = m.GeocodeAttempt,
-					GeocodeService = m.GeocodeService,
-					GeocodeResult = m.GeocodeResult,
-					GeocodeDate = m.GeocodeDate,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
+        {
+            return items.Select( m => new LocationDto()
+                {
+                    Raw = m.Raw,
+                    Street1 = m.Street1,
+                    Street2 = m.Street2,
+                    City = m.City,
+                    State = m.State,
+                    Country = m.Country,
+                    Zip = m.Zip,
+                    Latitude = m.Latitude,
+                    Longitude = m.Longitude,
+                    ParcelId = m.ParcelId,
+                    StandardizeAttempt = m.StandardizeAttempt,
+                    StandardizeService = m.StandardizeService,
+                    StandardizeResult = m.StandardizeResult,
+                    StandardizeDate = m.StandardizeDate,
+                    GeocodeAttempt = m.GeocodeAttempt,
+                    GeocodeService = m.GeocodeService,
+                    GeocodeResult = m.GeocodeResult,
+                    GeocodeDate = m.GeocodeDate,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

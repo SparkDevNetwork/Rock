@@ -114,15 +114,15 @@ namespace Rock.Financial
         [DataMember]
         public int? ModifiedByPersonId { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Gateway Read( int id )
-		{
-			return Read<Gateway>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Gateway Read( int id )
+        {
+            return Read<Gateway>( id );
+        }
     }
 
     /// <summary>

@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
-            //if ( !Page.IsPostBack )
+            //if ( !RockPage.IsPostBack )
                 BindData();
         }
 

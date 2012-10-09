@@ -2,7 +2,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class BlockToBlockType : DbMigration
     {
         public override void Up()
@@ -34,53 +34,53 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonId)
                 .Index(t => t.ModifiedByPersonId);
 
-			Sql( @"
-				SET IDENTITY_INSERT cmsBlockType ON
-				INSERT INTO [cmsBlockType] (
-					 [Id]
-					,[IsSystem]
-					,[Path]
-					,[Name]
-					,[Description]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid] )
-				SELECT 
- 					 [Id]
-					,[IsSystem]
-					,[Path]
-					,[Name]
-					,[Description]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid]
-				FROM [cmsBlock]
-				SET IDENTITY_INSERT cmsBlockType OFF
+            Sql( @"
+                SET IDENTITY_INSERT cmsBlockType ON
+                INSERT INTO [cmsBlockType] (
+                     [Id]
+                    ,[IsSystem]
+                    ,[Path]
+                    ,[Name]
+                    ,[Description]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid] )
+                SELECT 
+                      [Id]
+                    ,[IsSystem]
+                    ,[Path]
+                    ,[Name]
+                    ,[Description]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid]
+                FROM [cmsBlock]
+                SET IDENTITY_INSERT cmsBlockType OFF
 
-				UPDATE [cmsBlockType] SET 
-					 [Path] = '~/Blocks/Administration/BlockTypes.ascx'
-					,[Name] = 'Block Types'
-					,[Description] = 'Block Type Administration'
-				WHERE [Path] = '~/Blocks/Administration/Blocks.ascx'
+                UPDATE [cmsBlockType] SET 
+                     [Path] = '~/Blocks/Administration/BlockTypes.ascx'
+                    ,[Name] = 'Block Types'
+                    ,[Description] = 'Block Type Administration'
+                WHERE [Path] = '~/Blocks/Administration/Blocks.ascx'
 
-				UPDATE [cmsPage] SET 
-					 [Name] = 'Block Types'
-					,[Title] = 'Block Types'
-					,[Description] = 'Manage Block Types'
-				WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D'
+                UPDATE [cmsPage] SET 
+                     [Name] = 'Block Types'
+                    ,[Title] = 'Block Types'
+                    ,[Description] = 'Manage Block Types'
+                WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D'
 " );
-			
+            
             AddColumn("dbo.cmsBlockInstance", "BlockTypeId", c => c.Int(nullable: false));
-			Sql( @"
-				UPDATE [cmsBlockInstance] SET [BlockTypeId] = [BlockId]
-				UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockTypeId' WHERE [EntityQualifierColumn] = 'BlockId'
+            Sql( @"
+                UPDATE [cmsBlockInstance] SET [BlockTypeId] = [BlockId]
+                UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockTypeId' WHERE [EntityQualifierColumn] = 'BlockId'
 " );
-			
-			AddForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
+            
+            AddForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
             CreateIndex("dbo.cmsBlockInstance", "BlockTypeId");
             DropColumn("dbo.cmsBlockInstance", "BlockId");
             DropTable("dbo.cmsBlock");
@@ -105,53 +105,53 @@ namespace Rock.Migrations
                     })
                 .PrimaryKey(t => t.Id);
 
-			Sql( @"
-				SET IDENTITY_INSERT cmsBlock ON
-				INSERT INTO [cmsBlock] (
-					 [Id]
-					,[IsSystem]
-					,[Path]
-					,[Name]
-					,[Description]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid] )
-				SELECT 
- 					 [Id]
-					,[IsSystem]
-					,[Path]
-					,[Name]
-					,[Description]
-					,[CreatedDateTime]
-					,[ModifiedDateTime]
-					,[CreatedByPersonId]
-					,[ModifiedByPersonId]
-					,[Guid]
-				FROM [cmsBlockType]
-				SET IDENTITY_INSERT cmsBlock OFF
+            Sql( @"
+                SET IDENTITY_INSERT cmsBlock ON
+                INSERT INTO [cmsBlock] (
+                     [Id]
+                    ,[IsSystem]
+                    ,[Path]
+                    ,[Name]
+                    ,[Description]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid] )
+                SELECT 
+                      [Id]
+                    ,[IsSystem]
+                    ,[Path]
+                    ,[Name]
+                    ,[Description]
+                    ,[CreatedDateTime]
+                    ,[ModifiedDateTime]
+                    ,[CreatedByPersonId]
+                    ,[ModifiedByPersonId]
+                    ,[Guid]
+                FROM [cmsBlockType]
+                SET IDENTITY_INSERT cmsBlock OFF
 
-				UPDATE [cmsBlock] SET 
-					 [Path] = '~/Blocks/Administration/Blocks.ascx'
-					,[Name] = 'Blocks'
-					,[Description] = 'Block Administration'
-				WHERE [Path] = '~/Blocks/Administration/BlockTypes.ascx'
+                UPDATE [cmsBlock] SET 
+                     [Path] = '~/Blocks/Administration/Blocks.ascx'
+                    ,[Name] = 'Blocks'
+                    ,[Description] = 'Block Administration'
+                WHERE [Path] = '~/Blocks/Administration/BlockTypes.ascx'
 
-				UPDATE [cmsPage] SET 
-					 [Name] = 'Blocks'
-					,[Title] = 'Blocks'
-					,[Description] = 'Manage Blocks'
-				WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D'
+                UPDATE [cmsPage] SET 
+                     [Name] = 'Blocks'
+                    ,[Title] = 'Blocks'
+                    ,[Description] = 'Manage Blocks'
+                WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D'
 " );
-			
-			AddColumn( "dbo.cmsBlockInstance", "BlockId", c => c.Int( nullable: false ) );
-			Sql( @"
-				UPDATE [cmsBlockInstance] SET [BlockId] = [BlockTypeId]
-				UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockId' WHERE [EntityQualifierColumn] = 'BlockTypeId'
+            
+            AddColumn( "dbo.cmsBlockInstance", "BlockId", c => c.Int( nullable: false ) );
+            Sql( @"
+                UPDATE [cmsBlockInstance] SET [BlockId] = [BlockTypeId]
+                UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockId' WHERE [EntityQualifierColumn] = 'BlockTypeId'
 " );
 
-			DropIndex("dbo.cmsBlockInstance", new[] { "BlockTypeId" });
+            DropIndex("dbo.cmsBlockInstance", new[] { "BlockTypeId" });
             DropIndex("dbo.cmsBlockType", new[] { "ModifiedByPersonId" });
             DropIndex("dbo.cmsBlockType", new[] { "CreatedByPersonId" });
             DropForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType");
