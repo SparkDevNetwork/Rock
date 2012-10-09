@@ -462,6 +462,10 @@
     <Compile Include="Migrations\201210032052400_UpdatePersonDetail.Designer.cs">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210042044531_UniqueGuids.cs" />
+    <Compile Include="Migrations\201210042044531_UniqueGuids.Designer.cs">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -822,6 +826,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210032052400_UpdatePersonDetail.resx">
       <DependentUpon>201210032052400_UpdatePersonDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210042044531_UniqueGuids.resx">
+      <DependentUpon>201210042044531_UniqueGuids.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
