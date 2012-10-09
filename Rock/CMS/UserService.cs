@@ -17,72 +17,73 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// User Service class
-	/// </summary>
-	public partial class UserService : Service<User, UserDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UserService"/> class
-		/// </summary>
-		public UserService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// User Service class
+    /// </summary>
+    public partial class UserService : Service<User, UserDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class
+        /// </summary>
+        public UserService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="UserService"/> class
-		/// </summary>
-		public UserService(IRepository<User> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class
+        /// </summary>
+        public UserService(IRepository<User> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override User CreateNew()
-		{
-			return new User();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override User CreateNew()
+        {
+            return new User();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<UserDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<UserDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
-		{
-			return items.Select( m => new UserDto()
-				{
-					UserName = m.UserName,
-					AuthenticationType = m.AuthenticationType,
-					Password = m.Password,
-					IsConfirmed = m.IsConfirmed,
-					LastActivityDate = m.LastActivityDate,
-					LastLoginDate = m.LastLoginDate,
-					LastPasswordChangedDate = m.LastPasswordChangedDate,
-					CreationDate = m.CreationDate,
-					IsOnLine = m.IsOnLine,
-					IsLockedOut = m.IsLockedOut,
-					LastLockedOutDate = m.LastLockedOutDate,
-					FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
-					FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
-					ApiKey = m.ApiKey,
-					PersonId = m.PersonId,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
+        {
+            return items.Select( m => new UserDto()
+                {
+                    UserName = m.UserName,
+                    AuthenticationType = m.AuthenticationType,
+                    Password = m.Password,
+                    IsConfirmed = m.IsConfirmed,
+                    LastActivityDate = m.LastActivityDate,
+                    LastLoginDate = m.LastLoginDate,
+                    LastPasswordChangedDate = m.LastPasswordChangedDate,
+                    CreationDate = m.CreationDate,
+                    IsOnLine = m.IsOnLine,
+                    IsLockedOut = m.IsLockedOut,
+                    LastLockedOutDate = m.LastLockedOutDate,
+                    FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
+                    FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
+                    ApiKey = m.ApiKey,
+                    PersonId = m.PersonId,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

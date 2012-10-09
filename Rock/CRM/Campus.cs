@@ -21,15 +21,15 @@ namespace Rock.Crm
     [Table( "crmCampus" )]
     public partial class Campus : ModelWithAttributes<Campus>, IAuditable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -83,15 +83,15 @@ namespace Rock.Crm
         [NotMapped]
         public override string AuthEntity { get { return "Crm.Campus"; } }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Campus Read( int id )
-		{
-			return Read<Campus>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Campus Read( int id )
+        {
+            return Read<Campus>( id );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -116,6 +116,6 @@ namespace Rock.Crm
         /// </summary>
         public CampusConfiguration()
         {
-		}
+        }
     }
 }

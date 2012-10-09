@@ -17,62 +17,63 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Gateway Service class
-	/// </summary>
-	public partial class GatewayService : Service<Gateway, GatewayDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GatewayService"/> class
-		/// </summary>
-		public GatewayService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Gateway Service class
+    /// </summary>
+    public partial class GatewayService : Service<Gateway, GatewayDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GatewayService"/> class
+        /// </summary>
+        public GatewayService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GatewayService"/> class
-		/// </summary>
-		public GatewayService(IRepository<Gateway> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GatewayService"/> class
+        /// </summary>
+        public GatewayService(IRepository<Gateway> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Gateway CreateNew()
-		{
-			return new Gateway();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Gateway CreateNew()
+        {
+            return new Gateway();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<GatewayDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<GatewayDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<GatewayDto> QueryableDto( IQueryable<Gateway> items )
-		{
-			return items.Select( m => new GatewayDto()
-				{
-					Name = m.Name,
-					Description = m.Description,
-					ApiUrl = m.ApiUrl,
-					ApiKey = m.ApiKey,
-					ApiSecret = m.ApiSecret,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<GatewayDto> QueryableDto( IQueryable<Gateway> items )
+        {
+            return items.Select( m => new GatewayDto()
+                {
+                    Name = m.Name,
+                    Description = m.Description,
+                    ApiUrl = m.ApiUrl,
+                    ApiKey = m.ApiKey,
+                    ApiSecret = m.ApiSecret,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedDateTime = m.CreatedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [Rock.Attribute.Property( 3, "Entity Id", "Entity", "The entity id that values apply to", false, "" )]
-    public partial class AttributeValues : Rock.Web.UI.Block
+    public partial class AttributeValues : Rock.Web.UI.RockBlock
     {
         #region Fields
 

@@ -11,27 +11,27 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Defined Value POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Defined Value POCO Service class
+    /// </summary>
     public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
     {
-		/// <summary>
-		/// Gets Defined Values by Defined Type Id
-		/// </summary>
-		/// <param name="definedTypeId">Defined Type Id.</param>
-		/// <returns>An enumerable list of DefinedValue objects.</returns>
-	    public IEnumerable<DefinedValue> GetByDefinedTypeId( int definedTypeId )
+        /// <summary>
+        /// Gets Defined Values by Defined Type Id
+        /// </summary>
+        /// <param name="definedTypeId">Defined Type Id.</param>
+        /// <returns>An enumerable list of DefinedValue objects.</returns>
+        public IEnumerable<DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
             return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Defined Value by Guid
-		/// </summary>
-		/// <param name="guid">Guid.</param>
-		/// <returns>DefinedValue object.</returns>
-	    public DefinedValue GetByGuid( Guid guid )
+        
+        /// <summary>
+        /// Gets Defined Value by Guid
+        /// </summary>
+        /// <param name="guid">Guid.</param>
+        /// <returns>DefinedValue object.</returns>
+        public DefinedValue GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }

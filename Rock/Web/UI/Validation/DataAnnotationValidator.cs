@@ -82,10 +82,29 @@ namespace Rock.Web.UI.Validation
             {
                 if ( !attribute.IsValid( value ) )
                 {
-                    if ( attribute.ErrorMessage != null )
+                    if ( !string.IsNullOrWhiteSpace( attribute.ErrorMessage ) )
+                    {
                         ErrorMessage = attribute.ErrorMessage;
+                    }
                     else if ( attribute.ErrorMessageResourceType != null )
+                    {
                         ErrorMessage = new System.Resources.ResourceManager( attribute.ErrorMessageResourceType ).GetString( attribute.ErrorMessageResourceName );
+                    }
+                    else
+                    {
+                        if ( attribute is MaxLengthAttribute )
+                        {
+                            ErrorMessage = "Max length is " + ( attribute as MaxLengthAttribute ).Length.ToString();
+                        }
+                        else if ( attribute is RequiredAttribute )
+                        {
+                            ErrorMessage = "Value is required";
+                        }
+                        else
+                        {
+                            ErrorMessage = "Invalid value";
+                        }
+                    }
 
                     return false;
                 }

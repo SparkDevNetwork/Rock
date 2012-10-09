@@ -14,7 +14,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class ZoneBlocks : Rock.Web.UI.Block
+    public partial class ZoneBlocks : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -100,18 +100,18 @@ namespace RockWeb.Blocks.Administration
 
             if ( hfOption.Value == "Page" )
             {
-				liPage.AddCssClass( "active" );
-				divPage.AddCssClass( "active" );
-				liLayout.RemoveCssClass( "active" );
-				divLayout.RemoveCssClass( "active" );
+                liPage.AddCssClass( "active" );
+                divPage.AddCssClass( "active" );
+                liLayout.RemoveCssClass( "active" );
+                divLayout.RemoveCssClass( "active" );
             }
             else
             {
-				liPage.RemoveCssClass( "active" );
-				divPage.RemoveCssClass( "active" );
-				liLayout.AddCssClass( "active" );
-				divLayout.AddCssClass( "active" );
-			}
+                liPage.RemoveCssClass( "active" );
+                divPage.RemoveCssClass( "active" );
+                liLayout.AddCssClass( "active" );
+                divLayout.AddCssClass( "active" );
+            }
         }
         #endregion
 
@@ -138,8 +138,8 @@ namespace RockWeb.Blocks.Administration
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-				Rock.Web.Cache.PageCache.FlushLayoutBlocks( _page.Layout );
-			}
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( _page.Layout );
+            }
 
             BindGrids();
         }
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Administration
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-				_page.FlushBlocks();
+                _page.FlushBlocks();
             }
 
             BindGrids();
@@ -248,10 +248,10 @@ namespace RockWeb.Blocks.Administration
 
             Rock.Security.Authorization.CopyAuthorization( _page, block, CurrentPersonId );
 
-			if (block.Layout != null)
-				Rock.Web.Cache.PageCache.FlushLayoutBlocks(_page.Layout);
-			else
-				_page.FlushBlocks();
+            if (block.Layout != null)
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks(_page.Layout);
+            else
+                _page.FlushBlocks();
 
             BindGrids();
 
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Administration
                     try
                     {
                         Control control = LoadControl( blockType.Path );
-                        if ( control is Rock.Web.UI.Block )
+                        if ( control is Rock.Web.UI.RockBlock )
                         {
                             blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path );
                             // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
@@ -333,12 +333,12 @@ namespace RockWeb.Blocks.Administration
                 lAction.Text = "Add ";
                 hfBlockId.Value = "0";
 
-				// Select HTML Content block by default
-				var blockType = new Rock.Cms.BlockTypeService().GetByGuid( Rock.SystemGuid.BlockType.HTML_CONTENT );
-				if (blockType != null)
-					ddlBlockType.SelectedValue = blockType.Id.ToString();				
-				else
-					ddlBlockType.SelectedIndex = -1;
+                // Select HTML Content block by default
+                var blockType = new Rock.Cms.BlockTypeService().GetByGuid( Rock.SystemGuid.BlockType.HTML_CONTENT );
+                if (blockType != null)
+                    ddlBlockType.SelectedValue = blockType.Id.ToString();                
+                else
+                    ddlBlockType.SelectedIndex = -1;
 
                 tbBlockName.Text = string.Empty;
             }

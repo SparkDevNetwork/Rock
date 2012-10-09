@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Security
         "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
     [Rock.Attribute.Property( 6, "Success", "SuccessCaption", "Captions", "", false,
         "{0}, Your account has been created" )]
-    public partial class NewAccount : Rock.Web.UI.Block
+    public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
 
@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         protected override void OnInit( EventArgs e )
         {

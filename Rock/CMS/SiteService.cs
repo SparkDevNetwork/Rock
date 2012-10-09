@@ -17,69 +17,70 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Site Service class
-	/// </summary>
-	public partial class SiteService : Service<Site, SiteDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SiteService"/> class
-		/// </summary>
-		public SiteService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Site Service class
+    /// </summary>
+    public partial class SiteService : Service<Site, SiteDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiteService"/> class
+        /// </summary>
+        public SiteService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SiteService"/> class
-		/// </summary>
-		public SiteService(IRepository<Site> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiteService"/> class
+        /// </summary>
+        public SiteService(IRepository<Site> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Site CreateNew()
-		{
-			return new Site();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Site CreateNew()
+        {
+            return new Site();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<SiteDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<SiteDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<SiteDto> QueryableDto( IQueryable<Site> items )
-		{
-			return items.Select( m => new SiteDto()
-				{
-					IsSystem = m.IsSystem,
-					Name = m.Name,
-					Description = m.Description,
-					Theme = m.Theme,
-					DefaultPageId = m.DefaultPageId,
-					FaviconUrl = m.FaviconUrl,
-					AppleTouchIconUrl = m.AppleTouchIconUrl,
-					FacebookAppId = m.FacebookAppId,
-					FacebookAppSecret = m.FacebookAppSecret,
-					LoginPageReference = m.LoginPageReference,
-					RegistrationPageReference = m.RegistrationPageReference,
-					ErrorPage = m.ErrorPage,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<SiteDto> QueryableDto( IQueryable<Site> items )
+        {
+            return items.Select( m => new SiteDto()
+                {
+                    IsSystem = m.IsSystem,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Theme = m.Theme,
+                    DefaultPageId = m.DefaultPageId,
+                    FaviconUrl = m.FaviconUrl,
+                    AppleTouchIconUrl = m.AppleTouchIconUrl,
+                    FacebookAppId = m.FacebookAppId,
+                    FacebookAppSecret = m.FacebookAppSecret,
+                    LoginPageReference = m.LoginPageReference,
+                    RegistrationPageReference = m.RegistrationPageReference,
+                    ErrorPage = m.ErrorPage,
+                    CreatedDateTime = m.CreatedDateTime,
+                    ModifiedDateTime = m.ModifiedDateTime,
+                    CreatedByPersonId = m.CreatedByPersonId,
+                    ModifiedByPersonId = m.ModifiedByPersonId,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

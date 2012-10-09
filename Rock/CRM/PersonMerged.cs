@@ -20,49 +20,49 @@ namespace Rock.Crm
     [Table( "crmPersonMerged" )]
     public partial class PersonMerged : ModelWithAttributes<PersonMerged>
     {
-		/// <summary>
-		/// Gets or sets the Current Id.
-		/// </summary>
-		/// <value>
-		/// Current Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int CurrentId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Current Guid.
-		/// </summary>
-		/// <value>
-		/// Current Guid.
-		/// </value>
-		[Required]
-		[DataMember]
-		public Guid CurrentGuid { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Current Id.
+        /// </summary>
+        /// <value>
+        /// Current Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int CurrentId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Current Guid.
+        /// </summary>
+        /// <value>
+        /// Current Guid.
+        /// </value>
+        [Required]
+        [DataMember]
+        public Guid CurrentGuid { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Crm.PersonMerged"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
@@ -77,15 +77,15 @@ namespace Rock.Crm
             }
         }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static PersonMerged Read( int id )
-		{
-			return Read<PersonMerged>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static PersonMerged Read( int id )
+        {
+            return Read<PersonMerged>( id );
+        }
 
     }
 
@@ -99,6 +99,6 @@ namespace Rock.Crm
         /// </summary>
         public PersonMergedConfiguration()
         {
-		}
+        }
     }
 }

@@ -9,7 +9,7 @@ using System;
 namespace RockWeb.Blocks.Cms
 {
     [Rock.Attribute.Property( 0, "Url", "The path to redirect to", true )]
-    public partial class Redirect : Rock.Web.UI.Block
+    public partial class Redirect : Rock.Web.UI.RockBlock
     {
         protected override void OnInit( EventArgs e )
         {

@@ -20,136 +20,136 @@ namespace Rock.Groups
     [Table( "groupsGroupType" )]
     public partial class GroupType : ModelWithAttributes<GroupType>, IAuditable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Default Group Role Id.
-		/// </summary>
-		/// <value>
-		/// Default Group Role Id.
-		/// </value>
-		[DataMember]
-		public int? DefaultGroupRoleId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Default Group Role Id.
+        /// </summary>
+        /// <value>
+        /// Default Group Role Id.
+        /// </value>
+        [DataMember]
+        public int? DefaultGroupRoleId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified Date Time.
+        /// </summary>
+        /// <value>
+        /// Modified Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ModifiedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Created By Person Id.
+        /// </summary>
+        /// <value>
+        /// Created By Person Id.
+        /// </value>
+        [DataMember]
+        public int? CreatedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Modified By Person Id.
+        /// </summary>
+        /// <value>
+        /// Modified By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ModifiedByPersonId { get; set; }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Groups.GroupType"; } }
+        [NotMapped]
+        public override string AuthEntity { get { return "Groups.GroupType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>
         /// Collection of Groups.
         /// </value>
-		public virtual ICollection<Group> Groups { get; set; }
+        public virtual ICollection<Group> Groups { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Child Group Types.
         /// </summary>
         /// <value>
         /// Collection of Child Group Types.
         /// </value>
-		public virtual ICollection<GroupType> ChildGroupTypes { get; set; }
+        public virtual ICollection<GroupType> ChildGroupTypes { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Parent Group Types.
         /// </summary>
         /// <value>
         /// Collection of Parent Group Types.
         /// </value>
-		public virtual ICollection<GroupType> ParentGroupTypes { get; set; }
+        public virtual ICollection<GroupType> ParentGroupTypes { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group Roles.
         /// </summary>
         /// <value>
         /// Collection of Group Roles.
         /// </value>
-		public virtual ICollection<GroupRole> Roles { get; set; }
+        public virtual ICollection<GroupRole> Roles { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static GroupType Read( int id )
-		{
-			return Read<GroupType>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static GroupType Read( int id )
+        {
+            return Read<GroupType>( id );
+        }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Default Group Role.
         /// </summary>
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-		public virtual GroupRole DefaultGroupRole { get; set; }
+        public virtual GroupRole DefaultGroupRole { get; set; }
 
     }
 
@@ -163,8 +163,8 @@ namespace Rock.Groups
         /// </summary>
         public GroupTypeConfiguration()
         {
-			this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
-			this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
-		}
+            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
+            this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
+        }
     }
 }

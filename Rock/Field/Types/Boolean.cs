@@ -22,9 +22,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-		public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value ) )
                 return condensed ? "Y" : "Yes";
@@ -35,9 +36,12 @@ namespace Rock.Field.Types
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
+        /// <param name="value">The value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="message">The message.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
+        /// </returns>
         public override bool IsValid( string value, bool required, out string message )
         {
             bool boolValue = false;
@@ -53,9 +57,10 @@ namespace Rock.Field.Types
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="setValue"></param>
-        /// <returns></returns>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             return new CheckBox();
@@ -64,7 +69,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
-        /// <param name="control"></param>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
@@ -77,6 +83,7 @@ namespace Rock.Field.Types
         /// Sets the value.
         /// </summary>
         /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {

@@ -11,6 +11,9 @@ using Rock.Extension;
 
 namespace Rock.Search
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class SearchComponent : Component
     {
         /// <summary>
@@ -26,7 +29,7 @@ namespace Rock.Search
         /// <summary>
         /// Returns a list of value/label results matching the searchterm
         /// </summary>
-        /// <param name="term"></param>
+        /// <param name="searchterm">The searchterm.</param>
         /// <returns></returns>
         public abstract IQueryable<string> Search( string searchterm );
     }

@@ -5,22 +5,20 @@
 //
 
 using System;
-using System.Web.UI;
-
-using Rock.Crm;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks
 {
-    public partial class PersonDetails : Rock.Web.UI.Block
+    public partial class PersonDetails : RockBlock
     {
-		protected override void OnInit( EventArgs e )
-		{
-			base.OnInit( e );
-			
-			Rock.Web.UI.Page.AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
-			Rock.Web.UI.Page.AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
-			Rock.Web.UI.Page.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
-			Rock.Web.UI.Page.AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
-		}
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
+            RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
+        }
     }
 }
