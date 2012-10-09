@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201210072211380_AddAuditFunctionality"; }
+            get { return "201210092242509_AddAuditFunctionality"; }
         }
         
         string IMigrationMetadata.Source
