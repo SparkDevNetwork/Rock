@@ -12,6 +12,7 @@ using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Crm;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -24,7 +25,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			base.OnInit( e );
 
 			// Name
-			var page = Page as Rock.Web.UI.Page;
+			var page = Page as RockPage;
 			if ( page != null )
 				page.SetTitle( Person.FullName );
 

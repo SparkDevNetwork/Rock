@@ -215,6 +215,7 @@
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
+    <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
