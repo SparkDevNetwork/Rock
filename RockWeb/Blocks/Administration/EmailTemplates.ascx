@@ -14,7 +14,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Templates Found" AllowSorting="true"  >
+        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Templates Found" RowItemText="template" AllowSorting="true"  >
             <Columns>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category"  />
                 <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />

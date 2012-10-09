@@ -8,7 +8,7 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" EmptyDataText="No Child Pages Exist" >
+        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" EmptyDataText="No Child Pages Exist" RowItemText="page" >
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />

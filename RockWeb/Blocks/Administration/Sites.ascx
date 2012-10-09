@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:Grid ID="gSites" runat="server" EmptyDataText="No Sites Found">
+            <Rock:Grid ID="gSites" runat="server" EmptyDataText="No Sites Found" RowItemText="site">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField HeaderText="Description" DataField="Description" />

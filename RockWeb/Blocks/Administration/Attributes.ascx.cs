@@ -92,16 +92,7 @@ namespace RockWeb.Blocks.Administration
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
-
-                string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this setting?');
-                }});
-        }});
-    ", rGrid.ClientID );
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
-
+                
                 // Create the dropdown list for listing the available field types
                 var fieldTypeService = new Rock.Core.FieldTypeService();
                 var items = fieldTypeService.

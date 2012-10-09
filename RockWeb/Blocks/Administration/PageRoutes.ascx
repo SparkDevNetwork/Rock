@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gPageRoutes" runat="server" EmptyDataText="No Page Routes Found" AllowSorting="true">
+            <Rock:Grid ID="gPageRoutes" runat="server" EmptyDataText="No Page Routes Found" AllowSorting="true" RowItemText="page route">
                 <Columns>
                     <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
                     <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name" />

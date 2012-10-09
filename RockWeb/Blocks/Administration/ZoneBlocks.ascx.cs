@@ -57,17 +57,13 @@ namespace RockWeb.Blocks.Administration
 
             string script = string.Format( @"
         Sys.Application.add_load(function () {{
-
-            $('td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this block?');
-                }});
-            $('#modal-popup div.modal-header h3 small', window.parent.document).html('{1}');
-            $('#{2} a').click(function() {{ $('#{4}').val('Page'); }});
-            $('#{3} a').click(function() {{ $('#{4}').val('Layout'); }});
+            $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
+            $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
+            $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
         }});
-    ", gPageBlocks.ClientID, _zoneName, liPage.ClientID, liLayout.ClientID, hfOption.ClientID );
+    ", _zoneName, liPage.ClientID, liLayout.ClientID, hfOption.ClientID );
 
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gPageBlocks.ClientID ), script, true );
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "zone-add-load-{0}", this.ClientID ), script, true );
 
             base.OnInit( e );
         }
