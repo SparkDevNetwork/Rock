@@ -44,13 +44,12 @@ namespace Rock.Security.Authentication
 			encryptionKey = HexToByte( configKey );
 		}
 
-		/// <summary>
-		/// Authenticates the specified user name.
-		/// </summary>
-		/// <param name="userName">Name of the user.</param>
-		/// <param name="password">The password.</param>
-		/// <returns></returns>
-		/// <exception cref="System.NotImplementedException"></exception>
+        /// <summary>
+        /// Authenticates the specified user name.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
 		public override Boolean Authenticate( User user, string password )
 		{
 			return EncodePassword( user, password ) == user.Password;
