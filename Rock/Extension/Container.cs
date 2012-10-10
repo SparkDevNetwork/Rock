@@ -32,14 +32,14 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the component names and their attributes
         /// </summary>
-        public Dictionary<int, KeyValuePair<string, Rock.Attribute.IHasAttributes>> Dictionary
+        public Dictionary<int, KeyValuePair<string, Component>> Dictionary
         {
             get
             {
-                var dictionary = new Dictionary<int, KeyValuePair<string, Rock.Attribute.IHasAttributes>>();
+                var dictionary = new Dictionary<int, KeyValuePair<string, Component>>();
                 foreach ( var component in Components )
                 {
-                    dictionary.Add( component.Key, new KeyValuePair<string, Rock.Attribute.IHasAttributes>(
+                    dictionary.Add( component.Key, new KeyValuePair<string, Component>(
                         component.Value.Metadata.ComponentName, component.Value.Value ) );
                 }
 

@@ -24,6 +24,27 @@ namespace Rock.Cms
     public partial class User : Model<User>
     {
         /// <summary>
+        /// Gets or sets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        [Required]
+        [DataMember]
+        public AuthenticationServiceType ServiceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>
+        /// The service.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string ServiceName { get; set; }
+
+        /// <summary>
         /// Gets or sets the User Name.
         /// </summary>
         /// <value>
@@ -35,27 +56,11 @@ namespace Rock.Cms
         public string UserName { get; set; }
         
         /// <summary>
-        /// Gets or sets the Authentication Type.
-        /// </summary>
-        /// <value>
-        /// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
-        /// </value>
-        [Required]
-        [DataMember]
-        public AuthenticationType AuthenticationType
-        {
-            get { return _AuthenticationType; }
-            set { _AuthenticationType = value; }
-        }
-        private AuthenticationType _AuthenticationType = AuthenticationType.Database;
-
-        /// <summary>
         /// Gets or sets the Password.
         /// </summary>
         /// <value>
         /// Password.
         /// </value>
-        [Required]
         [MaxLength( 128 )]
         [DataMember]
         public string Password { get; set; }
@@ -68,26 +73,6 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public bool? IsConfirmed { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
-        /// </summary>
-        [NotMapped]
-        public bool IsAuthenticated 
-        {
-            get
-            {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
-                if ( identity == null)
-                    return false;
-
-                if (identity.Ticket != null &&
-                    identity.Ticket.UserData.ToLower() == "true" )
-                    return false;
-
-                return true;
-            }
-        }
 
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
@@ -189,7 +174,27 @@ namespace Rock.Cms
 		/// </value>
 		[DataMember]
 		public int? PersonId { get; set; }
-		
+
+        /// <summary>
+        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// </summary>
+        [NotMapped]
+        public bool IsAuthenticated
+        {
+            get
+            {
+                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
+                if ( identity == null )
+                    return false;
+
+                if ( identity.Ticket != null &&
+                    identity.Ticket.UserData.ToLower() == "true" )
+                    return false;
+
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
@@ -301,23 +306,18 @@ namespace Rock.Cms
     }
 
     /// <summary>
-    /// How user is authenticated
+    /// Type of authentication service used to authenticate user
     /// </summary>
-    public enum AuthenticationType
+    public enum AuthenticationServiceType
     {
         /// <summary>
-        /// Athenticate login against Rock database
+        /// An internal authentication service (i.e. Database, Active Directory)
         /// </summary>
-        Database = 1,
+        Internal = 0,
 
         /// <summary>
-        /// Authenticate using Facebook
+        /// An external authentication service (i.e. Facebook, Twitter, Google, etc.)
         /// </summary>
-        Facebook = 2,
-
-        /// <summary>
-        /// Authenticate using Active Directory
-        /// </summary>
-        ActiveDirectory = 3
+        External = 1,
     }
 }

@@ -35,5 +35,13 @@ namespace Rock.Core
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
+
+        public int? GetIdByGuid( Guid guid )
+        {
+            return Repository.AsQueryable()
+                .Where( t => t.Guid == guid )
+                .Select( t => t.Id )
+                .FirstOrDefault();
+        }
     }
 }
