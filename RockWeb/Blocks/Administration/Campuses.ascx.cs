@@ -14,7 +14,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Campuses : Rock.Web.UI.Block
+    public partial class Campuses : Rock.Web.UI.RockBlock
     {
         #region Fields
         
@@ -33,15 +33,6 @@ namespace RockWeb.Blocks.Administration
                 gCampuses.Actions.AddClick += gCampuses_Add;
                 gCampuses.GridRebind += gCampuses_GridRebind;
             }
-
-            string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this campus?');
-                });
-        });
-    ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gCampuses.ClientID ), script, true );
 
             base.OnInit( e );
         }

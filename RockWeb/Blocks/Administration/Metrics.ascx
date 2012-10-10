@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <asp:Panel ID="pnlMetricList" runat="server">
 
@@ -15,7 +15,7 @@
         </fieldset>
         </div>
 
-        <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyText="No Metrics Found" >
+        <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyText="No Metrics Found" RowItemText="value" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />

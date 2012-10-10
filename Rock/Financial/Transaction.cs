@@ -19,7 +19,7 @@ namespace Rock.Financial
     /// Transaction POCO class.
     /// </summary>
     [Table("financialTransaction")]
-    public partial class Transaction : ModelWithAttributes<Transaction>, IAuditable
+    public partial class Transaction : Model<Transaction>
     {
         /// <summary>
         /// Gets or sets the description.
@@ -151,15 +151,15 @@ namespace Rock.Financial
         [MaxLength(500)]
         public string Summary { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Transaction Read( int id )
-		{
-			return Read<Transaction>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Transaction Read( int id )
+        {
+            return Read<Transaction>( id );
+        }
 
         /// <summary>
         /// Gets or sets the batch.
@@ -219,45 +219,20 @@ namespace Rock.Financial
         //public virtual ICollection<Fund> Funds { get; set; }
 
         /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.Transaction"; } }
+        public override string EntityTypeName { get { return "Financial.Transaction"; } }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Amount.ToString();
+		}
     }
 
     /// <summary>

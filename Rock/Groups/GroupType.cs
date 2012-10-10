@@ -18,7 +18,7 @@ namespace Rock.Groups
     /// Group Type POCO Entity.
     /// </summary>
     [Table( "groupsGroupType" )]
-    public partial class GroupType : ModelWithAttributes<GroupType>, IAuditable
+    public partial class GroupType : Model<GroupType>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -59,98 +59,72 @@ namespace Rock.Groups
 		[DataMember]
 		public int? DefaultGroupRoleId { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Groups.GroupType"; } }
+		public override string EntityTypeName { get { return "Groups.GroupType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>
         /// Collection of Groups.
         /// </value>
-		public virtual ICollection<Group> Groups { get; set; }
+        public virtual ICollection<Group> Groups { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Child Group Types.
         /// </summary>
         /// <value>
         /// Collection of Child Group Types.
         /// </value>
-		public virtual ICollection<GroupType> ChildGroupTypes { get; set; }
+        public virtual ICollection<GroupType> ChildGroupTypes { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Parent Group Types.
         /// </summary>
         /// <value>
         /// Collection of Parent Group Types.
         /// </value>
-		public virtual ICollection<GroupType> ParentGroupTypes { get; set; }
+        public virtual ICollection<GroupType> ParentGroupTypes { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group Roles.
         /// </summary>
         /// <value>
         /// Collection of Group Roles.
         /// </value>
-		public virtual ICollection<GroupRole> Roles { get; set; }
+        public virtual ICollection<GroupRole> Roles { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static GroupType Read( int id )
-		{
-			return Read<GroupType>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static GroupType Read( int id )
+        {
+            return Read<GroupType>( id );
+        }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Default Group Role.
         /// </summary>
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-		public virtual GroupRole DefaultGroupRole { get; set; }
+        public virtual GroupRole DefaultGroupRole { get; set; }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Name;
+		}
     }
 
     /// <summary>
@@ -163,8 +137,8 @@ namespace Rock.Groups
         /// </summary>
         public GroupTypeConfiguration()
         {
-			this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
-			this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
-		}
+            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
+            this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
+        }
     }
 }

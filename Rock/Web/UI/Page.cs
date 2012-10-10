@@ -6,27 +6,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Runtime.Caching;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Routing;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Web.Security;
-using System.Configuration;
-
 using Rock.Crm;
-using Rock.Web.UI.Controls;
 using Rock.Transactions;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// Page is the base abstract class that all page templates should inherit from
+    /// RockPage is the base abstract class that all page templates should inherit from
     /// </summary>
-    public abstract class Page : System.Web.UI.Page
+    public abstract class RockPage : Page
     {
         #region Private Variables
 
@@ -49,23 +50,23 @@ namespace Rock.Web.UI
         /// The current Rock page instance being requested.  This value is set 
         /// by the RockRouteHandler immediately after instantiating the page
         /// </summary>
-        public Rock.Web.Cache.PageCache CurrentPage 
+        public PageCache CurrentPage
         {
-            get 
-            { 
-                return _currentPage; 
+            get
+            {
+                return _currentPage;
             }
             set
             {
                 _currentPage = value;
                 HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Site.Id );
-                HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id);
+                HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
             }
         }
-        private Rock.Web.Cache.PageCache _currentPage = null;
+        private PageCache _currentPage = null;
 
         /// <summary>
-        /// The Page Title controls on the page.
+        /// The RockPage Title controls on the page.
         /// </summary>
         public List<PageTitle> PageTitles { get; private set; }
 
@@ -85,20 +86,20 @@ namespace Rock.Web.UI
         {
             get
             {
-                if (_CurrentUser != null)
+                if ( _CurrentUser != null )
                     return _CurrentUser;
 
-                if (_CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
+                if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
                     _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
 
-                if (_CurrentUser == null)
+                if ( _CurrentUser == null )
                 {
                     _CurrentUser = Rock.Cms.UserService.GetCurrentUser();
-                    if (_CurrentUser != null)
+                    if ( _CurrentUser != null )
                         Context.Items.Add( "CurrentUser", _CurrentUser );
                 }
-    
-                if (_CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+
+                if ( _CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
                     CurrentPerson = _CurrentUser.Person;
 
                 return _CurrentUser;
@@ -106,11 +107,11 @@ namespace Rock.Web.UI
 
             private set
             {
-                Context.Items.Remove("CurrentUser");
+                Context.Items.Remove( "CurrentUser" );
                 _CurrentUser = value;
 
-                if (_CurrentUser != null)
-                    Context.Items.Add("CurrentUser", _CurrentUser);
+                if ( _CurrentUser != null )
+                    Context.Items.Add( "CurrentUser", _CurrentUser );
 
                 CurrentPerson = _CurrentUser.Person;
             }
@@ -153,7 +154,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                if (CurrentPerson != null) 
+                if ( CurrentPerson != null )
                     return CurrentPerson.Id;
                 else
                     return null;
@@ -269,7 +270,7 @@ namespace Rock.Web.UI
             FindRockControls( this.Controls );
 
             // Add a Rock version meta tag
-            string version = typeof(Rock.Web.UI.Page).Assembly.GetName().Version.ToString();
+            string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
             rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
@@ -294,7 +295,7 @@ namespace Rock.Web.UI
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
-                    CurrentUser =  impersonatedPerson.ImpersonatedUser;
+                    CurrentUser = impersonatedPerson.ImpersonatedUser;
                 }
             }
 
@@ -308,7 +309,7 @@ namespace Rock.Web.UI
                 UserName = user.UserName;
                 int? personId = user.PersonId;
 
-                if ( personId.HasValue)
+                if ( personId.HasValue )
                 {
                     string personNameKey = "PersonName_" + personId.Value.ToString();
                     if ( Session[personNameKey] != null )
@@ -337,9 +338,9 @@ namespace Rock.Web.UI
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
-                    Response.Redirect( redirectUrl ); 
+                    Response.Redirect( redirectUrl );
                 }
-                
+
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
@@ -350,27 +351,27 @@ namespace Rock.Web.UI
                 else
                 {
                     // Set current models (context)
-                    CurrentPage.Context = new Dictionary<string, Data.KeyModel>();
+                    CurrentPage.Context = new Dictionary<string, Data.KeyEntity>();
                     try 
                     {
                         foreach ( var pageContext in CurrentPage.PageContexts )
                         {
                             int contextId = 0;
                             if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
-                                CurrentPage.Context.Add( pageContext.Key, new Data.KeyModel( contextId ) );
+                                CurrentPage.Context.Add( pageContext.Key, new Data.KeyEntity( contextId ) );
                         }
 
                         char[] delim = new char[1] { ',' };
-                        foreach (string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ))
+                        foreach ( string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
                             string[] parts = contextItem.Split('|');
                             if (parts.Length == 2)
-                                CurrentPage.Context.Add(parts[0], new Data.KeyModel(parts[1]));
+                                CurrentPage.Context.Add(parts[0], new Data.KeyEntity(parts[1]));
                         }
 
                     }
-                    catch {}
+                    catch { }
 
                     // set page title
                     if ( CurrentPage.Title != null && CurrentPage.Title != "" )
@@ -419,7 +420,7 @@ namespace Rock.Web.UI
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
-                            blockWrapper.ID = string.Format("bid_{0}", block.Id);
+                            blockWrapper.ID = string.Format( "bid_{0}", block.Id );
                             blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
@@ -452,15 +453,15 @@ namespace Rock.Web.UI
                                     control = div;
                                 }
 
-                                Block blockControl = null;
+                                RockBlock blockControl = null;
 
                                 // Check to see if the control was a PartialCachingControl or not
-                                if ( control is Block )
-                                    blockControl = control as Block;
+                                if ( control is RockBlock )
+                                    blockControl = control as RockBlock;
                                 else
                                 {
-                                    if ( control is PartialCachingControl && ( ( PartialCachingControl )control ).CachedControl != null )
-                                        blockControl = ( Block )( ( PartialCachingControl )control ).CachedControl;
+                                    if ( control is PartialCachingControl && ( (PartialCachingControl)control ).CachedControl != null )
+                                        blockControl = (RockBlock)( (PartialCachingControl)control ).CachedControl;
                                 }
 
                                 // If the current control is a block, set it's properties
@@ -481,8 +482,8 @@ namespace Rock.Web.UI
                                     }
 
                                     // Add the block configuration scripts and icons if user is authorized
-                                    if (CurrentPage.IncludeAdminFooter)
-                                        AddBlockConfig(blockWrapper, blockControl, block, canConfig, canEdit);
+                                    if ( CurrentPage.IncludeAdminFooter )
+                                        AddBlockConfig( blockWrapper, blockControl, block, canConfig, canEdit );
                                 }
 
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
@@ -501,7 +502,7 @@ namespace Rock.Web.UI
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl("~/" + CurrentPage.Site.FaviconUrl) );
+                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.FaviconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, faviconLink );
                     }
@@ -511,13 +512,13 @@ namespace Rock.Web.UI
                         System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-						touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.AppleTouchIconUrl ) );
+                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.AppleTouchIconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, touchLink );
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( CurrentPage.IncludeAdminFooter && canConfigPage)
+                    if ( CurrentPage.IncludeAdminFooter && canConfigPage )
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -531,7 +532,7 @@ namespace Rock.Web.UI
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
 
-                        // Block Config
+                        // RockBlock Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "btn block-config" );
@@ -541,14 +542,14 @@ namespace Rock.Web.UI
                         aBlockConfig.Controls.Add( iBlockConfig );
                         iBlockConfig.Attributes.Add( "class", "icon-th-large" );
 
-                        // Page Properties
+                        // RockPage Properties
                         HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
                         aAttributes.Attributes.Add( "height", "500px" );
                         aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) );
-						aAttributes.Attributes.Add( "Title", "Page Properties" );
-						HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                        aAttributes.Attributes.Add( "Title", "Page Properties" );
+                        HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
                         iAttributes.Attributes.Add( "class", "icon-cog" );
 
@@ -558,12 +559,12 @@ namespace Rock.Web.UI
                         aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
                         aChildPages.Attributes.Add( "height", "500px" );
                         aChildPages.Attributes.Add( "href", ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) );
-						aChildPages.Attributes.Add( "Title", "Child Pages" );
-						HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
+                        aChildPages.Attributes.Add( "Title", "Child Pages" );
+                        HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
                         iChildPages.Attributes.Add( "class", "icon-sitemap" );
 
-                        // Page Zones
+                        // RockPage Zones
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "btn page-zones" );
@@ -573,15 +574,15 @@ namespace Rock.Web.UI
                         aPageZones.Controls.Add( iPageZones );
                         iPageZones.Attributes.Add( "class", "icon-columns" );
 
-                        // Page Security
+                        // RockPage Security
                         HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
                         aPageSecurity.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( CurrentPage.GetType() ), CurrentPage.Id ) ) );
-						aPageSecurity.Attributes.Add( "Title", "Page Security" );
-						HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
+                        aPageSecurity.Attributes.Add( "Title", "Page Security" );
+                        HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );
                         iPageSecurity.Attributes.Add( "class", "icon-lock" );
 
@@ -591,8 +592,8 @@ namespace Rock.Web.UI
                         aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
                         aSystemInfo.Attributes.Add( "href", ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) );
-						aSystemInfo.Attributes.Add( "Title", "Rock Information" );
-						HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
+                        aSystemInfo.Attributes.Add( "Title", "Rock Information" );
+                        HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
                         iSystemInfo.Attributes.Add( "class", "icon-info-sign" );
 
@@ -646,9 +647,9 @@ namespace Rock.Web.UI
         {
             base.OnPreRender( e );
 
-            if ( phLoadTime != null  )
+            if ( phLoadTime != null )
             {
-                TimeSpan tsDuration = DateTime.Now.Subtract( ( DateTime )Context.Items["Request_Start_Time"] );
+                TimeSpan tsDuration = DateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
                 phLoadTime.Controls.Add( new LiteralControl( string.Format( "{0}: {1:N2}s", "Page Load Time", tsDuration.TotalSeconds ) ) );
             }
         }
@@ -663,9 +664,9 @@ namespace Rock.Web.UI
         /// <param name="title">The title.</param>
         public virtual void SetTitle( string title )
         {
-            foreach(PageTitle pageTitle in PageTitles)
+            foreach ( PageTitle pageTitle in PageTitles )
                 pageTitle.Text = title;
-            
+
             this.Title = title;
         }
 
@@ -695,6 +696,9 @@ namespace Rock.Web.UI
 
         #region Cms Admin Content
 
+        /// <summary>
+        /// Adds the popup controls.
+        /// </summary>
         private void AddPopupControls()
         {
             // Add the page admin script
@@ -707,6 +711,9 @@ namespace Rock.Web.UI
         }
 
         // Adds the neccessary script elements for managing the page/zone/blocks
+        /// <summary>
+        /// Adds the config elements.
+        /// </summary>
         private void AddConfigElements()
         {
             // Add the page admin script
@@ -769,7 +776,15 @@ namespace Rock.Web.UI
         }
 
         // Adds the configuration html elements for editing a block
-        private void AddBlockConfig( HtmlGenericContainer blockWrapper, Block blockControl, 
+        /// <summary>
+        /// Adds the block config.
+        /// </summary>
+        /// <param name="blockWrapper">The block wrapper.</param>
+        /// <param name="blockControl">The block control.</param>
+        /// <param name="block">The block.</param>
+        /// <param name="canConfig">if set to <c>true</c> [can config].</param>
+        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
+        private void AddBlockConfig( HtmlGenericContainer blockWrapper, RockBlock blockControl,
             Rock.Web.Cache.BlockCache block, bool canConfig, bool canEdit )
         {
             if ( canConfig || canEdit )
@@ -794,7 +809,7 @@ namespace Rock.Web.UI
                 blockConfig.Controls.Add( blockConfigBar );
 
                 HtmlGenericControl blockConfigTitle = new HtmlGenericControl( "span" );
-                if (string.IsNullOrWhiteSpace(block.Name))
+                if ( string.IsNullOrWhiteSpace( block.Name ) )
                     blockConfigTitle.InnerText = block.BlockType.Name;
                 else
                     blockConfigTitle.InnerText = block.Name;
@@ -808,6 +823,9 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Adds the block move.
+        /// </summary>
         private void AddBlockMove()
         {
             // Add Zone Selection Popup (for moving blocks to another zone)
@@ -854,7 +872,7 @@ namespace Rock.Web.UI
         /// parameter matching the specified name, and if found returns the string
         /// value
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">The name.</param>
         /// <returns></returns>
         public string PageParameter( string name )
         {
@@ -862,7 +880,7 @@ namespace Rock.Web.UI
                 return string.Empty;
 
             if ( Page.RouteData.Values.ContainsKey( name ) )
-                return ( string )Page.RouteData.Values[name];
+                return (string)Page.RouteData.Values[name];
 
             if ( String.IsNullOrEmpty( Request.QueryString[name] ) )
                 return string.Empty;
@@ -873,9 +891,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
+        /// <param name="page">The page.</param>
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public static void AddCSSLink( System.Web.UI.Page page, string href )
+        public static void AddCSSLink( Page page, string href )
         {
             AddCSSLink( page, href, string.Empty );
         }
@@ -883,12 +901,12 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the CSS link.
         /// </summary>
-        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
+        /// <param name="page">The page.</param>
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         /// <param name="mediaType">Type of the media to use for the css link.</param>
-        public static void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
+        public static void AddCSSLink( Page page, string href, string mediaType )
         {
-            System.Web.UI.HtmlControls.HtmlLink htmlLink = new System.Web.UI.HtmlControls.HtmlLink();
+            HtmlLink htmlLink = new HtmlLink();
 
             htmlLink.Attributes.Add( "type", "text/css" );
             htmlLink.Attributes.Add( "rel", "stylesheet" );
@@ -904,9 +922,9 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="htmlMeta">The HTML meta tag.</param>
-        public static void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
+        public static void AddMetaTag( Page page, HtmlMeta htmlMeta )
         {
-            if (page != null && page.Header != null)
+            if ( page != null && page.Header != null )
                 if ( !HtmlMetaExists( page, htmlMeta ) )
                 {
                     // Find last meta element
@@ -931,7 +949,13 @@ namespace Rock.Web.UI
                 }
         }
 
-        private static bool HtmlMetaExists( System.Web.UI.Page page, HtmlMeta newMeta )
+        /// <summary>
+        /// HTMLs the meta exists.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="newMeta">The new meta.</param>
+        /// <returns></returns>
+        private static bool HtmlMetaExists( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -939,7 +963,7 @@ namespace Rock.Web.UI
                 foreach ( Control control in page.Header.Controls )
                     if ( control is HtmlMeta )
                     {
-                        HtmlMeta existingMeta = ( HtmlMeta )control;
+                        HtmlMeta existingMeta = (HtmlMeta)control;
 
                         bool sameAttributes = true;
 
@@ -963,9 +987,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new Html link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
-        /// <param name="htmlLink">A <see cref="System.Web.UI.HtmlControls.HtmlLink"/> control</param>
-        public static void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
+        /// <param name="page">The page.</param>
+        /// <param name="htmlLink">The HTML link.</param>
+        public static void AddHtmlLink( Page page, HtmlLink htmlLink )
         {
             if ( page != null && page.Header != null )
                 if ( !HtmlLinkExists( page, htmlLink ) )
@@ -992,7 +1016,13 @@ namespace Rock.Web.UI
                 }
         }
 
-        private static bool HtmlLinkExists( System.Web.UI.Page page, HtmlLink newLink )
+        /// <summary>
+        /// HTMLs the link exists.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="newLink">The new link.</param>
+        /// <returns></returns>
+        private static bool HtmlLinkExists( Page page, HtmlLink newLink )
         {
             bool existsAlready = false;
 
@@ -1000,7 +1030,7 @@ namespace Rock.Web.UI
                 foreach ( Control control in page.Header.Controls )
                     if ( control is HtmlLink )
                     {
-                        HtmlLink existingLink = ( HtmlLink )control;
+                        HtmlLink existingLink = (HtmlLink)control;
 
                         bool sameAttributes = true;
 
@@ -1024,9 +1054,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">Current <see cref="System.Web.UI.Page"/></param>
+        /// <param name="page">The page.</param>
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public static void AddScriptLink( System.Web.UI.Page page, string path )
+        public static void AddScriptLink( Page page, string path )
         {
             string relativePath = page.ResolveUrl( path );
 
@@ -1036,7 +1066,7 @@ namespace Rock.Web.UI
                 foreach ( Control control in page.Header.Controls )
                 {
                     if ( control is LiteralControl )
-                        if ( ( ( LiteralControl )control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
+                        if ( ( (LiteralControl)control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
                         {
                             existsAlready = true;
                             break;
@@ -1044,7 +1074,7 @@ namespace Rock.Web.UI
 
                     if ( control is HtmlGenericControl )
                     {
-                        HtmlGenericControl genericControl = ( HtmlGenericControl )control;
+                        HtmlGenericControl genericControl = (HtmlGenericControl)control;
                         if ( genericControl.TagName.ToLower() == "script" &&
                            genericControl.Attributes["src"] != null &&
                                 genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
@@ -1070,20 +1100,20 @@ namespace Rock.Web.UI
         /// <summary>
         /// Builds a URL from a page and parameters with support for routes
         /// </summary>
-        /// <param name="pageId">Page to link to</param>
+        /// <param name="pageId">RockPage to link to</param>
         /// <param name="parms">Dictionary of parameters</param>
         public static string BuildUrl( int pageId, Dictionary<string, string> parms )
         {
-            return BuildUrl(new PageReference(pageId, -1), parms, null);
+            return BuildUrl( new PageReference( pageId, -1 ), parms, null );
         }
 
         /// <summary>
         /// Builds a URL from a page and parameters with support for routes
         /// </summary>
-        /// <param name="pageId">Page to link to</param>
+        /// <param name="pageId">RockPage to link to</param>
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
-        public static string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        public static string BuildUrl( int pageId, Dictionary<string, string> parms, NameValueCollection queryString )
         {
             return BuildUrl( new PageReference( pageId, -1 ), parms, queryString );
         }
@@ -1104,7 +1134,7 @@ namespace Rock.Web.UI
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
-        public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
+        public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms, NameValueCollection queryString )
         {
             string url = string.Empty;
 
@@ -1142,18 +1172,24 @@ namespace Rock.Web.UI
                     }
                 }
             }
-            
+
             // add base path to url
             url = HttpContext.Current.Request.ApplicationPath + "/" + url;
-            
+
             return url;
         }
 
         // returns route based url if all required parmameters were provided
-        private static string BuildRouteURL( int routeId, Dictionary<string, string> parms ) 
+        /// <summary>
+        /// Builds the route URL.
+        /// </summary>
+        /// <param name="routeId">The route id.</param>
+        /// <param name="parms">The parms.</param>
+        /// <returns></returns>
+        private static string BuildRouteURL( int routeId, Dictionary<string, string> parms )
         {
             string routeUrl = string.Empty;
-            
+
             foreach ( Route route in RouteTable.Routes )
             {
                 if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == routeId.ToString() )
@@ -1174,7 +1210,7 @@ namespace Rock.Web.UI
                 routeParms.Add( match.Groups[1].Value, match.Value );
 
                 // check that a value for that parm is available
-                if ( !parms.ContainsKey( match.Groups[1].Value ) )
+                if ( parms == null || !parms.ContainsKey( match.Groups[1].Value ) )
                     allRouteParmsProvided = false;
             }
 
@@ -1182,13 +1218,13 @@ namespace Rock.Web.UI
             if ( allRouteParmsProvided )
             {
                 // merge route parm values
-                foreach ( KeyValuePair<string,string> parm in routeParms )
+                foreach ( KeyValuePair<string, string> parm in routeParms )
                 {
                     // merge field
-                    routeUrl = routeUrl.Replace(parm.Value, parms[parm.Key]);
+                    routeUrl = routeUrl.Replace( parm.Value, parms[parm.Key] );
 
                     // remove parm from dictionary
-                    parms.Remove(parm.Key);
+                    parms.Remove( parm.Key );
                 }
 
                 // add remaining parms to the query string
@@ -1201,76 +1237,71 @@ namespace Rock.Web.UI
                         delimitor = "&";
                     }
                 }
-                
+
                 return routeUrl;
             }
             else
                 return string.Empty;
 
-            
-        }
 
-		/// <summary>
-		/// Gets the value for the current user for a given key
-		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		public string GetUserValue( string key )
-		{
-			var values = SessionUserValues();
-			if (values.ContainsKey(key))
-				foreach ( string value in SessionUserValues()[key] )
-					return value;
-			return string.Empty;
-		}
+        }
 
         /// <summary>
-        /// Gets all user values for the current user
+        /// Gets the value for the current user for a given key
         /// </summary>
+        /// <param name="key">The key.</param>
         /// <returns></returns>
-        public Dictionary<string, List<string>> GetAllUserValues()
+        public string GetUserValue( string key )
         {
-            return SessionUserValues();
+            var values = SessionUserValues();
+            if ( values.ContainsKey( key ) )
+                foreach ( string value in SessionUserValues()[key] )
+                    return value;
+            return string.Empty;
         }
 
-		/// <summary>
-		/// Sets a value for the current user for a given key
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="value"></param>
-		public void SetUserValue( string key, string value )
-		{
-			var newValues = new List<string>();
-			newValues.Add( value );
+        /// <summary>
+        /// Sets a value for the current user for a given key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void SetUserValue( string key, string value )
+        {
+            var newValues = new List<string>();
+            newValues.Add( value );
 
-			var sessionValues = SessionUserValues();
-			if ( sessionValues.ContainsKey( key ) )
-				sessionValues[key] = newValues;
-			else
-				sessionValues.Add( key, newValues );
+            var sessionValues = SessionUserValues();
+            if ( sessionValues.ContainsKey( key ) )
+                sessionValues[key] = newValues;
+            else
+                sessionValues.Add( key, newValues );
 
-			if ( CurrentPerson != null )
-				new PersonService().SaveUserValue( CurrentPerson, key, newValues, CurrentPersonId );
-		}
+            if ( CurrentPerson != null )
+                new PersonService().SaveUserValue( CurrentPerson, key, newValues, CurrentPersonId );
+        }
 
-		private Dictionary<string, List<string>> SessionUserValues()
-		{
-			string sessionKey = string.Format( "{0}_{1}",
-				Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
+        /// <summary>
+        /// Sessions the user values.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, List<string>> SessionUserValues()
+        {
+            string sessionKey = string.Format( "{0}_{1}",
+                Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
 
-			var userValues = Session[sessionKey] as Dictionary<string, List<string>>;
-			if ( userValues == null )
-			{
-				if ( CurrentPerson != null )
-					userValues = new PersonService().GetUserValues( CurrentPerson );
-				else
-					userValues = new Dictionary<string, List<string>>();
+            var userValues = Session[sessionKey] as Dictionary<string, List<string>>;
+            if ( userValues == null )
+            {
+                if ( CurrentPerson != null )
+                    userValues = new PersonService().GetUserValues( CurrentPerson );
+                else
+                    userValues = new Dictionary<string, List<string>>();
 
-				Session[sessionKey] = userValues;
-			}
+                Session[sessionKey] = userValues;
+            }
 
-			return userValues;
-		}
+            return userValues;
+        }
 
 
         #endregion

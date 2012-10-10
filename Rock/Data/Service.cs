@@ -8,13 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Core;
+
 namespace Rock.Data
 {
     /// <summary>
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Model<T>
+    public class Service<T> where T : Rock.Data.Entity<T>
     {
         private IRepository<T> _repository;
         /// <summary>
@@ -52,17 +54,17 @@ namespace Rock.Data
             return _repository.AsQueryable();
         }
 
-		/// <summary>
-		/// Gets an <see cref="IQueryable{T}"/> list of all models
-		/// with eager loading of properties specified in includes
-		/// </summary>
-		/// <returns></returns>
-		public IQueryable<T> Queryable(string includes)
-		{
-			return _repository.AsQueryable(includes);
-		}
+        /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models
+        /// with eager loading of properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> Queryable( string includes )
+        {
+            return _repository.AsQueryable( includes );
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets the model with the id value
         /// </summary>
         /// <param name="id">id</param>
@@ -78,9 +80,11 @@ namespace Rock.Data
         /// <returns></returns>
         public bool TryGet( int id, out T item )
         {
-            item = Get(id);
-            if (item == null)
+            item = Get( id );
+            if ( item == null )
+            {
                 return false;
+            }
             return true;
         }
 
@@ -113,7 +117,9 @@ namespace Rock.Data
                     T model = Get( id );
 
                     if ( model != null && model.Guid.CompareTo( guid ) == 0 )
+                    {
                         return model;
+                    }
                 }
 
                 return null;
@@ -124,15 +130,16 @@ namespace Rock.Data
             }
         }
 
+        /*
         /// <summary>
         /// Gets the current model from the page instance context.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        //public T GetCurrent( Rock.Web.Cache.Page pageInstance )
+        //public T GetCurrent( Rock.Web.Cache.RockPage pageInstance )
         //{
         //    string key = typeof( T ).FullName;
-            
+
         //    if ( pageInstance.Context.ContainsKey( key ) )
         //    {
         //        var keyModel = pageInstance.Context[key];
@@ -148,31 +155,139 @@ namespace Rock.Data
 
         //    return null;
         //}
+         */ 
 
-        /// <summary>
-        /// Adds the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public bool Add( T item, int? personId )
-        {
-            bool cancel = false;
-            item.RaiseAddingEvent( out cancel, personId );
-            if ( !cancel )
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( T entity )
+		{
+			return _repository.DateCreated( entity );
+		}
+
+		/// <summary>
+		/// Date the entity was created.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+		{
+			return _repository.DateCreated( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( T entity )
+		{
+			return _repository.DateLastModified( entity );
+		}
+
+		/// <summary>
+		/// Date the entity was last modified.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+		{
+			return _repository.DateLastModified( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( T entity )
+		{
+			return _repository.CreatedByPersonId( entity );
+		}
+
+		/// <summary>
+		/// The person id who created entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+		{
+			return _repository.CreatedByPersonId( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( T entity )
+		{
+			return _repository.LastModifiedByPersonId( entity );
+		}
+
+		/// <summary>
+		/// The person id who last modified the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+		{
+			return _repository.LastModifiedByPersonId( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entity">The entity.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( T entity )
+		{
+			return _repository.Audits( entity );
+		}
+
+		/// <summary>
+		/// All the audits made to the entity.
+		/// </summary>
+		/// <param name="entityTypeName">Name of the entity type.</param>
+		/// <param name="entityId">The entity id.</param>
+		/// <returns></returns>
+		public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+		{
+			return _repository.Audits( entityTypeName, entityId );
+		}
+
+		/// <summary>
+		/// Adds the specified item.
+		/// </summary>
+		/// <param name="item">The item.</param>
+		/// <param name="personId">The person id.</param>
+		/// <returns></returns>
+		public virtual bool Add( T item, int? personId )
+		{
+			bool cancel = false;
+			item.RaiseAddingEvent( out cancel, personId );
+			if ( !cancel )
+			{
+				_repository.Add( item );
+				return true;
+			}
+			else
             {
-                _repository.Add( item );
-                return true;
+				return false;
             }
-            else
-                return false;
-        }
+		}
 
-        /// <summary>
+		/// <summary>
         /// Attaches the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void Attach( T item )
+        public virtual void Attach( T item )
         {
             _repository.Attach( item );
         }
@@ -183,7 +298,7 @@ namespace Rock.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public bool Delete( T item, int? personId )
+		public virtual bool Delete( T item, int? personId )
         {
             bool cancel = false;
             item.RaiseDeletingEvent( out cancel, personId );
@@ -193,7 +308,9 @@ namespace Rock.Data
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         /// <summary>
@@ -201,19 +318,28 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
-        public void Save( T item, int? personId )
+		public virtual void Save( T item, int? personId )
         {
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            var entityChanges = _repository.Save( personId );
-            if ( entityChanges != null && entityChanges.Count > 0 )
+			var audits = new List<Core.AuditDto>();
+            var entityChanges = _repository.Save( personId, audits );
+
+			if ( entityChanges != null && entityChanges.Count > 0 )
             {
                 var transaction = new Rock.Transactions.EntityChangeTransaction();
                 transaction.Changes = entityChanges;
                 transaction.PersonId = personId;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+
+			if ( audits != null && audits.Count > 0 )
+			{
+				var transaction = new Rock.Transactions.AuditTransaction();
+				transaction.Audits = audits;
+				Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+			}
         }
 
         /// <summary>
@@ -223,7 +349,7 @@ namespace Rock.Data
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
         /// <param name="personId">The person id.</param>
-        public void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
+		public virtual void Reorder( List<T> items, int oldIndex, int newIndex, int? personId )
         {
             T movedItem = items[oldIndex];
             items.RemoveAt( oldIndex );
@@ -249,11 +375,24 @@ namespace Rock.Data
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="D"></typeparam>
     public class Service<T, D> : Service<T>
-        where T : Rock.Data.Model<T>
+        where T : Rock.Data.Entity<T>
         where D : Rock.Data.IDto
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service{D}" /> class.
+        /// </summary>
         public Service() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service{D}" /> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
         public Service( IRepository<T> repository ) : base( repository ) { }
 
         /// <summary>
@@ -265,6 +404,11 @@ namespace Rock.Data
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Creates the new.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public virtual T CreateNew()
         {
             throw new System.NotImplementedException();

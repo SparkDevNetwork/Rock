@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <asp:PlaceHolder ID="phList" runat="server">
 
@@ -14,7 +14,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Templates Found" AllowSorting="true"  >
+        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Templates Found" RowItemText="template" AllowSorting="true"  >
             <Columns>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category"  />
                 <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />

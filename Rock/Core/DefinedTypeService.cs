@@ -17,63 +17,60 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// DefinedType Service class
-	/// </summary>
-	public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefinedTypeService"/> class
-		/// </summary>
-		public DefinedTypeService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// DefinedType Service class
+    /// </summary>
+    public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
+        /// </summary>
+        public DefinedTypeService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="DefinedTypeService"/> class
-		/// </summary>
-		public DefinedTypeService(IRepository<DefinedType> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
+        /// </summary>
+        public DefinedTypeService(IRepository<DefinedType> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override DefinedType CreateNew()
-		{
-			return new DefinedType();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override DefinedType CreateNew()
+        {
+            return new DefinedType();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<DefinedTypeDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<DefinedTypeDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<DefinedTypeDto> QueryableDto( IQueryable<DefinedType> items )
-		{
-			return items.Select( m => new DefinedTypeDto()
-				{
-					IsSystem = m.IsSystem,
-					FieldTypeId = m.FieldTypeId,
-					Order = m.Order,
-					Category = m.Category,
-					Name = m.Name,
-					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<DefinedTypeDto> QueryableDto( IQueryable<DefinedType> items )
+        {
+            return items.Select( m => new DefinedTypeDto()
+                {
+                    IsSystem = m.IsSystem,
+                    FieldTypeId = m.FieldTypeId,
+                    Order = m.Order,
+                    Category = m.Category,
+                    Name = m.Name,
+                    Description = m.Description,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

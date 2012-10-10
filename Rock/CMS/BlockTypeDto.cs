@@ -15,83 +15,71 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Data Transfer Object for BlockType object
-	/// </summary>
-	public partial class BlockTypeDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for BlockType object
+    /// </summary>
+    public partial class BlockTypeDto : IDto
+    {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public string Path { get; set; }
-		public string Name { get; set; }
-		public string Description { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public BlockTypeDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public BlockTypeDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="blockType"></param>
-		public BlockTypeDto ( BlockType blockType )
-		{
-			CopyFromModel( blockType );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="blockType"></param>
+        public BlockTypeDto ( BlockType blockType )
+        {
+            CopyFromModel( blockType );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="blockType"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is BlockType )
-			{
-				var blockType = (BlockType)model;
-				this.IsSystem = blockType.IsSystem;
-				this.Path = blockType.Path;
-				this.Name = blockType.Name;
-				this.Description = blockType.Description;
-				this.CreatedDateTime = blockType.CreatedDateTime;
-				this.ModifiedDateTime = blockType.ModifiedDateTime;
-				this.CreatedByPersonId = blockType.CreatedByPersonId;
-				this.ModifiedByPersonId = blockType.ModifiedByPersonId;
-				this.Id = blockType.Id;
-				this.Guid = blockType.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is BlockType )
+            {
+                var blockType = (BlockType)model;
+                this.IsSystem = blockType.IsSystem;
+                this.Path = blockType.Path;
+                this.Name = blockType.Name;
+                this.Description = blockType.Description;
+                this.Id = blockType.Id;
+                this.Guid = blockType.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="blockType"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is BlockType )
-			{
-				var blockType = (BlockType)model;
-				blockType.IsSystem = this.IsSystem;
-				blockType.Path = this.Path;
-				blockType.Name = this.Name;
-				blockType.Description = this.Description;
-				blockType.CreatedDateTime = this.CreatedDateTime;
-				blockType.ModifiedDateTime = this.ModifiedDateTime;
-				blockType.CreatedByPersonId = this.CreatedByPersonId;
-				blockType.ModifiedByPersonId = this.ModifiedByPersonId;
-				blockType.Id = this.Id;
-				blockType.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is BlockType )
+            {
+                var blockType = (BlockType)model;
+                blockType.IsSystem = this.IsSystem;
+                blockType.Path = this.Path;
+                blockType.Name = this.Name;
+                blockType.Description = this.Description;
+                blockType.Id = this.Id;
+                blockType.Guid = this.Guid;
+            }
+        }
+    }
 }

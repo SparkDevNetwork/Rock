@@ -83,11 +83,17 @@ namespace Rock
         /// Returns a string array that contains the substrings in this string that are delimited by any combination of whitespace, comma, semi-colon, or pipe characters
         /// </summary>
         /// <param name="str">The string.</param>
+        /// <param name="whitespace">if set to <c>true</c> [whitespace].</param>
         /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str )
+        public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
+			if (str == null)
+				return new string[0];
+
+			string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
+
 			char[] delimiter = new char[] { ',' };
-            return Regex.Replace( str, @"[\s\|,;]+", "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
+            return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
         /// <summary>
@@ -164,11 +170,11 @@ namespace Rock
 
 		#region Int Extensions
 
-		/// <summary>
-		/// Gets the Defined Value name associated with this id
-		/// </summary>
-		/// <param name="field"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Gets the Defined Value name associated with this id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
 		public static string DefinedValue( this int? id )
 		{
 			if ( !id.HasValue )
@@ -197,14 +203,14 @@ namespace Rock
 
 		#endregion
 
-		#region DateTime Extensions
+		#region DateTimeOffset Extensions
 
 		/// <summary>
 		/// Returns the age at the current date
 		/// </summary>
 		/// <param name="start"></param>
 		/// <returns></returns>
-		public static int Age( this DateTime? start )
+		public static int Age( this DateTimeOffset? start )
 		{
 			if ( start.HasValue )
 				return start.Value.Age();
@@ -217,7 +223,7 @@ namespace Rock
 		/// </summary>
 		/// <param name="start"></param>
 		/// <returns></returns>
-		public static int Age( this DateTime start )
+		public static int Age( this DateTimeOffset start )
 		{
 			var now = DateTime.Today;
 			int age = now.Year - start.Year;
@@ -232,7 +238,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalMonths( this DateTime end, DateTime start )
+        public static int TotalMonths( this DateTimeOffset end, DateTimeOffset start )
         {
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
@@ -243,7 +249,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalYears( this DateTime end, DateTime start )
+		public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
         {
             return (end.Year) - (start.Year);
         }
@@ -252,8 +258,10 @@ namespace Rock
         /// Returns a friendly elapsed time string.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-		public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
+		public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
 		{
             if ( dateTime.HasValue )
             {
@@ -267,11 +275,13 @@ namespace Rock
 		/// Returns a friendly elapsed time string.
 		/// </summary>
 		/// <param name="dateTime">The date time.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="includeTime">if set to <c>true</c> [include time].</param>
 		/// <returns></returns>
-		public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
+		public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
 		{
-			DateTime start = dateTime;
-			DateTime end = DateTime.Now;
+			DateTimeOffset start = dateTime;
+			DateTimeOffset end = DateTimeOffset.Now;
 
 			string direction = " Ago";
 			TimeSpan timeSpan = end.Subtract( start );
@@ -487,6 +497,7 @@ namespace Rock
         /// Joins a dictionary of items
         /// </summary>
         /// <param name="items">The items.</param>
+        /// <param name="delimter">The delimter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
         {

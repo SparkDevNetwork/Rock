@@ -14,9 +14,9 @@ using Rock.Data;
 
 namespace Rock.Util
 {
-	/// <summary>
-	/// Job POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Job POCO Service class
+    /// </summary>
     public partial class JobService : Service<Job, JobDto>
     {
         /// <summary>

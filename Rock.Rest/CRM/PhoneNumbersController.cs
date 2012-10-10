@@ -14,11 +14,11 @@ using Rock.Crm;
 
 namespace Rock.Rest.Crm
 {
-	/// <summary>
-	/// PhoneNumbers REST API
-	/// </summary>
-	public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Crm.PhoneNumber, Rock.Crm.PhoneNumberDto>
-	{
-		public PhoneNumbersController() : base( new Rock.Crm.PhoneNumberService() ) { } 
-	}
+    /// <summary>
+    /// PhoneNumbers REST API
+    /// </summary>
+    public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Crm.PhoneNumber, Rock.Crm.PhoneNumberDto>
+    {
+        public PhoneNumbersController() : base( new Rock.Crm.PhoneNumberService() ) { } 
+    }
 }

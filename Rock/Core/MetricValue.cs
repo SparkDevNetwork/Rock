@@ -19,76 +19,76 @@ namespace Rock.Core
     /// MetricValue POCO Entity.
     /// </summary>
     [Table( "coreMetricValue" )]
-    public partial class MetricValue : Model<MetricValue>, IAuditable, IOrdered
+    public partial class MetricValue : Model<MetricValue>, IOrdered
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
 
-		/// <summary>
-		/// Gets or sets the MetricId.
-		/// </summary>
-		/// <value>
-		/// MetricId.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int MetricId { get; set; }
+        /// <summary>
+        /// Gets or sets the MetricId.
+        /// </summary>
+        /// <value>
+        /// MetricId.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int MetricId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Value.
-		/// </summary>
-		/// <value>
-		/// Value.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Value { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the xValue.
-		/// </summary>
-		/// <value>
-		/// xValue.
-		/// </value>
-		[Required]
-		[DataMember]
-		public string xValue { get; set; }
-				
-		/// <summary>
-		/// Gets or sets the isDateBased flag.
-		/// </summary>
-		/// <value>
-		/// isDateBased.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool isDateBased { get; set; }
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        /// <value>
+        /// Value.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Value { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the xValue.
+        /// </summary>
+        /// <value>
+        /// xValue.
+        /// </value>
+        [Required]
+        [DataMember]
+        public string xValue { get; set; }
+                
+        /// <summary>
+        /// Gets or sets the isDateBased flag.
+        /// </summary>
+        /// <value>
+        /// isDateBased.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool isDateBased { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Label.
-		/// </summary>
-		/// <value>
-		/// Label.
-		/// </value>
-		[DataMember]
-		public string Label { get; set; }
+        /// <summary>
+        /// Gets or sets the Label.
+        /// </summary>
+        /// <value>
+        /// Label.
+        /// </value>
+        [DataMember]
+        public string Label { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Order.
@@ -100,57 +100,21 @@ namespace Rock.Core
 		[DataMember]
 		public int Order { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.MetricValue"; } }
+		public override string EntityTypeName { get { return "Core.MetricValue"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static MetricValue Read( int id )
-		{
-			return Read<MetricValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static MetricValue Read( int id )
+        {
+            return Read<MetricValue>( id );
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -159,6 +123,17 @@ namespace Rock.Core
         {
             get { return new Security.GenericEntity( "Global" ); }
         }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Value;
+		}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValue"/> class.
@@ -179,6 +154,6 @@ namespace Rock.Core
         /// </summary>
         public MetricValueConfiguration()
         {
-		}
+        }
     }
 }

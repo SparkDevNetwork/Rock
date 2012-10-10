@@ -24,53 +24,86 @@ namespace Rock.Crm
         /// Raw question data. This data format comes from source disc.js file from Greg Wiens.
         /// </summary>
         private static string[,] questionData = {
-			{"Fearless in conquering a challenge", "Always enjoys having fun", "Free to express true feelings", "Usually at rest with circumstances", "NNNN", "NNNN"},
-			{"Tries to avoid mistakes","Securely fixed in place","Convinces others ","Goes along with the flow","CDIS","CDIN"},
-			{"Liked by others","Systematically thinks through issues","Clearly conveys thoughts","Untroubled by stress","ICDN","NCDS"},
-			{"Enjoys talking","Able to control his/her impulses","Actions can be foreseen by others","Quickly makes decisions","ICSD","ICSD"},
-			{"Willing to take risks","Easily distinguishes differences","People person","Avoids extremes","DCIS","DCIS"},
-			{"Sensitive to the needs of others","Guides the thinking or behavior of others","Humbly acknowledges his/her abilities","Capable of producing a desired result","SINN","SNCD"},
-			{"Full of energy","Tries to avoid mistakes","Takes control of situations","Readily accessible to others","ICDN","ICDS"},
-			{"Has high-spirited energy","Easily focuses his/her attention","Tends not to speak frequently","Fully committed to achieving a goal","ICSD","INSD"},
-			{"Has an extreme care for details","People person","Captivates peoples' attention","Able to give direction","CSID","CSID"},
-			{"Fearless in conquering a challenge","Has the ability to encourage others","Readily follows someone else's lead","Minutely exact","DISN","DISC"},
-			{"Humbly acknowledges abilities","Pays attention to the needs of others","Driven by goals","Sees the glass as half-full","CSDI","CSDI"},
-			{"Drives others forward","Concerned about others' needs above own","Concerned with correct information","Able to take care of yourself","ISCD","ISCD"},
-			{"Forcefully pursues a goal","Shares the feelings of others","Other people love being around him/her","Tries to avoid danger","DSIC","DSIC"},
-			{"Likes to have things a certain way","Readily follows someone else's lead","Establishes new endeavors","Joyfully enjoys life","CSDI","CSDI"},
-			{"Liked by others","Full of thought","Perseveres despite opposition","Does things the traditional way","ICDS","INDS"},
-			{"Thinks through problems analytically","Willing to take risks","Loyal to others","Possesses a magnetic charm ","CDSI","CDSI"},
-			{"Enjoys the company of others","Unmovable in opposition","Able to take care of oneself","Listens more than he/she talks","ISDC","ISDC"},
-			{"Goes along with the flow","Has a one-track mind","Works systematically","Full of energy","SDCI","SNCI"},
-			{"Continues despite difficulties","Shows love freely","Mindful of the needs of others","Prone to worrying","DISN","DISC"},
-			{"Seeks the company of others","Cares deeply about the needs of others","Free from bias","Secure in his/her own abilities","ISND","ISCD"},
-			{"Capable of producing a desired result","Gives freely to others","Clearly conveys meaningful thoughts","Fully committed to achieving a goal","CSID","CSID"},
-			{"Instantly acts without thought","Sees things as they are","Readily accepts leadership roles","Usually at rest with circumstances","ICDS","ICDS"},
-			{"Enjoys time spent with others","Systematically thinks through issues","Does not show weakness or uncertainty","Gives grace when it is undeserved","ICDS","ICDS"},
-			{"Enjoys the company of others","Satisfied with life","Securely fixed in place","Follows directions","ISDC","ISCD"},
-			{"Pushes others to do their best","Thinks through problems analytically","Collaborative team player","Upbeat about life","DCSI","DCSI"},
-			{"Always enjoys having fun","Conforms exactly to a standard","Free to express true feelings","Can be depended on consistently","ICDS","ICDS"},
-			{"Forcefully pursues a goal","Welcoming to others","Holds the attention of others","Carefully assesses risks","DISC","DISC"},
-			{"Courteous of others","Requires others to accomplish tasks correctly","Sees the glass half-full","Concerned with the feelings of others","CDIS","CDIS"},
-			{"Readily follows someone else's lead","Tries to avoid mistakes","Does not show weakness or uncertainty","Minutely exact","NNNN","NNNN"},
-			{"Capable of expressing strong feelings","Prominently stands out","Minutely exact","Satisfied with life","IDCS","IDCS"}
-		};
+            {"Fearless in conquering a challenge", "Always enjoys having fun", "Free to express true feelings", "Usually at rest with circumstances", "NNNN", "NNNN"},
+            {"Tries to avoid mistakes","Securely fixed in place","Convinces others ","Goes along with the flow","CDIS","CDIN"},
+            {"Liked by others","Systematically thinks through issues","Clearly conveys thoughts","Untroubled by stress","ICDN","NCDS"},
+            {"Enjoys talking","Able to control his/her impulses","Actions can be foreseen by others","Quickly makes decisions","ICSD","ICSD"},
+            {"Willing to take risks","Easily distinguishes differences","People person","Avoids extremes","DCIS","DCIS"},
+            {"Sensitive to the needs of others","Guides the thinking or behavior of others","Humbly acknowledges his/her abilities","Capable of producing a desired result","SINN","SNCD"},
+            {"Full of energy","Tries to avoid mistakes","Takes control of situations","Readily accessible to others","ICDN","ICDS"},
+            {"Has high-spirited energy","Easily focuses his/her attention","Tends not to speak frequently","Fully committed to achieving a goal","ICSD","INSD"},
+            {"Has an extreme care for details","People person","Captivates peoples' attention","Able to give direction","CSID","CSID"},
+            {"Fearless in conquering a challenge","Has the ability to encourage others","Readily follows someone else's lead","Minutely exact","DISN","DISC"},
+            {"Humbly acknowledges abilities","Pays attention to the needs of others","Driven by goals","Sees the glass as half-full","CSDI","CSDI"},
+            {"Drives others forward","Concerned about others' needs above own","Concerned with correct information","Able to take care of yourself","ISCD","ISCD"},
+            {"Forcefully pursues a goal","Shares the feelings of others","Other people love being around him/her","Tries to avoid danger","DSIC","DSIC"},
+            {"Likes to have things a certain way","Readily follows someone else's lead","Establishes new endeavors","Joyfully enjoys life","CSDI","CSDI"},
+            {"Liked by others","Full of thought","Perseveres despite opposition","Does things the traditional way","ICDS","INDS"},
+            {"Thinks through problems analytically","Willing to take risks","Loyal to others","Possesses a magnetic charm ","CDSI","CDSI"},
+            {"Enjoys the company of others","Unmovable in opposition","Able to take care of oneself","Listens more than he/she talks","ISDC","ISDC"},
+            {"Goes along with the flow","Has a one-track mind","Works systematically","Full of energy","SDCI","SNCI"},
+            {"Continues despite difficulties","Shows love freely","Mindful of the needs of others","Prone to worrying","DISN","DISC"},
+            {"Seeks the company of others","Cares deeply about the needs of others","Free from bias","Secure in his/her own abilities","ISND","ISCD"},
+            {"Capable of producing a desired result","Gives freely to others","Clearly conveys meaningful thoughts","Fully committed to achieving a goal","CSID","CSID"},
+            {"Instantly acts without thought","Sees things as they are","Readily accepts leadership roles","Usually at rest with circumstances","ICDS","ICDS"},
+            {"Enjoys time spent with others","Systematically thinks through issues","Does not show weakness or uncertainty","Gives grace when it is undeserved","ICDS","ICDS"},
+            {"Enjoys the company of others","Satisfied with life","Securely fixed in place","Follows directions","ISDC","ISCD"},
+            {"Pushes others to do their best","Thinks through problems analytically","Collaborative team player","Upbeat about life","DCSI","DCSI"},
+            {"Always enjoys having fun","Conforms exactly to a standard","Free to express true feelings","Can be depended on consistently","ICDS","ICDS"},
+            {"Forcefully pursues a goal","Welcoming to others","Holds the attention of others","Carefully assesses risks","DISC","DISC"},
+            {"Courteous of others","Requires others to accomplish tasks correctly","Sees the glass half-full","Concerned with the feelings of others","CDIS","CDIS"},
+            {"Readily follows someone else's lead","Tries to avoid mistakes","Does not show weakness or uncertainty","Minutely exact","NNNN","NNNN"},
+            {"Capable of expressing strong feelings","Prominently stands out","Minutely exact","Satisfied with life","IDCS","IDCS"}
+        };
 
         /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
         public struct AssessmentResults
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public int AdaptiveBehaviorS;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int AdaptiveBehaviorC;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int AdaptiveBehaviorI;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int AdaptiveBehaviorD;
 
+            /// <summary>
+            /// 
+            /// </summary>
             public int NaturalBehaviorS;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int NaturalBehaviorC;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int NaturalBehaviorI;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public int NaturalBehaviorD;
 
+            /// <summary>
+            /// 
+            /// </summary>
             public DateTime LastSaveDate;
         }
 
@@ -80,11 +113,34 @@ namespace Rock.Crm
         /// </summary>
         public struct ResponseItem
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public string QuestionNumber;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public string ResponseNumber;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public string ResponseID;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public string ResponseText;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public string MostScore;
+            
+            /// <summary>
+            /// 
+            /// </summary>
             public string LeastScore;
         }
 

@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Site Domain POCO Entity.
     /// </summary>
     [Table( "cmsSiteDomain" )]
-    public partial class SiteDomain : ModelWithAttributes<SiteDomain>, IAuditable
+    public partial class SiteDomain : Model<SiteDomain>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -51,66 +51,40 @@ namespace Rock.Cms
 		[DataMember]
 		public string Domain { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.SiteDomain"; } }
+		public override string EntityTypeName { get { return "Cms.SiteDomain"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Site.
         /// </summary>
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-		public virtual Site Site { get; set; }
+        public virtual Site Site { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static SiteDomain Read( int id )
-		{
-			return Read<SiteDomain>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static SiteDomain Read( int id )
+        {
+            return Read<SiteDomain>( id );
+        }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Domain;
+		}
     }
 
     /// <summary>
@@ -123,7 +97,7 @@ namespace Rock.Cms
         /// </summary>
         public SiteDomainConfiguration()
         {
-			this.HasRequired( p => p.Site ).WithMany( p => p.SiteDomains ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Site ).WithMany( p => p.SiteDomains ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
+        }
     }
 }

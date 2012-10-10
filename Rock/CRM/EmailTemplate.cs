@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Email Template POCO Entity.
     /// </summary>
     [Table( "crmEmailTemplate" )]
-    public partial class EmailTemplate : ModelWithAttributes<EmailTemplate>, IAuditable
+    public partial class EmailTemplate : Model<EmailTemplate>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -119,42 +119,6 @@ namespace Rock.Crm
 		public string Body { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -168,16 +132,26 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.EmailTemplate"; } }
+		public override string EntityTypeName { get { return "Crm.EmailTemplate"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
 		public virtual Person Person { get; set; }
-        
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Title;
+		}
     }
     
     /// <summary>
@@ -190,7 +164,7 @@ namespace Rock.Crm
         /// </summary>
         public EmailTemplateConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-		}
+            this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+        }
     }
 }

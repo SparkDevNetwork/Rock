@@ -17,8 +17,9 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change POCO Entity.
     /// </summary>
+	[NotAudited]
     [Table( "coreEntityChange" )]
-    public partial class EntityChange : ModelWithAttributes<EntityChange>
+    public partial class EntityChange : Model<EntityChange>
     {
 		/// <summary>
 		/// Gets or sets the Change Set.
@@ -108,23 +109,41 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
-		
+
+        /// <summary>
+        /// Gets or sets the created by person.
+        /// </summary>
+        /// <value>
+        /// The created by person.
+        /// </value>
+		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.EntityChange"; } }
+		public override string EntityTypeName { get { return "Core.EntityChange"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static EntityChange Read( int id )
-		{
-			return Read<EntityChange>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static EntityChange Read( int id )
+        {
+            return Read<EntityChange>( id );
+        }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.CurrentValue;
+		}
     }
     
     /// <summary>
@@ -137,6 +156,7 @@ namespace Rock.Core
         /// </summary>
         public EntityChangeConfiguration()
         {
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
 		}
     }
 }

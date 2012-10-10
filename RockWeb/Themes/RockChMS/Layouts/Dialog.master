@@ -63,7 +63,7 @@
         <div id="pnl1"></div>
 
         <div id="footerPanel" class="modal-footer">
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " CausesValidation="false" />
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
         </div>
 

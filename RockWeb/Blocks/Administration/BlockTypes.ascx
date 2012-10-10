@@ -3,9 +3,9 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
-    <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Block Types Found" AllowSorting="true" >
+    <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Block Types Found" RowItemText="block type" AllowSorting="true" >
         <Columns>
             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
             <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />

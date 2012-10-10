@@ -17,66 +17,62 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Block Service class
-	/// </summary>
-	public partial class BlockService : Service<Block, BlockDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="BlockService"/> class
-		/// </summary>
-		public BlockService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Block Service class
+    /// </summary>
+    public partial class BlockService : Service<Block, BlockDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockService"/> class
+        /// </summary>
+        public BlockService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="BlockService"/> class
-		/// </summary>
-		public BlockService(IRepository<Block> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockService"/> class
+        /// </summary>
+        public BlockService(IRepository<Block> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Block CreateNew()
-		{
-			return new Block();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Block CreateNew()
+        {
+            return new Block();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<BlockDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<BlockDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<BlockDto> QueryableDto( IQueryable<Block> items )
-		{
-			return items.Select( m => new BlockDto()
-				{
-					IsSystem = m.IsSystem,
-					PageId = m.PageId,
-					Layout = m.Layout,
-					BlockTypeId = m.BlockTypeId,
-					Zone = m.Zone,
-					Order = m.Order,
-					Name = m.Name,
-					OutputCacheDuration = m.OutputCacheDuration,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,
-				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<BlockDto> QueryableDto( IQueryable<Block> items )
+        {
+            return items.Select( m => new BlockDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PageId = m.PageId,
+                    Layout = m.Layout,
+                    BlockTypeId = m.BlockTypeId,
+                    Zone = m.Zone,
+                    Order = m.Order,
+                    Name = m.Name,
+                    OutputCacheDuration = m.OutputCacheDuration,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

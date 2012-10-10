@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// of the attributes specified in each class
     /// </summary>
     [Rock.Attribute.Property( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
-    public partial class Components : Rock.Web.UI.Block
+    public partial class Components : Rock.Web.UI.RockBlock
     {
         #region Private Variables
 
@@ -47,6 +47,9 @@ namespace RockWeb.Blocks.Administration
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
+                        if ( !Page.IsPostBack )
+                            _container.Refresh();
+
                         rGrid.DataKeyNames = new string[] { "id" };
                         if ( _isAuthorizedToConfigure )
                             rGrid.GridReorder += rGrid_GridReorder;

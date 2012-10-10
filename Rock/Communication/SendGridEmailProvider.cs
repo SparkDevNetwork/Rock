@@ -7,12 +7,18 @@ using System.Xml.Linq;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SendGridEmailProvider: IEmailProvider
     {
         private string _userName = string.Empty;
         private string _password = string.Empty;
         private string _urlBase = "https://sendgrid.com";
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SendGridEmailProvider" /> class.
+        /// </summary>
         public SendGridEmailProvider()
         {
             // load up parameters from global settings

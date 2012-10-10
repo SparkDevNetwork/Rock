@@ -15,113 +15,101 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Data Transfer Object for Transaction object
-	/// </summary>
-	public partial class TransactionDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for Transaction object
+    /// </summary>
+    public partial class TransactionDto : IDto
+    {
 
 #pragma warning disable 1591
-		public string Description { get; set; }
-		public DateTime? TransactionDate { get; set; }
-		public string Entity { get; set; }
-		public int? EntityId { get; set; }
-		public int? BatchId { get; set; }
-		public int? CurrencyTypeId { get; set; }
-		public int? CreditCardTypeId { get; set; }
-		public decimal Amount { get; set; }
-		public int? RefundTransactionId { get; set; }
-		public int? TransactionImageId { get; set; }
-		public string TransactionCode { get; set; }
-		public int? GatewayId { get; set; }
-		public int? SourceTypeId { get; set; }
-		public string Summary { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public string Description { get; set; }
+        public DateTime? TransactionDate { get; set; }
+        public string Entity { get; set; }
+        public int? EntityId { get; set; }
+        public int? BatchId { get; set; }
+        public int? CurrencyTypeId { get; set; }
+        public int? CreditCardTypeId { get; set; }
+        public decimal Amount { get; set; }
+        public int? RefundTransactionId { get; set; }
+        public int? TransactionImageId { get; set; }
+        public string TransactionCode { get; set; }
+        public int? GatewayId { get; set; }
+        public int? SourceTypeId { get; set; }
+        public string Summary { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public TransactionDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public TransactionDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="transaction"></param>
-		public TransactionDto ( Transaction transaction )
-		{
-			CopyFromModel( transaction );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="transaction"></param>
+        public TransactionDto ( Transaction transaction )
+        {
+            CopyFromModel( transaction );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="transaction"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is Transaction )
-			{
-				var transaction = (Transaction)model;
-				this.Description = transaction.Description;
-				this.TransactionDate = transaction.TransactionDate;
-				this.Entity = transaction.Entity;
-				this.EntityId = transaction.EntityId;
-				this.BatchId = transaction.BatchId;
-				this.CurrencyTypeId = transaction.CurrencyTypeId;
-				this.CreditCardTypeId = transaction.CreditCardTypeId;
-				this.Amount = transaction.Amount;
-				this.RefundTransactionId = transaction.RefundTransactionId;
-				this.TransactionImageId = transaction.TransactionImageId;
-				this.TransactionCode = transaction.TransactionCode;
-				this.GatewayId = transaction.GatewayId;
-				this.SourceTypeId = transaction.SourceTypeId;
-				this.Summary = transaction.Summary;
-				this.ModifiedDateTime = transaction.ModifiedDateTime;
-				this.CreatedDateTime = transaction.CreatedDateTime;
-				this.CreatedByPersonId = transaction.CreatedByPersonId;
-				this.ModifiedByPersonId = transaction.ModifiedByPersonId;
-				this.Id = transaction.Id;
-				this.Guid = transaction.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is Transaction )
+            {
+                var transaction = (Transaction)model;
+                this.Description = transaction.Description;
+                this.TransactionDate = transaction.TransactionDate;
+                this.Entity = transaction.Entity;
+                this.EntityId = transaction.EntityId;
+                this.BatchId = transaction.BatchId;
+                this.CurrencyTypeId = transaction.CurrencyTypeId;
+                this.CreditCardTypeId = transaction.CreditCardTypeId;
+                this.Amount = transaction.Amount;
+                this.RefundTransactionId = transaction.RefundTransactionId;
+                this.TransactionImageId = transaction.TransactionImageId;
+                this.TransactionCode = transaction.TransactionCode;
+                this.GatewayId = transaction.GatewayId;
+                this.SourceTypeId = transaction.SourceTypeId;
+                this.Summary = transaction.Summary;
+                this.Id = transaction.Id;
+                this.Guid = transaction.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="transaction"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is Transaction )
-			{
-				var transaction = (Transaction)model;
-				transaction.Description = this.Description;
-				transaction.TransactionDate = this.TransactionDate;
-				transaction.Entity = this.Entity;
-				transaction.EntityId = this.EntityId;
-				transaction.BatchId = this.BatchId;
-				transaction.CurrencyTypeId = this.CurrencyTypeId;
-				transaction.CreditCardTypeId = this.CreditCardTypeId;
-				transaction.Amount = this.Amount;
-				transaction.RefundTransactionId = this.RefundTransactionId;
-				transaction.TransactionImageId = this.TransactionImageId;
-				transaction.TransactionCode = this.TransactionCode;
-				transaction.GatewayId = this.GatewayId;
-				transaction.SourceTypeId = this.SourceTypeId;
-				transaction.Summary = this.Summary;
-				transaction.ModifiedDateTime = this.ModifiedDateTime;
-				transaction.CreatedDateTime = this.CreatedDateTime;
-				transaction.CreatedByPersonId = this.CreatedByPersonId;
-				transaction.ModifiedByPersonId = this.ModifiedByPersonId;
-				transaction.Id = this.Id;
-				transaction.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is Transaction )
+            {
+                var transaction = (Transaction)model;
+                transaction.Description = this.Description;
+                transaction.TransactionDate = this.TransactionDate;
+                transaction.Entity = this.Entity;
+                transaction.EntityId = this.EntityId;
+                transaction.BatchId = this.BatchId;
+                transaction.CurrencyTypeId = this.CurrencyTypeId;
+                transaction.CreditCardTypeId = this.CreditCardTypeId;
+                transaction.Amount = this.Amount;
+                transaction.RefundTransactionId = this.RefundTransactionId;
+                transaction.TransactionImageId = this.TransactionImageId;
+                transaction.TransactionCode = this.TransactionCode;
+                transaction.GatewayId = this.GatewayId;
+                transaction.SourceTypeId = this.SourceTypeId;
+                transaction.Summary = this.Summary;
+                transaction.Id = this.Id;
+                transaction.Guid = this.Guid;
+            }
+        }
+    }
 }

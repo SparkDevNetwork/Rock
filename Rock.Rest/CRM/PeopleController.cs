@@ -14,11 +14,11 @@ using Rock.Crm;
 
 namespace Rock.Rest.Crm
 {
-	/// <summary>
-	/// People REST API
-	/// </summary>
-	public partial class PeopleController : Rock.Rest.ApiController<Rock.Crm.Person, Rock.Crm.PersonDto>
-	{
-		public PeopleController() : base( new Rock.Crm.PersonService() ) { } 
-	}
+    /// <summary>
+    /// People REST API
+    /// </summary>
+    public partial class PeopleController : Rock.Rest.ApiController<Rock.Crm.Person, Rock.Crm.PersonDto>
+    {
+        public PeopleController() : base( new Rock.Crm.PersonService() ) { } 
+    }
 }

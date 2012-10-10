@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "cmsHtmlContent" )]
-    public partial class HtmlContent : ModelWithAttributes<HtmlContent>, IAuditable, IExportable
+    public partial class HtmlContent : Model<HtmlContent>, IExportable
     {
 		/// <summary>
 		/// Gets or sets the Block Id.
@@ -89,42 +89,6 @@ namespace Rock.Cms
 		public DateTime? ApprovedDateTime { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
 		/// Gets or sets the Start Date Time.
 		/// </summary>
 		/// <value>
@@ -146,24 +110,24 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.HtmlContent"; } }
+		public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Block.
         /// </summary>
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
-		public virtual Block Block { get; set; }
+        public virtual Block Block { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Approved By Person.
         /// </summary>
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
 		public virtual Crm.Person ApprovedByPerson { get; set; }
-        
+
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -174,7 +138,7 @@ namespace Rock.Cms
 			return Read<HtmlContent>( id );
 		}
 
-        /// <summary>
+		/// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -223,8 +187,8 @@ namespace Rock.Cms
         /// </summary>
         public HtmlContentConfiguration()
         {
-			this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+            this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
+        }
     }
 }

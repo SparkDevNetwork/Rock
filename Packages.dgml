@@ -1,23 +1,67 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
+    <Node Id="Rock.Tests" Label="Rock.Tests" Category="Project" />
+    <Node Id="xunit 1.9.0.1566" Label="xunit 1.9.0.1566" Category="Package" />
+    <Node Id="Rock.Rest" Label="Rock.Rest" Category="Project" />
+    <Node Id="EntityFramework 5.0.0" Label="EntityFramework 5.0.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Label="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Category="Package" />
+    <Node Id="Microsoft.Data.Edm 5.0.2" Label="Microsoft.Data.Edm 5.0.2" Category="Package" />
+    <Node Id="Microsoft.Data.OData 5.0.1" Label="Microsoft.Data.OData 5.0.1" Category="Package" />
+    <Node Id="Microsoft.Data.OData.Contrib 5.0.1.50813" Label="Microsoft.Data.OData.Contrib 5.0.1.50813" Category="Package" />
+    <Node Id="Microsoft.Net.Http 2.0.20710.0" Label="Microsoft.Net.Http 2.0.20710.0" Category="Package" />
+    <Node Id="Newtonsoft.Json 4.5.8" Label="Newtonsoft.Json 4.5.8" Category="Package" />
+    <Node Id="System.Spatial 5.0.2" Label="System.Spatial 5.0.2" Category="Package" />
     <Node Id="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Label="C:\...\RockWeb\" Category="Project" />
     <Node Id="CodeContracts.Unofficial 1.0.0.2" Label="CodeContracts.Unofficial 1.0.0.2" Category="Package" />
     <Node Id="dotless 1.1.0" Label="dotless 1.1.0" Category="Package" />
-    <Node Id="Facebook 5.0.25.0" Label="Facebook 5.0.25.0" Category="Package" />
     <Node Id="ImageResizer 3.0.13" Label="ImageResizer 3.0.13" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi 4.0.20710.0" Label="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.WebHost 4.0.20710.0" Label="Microsoft.AspNet.WebApi.WebHost 4.0.20710.0" Category="Package" />
+    <Node Id="Microsoft.Net.Http 2.0.20710.0" Label="Microsoft.Net.Http 2.0.20710.0" Category="Package" />
+    <Node Id="Newtonsoft.Json 4.5.6" Label="Newtonsoft.Json 4.5.6" Category="Package" />
+    <Node Id="NuGet.Core 2.0.1" Label="NuGet.Core 2.0.1" Category="Package" />
     <Node Id="Rock" Label="Rock" Category="Project" />
-    <Node Id="AjaxControlToolkit 4.1.60501" Label="AjaxControlToolkit 4.1.60501" Category="Package" />
-    <Node Id="EntityFramework 4.3.1" Label="EntityFramework 4.3.1" Category="Package" />
+    <Node Id="AjaxControlToolkit 4.1.60623" Label="AjaxControlToolkit 4.1.60623" Category="Package" />
+    <Node Id="EntityFramework 5.0.0" Label="EntityFramework 5.0.0" Category="Package" />
+    <Node Id="Facebook 6.0.24" Label="Facebook 6.0.24" Category="Package" />
+    <Node Id="Newtonsoft.Json 4.5.7" Label="Newtonsoft.Json 4.5.7" Category="Package" />
+    <Node Id="NuGet.Core 2.0.1" Label="NuGet.Core 2.0.1" Category="Package" />
     <Node Id="T4Scaffolding 1.0.5" Label="T4Scaffolding 1.0.5" Category="Package" />
   </Nodes>
   <Links>
-    <Link Source="Facebook 5.0.25.0" Target="CodeContracts.Unofficial 1.0.0.2" Category="Package Dependency" />
+    <Link Source="Rock.Tests" Target="xunit 1.9.0.1566" Category="Installed Package" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Microsoft.Net.Http 2.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Newtonsoft.Json 4.5.8" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Target="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Target="Microsoft.Net.Http 2.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Target="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Target="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Target="Microsoft.Data.OData.Contrib 5.0.1.50813" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.0.1" Target="System.Spatial 5.0.2" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData 5.0.1" Target="Microsoft.Data.Edm 5.0.2" Category="Package Dependency" />
+    <Link Source="Microsoft.Data.OData.Contrib 5.0.1.50813" Target="Microsoft.Data.OData 5.0.1" Category="Package Dependency" />
+    <Link Source="Rock.Rest" Target="EntityFramework 5.0.0" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 0.1.0-alpha-120815" Category="Installed Package" />
+    <Link Source="Microsoft.AspNet.WebApi 4.0.20710.0" Target="Microsoft.AspNet.WebApi.WebHost 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Microsoft.Net.Http 2.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Newtonsoft.Json 4.5.6" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Target="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.WebHost 4.0.20710.0" Target="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package Dependency" />
+    <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="CodeContracts.Unofficial 1.0.0.2" Category="Installed Package" />
     <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="dotless 1.1.0" Category="Installed Package" />
-    <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="Facebook 5.0.25.0" Category="Installed Package" />
     <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="ImageResizer 3.0.13" Category="Installed Package" />
-    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 4.3.1" Category="Package Dependency" />
-    <Link Source="Rock" Target="AjaxControlToolkit 4.1.60501" Category="Installed Package" />
+    <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Installed Package" />
+    <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="NuGet.Core 2.0.1" Category="Installed Package" />
+    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 5.0.0" Category="Package Dependency" />
+    <Link Source="Rock" Target="AjaxControlToolkit 4.1.60623" Category="Installed Package" />
+    <Link Source="Rock" Target="Facebook 6.0.24" Category="Installed Package" />
+    <Link Source="Rock" Target="Newtonsoft.Json 4.5.7" Category="Installed Package" />
+    <Link Source="Rock" Target="NuGet.Core 2.0.1" Category="Installed Package" />
     <Link Source="Rock" Target="T4Scaffolding 1.0.5" Category="Installed Package" />
   </Links>
   <Categories>

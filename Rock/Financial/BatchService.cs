@@ -17,64 +17,61 @@ using Rock.Data;
 
 namespace Rock.Financial
 {
-	/// <summary>
-	/// Batch Service class
-	/// </summary>
-	public partial class BatchService : Service<Batch, BatchDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="BatchService"/> class
-		/// </summary>
-		public BatchService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// Batch Service class
+    /// </summary>
+    public partial class BatchService : Service<Batch, BatchDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatchService"/> class
+        /// </summary>
+        public BatchService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="BatchService"/> class
-		/// </summary>
-		public BatchService(IRepository<Batch> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BatchService"/> class
+        /// </summary>
+        public BatchService(IRepository<Batch> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override Batch CreateNew()
-		{
-			return new Batch();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override Batch CreateNew()
+        {
+            return new Batch();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<BatchDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<BatchDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<BatchDto> QueryableDto( IQueryable<Batch> items )
-		{
-			return items.Select( m => new BatchDto()
-				{
-					Name = m.Name,
-					BatchDate = m.BatchDate,
-					IsClosed = m.IsClosed,
-					CampusId = m.CampusId,
-					Entity = m.Entity,
-					EntityId = m.EntityId,
-					ForeignReference = m.ForeignReference,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedDateTime = m.CreatedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<BatchDto> QueryableDto( IQueryable<Batch> items )
+        {
+            return items.Select( m => new BatchDto()
+                {
+                    Name = m.Name,
+                    BatchDate = m.BatchDate,
+                    IsClosed = m.IsClosed,
+                    CampusId = m.CampusId,
+                    Entity = m.Entity,
+                    EntityId = m.EntityId,
+                    ForeignReference = m.ForeignReference,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

@@ -2,7 +2,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class RenameFamilyMemberBlock : RockMigration_0
     {
         public override void Up()
@@ -17,7 +17,7 @@ namespace Rock.Migrations
 		VALUES(1,'Family','Family Members',NULL,GETDATE(),GETDATE(),1,1,'790E3215-3B10-442B-AF69-616C0DCB998E')
 	SET @GroupTypeId = SCOPE_IDENTITY()
 
-	-- Add Family Role
+	-- Add Adult Role
 	DECLARE @GroupRoleId int
 	INSERT INTO [groupsGroupRole] ([IsSystem],[Name],[Description],[Order],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
 		VALUES(1,'Adult','Adult Family Member',0,GETDATE(),GETDATE(),1,1,'2639F9A5-2AAE-4E48-A8C3-4FFE86681E42')

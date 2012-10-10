@@ -13,16 +13,17 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Cms;
-using Rock.Web.UI.Controls;
+using Rock.Crm;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// Block is the base abstract class that all Blocks should inherit from
+    /// RockBlock is the base abstract class that all Blocks should inherit from
     /// </summary>
-    public abstract class Block : System.Web.UI.UserControl
+    public abstract class RockBlock : UserControl
     {
         #region Events
 
@@ -37,22 +38,22 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// The current page.  This value is read and cached by the RockRouteHandler
-        /// and set by the layout's base class (Rock.Web.UI.Page) when loading the block instance
+        /// and set by the layout's base class (Rock.Web.UI.RockPage) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.PageCache CurrentPage { get; set; }
+        public PageCache CurrentPage { get; set; }
 
         /// <summary>
         /// The current block.  This value is read and cached by the layout's 
-        /// base class (Rock.Web.UI.Page) when loading the block instance
+        /// base class (Rock.Web.UI.RockPage) when loading the block instance
         /// </summary>
-        public Rock.Web.Cache.BlockCache CurrentBlock { get; set; }
+        public BlockCache CurrentBlock { get; set; }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null
         /// </summary>
         public int? CurrentPersonId
         {
-            get { return ( ( Rock.Web.UI.Page )this.Page ).CurrentPersonId; }
+            get { return ( (RockPage)this.Page ).CurrentPersonId; }
         }
 
         /// <summary>
@@ -60,15 +61,15 @@ namespace Rock.Web.UI
         /// </summary>
         public User CurrentUser
         {
-            get { return ( ( Rock.Web.UI.Page )this.Page ).CurrentUser; }
+            get { return ( (RockPage)this.Page ).CurrentUser; }
         }
 
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
         /// </summary>
-        public Rock.Crm.Person CurrentPerson
+        public Person CurrentPerson
         {
-            get { return ( ( Rock.Web.UI.Page )this.Page ).CurrentPerson; }
+            get { return ( (RockPage)this.Page ).CurrentPerson; }
         }
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace Rock.Web.UI
         /// </summary>
         public string ThemePath
         {
-            get { return ( ( Rock.Web.UI.Page )this.Page ).ThemePath; }
+            get { return ( (RockPage)this.Page ).ThemePath; }
         }
 
         /// <summary>
@@ -178,9 +179,14 @@ namespace Rock.Web.UI
             cache.Remove( ItemCacheKey( key ) );
         }
 
+        /// <summary>
+        /// Items the cache key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         private string ItemCacheKey( string key )
         {
-            return string.Format( "Rock:Page:{0}:Block:{1}:ItemCache:{2}",
+            return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
                 this.CurrentPage.Id, CurrentBlock.Id, key );
         }
 
@@ -207,7 +213,7 @@ namespace Rock.Web.UI
         /// When a control renders it's content to the page, this method will also check to see if 
         /// the block instance of this control has been configured for output caching, and if so, 
         /// the contents will also be rendered to a string variable that will gets cached in the 
-        /// default MemoryCache for use next time by the Rock.Web.UI.Page.OnInit() method when rendering the 
+        /// default MemoryCache for use next time by the Rock.Web.UI.RockPage.OnInit() method when rendering the 
         /// control content.
         /// </summary>
         /// <param name="writer"></param>
@@ -288,7 +294,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string AttributeValue( string key )
         {
-            if ( CurrentBlock != null  && 
+            if ( CurrentBlock != null &&
                 CurrentBlock.AttributeValues != null &&
                 CurrentBlock.AttributeValues.ContainsKey( key ) )
                 return CurrentBlock.AttributeValues[key].Value[0].Value;
@@ -315,37 +321,28 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public string PageParameter( string name )
         {
-            return ( ( Rock.Web.UI.Page )this.Page ).PageParameter( name );
+            return ( (RockPage)this.Page ).PageParameter( name );
         }
-
-		/// <summary>
-		/// Gets the value for the current user for a given key
-		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		public string GetUserValue( string key )
-		{
-			return ( (Rock.Web.UI.Page)this.Page ).GetUserValue( key );
-		}
 
         /// <summary>
-        /// Gets all user values for the current user
+        /// Gets the value for the current user for a given key
         /// </summary>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public Dictionary<string, List<string>> GetAllUserValues()
+        public string GetUserValue( string key )
         {
-            return ((Rock.Web.UI.Page)this.Page).GetAllUserValues();
+            return ( (RockPage)this.Page ).GetUserValue( key );
         }
-        
-		/// <summary>
-		/// Sets a value for the current user for a given key
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="value"></param>
-		public void SetUserValue( string key, string value )
-		{
-			( (Rock.Web.UI.Page)this.Page ).SetUserValue( key, value );
-		}
+
+        /// <summary>
+        /// Sets a value for the current user for a given key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void SetUserValue( string key, string value )
+        {
+            ( (RockPage)this.Page ).SetUserValue( key, value );
+        }
 
         /// <summary>
         /// Adds icons to the configuration area of a block instance.  Can be overridden to
@@ -358,7 +355,7 @@ namespace Rock.Web.UI
         {
             List<Control> configControls = new List<Control>();
 
-            if ( canConfig || canEdit)
+            if ( canConfig || canEdit )
             {
                 // Attributes
                 CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
@@ -387,8 +384,8 @@ namespace Rock.Web.UI
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
                 aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) );
-				aAttributes.Attributes.Add( "title", "Block Properties" );
-				//aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
+                aAttributes.Attributes.Add( "title", "Block Properties" );
+                //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                 aAttributes.Controls.Add( iAttributes );
@@ -403,16 +400,16 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
                     Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) );
-				aSecureBlock.Attributes.Add( "title", "Block Security" );
-				configControls.Add( aSecureBlock );
-				HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
+                aSecureBlock.Attributes.Add( "title", "Block Security" );
+                configControls.Add( aSecureBlock );
+                HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
                 aSecureBlock.Controls.Add( iSecureBlock );
                 iSecureBlock.Attributes.Add( "class", "icon-lock" );
-                
+
                 // Move
                 HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
                 aMoveBlock.Attributes.Add( "class", "block-move block-move" );
-                aMoveBlock.Attributes.Add("href", CurrentBlock.Id.ToString());
+                aMoveBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
                 aMoveBlock.Attributes.Add( "zone", CurrentBlock.Zone );
                 aMoveBlock.Attributes.Add( "zoneloc", CurrentBlock.BlockLocation.ToString() );
                 aMoveBlock.Attributes.Add( "title", "Move Block" );
@@ -424,7 +421,7 @@ namespace Rock.Web.UI
                 // Delete
                 HtmlGenericControl aDeleteBlock = new HtmlGenericControl( "a" );
                 aDeleteBlock.Attributes.Add( "class", "delete block-delete" );
-                aDeleteBlock.Attributes.Add("href", CurrentBlock.Id.ToString());
+                aDeleteBlock.Attributes.Add( "href", CurrentBlock.Id.ToString() );
                 aDeleteBlock.Attributes.Add( "title", "Delete Block" );
                 configControls.Add( aDeleteBlock );
                 HtmlGenericControl iDeleteBlock = new HtmlGenericControl( "i" );
@@ -443,7 +440,9 @@ namespace Rock.Web.UI
         protected void trigger_Click( object sender, EventArgs e )
         {
             if ( AttributesUpdated != null )
+            {
                 AttributesUpdated( sender, e );
+            }
         }
 
         #endregion
@@ -455,18 +454,21 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), 
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(),
                 "Rock.Cms.Block", "BlockTypeId", this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
             {
                 this.CurrentBlock.ReloadAttributeValues();
             }
         }
 
+        /// <summary>
+        /// Reads the additional actions.
+        /// </summary>
         internal void ReadAdditionalActions()
         {
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( Rock.Security.AdditionalActionsAttribute ), true );
+            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
-                this.CurrentBlock.BlockTypeActions = ( ( Rock.Security.AdditionalActionsAttribute )customAttributes[0] ).AdditionalActions;
+                this.CurrentBlock.BlockTypeActions = ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions;
             else
                 this.CurrentBlock.BlockTypeActions = new List<string>();
         }

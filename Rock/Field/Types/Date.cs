@@ -20,21 +20,22 @@ namespace Rock.Field.Types
     [Serializable]
     public class Date : FieldType
     {
-		/// <summary>
-		/// Formats date display
-		/// </summary>
-		/// <param name="parentControl"></param>
-		/// <param name="value"></param>
-		/// <param name="condensed"></param>
-		/// <returns></returns>
-		public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-		{
-			string formattedValue = string.Empty;
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
 
-			DateTime dateValue = DateTime.MinValue;
-			if ( DateTime.TryParse( value, out dateValue ) )
+			DateTimeOffset dateValue = DateTimeOffset.MinValue;
+			if ( DateTimeOffset.TryParse( value, out dateValue ) )
 			{
-				formattedValue = dateValue.ToShortDateString();
+				formattedValue = dateValue.DateTime.ToShortDateString();
 
 				if ( configurationValues != null &&
 					configurationValues.ContainsKey( "format" ) &&
@@ -46,7 +47,7 @@ namespace Rock.Field.Types
 					}
 					catch
 					{
-						formattedValue = dateValue.ToShortDateString();
+						formattedValue = dateValue.DateTime.ToShortDateString();
 					}
 				}
 
@@ -65,6 +66,10 @@ namespace Rock.Field.Types
 			return formattedValue;
 		}
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
 		public override List<string> ConfigurationKeys()
 		{
 			var keys = base.ConfigurationKeys();
@@ -73,6 +78,10 @@ namespace Rock.Field.Types
 			return keys;
 		}
 
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
 		public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
 		{
 			var controls = base.ConfigurationControls();
@@ -90,6 +99,11 @@ namespace Rock.Field.Types
 			return controls;
 		}
 
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="configurationValues">The configuration values.</param>
 		public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
 		{
 			base.SetConfigurationValues( controls, configurationValues );
@@ -114,6 +128,11 @@ namespace Rock.Field.Types
 			}
 		}
 
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
 		public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
 		{
 			var values = base.ConfigurationValues( controls );
@@ -127,11 +146,11 @@ namespace Rock.Field.Types
 					values["format"].Value = ( (TextBox)controls[i] ).Text;
 				i++;
 				if ( controls[i] != null && controls[i] is HtmlGenericControl &&
-					controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox)
+					controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox )
 					values["displayDiff"].Value = ( (CheckBox)controls[i].Controls[0] ).Checked.ToString();
 			}
 
 			return values;
 		}
-    }
+	}
 }

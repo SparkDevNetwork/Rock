@@ -5,6 +5,10 @@
                 
     <ul id="ulPhoneNumbers" runat="server" class="phone-numbers"></ul>
 
+    <ul class="emails">
+        <li><asp:HyperLink ID="hlEmail" runat="server" /></li>
+    </ul>
+
     <script>
         $('ul.phone-numbers li a').live({
             mouseenter:
@@ -34,40 +38,4 @@
         });
     </script>
 
-    <ul class="emails">
-        <li><asp:HyperLink ID="hlEmail" runat="server" /></li>
-    </ul>
-
-    <ul class="addresses">
-        <li class="group">
-            <h4>Home Address</h4>
-            <a href="" class="map"><i class="icon-map-marker"></i></a>
-            <div class="address">
-                <span>9039 W Molly Ln</span>
-                <span>Peoria, AZ 85383</span>
-            </div>
-            <div class="actions">
-                <a href="" title="GPS: 33.7281 -112.2546"><i class="icon-globe"></i></a>
-                <a href="" title="Address Standardized"><i class="icon-magic"></i></a>
-            </div>
-        </li>
-    </ul>
-    <script>
-        $('ul.addresses li').live({
-            mouseenter:
-                function () {
-                    var actionsDiv = $('div.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                },
-            mouseleave:
-                function () {
-                    var actionsDiv = $('div.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                }
-        });
-    </script>
 </section>

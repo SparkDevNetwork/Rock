@@ -12,6 +12,7 @@ using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Crm;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -24,15 +25,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			base.OnInit( e );
 
 			// Name
-			var page = Page as Rock.Web.UI.Page;
+			var page = Page as RockPage;
 			if ( page != null )
 				page.SetTitle( Person.FullName );
 
 			if ( Person.PhotoId.HasValue )
 			{
+				var imgLink = new HtmlAnchor();
+				phImage.Controls.Add( imgLink );
+				imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+				imgLink.Target = "_blank";
+
 				var img = new HtmlImage();
-				phImage.Controls.Add( img );
-				img.Src = string.Format( "~/image.ashx?id={0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
+				imgLink.Controls.Add( img );
+				img.Src = string.Format( "~/image.ashx?{0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
 				img.Alt = Person.FullName;
 			}
 
@@ -52,13 +58,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			}
 
 			if ( Person.BirthDate.HasValue)
-				lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", Person.BirthDate.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
+				lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", new DateTimeOffset(Person.BirthDate.Value).Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
 	
 			lGender.Text = Person.Gender.ToString();
 
 			lMaritalStatus.Text = Person.MaritalStatusId.DefinedValue();
 			if ( Person.AnniversaryDate.HasValue )
-				lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", Person.AnniversaryDate.Age(), Person.AnniversaryDate.Value.ToString("MM/dd") );
+				lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", new DateTimeOffset(Person.AnniversaryDate.Value).Age(), Person.AnniversaryDate.Value.ToString("MM/dd") );
         }
     }
 }

@@ -18,175 +18,175 @@ namespace Rock.Cms
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
-    public partial class Page : ModelWithAttributes<Page>, IAuditable, IOrdered, IExportable
+    public partial class Page : Model<Page>, IOrdered, IExportable
     {
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[TrackChanges]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		/// <value>
-		/// Title.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Title { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the IsSystem.
-		/// </summary>
-		/// <value>
-		/// IsSystem.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Parent Page Id.
-		/// </summary>
-		/// <value>
-		/// Parent Page Id.
-		/// </value>
-		[DataMember]
-		public int? ParentPageId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Site Id.
-		/// </summary>
-		/// <value>
-		/// Site Id.
-		/// </value>
-		[DataMember]
-		public int? SiteId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Layout.
-		/// </summary>
-		/// <value>
-		/// Layout.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Layout { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Requires Encryption.
-		/// </summary>
-		/// <value>
-		/// Requires Encryption.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool RequiresEncryption { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Enable View State.
-		/// </summary>
-		/// <value>
-		/// Enable View State.
-		/// </value>
-		[Required]
-		[DataMember]
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [TrackChanges]
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsSystem.
+        /// </summary>
+        /// <value>
+        /// IsSystem.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent Page Id.
+        /// </summary>
+        /// <value>
+        /// Parent Page Id.
+        /// </value>
+        [DataMember]
+        public int? ParentPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Id.
+        /// </summary>
+        /// <value>
+        /// Site Id.
+        /// </value>
+        [DataMember]
+        public int? SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Layout.
+        /// </summary>
+        /// <value>
+        /// Layout.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Requires Encryption.
+        /// </summary>
+        /// <value>
+        /// Requires Encryption.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Enable View State.
+        /// </summary>
+        /// <value>
+        /// Enable View State.
+        /// </value>
+        [Required]
+        [DataMember]
         public bool EnableViewState
         {
             get { return _enableViewState; }
             set { _enableViewState = value; }
         }
         private bool _enableViewState = true;
-		
-		/// <summary>
-		/// Gets or sets the Menu Display Description.
-		/// </summary>
-		/// <value>
-		/// Menu Display Description.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool MenuDisplayDescription { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Menu Display Icon.
-		/// </summary>
-		/// <value>
-		/// Menu Display Icon.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool MenuDisplayIcon { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Menu Display Child Pages.
-		/// </summary>
-		/// <value>
-		/// Menu Display Child Pages.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool MenuDisplayChildPages { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Display In Nav When.
-		/// </summary>
-		/// <value>
-		/// Determines when to display in a navigation 
-		/// 0 = When Security Allows
-		/// 1 = Always
-		/// 3 = Never   
-		/// 
-		/// Enum[DisplayInNavWhen].
-		/// </value>
-		[Required]
-		[DataMember]
+
+        /// <summary>
+        /// Gets or sets the Menu Display Description.
+        /// </summary>
+        /// <value>
+        /// Menu Display Description.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool MenuDisplayDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Menu Display Icon.
+        /// </summary>
+        /// <value>
+        /// Menu Display Icon.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool MenuDisplayIcon { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Menu Display Child Pages.
+        /// </summary>
+        /// <value>
+        /// Menu Display Child Pages.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool MenuDisplayChildPages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Display In Nav When.
+        /// </summary>
+        /// <value>
+        /// Determines when to display in a navigation 
+        /// 0 = When Security Allows
+        /// 1 = Always
+        /// 3 = Never   
+        /// 
+        /// Enum[DisplayInNavWhen].
+        /// </value>
+        [Required]
+        [DataMember]
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Output Cache Duration.
-		/// </summary>
-		/// <value>
-		/// Output Cache Duration.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int OutputCacheDuration { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Include Admin Footer.
-		/// </summary>
-		/// <value>
-		/// Include Admin Footer.
-		/// </value>
-		[Required]
-		[DataMember]
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Output Cache Duration.
+        /// </summary>
+        /// <value>
+        /// Output Cache Duration.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Include Admin Footer.
+        /// </summary>
+        /// <value>
+        /// Include Admin Footer.
+        /// </value>
+        [Required]
+        [DataMember]
         public bool IncludeAdminFooter
         {
             get { return _includeAdminFooter; }
@@ -194,42 +194,6 @@ namespace Rock.Cms
         }
         private bool _includeAdminFooter = true;
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -239,7 +203,6 @@ namespace Rock.Cms
 		{
 			return Read<Page>( id );
 		}
-
 		
 		/// <summary>
 		/// Gets or sets the Icon Url.
@@ -255,7 +218,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Page"; } }
+		public override string EntityTypeName { get { return "Cms.Page"; } }
         
 		/// <summary>
         /// Gets or sets the Blocks.
@@ -263,23 +226,23 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Blocks.
         /// </value>
-		public virtual ICollection<Block> Blocks { get; set; }
-        
-		/// <summary>
+        public virtual ICollection<Block> Blocks { get; set; }
+
+        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>
         /// Collection of Pages.
         /// </value>
-		public virtual ICollection<Page> Pages { get; set; }
-        
-		/// <summary>
+        public virtual ICollection<Page> Pages { get; set; }
+
+        /// <summary>
         /// Gets or sets the Page Routes.
         /// </summary>
         /// <value>
         /// Collection of Page Routes.
         /// </value>
-		public virtual ICollection<PageRoute> PageRoutes { get; set; }
+        public virtual ICollection<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
         /// Gets or sets the Page Contexts.
@@ -295,24 +258,24 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Sites.
         /// </value>
-		public virtual ICollection<Site> Sites { get; set; }
-        
-		/// <summary>
+        public virtual ICollection<Site> Sites { get; set; }
+
+        /// <summary>
         /// Gets or sets the Parent Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page ParentPage { get; set; }
-        
-		/// <summary>
+        public virtual Page ParentPage { get; set; }
+
+        /// <summary>
         /// Gets or sets the Site.
         /// </summary>
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-		public virtual Site Site { get; set; }
-        
+        public virtual Site Site { get; set; }
+
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
@@ -330,6 +293,60 @@ namespace Rock.Cms
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Pages the sort hash.
+        /// </summary>
+        /// <returns></returns>
+        public string PageSortHash
+        {
+            get
+            {
+                string result = Title.PadRight( 100, ' ' );
+                var _parentPage = ParentPage;
+                while ( _parentPage != null )
+                {
+                    result = _parentPage.Title.PadRight( 100, ' ' ) + result;
+                    _parentPage = _parentPage.ParentPage;
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Pages the depth.
+        /// </summary>
+        /// <returns></returns>
+        public int PageDepth
+        {
+            get
+            {
+                int result = 0;
+                var _parentPage = ParentPage;
+                while ( _parentPage != null )
+                {
+                    result++;
+                    _parentPage = _parentPage.ParentPage;
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets the drop down list text.
+        /// </summary>
+        /// <value>
+        /// The drop down list text.
+        /// </value>
+        public string DropDownListText
+        {
+            get
+            {
+                return new string( '-', PageDepth ) + Title;
+            }
         }
 
         /// <summary>
@@ -357,7 +374,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public static dynamic MapPagesRecursive( Page page )
         {
-            dynamic exportPage = new PageDto(page).ToDynamic();
+            dynamic exportPage = new PageDto( page ).ToDynamic();
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
@@ -413,12 +430,17 @@ namespace Rock.Cms
 
             exportPage.PageRoutes = new List<dynamic>();
 
-            foreach (var pageRoute in page.PageRoutes)
+            foreach ( var pageRoute in page.PageRoutes )
             {
                 exportPage.PageRoutes.Add( pageRoute.ExportObject() );
             }
         }
 
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
         {
             throw new NotImplementedException();
@@ -435,9 +457,9 @@ namespace Rock.Cms
         /// </summary>
         public PageConfiguration()
         {
-			this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(false);
-		}
+            this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
+        }
     }
 
     /// <summary>

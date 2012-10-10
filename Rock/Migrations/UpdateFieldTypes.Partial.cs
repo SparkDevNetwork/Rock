@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 
 namespace Rock.Migrations
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class UpdateFieldTypes
     {
+        /// <summary>
+        /// Datas up.
+        /// </summary>
         public void DataUp()
         {
             Sql( @"
@@ -36,6 +43,9 @@ INSERT INTO [coreFieldType] ([System],[Name],[Description],[Assembly],[Class],[C
 " );
         }
 
+        /// <summary>
+        /// Datas down.
+        /// </summary>
         public void DataDown()
         {
             Sql( @"

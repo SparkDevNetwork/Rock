@@ -18,7 +18,7 @@ namespace Rock.Crm
     /// Person Trail POCO Entity.
     /// </summary>
     [Table( "crmPersonMerged" )]
-    public partial class PersonMerged : ModelWithAttributes<PersonMerged>
+    public partial class PersonMerged : Model<PersonMerged>
     {
 		/// <summary>
 		/// Gets or sets the Current Id.
@@ -40,29 +40,11 @@ namespace Rock.Crm
 		[DataMember]
 		public Guid CurrentGuid { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.PersonMerged"; } }
+		public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
@@ -77,16 +59,26 @@ namespace Rock.Crm
             }
         }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static PersonMerged Read( int id )
-		{
-			return Read<PersonMerged>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static PersonMerged Read( int id )
+        {
+            return Read<PersonMerged>( id );
+        }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return string.Format( "{0}->{1}", this.Id, this.CurrentId );
+		}
     }
 
     /// <summary>
@@ -99,6 +91,6 @@ namespace Rock.Crm
         /// </summary>
         public PersonMergedConfiguration()
         {
-		}
+        }
     }
 }

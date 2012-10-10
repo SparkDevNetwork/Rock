@@ -17,61 +17,59 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// PageContext Service class
-	/// </summary>
-	public partial class PageContextService : Service<PageContext, PageContextDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageContextService"/> class
-		/// </summary>
-		public PageContextService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// PageContext Service class
+    /// </summary>
+    public partial class PageContextService : Service<PageContext, PageContextDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageContextService"/> class
+        /// </summary>
+        public PageContextService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PageContextService"/> class
-		/// </summary>
-		public PageContextService(IRepository<PageContext> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageContextService"/> class
+        /// </summary>
+        public PageContextService(IRepository<PageContext> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override PageContext CreateNew()
-		{
-			return new PageContext();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override PageContext CreateNew()
+        {
+            return new PageContext();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<PageContextDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<PageContextDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
-		{
-			return items.Select( m => new PageContextDto()
-				{
-					IsSystem = m.IsSystem,
-					PageId = m.PageId,
-					Entity = m.Entity,
-					IdParameter = m.IdParameter,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
+        {
+            return items.Select( m => new PageContextDto()
+                {
+                    IsSystem = m.IsSystem,
+                    PageId = m.PageId,
+                    Entity = m.Entity,
+                    IdParameter = m.IdParameter,
+                    CreatedDateTime = m.CreatedDateTime,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

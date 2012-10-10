@@ -32,6 +32,23 @@ namespace Rock.Web.UI.Controls
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
+            string rowItemText = ( control as Grid ).RowItemText;
+
+            // Add Javascript Confirm to grids that use the DeleteField
+            string script = string.Format( @"
+        Sys.Application.add_load(function () {{
+            $('#{0} td.grid-icon-cell.delete a').click(function(){{
+                return confirm('Are you sure you want to delete this {1}?');
+                }});
+        }});
+            ", control.ClientID, rowItemText );
+
+            string scriptKey = string.Format( "grid-confirm-delete-{0}", control.ClientID );
+
+            if ( !control.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
+            {
+                control.Page.ClientScript.RegisterStartupScript( control.Page.GetType(), scriptKey, script, true );
+            }
 
             return base.Initialize( sortingEnabled, control );
         }
@@ -58,7 +75,9 @@ namespace Rock.Web.UI.Controls
         public virtual void OnClick( RowEventArgs e )
         {
             if ( Click != null )
+            {
                 Click( this, e );
+            }
         }
     }
 
@@ -93,7 +112,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( LinkButtonClick != null )
             {
-                GridViewRow row = ( GridViewRow )( ( LinkButton )sender ).Parent.Parent;
+                GridViewRow row = (GridViewRow)( (LinkButton)sender ).Parent.Parent;
                 RowEventArgs args = new RowEventArgs( row.RowIndex );
                 LinkButtonClick( sender, args );
             }

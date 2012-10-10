@@ -20,7 +20,7 @@ namespace Rock.Security
         /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the 
         /// qualified name of the class. 
         /// </summary>
-        string AuthEntity { get; }
+        string EntityTypeName { get; }
 
         /// <summary>
         /// The Id
