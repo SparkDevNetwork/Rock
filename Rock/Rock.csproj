@@ -230,6 +230,7 @@
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
+    <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
@@ -485,7 +486,12 @@
     <Compile Include="Migrations\201210092242509_AddAuditFunctionality.Designer.cs">
       <DependentUpon>201210092242509_AddAuditFunctionality.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.cs" />
+    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.Designer.cs">
+      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -858,6 +864,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210092242509_AddAuditFunctionality.resx">
       <DependentUpon>201210092242509_AddAuditFunctionality.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210102353484_AddMissingAuditGuidIndex.resx">
+      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
