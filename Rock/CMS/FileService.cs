@@ -17,64 +17,62 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// File Service class
-	/// </summary>
-	public partial class FileService : Service<File, FileDto>
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FileService"/> class
-		/// </summary>
-		public FileService()
-			: base()
-		{
-		}
+    /// <summary>
+    /// File Service class
+    /// </summary>
+    public partial class FileService : Service<File, FileDto>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileService"/> class
+        /// </summary>
+        public FileService()
+            : base()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FileService"/> class
-		/// </summary>
-		public FileService(IRepository<File> repository) : base(repository)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileService"/> class
+        /// </summary>
+        public FileService(IRepository<File> repository) : base(repository)
+        {
+        }
 
-		/// <summary>
-		/// Creates a new model
-		/// </summary>
-		public override File CreateNew()
-		{
-			return new File();
-		}
+        /// <summary>
+        /// Creates a new model
+        /// </summary>
+        public override File CreateNew()
+        {
+            return new File();
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public override IQueryable<FileDto> QueryableDto( )
-		{
-			return QueryableDto( this.Queryable() );
-		}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public override IQueryable<FileDto> QueryableDto( )
+        {
+            return QueryableDto( this.Queryable() );
+        }
 
-		/// <summary>
-		/// Query DTO objects
-		/// </summary>
-		/// <returns>A queryable list of DTO objects</returns>
-		public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
-		{
-			return items.Select( m => new FileDto()
-				{
-					IsTemporary = m.IsTemporary,
-					IsSystem = m.IsSystem,
-					Data = m.Data,
-					Url = m.Url,
-					FileName = m.FileName,
-					MimeType = m.MimeType,
-					Description = m.Description,
-					CreatedDateTime = m.CreatedDateTime,
-					ModifiedDateTime = m.ModifiedDateTime,
-					CreatedByPersonId = m.CreatedByPersonId,
-					ModifiedByPersonId = m.ModifiedByPersonId,
-					Id = m.Id,
-					Guid = m.Guid,				});
-		}
-	}
+        /// <summary>
+        /// Query DTO objects
+        /// </summary>
+        /// <returns>A queryable list of DTO objects</returns>
+        public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
+        {
+            return items.Select( m => new FileDto()
+                {
+                    IsTemporary = m.IsTemporary,
+                    IsSystem = m.IsSystem,
+                    Data = m.Data,
+                    Url = m.Url,
+                    FileName = m.FileName,
+                    MimeType = m.MimeType,
+                    LastModifiedTime = m.LastModifiedTime,
+                    Description = m.Description,
+                    Id = m.Id,
+                    Guid = m.Guid,
+                });
+        }
+    }
 }

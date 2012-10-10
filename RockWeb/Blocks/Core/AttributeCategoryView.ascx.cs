@@ -18,6 +18,8 @@ using Rock;
 using Rock.Core;
 using Rock.Field;
 using Rock.Web.UI.Controls;
+using System.Xml.Linq;
+using System.Xml.Xsl;
 
 namespace RockWeb.Blocks.Core
 {
@@ -26,10 +28,11 @@ namespace RockWeb.Blocks.Core
     /// </summary>
     [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [Rock.Attribute.Property( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
+    [Rock.Attribute.Property( 3, "Attribute Categories", "Filter", "Delimited List of Attribute Category Names", true, "" )]
+	[Rock.Attribute.Property( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
 	public partial class AttributeCategoryView : Rock.Web.UI.ContextBlock
     {
-        protected string _category = string.Empty;
+		private XDocument xDocument = null;
 
         protected override void OnInit( EventArgs e )
         {
@@ -42,10 +45,6 @@ namespace RockWeb.Blocks.Core
             string entityQualifierValue = AttributeValue( "EntityQualifierValue" );
             if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
                 entityQualifierValue = PageParameter( "EntityQualifierValue" );
-
-            _category = AttributeValue( "AttributeCategory" );
-            if ( string.IsNullOrWhiteSpace( _category ) )
-                _category = PageParameter( "AttributeCategory" );
 
             ObjectCache cache = MemoryCache.Default;
             string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", base.EntityType, entityQualifierColumn, entityQualifierValue );
@@ -76,28 +75,61 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.IHasAttributes model = base.Entity as Rock.Attribute.IHasAttributes;
             if ( model != null )
             {
-                if ( cachedAttributes.ContainsKey( _category ) )
-                    foreach ( var attributeId in cachedAttributes[_category] )
-                    {
-                        var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-						if ( attribute != null )
+				var rootElement = new XElement( "root" );
+
+				foreach ( string category in AttributeValue( "AttributeCategories" ).SplitDelimitedValues(false) )
+				{
+					if ( cachedAttributes.ContainsKey( category ) )
+					{
+						var attributesElement = new XElement( "attributes",
+							new XAttribute( "category-name", category )
+							);
+						rootElement.Add( attributesElement );
+
+						foreach ( var attributeId in cachedAttributes[category] )
 						{
-							var li = new HtmlGenericControl("li");
-							ulAttributes.Controls.Add(li);
-							li.Controls.Add(new LiteralControl(attribute.Name));
-
-							li.Controls.Add( new LiteralControl( ": " ) );
-
-							var span = new HtmlGenericControl("span");
-							li.Controls.Add(span);
-							span.AddCssClass("value");
-
-							var values = model.AttributeValues[attribute.Key].Value;
-							if (values != null && values.Count > 0)
-								span.Controls.Add(new LiteralControl(attribute.FieldType.Field.FormatValue(span, values[0].Value, attribute.QualifierValues, false)));
+							var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+							if ( attribute != null )
+							{
+								var values = model.AttributeValues[attribute.Key].Value;
+								if ( values != null && values.Count > 0 )
+								{
+									attributesElement.Add( new XElement("attribute",
+										new XAttribute("name", attribute.Name),
+										new XCData(attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty )
+									));
+								}
+							}
 						}
-                    }
+					}
+				}
+
+				xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+
             }
         }
+
+		protected override void Render( System.Web.UI.HtmlTextWriter writer )
+		{
+			try
+			{
+				if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
+				{
+					string xsltFile = AttributeValue( "XsltFile" );
+					if ( !String.IsNullOrEmpty( xsltFile ) )
+					{
+						string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
+						var xslt = new XslCompiledTransform();
+						xslt.Load( xsltPath );
+						xslt.Transform( xDocument.CreateReader(), null, writer );
+					}
+				}
+			}
+			catch ( Exception ex )
+			{
+				writer.Write( "Error: " + ex.Message );
+			}
+		}
+
     }
 }

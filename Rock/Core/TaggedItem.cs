@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Tagged Ited POCO Entity.
     /// </summary>
     [Table( "coreTaggedItem" )]
-    public partial class TaggedItem : Model<TaggedItem>, IAuditable
+    public partial class TaggedItem : Model<TaggedItem>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -49,65 +49,29 @@ namespace Rock.Core
 		[DataMember]
 		public int? EntityId { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.TaggedItem"; } }
+		public override string EntityTypeName { get { return "Core.TaggedItem"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Tag
         /// </summary>
         /// <value>
         /// A <see cref="Tag"/> object.
         /// </value>
-		public virtual Tag Tag { get; set; }
+        public virtual Tag Tag { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static AttributeValue Read( int id )
-		{
-			return Read<AttributeValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static AttributeValue Read( int id )
+        {
+            return Read<AttributeValue>( id );
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -116,6 +80,17 @@ namespace Rock.Core
         {
             get { return new Security.GenericEntity( "Global" ); }
         }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.EntityId.HasValue ? this.EntityId.ToString() : "";
+		}
     }
 
     /// <summary>
@@ -126,9 +101,9 @@ namespace Rock.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueConfiguration"/> class.
         /// </summary>
-		public TaggeedItemConfiguration()
+        public TaggeedItemConfiguration()
         {
-			this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
+        }
     }
 }

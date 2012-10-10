@@ -6,28 +6,29 @@ using System.Text;
 using Rock;
 using Rock.Cms;
 
+#pragma warning disable 1591
 
 namespace Rock.Migrations
 {
-	/// <summary>
-	/// Custom Migration methods for migrations prior to the 201209211556505_BlockToBlockType migration
-	/// </summary>
-	public abstract class RockMigration_0 : DbMigration
-	{
-		#region Block Methods
+    /// <summary>
+    /// Custom Migration methods for migrations prior to the 201209211556505_BlockToBlockType migration
+    /// </summary>
+    public abstract class RockMigration_0 : DbMigration
+    {
+        #region Block Methods
 
-		public void AddBlock( string name, string description, string path, string guid )
-		{
-			Sql( string.Format( @"
-				
-				INSERT INTO [cmsBlock] (
-					[IsSystem],[Path],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,'{0}','{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
-					'{3}')
+        public void AddBlock( string name, string description, string path, string guid )
+        {
+            Sql( string.Format( @"
+                
+                INSERT INTO [cmsBlock] (
+                    [IsSystem],[Path],[Name],[Description],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,'{0}','{1}','{2}',
+                    GETDATE(),GETDATE(),1,1,
+                    '{3}')
 ",
 					path,
 					name,
@@ -45,17 +46,13 @@ namespace Rock.Migrations
 					[Guid])
 				VALUES(
 					{0},'{1}','{2}','{3}'
-					'{4}','{5}',{6},{7},
-					'{8}')
+					GETDATE(),GETDATE(),1,1,
+					'{4}')
 ",
 					block.IsSystem.Bit(),
 					block.Path,
 					block.Name,
 					block.Description,
-					block.CreatedDateTime,
-					block.ModifiedDateTime,
-					block.CreatedByPersonId,
-					block.ModifiedByPersonId,
 					block.Guid ) );
 		}
 
@@ -75,10 +72,6 @@ namespace Rock.Migrations
 			block.IsSystem = true;
 			block.Name = name;
 			block.Description = description;
-			block.CreatedDateTime = DateTime.Now;
-			block.ModifiedDateTime = DateTime.Now;
-			block.CreatedByPersonId = 1;
-			block.ModifiedByPersonId = 1;
 			block.Guid = guid;
 
 			return block;
@@ -139,8 +132,8 @@ namespace Rock.Migrations
 					'{1}','{2}',{3},@ParentPageId,{4},'{5}',
 					{6},{7},{8},{9},{10},{11},
 					@Order,{12},'{13}',{14},
-					'{15}','{16}',{17},{18},
-					'{19}','{20}')
+					GETDATE(),GETDATE(),1,1,
+					'{15}','{16}')
 ",
 					parentPageGuid,
 					page.Name,
@@ -157,10 +150,6 @@ namespace Rock.Migrations
 					page.OutputCacheDuration,
 					page.Description,
 					page.IncludeAdminFooter.Bit(),
-					page.CreatedDateTime,
-					page.ModifiedDateTime,
-					page.CreatedByPersonId,
-					page.ModifiedByPersonId,
 					page.IconUrl,
 					page.Guid ) );
 		}
@@ -189,10 +178,6 @@ namespace Rock.Migrations
 			page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
 			page.Description = description;
 			page.IncludeAdminFooter = true;
-			page.CreatedDateTime = DateTime.Now;
-			page.ModifiedDateTime = DateTime.Now;
-			page.CreatedByPersonId = 1;
-			page.ModifiedByPersonId = 1;
 			page.Guid = guid;
 
 			return page;
@@ -209,60 +194,60 @@ namespace Rock.Migrations
 			sb.Append(@"
 				DECLARE @PageId int
 ");
-			if (string.IsNullOrWhiteSpace(pageGuid))
-				sb.Append( @"
-				SET @PageId = NULL
+            if (string.IsNullOrWhiteSpace(pageGuid))
+                sb.Append( @"
+                SET @PageId = NULL
 ");
-			else
-				sb.AppendFormat( @"
-				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
-", 					pageGuid);
+            else
+                sb.AppendFormat( @"
+                SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+",                     pageGuid);
 
-			sb.AppendFormat( @"
-				
-				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+            sb.AppendFormat( @"
+                
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
-				DECLARE @BlockInstanceId int
-				INSERT INTO [cmsBlockInstance] (
-					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
-					[Order],[Name],[OutputCacheDuration],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@PageId,NULL,@BlockId,'{1}',
-					{2},'{3}',0,
-					GETDATE(),GETDATE(),1,1,
-					'{4}')
-				SET @BlockInstanceId = SCOPE_IDENTITY()
+                DECLARE @BlockInstanceId int
+                INSERT INTO [cmsBlockInstance] (
+                    [IsSystem],[PageId],[Layout],[BlockId],[Zone],
+                    [Order],[Name],[OutputCacheDuration],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@PageId,NULL,@BlockId,'{1}',
+                    {2},'{3}',0,
+                    GETDATE(),GETDATE(),1,1,
+                    '{4}')
+                SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
-					blockGuid,
-					zone,
-					order,
-					name,
-					guid );
+                    blockGuid,
+                    zone,
+                    order,
+                    name,
+                    guid );
 
-			// If adding a layout block, give edit/configuration authorization to admin role
-			if ( string.IsNullOrWhiteSpace( pageGuid ) )
-				sb.Append( @"
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+            // If adding a layout block, give edit/configuration authorization to admin role
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
+                sb.Append( @"
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+                    VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+                    VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
 " );
-			Sql(sb.ToString());
-		}
+            Sql(sb.ToString());
+        }
 
-		public void AddBlockInstance( string pageGuid, string blockGuid, BlockDto blockInstance )
-		{
-			var sb = new StringBuilder();
+        public void AddBlockInstance( string pageGuid, string blockGuid, BlockDto blockInstance )
+        {
+            var sb = new StringBuilder();
 
-			sb.Append(@"
-				DECLARE @PageId int
+            sb.Append(@"
+                DECLARE @PageId int
 ");
-			if (string.IsNullOrWhiteSpace(pageGuid))
-				sb.Append( @"
-				SET @PageId = NULL
+            if (string.IsNullOrWhiteSpace(pageGuid))
+                sb.Append( @"
+                SET @PageId = NULL
 ");
 			else
 				sb.AppendFormat( @"
@@ -283,8 +268,8 @@ namespace Rock.Migrations
 				VALUES(
 					{1},@PageId,{2},@BlockId,'{3}',
 					{4},'{5}',{6},
-					'{7}','{8}',{9},{10},
-					'{11}')
+					GETDATE(),GETDATE(),1,1,
+					'{7}')
 				SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
 					blockGuid,
@@ -294,10 +279,6 @@ namespace Rock.Migrations
 					blockInstance.Order,
 					blockInstance.Name,
 					blockInstance.OutputCacheDuration,
-					blockInstance.CreatedDateTime,
-					blockInstance.ModifiedDateTime,
-					blockInstance.CreatedByPersonId,
-					blockInstance.ModifiedByPersonId,
 					blockInstance.Guid );
 
 			// If adding a layout block, give edit/configuration authorization to admin role
@@ -308,16 +289,16 @@ namespace Rock.Migrations
 				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
 					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
 " );
-			Sql( sb.ToString() );
-		}
+            Sql( sb.ToString() );
+        }
 
-		public void DeleteBlockInstance( string guid )
-		{
-			Sql( string.Format( @"
-				DECLARE @BlockInstanceId int
-				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
-				DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockInstanceId
-				DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
+        public void DeleteBlockInstance( string guid )
+        {
+            Sql( string.Format( @"
+                DECLARE @BlockInstanceId int
+                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+                DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockInstanceId
+                DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
 ",
 					guid
 					) );
@@ -330,10 +311,6 @@ namespace Rock.Migrations
 			blockInstance.IsSystem = true;
 			blockInstance.Zone = "Content";
 			blockInstance.Name = name;
-			blockInstance.CreatedDateTime = DateTime.Now;
-			blockInstance.ModifiedDateTime = DateTime.Now;
-			blockInstance.CreatedByPersonId = 1;
-			blockInstance.ModifiedByPersonId = 1;
 			blockInstance.Guid = guid;
 
 			return blockInstance;
@@ -399,8 +376,8 @@ namespace Rock.Migrations
 					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},{7},'{8}',{9},{10},
-					'{11}','{12}',{13},{14},
-					'{15}')
+					GETDATE(),GETDATE(),1,1,
+					'{11}')
 ",
 					blockGuid,
 					fieldTypeGuid,
@@ -413,10 +390,6 @@ namespace Rock.Migrations
 					attribute.DefaultValue,
 					attribute.IsMultiValue.Bit(),
 					attribute.IsRequired.Bit(),
-					attribute.CreatedDateTime,
-					attribute.ModifiedDateTime,
-					attribute.CreatedByPersonId,
-					attribute.ModifiedByPersonId,
 					attribute.Guid )
 			);
 		}
@@ -440,10 +413,6 @@ namespace Rock.Migrations
 			attribute.Category = category;
 			attribute.Description = description;
 			attribute.Order = order;
-			attribute.CreatedDateTime = DateTime.Now;
-			attribute.ModifiedDateTime = DateTime.Now;
-			attribute.CreatedByPersonId = 1;
-			attribute.ModifiedByPersonId = 1;
 			attribute.Guid = guid;
 
 			return attribute;
@@ -474,111 +443,111 @@ namespace Rock.Migrations
 					GETDATE(),GETDATE(),1,1,
 					NEWID())
 ",
-					blockInstanceGuid,
-					attributeGuid,
-					value)
-			);
-		}
+                    blockInstanceGuid,
+                    attributeGuid,
+                    value)
+            );
+        }
 
-		public void DeleteBlockAttributeValue( string blockInstanceGuid, string attributeGuid )
-		{
-			Sql( string.Format( @"
+        public void DeleteBlockAttributeValue( string blockInstanceGuid, string attributeGuid )
+        {
+            Sql( string.Format( @"
 
-				DECLARE @BlockInstanceId int
-				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+                DECLARE @BlockInstanceId int
+                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
 
-				DECLARE @AttributeId int
-				SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
 
-				DELETE [coreAttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockInstanceId
+                DELETE [coreAttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockInstanceId
 ",
-					blockInstanceGuid,
-					attributeGuid)
-			);
-		}
+                    blockInstanceGuid,
+                    attributeGuid)
+            );
+        }
 
-		#endregion
+        #endregion
 
-		#region DefinedType Methods
+        #region DefinedType Methods
 
-		public void AddDefinedType( string category, string name, string description, string guid )
-		{
-			Sql( string.Format( @"
-				
-				DECLARE @FieldTypeId int
-				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+        public void AddDefinedType( string category, string name, string description, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
 
-				DECLARE @Order int
-				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedType];
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedType];
 
-				INSERT INTO [coreDefinedType] (
-					[IsSystem],[FieldTypeId],[Order],
-					[Category],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@FieldTypeId,@Order,
-					'{0}','{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
-					'{3}')
+                INSERT INTO [coreDefinedType] (
+                    [IsSystem],[FieldTypeId],[Order],
+                    [Category],[Name],[Description],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId,@Order,
+                    '{0}','{1}','{2}',
+                    GETDATE(),GETDATE(),1,1,
+                    '{3}')
 ",
-					category,
-					name,
-					description,
-					guid
-					) );
-		}
+                    category,
+                    name,
+                    description,
+                    guid
+                    ) );
+        }
 
-		public void DeleteDefinedType( string guid )
-		{
-			Sql( string.Format( @"
-				DELETE [coreDefinedType] WHERE [Guid] = '{0}'
+        public void DeleteDefinedType( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [coreDefinedType] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		#endregion
+        #endregion
 
-		#region DefinedType Methods
+        #region DefinedType Methods
 
-		public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
-		{
-			Sql( string.Format( @"
-				
-				DECLARE @DefinedTypeId int
-				SET @DefinedTypeId = (SELECT [Id] FROM [coreDefinedType] WHERE [Guid] = '{0}')
+        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [coreDefinedType] WHERE [Guid] = '{0}')
 
-				DECLARE @Order int
-				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
 
-				INSERT INTO [coreDefinedValue] (
-					[IsSystem],[DefinedTypeId],[Order],
-					[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@DefinedTypeId,@Order,
-					'{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
-					'{3}')
+                INSERT INTO [coreDefinedValue] (
+                    [IsSystem],[DefinedTypeId],[Order],
+                    [Name],[Description],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@DefinedTypeId,@Order,
+                    '{1}','{2}',
+                    GETDATE(),GETDATE(),1,1,
+                    '{3}')
 ",
-					definedTypeGuid,
-					name,
-					description,
-					guid
-					) );
-		}
+                    definedTypeGuid,
+                    name,
+                    description,
+                    guid
+                    ) );
+        }
 
-		public void DeleteDefinedValue( string guid )
-		{
-			Sql( string.Format( @"
-				DELETE [coreDefinedValue] WHERE [Guid] = '{0}'
+        public void DeleteDefinedValue( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [coreDefinedValue] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

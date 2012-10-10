@@ -11,7 +11,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Cms;
 using Rock.Communication;
 using Rock.Crm;
 using Rock.Web.Cache;
@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Security
         "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
     [Rock.Attribute.Property( 6, "Success", "SuccessCaption", "Captions", "", false,
         "{0}, Your account has been created" )]
-    public partial class NewAccount : Rock.Web.UI.Block
+    public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
 
@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Security
                     mergeObjects.Add( person );
 
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        if (user.AuthenticationType != Rock.Cms.AuthenticationType.Facebook)
+                        if (user.ServiceType == AuthenticationServiceType.Internal)
                             userObjects.Add( user );
 
                     personObjects.Add( person, userObjects );
@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Security
         private Rock.Cms.User CreateUser( Person person, bool confirmed )
         {
             Rock.Cms.UserService userService = new Rock.Cms.UserService();
-            return userService.Create( person, Rock.Cms.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
+            return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )

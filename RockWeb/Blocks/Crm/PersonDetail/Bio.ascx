@@ -4,7 +4,6 @@
     <div class="content">
 
         <asp:PlaceHolder ID="phImage" runat="server"></asp:PlaceHolder>
-<%--        <img src="/RockWeb/Assets/Mockup/jon.jpg" alt="Jon Edmiston" />--%>
 
         <section class="group">
             <span class="member-status"><asp:Literal ID="lPersonStatus" runat="server" /></span>

@@ -16,7 +16,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Roles : Rock.Web.UI.Block
+    public partial class Roles : Rock.Web.UI.RockBlock
     {
         private bool _canConfigure = false;
 
@@ -35,15 +35,6 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
-
-                    string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this role?');
-                }});
-        }});
-    ", rGrid.ClientID );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", CurrentBlock.Id ), script, true );
                 }
                 else
                 {

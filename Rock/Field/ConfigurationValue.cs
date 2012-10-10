@@ -35,9 +35,9 @@ namespace Rock.Field
         public string Value { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigurationValue"/> class.
+        /// Initializes a new instance of the <see cref="ConfigurationValue" /> class.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
         public ConfigurationValue( string value )
         {
             Value = value;

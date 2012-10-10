@@ -16,7 +16,7 @@ namespace Rock.Financial
     /// PersonAccountLookup POCO class.
     /// </summary>
     [Table("financialPersonAccountLookup")]
-    public partial class PersonAccountLookup : ModelWithAttributes<PersonAccountLookup>
+    public partial class PersonAccountLookup : Model<PersonAccountLookup>
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -45,20 +45,31 @@ namespace Rock.Financial
         /// </value>
         public virtual Person Person { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static PersonAccountLookup Read( int id )
-		{
-			return Read<PersonAccountLookup>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static PersonAccountLookup Read( int id )
+        {
+            return Read<PersonAccountLookup>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.PersonAccountLookup"; } }
+        public override string EntityTypeName { get { return "Financial.PersonAccountLookup"; } }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Account;
+		}
     }
 
     /// <summary>

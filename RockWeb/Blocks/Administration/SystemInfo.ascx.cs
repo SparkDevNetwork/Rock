@@ -18,13 +18,13 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class SystemInfo : Rock.Web.UI.Block
-	{
+    public partial class SystemInfo : Rock.Web.UI.RockBlock
+    {
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-			lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
+            lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
             var cache = MemoryCache.Default;
 
@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Administration
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
             foreach ( KeyValuePair<string, object> cachItem in cache.AsQueryable().ToList() )
             {
-                int size = 0;
+                //int size = 0;
 
 				//try
 				//{
@@ -110,14 +110,14 @@ namespace RockWeb.Blocks.Administration
             lCacheOverview.Text = sb.ToString();
             lCacheObjects.Text = sbItems.ToString();
 
-			var routes = new SortedDictionary<string, System.Web.Routing.Route>();
-			foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
-				routes.Add( route.Url, route );
+            var routes = new SortedDictionary<string, System.Web.Routing.Route>();
+            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
+                routes.Add( route.Url, route );
 
-			sb = new StringBuilder();
-			foreach(var routeItem in routes)
-				sb.AppendFormat("{0}<br/>", routeItem.Key);
-			lRoutes.Text = sb.ToString();
+            sb = new StringBuilder();
+            foreach(var routeItem in routes)
+                sb.AppendFormat("{0}<br/>", routeItem.Key);
+            lRoutes.Text = sb.ToString();
         }
 
     }

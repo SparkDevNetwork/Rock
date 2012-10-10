@@ -15,86 +15,74 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Data Transfer Object for AttributeValue object
-	/// </summary>
-	public partial class AttributeValueDto : IDto
-	{
+    /// <summary>
+    /// Data Transfer Object for AttributeValue object
+    /// </summary>
+    public partial class AttributeValueDto : IDto
+    {
 
 #pragma warning disable 1591
-		public bool IsSystem { get; set; }
-		public int AttributeId { get; set; }
-		public int? EntityId { get; set; }
-		public int? Order { get; set; }
-		public string Value { get; set; }
-		public DateTime? CreatedDateTime { get; set; }
-		public DateTime? ModifiedDateTime { get; set; }
-		public int? CreatedByPersonId { get; set; }
-		public int? ModifiedByPersonId { get; set; }
-		public int Id { get; set; }
-		public Guid Guid { get; set; }
+        public bool IsSystem { get; set; }
+        public int AttributeId { get; set; }
+        public int? EntityId { get; set; }
+        public int? Order { get; set; }
+        public string Value { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
-		/// <summary>
-		/// Instantiates a new DTO object
-		/// </summary>
-		public AttributeValueDto ()
-		{
-		}
+        /// <summary>
+        /// Instantiates a new DTO object
+        /// </summary>
+        public AttributeValueDto ()
+        {
+        }
 
-		/// <summary>
-		/// Instantiates a new DTO object from the model
-		/// </summary>
-		/// <param name="attributeValue"></param>
-		public AttributeValueDto ( AttributeValue attributeValue )
-		{
-			CopyFromModel( attributeValue );
-		}
+        /// <summary>
+        /// Instantiates a new DTO object from the entity
+        /// </summary>
+        /// <param name="attributeValue"></param>
+        public AttributeValueDto ( AttributeValue attributeValue )
+        {
+            CopyFromModel( attributeValue );
+        }
 
-		/// <summary>
-		/// Copies the model property values to the DTO properties
-		/// </summary>
-		/// <param name="attributeValue"></param>
-		public void CopyFromModel( IModel model )
-		{
-			if ( model is AttributeValue )
-			{
-				var attributeValue = (AttributeValue)model;
-				this.IsSystem = attributeValue.IsSystem;
-				this.AttributeId = attributeValue.AttributeId;
-				this.EntityId = attributeValue.EntityId;
-				this.Order = attributeValue.Order;
-				this.Value = attributeValue.Value;
-				this.CreatedDateTime = attributeValue.CreatedDateTime;
-				this.ModifiedDateTime = attributeValue.ModifiedDateTime;
-				this.CreatedByPersonId = attributeValue.CreatedByPersonId;
-				this.ModifiedByPersonId = attributeValue.ModifiedByPersonId;
-				this.Id = attributeValue.Id;
-				this.Guid = attributeValue.Guid;
-			}
-		}
+        /// <summary>
+        /// Copies the model property values to the DTO properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyFromModel( IEntity model )
+        {
+            if ( model is AttributeValue )
+            {
+                var attributeValue = (AttributeValue)model;
+                this.IsSystem = attributeValue.IsSystem;
+                this.AttributeId = attributeValue.AttributeId;
+                this.EntityId = attributeValue.EntityId;
+                this.Order = attributeValue.Order;
+                this.Value = attributeValue.Value;
+                this.Id = attributeValue.Id;
+                this.Guid = attributeValue.Guid;
+            }
+        }
 
-		/// <summary>
-		/// Copies the DTO property values to the model properties
-		/// </summary>
-		/// <param name="attributeValue"></param>
-		public void CopyToModel ( IModel model )
-		{
-			if ( model is AttributeValue )
-			{
-				var attributeValue = (AttributeValue)model;
-				attributeValue.IsSystem = this.IsSystem;
-				attributeValue.AttributeId = this.AttributeId;
-				attributeValue.EntityId = this.EntityId;
-				attributeValue.Order = this.Order;
-				attributeValue.Value = this.Value;
-				attributeValue.CreatedDateTime = this.CreatedDateTime;
-				attributeValue.ModifiedDateTime = this.ModifiedDateTime;
-				attributeValue.CreatedByPersonId = this.CreatedByPersonId;
-				attributeValue.ModifiedByPersonId = this.ModifiedByPersonId;
-				attributeValue.Id = this.Id;
-				attributeValue.Guid = this.Guid;
-			}
-		}
-	}
+        /// <summary>
+        /// Copies the DTO property values to the entity properties
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public void CopyToModel ( IEntity model )
+        {
+            if ( model is AttributeValue )
+            {
+                var attributeValue = (AttributeValue)model;
+                attributeValue.IsSystem = this.IsSystem;
+                attributeValue.AttributeId = this.AttributeId;
+                attributeValue.EntityId = this.EntityId;
+                attributeValue.Order = this.Order;
+                attributeValue.Value = this.Value;
+                attributeValue.Id = this.Id;
+                attributeValue.Guid = this.Guid;
+            }
+        }
+    }
 }

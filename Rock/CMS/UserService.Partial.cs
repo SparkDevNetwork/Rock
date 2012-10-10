@@ -10,61 +10,64 @@ using System.Security.Cryptography;
 using System.Text;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// User POCO Service class
-	/// </summary>
+    /// <summary>
+    /// User POCO Service class
+    /// </summary>
     public partial class UserService : Service<User, UserDto>
     {
-        private const string VALIDATION_KEY = "D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2";
-
         /// <summary>
-		/// Gets Users by Api Key
-		/// </summary>
-		/// <param name="apiKey">Api Key.</param>
-		/// <returns>An enumerable list of User objects.</returns>
-	    public IEnumerable<User> GetByApiKey( string apiKey )
+        /// Gets Users by Api Key
+        /// </summary>
+        /// <param name="apiKey">Api Key.</param>
+        /// <returns>An enumerable list of User objects.</returns>
+        public IEnumerable<User> GetByApiKey( string apiKey )
         {
             return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets Users by Person Id
-		/// </summary>
-		/// <param name="personId">Person Id.</param>
-		/// <returns>An enumerable list of User objects.</returns>
-	    public IEnumerable<User> GetByPersonId( int? personId )
+        
+        /// <summary>
+        /// Gets Users by Person Id
+        /// </summary>
+        /// <param name="personId">Person Id.</param>
+        /// <returns>An enumerable list of User objects.</returns>
+        public IEnumerable<User> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets User by User Name
-		/// </summary>
-		/// <param name="userName">User Name.</param>
-		/// <returns>User object.</returns>
-	    public User GetByUserName( string userName )
+        
+        /// <summary>
+        /// Gets User by User Name
+        /// </summary>
+        /// <param name="userName">User Name.</param>
+        /// <returns>User object.</returns>
+        public User GetByUserName( string userName )
         {
-			return Repository
-				.AsQueryable( "Person" )
-				.Where( u => u.UserName == userName )
-				.FirstOrDefault();
+            return Repository
+                .AsQueryable( "Person" )
+                .Where( u => u.UserName == userName )
+                .FirstOrDefault();
         }
 
         /// <summary>
         /// Creates a new user.
         /// </summary>
         /// <param name="person">The person.</param>
-        /// <param name="authenticationType">Type of the authentication.</param>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <param name="serviceName">Name of the service.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
+        /// <exception cref="System.ArgumentException">serviceName</exception>
         public User Create( Rock.Crm.Person person,
-            AuthenticationType authenticationType,
+            AuthenticationServiceType serviceType,
+            string serviceName,
             string username,
             string password,
             bool isConfirmed,
@@ -77,14 +80,23 @@ namespace Rock.Cms
             DateTime createDate = DateTime.Now;
 
             user = new User();
+            user.ServiceType = serviceType;
+            user.ServiceName = serviceName;
             user.UserName = username;
-            user.Password = EncodePassword( password );
             user.IsConfirmed = isConfirmed;
             user.CreationDate = createDate;
             user.LastPasswordChangedDate = createDate;
             if ( person != null )
                 user.PersonId = person.Id;
-            user.AuthenticationType = authenticationType;
+
+            if ( serviceType == AuthenticationServiceType.Internal )
+            {
+                AuthenticationComponent authenticationComponent = GetComponent( serviceName );
+                if ( authenticationComponent == null )
+                    throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", serviceName), "serviceName" );
+
+                user.Password = authenticationComponent.EncodePassword( user, password );
+            }
 
             this.Add( user, currentPersonId );
             this.Save( user, currentPersonId );
@@ -101,10 +113,17 @@ namespace Rock.Cms
         /// <returns></returns>
         public bool ChangePassword( User user, string oldPassword, string newPassword )
         {
-            if ( !Validate( user, oldPassword ) )
+            if ( user.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
+
+            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
+            if ( authenticationComponent == null )
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+
+            if ( !authenticationComponent.Authenticate( user, oldPassword ) )
                 return false;
 
-            user.Password = EncodePassword( newPassword );
+            user.Password = authenticationComponent.EncodePassword( user, newPassword );
             user.LastPasswordChangedDate = DateTime.Now;
 
             return true;
@@ -117,7 +136,14 @@ namespace Rock.Cms
         /// <param name="password">The password.</param>
         public void ChangePassword( User user, string password )
         {
-            user.Password = EncodePassword( password );
+            if ( user.ServiceType == AuthenticationServiceType.External )
+                throw new Exception( "Cannot change password on external service type" );
+
+            AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
+            if ( authenticationComponent == null )
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+
+            user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDate = DateTime.Now;
         }
 
@@ -129,33 +155,6 @@ namespace Rock.Cms
         {
             user.IsLockedOut = false;
             this.Save( user, null );
-        }
-
-        /// <summary>
-        /// Validates the specified user.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="password">The password.</param>
-        /// <returns></returns>
-        public bool Validate( User user, string password )
-        {
-            if ( EncodePassword( password ) == user.Password )
-            {
-                if ( user.IsConfirmed ?? false )
-                    if ( !user.IsLockedOut.HasValue || !user.IsLockedOut.Value )
-                    {
-                        user.LastLoginDate = DateTime.Now;
-                        this.Save( user, null );
-                        return true;
-                    }
-                return false;
-            }
-            else
-            {
-                UpdateFailureCount( user );
-                this.Save( user, null );
-                return false;
-            }
         }
 
         private void UpdateFailureCount( User user )
@@ -230,6 +229,42 @@ namespace Rock.Cms
             return null;
         }
 
+        private AuthenticationComponent GetComponent( string serviceName )
+        {
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                string componentName = component.GetType().FullName;
+                if (
+                    componentName == serviceName &&
+                    component.AttributeValues.ContainsKey( "Active" ) &&
+                    bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                )
+                {
+                    return component;
+                }
+            }
+            return null;
+        }
+
+        private ExternalAuthenticationComponent GetExternalComponent( string serviceName )
+        {
+            foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                string componentName = component.GetType().FullName;
+                if (
+                    componentName == serviceName &&
+                    component.AttributeValues.ContainsKey( "Active" ) &&
+                    bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                )
+                {
+                    return component;
+                }
+            }
+            return null;
+        }
+
         #region Static Methods
 
         /// <summary>
@@ -277,37 +312,6 @@ namespace Rock.Cms
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Validates the user.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <returns></returns>
-        public static bool Validate( string username, string password )
-        {
-            UserService userService = new UserService();
-            User user = userService.GetByUserName( username );
-            if ( user != null )
-                return userService.Validate( user, password );
-
-            return false;
-        }
-
-        internal static string EncodePassword( string password )
-        {
-            HMACSHA1 hash = new HMACSHA1();
-            hash.Key = HexToByte( VALIDATION_KEY );
-            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
-        }
-
-        private static byte[] HexToByte( string hexString )
-        {
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            for ( int i = 0; i < returnBytes.Length; i++ )
-                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
-            return returnBytes;
         }
 
         #endregion

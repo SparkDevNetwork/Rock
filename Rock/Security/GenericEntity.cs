@@ -26,7 +26,7 @@ namespace Rock.Security
         /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the
         /// qualified name of the class.
         /// </summary>
-        public string AuthEntity
+        public string EntityTypeName
         {
             get { return _authEntity; }
         }
@@ -80,6 +80,10 @@ namespace Rock.Security
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );

@@ -19,107 +19,107 @@ namespace Rock.Core
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "coreAttribute" )]
-    public partial class Attribute : Model<Attribute>, IAuditable, IOrdered
+    public partial class Attribute : Entity<Attribute>, IOrdered
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Field Type Id.
-		/// </summary>
-		/// <value>
-		/// Field Type Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int FieldTypeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity.
-		/// </summary>
-		/// <value>
-		/// Entity.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Entity { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Column.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Column.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string EntityQualifierColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Qualifier Value.
-		/// </summary>
-		/// <value>
-		/// Entity Qualifier Value.
-		/// </value>
-		[MaxLength( 200 )]
-		[DataMember]
-		public string EntityQualifierValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Key.
-		/// </summary>
-		/// <value>
-		/// Key.
-		/// </value>
-		[Required]
-		[MaxLength( 50 )]
-		[DataMember]
-		public string Key { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Category.
-		/// </summary>
-		/// <value>
-		/// Category.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Category { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Field Type Id.
+        /// </summary>
+        /// <value>
+        /// Field Type Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int FieldTypeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity.
+        /// </summary>
+        /// <value>
+        /// Entity.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Entity { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Column.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Column.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string EntityQualifierColumn { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Qualifier Value.
+        /// </summary>
+        /// <value>
+        /// Entity Qualifier Value.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityQualifierValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Key.
+        /// </summary>
+        /// <value>
+        /// Key.
+        /// </value>
+        [Required]
+        [MaxLength( 50 )]
+        [DataMember]
+        public string Key { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Category { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
 		public int Order { get; set; }
 		
 		/// <summary>
@@ -162,42 +162,6 @@ namespace Rock.Core
 		public bool IsRequired { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -206,46 +170,48 @@ namespace Rock.Core
 		{
 			return Read<Attribute>( id );
 		}
-
-		
+				
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.Attribute"; } }
+		public override string EntityTypeName { get { return "Core.Attribute"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
-		public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
+        public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Attribute Values.
         /// </summary>
         /// <value>
         /// Collection of Attribute Values.
         /// </value>
-		public virtual ICollection<AttributeValue> AttributeValues { get; set; }
+        public virtual ICollection<AttributeValue> AttributeValues { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Field Type.
         /// </summary>
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
 		public virtual FieldType FieldType { get; set; }
-        
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
-        }
-    }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Key;
+		}
+}
 
     /// <summary>
     /// Attribute Configuration class.
@@ -257,7 +223,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeConfiguration()
         {
-			this.HasRequired( p => p.FieldType ).WithMany( p => p.Attributes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+			this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
 		}
     }
 }

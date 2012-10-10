@@ -18,26 +18,26 @@ namespace Rock.Groups
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "groupsGroupRole" )]
-    public partial class GroupRole : ModelWithAttributes<GroupRole>, IAuditable
+    public partial class GroupRole : Model<GroupRole>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Group Type Id.
-		/// </summary>
-		/// <value>
-		/// Group Type Id.
-		/// </value>
-		[DataMember]
-		public int? GroupTypeId { get; set; }
+        /// <summary>
+        /// Gets or sets the Group Type Id.
+        /// </summary>
+        /// <value>
+        /// Group Type Id.
+        /// </value>
+        [DataMember]
+        public int? GroupTypeId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Name.
@@ -69,42 +69,6 @@ namespace Rock.Groups
 		public int? Order { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -118,7 +82,7 @@ namespace Rock.Groups
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Groups.GroupRole"; } }
+		public override string EntityTypeName { get { return "Groups.GroupRole"; } }
 
 		/// <summary>
 		/// Gets or sets the Group Type.
@@ -127,6 +91,17 @@ namespace Rock.Groups
 		/// A <see cref="GroupType"/> object.
 		/// </value>
 		public virtual GroupType GroupType { get; set; }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Name;
+		}
     }
 
     /// <summary>
@@ -139,7 +114,7 @@ namespace Rock.Groups
         /// </summary>
         public GroupRoleConfiguration()
         {
-			this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
-		}
+            this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
+        }
     }
 }

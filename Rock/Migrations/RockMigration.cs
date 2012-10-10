@@ -9,7 +9,8 @@ using Rock.Cms;
 
 namespace Rock.Migrations
 {
-	/// <summary>
+#pragma warning disable 1591
+    /// <summary>
 	/// Custom Migration methods
 	/// </summary>
 	public abstract class RockMigration : DbMigration
@@ -22,16 +23,14 @@ namespace Rock.Migrations
 				
 				INSERT INTO [cmsBlockType] (
 					[IsSystem],[Path],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					1,'{0}','{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
 					'{3}')
 ",
 					path,
 					name,
-					description,
+					description.Replace( "'", "''" ),
 					guid
 					) );
 		}
@@ -41,21 +40,15 @@ namespace Rock.Migrations
 			Sql( string.Format( @"
 				INSERT INTO [cmsBlockType] (
 					[IsSystem],[Path],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					{0},'{1}','{2}','{3}'
-					'{4}','{5}',{6},{7},
-					'{8}')
+					'{4}')
 ",
 					blockType.IsSystem.Bit(),
 					blockType.Path,
 					blockType.Name,
-					blockType.Description,
-					blockType.CreatedDateTime,
-					blockType.ModifiedDateTime,
-					blockType.CreatedByPersonId,
-					blockType.ModifiedByPersonId,
+					blockType.Description.Replace( "'", "''" ),
 					blockType.Guid ) );
 		}
 
@@ -75,10 +68,6 @@ namespace Rock.Migrations
 			blockType.IsSystem = true;
 			blockType.Name = name;
 			blockType.Description = description;
-			blockType.CreatedDateTime = DateTime.Now;
-			blockType.ModifiedDateTime = DateTime.Now;
-			blockType.CreatedByPersonId = 1;
-			blockType.ModifiedByPersonId = 1;
 			blockType.Guid = guid;
 
 			return blockType;
@@ -102,18 +91,16 @@ namespace Rock.Migrations
 					[Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
 					[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
 					[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[IconUrl],[Guid])
 				VALUES(
 					'{1}','{1}',1,@ParentPageId,1,'Default',
 					0,1,1,0,1,0,
 					@Order,0,'{2}',1,
-					GETDATE(),GETDATE(),1,1,
 					'','{3}')
 ",
 					parentPageGuid,
 					name,
-					description,
+					description.Replace( "'", "''" ),
 					guid
 					) );
 		}
@@ -133,14 +120,12 @@ namespace Rock.Migrations
 					[Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
 					[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
 					[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[IconUrl],[Guid])
 				VALUES(
 					'{1}','{2}',{3},@ParentPageId,{4},'{5}',
 					{6},{7},{8},{9},{10},{11},
 					@Order,{12},'{13}',{14},
-					'{15}','{16}',{17},{18},
-					'{19}','{20}')
+					'{15}','{16}')
 ",
 					parentPageGuid,
 					page.Name,
@@ -155,12 +140,8 @@ namespace Rock.Migrations
 					page.MenuDisplayChildPages.Bit(),
 					(int)page.DisplayInNavWhen,
 					page.OutputCacheDuration,
-					page.Description,
+					page.Description.Replace( "'", "''" ),
 					page.IncludeAdminFooter.Bit(),
-					page.CreatedDateTime,
-					page.ModifiedDateTime,
-					page.CreatedByPersonId,
-					page.ModifiedByPersonId,
 					page.IconUrl,
 					page.Guid ) );
 		}
@@ -189,10 +170,6 @@ namespace Rock.Migrations
 			page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
 			page.Description = description;
 			page.IncludeAdminFooter = true;
-			page.CreatedDateTime = DateTime.Now;
-			page.ModifiedDateTime = DateTime.Now;
-			page.CreatedByPersonId = 1;
-			page.ModifiedByPersonId = 1;
 			page.Guid = guid;
 
 			return page;
@@ -227,12 +204,10 @@ namespace Rock.Migrations
 				INSERT INTO [cmsBlock] (
 					[IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					1,@PageId,NULL,@BlockTypeId,'{1}',
 					{2},'{3}',0,
-					GETDATE(),GETDATE(),1,1,
 					'{4}')
 				SET @BlockId = SCOPE_IDENTITY()
 ",
@@ -245,10 +220,10 @@ namespace Rock.Migrations
 			// If adding a layout block, give edit/configuration authorization to admin role
 			if ( string.IsNullOrWhiteSpace( pageGuid ) )
 				sb.Append( @"
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+					VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+					VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
 			Sql(sb.ToString());
 		}
@@ -278,13 +253,11 @@ namespace Rock.Migrations
 				INSERT INTO [cmsBlock] (
 					[IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
 					[Order],[Name],[OutputCacheDuration],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					{1},@PageId,{2},@BlockTypeId,'{3}',
 					{4},'{5}',{6},
-					'{7}','{8}',{9},{10},
-					'{11}')
+					'{7}')
 				SET @BlockId = SCOPE_IDENTITY()
 ",
 					blockTypeGuid,
@@ -294,19 +267,15 @@ namespace Rock.Migrations
 					block.Order,
 					block.Name,
 					block.OutputCacheDuration,
-					block.CreatedDateTime,
-					block.ModifiedDateTime,
-					block.CreatedByPersonId,
-					block.ModifiedByPersonId,
 					block.Guid );
 
 			// If adding a layout block, give edit/configuration authorization to admin role
 			if ( string.IsNullOrWhiteSpace( pageGuid ) )
 				sb.Append( @"
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+					VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+					VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
 			Sql( sb.ToString() );
 		}
@@ -316,7 +285,7 @@ namespace Rock.Migrations
 			Sql( string.Format( @"
 				DECLARE @BlockId int
 				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
-				DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockId
+				DELETE [cmsAuth] WHERE [EntityType] = 'Cms.Block' AND [EntityId] = @BlockId
 				DELETE [cmsBlock] WHERE [Guid] = '{0}'
 ",
 					guid
@@ -330,10 +299,6 @@ namespace Rock.Migrations
 			block.IsSystem = true;
 			block.Zone = "Content";
 			block.Name = name;
-			block.CreatedDateTime = DateTime.Now;
-			block.ModifiedDateTime = DateTime.Now;
-			block.CreatedByPersonId = 1;
-			block.ModifiedByPersonId = 1;
 			block.Guid = guid;
 
 			return block;
@@ -353,17 +318,22 @@ namespace Rock.Migrations
 				DECLARE @FieldTypeId int
 				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
 
+				-- Delete existing attribute first (might have been created by Rock system)
+				DELETE [coreAttribute] 
+				WHERE [Entity] = 'Rock.Cms.Block'
+				AND [EntityQualifierColumn] = 'BlockTypeId'
+				AND [EntityQualifierValue] = CAST(@BlockTypeId as varchar)
+				AND [Key] = '{2}'
+
 				INSERT INTO [coreAttribute] (
 					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
 					[Key],[Name],[Category],[Description],
 					[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockTypeId',CAST(@BlockTypeId as varchar),
+					1,@FieldTypeId,'Rock.Cms.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},0,'{7}',0,0,
-					GETDATE(),GETDATE(),1,1,
 					'{8}')
 ",
 					blockGuid,
@@ -371,7 +341,7 @@ namespace Rock.Migrations
 					name.Replace( " ", string.Empty ),
 					name,
 					category,
-					description,
+					description.Replace( "'", "''" ),
 					order,
 					defaultValue,
 					guid)
@@ -389,34 +359,35 @@ namespace Rock.Migrations
 				DECLARE @FieldTypeId int
 				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
 
+				-- Delete existing attribute first (might have been created by Rock system)
+				DELETE [coreAttribute] 
+				WHERE [Entity] = 'Rock.Cms.Block'
+				AND [EntityQualifierColumn] = 'BlockTypeId'
+				AND [EntityQualifierValue] = CAST(@BlockTypeId as varchar)
+				AND [Key] = '{2}'
+
 				INSERT INTO [coreAttribute] (
 					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
 					[Key],[Name],[Category],[Description],
 					[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockTypeId',CAST(@BlockTypeId as varchar),
+					1,@FieldTypeId,'Rock.Cms.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
 					'{2}','{3}','{4}','{5}',
 					{6},{7},'{8}',{9},{10},
-					'{11}','{12}',{13},{14},
-					'{15}')
+					'{11}')
 ",
 					blockGuid,
 					fieldTypeGuid,
 					attribute.Key,
 					attribute.Name,
 					attribute.Category,
-					attribute.Description,
+					attribute.Description.Replace("'","''"),
 					attribute.Order,
 					attribute.IsGridColumn.Bit(),
 					attribute.DefaultValue,
 					attribute.IsMultiValue.Bit(),
 					attribute.IsRequired.Bit(),
-					attribute.CreatedDateTime,
-					attribute.ModifiedDateTime,
-					attribute.CreatedByPersonId,
-					attribute.ModifiedByPersonId,
 					attribute.Guid )
 			);
 		}
@@ -440,10 +411,6 @@ namespace Rock.Migrations
 			attribute.Category = category;
 			attribute.Description = description;
 			attribute.Order = order;
-			attribute.CreatedDateTime = DateTime.Now;
-			attribute.ModifiedDateTime = DateTime.Now;
-			attribute.CreatedByPersonId = 1;
-			attribute.ModifiedByPersonId = 1;
 			attribute.Guid = guid;
 
 			return attribute;
@@ -463,15 +430,18 @@ namespace Rock.Migrations
 				DECLARE @AttributeId int
 				SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
 
+				-- Delete existing attribute value first (might have been created by Rock system)
+				DELETE [coreAttributeValue]
+				WHERE [AttributeId] = @AttributeId
+				AND [EntityId] = @BlockId
+
 				INSERT INTO [coreAttributeValue] (
 					[IsSystem],[AttributeId],[EntityId],
 					[Order],[Value],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					1,@AttributeId,@BlockId,
 					0,'{2}',
-					GETDATE(),GETDATE(),1,1,
 					NEWID())
 ",
 					blockGuid,
@@ -514,17 +484,15 @@ namespace Rock.Migrations
 				INSERT INTO [coreDefinedType] (
 					[IsSystem],[FieldTypeId],[Order],
 					[Category],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					1,@FieldTypeId,@Order,
 					'{0}','{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
 					'{3}')
 ",
 					category,
 					name,
-					description,
+					description.Replace( "'", "''" ),
 					guid
 					) );
 		}
@@ -555,17 +523,15 @@ namespace Rock.Migrations
 				INSERT INTO [coreDefinedValue] (
 					[IsSystem],[DefinedTypeId],[Order],
 					[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
 					1,@DefinedTypeId,@Order,
 					'{1}','{2}',
-					GETDATE(),GETDATE(),1,1,
 					'{3}')
 ",
 					definedTypeGuid,
 					name,
-					description,
+					description.Replace( "'", "''" ),
 					guid
 					) );
 		}

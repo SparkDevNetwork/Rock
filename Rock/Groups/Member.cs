@@ -18,7 +18,7 @@ namespace Rock.Groups
     /// Member POCO Entity.
     /// </summary>
     [Table( "groupsMember" )]
-    public partial class Member : ModelWithAttributes<Member>, IAuditable
+    public partial class Member : Model<Member>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -61,42 +61,6 @@ namespace Rock.Groups
 		public int GroupRoleId { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -110,32 +74,44 @@ namespace Rock.Groups
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Groups.Member"; } }
+		public override string EntityTypeName { get { return "Groups.Member"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person Person { get; set; }
+        public virtual Crm.Person Person { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
-		public virtual Group Group { get; set; }
+        public virtual Group Group { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group Role.
         /// </summary>
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-		public virtual GroupRole GroupRole { get; set; }
+        public virtual GroupRole GroupRole { get; set; }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			if ( Person != null )
+				return Person.FullName;
+			return string.Empty;
+		}
     }
 
     /// <summary>
@@ -148,9 +124,9 @@ namespace Rock.Groups
         /// </summary>
         public MemberConfiguration()
         {
-			this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-			this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
-			this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
+        }
     }
 }

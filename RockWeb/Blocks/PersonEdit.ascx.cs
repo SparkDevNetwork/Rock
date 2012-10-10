@@ -12,9 +12,9 @@ using Rock.Crm;
 
 namespace RockWeb.Blocks
 {
-    public partial class PersonEdit : Rock.Web.UI.Block
+    public partial class PersonEdit : Rock.Web.UI.RockBlock
     {
-        private Person person;
+        private Person person = null;
 
         /// <summary>
         /// Gets a list of any context entities that the block requires.
@@ -26,7 +26,7 @@ namespace RockWeb.Blocks
 
         protected void Page_Load( object sender, EventArgs e )
         {
-            Person person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+            person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
             if (person == null)
             {
                 PersonService personService = new PersonService();

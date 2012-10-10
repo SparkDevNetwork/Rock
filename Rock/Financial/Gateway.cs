@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Payment Gateway POCO class.
     /// </summary>
     [Table("financialGateway")]
-    public partial class Gateway : ModelWithAttributes<Gateway>, IAuditable
+    public partial class Gateway : Model<Gateway>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -78,41 +78,11 @@ namespace Rock.Financial
         /// </value>
         public virtual ICollection<Transaction> Transactions { get; set; }
 
-        /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
+		/// <summary>
+		/// Gets the auth entity.
+		/// </summary>
+		[NotMapped]
+		public override string EntityTypeName { get { return "Financial.Gateway"; } }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -122,6 +92,17 @@ namespace Rock.Financial
 		public static Gateway Read( int id )
 		{
 			return Read<Gateway>( id );
+		}
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Name;
 		}
     }
 

@@ -47,7 +47,7 @@
 
         <asp:PlaceHolder ID="phList" runat="server">
 
-            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="DisplayName" HeaderText="Name" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />

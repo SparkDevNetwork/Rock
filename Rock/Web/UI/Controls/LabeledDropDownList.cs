@@ -16,7 +16,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
     public class LabeledDropDownList : DropDownList
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected Label label;
+        
+        /// <summary>
+        /// 
+        /// </summary>
         protected RequiredFieldValidator validator;
 
         /// <summary>

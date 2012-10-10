@@ -17,8 +17,9 @@ namespace Rock.Core
     /// <summary>
     /// Exception Log POCO Entity.
     /// </summary>
+	[NotAudited]
     [Table( "coreExceptionLog" )]
-    public partial class ExceptionLog : ModelWithAttributes<ExceptionLog>
+    public partial class ExceptionLog : Model<ExceptionLog>
     {
 		/// <summary>
 		/// Gets or sets the Parent Id.
@@ -56,7 +57,24 @@ namespace Rock.Core
 		[Required]
 		[DataMember]
 		public DateTime ExceptionDate { get; set; }
-		
+
+		/// <summary>
+		/// Gets or sets the Created By Person Id.
+		/// </summary>
+		/// <value>
+		/// Created By Person Id.
+		/// </value>
+		[DataMember]
+		public int? CreatedByPersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created by person.
+        /// </summary>
+        /// <value>
+        /// The created by person.
+        /// </value>
+		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+
 		/// <summary>
 		/// Gets or sets the Has Inner Exception.
 		/// </summary>
@@ -65,15 +83,6 @@ namespace Rock.Core
 		/// </value>
 		[DataMember]
 		public bool? HasInnerException { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id of the logged in person who experienced the exception..
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Status Code.
@@ -173,7 +182,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.ExceptionLog"; } }
+		public override string EntityTypeName { get { return "Core.ExceptionLog"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -183,6 +192,17 @@ namespace Rock.Core
 		public static ExceptionLog Read( int id )
 		{
 			return Read<ExceptionLog>( id );
+		}
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Description;
 		}
     }
 
@@ -196,6 +216,7 @@ namespace Rock.Core
         /// </summary>
         public ExceptionLogConfiguration()
         {
+			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
 		}
     }
 }

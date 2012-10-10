@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Block POCO Entity.
     /// </summary>
     [Table( "cmsBlock" )]
-    public partial class Block : ModelWithAttributes<Block>, IAuditable, IOrdered, IExportable
+    public partial class Block : Model<Block>, IOrdered, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -102,47 +102,11 @@ namespace Rock.Cms
 		[DataMember]
 		public int OutputCacheDuration { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Block"; } }
+		public override string EntityTypeName { get { return "Cms.Block"; } }
         
 		/// <summary>
         /// Gets or sets the Html Contents.
@@ -150,17 +114,17 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Html Contents.
         /// </value>
-		public virtual ICollection<HtmlContent> HtmlContents { get; set; }
-        
-		/// <summary>
+        public virtual ICollection<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
         /// A <see cref="BlockType"/> object.
         /// </value>
-		public virtual BlockType BlockType { get; set; }
-        
-		/// <summary>
+        public virtual BlockType BlockType { get; set; }
+
+        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
@@ -168,6 +132,14 @@ namespace Rock.Cms
         /// </value>
 		public virtual Page Page { get; set; }
         
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        public override List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
+
 		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -178,16 +150,7 @@ namespace Rock.Cms
 			return Read<Block>( id );
 		}
 
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        public override List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
-        }
-
-        /// <summary>
+		/// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -198,28 +161,36 @@ namespace Rock.Cms
             return this.Name;
         }
 
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
         public object ExportObject()
         {
             dynamic exportObject = this.ToDynamic();
 
-            if (BlockType != null)
+            if ( BlockType != null )
             {
                 exportObject.BlockType = BlockType.ExportObject();
             }
 
-            if (HtmlContents == null)
+            if ( HtmlContents == null )
             {
                 return exportObject;
             }
 
             exportObject.HtmlContents = new List<dynamic>();
 
-            foreach (var content in HtmlContents)
+            foreach ( var content in HtmlContents )
             {
                 exportObject.HtmlContents.Add( content.ExportObject() );
             }
@@ -227,9 +198,13 @@ namespace Rock.Cms
             return exportObject;
         }
 
-        public void ImportJson(string data)
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        public void ImportJson( string data )
         {
-            
+
         }
     }
 
@@ -243,8 +218,8 @@ namespace Rock.Cms
         /// </summary>
         public BlockConfiguration()
         {
-			this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete(true);
-			this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
-		}
+            this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
+        }
     }
 }

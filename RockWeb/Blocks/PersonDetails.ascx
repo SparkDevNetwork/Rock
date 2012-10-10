@@ -32,7 +32,7 @@
                 <section class="family group">
                     <header>Edmiston Family <a href="#" class="edit"><i class="icon-edit"></i></a></header>
 
-                    <ul class="group">
+                    <ul class="group-members">
                         <li>
                             <a href="">
                             <img src="<%= Page.ResolveClientUrl("~/Assets/Mockup/heidi.jpg") %>" />

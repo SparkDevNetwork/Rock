@@ -22,7 +22,7 @@ namespace Rock.Web.Cache
     public class SiteCache : SiteDto, Security.ISecured
     {
         private SiteCache() : base() { }
-		private SiteCache( Rock.Cms.Site model ) : base( model ) { }
+        private SiteCache( Rock.Cms.Site model ) : base( model ) { }
 
         /// <summary>
         /// Gets the attribute values.
@@ -45,7 +45,7 @@ namespace Rock.Web.Cache
                 return attributes;
             }
         }
-		private List<int> AttributeIds = new List<int>();
+        private List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Gets the default page.
@@ -108,7 +108,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
-					site = new SiteCache( siteModel );
+                    site = new SiteCache( siteModel );
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 
@@ -118,7 +118,7 @@ namespace Rock.Web.Cache
 
                     site.AttributeValues = siteModel.AttributeValues;
 
-                    site.AuthEntity = siteModel.AuthEntity;
+                    site.EntityTypeName = siteModel.EntityTypeName;
                     site.SupportedActions = siteModel.SupportedActions;
 
                     cache.Set( cacheKey, site, new CacheItemPolicy() );
@@ -151,7 +151,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string AuthEntity { get; set; }
+        public string EntityTypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
@@ -191,6 +191,10 @@ namespace Rock.Web.Cache
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );

@@ -19,8 +19,8 @@ namespace Rock.Web.Cache
     [Serializable]
     public class BlockCache : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
-		private BlockCache() : base() { }
-		private BlockCache( Rock.Cms.Block model ) : base( model ) { }
+        private BlockCache() : base() { }
+        private BlockCache( Rock.Cms.Block model ) : base( model ) { }
 
         /// <summary>
         /// Gets the location of the block (Layout or Page)
@@ -64,19 +64,19 @@ namespace Rock.Web.Cache
             }
         }
 
-		/// <summary>
-		/// Gets the page.
-		/// </summary>
-		public PageCache Page
-		{
-			get
-			{
-				if ( PageId.HasValue )
-					return PageCache.Read( PageId.Value );
-				else
-					return null;
-			}
-		}
+        /// <summary>
+        /// Gets the page.
+        /// </summary>
+        public PageCache Page
+        {
+            get
+            {
+                if ( PageId.HasValue )
+                    return PageCache.Read( PageId.Value );
+                else
+                    return null;
+            }
+        }
 
         /// <summary>
         /// Gets the block type
@@ -157,20 +157,20 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static BlockCache Read( Rock.Cms.Block blockModel )
         {
-			string cacheKey = BlockCache.CacheKey( blockModel.Id );
+            string cacheKey = BlockCache.CacheKey( blockModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
             BlockCache block = cache[cacheKey] as BlockCache;
 
-			if ( block != null )
-				return block;
-			else
-			{
-				block = BlockCache.CopyModel( blockModel );
-				cache.Set( cacheKey, block, new CacheItemPolicy() );
+            if ( block != null )
+                return block;
+            else
+            {
+                block = BlockCache.CopyModel( blockModel );
+                cache.Set( cacheKey, block, new CacheItemPolicy() );
 
-				return block;
-			}
+                return block;
+            }
         }
 
         /// <summary>
@@ -211,16 +211,16 @@ namespace Rock.Web.Cache
         {
             BlockCache block = new BlockCache(blockModel);
 
-			block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
+            block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
             block.AttributeValues = blockModel.AttributeValues;
             
-			block.AttributeIds = new List<int>();
+            block.AttributeIds = new List<int>();
             if (blockModel.Attributes != null)
                 foreach ( var category in blockModel.Attributes )
                     foreach ( var attribute in category.Value )
                         block.AttributeIds.Add( attribute.Id );
 
-            block.AuthEntity = blockModel.AuthEntity;
+            block.EntityTypeName = blockModel.EntityTypeName;
             block.BlockActions = blockModel.SupportedActions;
 
             return block;
@@ -244,7 +244,7 @@ namespace Rock.Web.Cache
         /// The auth entity. The auth entity is a unique identifier for each type of class that implements
         /// the <see cref="Rock.Security.ISecured"/> interface.
         /// </summary>
-        public string AuthEntity { get; set; }
+        public string EntityTypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
@@ -253,11 +253,11 @@ namespace Rock.Web.Cache
         public Security.ISecured ParentAuthority
         {
             get 
-			{
-				if ( this.BlockLocation == Cache.BlockLocation.Page )
-					return this.Page;
-				return null;
-			}
+            {
+                if ( this.BlockLocation == Cache.BlockLocation.Page )
+                    return this.Page;
+                return null;
+            }
         }
 
         /// <summary>
@@ -306,6 +306,10 @@ namespace Rock.Web.Cache
             return action == "View";
         }
 
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );

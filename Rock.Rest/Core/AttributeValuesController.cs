@@ -14,11 +14,11 @@ using Rock.Core;
 
 namespace Rock.Rest.Core
 {
-	/// <summary>
-	/// AttributeValues REST API
-	/// </summary>
-	public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Core.AttributeValue, Rock.Core.AttributeValueDto>
-	{
-		public AttributeValuesController() : base( new Rock.Core.AttributeValueService() ) { } 
-	}
+    /// <summary>
+    /// AttributeValues REST API
+    /// </summary>
+    public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Core.AttributeValue, Rock.Core.AttributeValueDto>
+    {
+        public AttributeValuesController() : base( new Rock.Core.AttributeValueService() ) { } 
+    }
 }

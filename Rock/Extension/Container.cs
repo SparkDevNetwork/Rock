@@ -32,14 +32,17 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the component names and their attributes
         /// </summary>
-        public Dictionary<int, KeyValuePair<string, Rock.Attribute.IHasAttributes>> Dictionary 
+        public Dictionary<int, KeyValuePair<string, Component>> Dictionary
         {
             get
             {
-                var dictionary = new Dictionary<int, KeyValuePair<string, Rock.Attribute.IHasAttributes>>();
+                var dictionary = new Dictionary<int, KeyValuePair<string, Component>>();
                 foreach ( var component in Components )
-                    dictionary.Add( component.Key, new KeyValuePair<string, Rock.Attribute.IHasAttributes>(
+                {
+                    dictionary.Add( component.Key, new KeyValuePair<string, Component>(
                         component.Value.Metadata.ComponentName, component.Value.Value ) );
+                }
+
                 return dictionary;
             }
         }
@@ -73,10 +76,12 @@ namespace Rock.Extension
             // Add the currently running assembly to the Catalog
             catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
 
-            // Add all the assemblies in the 'Extensions' subdirectory
-            string extensionFolder = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), "Extensions" );
-            if ( Directory.Exists( extensionFolder ) )
-                catalog.Catalogs.Add( new DirectoryCatalog( extensionFolder ) );
+            // Add all the assemblies in the 'Plugins' subdirectory
+            string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
+            if ( Directory.Exists( pluginsFolder ) )
+            {
+                catalog.Catalogs.Add( new DirectoryCatalog( pluginsFolder ) );
+            }
 
             // Create the container from the catalog
             container = new CompositionContainer( catalog );
@@ -89,15 +94,22 @@ namespace Rock.Extension
             foreach ( Lazy<T, TData> i in MEFComponents )
             {
                 if ( !components.ContainsKey( i.Value.Order ) )
+                {
                     components.Add( i.Value.Order, new List<Lazy<T, TData>>() );
+                }
+
                 components[i.Value.Order].Add( i );
             }
 
             // Add each class found through MEF into the Services property value in the correct order
             int id = 0;
             foreach ( KeyValuePair<int, List<Lazy<T, TData>>> entry in components )
+            {
                 foreach ( Lazy<T, TData> component in entry.Value )
+                {
                     Components.Add( id++, component );
+                }
+            }
         }
 
         /// <summary>
@@ -105,21 +117,21 @@ namespace Rock.Extension
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Dispose( true );
+            GC.SuppressFinalize( this );
         }
 
         /// <summary>
         /// Dispose
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose( bool disposing )
         {
-            if (!IsDisposed)
+            if ( !IsDisposed )
             {
-                if (disposing)
+                if ( disposing )
                 {
-                    if (container != null)
+                    if ( container != null )
                         container.Dispose();
                 }
 

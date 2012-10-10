@@ -246,7 +246,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
     
     <asp:Panel ID="pnlContent" runat="server">
 
@@ -257,7 +257,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found">
+        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found" RowItemText="setting">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:TemplateField HeaderText="Name" showHeader="true" ItemStyle-Width="35%">

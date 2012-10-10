@@ -19,153 +19,153 @@ namespace Rock.Crm
     /// Person POCO Entity.
     /// </summary>
     [Table( "crmPerson" )]
-    public partial class Person : ModelWithAttributes<Person>, IAuditable
+    public partial class Person : Model<Person>
     {
-		/// <summary>
-		/// The Entity Type used for saving user values
-		/// </summary>
-		public const string USER_VALUE_ENTITY = "Rock.Crm.Person.Value";
-
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Record Type Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? RecordTypeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Record Status Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? RecordStatusId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Record Status Reason Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? RecordStatusReasonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Status Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? PersonStatusId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Title Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? TitleId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Given Name.
-		/// </summary>
-		/// <value>
-		/// Given Name.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string GivenName { get; set; }
+        /// <summary>
+        /// The Entity Type used for saving user values
+        /// </summary>
+        public const string USER_VALUE_ENTITY = "Rock.Crm.Person.Value";
 
         /// <summary>
-		/// Gets or sets the Nick Name.
-		/// </summary>
-		/// <value>
-		/// Nick Name.
-		/// </value>
-		[MaxLength( 50 )]
-		[TrackChanges]
-		[DataMember]
-		public string NickName { get; set; }
-
-        /// <summary>
-		/// Gets or sets the Last Name.
-		/// </summary>
-		/// <value>
-		/// Last Name.
-		/// </value>
-		[MaxLength( 50 )]
-		[TrackChanges]
-		[DataMember]
-		public string LastName { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Suffix Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? SuffixId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Photo Id.
-		/// </summary>
-		/// <value>
-		/// Photo Id.
-		/// </value>
-		[DataMember]
-		public int? PhotoId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Birth Day.
-		/// </summary>
-		/// <value>
-		/// Birth Day.
-		/// </value>
-		[DataMember]
-		public int? BirthDay { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Birth Month.
-		/// </summary>
-		/// <value>
-		/// Birth Month.
-		/// </value>
-		[DataMember]
-		public int? BirthMonth { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Birth Year.
-		/// </summary>
-		/// <value>
-		/// Birth Year.
-		/// </value>
-		[DataMember]
-		public int? BirthYear { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Gender.
-		/// </summary>
-		/// <value>
-		/// Enum[Gender].
-		/// </value>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
         [Required]
-		[DataMember]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Record Type Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? RecordTypeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Record Status Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? RecordStatusId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Record Status Reason Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? RecordStatusReasonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Person Status Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? PersonStatusId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Title Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? TitleId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Given Name.
+        /// </summary>
+        /// <value>
+        /// Given Name.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string GivenName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Nick Name.
+        /// </summary>
+        /// <value>
+        /// Nick Name.
+        /// </value>
+        [MaxLength( 50 )]
+        [TrackChanges]
+        [DataMember]
+        public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Last Name.
+        /// </summary>
+        /// <value>
+        /// Last Name.
+        /// </value>
+        [MaxLength( 50 )]
+        [TrackChanges]
+        [DataMember]
+        public string LastName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Suffix Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? SuffixId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Photo Id.
+        /// </summary>
+        /// <value>
+        /// Photo Id.
+        /// </value>
+        [DataMember]
+        public int? PhotoId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Birth Day.
+        /// </summary>
+        /// <value>
+        /// Birth Day.
+        /// </value>
+        [DataMember]
+        public int? BirthDay { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Birth Month.
+        /// </summary>
+        /// <value>
+        /// Birth Month.
+        /// </value>
+        [DataMember]
+        public int? BirthMonth { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Birth Year.
+        /// </summary>
+        /// <value>
+        /// Birth Year.
+        /// </value>
+        [DataMember]
+        public int? BirthYear { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Gender.
+        /// </summary>
+        /// <value>
+        /// Enum[Gender].
+        /// </value>
+        [Required]
+        [DataMember]
         public Gender Gender { get; set; }
 
 		/// <summary>
@@ -254,42 +254,6 @@ namespace Rock.Crm
 		public int? ViewedCount { get; set; }
 		
 		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-
-		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
 		/// <param name="id">The id.</param>
@@ -303,39 +267,39 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Crm.Person"; } }
+		public override string EntityTypeName { get { return "Crm.Person"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Users.
         /// </summary>
         /// <value>
         /// Collection of Users.
         /// </value>
-		public virtual ICollection<Cms.User> Users { get; set; }
+        public virtual ICollection<Cms.User> Users { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Email Templates.
         /// </summary>
         /// <value>
         /// Collection of Email Templates.
         /// </value>
-		public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
+        public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
         /// Collection of Phone Numbers.
         /// </value>
-		public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
+        public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// Collection of Members.
         /// </value>
-		public virtual ICollection<Groups.Member> Members { get; set; }
+        public virtual ICollection<Groups.Member> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Pledges.
@@ -353,66 +317,66 @@ namespace Rock.Crm
         /// </value>
         public virtual ICollection<Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Marital Status.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue MaritalStatus { get; set; }
+        public virtual Core.DefinedValue MaritalStatus { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person Status.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue PersonStatus { get; set; }
+        public virtual Core.DefinedValue PersonStatus { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Record Status.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue RecordStatus { get; set; }
+        public virtual Core.DefinedValue RecordStatus { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Record Status Reason.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue RecordStatusReason { get; set; }
+        public virtual Core.DefinedValue RecordStatusReason { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Record Type.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue RecordType { get; set; }
+        public virtual Core.DefinedValue RecordType { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Suffix.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue Suffix { get; set; }
+        public virtual Core.DefinedValue Suffix { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Title.
         /// </summary>
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual Core.DefinedValue Title { get; set; }
+        public virtual Core.DefinedValue Title { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Photo
-		/// </summary>
-		public virtual Cms.File Photo { get; set; }
+        /// <summary>
+        /// Gets or sets the Photo
+        /// </summary>
+        public virtual Cms.File Photo { get; set; }
 
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
@@ -500,6 +464,12 @@ namespace Rock.Crm
             }
         }
 
+        /// <summary>
+        /// Gets the impersonated user.
+        /// </summary>
+        /// <value>
+        /// The impersonated user.
+        /// </value>
         public Rock.Cms.User ImpersonatedUser
         {
             get
@@ -512,6 +482,16 @@ namespace Rock.Crm
             }
         }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.FullName;
+		}
     }
 
     /// <summary>
@@ -524,15 +504,15 @@ namespace Rock.Crm
         /// </summary>
         public PersonConfiguration()
         {
-			this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.RecordStatusReason ).WithMany().HasForeignKey( p => p.RecordStatusReasonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.RecordType ).WithMany().HasForeignKey( p => p.RecordTypeId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
-		}
+            this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordStatusReason ).WithMany().HasForeignKey( p => p.RecordStatusReasonId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordType ).WithMany().HasForeignKey( p => p.RecordTypeId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
+        }
     }
 
     /// <summary>

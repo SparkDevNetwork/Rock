@@ -11,49 +11,49 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// Block POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Block POCO Service class
+    /// </summary>
     public partial class BlockService : Service<Block, BlockDto>
     {
-		/// <summary>
-		/// Gets Blocks by Block Type Id
-		/// </summary>
-		/// <param name="blockTypeId">Block Type Id.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
+        /// <summary>
+        /// Gets Blocks by Block Type Id
+        /// </summary>
+        /// <param name="blockTypeId">Block Type Id.</param>
+        /// <returns>An enumerable list of Block objects.</returns>
+        public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
         {
             return Repository.Find( t => t.BlockTypeId == blockTypeId ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Block Instances by Layout
-		/// </summary>
-		/// <param name="layout">Layout.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByLayout( string layout )
+        
+        /// <summary>
+        /// Gets Block Instances by Layout
+        /// </summary>
+        /// <param name="layout">Layout.</param>
+        /// <returns>An enumerable list of Block objects.</returns>
+        public IEnumerable<Block> GetByLayout( string layout )
         {
             return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Block Instances by Layout And Page Id And Zone
-		/// </summary>
-		/// <param name="layout">Layout.</param>
-		/// <param name="pageId">Page Id.</param>
-		/// <param name="zone">Zone.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
+        
+        /// <summary>
+        /// Gets Block Instances by Layout And Page Id And Zone
+        /// </summary>
+        /// <param name="layout">Layout.</param>
+        /// <param name="pageId">Page Id.</param>
+        /// <param name="zone">Zone.</param>
+        /// <returns>An enumerable list of Block objects.</returns>
+        public IEnumerable<Block> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
         {
             return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
         }
-		
-		/// <summary>
-		/// Gets Block Instances by Page Id
-		/// </summary>
-		/// <param name="pageId">Page Id.</param>
-		/// <returns>An enumerable list of Block objects.</returns>
-	    public IEnumerable<Block> GetByPageId( int? pageId )
+        
+        /// <summary>
+        /// Gets Block Instances by Page Id
+        /// </summary>
+        /// <param name="pageId">Page Id.</param>
+        /// <returns>An enumerable list of Block objects.</returns>
+        public IEnumerable<Block> GetByPageId( int? pageId )
         {
             return Repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
         }

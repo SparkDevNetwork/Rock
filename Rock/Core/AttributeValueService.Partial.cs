@@ -11,38 +11,38 @@ using Rock.Data;
 
 namespace Rock.Core
 {
-	/// <summary>
-	/// Attribute Value POCO Service class
-	/// </summary>
+    /// <summary>
+    /// Attribute Value POCO Service class
+    /// </summary>
     public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
     {
-		/// <summary>
-		/// Gets Attribute Values by Attribute Id
-		/// </summary>
-		/// <param name="attributeId">Attribute Id.</param>
-		/// <returns>An enumerable list of AttributeValue objects.</returns>
-	    public IEnumerable<AttributeValue> GetByAttributeId( int attributeId )
+        /// <summary>
+        /// Gets Attribute Values by Attribute Id
+        /// </summary>
+        /// <param name="attributeId">Attribute Id.</param>
+        /// <returns>An enumerable list of AttributeValue objects.</returns>
+        public IEnumerable<AttributeValue> GetByAttributeId( int attributeId )
         {
             return Repository.Find( t => t.AttributeId == attributeId );
         }
-		
-		/// <summary>
-		/// Gets Attribute Values by Attribute Id And Entity Id
-		/// </summary>
-		/// <param name="attributeId">Attribute Id.</param>
-		/// <param name="entityId">Entity Id.</param>
-		/// <returns>An enumerable list of AttributeValue objects.</returns>
-	    public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
+        
+        /// <summary>
+        /// Gets Attribute Values by Attribute Id And Entity Id
+        /// </summary>
+        /// <param name="attributeId">Attribute Id.</param>
+        /// <param name="entityId">Entity Id.</param>
+        /// <returns>An enumerable list of AttributeValue objects.</returns>
+        public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
             return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
-		
-		/// <summary>
-		/// Gets Attribute Values by Entity Id
-		/// </summary>
-		/// <param name="entityId">Entity Id.</param>
-		/// <returns>An enumerable list of AttributeValue objects.</returns>
-	    public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
+        
+        /// <summary>
+        /// Gets Attribute Values by Entity Id
+        /// </summary>
+        /// <param name="entityId">Entity Id.</param>
+        /// <returns>An enumerable list of AttributeValue objects.</returns>
+        public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
         {
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }

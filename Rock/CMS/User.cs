@@ -21,73 +21,58 @@ namespace Rock.Cms
     /// User POCO Entity.
     /// </summary>
     [Table( "cmsUser" )]
-    public partial class User : ModelWithAttributes<User>, IAuditable
+    public partial class User : Model<User>
     {
-		/// <summary>
-		/// Gets or sets the User Name.
-		/// </summary>
-		/// <value>
-		/// User Name.
-		/// </value>
-		[Required]
-		[MaxLength( 255 )]
-		[DataMember]
-		public string UserName { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Authentication Type.
-		/// </summary>
-		/// <value>
-		/// Enum[AuthenticationType]  1=Database, 2= Facebook, 3=Active Directory.
-		/// </value>
-		[Required]
-		[DataMember]
-        public AuthenticationType AuthenticationType
-        {
-            get { return _AuthenticationType; }
-            set { _AuthenticationType = value; }
-        }
-        private AuthenticationType _AuthenticationType = AuthenticationType.Database;
-
-		/// <summary>
-		/// Gets or sets the Password.
-		/// </summary>
-		/// <value>
-		/// Password.
-		/// </value>
-		[Required]
-		[MaxLength( 128 )]
-		[DataMember]
-		public string Password { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the is confirmed.
-		/// </summary>
-		/// <value>
-		/// Is confirmed.
-		/// </value>
-		[DataMember]
-		public bool? IsConfirmed { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the service.
+        /// </summary>
+        /// <value>
+        /// The type of the service.
+        /// </value>
+        [Required]
+        [DataMember]
+        public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// Gets or sets the name of the service.
         /// </summary>
-        [NotMapped]
-        public bool IsAuthenticated 
-        {
-            get
-            {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
-                if ( identity == null)
-                    return false;
+        /// <value>
+        /// The service.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string ServiceName { get; set; }
 
-                if (identity.Ticket != null &&
-                    identity.Ticket.UserData.ToLower() == "true" )
-                    return false;
-
-                return true;
-            }
-        }
+        /// <summary>
+        /// Gets or sets the User Name.
+        /// </summary>
+        /// <value>
+        /// User Name.
+        /// </value>
+        [Required]
+        [MaxLength( 255 )]
+        [DataMember]
+        public string UserName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Password.
+        /// </summary>
+        /// <value>
+        /// Password.
+        /// </value>
+        [MaxLength( 128 )]
+        [DataMember]
+        public string Password { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the is confirmed.
+        /// </summary>
+        /// <value>
+        /// Is confirmed.
+        /// </value>
+        [DataMember]
+        public bool? IsConfirmed { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
@@ -95,6 +80,7 @@ namespace Rock.Cms
 		/// <value>
 		/// Last Activity Date.
 		/// </value>
+		[NotAudited]
 		[DataMember]
 		public DateTime? LastActivityDate { get; set; }
 		
@@ -188,66 +174,50 @@ namespace Rock.Cms
 		/// </value>
 		[DataMember]
 		public int? PersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// </summary>
+        [NotMapped]
+        public bool IsAuthenticated
+        {
+            get
+            {
+                System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
+                if ( identity == null )
+                    return false;
+
+                if ( identity.Ticket != null &&
+                    identity.Ticket.UserData.ToLower() == "true" )
+                    return false;
+
+                return true;
+            }
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.User"; } }
+		public override string EntityTypeName { get { return "Cms.User"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person Person { get; set; }
+        public virtual Crm.Person Person { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static User Read( int id )
-		{
-			return Read<User>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static User Read( int id )
+        {
+            return Read<User>( id );
+        }
 
 
         /// <summary>
@@ -285,6 +255,17 @@ namespace Rock.Cms
             }
         }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.UserName;
+		}
+
         #region Static Methods
 
         /// <summary>
@@ -320,28 +301,23 @@ namespace Rock.Cms
         /// </summary>
         public UserConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
-		}
+            this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+        }
     }
 
     /// <summary>
-    /// How user is authenticated
+    /// Type of authentication service used to authenticate user
     /// </summary>
-    public enum AuthenticationType
+    public enum AuthenticationServiceType
     {
         /// <summary>
-        /// Athenticate login against Rock database
+        /// An internal authentication service (i.e. Database, Active Directory)
         /// </summary>
-        Database = 1,
+        Internal = 0,
 
         /// <summary>
-        /// Authenticate using Facebook
+        /// An external authentication service (i.e. Facebook, Twitter, Google, etc.)
         /// </summary>
-        Facebook = 2,
-
-        /// <summary>
-        /// Authenticate using Active Directory
-        /// </summary>
-        ActiveDirectory = 3
+        External = 1,
     }
 }

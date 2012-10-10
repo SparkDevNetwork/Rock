@@ -16,11 +16,20 @@ namespace Rock.Financial
     /// </summary>
     public partial class TransactionService : Service<Transaction, TransactionDto>
     {
+        /// <summary>
+        /// Gets all transactions.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Transaction> GetAllTransactions()
         {
            return Repository.GetAll();
         }
 
+        /// <summary>
+        /// Gets the transaction by search.
+        /// </summary>
+        /// <param name="searchValue">The search value.</param>
+        /// <returns></returns>
         public IEnumerable<Transaction> GetTransactionBySearch(TransactionSearchValue searchValue)
         {
             var transactions = Repository.GetAll();

@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Defined Value POCO Entity.
     /// </summary>
     [Table( "coreDefinedValue" )]
-    public partial class DefinedValue : ModelWithAttributes<DefinedValue>, IAuditable, IOrdered
+    public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -70,74 +70,48 @@ namespace Rock.Core
 		[DataMember]
 		public string Description { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Core.DefinedValue"; } }
+		public override string EntityTypeName { get { return "Core.DefinedValue"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Defined Type.
         /// </summary>
         /// <value>
         /// A <see cref="DefinedType"/> object.
         /// </value>
-		public virtual DefinedType DefinedType { get; set; }
+        public virtual DefinedType DefinedType { get; set; }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static DefinedValue Read( int id )
-		{
-			return Read<DefinedValue>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static DefinedValue Read( int id )
+        {
+            return Read<DefinedValue>( id );
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get { return new Security.GenericEntity( "Global" ); }
+        }
 
 		/// <summary>
-		/// Gets the parent authority.
+		/// Returns a <see cref="System.String" /> that represents this instance.
 		/// </summary>
-		public override Security.ISecured ParentAuthority
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
 		{
-			get { return new Security.GenericEntity( "Global" ); }
+			return this.Name;
 		}
-
     }
     
     /// <summary>
@@ -150,7 +124,7 @@ namespace Rock.Core
         /// </summary>
         public DefinedValueConfiguration()
         {
-			this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
-		}
+            this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
+        }
     }
 }

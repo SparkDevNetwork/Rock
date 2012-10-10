@@ -3,11 +3,11 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <asp:Panel ID="pnlList" runat="server">
 
-        <Rock:Grid ID="rGrid" runat="server" >
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />

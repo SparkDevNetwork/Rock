@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Site POCO Entity.
     /// </summary>
     [Table( "cmsSite" )]
-    public partial class Site : ModelWithAttributes<Site>, IAuditable
+    public partial class Site : Model<Site>
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -139,71 +139,35 @@ namespace Rock.Cms
 		[DataMember]
 		public string ErrorPage { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.Site"; } }
+		public override string EntityTypeName { get { return "Cms.Site"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>
         /// Collection of Pages.
         /// </value>
-		public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Page> Pages { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Site Domains.
         /// </summary>
         /// <value>
         /// Collection of Site Domains.
         /// </value>
-		public virtual ICollection<SiteDomain> SiteDomains { get; set; }
+        public virtual ICollection<SiteDomain> SiteDomains { get; set; }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Default Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page DefaultPage { get; set; }
+        public virtual Page DefaultPage { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -215,6 +179,16 @@ namespace Rock.Cms
             return Read<Site>( id );
         }
 
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Name;
+		}
     }
 
     /// <summary>
@@ -227,7 +201,7 @@ namespace Rock.Cms
         /// </summary>
         public SiteConfiguration()
         {
-			this.HasOptional( p => p.DefaultPage ).WithMany( p => p.Sites ).HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
-		}
+            this.HasOptional( p => p.DefaultPage ).WithMany( p => p.Sites ).HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+        }
     }
 }

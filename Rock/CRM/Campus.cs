@@ -19,17 +19,17 @@ namespace Rock.Crm
     /// Campus POCO Entity.
     /// </summary>
     [Table( "crmCampus" )]
-    public partial class Campus : ModelWithAttributes<Campus>, IAuditable
+    public partial class Campus : Model<Campus>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -42,56 +42,20 @@ namespace Rock.Crm
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Created Date Time.
-        /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string AuthEntity { get { return "Crm.Campus"; } }
+        public override string EntityTypeName { get { return "Crm.Campus"; } }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Campus Read( int id )
-		{
-			return Read<Campus>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Campus Read( int id )
+        {
+            return Read<Campus>( id );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -116,6 +80,6 @@ namespace Rock.Crm
         /// </summary>
         public CampusConfiguration()
         {
-		}
+        }
     }
 }

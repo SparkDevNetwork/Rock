@@ -6,7 +6,7 @@ using System.Web.UI.WebControls;
 
 namespace Rockweb.Blocks.Crm
 {
-    public partial class Disc : Rock.Web.UI.Block
+    public partial class Disc : Rock.Web.UI.RockBlock
     {
         /// <summary>
         /// Creates a RadioButton for display on the test form.
@@ -113,7 +113,7 @@ namespace Rockweb.Blocks.Crm
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            //Checks if Page IsPostBack (making the assumption that the PostBack is because the
+            //Checks if RockPage IsPostBack (making the assumption that the PostBack is because the
             //  'Score Test' button was clicked.
             //Tell Javascript that the page is posted back or not.
             // See:  http://stackoverflow.com/questions/59719/how-can-i-check-for-ispostback-in-javascript

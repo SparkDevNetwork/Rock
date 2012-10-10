@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// Block Type POCO Entity.
     /// </summary>
     [Table( "cmsBlockType" )]
-    public partial class BlockType : ModelWithAttributes<BlockType>, IAuditable, IExportable
+    public partial class BlockType : Model<BlockType>, IExportable
     {
 		/// <summary>
 		/// Gets or sets the System.
@@ -61,64 +61,39 @@ namespace Rock.Cms
 		[DataMember]
 		public string Description { get; set; }
 		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string AuthEntity { get { return "Cms.BlockType"; } }
+		public override string EntityTypeName { get { return "Cms.BlockType"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
         /// Collection of Blocks.
         /// </value>
-		public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks { get; set; }
         
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static BlockType Read( int id )
+        {
+            return Read<BlockType>( id );
+        }
+
 		/// <summary>
-		/// Static Method to return an object based on the id
+		/// Returns a <see cref="System.String" /> that represents this instance.
 		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static BlockType Read( int id )
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
 		{
-			return Read<BlockType>( id );
+			return this.Name;
 		}
 
         /// <summary>
@@ -160,6 +135,6 @@ namespace Rock.Cms
         /// </summary>
         public BlockTypeConfiguration()
         {
-		}
+        }
     }
 }

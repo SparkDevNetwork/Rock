@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Pledge POCO class.
     /// </summary>
     [Table("financialPledge")]
-    public partial class Pledge : ModelWithAttributes<Pledge>, IAuditable
+    public partial class Pledge : Model<Pledge>
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -107,42 +107,6 @@ namespace Rock.Financial
         /// </value>
         public virtual DefinedValue FrequencyType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
  		/// <summary>
 		/// Static Method to return an object based on the id
 		/// </summary>
@@ -156,7 +120,18 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string AuthEntity { get { return "Financial.TransactionDetail"; } }
+        public override string EntityTypeName { get { return "Financial.TransactionDetail"; } }
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString()
+		{
+			return this.Amount.ToString();
+		}
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a person
     /// </summary>
     [Serializable]
-    public class Person : FieldType
+    public class PersonField : FieldType
     {
     }
 }
