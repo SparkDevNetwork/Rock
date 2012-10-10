@@ -36,6 +36,11 @@ namespace Rock.Core
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 
+        /// <summary>
+        /// Gets a Defined Value Id by GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
         public int? GetIdByGuid( Guid guid )
         {
             return Repository.AsQueryable()
