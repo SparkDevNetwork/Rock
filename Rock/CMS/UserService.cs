@@ -63,7 +63,6 @@ namespace Rock.Cms
             return items.Select( m => new UserDto()
                 {
                     UserName = m.UserName,
-                    AuthenticationType = m.AuthenticationType,
                     Password = m.Password,
                     IsConfirmed = m.IsConfirmed,
                     LastActivityDate = m.LastActivityDate,

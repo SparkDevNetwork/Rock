@@ -77,18 +77,67 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the order.
         /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int Order
         {
             get
             {
                 int order = 0;
-                if ( AttributeValues.ContainsKey( "Order" ) )
-                    if ( !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
-                        order = 0;
+                if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
+                {
+                    foreach(var attributeCategory in Attributes)
+                    {
+                        foreach(var attribute in attributeCategory.Value)
+                        {
+                            if ( attribute.Key == "Order" )
+                            {
+                                if ( Int32.TryParse( attribute.DefaultValue, out order ) )
+                                    return order;
+                                else
+                                    return 0;
+                            }
+                        }
+                    }
+                }
                 return order;
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive
+        {
+            get
+            {
+                bool isActive = false;
+                if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"].Value[0].Value, out isActive ) ) )
+                {
+                    foreach ( var attributeCategory in Attributes )
+                    {
+                        foreach ( var attribute in attributeCategory.Value )
+                        {
+                            if ( attribute.Key == "Active" )
+                            {
+                                if ( Boolean.TryParse( attribute.DefaultValue, out isActive ) )
+                                    return isActive;
+                                else
+                                    return false;
+                            }
+                        }
+                    }
+                }
+                return isActive;
+            }
+        }
+
+
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Component"/> class.
         /// </summary>

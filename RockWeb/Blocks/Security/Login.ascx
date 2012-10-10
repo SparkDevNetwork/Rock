@@ -30,7 +30,7 @@
     <div class="form-actions">
         <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
         <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn" OnClick="btnNewAccount_Click" CausesValidation="false" />
-        <asp:Button ID="Cancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false" />
+        <asp:Button ID="Cancel" runat="server" Text="Help" CssClass="btn" OnClick="btnHelp_Click" CausesValidation="false" />
     </div>
 
     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-info"/>
