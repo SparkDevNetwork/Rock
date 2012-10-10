@@ -67,12 +67,12 @@ namespace Rock.Core
 		[DataMember]
 		public int? CreatedByPersonId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Created Person.
-		/// </summary>
-		/// <value>
-		/// A <see cref="Person"/> object.
-		/// </value>
+        /// <summary>
+        /// Gets or sets the created by person.
+        /// </summary>
+        /// <value>
+        /// The created by person.
+        /// </value>
 		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
 
 		/// <summary>
