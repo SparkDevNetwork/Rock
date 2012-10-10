@@ -76,11 +76,11 @@ namespace Rock.Extension
             // Add the currently running assembly to the Catalog
             catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
 
-            // Add all the assemblies in the 'Extensions' subdirectory
-            string extensionFolder = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), "Extensions" );
-            if ( Directory.Exists( extensionFolder ) )
+            // Add all the assemblies in the 'Plugins' subdirectory
+            string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
+            if ( Directory.Exists( pluginsFolder ) )
             {
-                catalog.Catalogs.Add( new DirectoryCatalog( extensionFolder ) );
+                catalog.Catalogs.Add( new DirectoryCatalog( pluginsFolder ) );
             }
 
             // Create the container from the catalog
