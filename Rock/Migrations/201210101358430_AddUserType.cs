@@ -2,9 +2,17 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
+    /// <summary>
+    /// Migration for update cmsUser to include ServiceType and ServiceName fields and removed AuthenticationType.
+    /// Creates page for managing Authentication services
+    /// Deletes all previous authorizations and rebuilds them
+    /// </summary>
     public partial class AddUserType : RockMigration
     {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
         public override void Up()
         {
             AddColumn("dbo.cmsUser", "ServiceType", c => c.Int(nullable: false));
@@ -96,7 +104,10 @@ namespace Rock.Migrations
 " );
 
         }
-        
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
         public override void Down()
         {
             Sql( @"

@@ -56,12 +56,15 @@ namespace Rock.Cms
         /// Creates a new user.
         /// </summary>
         /// <param name="person">The person.</param>
-        /// <param name="authenticationType">Type of the authentication.</param>
+        /// <param name="serviceType">Type of the service.</param>
+        /// <param name="serviceName">Name of the service.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
+        /// <exception cref="System.ArgumentException">serviceName</exception>
         public User Create( Rock.Crm.Person person,
             AuthenticationServiceType serviceType,
             string serviceName,

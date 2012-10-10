@@ -73,6 +73,7 @@ namespace Rock.Security.ExternalAuthentication
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="username">The username.</param>
+        /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
         public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
         {
