@@ -40,6 +40,7 @@ namespace Rock.Data
         /// <value>
         /// The GUID.
         /// </value>
+        [AlternateKey]
         [DataMember]
         public Guid Guid { 
             get { return _guid; }
