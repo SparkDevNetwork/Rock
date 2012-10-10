@@ -448,12 +448,22 @@ namespace Rock.Data
 			return entityChanges;
 		}
 
+        /// <summary>
+        /// Audits the class.
+        /// </summary>
+        /// <param name="baseType">Type of the base.</param>
+        /// <returns></returns>
 		private bool AuditClass( Type baseType )
 		{
 			var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
 			return ( attribute == null );
 		}
 
+        /// <summary>
+        /// Audits the property.
+        /// </summary>
+        /// <param name="propertyInfo">The property info.</param>
+        /// <returns></returns>
 		private bool AuditProperty( PropertyInfo propertyInfo )
 		{
 			if (propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
@@ -466,6 +476,7 @@ namespace Rock.Data
         /// Gets the entity changes.
         /// </summary>
         /// <param name="entity">The entity.</param>
+        /// <param name="baseType">Type of the base.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
 		private List<Rock.Core.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )

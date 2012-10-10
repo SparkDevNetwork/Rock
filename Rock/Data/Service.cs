@@ -130,6 +130,7 @@ namespace Rock.Data
             }
         }
 
+        /*
         /// <summary>
         /// Gets the current model from the page instance context.
         /// </summary>
@@ -154,6 +155,7 @@ namespace Rock.Data
 
         //    return null;
         //}
+         */ 
 
 		/// <summary>
 		/// Date the entity was created.

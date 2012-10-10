@@ -21,6 +21,8 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class PageRoutes : RockBlock
     {
+        #region Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -63,6 +65,7 @@ namespace RockWeb.Blocks.Administration
 
             base.OnLoad( e );
         }
+        #endregion
 
         #region Grid Events
 
@@ -206,18 +209,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        private class PageInfo
-        {
-            public int Id { get; set; }
-            public string Title { get; set; }
-            public string DropDownListText { get; set; }
-            public int pageDepth { get; set; }
-            public string pageHash { get; set; }
-        }
-
-        /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
@@ -243,12 +234,12 @@ namespace RockWeb.Blocks.Administration
             if ( pageRoute != null )
             {
                 hfPageRouteId.Value = pageRoute.Id.ToString();
-
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbRoute.Text = pageRoute.Route;
             }
             else
             {
+                hfPageRouteId.Value = string.Empty;
                 tbRoute.Text = string.Empty;
             }
         }

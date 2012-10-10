@@ -67,12 +67,13 @@ namespace Rock.Security.Authentication
 			return loginUri.AbsoluteUri;
 		}
 
-		/// <summary>
-		/// Authenticates the specified request.
-		/// </summary>
-		/// <param name="request">The request.</param>
-		/// <param name="username">The username.</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Authenticates the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="returnUrl">The return URL.</param>
+        /// <returns></returns>
 		public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
 		{
 			string code = request.QueryString["code"];
