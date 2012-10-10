@@ -6,6 +6,7 @@ using System.Text;
 using Rock;
 using Rock.Cms;
 
+#pragma warning disable 1591
 
 namespace Rock.Migrations
 {

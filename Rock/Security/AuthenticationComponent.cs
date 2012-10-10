@@ -25,12 +25,12 @@ namespace Rock.Security
 		/// <returns></returns>
 		public abstract Boolean Authenticate( User user, string password );
 
-		/// <summary>
-		/// Encodes the password.
-		/// </summary>
-		/// <param name="user">The user.</param>
-		/// <param name="newPassword">The new password.</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Encodes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
 		public abstract String EncodePassword( User user, string password );
 
 	}

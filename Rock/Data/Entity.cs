@@ -69,6 +69,12 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Gets the context key.
+        /// </summary>
+        /// <value>
+        /// The context key.
+        /// </value>
         [NotMapped]
         public string ContextKey
         {
@@ -112,7 +118,7 @@ namespace Rock.Data
         /// <summary>
         /// Static method to return an object based on the id
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TT">The type of the T.</typeparam>
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static TT Read<TT>( int id ) where TT : Entity<TT>
