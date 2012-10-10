@@ -47,6 +47,9 @@ namespace RockWeb.Blocks.Administration
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
+                        if ( !Page.IsPostBack )
+                            _container.Refresh();
+
                         rGrid.DataKeyNames = new string[] { "id" };
                         if ( _isAuthorizedToConfigure )
                             rGrid.GridReorder += rGrid_GridReorder;
