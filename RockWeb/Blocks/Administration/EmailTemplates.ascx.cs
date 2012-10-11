@@ -7,9 +7,9 @@
 using System;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Crm;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -17,50 +17,50 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the emailTemplates that are available for a specific entity
     /// </summary>
-    public partial class EmailTemplates : Rock.Web.UI.RockBlock
+    public partial class EmailTemplates : RockBlock
     {
-        #region Fields
-
-        private bool _canConfigure = false;
-        private Rock.Crm.EmailTemplateService _emailTemplateService = new Rock.Crm.EmailTemplateService();
-
-        #endregion
-
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            try
+            BindFilter();
+
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
-
-                BindFilter();
-
-                if ( _canConfigure )
-                {
-                    rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.IsAddEnabled = true;
-                    rGrid.Actions.AddClick += rGrid_AddClick;
-                    rGrid.GridRebind += rGrid_GridRebind;
-                }
-                else
-                {
-                    DisplayError( "You are not authorized to configure this page" );
-                }
+                gEmailTemplates.DataKeyNames = new string[] { "id" };
+                gEmailTemplates.Actions.IsAddEnabled = true;
+                gEmailTemplates.Actions.AddClick += gEmailTemplates_AddClick;
+                gEmailTemplates.GridRebind += gEmailTemplates_GridRebind;
             }
-            catch ( SystemException ex )
-            {
-                DisplayError( ex.Message );
-            }
-
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _canConfigure )
-                BindGrid();
+            nbMessage.Visible = false;
+
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            {
+                if ( !Page.IsPostBack )
+                {
+                    BindGrid();
+                }
+            }
+            else
+            {
+                gEmailTemplates.Visible = false;
+                nbMessage.Text = "You are not authorized to edit email templates";
+                nbMessage.Visible = true;
+            }
 
             base.OnLoad( e );
         }
@@ -69,34 +69,60 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCategoryFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        protected void rGrid_Edit( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the AddClick event of the gEmailTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gEmailTemplates_AddClick( object sender, EventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( 0 );
         }
 
-        protected void rGrid_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Edit event of the gEmailTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gEmailTemplates_Edit( object sender, RowEventArgs e )
         {
-            Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gEmailTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gEmailTemplates_Delete( object sender, RowEventArgs e )
+        {
+            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            EmailTemplate emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
-                _emailTemplateService.Delete( emailTemplate, CurrentPersonId );
-                _emailTemplateService.Save( emailTemplate, CurrentPersonId );
+                emailTemplateService.Delete( emailTemplate, CurrentPersonId );
+                emailTemplateService.Save( emailTemplate, CurrentPersonId );
             }
 
             BindGrid();
         }
 
-        protected void rGrid_AddClick( object sender, EventArgs e )
-        {
-            ShowEdit( 0 );
-        }
-
-        void rGrid_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gEmailTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gEmailTemplates_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -105,27 +131,42 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            phList.Visible = true;
+            pnlList.Visible = true;
             pnlDetails.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Crm.EmailTemplate emailTemplate;
+            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            EmailTemplate emailTemplate;
 
             int emailTemplateId = 0;
-            if ( !Int32.TryParse( hfEmailTemplateId.Value, out emailTemplateId ) )
+            if ( !int.TryParse( hfEmailTemplateId.Value, out emailTemplateId ) )
+            {
                 emailTemplateId = 0;
+            }
 
-            if (emailTemplateId == 0)
+            if ( emailTemplateId == 0 )
             {
                 emailTemplate = new EmailTemplate();
-                _emailTemplateService.Add(emailTemplate, CurrentPersonId);
+                emailTemplateService.Add( emailTemplate, CurrentPersonId );
             }
             else
-                emailTemplate = _emailTemplateService.Get(emailTemplateId);
+            {
+                emailTemplate = emailTemplateService.Get( emailTemplateId );
+            }
 
             emailTemplate.Category = tbCategory.Text;
             emailTemplate.Title = tbTitle.Text;
@@ -136,20 +177,26 @@ namespace RockWeb.Blocks.Administration
             emailTemplate.Subject = tbSubject.Text;
             emailTemplate.Body = tbBody.Text;
 
-            _emailTemplateService.Save(emailTemplate, CurrentPersonId);
+            if ( !emailTemplate.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
 
+            emailTemplateService.Save( emailTemplate, CurrentPersonId );
             BindFilter();
             BindGrid();
-
             pnlDetails.Visible = false;
-            phList.Visible = true;
+            pnlList.Visible = true;
         }
-
 
         #endregion
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
@@ -163,36 +210,53 @@ namespace RockWeb.Blocks.Administration
                 Distinct().ToList();
 
             foreach ( var item in items )
+            {
                 ddlCategoryFilter.Items.Add( item );
+            }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
-            var emailTemplates = _emailTemplateService.Queryable();
+            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            SortProperty sortProperty = gEmailTemplates.SortProperty;
+
+            var emailTemplates = emailTemplateService.Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
-                emailTemplates = emailTemplates.
-                    Where( a => a.Category.Trim() == ddlCategoryFilter.SelectedValue );
+            {
+                emailTemplates = emailTemplates.Where( a => a.Category.Trim() == ddlCategoryFilter.SelectedValue );
+            }
 
-            SortProperty sortProperty = rGrid.SortProperty;
             if ( sortProperty != null )
-                emailTemplates = emailTemplates.Sort( sortProperty );
+            {
+                gEmailTemplates.DataSource = emailTemplates.Sort( sortProperty ).ToList();
+            }
             else
-                emailTemplates = emailTemplates.
-                    OrderBy( a => a.Category ).
-                    ThenBy( a => a.Title );
+            {
+                gEmailTemplates.DataSource = emailTemplates.OrderBy( a => a.Category ).ThenBy( a => a.Title ).ToList();
+            }
 
-            rGrid.DataSource = emailTemplates.ToList();
-            rGrid.DataBind();
+            gEmailTemplates.DataBind();
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="emailTemplateId">The email template id.</param>
         protected void ShowEdit( int emailTemplateId )
         {
-            Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( emailTemplateId );
+            pnlList.Visible = false;
+            pnlDetails.Visible = true;
+
+            EmailTemplateService emailTemplateService = new EmailTemplateService();
+            EmailTemplate emailTemplate = emailTemplateService.Get( emailTemplateId );
 
             if ( emailTemplate != null )
             {
-                lAction.Text = "Edit";
+                lActionTitle.Text = "Edit Email Template";
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 tbCategory.Text = emailTemplate.Category;
@@ -206,7 +270,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lAction.Text = "Add";
+                lActionTitle.Text = "Add Email Template";
                 tbCategory.Text = string.Empty;
                 tbTitle.Text = string.Empty;
                 tbFrom.Text = string.Empty;
@@ -215,25 +279,9 @@ namespace RockWeb.Blocks.Administration
                 tbBcc.Text = string.Empty;
                 tbSubject.Text = string.Empty;
                 tbBody.Text = string.Empty;
-
             }
-
-            phList.Visible = false;
-            pnlDetails.Visible = true;
-        }
-
-        private void DisplayError( string message )
-        {
-            pnlMessage.Controls.Clear();
-            pnlMessage.Controls.Add( new LiteralControl( message ) );
-            pnlMessage.Visible = true;
-
-            phList.Visible = false;
-            pnlDetails.Visible = false;
         }
 
         #endregion
-
-
     }
 }

@@ -20,7 +20,9 @@
             <asp:ValidationSummary runat="server" CssClass="failureNotification" />
 
             <fieldset>
-                <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Campus</legend>
+                <legend>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </legend>
                 <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Crm.Campus, Rock" PropertyName="Name" />
             </fieldset>
 

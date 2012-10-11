@@ -231,14 +231,14 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageRoute != null )
             {
-                lAction.Text = "Edit";
+                lActionTitle.Text = "Edit Page Route";
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbRoute.Text = pageRoute.Route;
             }
             else
             {
-                lAction.Text = "Add";
+                lActionTitle.Text = "Add Page Route";
                 hfPageRouteId.Value = string.Empty;
                 tbRoute.Text = string.Empty;
             }
