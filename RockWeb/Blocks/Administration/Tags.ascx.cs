@@ -40,11 +40,11 @@ namespace RockWeb.Blocks.Administration
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public override List<string> RequiredContext
+        public override List<string> ContextTypesRequired
         {
             get 
             {
-                var requiredContext = base.RequiredContext;
+                var requiredContext = base.ContextTypesRequired;
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
                     requiredContext.Add( "Rock.Crm.Person" );
