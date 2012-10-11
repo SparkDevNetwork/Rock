@@ -13,12 +13,12 @@ using Rock.Crm;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     /// <summary>
     /// User control for managing the emailTemplates that are available for a specific entity
     /// </summary>
     public partial class EmailTemplates : Rock.Web.UI.RockBlock
-        
+    {
         #region Fields
 
         private bool _canConfigure = false;
@@ -29,36 +29,36 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             try
-                
+            {
                 _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
                 if ( _canConfigure )
-                    
-                    rGrid.DataKeyNames = new string[]      "id" };
+                {
+                    rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.IsAddEnabled = true;
                     rGrid.Actions.AddClick += rGrid_AddClick;
                     rGrid.GridRebind += rGrid_GridRebind;
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to configure this page" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
 
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
 
@@ -70,20 +70,20 @@ namespace RockWeb.Blocks.Administration
         #region Grid Events
 
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
-            
+        {
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
-            
+        {
             Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
-                
+            {
                 _emailTemplateService.Delete( emailTemplate, CurrentPersonId );
                 _emailTemplateService.Save( emailTemplate, CurrentPersonId );
             }
@@ -92,12 +92,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGrid_AddClick( object sender, EventArgs e )
-            
+        {
             ShowEdit( 0 );
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
@@ -106,13 +106,13 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         protected void btnCancel_Click( object sender, EventArgs e )
-            
+        {
             phList.Visible = true;
             pnlDetails.Visible = false;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-            
+        {
             Rock.Crm.EmailTemplate emailTemplate;
 
             int emailTemplateId = 0;
@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Administration
                 emailTemplateId = 0;
 
             if (emailTemplateId == 0)
-                
+            {
                 emailTemplate = new EmailTemplate();
                 _emailTemplateService.Add(emailTemplate, CurrentPersonId);
             }
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void BindFilter()
-            
+        {
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void BindGrid()
-            
+        {
             var emailTemplates = _emailTemplateService.Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
@@ -187,11 +187,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( int emailTemplateId )
-            
+        {
             Rock.Crm.EmailTemplate emailTemplate = _emailTemplateService.Get( emailTemplateId );
 
             if ( emailTemplate != null )
-                
+            {
                 lAction.Text = "Edit";
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Administration
                 tbBody.Text = emailTemplate.Body;
             }
             else
-                
+            {
                 lAction.Text = "Add";
                 tbCategory.Text = string.Empty;
                 tbTitle.Text = string.Empty;
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

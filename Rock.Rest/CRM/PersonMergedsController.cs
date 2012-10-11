@@ -13,12 +13,12 @@
 using Rock.Crm;
 
 namespace Rock.Rest.Crm
-    
+{
     /// <summary>
     /// PersonMergeds REST API
     /// </summary>
     public partial class PersonMergedsController : Rock.Rest.ApiController<Rock.Crm.PersonMerged, Rock.Crm.PersonMergedDto>
-        
-        public PersonMergedsController() : base( new Rock.Crm.PersonMergedService() )      } 
+    {
+        public PersonMergedsController() : base( new Rock.Crm.PersonMergedService() ) { } 
     }
 }

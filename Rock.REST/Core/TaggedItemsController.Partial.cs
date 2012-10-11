@@ -13,23 +13,23 @@ using Rock.Core;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Core
-    
+{
 	/// <summary>
 	/// TaggedItems REST API
 	/// </summary>
 	public partial class TaggedItemsController : IHasCustomRoutes
-	    
+	{
 		/// <summary>
 		/// Add Custom route for flushing cached attributes
 		/// </summary>
 		/// <param name="routes"></param>
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		    
+		{
 			routes.MapHttpRoute(
 				name: "TaggedItemsByEntity",
-				routeTemplate: "api/taggeditems/    entity}/    ownerid}/    entityid}/    name}/    entityqualifier}/    entityqualifiervalue}",
+				routeTemplate: "api/taggeditems/{entity}/{ownerid}/{entityid}/{name}/{entityqualifier}/{entityqualifiervalue}",
 				defaults: new
-				    
+				{
 					controller = "taggeditems",
 					entityqualifier = RouteParameter.Optional,
 					entityqualifiervalue = RouteParameter.Optional
@@ -38,30 +38,30 @@ namespace Rock.Rest.Core
 
 		[Authenticate]
 		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name )
-		    
+		{
 			return Post( entity, ownerId, entityId, name, string.Empty, string.Empty );
 		}
 
 		[Authenticate]
 		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier )
-		    
+		{
 			return Post( entity, ownerId, entityId, name, entityQualifier, string.Empty );
 		}
 
 		[Authenticate]
 		public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
-		    
+		{
 			var user = CurrentUser();
 			if ( user != null )
-			    
+			{
 				using ( new Rock.Data.UnitOfWorkScope() )
-				    
+				{
 					var tagService = new TagService();
 					var taggedItemService = new TaggedItemService();
 
 					var tag = tagService.GetByEntityAndName( entity, entityQualifier, entityQualifierValue, ownerId, name );
 					if ( tag == null )
-					    
+					{
 						tag = new Tag();
 						tag.Entity = entity;
 						tag.EntityQualifierColumn = entityQualifier;
@@ -74,7 +74,7 @@ namespace Rock.Rest.Core
 
 					var taggedItem = taggedItemService.GetByTag( tag.Id, entityId );
 					if ( taggedItem == null )
-					    
+					{
 						taggedItem = new TaggedItem();
 						taggedItem.TagId = tag.Id;
 						taggedItem.EntityId = entityId;
@@ -91,24 +91,24 @@ namespace Rock.Rest.Core
 
 		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name )
-		    
+		{
 			Delete( entity, ownerId, entityId, name, string.Empty, string.Empty );
 		}
 
 		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier )
-		    
+		{
 			Delete( entity, ownerId, entityId, name, entityQualifier, string.Empty );
 		}
 
 		[Authenticate]
 		public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
-		    
+		{
 			var user = CurrentUser();
 			if ( user != null )
-			    
+			{
 				using ( new Rock.Data.UnitOfWorkScope() )
-				    
+				{
 					var tagService = new TagService();
 					var taggedItemService = new TaggedItemService();
 

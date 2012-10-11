@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "cmsHtmlContent" )]
     public partial class HtmlContent : Model<HtmlContent>, IExportable
-        
+    {
 		/// <summary>
 		/// Gets or sets the Block Id.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int BlockId      get; set; }
+		public int BlockId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Entity Value.
@@ -38,7 +38,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 200 )]
 		[DataMember]
-		public string EntityValue      get; set; }
+		public string EntityValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Version.
@@ -48,7 +48,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int Version      get; set; }
+		public int Version { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Content.
@@ -58,7 +58,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public string Content      get; set; }
+		public string Content { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Approved.
@@ -68,7 +68,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsApproved      get; set; }
+		public bool IsApproved { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Approved By Person Id.
@@ -77,7 +77,7 @@ namespace Rock.Cms
 		/// Approved By Person Id.
 		/// </value>
 		[DataMember]
-		public int? ApprovedByPersonId      get; set; }
+		public int? ApprovedByPersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Approved Date Time.
@@ -86,7 +86,7 @@ namespace Rock.Cms
 		/// Approved Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime? ApprovedDateTime      get; set; }
+		public DateTime? ApprovedDateTime { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Start Date Time.
@@ -95,7 +95,7 @@ namespace Rock.Cms
 		/// Start Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime? StartDateTime      get; set; }
+		public DateTime? StartDateTime { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Expire Date Time.
@@ -104,13 +104,13 @@ namespace Rock.Cms
 		/// Expire Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime? ExpireDateTime      get; set; }
+		public DateTime? ExpireDateTime { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Cms.HtmlContent"; } }
+		public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
         
         /// <summary>
         /// Gets or sets the Block.
@@ -118,7 +118,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
-        public virtual Block Block      get; set; }
+        public virtual Block Block { get; set; }
         
         /// <summary>
         /// Gets or sets the Approved By Person.
@@ -126,7 +126,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person ApprovedByPerson      get; set; }
+		public virtual Crm.Person ApprovedByPerson { get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -134,7 +134,7 @@ namespace Rock.Cms
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static HtmlContent Read( int id )
-		    
+		{
 			return Read<HtmlContent>( id );
 		}
 
@@ -145,7 +145,7 @@ namespace Rock.Cms
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
-            
+        {
             return Content;
         }
 
@@ -154,7 +154,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string ExportJson()
-            
+        {
             return ExportObject().ToJSON();
         }
 
@@ -163,7 +163,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public object ExportObject()
-            
+        {
             return this.ToDynamic();
         }
 
@@ -172,7 +172,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="data">The data.</param>
         public void ImportJson(string data)
-            
+        {
             throw new NotImplementedException();
         }
     }
@@ -181,12 +181,12 @@ namespace Rock.Cms
     /// Html Content Configuration class.
     /// </summary>
     public partial class HtmlContentConfiguration : EntityTypeConfiguration<HtmlContent>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentConfiguration"/> class.
         /// </summary>
         public HtmlContentConfiguration()
-            
+        {
             this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
             this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
         }

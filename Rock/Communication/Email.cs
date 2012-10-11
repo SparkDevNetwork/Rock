@@ -13,19 +13,19 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Rock.Communication
-    
+{
     /// <summary>
     /// Email class
     /// </summary>
     public class Email
-        
+    {
         /// <summary>
         /// Gets or sets from.
         /// </summary>
         /// <value>
         /// From.
         /// </value>
-        public string From      get; set; }
+        public string From { get; set; }
 
         /// <summary>
         /// Gets or sets to.
@@ -33,7 +33,7 @@ namespace Rock.Communication
         /// <value>
         /// To.
         /// </value>
-        public string To      get; set; }
+        public string To { get; set; }
 
         /// <summary>
         /// Gets or sets the cc.
@@ -41,7 +41,7 @@ namespace Rock.Communication
         /// <value>
         /// The cc.
         /// </value>
-        public string Cc      get; set; }
+        public string Cc { get; set; }
 
         /// <summary>
         /// Gets or sets the BCC.
@@ -49,7 +49,7 @@ namespace Rock.Communication
         /// <value>
         /// The BCC.
         /// </value>
-        public string Bcc      get; set; }
+        public string Bcc { get; set; }
 
         /// <summary>
         /// Gets or sets the subject.
@@ -57,7 +57,7 @@ namespace Rock.Communication
         /// <value>
         /// The subject.
         /// </value>
-        public string Subject      get; set; }
+        public string Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the body.
@@ -65,7 +65,7 @@ namespace Rock.Communication
         /// <value>
         /// The body.
         /// </value>
-        public string Body      get; set; }
+        public string Body { get; set; }
 
         /// <summary>
         /// Gets or sets the SMTP server.
@@ -73,7 +73,7 @@ namespace Rock.Communication
         /// <value>
         /// The SMTP server.
         /// </value>
-        public string Server      get; set; }
+        public string Server { get; set; }
 
         /// <summary>
         /// Gets or sets the SMTP port.
@@ -81,7 +81,7 @@ namespace Rock.Communication
         /// <value>
         /// The SMTP port.
         /// </value>
-        public int Port      get; set; }
+        public int Port { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to use SSL.
@@ -89,7 +89,7 @@ namespace Rock.Communication
         /// <value>
         ///   <c>true</c> if [use SSL]; otherwise, <c>false</c>.
         /// </value>
-        public bool UseSSL      get; set; }
+        public bool UseSSL { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the SMTP user.
@@ -97,7 +97,7 @@ namespace Rock.Communication
         /// <value>
         /// The name of the SMTP user.
         /// </value>
-        public string UserName      get; set; }
+        public string UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the SMTP password.
@@ -105,18 +105,18 @@ namespace Rock.Communication
         /// <value>
         /// The SMTP password.
         /// </value>
-        public string Password      get; set; }
+        public string Password { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Email"/> class.
         /// </summary>
         /// <param name="templateGuid">The template GUID.</param>
         public Email( Guid templateGuid )
-            
+        {
             Rock.Crm.EmailTemplateService service = new Crm.EmailTemplateService();
             Rock.Crm.EmailTemplate template = service.GetByGuid( templateGuid );
             if ( template != null )
-                
+            {
                 To = template.To;
                 From = template.From;
                 Cc = template.Cc;
@@ -136,7 +136,7 @@ namespace Rock.Communication
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         public Email( string from, string to, string cc, string bcc, string subject, string body )
-            
+        {
             From = from;
             To = to;
             Cc = cc;
@@ -149,7 +149,7 @@ namespace Rock.Communication
         /// Sends this instance.
         /// </summary>
         public void Send()
-            
+        {
             List<string> to = SplitRecipient( To );
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
@@ -162,12 +162,12 @@ namespace Rock.Communication
         /// </summary>
         /// <param name="recipientMergeValues">The recipient merge values.</param>
         public void Send( Dictionary<string, List<object>> recipientMergeValues )
-            
+        {
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
             foreach ( KeyValuePair<string, List<object>> recipient in recipientMergeValues )
-                
+            {
                 List<string> to = SplitRecipient( To );
                 to.Add( recipient.Key );
 
@@ -180,12 +180,12 @@ namespace Rock.Communication
 
 
         private string Resolve( string content, List<object> objects )
-            
+        {
             if (content == null)
                 return string.Empty;
 
             // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\    .+}.*" ) )
+            if ( !Regex.IsMatch( content, @".*\{.+}.*" ) )
                 return content;
 
             string result = content;
@@ -213,9 +213,9 @@ namespace Rock.Communication
         }
 
         private string ResolveGlobalAttributes( string value, Dictionary<string, KeyValuePair<string, string>> globalAttributes )
-            
+        {
             // If the attribute doesn't contain any merge codes, return the content
-            if ( !Regex.IsMatch( value, @".*\    .+}.*" ) )
+            if ( !Regex.IsMatch( value, @".*\{.+}.*" ) )
                 return value;
 
             // Resolve the merge codes
@@ -224,7 +224,7 @@ namespace Rock.Communication
 
             // If anything was resolved, keep resolving until nothing changed.
             while (result != content)
-                
+            {
                 content = result;
                 result = ResolveGlobalAttributes( content, globalAttributes);
             }
@@ -233,28 +233,28 @@ namespace Rock.Communication
         }
 
         private string ResolveMergeCodes( string content, object item )
-            
+        {
             string result = content;
 
             if ( item is Dictionary<string, string> )
-                
+            {
                 Dictionary<string, string> items = item as Dictionary<string, string>;
                 foreach(KeyValuePair<string, string> kvp in items)
-                    result = result.ReplaceCaseInsensitive( "    " + kvp.Key + "}", kvp.Value );
+                    result = result.ReplaceCaseInsensitive( "{" + kvp.Key + "}", kvp.Value );
             }
 
             else if ( item is Dictionary<string, KeyValuePair<string, string>> )
-                
+            {
                 Dictionary<string, KeyValuePair<string, string>> items = item as Dictionary<string, KeyValuePair<string, string>>;
                 foreach ( KeyValuePair<string, KeyValuePair<string, string>> kvp in items )
-                    result = result.ReplaceCaseInsensitive( "    " + kvp.Key + "}", kvp.Value.Value );
+                    result = result.ReplaceCaseInsensitive( "{" + kvp.Key + "}", kvp.Value.Value );
             }
 
             else if ( item is List<object> )
-                
+            {
                 List<object> itemList = item as List<object>;
                 if ( itemList.Count > 0 )
-                    
+                {
                     Type type = itemList[0].GetType();
                     if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
                         type = type.BaseType;
@@ -262,11 +262,11 @@ namespace Rock.Communication
                     string itemName = type.Name.ToLower();
 
                     string contentLc = content.ToLower();
-                    int start = contentLc.IndexOf( "    " + itemName + ":repeatbegin}" );
-                    int end = contentLc.IndexOf( "    " + itemName + ":repeatend}" );
+                    int start = contentLc.IndexOf( "{" + itemName + ":repeatbegin}" );
+                    int end = contentLc.IndexOf( "{" + itemName + ":repeatend}" );
 
                     if ( start >= 0 && end > start )
-                        
+                    {
                         int startOffset = start + itemName.Length + 14;
                         string targetContent = content.Substring( startOffset, end - startOffset );
 
@@ -281,10 +281,10 @@ namespace Rock.Communication
             }
 
             else if ( item is Dictionary<object, List<object>> )
-                
+            {
                 Dictionary<object, List<object>> itemList = item as Dictionary<object, List<object>>;
                 if ( itemList.Count > 0 )
-                    
+                {
                     Type type = itemList.Keys.First().GetType();
                     if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
                         type = type.BaseType;
@@ -292,17 +292,17 @@ namespace Rock.Communication
                     string itemName = type.Name.ToLower();
 
                     string contentLc = content.ToLower();
-                    int start = contentLc.IndexOf( "    " + itemName + ":repeatbegin}" );
-                    int end = contentLc.IndexOf( "    " + itemName + ":repeatend}" );
+                    int start = contentLc.IndexOf( "{" + itemName + ":repeatbegin}" );
+                    int end = contentLc.IndexOf( "{" + itemName + ":repeatend}" );
 
                     if ( start >= 0 && end > start )
-                        
+                    {
                         int startOffset = start + itemName.Length + 14;
                         string targetContent = content.Substring( startOffset, end - startOffset );
 
                         StringBuilder sb = new StringBuilder();
                         foreach ( KeyValuePair<object, List<object>> kvp in itemList )
-                            
+                        {
                             string resolvedContent = ResolveMergeCodes( targetContent, kvp.Key );
                             sb.Append( ResolveMergeCodes( resolvedContent, kvp.Value ) );
                         }
@@ -313,7 +313,7 @@ namespace Rock.Communication
             }
 
             else
-                
+            {
                 Type type = item.GetType();
                 if ( type.Namespace == "System.Data.Entity.DynamicProxies")
                     type = type.BaseType;
@@ -324,10 +324,10 @@ namespace Rock.Communication
 
                 PropertyInfo[] properties = item.GetType().GetProperties();
                 foreach ( PropertyInfo propertyInfo in properties )
-                    
-                    string mergeCode = string.Format( "            0}:    1}}}", type.Name, propertyInfo.Name );
+                {
+                    string mergeCode = string.Format( "{{{0}:{1}}}", type.Name, propertyInfo.Name );
                     if ( resultLc.Contains( mergeCode.ToLower() ) )
-                        
+                    {
                         object value = propertyInfo.GetValue( item, null );
                         result = result.ReplaceCaseInsensitive( mergeCode, value != null ? value.ToString() : "" );
                     }
@@ -339,11 +339,11 @@ namespace Rock.Communication
         }
 
         private List<string> SplitRecipient( string recipients )
-            
+        {
             if ( String.IsNullOrWhiteSpace( recipients ) )
                 return new List<string>();
             else
-                return new List<string>( recipients.Split( new char[]      ',' }, StringSplitOptions.RemoveEmptyEntries ) );
+                return new List<string>( recipients.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) );
         }
 
         /// <summary>
@@ -362,9 +362,9 @@ namespace Rock.Communication
         /// <param name="password">The password.</param>
         public static void Send( string from, List<string> to, List<string> cc, List<string> bcc, string subject, string body, 
             string server, int port, bool useSSL, string userName, string password)
-            
+        {
             if ( !string.IsNullOrEmpty( server ) )
-                
+            {
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress( from );
 
@@ -373,7 +373,7 @@ namespace Rock.Communication
                         message.To.Add( new MailAddress( e ) );
 
                 if ( message.To.Count > 0 )
-                    
+                {
                     foreach ( string e in cc )
                         if ( !string.IsNullOrWhiteSpace( e ) )
                             message.CC.Add( new MailAddress( e ) );
@@ -395,7 +395,7 @@ namespace Rock.Communication
                     smtpClient.EnableSsl = useSSL;
 
                     if ( !string.IsNullOrEmpty( userName ) )
-                        
+                    {
                         smtpClient.UseDefaultCredentials = false;
                         smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
                     }

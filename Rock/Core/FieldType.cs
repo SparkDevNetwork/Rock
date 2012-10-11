@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Field Type POCO Entity.
     /// </summary>
     [Table( "coreFieldType" )]
     public partial class FieldType : Model<FieldType>
-        
+    {
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem      get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -39,7 +39,7 @@ namespace Rock.Core
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name      get; set; }
+		public string Name { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -48,7 +48,7 @@ namespace Rock.Core
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description      get; set; }
+		public string Description { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Assembly.
@@ -59,7 +59,7 @@ namespace Rock.Core
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Assembly      get; set; }
+		public string Assembly { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Class.
@@ -70,7 +70,7 @@ namespace Rock.Core
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Class      get; set; }
+		public string Class { get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -78,7 +78,7 @@ namespace Rock.Core
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static FieldType Read( int id )
-		    
+		{
 			return Read<FieldType>( id );
 		}
 				
@@ -86,7 +86,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Core.FieldType"; } }
+		public override string EntityTypeName { get { return "Core.FieldType"; } }
         
         /// <summary>
         /// Gets or sets the Defined Types.
@@ -94,7 +94,7 @@ namespace Rock.Core
         /// <value>
         /// Collection of Defined Types.
         /// </value>
-        public virtual ICollection<DefinedType> DefinedTypes      get; set; }
+        public virtual ICollection<DefinedType> DefinedTypes { get; set; }
 
         // <summary>
         // Gets or sets the Metrics.
@@ -102,7 +102,7 @@ namespace Rock.Core
         // <value>
         // Collection of Metrics.
         // </value>
-        //public virtual ICollection<Metric> Metrics      get; set; }
+        //public virtual ICollection<Metric> Metrics { get; set; }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -111,7 +111,7 @@ namespace Rock.Core
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
-            
+        {
             return Name;
         }
 
@@ -121,12 +121,12 @@ namespace Rock.Core
     /// Field Type Configuration class.
     /// </summary>
     public partial class FieldTypeConfiguration : EntityTypeConfiguration<FieldType>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypeConfiguration"/> class.
         /// </summary>
         public FieldTypeConfiguration()
-            
+        {
         }
     }
 }

@@ -11,12 +11,12 @@ using Rock.Cms;
 using Rock.Extension;
 
 namespace Rock.Security
-    
+{
 	/// <summary>
 	/// Base class for components that authenticate user by redirecting to third-party site (i.e. Facebook, Twitter, Google, etc)
 	/// </summary>
 	public abstract class ExternalAuthenticationComponent : Component
-        
+    {
 		/// <summary>
 		/// Tests the Http Request to determine if authentication should be tested by this 
 		/// authentication provider.

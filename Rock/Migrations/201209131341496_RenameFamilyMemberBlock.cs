@@ -1,12 +1,12 @@
 namespace Rock.Migrations
-    
+{
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class RenameFamilyMemberBlock : RockMigration_0
-        
+    {
         public override void Up()
-            
+        {
 			Sql( @"
 	-- Change family member block path to more generic group members
 	UPDATE [cmsBlock] SET [Path] = '~/Blocks/Crm/PersonDetail/GroupMembers.ascx' WHERE [Guid] = '3E14B410-22CB-49CC-8A1F-C30ECD0E816A'
@@ -47,7 +47,7 @@ namespace Rock.Migrations
 		}
         
         public override void Down()
-            
+        {
 			DeleteBlockAttribute( "B84EB1CB-E719-4444-B739-B0112AA20BBA" );
 
 			Sql( @"

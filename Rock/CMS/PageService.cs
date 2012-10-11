@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Page Service class
     /// </summary>
     public partial class PageService : Service<Page, PageDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageService"/> class
         /// </summary>
         public PageService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageService"/> class
         /// </summary>
         public PageService(IRepository<Page> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Page CreateNew()
-            
+        {
             return new Page();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PageDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
-            
+        {
             return items.Select( m => new PageDto()
-                    
+                {
                     Name = m.Name,
                     Title = m.Title,
                     IsSystem = m.IsSystem,

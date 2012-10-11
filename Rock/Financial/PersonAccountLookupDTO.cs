@@ -14,25 +14,25 @@ using System;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Data Transfer Object for PersonAccountLookup object
     /// </summary>
     public partial class PersonAccountLookupDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public int? PersonId      get; set; }
-        public string Account      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public int? PersonId { get; set; }
+        public string Account { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PersonAccountLookupDto ()
-            
+        {
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="personAccountLookup"></param>
         public PersonAccountLookupDto ( PersonAccountLookup personAccountLookup )
-            
+        {
             CopyFromModel( personAccountLookup );
         }
 
@@ -49,9 +49,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is PersonAccountLookup )
-                
+            {
                 var personAccountLookup = (PersonAccountLookup)model;
                 this.PersonId = personAccountLookup.PersonId;
                 this.Account = personAccountLookup.Account;
@@ -65,9 +65,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is PersonAccountLookup )
-                
+            {
                 var personAccountLookup = (PersonAccountLookup)model;
                 personAccountLookup.PersonId = this.PersonId;
                 personAccountLookup.Account = this.Account;

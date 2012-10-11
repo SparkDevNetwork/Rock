@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Defined Type POCO Entity.
     /// </summary>
     [Table( "coreDefinedType" )]
     public partial class DefinedType : Model<DefinedType>, IOrdered
-        
+    {
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem      get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Field Type Id.
@@ -37,7 +37,7 @@ namespace Rock.Core
 		/// Field Type Id.
 		/// </value>
 		[DataMember]
-		public int? FieldTypeId      get; set; }
+		public int? FieldTypeId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Order.
@@ -47,7 +47,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int Order      get; set; }
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Category.
@@ -57,7 +57,7 @@ namespace Rock.Core
 		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Category      get; set; }
+		public string Category { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -68,7 +68,7 @@ namespace Rock.Core
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name      get; set; }
+		public string Name { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -77,13 +77,13 @@ namespace Rock.Core
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description      get; set; }
+		public string Description { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Core.DefinedType"; } }
+		public override string EntityTypeName { get { return "Core.DefinedType"; } }
         
         /// <summary>
         /// Gets or sets the Defined Values.
@@ -91,7 +91,7 @@ namespace Rock.Core
         /// <value>
         /// Collection of Defined Values.
         /// </value>
-        public virtual ICollection<DefinedValue> DefinedValues      get; set; }
+        public virtual ICollection<DefinedValue> DefinedValues { get; set; }
         
         /// <summary>
         /// Gets or sets the Field Type.
@@ -99,7 +99,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
-        public virtual FieldType FieldType      get; set; }
+        public virtual FieldType FieldType { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -107,7 +107,7 @@ namespace Rock.Core
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static DefinedType Read( int id )
-            
+        {
             return Read<DefinedType>( id );
         }
 
@@ -115,8 +115,8 @@ namespace Rock.Core
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
-            
-            get      return new Security.GenericEntity( "Global" ); }
+        {
+            get { return new Security.GenericEntity( "Global" ); }
         }
 
 		/// <summary>
@@ -126,7 +126,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Name;
 		}
     }
@@ -135,12 +135,12 @@ namespace Rock.Core
     /// Defined Type Configuration class.
     /// </summary>
     public partial class DefinedTypeConfiguration : EntityTypeConfiguration<DefinedType>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedTypeConfiguration"/> class.
         /// </summary>
         public DefinedTypeConfiguration()
-            
+        {
             this.HasOptional( p => p.FieldType ).WithMany( p => p.DefinedTypes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
         }
     }

@@ -14,32 +14,32 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for HtmlContent object
     /// </summary>
     public partial class HtmlContentDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public int BlockId      get; set; }
-        public string EntityValue      get; set; }
-        public int Version      get; set; }
-        public string Content      get; set; }
-        public bool IsApproved      get; set; }
-        public int? ApprovedByPersonId      get; set; }
-        public DateTime? ApprovedDateTime      get; set; }
-        public DateTime? StartDateTime      get; set; }
-        public DateTime? ExpireDateTime      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public int BlockId { get; set; }
+        public string EntityValue { get; set; }
+        public int Version { get; set; }
+        public string Content { get; set; }
+        public bool IsApproved { get; set; }
+        public int? ApprovedByPersonId { get; set; }
+        public DateTime? ApprovedDateTime { get; set; }
+        public DateTime? StartDateTime { get; set; }
+        public DateTime? ExpireDateTime { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public HtmlContentDto ()
-            
+        {
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="htmlContent"></param>
         public HtmlContentDto ( HtmlContent htmlContent )
-            
+        {
             CopyFromModel( htmlContent );
         }
 
@@ -56,9 +56,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is HtmlContent )
-                
+            {
                 var htmlContent = (HtmlContent)model;
                 this.BlockId = htmlContent.BlockId;
                 this.EntityValue = htmlContent.EntityValue;
@@ -79,9 +79,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is HtmlContent )
-                
+            {
                 var htmlContent = (HtmlContent)model;
                 htmlContent.BlockId = this.BlockId;
                 htmlContent.EntityValue = this.EntityValue;

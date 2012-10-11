@@ -12,34 +12,34 @@ using System.Linq.Expressions;
 using Rock.Core;
 
 namespace Rock.Data
-    
+{
     /// <summary>
     /// Repository interface for POCO models
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IRepository<T> where T : class
-        
+    {
         /// <summary>
-        /// Gets an <see cref="IQueryable    T}"/> list of all models
+        /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
         IQueryable<T> AsQueryable();
 
         /// <summary>
-        /// Gets an <see cref="IQueryable    T}"/> list of all models, 
+        /// Gets an <see cref="IQueryable{T}"/> list of all models, 
         /// with optional eager loading of properties specified in includes
         /// </summary>
         /// <returns></returns>
         IQueryable<T> AsQueryable( string includes );
 
         /// <summary>
-        /// Gets an <see cref="IEnumerable    T}"/> list of all models.
+        /// Gets an <see cref="IEnumerable{T}"/> list of all models.
         /// </summary>
         /// <returns></returns>
         IEnumerable<T> GetAll();
 
         /// <summary>
-        /// Gets an <see cref="IEnumerable    T}"/> list of models matching the where expression
+        /// Gets an <see cref="IEnumerable{T}"/> list of models matching the where expression
         /// </summary>
         /// <param name="where">where expression</param>
         /// <returns></returns>

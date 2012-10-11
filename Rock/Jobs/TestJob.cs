@@ -21,7 +21,7 @@ using Quartz;
 using Rock.Web.UI;
 
 namespace Rock.Jobs
-    
+{
     
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [BlockProperty( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
     [BlockProperty( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
     public class TestJob : IJob
-        
+    {
         
         
         /// <summary> 
@@ -43,7 +43,7 @@ namespace Rock.Jobs
         /// </para>
         /// </summary>
         public TestJob()
-            
+        {
         }
         
         /// <summary> 
@@ -55,7 +55,7 @@ namespace Rock.Jobs
         /// the <see cref="IJob" />.
         /// </summary>
         public virtual void  Execute(IJobExecutionContext context)
-            
+        {
             
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 

@@ -20,12 +20,12 @@ using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
-    
+{
     /// <summary>
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
     public partial class AttributeInstanceValues : System.Web.UI.UserControl
-        
+    {
         #region Fields
 
         protected Rock.Attribute.IHasAttributes _model;
@@ -36,18 +36,18 @@ namespace RockWeb.Blocks.Core
 
         public AttributeInstanceValues()
             : base()
-            
+        {
         }
 
         public AttributeInstanceValues( Rock.Attribute.IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, int? currentPersonId )
-            
+        {
             _model = model;
             _attribute = attribute;
             _currentPersonId = currentPersonId;
         }
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             lvAttributeValues.ItemEditing += new EventHandler<ListViewEditEventArgs>( lvAttributeValues_ItemEditing );
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Core
             lvAttributeValues.ItemInserting += new EventHandler<ListViewInsertEventArgs>( lvAttributeValues_ItemInserting );
 
             if ( _attribute != null )
-                
+            {
                 lAttributeName.Text = _attribute.Name;
 
                 if ( _attribute.IsMultiValue )
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Core
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             base.OnLoad( e );
 
             //if ( !RockPage.IsPostBack )
@@ -78,8 +78,8 @@ namespace RockWeb.Blocks.Core
         }
 
         private void BindData()  
-            
-            lvAttributeValues.DataKeyNames = new string[]      "Id" };
+        {
+            lvAttributeValues.DataKeyNames = new string[] { "Id" };
             if ( _model != null )
                 lvAttributeValues.DataSource = _model.AttributeValues[_attribute.Key].Value;
             else
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Core
             lvAttributeValues.DataBind();
 
             if ( _attribute.IsMultiValue && lvAttributeValues.InsertItem != null )
-                
+            {
                 PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
                 if ( phInsertValue != null )
                     phInsertValue.Controls.Add(_attribute.FieldType.Field.EditControl(_attribute.QualifierValues) );
@@ -96,16 +96,16 @@ namespace RockWeb.Blocks.Core
         }
 
         void lvAttributeValues_ItemUpdating( object sender, ListViewUpdateEventArgs e )
-            
+        {
             PlaceHolder phEditValue = lvAttributeValues.EditItem.FindControl( "phEditValue" ) as PlaceHolder;
             if ( phEditValue != null && phEditValue.Controls.Count == 1 )
-                
+            {
                 string value = _attribute.FieldType.Field.GetEditValue( phEditValue.Controls[0], _attribute.QualifierValues );
 
                 var attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.Get( ( int )e.Keys["Id"] );
                 if ( attributeValue == null )
-                    
+                {
                     attributeValue = new AttributeValue();
                     attributeValueService.Add( attributeValue, _currentPersonId );
 
@@ -124,10 +124,10 @@ namespace RockWeb.Blocks.Core
         }
 
         void lvAttributeValues_ItemInserting( object sender, ListViewInsertEventArgs e )
-            
+        {
             PlaceHolder phInsertValue = lvAttributeValues.InsertItem.FindControl( "phInsertValue" ) as PlaceHolder;
             if ( phInsertValue != null && phInsertValue.Controls.Count == 1 )
-                
+            {
                 string value = _attribute.FieldType.Field.GetEditValue( phInsertValue.Controls[0], _attribute.QualifierValues );
 
                 var attributeValueService = new AttributeValueService();
@@ -153,11 +153,11 @@ namespace RockWeb.Blocks.Core
         }
 
         void lvAttributeValues_ItemDeleting( object sender, ListViewDeleteEventArgs e )
-            
+        {
             var attributeValueService = new AttributeValueService();
             var attributeValue = attributeValueService.Get( ( int )e.Keys["Id"] );
             if ( attributeValue != null )
-                
+            {
                 attributeValueService.Delete( attributeValue, _currentPersonId );
                 attributeValueService.Save( attributeValue, _currentPersonId );
                 Rock.Attribute.Helper.LoadAttributes( _model );
@@ -167,32 +167,32 @@ namespace RockWeb.Blocks.Core
         }
 
         void lvAttributeValues_ItemEditing( object sender, ListViewEditEventArgs e )
-            
+        {
             lvAttributeValues.EditIndex = e.NewEditIndex;
             BindData();
         }
 
         void lvAttributeValues_ItemCanceling( object sender, ListViewCancelEventArgs e )
-            
+        {
             lvAttributeValues.EditIndex = -1;
             BindData();
         }
 
         void lvAttributeValues_ItemDataBound( object sender, ListViewItemEventArgs e )
-            
+        {
             if ( e.Item.ItemType == ListViewItemType.DataItem )
-                
+            {
                 var attributeValue = e.Item.DataItem as Rock.Core.AttributeValueDto;
                 if ( attributeValue != null )
-                    
+                {
                     PlaceHolder phDisplayValue = e.Item.FindControl( "phDisplayValue" ) as PlaceHolder;
                     if ( phDisplayValue != null  )
                         phDisplayValue.Controls.Add( new LiteralControl( _attribute.FieldType.Field.FormatValue( phDisplayValue, attributeValue.Value, _attribute.QualifierValues, false ) ) );
                     else
-                        
+                    {
                         PlaceHolder phEditValue = e.Item.FindControl( "phEditValue" ) as PlaceHolder;
                         if ( phEditValue != null )
-                            
+                        {
                             Control editControl = _attribute.FieldType.Field.EditControl( _attribute.QualifierValues );
                             _attribute.FieldType.Field.SetEditValue( editControl, _attribute.QualifierValues, attributeValue.Value );
                             phEditValue.Controls.Add( editControl );

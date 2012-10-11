@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Person Viewed POCO Service class
     /// </summary>
     public partial class PersonViewedService : Service<PersonViewed, PersonViewedDto>
-        
+    {
         /// <summary>
         /// Gets Person Vieweds by Target Person Id
         /// </summary>
         /// <param name="targetPersonId">Target Person Id.</param>
         /// <returns>An enumerable list of PersonViewed objects.</returns>
         public IEnumerable<PersonViewed> GetByTargetPersonId( int? targetPersonId )
-            
+        {
             return Repository.Find( t => ( t.TargetPersonId == targetPersonId || ( targetPersonId == null && t.TargetPersonId == null ) ) );
         }
         
@@ -32,7 +32,7 @@ namespace Rock.Crm
         /// <param name="viewerPersonId">Viewer Person Id.</param>
         /// <returns>An enumerable list of PersonViewed objects.</returns>
         public IEnumerable<PersonViewed> GetByViewerPersonId( int? viewerPersonId )
-            
+        {
             return Repository.Find( t => ( t.ViewerPersonId == viewerPersonId || ( viewerPersonId == null && t.ViewerPersonId == null ) ) );
         }
     }

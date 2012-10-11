@@ -4,22 +4,22 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Rock.Security
-    
+{
     /// <summary>
     /// Encryption Helper class
     /// </summary>
     public static class Encryption
-        
+    {
         /// <summary>
         /// Encrypts a string.
         /// </summary>
         /// <param name="Message">The string to encrypt.</param>
         /// <returns></returns>
         public static string EncryptString( string Message )
-            
+        {
             string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
             if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                
+            {
                 encryptionPhrase = "Rock Rocks!";
             }
 
@@ -46,12 +46,12 @@ namespace Rock.Security
 
             // Step 5. Attempt to encrypt the string
             try
-                
+            {
                 ICryptoTransform Encryptor = TDESAlgorithm.CreateEncryptor();
                 Results = Encryptor.TransformFinalBlock( DataToEncrypt, 0, DataToEncrypt.Length );
             }
             finally
-                
+            {
                 // Clear the TripleDes and Hashprovider services of any sensitive information
                 TDESAlgorithm.Clear();
                 HashProvider.Clear();
@@ -67,10 +67,10 @@ namespace Rock.Security
         /// <param name="Message">The string to decrypt.</param>
         /// <returns></returns>
         public static string DecryptString( string Message )
-            
+        {
             string encryptionPhrase = ConfigurationManager.AppSettings["EncryptionPhrase"];
             if ( String.IsNullOrWhiteSpace( encryptionPhrase ) )
-                
+            {
                 encryptionPhrase = "Rock Rocks!";
             }
 
@@ -97,12 +97,12 @@ namespace Rock.Security
 
             // Step 5. Attempt to decrypt the string
             try
-                
+            {
                 ICryptoTransform Decryptor = TDESAlgorithm.CreateDecryptor();
                 Results = Decryptor.TransformFinalBlock( DataToDecrypt, 0, DataToDecrypt.Length );
             }
             finally
-                
+            {
                 // Clear the TripleDes and Hashprovider services of any sensitive information
                 TDESAlgorithm.Clear();
                 HashProvider.Clear();

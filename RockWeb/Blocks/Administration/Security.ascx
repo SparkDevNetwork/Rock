@@ -1,31 +1,31 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Security.ascx.cs" Inherits="RockWeb.Blocks.Administration.Security" %>
 <script type="text/javascript">
 
-    function showAddRole(show)     
-        if (show)     
+    function showAddRole(show) {
+        if (show) {
             $('#add-actions').hide('fast');
             $('#add-role').show('fast');
         }
-        else     
+        else {
             $('#add-role').hide('fast');
             $('#add-actions').show('fast');
         }
     }
 
-    function showAddUser(show)     
-        if (show)     
+    function showAddUser(show) {
+        if (show) {
             $('#add-actions').hide('fast');
             $('#add-user').show('fast');
         }
-        else     
+        else {
             $('#add-user').hide('fast');
             $('#add-actions').show('fast');
         }
     }
 
-    Sys.Application.add_load(function ()     
+    Sys.Application.add_load(function () {
         $('ul[id$=cblRoleActionList]').hide();
-        $('a.show-action-list').click(function ()     
+        $('a.show-action-list').click(function () {
             $('ul[id$=cblRoleActionList]').toggle('fast');
             return false;
         });

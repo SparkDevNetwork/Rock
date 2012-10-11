@@ -15,28 +15,28 @@ using Rock.Data;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest
-    
+{
 	public abstract class ApiController<T, D> : ApiController
 		where T : Rock.Data.Entity<T>
 		where D : Rock.Data.IDto, new()
-	    
+	{
 		private Service<T, D> _service;
 
 		public ApiController( Service<T, D> service )
-		    
+		{
 			_service = service;
 		}
 
 		// GET api/<controller>
 		[Queryable]
 		public virtual IQueryable<D> Get()
-		    
+		{
 			return _service.QueryableDto();
 		}
 
 		// GET api/<controller>/5
 		public virtual D Get( int id )
-		    
+		{
 			T model;
 			if ( !_service.TryGet( id, out model ) )
 				throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -48,10 +48,10 @@ namespace Rock.Rest
 		// POST api/<controller> (insert)
 		[Authenticate]
 		public virtual HttpResponseMessage Post( [FromBody]D value )
-		    
+		{
 			var user = CurrentUser();
 			if ( user != null )
-			    
+			{
 				T model = _service.CreateNew();
 				_service.Add( model, null );
 
@@ -75,10 +75,10 @@ namespace Rock.Rest
 		// PUT api/<controller>/5  (update)
 		[Authenticate]
 		public virtual void Put( int id, [FromBody]D value )
-		    
+		{
 			var user = CurrentUser();
 			if ( user != null )
-			    
+			{
 				var service = new Service<T, D>();
 				T model;
 				if ( !service.TryGet( id, out model ) )
@@ -99,10 +99,10 @@ namespace Rock.Rest
 		// DELETE api/<controller>/5
 		[Authenticate]
 		public virtual void Delete( int id )
-		    
+		{
 			var user = CurrentUser();
 			if ( user != null )
-			    
+			{
 				T model;
 				if ( !_service.TryGet( id, out model ) )
 					throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -115,10 +115,10 @@ namespace Rock.Rest
 		}
 
 		protected virtual Rock.Cms.User CurrentUser()
-		    
+		{
 			var principal = ControllerContext.Request.GetUserPrincipal();
 			if ( principal != null && principal.Identity != null )
-			    
+			{
 				var userService = new Rock.Cms.UserService();
 				var user = userService.GetByUserName( principal.Identity.Name );
 

@@ -13,13 +13,13 @@ using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Pledge POCO class.
     /// </summary>
     [Table("financialPledge")]
     public partial class Pledge : Model<Pledge>
-        
+    {
         /// <summary>
         /// Gets or sets the person id.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Financial
         /// The person id.
         /// </value>
         [DataMember]
-        public int? PersonId      get; set; }
+        public int? PersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the fund id.
@@ -36,7 +36,7 @@ namespace Rock.Financial
         /// The fund id.
         /// </value>
         [DataMember]
-        public int? FundId      get; set; }
+        public int? FundId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -45,7 +45,7 @@ namespace Rock.Financial
         /// The amount.
         /// </value>
         [DataMember]
-        public decimal Amount      get; set; }
+        public decimal Amount { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -54,7 +54,7 @@ namespace Rock.Financial
         /// The start date.
         /// </value>
         [DataMember]
-        public DateTime StartDate      get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -63,7 +63,7 @@ namespace Rock.Financial
         /// The end date.
         /// </value>
         [DataMember]
-        public DateTime EndDate      get; set; }
+        public DateTime EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the frequency type id.
@@ -72,7 +72,7 @@ namespace Rock.Financial
         /// The frequency type id.
         /// </value>
         [DataMember]
-        public int? FrequencyTypeId      get; set; }
+        public int? FrequencyTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the frequency amount.
@@ -81,7 +81,7 @@ namespace Rock.Financial
         /// The frequency amount.
         /// </value>
         [DataMember]
-        public decimal? FrequencyAmount      get; set; }
+        public decimal? FrequencyAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the person.
@@ -89,7 +89,7 @@ namespace Rock.Financial
         /// <value>
         /// The person.
         /// </value>
-        public virtual Person Person      get; set; }
+        public virtual Person Person { get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -97,7 +97,7 @@ namespace Rock.Financial
         /// <value>
         /// The fund.
         /// </value>
-        public virtual Fund Fund      get; set; }
+        public virtual Fund Fund { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the frequency.
@@ -105,7 +105,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the frequency.
         /// </value>
-        public virtual DefinedValue FrequencyType      get; set; }
+        public virtual DefinedValue FrequencyType { get; set; }
 
  		/// <summary>
 		/// Static Method to return an object based on the id
@@ -113,14 +113,14 @@ namespace Rock.Financial
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Pledge Read( int id )
-		    
+		{
 			return Read<Pledge>( id );
 		}
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName      get      return "Financial.TransactionDetail"; } }
+        public override string EntityTypeName { get { return "Financial.TransactionDetail"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -129,7 +129,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Amount.ToString();
 		}
     }
@@ -138,12 +138,12 @@ namespace Rock.Financial
     /// Pledge Configuration class.
     /// </summary>
     public partial class PledgeConfiguration : EntityTypeConfiguration<Pledge>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PledgeConfiguration"/> class.
         /// </summary>
         public PledgeConfiguration()
-            
+        {
             this.HasOptional(p => p.Person).WithMany(p => p.Pledges).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.Fund).WithMany(f => f.Pledges).HasForeignKey(p => p.FundId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.FrequencyType).WithMany().HasForeignKey(p => p.FrequencyTypeId).WillCascadeOnDelete(false);

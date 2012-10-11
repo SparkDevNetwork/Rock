@@ -14,13 +14,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "coreAttribute" )]
     public partial class Attribute : Entity<Attribute>, IOrdered
-        
+    {
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -29,7 +29,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem      get; set; }
+        public bool IsSystem { get; set; }
         
         /// <summary>
         /// Gets or sets the Field Type Id.
@@ -39,7 +39,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public int FieldTypeId      get; set; }
+        public int FieldTypeId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity.
@@ -49,7 +49,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Entity      get; set; }
+        public string Entity { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
@@ -59,7 +59,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string EntityQualifierColumn      get; set; }
+        public string EntityQualifierColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -69,7 +69,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityQualifierValue      get; set; }
+        public string EntityQualifierValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Key.
@@ -80,7 +80,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 50 )]
         [DataMember]
-        public string Key      get; set; }
+        public string Key { get; set; }
         
         /// <summary>
         /// Gets or sets the Name.
@@ -91,7 +91,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Name      get; set; }
+        public string Name { get; set; }
         
         /// <summary>
         /// Gets or sets the Category.
@@ -101,7 +101,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Category      get; set; }
+        public string Category { get; set; }
         
         /// <summary>
         /// Gets or sets the Description.
@@ -110,7 +110,7 @@ namespace Rock.Core
         /// Description.
         /// </value>
         [DataMember]
-        public string Description      get; set; }
+        public string Description { get; set; }
         
         /// <summary>
         /// Gets or sets the Order.
@@ -120,7 +120,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-		public int Order      get; set; }
+		public int Order { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Grid Column.
@@ -130,7 +130,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsGridColumn      get; set; }
+		public bool IsGridColumn { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Default Value.
@@ -139,7 +139,7 @@ namespace Rock.Core
 		/// Default Value.
 		/// </value>
         [DataMember]
-		public string DefaultValue      get; set; }
+		public string DefaultValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Multi Value.
@@ -149,7 +149,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsMultiValue      get; set; }
+		public bool IsMultiValue { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Required.
@@ -159,7 +159,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsRequired      get; set; }
+		public bool IsRequired { get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -167,7 +167,7 @@ namespace Rock.Core
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Attribute Read( int id )
-		    
+		{
 			return Read<Attribute>( id );
 		}
 				
@@ -175,7 +175,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Core.Attribute"; } }
+		public override string EntityTypeName { get { return "Core.Attribute"; } }
         
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -183,7 +183,7 @@ namespace Rock.Core
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
-        public virtual ICollection<AttributeQualifier> AttributeQualifiers      get; set; }
+        public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
         
         /// <summary>
         /// Gets or sets the Attribute Values.
@@ -191,7 +191,7 @@ namespace Rock.Core
         /// <value>
         /// Collection of Attribute Values.
         /// </value>
-        public virtual ICollection<AttributeValue> AttributeValues      get; set; }
+        public virtual ICollection<AttributeValue> AttributeValues { get; set; }
         
         /// <summary>
         /// Gets or sets the Field Type.
@@ -199,7 +199,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
-		public virtual FieldType FieldType      get; set; }
+		public virtual FieldType FieldType { get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -208,7 +208,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Key;
 		}
 }
@@ -217,12 +217,12 @@ namespace Rock.Core
     /// Attribute Configuration class.
     /// </summary>
     public partial class AttributeConfiguration : EntityTypeConfiguration<Attribute>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeConfiguration"/> class.
         /// </summary>
         public AttributeConfiguration()
-            
+        {
 			this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
 		}
     }

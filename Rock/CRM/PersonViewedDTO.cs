@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Data Transfer Object for PersonViewed object
     /// </summary>
     public partial class PersonViewedDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public int? ViewerPersonId      get; set; }
-        public int? TargetPersonId      get; set; }
-        public DateTime? ViewDateTime      get; set; }
-        public string IpAddress      get; set; }
-        public string Source      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public int? ViewerPersonId { get; set; }
+        public int? TargetPersonId { get; set; }
+        public DateTime? ViewDateTime { get; set; }
+        public string IpAddress { get; set; }
+        public string Source { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PersonViewedDto ()
-            
+        {
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="personViewed"></param>
         public PersonViewedDto ( PersonViewed personViewed )
-            
+        {
             CopyFromModel( personViewed );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is PersonViewed )
-                
+            {
                 var personViewed = (PersonViewed)model;
                 this.ViewerPersonId = personViewed.ViewerPersonId;
                 this.TargetPersonId = personViewed.TargetPersonId;
@@ -71,9 +71,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is PersonViewed )
-                
+            {
                 var personViewed = (PersonViewed)model;
                 personViewed.ViewerPersonId = this.ViewerPersonId;
                 personViewed.TargetPersonId = this.TargetPersonId;

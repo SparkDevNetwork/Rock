@@ -6,12 +6,12 @@ using System.Web;
 using System.Xml.Linq;
 
 namespace Rock.Communication
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public class SendGridEmailProvider: IEmailProvider
-        
+    {
         private string _userName = string.Empty;
         private string _password = string.Empty;
         private string _urlBase = "https://sendgrid.com";
@@ -20,7 +20,7 @@ namespace Rock.Communication
         /// Initializes a new instance of the <see cref="SendGridEmailProvider" /> class.
         /// </summary>
         public SendGridEmailProvider()
-            
+        {
             // load up parameters from global settings
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
@@ -35,10 +35,10 @@ namespace Rock.Communication
         /// Returns a list of bounced emails.  Paramenter tells whether soft bounces should also be returned.
         /// </summary>
         public List<BouncedEmail> BouncedEmails( bool includeSoftBounces )
-            
+        {
             List<BouncedEmail> bouncedItems = new List<BouncedEmail>();
             
-            string URLString = String.Format( "    0}/api/bounces.get.xml?api_user=    1}&api_key=    2}&date=1", _urlBase, _userName, _password );
+            string URLString = String.Format( "{0}/api/bounces.get.xml?api_user={1}&api_key={2}&date=1", _urlBase, _userName, _password );
             
             if ( !includeSoftBounces )
                 URLString += "&type=hard";
@@ -48,7 +48,7 @@ namespace Rock.Communication
 
             var bounces = from bounce in xdoc.Descendants( "bounce" )
                           select new
-                              
+                          {
                               Status = bounce.Element( "status" ).Value,
                               Created = bounce.Element( "created" ).Value,
                               Reason = bounce.Element( "reason" ).Value,
@@ -56,7 +56,7 @@ namespace Rock.Communication
                           };
 
             foreach ( var bounce in bounces )
-                
+            {
                 BouncedEmail email = new BouncedEmail();
                 email.Email = bounce.Email;
                 email.Reason = bounce.Reason;
@@ -74,14 +74,14 @@ namespace Rock.Communication
         /// Deletes bounced email from the email system
         /// </summary>
         public bool DeleteBouncedEmail( string email )
-            
-            string URLString = String.Format( "    0}/api/bounces.delete.xml?api_user=    1}&api_key=    2}&email=    3}", _urlBase, _userName, _password, email );
+        {
+            string URLString = String.Format( "{0}/api/bounces.delete.xml?api_user={1}&api_key={2}&email={3}", _urlBase, _userName, _password, email );
 
             XDocument xdoc = XDocument.Load( URLString );
 
             string result = ( from trans in xdoc.Descendants( "result" )
                                         select new
-                                                
+                                            {
                                                 trans.Element( "message" ).Value
                                             } ).FirstOrDefault().Value;
 

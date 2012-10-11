@@ -10,21 +10,21 @@ using System.Linq;
 using Rock.Extension;
 
 namespace Rock.Search
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public abstract class SearchComponent : Component
-        
+    {
         /// <summary>
         /// The label to display for the type of search
         /// </summary>
-        public abstract string SearchLabel      get; }
+        public abstract string SearchLabel { get; }
 
         /// <summary>
         /// The url to redirect user to after they've entered search criteria
         /// </summary>
-        public abstract string ResultUrl      get; }
+        public abstract string ResultUrl { get; }
 
         /// <summary>
         /// Returns a list of value/label results matching the searchterm

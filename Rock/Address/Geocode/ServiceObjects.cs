@@ -11,7 +11,7 @@ using Rock.ServiceObjects.GeoCoder;
 using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
-    
+{
     /// <summary>
     /// Geocoder service from <a href="http://www.serviceobjects.com">ServiceObjects</a>
     /// </summary>
@@ -20,7 +20,7 @@ namespace Rock.Address.Geocode
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
     [BlockProperty( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
     public class ServiceObjects : GeocodeComponent
-        
+    {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
@@ -30,14 +30,14 @@ namespace Rock.Address.Geocode
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
         public override bool Geocode( Rock.Crm.Location location, out string result )
-            
+        {
             if ( location != null )
-                
+            {
                 string licenseKey = AttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
                 Location_V3 location_match = client.GetBestMatch_V3(
-                    string.Format("    0}     1}",
+                    string.Format("{0} {1}",
                         location.Street1,
                         location.Street2),
                     location.City,
@@ -48,7 +48,7 @@ namespace Rock.Address.Geocode
                 result = location_match.Level;
 
                 if ( location_match.Level == "S" || location_match.Level == "P" )
-                    
+                {
                     location.Latitude = double.Parse( location_match.Latitude );
                     location.Longitude = double.Parse( location_match.Longitude );
 

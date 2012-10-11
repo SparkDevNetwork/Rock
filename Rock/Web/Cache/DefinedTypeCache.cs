@@ -8,16 +8,16 @@ using System;
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
-    
+{
     /// <summary>
     /// Information about a definedType that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class DefinedTypeCache : Rock.Core.DefinedTypeDto
-        
-        private DefinedTypeCache() : base()      }
-        private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model )      }
+    {
+        private DefinedTypeCache() : base() { }
+        private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -26,9 +26,9 @@ namespace Rock.Web.Cache
         /// The type of the field.
         /// </value>
         public FieldTypeCache FieldType
-            
+        {
             get 
-                 
+            { 
                 if (FieldTypeId.HasValue)
                     return FieldTypeCache.Read( FieldTypeId.Value );
                 return null;
@@ -38,8 +38,8 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         private static string CacheKey( int id )
-            
-            return string.Format( "Rock:DefinedType:    0}", id );
+        {
+            return string.Format( "Rock:DefinedType:{0}", id );
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static DefinedTypeCache Read( int id )
-            
+        {
             string cacheKey = DefinedTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -58,11 +58,11 @@ namespace Rock.Web.Cache
             if ( definedType != null )
                 return definedType;
             else
-                
+            {
                 Rock.Core.DefinedTypeService definedTypeService = new Rock.Core.DefinedTypeService();
                 Rock.Core.DefinedType definedTypeModel = definedTypeService.Get( id );
                 if ( definedTypeModel != null )
-                    
+                {
                     definedType = CopyModel( definedTypeModel );
 
                     cache.Set( cacheKey, definedType, new CacheItemPolicy() );
@@ -80,7 +80,7 @@ namespace Rock.Web.Cache
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
         public static DefinedTypeCache Read( Rock.Core.DefinedType definedTypeModel )
-            
+        {
             string cacheKey = DefinedTypeCache.CacheKey( definedTypeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -89,7 +89,7 @@ namespace Rock.Web.Cache
             if ( definedType != null )
                 return definedType;
             else
-                
+            {
                 definedType = DefinedTypeCache.CopyModel( definedTypeModel );
                 cache.Set( cacheKey, definedType, new CacheItemPolicy() );
 
@@ -103,7 +103,7 @@ namespace Rock.Web.Cache
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
         public static DefinedTypeCache CopyModel( Rock.Core.DefinedType definedTypeModel )
-            
+        {
             DefinedTypeCache definedType = new DefinedTypeCache(definedTypeModel);
             return definedType;
         }
@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( DefinedTypeCache.CacheKey( id ) );
         }

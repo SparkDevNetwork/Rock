@@ -5,19 +5,19 @@
 //
 
 namespace Rock.Migrations
-    
+{
     using System.Data.Entity.Migrations;
 
     /// <summary>
     /// 
     /// </summary>
     internal sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="Configuration" /> class.
         /// </summary>
         public Configuration()
-            
+        {
             AutomaticMigrationsEnabled = false;
             CodeGenerator = new RockCSharpMigrationCodeGenerator();
         }
@@ -27,7 +27,7 @@ namespace Rock.Migrations
         /// </summary>
         /// <param name="context">The context.</param>
         protected override void Seed(Rock.Data.RockContext context)
-            
+        {
             //  This method will be called after migrating to the latest version.
 
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
@@ -35,9 +35,9 @@ namespace Rock.Migrations
             //
             //    context.People.AddOrUpdate(
             //      p => p.FullName,
-            //      new Person      FullName = "Andrew Peters" },
-            //      new Person      FullName = "Brice Lambson" },
-            //      new Person      FullName = "Rowan Miller" }
+            //      new Person { FullName = "Andrew Peters" },
+            //      new Person { FullName = "Brice Lambson" },
+            //      new Person { FullName = "Rowan Miller" }
             //    );
             //
         }

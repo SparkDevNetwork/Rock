@@ -1,10 +1,10 @@
 ﻿namespace Rock.Data
-    
+{
     /// <summary>
     /// Interface to compose ability to Export an object's data
     /// </summary>
     public interface IExportable
-        
+    {
         /// <summary>
         /// Exports the object as JSON.
         /// </summary>

@@ -3,20 +3,20 @@
 
 <script type="text/javascript">
 
-    Sys.Application.add_load(function ()     
+    Sys.Application.add_load(function () {
 
         var modalPopup = $find('<%=mpeContent.BehaviorID%>');
         modalPopup.add_hidden(modalHidden_<%=CurrentBlock.Id %>);
     
-        $('#<%=tbStartDate.ClientID %>').kendoDatePicker(     open:function(e)    
-            window.setTimeout(function()     $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
+        $('#<%=tbStartDate.ClientID %>').kendoDatePicker({ open:function(e){
+            window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
         } });
 
-        $('#<%=tbExpireDate.ClientID %>').kendoDatePicker(     open:function(e)    
-            window.setTimeout(function()     $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
+        $('#<%=tbExpireDate.ClientID %>').kendoDatePicker({ open:function(e){
+            window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
         } });
 
-        $('#html-content-version-<%=CurrentBlock.Id %>').click(function ()     
+        $('#html-content-version-<%=CurrentBlock.Id %>').click(function () {
             $('#html-content-versions-<%=CurrentBlock.Id %>').show();
             $(this).hide();
             $('#html-content-edit-<%=CurrentBlock.Id %>').hide();
@@ -24,7 +24,7 @@
             return false;
         });
 
-        $('#html-content-versions-cancel-<%=CurrentBlock.Id %>').click(function ()     
+        $('#html-content-versions-cancel-<%=CurrentBlock.Id %>').click(function () {
             $('#html-content-edit-<%=CurrentBlock.Id %>').show();
             $('#html-content-version-<%=CurrentBlock.Id %>').show();
             $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
@@ -33,23 +33,23 @@
         });
 
         if ($('#<%=hfAction.ClientID %>').val() == 'Edit')
-            
-            $('#html-content-edit-<%=CurrentBlock.Id %> textarea.html-content-editor').ckeditor(function()     
+        {
+            $('#html-content-edit-<%=CurrentBlock.Id %> textarea.html-content-editor').ckeditor(function() {
                 $find('<%=mpeContent.BehaviorID%>').show(); 
             }, ckoptionsAdv).end();
         }
 
-        $('a.html-content-show-version-<%=CurrentBlock.Id %>').click(function ()     
+        $('a.html-content-show-version-<%=CurrentBlock.Id %>').click(function () {
 
             if (CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].checkDirty() == false ||
                 confirm('Loading a previous version will cause any changes you\'ve made to the existing text to be lost.  Are you sure you want to continue?'))
-                
-                $.ajax(    
+            {
+                $.ajax({
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
                     url: rock.baseUrl + 'REST/Cms/HtmlContent/' + $(this).attr('html-id'),
-                    success: function (getData, status, xhr)     
+                    success: function (getData, status, xhr) {
 
                         htmlContent = getData;
                         
@@ -59,7 +59,7 @@
                         $('#<%=tbExpireDate.ClientID %>').val(htmlContent.ExpireDateTime);
                         $('#<%=cbApprove.ClientID %>').attr('checked', htmlContent.Approved);
 
-                        CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].setData(htmlContent.Content, function()     
+                        CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].setData(htmlContent.Content, function() {
                             CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].resetDirty();
                             $('#html-content-edit-<%=CurrentBlock.Id %>').show();
                             $('#html-content-version-<%=CurrentBlock.Id %>').show();
@@ -68,7 +68,7 @@
                         });
 
                     },
-                    error: function (xhr, status, error)     
+                    error: function (xhr, status, error) {
                         alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
@@ -77,11 +77,11 @@
 
     });
 
-    function modalHidden_<%=CurrentBlock.Id %>()    
+    function modalHidden_<%=CurrentBlock.Id %>(){
         CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].destroy();
     }
 
-    function saveHtmlContent_<%=CurrentBlock.Id %>()    
+    function saveHtmlContent_<%=CurrentBlock.Id %>(){
         $('#<%=btnSave.ClientID %>').click();
     }
 

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// BlockType Service class
     /// </summary>
     public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTypeService"/> class
         /// </summary>
         public BlockTypeService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTypeService"/> class
         /// </summary>
         public BlockTypeService(IRepository<BlockType> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override BlockType CreateNew()
-            
+        {
             return new BlockType();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<BlockTypeDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<BlockTypeDto> QueryableDto( IQueryable<BlockType> items )
-            
+        {
             return items.Select( m => new BlockTypeDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     Path = m.Path,
                     Name = m.Name,

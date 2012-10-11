@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Person Service class
     /// </summary>
     public partial class PersonService : Service<Person, PersonDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonService"/> class
         /// </summary>
         public PersonService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonService"/> class
         /// </summary>
         public PersonService(IRepository<Person> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Person CreateNew()
-            
+        {
             return new Person();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PersonDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
-            
+        {
             return items.Select( m => new PersonDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     RecordTypeId = m.RecordTypeId,
                     RecordStatusId = m.RecordStatusId,

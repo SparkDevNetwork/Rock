@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "cmsPageContext" )]
     public partial class PageContext : Model<PageContext>
-        
+    {
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem      get; set; }
+        public bool IsSystem { get; set; }
         
         /// <summary>
         /// Gets or sets the Page Id.
@@ -38,7 +38,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public int PageId      get; set; }
+        public int PageId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity.
@@ -49,7 +49,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 200 )]
         [DataMember]
-        public string Entity      get; set; }
+        public string Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the page parameter that contains the entity's id.
@@ -60,7 +60,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string IdParameter      get; set; }
+        public string IdParameter { get; set; }
 
         /// <summary>
 		/// Gets or sets the Created Date Time.
@@ -69,13 +69,13 @@ namespace Rock.Cms
 		/// Created Date Time.
 		/// </value>
 		[DataMember]
-		public DateTime? CreatedDateTime      get; set; }
+		public DateTime? CreatedDateTime { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Cms.PageContext"; } }
+		public override string EntityTypeName { get { return "Cms.PageContext"; } }
         
         /// <summary>
         /// Gets or sets the Page.
@@ -83,7 +83,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        public virtual Page Page      get; set; }
+        public virtual Page Page { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -91,7 +91,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static PageContext Read( int id )
-            
+        {
             return Read<PageContext>( id );
         }
 
@@ -102,8 +102,8 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
-			return string.Format( "    0}:    1}", this.Entity, this.IdParameter );
+		{
+			return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
 		}
     }
 
@@ -111,12 +111,12 @@ namespace Rock.Cms
     /// Page Route Configuration class.
     /// </summary>
     public partial class PageContextConfiguration : EntityTypeConfiguration<PageContext>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextConfiguration"/> class.
         /// </summary>
         public PageContextConfiguration()
-            
+        {
             this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
         }
     }

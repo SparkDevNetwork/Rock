@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Site Domain POCO Service class
     /// </summary>
     public partial class SiteDomainService : Service<SiteDomain, SiteDomainDto>
-        
+    {
         /// <summary>
         /// Gets Site Domain by Domain
         /// </summary>
         /// <param name="domain">Domain.</param>
         /// <returns>SiteDomain object.</returns>
         public SiteDomain GetByDomain( string domain )
-            
+        {
             return Repository.FirstOrDefault( t => t.Domain == domain );
         }
         
@@ -32,7 +32,7 @@ namespace Rock.Cms
         /// <param name="siteId">Site Id.</param>
         /// <returns>An enumerable list of SiteDomain objects.</returns>
         public IEnumerable<SiteDomain> GetBySiteId( int siteId )
-            
+        {
             return Repository.Find( t => t.SiteId == siteId );
         }
         
@@ -43,7 +43,7 @@ namespace Rock.Cms
         /// <param name="domain">Domain.</param>
         /// <returns>An enumerable list of SiteDomain objects.</returns>
         public IEnumerable<SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
-            
+        {
             return Repository.Find( t => t.SiteId == siteId && t.Domain == domain );
         }
 
@@ -53,7 +53,7 @@ namespace Rock.Cms
         /// <param name="domain">The full domain.</param>
         /// <returns></returns>
         public SiteDomain GetByDomainContained( string domain )
-            
+        {
             return Repository.FirstOrDefault( t => domain.ToLower().Contains( t.Domain.ToLower() ) );
         }
     }

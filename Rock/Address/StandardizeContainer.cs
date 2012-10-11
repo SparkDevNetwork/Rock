@@ -14,21 +14,21 @@ using System.Reflection;
 using Rock.Extension;
 
 namespace Rock.Address
-    
+{
     /// <summary>
     /// Singleton class that uses MEF to load and cache all of the StandardizeComponent classes
     /// </summary>
     public class StandardizeContainer : Container<StandardizeComponent, IComponentData>
-        
+    {
         private static StandardizeContainer instance;
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
         public static StandardizeContainer Instance
-            
+        {
             get
-                
+            {
                 if ( instance == null )
                     instance = new StandardizeContainer();
                 return instance;
@@ -36,14 +36,14 @@ namespace Rock.Address
         }
 
         private StandardizeContainer()
-            
+        {
             Refresh();
         }
 
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( StandardizeComponent ) )]
-        protected override IEnumerable<Lazy<StandardizeComponent, IComponentData>> MEFComponents      get; set; }
+        protected override IEnumerable<Lazy<StandardizeComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
 
     }

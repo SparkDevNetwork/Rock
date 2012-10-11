@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// EmailTemplate Service class
     /// </summary>
     public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
         /// </summary>
         public EmailTemplateService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
         /// </summary>
         public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override EmailTemplate CreateNew()
-            
+        {
             return new EmailTemplate();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<EmailTemplateDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
-            
+        {
             return items.Select( m => new EmailTemplateDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     PersonId = m.PersonId,
                     Category = m.Category,

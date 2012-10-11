@@ -20,12 +20,12 @@ using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI
-    
+{
     /// <summary>
     /// RockBlock is the base abstract class that all Blocks should inherit from
     /// </summary>
     public abstract class RockBlock : UserControl
-        
+    {
         #region Events
 
         /// <summary>
@@ -41,36 +41,36 @@ namespace Rock.Web.UI
         /// The current page.  This value is read and cached by the RockRouteHandler
         /// and set by the layout's base class (Rock.Web.UI.RockPage) when loading the block instance
         /// </summary>
-        public PageCache CurrentPage      get; set; }
+        public PageCache CurrentPage { get; set; }
 
         /// <summary>
         /// The current block.  This value is read and cached by the layout's 
         /// base class (Rock.Web.UI.RockPage) when loading the block instance
         /// </summary>
-        public BlockCache CurrentBlock      get; set; }
+        public BlockCache CurrentBlock { get; set; }
 
         /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null
         /// </summary>
         public int? CurrentPersonId
-            
-            get      return ( (RockPage)this.Page ).CurrentPersonId; }
+        {
+            get { return ( (RockPage)this.Page ).CurrentPersonId; }
         }
 
         /// <summary>
         /// Returns the currently logged in user.  If user is not logged in, returns null
         /// </summary>
         public User CurrentUser
-            
-            get      return ( (RockPage)this.Page ).CurrentUser; }
+        {
+            get { return ( (RockPage)this.Page ).CurrentUser; }
         }
 
         /// <summary>
         /// Returns the currently logged in person. If user is not logged in, returns null
         /// </summary>
         public Person CurrentPerson
-            
-            get      return ( (RockPage)this.Page ).CurrentPerson; }
+        {
+            get { return ( (RockPage)this.Page ).CurrentPerson; }
         }
 
         /// <summary>
@@ -82,17 +82,17 @@ namespace Rock.Web.UI
         /// </example>
         /// </summary>
         public string CurrentTheme
-            
-            get      return ( (RockPage)this.Page ).CurrentTheme; }
+        {
+            get { return ( (RockPage)this.Page ).CurrentTheme; }
         }
 
         /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
-            
+        {
             get
-                
+            {
                 Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
                 return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + Page.ResolveUrl( "~" );
             }
@@ -102,37 +102,37 @@ namespace Rock.Web.UI
         /// Gets a list of any context entities that the block requires.
         /// </summary>
         public virtual List<string> ContextTypesRequired
-            
+        {
             get
-                
+            {
                 if ( _contextTypesRequired == null )
-                    
+                {
                     _contextTypesRequired = new List<string>();
 
                     int properties = 0;
                     foreach(var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true))
-                        
+                    {
                         var contextAttribute = (ContextAwareAttribute)attribute;
                         string contextType = string.Empty;
 
                         if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
-                            
+                        {
                             // If the entity type was not specified in the attibute, look for a property that defines it
-                            string propertyKeyName = string.Format( "ContextEntityType    0}", properties > 0 ? properties.ToString() : "" );
+                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
                             if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
-                                
+                            {
                                 contextType = AttributeValue( propertyKeyName );
                             }
                         }
                         else
-                            
+                        {
                             contextType = contextAttribute.EntityType;
                         }
 
                         if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
-                            
+                        {
                             _contextTypesRequired.Add( contextType );
                         }
                     }
@@ -148,7 +148,7 @@ namespace Rock.Web.UI
         /// <value>
         /// The context entities.
         /// </value>
-        public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities      get; private set; }
+        public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities { get; private set; }
 
         #endregion
 
@@ -159,7 +159,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="value">Object to cache</param>
         protected virtual void AddCacheItem( object value )
-            
+        {
             CacheItemPolicy cacheItemPolicy = null;
             AddCacheItem( string.Empty, value, cacheItemPolicy );
         }
@@ -170,7 +170,7 @@ namespace Rock.Web.UI
         /// <param name="key">Key to differentiate items from same block instance</param>
         /// <param name="value">Object to cache</param>
         protected virtual void AddCacheItem( string key, object value )
-            
+        {
             CacheItemPolicy cacheItemPolicy = null;
             AddCacheItem( key, value, cacheItemPolicy );
         }
@@ -182,7 +182,7 @@ namespace Rock.Web.UI
         /// <param name="value">Object to cache</param>
         /// <param name="seconds">The Number of seconds to cache object for</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
-            
+        {
             CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
             cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( seconds );
             AddCacheItem( key, value, cacheItemPolicy );
@@ -195,7 +195,7 @@ namespace Rock.Web.UI
         /// <param name="value">Object to cache</param>
         /// <param name="cacheItemPolicy">Optional CacheItemPolicy, defaults to null</param>
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             cache.Set( ItemCacheKey( key ), value, cacheItemPolicy );
         }
@@ -206,7 +206,7 @@ namespace Rock.Web.UI
         /// <param name="key"></param>
         /// <returns></returns>
         protected virtual object GetCacheItem( string key = "" )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             return cache[ItemCacheKey( key )];
         }
@@ -216,7 +216,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key"></param>
         protected virtual void FlushCacheItem( string key = "" )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
         }
@@ -227,8 +227,8 @@ namespace Rock.Web.UI
         /// <param name="key">The key.</param>
         /// <returns></returns>
         private string ItemCacheKey( string key )
-            
-            return string.Format( "Rock:Page:    0}:RockBlock:    1}:ItemCache:    2}",
+        {
+            return string.Format( "Rock:Page:{0}:RockBlock:{1}:ItemCache:{2}",
                 this.CurrentPage.Id, CurrentBlock.Id, key );
         }
 
@@ -237,11 +237,11 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
-            
+        {
             if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
-                
+            {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "blck-cnfg-trggr-    0}", CurrentBlock.Id );
+                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
                 trigger.EventName = "Click";
                 updatePanel.Triggers.Add( trigger );
             }
@@ -256,26 +256,26 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
-            
+        {
             // Get the context types defined through configuration or block properties
             var requiredContext = ContextTypesRequired;
 
             // Check to see if a context type was specified in a query, form, or page route parameter
             string param = PageParameter( "ContextEntityType" );
             if ( !String.IsNullOrWhiteSpace( param ) )
-                
+            {
                 requiredContext.Add( param );
             }
 
             // Get the current context for each required context type
             ContextEntities = new Dictionary<string, Data.IEntity>();
             foreach ( var contextEntityType in requiredContext )
-                
+            {
                 if ( !String.IsNullOrWhiteSpace( contextEntityType ) )
-                    
+                {
                     Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
                     if ( contextEntity != null )
-                        
+                    {
                         ContextEntities.Add( contextEntityType, contextEntity );
                     }
                 }
@@ -293,10 +293,10 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="writer"></param>
         protected override void Render( HtmlTextWriter writer )
-            
+        {
             if ( CurrentBlock.OutputCacheDuration > 0 )
-                
-                string blockCacheKey = string.Format( "Rock:BlockOutput:    0}", CurrentBlock.Id );
+            {
+                string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", CurrentBlock.Id );
                 StringBuilder sbOutput = new StringBuilder();
                 StringWriter swOutput = new StringWriter( sbOutput );
                 HtmlTextWriter twOutput = new HtmlTextWriter( swOutput );
@@ -318,7 +318,7 @@ namespace Rock.Web.UI
         ///// </summary>
         ///// <param name="e"></param>
         //protected override void OnError( EventArgs e )
-        //    
+        //{
         //    DisplayNotification( "Exception", NotificationBoxType.Error,
         //        HttpContext.Current.Server.GetLastError().Message );
 
@@ -335,7 +335,7 @@ namespace Rock.Web.UI
         ///// <param name="type"></param>
         ///// <param name="message"></param>
         //public void DisplayNotification( string title, NotificationBoxType type, string message )
-        //    
+        //{
         //    NotificationBox notification = new NotificationBox();
         //    notification.Title = title;
         //    notification.NotificationBoxType = type;
@@ -348,7 +348,7 @@ namespace Rock.Web.UI
         ///// </summary>
         ///// <param name="message">The message.</param>
         //public void DisplayError( string message )
-        //    
+        //{
         //    DisplayNotification( "Error", NotificationBoxType.Error, message );
         //}
 
@@ -357,7 +357,7 @@ namespace Rock.Web.UI
         ///// </summary>
         ///// <param name="message">The message.</param>
         //public void DisplayWarning( string message )
-        //    
+        //{
         //    DisplayNotification( "Warning", NotificationBoxType.Warning, message );
         //}
 
@@ -368,7 +368,7 @@ namespace Rock.Web.UI
         /// <param name="key"></param>
         /// <returns></returns>
         public string AttributeValue( string key )
-            
+        {
             if ( CurrentBlock != null &&
                 CurrentBlock.AttributeValues != null &&
                 CurrentBlock.AttributeValues.ContainsKey( key ) )
@@ -383,7 +383,7 @@ namespace Rock.Web.UI
         /// <param name="action"></param>
         /// <returns></returns>
         public bool IsUserAuthorized( string action )
-            
+        {
             return CurrentBlock.IsAuthorized( action, CurrentPerson );
         }
 
@@ -395,7 +395,7 @@ namespace Rock.Web.UI
         /// <param name="name"></param>
         /// <returns></returns>
         public string PageParameter( string name )
-            
+        {
             return ( (RockPage)this.Page ).PageParameter( name );
         }
 
@@ -405,7 +405,7 @@ namespace Rock.Web.UI
         /// <param name="key"></param>
         /// <returns></returns>
         public string GetUserValue( string key )
-            
+        {
             return ( (RockPage)this.Page ).GetUserValue( key );
         }
 
@@ -415,7 +415,7 @@ namespace Rock.Web.UI
         /// <param name="key"></param>
         /// <param name="value"></param>
         public void SetUserValue( string key, string value )
-            
+        {
             ( (RockPage)this.Page ).SetUserValue( key, value );
         }
 
@@ -427,24 +427,24 @@ namespace Rock.Web.UI
         /// <param name="canEdit"></param>
         /// <returns></returns>
         public virtual List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
-            
+        {
             List<Control> configControls = new List<Control>();
 
             if ( canConfig || canEdit )
-                
+            {
                 // Attributes
                 CompiledTemplateBuilder upContent = new CompiledTemplateBuilder(
                     delegate( Control content )
-                        
+                    {
                         Button trigger = new Button();
                         trigger.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        trigger.ID = string.Format( "blck-cnfg-trggr-    0}", CurrentBlock.Id.ToString() );
+                        trigger.ID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id.ToString() );
                         trigger.Click += trigger_Click;
                         content.Controls.Add( trigger );
 
                         HiddenField triggerData = new HiddenField();
                         triggerData.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-    0}", CurrentBlock.Id.ToString() );
+                        triggerData.ID = string.Format( "blck-cnfg-trggr-data-{0}", CurrentBlock.Id.ToString() );
                         content.Controls.Add( triggerData );
                     }
                 );
@@ -458,7 +458,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/    0}?t=Block Properties", CurrentBlock.Id ) ) );
+                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -468,12 +468,12 @@ namespace Rock.Web.UI
             }
 
             if ( canConfig )
-                
+            {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/    0}/    1}?t=Block Security",
+                aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
                     Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
@@ -513,9 +513,9 @@ namespace Rock.Web.UI
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void trigger_Click( object sender, EventArgs e )
-            
+        {
             if ( AttributesUpdated != null )
-                
+            {
                 AttributesUpdated( sender, e );
             }
         }
@@ -528,10 +528,10 @@ namespace Rock.Web.UI
         /// Creates and or updates any attributes defined for the block
         /// </summary>
         internal void CreateAttributes()
-            
+        {
             if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(),
                 "Rock.Cms.Block", "BlockTypeId", this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
-                
+            {
                 this.CurrentBlock.ReloadAttributeValues();
             }
         }
@@ -540,7 +540,7 @@ namespace Rock.Web.UI
         /// Reads the additional actions.
         /// </summary>
         internal void ReadAdditionalActions()
-            
+        {
             object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
                 this.CurrentBlock.BlockTypeActions = ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions;
@@ -558,7 +558,7 @@ namespace Rock.Web.UI
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.BlockAttributesUpdatedEventArgs"/> instance containing the event data.</param>
         void CmsBlock_BlockAttributesUpdated( object sender, BlockAttributesUpdatedEventArgs e )
-            
+        {
             if ( e.BlockID == CurrentBlock.Id && AttributesUpdated != null )
                 AttributesUpdated( sender, e );
         }

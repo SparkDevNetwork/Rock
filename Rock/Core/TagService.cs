@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Tag Service class
     /// </summary>
     public partial class TagService : Service<Tag, TagDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="TagService"/> class
         /// </summary>
         public TagService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TagService"/> class
         /// </summary>
         public TagService(IRepository<Tag> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Tag CreateNew()
-            
+        {
             return new Tag();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<TagDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<TagDto> QueryableDto( IQueryable<Tag> items )
-            
+        {
             return items.Select( m => new TagDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     Entity = m.Entity,
                     EntityQualifierColumn = m.EntityQualifierColumn,

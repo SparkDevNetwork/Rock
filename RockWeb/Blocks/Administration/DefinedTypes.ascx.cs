@@ -17,9 +17,9 @@ using Rock.Field;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     public partial class DefinedTypes : Rock.Web.UI.RockBlock
-        
+    {
         #region Fields
 
         protected string typeId = string.Empty;
@@ -36,9 +36,9 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             try
-                                                                
+            {                                                
                 typeId = null;
                 if ( string.IsNullOrWhiteSpace( typeId ) )
                     typeId = PageParameter( "typeId" );
@@ -50,32 +50,32 @@ namespace RockWeb.Blocks.Administration
                 BindFilter();
 
                 if ( canConfigure )
-                                        
+                {                    
                     //assign types grid actions
-                    rGridType.DataKeyNames = new string[]      "id" };
+                    rGridType.DataKeyNames = new string[] { "id" };
                     rGridType.GridRebind += new GridRebindEventHandler( rGridType_GridRebind );
                     rGridType.Actions.IsAddEnabled = true;
                     rGridType.Actions.ClientAddScript = "editType(0)";
 
                     //assign type values grid actions
-                    rGridValue.DataKeyNames = new string[]      "id" };
+                    rGridValue.DataKeyNames = new string[] { "id" };
                     rGridValue.GridRebind += new GridRebindEventHandler( rGridValue_GridRebind );
                     rGridValue.Actions.IsAddEnabled = true;
                     rGridValue.Actions.ClientAddScript = "editValue(0)";
 
                     //assign attributes grid actions
-                    rGridAttribute.DataKeyNames = new string[]      "id" };
+                    rGridAttribute.DataKeyNames = new string[] { "id" };
                     rGridAttribute.GridRebind += new GridRebindEventHandler( rGridAttribute_GridRebind );
                     rGridAttribute.Actions.IsAddEnabled = true;
                     rGridAttribute.Actions.ClientAddScript = "editAttribute(0)";
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to configure this page" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
 
@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if ( !Page.IsPostBack && canConfigure )
                 rGridType_Bind();
  
@@ -95,22 +95,22 @@ namespace RockWeb.Blocks.Administration
         #region Grid Events
 
         protected void ddlDefinedValueFilter_SelectedIndexChanged( object sender, EventArgs e )
-            
+        {
             rGridValue_Bind( typeId );
         }
 
 
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
-            
+        {
             rGridType_Bind();
         }
 
         protected void rGridType_Delete( object sender, RowEventArgs e )
-            
+        {
             Rock.Core.DefinedType type = typeService.Get( (int)rGridType.DataKeys[e.RowIndex]["id"] );
             
             if ( type != null )
-                
+            {
                 Rock.Web.Cache.AttributeCache.Flush( type.Id );
                 
                 // if this DefinedType has DefinedValues, delete them
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
                 .ToList();
 
                 foreach ( var value in hasDefinedValues )
-                    
+                {
                     valueService.Delete( value, CurrentPersonId );
                     valueService.Save( value, CurrentPersonId );
                 }
@@ -132,11 +132,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGridValue_Delete( object sender, RowEventArgs e )
-            
+        {
             Rock.Core.DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
 
             if ( value != null)
-                
+            {
                 Rock.Web.Cache.AttributeCache.Flush( value.Id );
 
                 valueService.Delete( value, CurrentPersonId );
@@ -147,10 +147,10 @@ namespace RockWeb.Blocks.Administration
         }
         
         protected void rGridAttribute_Delete( object sender, RowEventArgs e )
-            
+        {
             Rock.Core.Attribute attribute = attributeService.Get( (int)rGridAttribute.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
-                
+            {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
                 attributeService.Delete( attribute, CurrentPersonId );
@@ -161,17 +161,17 @@ namespace RockWeb.Blocks.Administration
         }
         
         void rGridType_GridRebind( object sender, EventArgs e )
-            
+        {
             rGridType_Bind();
         }
 
         void rGridValue_GridRebind( object sender, EventArgs e )
-            
+        {
             rGridValue_Bind( typeId );
         }
 
         void rGridAttribute_GridRebind( object sender, EventArgs e )
-            
+        {
             rGridAttribute_Bind( typeId );
         }
         
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         protected void btnRefresh_Click( object sender, EventArgs e )
-            
+        {
             typeId = hfTypeId.Value;
 
             BindFilter();
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void typeValues_Edit( object sender, CommandEventArgs e )
-            
+        {
             typeId = e.CommandArgument.ToString();
             hfTypeId.Value = typeId;
             rGridValue_Bind( typeId );
@@ -200,13 +200,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnValueClose_Click( object sender, EventArgs e )
-            
+        {
             pnlValues.Visible = false;
             pnlContent.Visible = true;
         }
 
         protected void typeAttributes_Edit( object sender, RowEventArgs e )
-            
+        {
             typeId = rGridType.DataKeys[e.RowIndex]["id"].ToString();
             hfTypeId.Value = typeId;                        
             rGridAttribute_Bind( typeId );
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnAttributeClose_Click( object sender, EventArgs e )
-            
+        {
             pnlAttributes.Visible = false;
             pnlContent.Visible = true;            
         }
@@ -226,9 +226,9 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void BindFilter()
-            
+        {
             if ( ddlCategoryFilter.SelectedItem == null )
-                
+            {
                 ddlCategoryFilter.Items.Clear();
                 ddlCategoryFilter.Items.Add( "[All]" );
 
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void rGridType_Bind()
-            
+        {
             var queryable = typeService.Queryable().
                 Where( a => a.Category != "" && a.Category != null );
 
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGridValue_Bind( string typeId )
-            
+        {
             int definedTypeId = Convert.ToInt32( typeId );
                         
             var gridAttributes = attributeService
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGridAttribute_Bind( string typeId )
-            
+        {
             var queryable = attributeService.Queryable().
                 Where( a => a.Entity == entity &&
                 ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Administration
         }
         
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

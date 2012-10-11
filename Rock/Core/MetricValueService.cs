@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// MetricValue Service class
     /// </summary>
     public partial class MetricValueService : Service<MetricValue, MetricValueDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValueService"/> class
         /// </summary>
         public MetricValueService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValueService"/> class
         /// </summary>
         public MetricValueService(IRepository<MetricValue> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override MetricValue CreateNew()
-            
+        {
             return new MetricValue();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<MetricValueDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<MetricValueDto> QueryableDto( IQueryable<MetricValue> items )
-            
+        {
             return items.Select( m => new MetricValueDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     MetricId = m.MetricId,
                     Value = m.Value,

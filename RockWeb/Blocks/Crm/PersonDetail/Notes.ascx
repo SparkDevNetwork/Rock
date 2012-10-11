@@ -8,9 +8,9 @@
 
             <script>
 
-                $(document).ready(function ()     
+                $(document).ready(function () {
 
-                    $('#note-add').click(function ()     
+                    $('#note-add').click(function () {
                         $('#note-entry').slideToggle("slow");
                     });
 
@@ -138,8 +138,8 @@
     </section>
         
     <script>
-        $(document).ready(function ()     
-            $('#person-notes').tinyscrollbar(     size: 150 });
+        $(document).ready(function () {
+            $('#person-notes').tinyscrollbar({ size: 150 });
         });
     </script>
         

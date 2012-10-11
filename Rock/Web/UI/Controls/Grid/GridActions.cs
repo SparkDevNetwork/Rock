@@ -10,13 +10,13 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-    
+{
     /// <summary>
     /// 
     /// </summary>
-    [ToolboxData( "<    0}:GridActions runat=server></    0}:GridActions>" )]
+    [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
-        
+    {
         HtmlGenericControl aAdd;
         LinkButton lbAdd;
 
@@ -30,14 +30,14 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
         public bool IsAddEnabled
-            
+        {
             get 
-                
+            {
                 bool? b = ViewState["IsAddEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
-                
+            {
                 ViewState["IsAddEnabled"] = value;
             }
         }
@@ -49,14 +49,14 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
         /// </value>
         public bool IsExcelExportEnabled
-            
+        {
             get
-                
+            {
                 bool? b = ViewState["IsExcelExportEnabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
-                
+            {
                 ViewState["IsExcelExportEnabled"] = value;
             }
         }
@@ -68,15 +68,15 @@ namespace Rock.Web.UI.Controls
         /// The client add script.
         /// </value>
         public string ClientAddScript
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return aAdd.Attributes["onclick"];
             }
             
             set
-                
+            {
                 EnsureChildControls();
                 aAdd.Attributes["onclick"] = value;
             }
@@ -89,15 +89,15 @@ namespace Rock.Web.UI.Controls
         /// The client excel export script.
         /// </value>
         public string ClientExcelExportScript
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return aExcelExport.Attributes["onclick"];
             }
 
             set
-                
+            {
                 EnsureChildControls();
                 aExcelExport.Attributes["onclick"] = value;
             }
@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             EnsureChildControls();
@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
-            
+        {
             aAdd.Visible = IsAddEnabled && !String.IsNullOrWhiteSpace( ClientAddScript );
             lbAdd.Visible = IsAddEnabled && String.IsNullOrWhiteSpace( ClientAddScript );
 
@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
         /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
         /// </summary>
         protected override void RecreateChildControls()
-            
+        {
             EnsureChildControls();
         }
 
@@ -143,8 +143,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
         protected override HtmlTextWriterTag TagKey
-            
-            get      return HtmlTextWriterTag.Div; }
+        {
+            get { return HtmlTextWriterTag.Div; }
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
         public override void RenderBeginTag( HtmlTextWriter writer )
-            
+        {
             writer.AddAttribute( "class", "grid-actions" );
             base.RenderBeginTag( writer );
         }
@@ -161,7 +161,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-            
+        {
             Controls.Clear();
 
             // controls for add
@@ -206,13 +206,13 @@ namespace Rock.Web.UI.Controls
         }
 
         void lbAdd_Click( object sender, EventArgs e )
-            
+        {
             if ( AddClick != null )
                 AddClick( sender, e );
         }
 
         void lbExcelExport_Click( object sender, EventArgs e )
-            
+        {
             if ( ExcelExportClick != null )
                 ExcelExportClick( sender, e );
         }

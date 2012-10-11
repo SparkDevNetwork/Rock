@@ -5,12 +5,12 @@
 //
 
 namespace Rock.Data
-    
+{
     /// <summary>
     /// Represents a model that supports generating a feed
     /// </summary>
     interface IFeed
-        
+    {
         /// <summary>
         /// Returns the feed.
         /// </summary>

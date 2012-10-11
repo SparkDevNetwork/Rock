@@ -11,13 +11,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// TransactionFund POCO class.
     /// </summary>
     [Table("financialTransactionFund")]
     public partial class TransactionFund
-        
+    {
         /// <summary>
         /// Gets or sets the transaction id.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Financial
         [Key]
         [Column(Order = 0)]
         [DataMember]
-        public int TransactionId      get; set; }
+        public int TransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the fund id.
@@ -38,7 +38,7 @@ namespace Rock.Financial
         [Key]
         [Column(Order = 1)]
         [DataMember]
-        public int FundId      get; set; }
+        public int FundId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -47,7 +47,7 @@ namespace Rock.Financial
         /// The amount.
         /// </value>
         [DataMember]
-        public decimal? Amount      get; set; }
+        public decimal? Amount { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction.
@@ -55,7 +55,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction.
         /// </value>
-        public virtual Transaction Transaction      get; set; }
+        public virtual Transaction Transaction { get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -63,19 +63,19 @@ namespace Rock.Financial
         /// <value>
         /// The fund.
         /// </value>
-        public virtual Fund Fund      get; set; }
+        public virtual Fund Fund { get; set; }
     }
 
     /// <summary>
     /// TransactionFund Configuration class
     /// </summary>
     public partial class TransactionFundConfiguration : EntityTypeConfiguration<TransactionFund>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionFundConfiguration"/> class.
         /// </summary>
         public TransactionFundConfiguration()
-            
+        {
             //this.HasKey(t => t.TransactionId);
             //this.HasKey(t => t.FundId);
             this.HasRequired(t => t.Transaction).WithMany(t => t.TransactionFunds).HasForeignKey(t => t.TransactionId);

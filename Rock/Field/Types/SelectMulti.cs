@@ -10,19 +10,19 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-    
+{
     /// <summary>
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
     [Serializable]
     public class SelectMulti : FieldType
-        
+    {
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
-            
+        {
             List<string> configKeys = new List<string>();
             configKeys.Add( "values" );
             return configKeys;
@@ -33,7 +33,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
-            
+        {
             List<Control> controls = new List<Control>();
 
             TextBox tb = new TextBox();
@@ -50,12 +50,12 @@ namespace Rock.Field.Types
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-            
+        {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values", "Comma-delimited list of values to display", "" ) );
 
             if ( controls != null && controls.Count == 1 )
-                
+            {
                 if ( controls[0] != null && controls[0] is TextBox )
                     configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
             }
@@ -69,7 +69,7 @@ namespace Rock.Field.Types
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
@@ -83,11 +83,11 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             CheckBoxList editControl = new CheckBoxList();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
-                foreach ( string value in configurationValues["values"].Value.Split( new char[]      ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( string value in configurationValues["values"].Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                     editControl.Items.Add( new ListItem( value ) );
 
             return editControl;
@@ -100,11 +100,11 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             List<string> values = new List<string>();
 
             if ( control != null && control is ListControl )
-                
+            {
                 CheckBoxList cbl = ( CheckBoxList )control;
                 foreach ( ListItem li in cbl.Items )
                     if ( li.Selected )
@@ -122,12 +122,12 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-            
+        {
             List<string> values = new List<string>();
             values.AddRange( value.Split( ',' ) );
 
             if ( control != null && control is ListControl )
-                
+            {
                 CheckBoxList cbl = ( CheckBoxList )control;
                 foreach ( ListItem li in cbl.Items )
                     li.Selected = values.Contains( li.Value );

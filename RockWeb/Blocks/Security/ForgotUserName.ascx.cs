@@ -15,16 +15,16 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
-    
+{
     [BlockProperty( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
     [BlockProperty( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
     [BlockProperty( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
-        
+    {
         #region Overridden RockPage Methods
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             base.OnLoad( e );
 
             pnlEntry.Visible = true;
@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Security
             pnlSuccess.Visible = false;
 
             if ( !Page.IsPostBack )
-                
+            {
                 lCaption.Text = AttributeValue( "HeadingCaption" );
                 lWarning.Text = AttributeValue( "InvalidEmailCaption" );
                 lSuccess.Text = AttributeValue( "SuccessCaption" );
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Security
         #region Events
 
         protected void btnSend_Click( object sender, EventArgs e )
-            
+        {
             PersonService personService = new PersonService();
 
             var mergeObjects = new List<object>();
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Security
             Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
 
             foreach(Person person in personService.GetByEmail(tbEmail.Text))
-                
+            {
                 var userObjects = new List<object>();
 
                 UserService userService = new UserService();
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Security
             }
 
             if ( personObjects.Count > 0 )
-                
+            {
                 mergeObjects.Add( personObjects );
 
                 var recipients = new Dictionary<string, List<object>>();
@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Security
         }
 
         private void SetSMTPParameters( Email email )
-            
+        {
             email.Server = GlobalAttributesCache.Value( "SMTPServer" );
 
             int port = 0;

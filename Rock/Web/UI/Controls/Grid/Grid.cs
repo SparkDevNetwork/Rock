@@ -22,13 +22,13 @@ using Rock;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
-    
+{
     /// <summary>
     /// Rock Grid Control
     /// </summary>
-    [ToolboxData( "<    0}:Grid runat=server></    0}:Grid>" )]
+    [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
-        
+    {
         const int ALL_ITEMS_SIZE = 1000000;
 
         private Table _table;
@@ -42,11 +42,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
         public virtual GridViewRow ActionRow
-            
+        {
             get
-                
+            {
                 if ( this._actionRow == null )
-                    
+                {
                     this.EnsureChildControls();
                 }
                 return this._actionRow;
@@ -58,8 +58,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
         public virtual GridActions Actions
-            
-            get      return this._gridActions; }
+        {
+            get { return this._gridActions; }
         }
 
         /// <summary>
@@ -74,17 +74,17 @@ namespace Rock.Web.UI.Controls
         Description( "Show Action Row" )
         ]
         public virtual bool ShowActionRow
-            
+        {
             get
-                
+            {
                 object showActionRow = this.ViewState["ShowActionRow"];
                 return ( ( showActionRow == null ) || ( (bool)showActionRow ) );
             }
             set
-                
+            {
                 bool showActionRow = this.ShowActionRow;
                 if ( value != showActionRow )
-                    
+                {
                     this.ViewState["ShowActionRow"] = value;
                 }
             }
@@ -101,14 +101,14 @@ namespace Rock.Web.UI.Controls
         Description( "Item Text" )
         ]
         public string RowItemText
-            
+        {
             get
-                
+            {
                 object rowItemText = this.ViewState["RowItemText"];
                 return ( rowItemText as string );
             }
             set
-                
+            {
                 this.ViewState["RowItemText"] = value;
             }
         }
@@ -125,14 +125,14 @@ namespace Rock.Web.UI.Controls
         Description( "Show Action Export to Excel" )
         ]
         public virtual bool ShowActionExcelExport
-            
+        {
             get
-                
+            {
                 object showActionExcelExport = this.ViewState["ShowActionExcelExport"];
                 return ( ( showActionExcelExport == null ) || ( (bool)showActionExcelExport ) );
             }
             set
-                
+            {
                 bool showActionExcelExport = this.ShowActionExcelExport;
                 if ( value != showActionExcelExport )
                     this.ViewState["ShowActionExcelExport"] = value;
@@ -143,9 +143,9 @@ namespace Rock.Web.UI.Controls
         /// Gets the sort property.
         /// </summary>
         public SortProperty SortProperty
-            
-            get      return ViewState["SortProperty"] as SortProperty; }
-            private set      ViewState["SortProperty"] = value; }
+        {
+            get { return ViewState["SortProperty"] as SortProperty; }
+            private set { ViewState["SortProperty"] = value; }
         }
 
 
@@ -158,7 +158,7 @@ namespace Rock.Web.UI.Controls
         /// Initializes a new instance of the <see cref="Grid"/> class.
         /// </summary>
         public Grid()
-            
+        {
             base.CssClass = "grid-table table-bordered table-stripped";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -186,7 +186,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
         protected override void OnInit( EventArgs e )
-            
+        {
             Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
             PagerTemplate pagerTemplate = new PagerTemplate();
@@ -203,7 +203,7 @@ namespace Rock.Web.UI.Controls
         }
 
         void Actions_ExcelExportClick( object sender, EventArgs e )
-            
+        {
             OnGridRebind( e );
 
             // create default settings
@@ -217,14 +217,14 @@ namespace Rock.Web.UI.Controls
 
             // if the grid has a caption customize on it
             if ( this.Caption != null && this.Caption != string.Empty )
-                
+            {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
                 filename = this.Caption.Replace( " ", "" ) + ".xlsx";
                 title = this.Caption;
             }
             else
-                
+            {
                 excel.Workbook.Properties.Title = "Rock ChMS Export";
             }
 
@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
             int columnCounter = 1;
 
             if ( this.DataSource is DataTable || this.DataSource is DataView )
-                
+            {
                 DataTable data = null;
 
                 if ( this.DataSource is DataTable )
@@ -257,21 +257,21 @@ namespace Rock.Web.UI.Controls
 
                 // print headings
                 foreach ( DataColumn column in data.Columns )
-                    
+                {
                     worksheet.Cells[3, columnCounter].Value = column.ColumnName.SplitCase();
                     columnCounter++;
                 }
 
                 // print data
                 foreach ( DataRow row in data.Rows )
-                    
+                {
                     for ( int i = 0; i < data.Columns.Count; i++ )
-                        
+                    {
                         worksheet.Cells[rowCounter, i].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
-                            
+                        {
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
                         }
@@ -280,7 +280,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
             else
-                
+            {
                 // get access to the List<> and its properties
                 IList data = (IList)this.DataSource;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
@@ -288,17 +288,17 @@ namespace Rock.Web.UI.Controls
 
                 // print column headings
                 foreach ( PropertyInfo prop in props )
-                    
+                {
                     worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                     columnCounter++;
                 }
 
                 // print data
                 foreach ( var item in data )
-                    
+                {
                     columnCounter = 1;
                     foreach ( PropertyInfo prop in props )
-                        
+                    {
                         object propValue = prop.GetValue( item, null );
 
                         string value = "";
@@ -309,7 +309,7 @@ namespace Rock.Web.UI.Controls
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
-                            
+                        {
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
                         }
@@ -326,7 +326,7 @@ namespace Rock.Web.UI.Controls
 
             // format header range
             using ( ExcelRange r = worksheet.Cells[3, 1, 3, columnCounter] )
-                
+            {
                 r.Style.Font.Bold = true;
                 r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                 r.Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 223, 223, 223 ) );
@@ -337,7 +337,7 @@ namespace Rock.Web.UI.Controls
             // format and set title
             worksheet.Cells[1, 1].Value = title;
             using ( ExcelRange r = worksheet.Cells[1, 1, 1, columnCounter] )
-                
+            {
                 r.Merge = true;
                 r.Style.Font.SetFromFont( new Font( "Calibri", 22, FontStyle.Regular ) );
                 r.Style.Font.Color.SetColor( Color.White );
@@ -368,7 +368,7 @@ namespace Rock.Web.UI.Controls
 
             // set some footer text
             worksheet.HeaderFooter.OddHeader.CenteredText = title;
-            worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page     0} of     1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
+            worksheet.HeaderFooter.OddFooter.RightAlignedText = string.Format( "Page {0} of {1}", ExcelHeaderFooter.PageNumber, ExcelHeaderFooter.NumberOfPages );
 
             excel.Save();
 
@@ -392,7 +392,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
-            
+        {
             base.OnPreRender( e );
 
             UseAccessibleHeader = true;
@@ -418,7 +418,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
-            
+        {
             base.OnDataBound( e );
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
@@ -432,17 +432,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs"/> that contains event data.</param>
         protected override void OnRowDataBound( GridViewRowEventArgs e )
-            
+        {
             base.OnRowDataBound( e );
 
             if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
-                
+            {
                 string asc = SortDirection.Ascending.ToString();
                 string desc = SortDirection.Descending.ToString();
 
                 // Remove the sort css classes
                 foreach ( TableCell cell in e.Row.Cells )
-                    
+                {
                     cell.RemoveCssClass( asc );
                     cell.RemoveCssClass( desc );
                 }
@@ -451,10 +451,10 @@ namespace Rock.Web.UI.Controls
                 SortProperty sortProperty = this.SortProperty;
                 if ( sortProperty != null )
                     foreach ( var column in this.Columns )
-                        
+                    {
                         var dcf = column as DataControlField;
                         if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
-                            
+                        {
                             e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
                             break;
                         }
@@ -462,10 +462,10 @@ namespace Rock.Web.UI.Controls
             }
 
             if ( e.Row.DataItem != null && this.DataKeys != null && this.DataKeys.Count > 0 )
-                
+            {
                 object dataKey = this.DataKeys[e.Row.RowIndex].Value as object;
                 if ( dataKey != null )
-                    
+                {
                     string key = dataKey.ToString();
                     e.Row.Attributes.Add( "datakey", key );
                 }
@@ -479,7 +479,7 @@ namespace Rock.Web.UI.Controls
         /// Always returns a new <see cref="T:System.Web.UI.WebControls.Table"/> that represents the child table.
         /// </returns>
         protected override Table CreateChildTable()
-            
+        {
             _table = base.CreateChildTable();
             return _table;
         }
@@ -495,11 +495,11 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="T:System.Web.HttpException">
         ///   <paramref name="dataSource"/> returns a null <see cref="T:System.Web.UI.DataSourceView"/>.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot return a <see cref="P:System.Web.UI.DataSourceSelectArguments.TotalRowCount"/>. -or-<see cref="P:System.Web.UI.WebControls.GridView.AllowPaging"/> is true and <paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and cannot perform data source paging.-or-<paramref name="dataSource"/> does not implement the <see cref="T:System.Collections.ICollection"/> interface and <paramref name="dataBinding"/> is set to false.</exception>
         protected override int CreateChildControls( System.Collections.IEnumerable dataSource, bool dataBinding )
-            
+        {
             int result = base.CreateChildControls( dataSource, dataBinding );
 
             if ( _table != null && _table.Parent != null )
-                
+            {
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                     this.BottomPagerRow.Visible = true;
 
@@ -525,10 +525,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
         protected void Grid_Sorting( object sender, GridViewSortEventArgs e )
-            
+        {
             SortProperty sortProperty = this.SortProperty;
             if ( sortProperty != null && sortProperty.Property == e.SortExpression )
-                
+            {
                 if ( sortProperty.Direction == SortDirection.Ascending )
                     sortProperty.Direction = SortDirection.Descending;
                 else
@@ -552,7 +552,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
-            
+        {
             this.PageSize = e.Number;
             OnGridRebind( e );
         }
@@ -563,7 +563,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
-            
+        {
             this.PageIndex = e.Number;
             OnGridRebind( e );
         }
@@ -577,9 +577,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="eventArgument">The event argument from which to create a <see cref="T:System.Web.UI.WebControls.CommandEventArgs"/> for the event or events that are raised.</param>
         void IPostBackEventHandler.RaisePostBackEvent( string eventArgument )
-            
+        {
             if ( eventArgument.StartsWith( "re-order:" ) )
-                
+            {
                 string[] parms = eventArgument.Substring( 9 ).Split( ';' );
 
                 string dataKey = parms[0];
@@ -617,7 +617,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected virtual void OnGridReorder( GridReorderEventArgs e )
-            
+        {
             if ( GridReorder != null )
                 GridReorder( this, e );
         }
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected virtual void OnGridRebind( EventArgs e )
-            
+        {
             if ( GridRebind != null )
                 GridRebind( this, e );
         }
@@ -671,18 +671,18 @@ namespace Rock.Web.UI.Controls
     /// Items Per RockPage Event Argument
     /// </summary>
     internal class NumericalEventArgs : EventArgs
-        
+    {
         /// <summary>
         /// Gets the items per page.
         /// </summary>
-        public int Number      get; private set; }
+        public int Number { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NumericalEventArgs"/> class.
         /// </summary>
         /// <param name="number">The number.</param>
         public NumericalEventArgs( int number )
-            
+        {
             Number = number;
         }
     }
@@ -691,21 +691,21 @@ namespace Rock.Web.UI.Controls
     /// Grid Reorder Event Argument
     /// </summary>
     public class GridReorderEventArgs : EventArgs
-        
+    {
         /// <summary>
         /// Gets the data key.
         /// </summary>
-        public string DataKey      get; private set; }
+        public string DataKey { get; private set; }
 
         /// <summary>
         /// Gets the old index.
         /// </summary>
-        public int OldIndex      get; private set; }
+        public int OldIndex { get; private set; }
 
         /// <summary>
         /// Gets the new index.
         /// </summary>
-        public int NewIndex      get; private set; }
+        public int NewIndex { get; private set; }
 
         private bool _cancel = false;
         /// <summary>
@@ -715,9 +715,9 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if cancelled; otherwise, <c>false</c>.
         /// </value>
         public bool Cancel
-            
-            get      return _cancel; }
-            set      _cancel = value; }
+        {
+            get { return _cancel; }
+            set { _cancel = value; }
         }
 
         /// <summary>
@@ -727,7 +727,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
         public GridReorderEventArgs( string dataKey, int oldIndex, int newIndex )
-            
+        {
             DataKey = dataKey;
             OldIndex = oldIndex;
             NewIndex = newIndex;
@@ -742,27 +742,27 @@ namespace Rock.Web.UI.Controls
     /// JSON Result  
     /// </summary>
     internal class JsonResult
-        
-        public string Action      get; set; }
-        public bool Cancel      get; set; }
-        public object Result      get; set; }
+    {
+        public string Action { get; set; }
+        public bool Cancel { get; set; }
+        public object Result { get; set; }
 
         public JsonResult( string action, bool cancel )
-            
+        {
             Action = action;
             Cancel = cancel;
             Result = null;
         }
 
         public JsonResult( string action, bool cancel, object result )
-            
+        {
             Action = action;
             Cancel = cancel;
             Result = result;
         }
 
         public string Serialize()
-            
+        {
             System.Web.Script.Serialization.JavaScriptSerializer serializer =
                 new System.Web.Script.Serialization.JavaScriptSerializer();
 
@@ -779,14 +779,14 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     [Serializable]
     public class SortProperty
-        
+    {
         /// <summary>
         /// Gets or sets the direction.
         /// </summary>
         /// <value>
         /// The direction.
         /// </value>
-        public System.Web.UI.WebControls.SortDirection Direction      get; set; }
+        public System.Web.UI.WebControls.SortDirection Direction { get; set; }
 
         /// <summary>
         /// Gets or sets the property name
@@ -794,14 +794,14 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The property.
         /// </value>
-        public string Property      get; set; }
+        public string Property { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SortProperty"/> class.
         /// </summary>
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewSortEventArgs"/> instance containing the event data.</param>
         public SortProperty( GridViewSortEventArgs e )
-            
+        {
             Direction = e.SortDirection;
             Property = e.SortExpression;
         }
@@ -815,7 +815,7 @@ namespace Rock.Web.UI.Controls
     /// Template used for the pager row in the <see cref="Grid"/> control
     /// </summary>
     internal class PagerTemplate : ITemplate, IDisposable
-        
+    {
         const int ALL_ITEMS_SIZE = 1000000;
 
         //Literal lStatus;
@@ -829,7 +829,7 @@ namespace Rock.Web.UI.Controls
         LinkButton[] ItemLink = new LinkButton[4];
 
         public PagerTemplate()
-            
+        {
             IsDisposed = false;
         }
 
@@ -838,7 +838,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
-            
+        {
             HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
@@ -860,7 +860,7 @@ namespace Rock.Web.UI.Controls
             NavigationPanel.Controls.Add( ulNavigation );
 
             for ( var i = 0; i < PageLinkListItem.Length; i++ )
-                
+            {
                 PageLinkListItem[i] = new HtmlGenericContainer( "li" );
                 ulNavigation.Controls.Add( PageLinkListItem[i] );
 
@@ -889,7 +889,7 @@ namespace Rock.Web.UI.Controls
             divSizeOptions.Controls.Add( ulSizeOptions );
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
-                
+            {
                 ItemLinkListItem[i] = new HtmlGenericContainer( "li" );
                 ulSizeOptions.Controls.Add( ItemLinkListItem[i] );
 
@@ -911,27 +911,27 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageIndex">The current page index</param>
         /// <param name="pageSize">The number of items on each page</param>
         public void SetNavigation( int pageCount, int pageIndex, int pageSize )
-            
+        {
             //// Set status
             //if (lStatus != null)
-            //    lStatus.Text = string.Format( "RockPage     0:N0} of     1:N0}", pageIndex+1, pageCount );
+            //    lStatus.Text = string.Format( "RockPage {0:N0} of {1:N0}", pageIndex+1, pageCount );
 
             // Set navigation controls
             if ( NavigationPanel != null )
-                
+            {
                 if ( pageCount > 1 )
-                    
+                {
                     int totalGroups = (int)( ( pageCount - 1 ) / 10 );
                     int currentGroup = (int)( pageIndex / 10 );
 
                     int prevPageIndex = 0;
                     if ( pageIndex <= 0 )
-                        
+                    {
                         PageLinkListItem[0].Attributes["class"] = "prev disabled";
                         PageLink[0].Enabled = false;
                     }
                     else
-                        
+                    {
                         prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
                         PageLinkListItem[0].Attributes["class"] = "prev";
                         PageLink[0].Enabled = true;
@@ -940,12 +940,12 @@ namespace Rock.Web.UI.Controls
 
                     int nextPageIndex = pageIndex;
                     if ( pageIndex >= pageCount - 1 )
-                        
+                    {
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
                         PageLink[PageLinkListItem.Length - 1].Enabled = false;
                     }
                     else
-                        
+                    {
                         nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
@@ -955,14 +955,14 @@ namespace Rock.Web.UI.Controls
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
-                        
+                    {
                         int currentPage = currentGroup + ( i - 1 );
 
                         HtmlGenericControl li = PageLinkListItem[i];
                         LinkButton lb = PageLink[i];
 
                         if ( currentPage < pageCount )
-                            
+                        {
                             li.Attributes["class"] = currentPage == pageIndex ? "active" : "";
                             li.Visible = true;
 
@@ -971,21 +971,21 @@ namespace Rock.Web.UI.Controls
                             lb.Visible = true;
                         }
                         else
-                            
+                        {
                             li.Visible = false;
                             lb.Visible = false;
                         }
                     }
                 }
                 else
-                    
+                {
                     NavigationPanel.Visible = false;
                 }
             }
 
             // Set page size controls
             if ( ItemLinkListItem[0] != null )
-                
+            {
                 string pageSizeValue = pageSize == ALL_ITEMS_SIZE ? "All" : pageSize.ToString( "N0" );
                 for ( int i = 0; i < ItemLinkListItem.Length; i++ )
                     ItemLinkListItem[i].Attributes["class"] = ItemLink[i].Text == pageSizeValue ? "active" : "";
@@ -993,15 +993,15 @@ namespace Rock.Web.UI.Controls
         }
 
         void lbPage_Click( object sender, EventArgs e )
-            
+        {
             if ( NavigateClick != null )
-                
+            {
                 LinkButton lbPage = sender as LinkButton;
                 if ( lbPage != null )
-                    
+                {
                     int pageIndex = 0;
                     if ( Int32.TryParse( lbPage.Attributes["page-index"], out pageIndex ) )
-                        
+                    {
                         NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex );
                         NavigateClick( sender, eventArgs );
                     }
@@ -1015,14 +1015,14 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void lbItems_Click( object sender, EventArgs e )
-            
+        {
             LinkButton lbItems = sender as LinkButton;
             if ( lbItems != null && ItemsPerPageClick != null )
-                
+            {
                 int itemsPerPage = ALL_ITEMS_SIZE;
 
                 switch ( lbItems.Text )
-                    
+                {
                     case "25":
                         itemsPerPage = 25;
                         break;
@@ -1054,7 +1054,7 @@ namespace Rock.Web.UI.Controls
         /// Dispose object
         /// </summary>
         public void Dispose()
-            
+        {
             Dispose( true );
             GC.SuppressFinalize( this );
         }
@@ -1064,11 +1064,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose( bool disposing )
-            
+        {
             if ( !IsDisposed )
-                
+            {
                 if ( disposing )
-                    
+                {
                     if ( NavigationPanel != null )
                         NavigationPanel.Dispose();
                 }

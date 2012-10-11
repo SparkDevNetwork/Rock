@@ -16,24 +16,24 @@ using Rock;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     public partial class PageProperties : Rock.Web.UI.RockBlock
-        
+    {
         #region Fields
 
         private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
-        private List<string> tabs = new List<string>      "Basic Settings", "Menu Display", "Advanced Settings"} ;
+        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
         
         protected string CurrentProperty
-            
+        {
             get
-                
+            {
                 object currentProperty = ViewState["CurrentProperty"];
                 return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
             }
             set
-                
+            {
                 ViewState["CurrentProperty"] = value;
             }
         }
@@ -43,27 +43,27 @@ namespace RockWeb.Blocks.Administration
         #region Overridden Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
             if ( masterPage != null )
                 masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
 
             try
-                
+            {
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
-                    
+                {
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
                     List<string> blockContexts = new List<string>();
                     foreach ( var block in _page.Blocks )
-                        
+                    {
                         var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as Rock.Web.UI.RockBlock;
                         if ( blockControl != null )
-                            
+                        {
                             blockControl.CurrentPage = _page;
                             blockControl.CurrentBlock = block;
                             foreach ( var context in blockControl.ContextTypesRequired )
@@ -76,9 +76,9 @@ namespace RockWeb.Blocks.Administration
 
                     int i = 0;
                     foreach ( string context in blockContexts )
-                        
+                    {
                         var tbContext = new LabeledTextBox();
-                        tbContext.ID = string.Format( "context_    0}", i++ );
+                        tbContext.ID = string.Format( "context_{0}", i++ );
                         tbContext.Required = true;
                         tbContext.LabelText = context;
 
@@ -90,12 +90,12 @@ namespace RockWeb.Blocks.Administration
 
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to edit this page" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
 
@@ -103,9 +103,9 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentPerson ) )
-                
+            {
                 Rock.Cms.PageService pageService = new Rock.Cms.PageService();
                 Rock.Cms.Page page = pageService.Get( _page.Id );
                 
@@ -142,10 +142,10 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         protected void lbProperty_Click( object sender, EventArgs e )
-            
+        {
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
-                
+            {
                 CurrentProperty = lb.Text;
 
                 rptProperties.DataSource = tabs;
@@ -156,11 +156,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         void masterPage_OnSave( object sender, EventArgs e )
-            
+        {
             if ( Page.IsValid )
-                
+            {
                 using ( new Rock.Data.UnitOfWorkScope() )
-                    
+                {
                     var pageService = new Rock.Cms.PageService();
                     var routeService = new Rock.Cms.PageRouteService();
                     var contextService = new Rock.Cms.PageContextService();
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Administration
 
                     int parentPage = Int32.Parse( ddlParentPage.SelectedValue );
                     if ( page.ParentPageId != parentPage )
-                        
+                    {
                         if ( page.ParentPageId.HasValue )
                             Rock.Web.Cache.PageCache.Flush( page.ParentPageId.Value );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Administration
                     page.PageContexts.Clear();
 
                     foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
-                        
+                    {
                         var pageRoute = new Rock.Cms.PageRoute();
                         pageRoute.Route = route;
                         pageRoute.Guid = Guid.NewGuid();
@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Administration
                     if (phContextPanel.Visible)
                         foreach ( var control in phContext.Controls)
                             if ( control is LabeledTextBox )
-                                
+                            {
                                 var tbContext = control as LabeledTextBox;
                                 var pageContext = new Rock.Cms.PageContext();
                                 pageContext.Entity = tbContext.LabelText;
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void LoadDropdowns()
-            
+        {
             ddlParentPage.Items.Clear();
             ddlParentPage.Items.Add( new ListItem( "Root", "0" ) );
             foreach ( var page in new Rock.Cms.PageService().GetByParentPageId( null ) )
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void AddPage( Rock.Cms.Page page, int level )
-            
+        {
             string pageName = new string( '-', level ) + page.Name;
             ddlParentPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );
             foreach ( var childPage in page.Pages )
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlError.Controls.Clear();
             pnlError.Controls.Add( new LiteralControl( message ) );
             pnlError.Visible = true;
@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected string GetTabClass( object property )
-            
+        {
             if ( property.ToString() == CurrentProperty )
                 return "active";
             else
@@ -279,22 +279,22 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void ShowSelectedPane()
-            
-            if (CurrentProperty.Equals( "Basic Settings" ))     
+        {
+            if (CurrentProperty.Equals( "Basic Settings" )) {
                 pnlBasicProperty.Visible = true;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = false;
                 pnlBasicProperty.DataBind();
             }
             else if ( CurrentProperty.Equals( "Menu Display" ) )
-                
+            {
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = true;
                 pnlAdvancedSettings.Visible = false;
                 pnlMenuDisplay.DataBind();
             }
             else if ( CurrentProperty.Equals( "Advanced Settings" ) )
-                
+            {
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = true;

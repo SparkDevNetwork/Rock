@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-       
+{   
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<    0}:LabeledText runat=server></    0}:LabeledText>" )]
+    [ToolboxData( "<{0}:LabeledText runat=server></{0}:LabeledText>" )]
     public class LabeledText : CompositeControl
-        
+    {
         private Label label;
         private Literal literal;
 
@@ -32,14 +32,14 @@ namespace Rock.Web.UI.Controls
         Description( "The text for the label." )
         ]
         public string LabelText
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return label.Text;
             }
             set
-                
+            {
                 EnsureChildControls();
                 label.Text = value;
             }
@@ -58,14 +58,14 @@ namespace Rock.Web.UI.Controls
         Description( "The text." )
         ]
         public string Text
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return literal.Text;
             }
             set
-                
+            {
                 EnsureChildControls();
                 literal.Text = value;
             }
@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-            
+        {
             base.CreateChildControls();
 
             Controls.Clear();
@@ -92,7 +92,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
-            
+        {
             writer.AddAttribute( "class", "control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

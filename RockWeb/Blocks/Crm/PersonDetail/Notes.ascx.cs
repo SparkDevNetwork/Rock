@@ -10,11 +10,11 @@ using System.Web.UI;
 using Rock.Crm;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
-    
+{
     public partial class Notes : Rock.Web.UI.PersonBlock
-        
+    {
         protected void Page_Load( object sender, EventArgs e )
-            
+        {
         }
     }
 }

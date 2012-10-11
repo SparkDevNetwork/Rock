@@ -13,12 +13,12 @@
 using Rock.Core;
 
 namespace Rock.Rest.Core
-    
+{
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
     public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Core.ExceptionLog, Rock.Core.ExceptionLogDto>
-        
-        public ExceptionLogsController() : base( new Rock.Core.ExceptionLogService() )      } 
+    {
+        public ExceptionLogsController() : base( new Rock.Core.ExceptionLogService() ) { } 
     }
 }

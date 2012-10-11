@@ -12,12 +12,12 @@ using System.Linq;
 using System.Reflection;
 
 namespace Rock
-    
+{
     /// <summary>
     /// Static helper methods for using Reflection
     /// </summary>
     public static class Reflection
-        
+    {
         /// <summary>
         /// Finds the all the types that implement or inherit from the baseType.  The baseType
         /// will not be included in the result
@@ -26,7 +26,7 @@ namespace Rock
         /// <param name="directory">The directory.</param>
         /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo directory = null )
-            
+        {
             return FindTypes( baseType, false, directory );
         }
 
@@ -38,7 +38,7 @@ namespace Rock
         /// <param name="directory">The directory.</param>
         /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo directory = null )
-            
+        {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
 
             if ( includeBaseType )
@@ -54,9 +54,9 @@ namespace Rock
                     assemblies.Add( assembly.FullName.ToLower(), assembly );
 
             if ( directory != null )
-                
+            {
                 foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
-                    
+                {
                     Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
                     if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
                         assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
@@ -78,29 +78,29 @@ namespace Rock
         /// <param name="baseType">Type of the base.</param>
         /// <returns></returns>
         public static Dictionary<string, Type> SearchAssembly( Assembly assembly, Type baseType )
-            
+        {
             Dictionary<string, Type> types = new Dictionary<string, Type>();
 
             try
-                
+            {
                 foreach ( Type type in assembly.GetTypes() )
-                    
+                {
                     if ( baseType.IsInterface )
-                        
+                    {
                         foreach ( Type typeInterface in type.GetInterfaces() )
                             if ( typeInterface == baseType )
-                                
+                            {
                                 types.Add( ClassName( type ), type );
                                 break;
                             }
                     }
                     else
-                        
+                    {
                         Type parentType = type.BaseType;
                         while ( parentType != null )
-                            
+                        {
                             if ( parentType == baseType )
-                                
+                            {
                                 types.Add( ClassName( type ), type );
                                 break;
                             }
@@ -110,7 +110,7 @@ namespace Rock
                 }
             }
             catch ( ReflectionTypeLoadException ex )
-                
+            {
                 string dd = ex.Message;
             }
 
@@ -124,7 +124,7 @@ namespace Rock
         /// <param name="type">The type.</param>
         /// <returns></returns>
         public static string ClassName( Type type )
-            
+        {
             object[] attributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), true );
             if ( attributes.Length > 0 )
                 return ( (System.ComponentModel.DescriptionAttribute)attributes[0] ).Description;
@@ -138,7 +138,7 @@ namespace Rock
         /// <param name="type"></param>
         /// <returns></returns>
         public static string GetDescription( Type type )
-            
+        {
             foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
                 return ( (DescriptionAttribute)descriptionAttribute ).Description;
             return null;

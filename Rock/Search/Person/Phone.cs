@@ -15,7 +15,7 @@ using Rock.Crm;
 using Rock.Web.UI;
 
 namespace Rock.Search.Person
-    
+{
     /// <summary>
     /// Searches for people with matching phones
     /// </summary>
@@ -23,16 +23,16 @@ namespace Rock.Search.Person
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Phone")]
     [BlockProperty( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Phone" )]
-    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '    0}' for the search text)", true, "" )]
+    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
     public class Phone : SearchComponent
-        
+    {
         /// <summary>
         /// The text to display as the search type
         /// </summary>
         public override string SearchLabel
-            
+        {
             get
-                
+            {
                 if ( !String.IsNullOrWhiteSpace( AttributeValue( "SearchLabel" ) ) )
                     return AttributeValue( "SearchLabel" );
                 else
@@ -44,9 +44,9 @@ namespace Rock.Search.Person
         /// The URL to redirect user to for search
         /// </summary>
         public override string ResultUrl
-            
+        {
             get
-                
+            {
                 if ( !String.IsNullOrWhiteSpace( AttributeValue( "ResultURL" ) ) )
                     return AttributeValue( "ResultURL" );
                 else
@@ -60,7 +60,7 @@ namespace Rock.Search.Person
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
-            
+        {
             var phoneNumberService = new PhoneNumberService();
 
             return phoneNumberService.Queryable().

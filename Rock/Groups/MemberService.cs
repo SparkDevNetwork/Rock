@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Groups
-    
+{
     /// <summary>
     /// Member Service class
     /// </summary>
     public partial class MemberService : Service<Member, MemberDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberService"/> class
         /// </summary>
         public MemberService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberService"/> class
         /// </summary>
         public MemberService(IRepository<Member> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Member CreateNew()
-            
+        {
             return new Member();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<MemberDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<MemberDto> QueryableDto( IQueryable<Member> items )
-            
+        {
             return items.Select( m => new MemberDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     GroupId = m.GroupId,
                     PersonId = m.PersonId,

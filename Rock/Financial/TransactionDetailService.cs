@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// TransactionDetail Service class
     /// </summary>
     public partial class TransactionDetailService : Service<TransactionDetail, TransactionDetailDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionDetailService"/> class
         /// </summary>
         public TransactionDetailService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionDetailService"/> class
         /// </summary>
         public TransactionDetailService(IRepository<TransactionDetail> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override TransactionDetail CreateNew()
-            
+        {
             return new TransactionDetail();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<TransactionDetailDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<TransactionDetailDto> QueryableDto( IQueryable<TransactionDetail> items )
-            
+        {
             return items.Select( m => new TransactionDetailDto()
-                    
+                {
                     TransactionId = m.TransactionId,
                     Entity = m.Entity,
                     EntityId = m.EntityId,

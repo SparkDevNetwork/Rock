@@ -5,12 +5,12 @@ using System.Web;
 using System.Reflection;
 
 namespace Rock
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public static class Version
-        
+    {
         /// <summary>
         /// Gets the current.
         /// </summary>
@@ -18,8 +18,8 @@ namespace Rock
         /// The current.
         /// </value>
         public static System.Version Current
-            
-            get      return Assembly.GetExecutingAssembly().GetName().Version; }
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
     }
 }

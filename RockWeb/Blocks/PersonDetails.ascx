@@ -84,28 +84,28 @@
                     </ul>
 
                     <script>
-                        $('ul.phone-numbers li a').live(    
+                        $('ul.phone-numbers li a').live({
                             mouseenter:
-                               function ()     
+                               function () {
                                    var spanItem = $('span.phone-unlisted', this);
-                                   if (spanItem.length > 0)     
+                                   if (spanItem.length > 0) {
                                        $(spanItem).text($(spanItem).attr('data-value'));
                                    }
 
                                    var phoneIcon = $('i', this);
-                                   if (phoneIcon.length > 0)     
+                                   if (phoneIcon.length > 0) {
                                        $(phoneIcon).fadeToggle();
                                    }
                                },
                             mouseleave:
-                               function ()     
+                               function () {
                                    var spanItem = $('span.phone-unlisted', this);
-                                   if (spanItem.length > 0)     
+                                   if (spanItem.length > 0) {
                                        $(spanItem).text('Unlisted');
                                    }
 
                                    var phoneIcon = $('i', this);
-                                   if (phoneIcon.length > 0)     
+                                   if (phoneIcon.length > 0) {
                                        $(phoneIcon).hide();
                                    }
                                }
@@ -131,18 +131,18 @@
                         </li>
                     </ul>
                     <script>
-                        $('ul.addresses li').live(    
+                        $('ul.addresses li').live({
                             mouseenter:
-                               function ()     
+                               function () {
                                    var actionsDiv = $('div.actions', this);
-                                   if (actionsDiv.length > 0)     
+                                   if (actionsDiv.length > 0) {
                                        $(actionsDiv).fadeToggle();
                                    }
                                },
                             mouseleave:
-                               function ()     
+                               function () {
                                    var actionsDiv = $('div.actions', this);
-                                   if (actionsDiv.length > 0)     
+                                   if (actionsDiv.length > 0) {
                                        $(actionsDiv).fadeToggle();
                                    }
                             }
@@ -193,9 +193,9 @@
 
                         <script>
 
-                            $(document).ready(function ()     
+                            $(document).ready(function () {
                                 
-                                $('#note-add').click(function ()     
+                                $('#note-add').click(function () {
                                     $('#note-entry').slideToggle("slow");
                                 });
 
@@ -323,10 +323,10 @@
                 </section>
         
                 <script>
-                    $(document).ready(function ()     
-                        $('#person-notes').tinyscrollbar(     size: 150 });
+                    $(document).ready(function () {
+                        $('#person-notes').tinyscrollbar({ size: 150 });
                         $('ul.ui-autocomplete').css('width', '300px');
-                        $('#person-tags').tagsInput(    
+                        $('#person-tags').tagsInput({
                             autocomplete_url: rock.baseUrl + 'autocomplete-sample.html',
                             autoCompleteAppendTo: 'div.tag-wrap',
                             'height':'auto',
@@ -340,24 +340,24 @@
                         });
                     });
 
-                    function AddTag(tagName)     
+                    function AddTag(tagName) {
                         // save tag to server (if tag does not exist don't save and trigger event below)
 
                         // simulate a tag that does not already exist, this check should be done on the server
-                        if (tagName.toLowerCase() == 'does not exist')     
+                        if (tagName.toLowerCase() == 'does not exist') {
                             var r = confirm("A tag called '" + tagName + "' does not exist. Do you want to create a new personal tag?");
-                            if (r == true)     
+                            if (r == true) {
                                 // call server control to add tag
                                 // save person to tag
                             }
-                            else     
+                            else {
                                 // remove tag
                                 $('#person-tags').removeTag(tagName);
                             } 
                         }
                     }
 
-                    function RemoveTag(tagName)     
+                    function RemoveTag(tagName) {
                         // call server to remove tag
                     }
                 </script>

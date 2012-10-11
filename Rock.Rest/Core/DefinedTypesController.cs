@@ -13,12 +13,12 @@
 using Rock.Core;
 
 namespace Rock.Rest.Core
-    
+{
     /// <summary>
     /// DefinedTypes REST API
     /// </summary>
     public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Core.DefinedType, Rock.Core.DefinedTypeDto>
-        
-        public DefinedTypesController() : base( new Rock.Core.DefinedTypeService() )      } 
+    {
+        public DefinedTypesController() : base( new Rock.Core.DefinedTypeService() ) { } 
     }
 }

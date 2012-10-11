@@ -14,33 +14,33 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Data Transfer Object for EmailTemplate object
     /// </summary>
     public partial class EmailTemplateDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int? PersonId      get; set; }
-        public string Category      get; set; }
-        public string Title      get; set; }
-        public string From      get; set; }
-        public string To      get; set; }
-        public string Cc      get; set; }
-        public string Bcc      get; set; }
-        public string Subject      get; set; }
-        public string Body      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int? PersonId { get; set; }
+        public string Category { get; set; }
+        public string Title { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string Cc { get; set; }
+        public string Bcc { get; set; }
+        public string Subject { get; set; }
+        public string Body { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public EmailTemplateDto ()
-            
+        {
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="emailTemplate"></param>
         public EmailTemplateDto ( EmailTemplate emailTemplate )
-            
+        {
             CopyFromModel( emailTemplate );
         }
 
@@ -57,9 +57,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is EmailTemplate )
-                
+            {
                 var emailTemplate = (EmailTemplate)model;
                 this.IsSystem = emailTemplate.IsSystem;
                 this.PersonId = emailTemplate.PersonId;
@@ -81,9 +81,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is EmailTemplate )
-                
+            {
                 var emailTemplate = (EmailTemplate)model;
                 emailTemplate.IsSystem = this.IsSystem;
                 emailTemplate.PersonId = this.PersonId;

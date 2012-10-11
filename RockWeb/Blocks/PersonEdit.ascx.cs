@@ -11,31 +11,31 @@ using System.Web.UI;
 using Rock.Crm;
 
 namespace RockWeb.Blocks
-    
+{
     public partial class PersonEdit : Rock.Web.UI.RockBlock
-        
+    {
         private Person person = null;
 
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
         public override List<string> ContextTypesRequired
-            
-            get      return new List<string>()      "Rock.Crm.Person" }; }
+        {
+            get { return new List<string>() { "Rock.Crm.Person" }; }
         }
 
         protected void Page_Load( object sender, EventArgs e )
-            
+        {
             person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
             if (person == null)
-                
+            {
                 PersonService personService = new PersonService();
                 person = new Person();
                 personService.Add( person, CurrentPersonId );
             }
 
             if ( !IsPostBack )
-                
+            {
                 txtFirstName.Text = person.FirstName;
                 txtNickName.Text = person.NickName;
                 txtLastName.Text = person.LastName;
@@ -43,9 +43,9 @@ namespace RockWeb.Blocks
         }
 
         protected void btnUpdate_Click( object sender, EventArgs e )
-            
+        {
             if ( Page.IsValid && person != null)
-                
+            {
                 PersonService personService = new PersonService();
 
                 person.GivenName = txtFirstName.Text;

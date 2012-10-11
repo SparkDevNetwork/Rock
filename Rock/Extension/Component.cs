@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using Rock.Web.UI;
 
 namespace Rock.Extension
-    
+{
     /// <summary>
     /// Abstract class that custom component classes should derive from.  
     /// <example>
@@ -37,11 +37,11 @@ namespace Rock.Extension
     [BlockProperty( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
     [BlockProperty( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public abstract class Component : Rock.Attribute.IHasAttributes
-        
+    {
         /// <summary>
         /// Gets the id.
         /// </summary>
-        public int Id      get      return 0; } }
+        public int Id { get { return 0; } }
 
         /// <summary>
         /// List of attributes associated with the object grouped by category.  This property will not include
@@ -50,7 +50,7 @@ namespace Rock.Extension
         /// <value>
         /// The attributes.
         /// </value>
-        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes      get; set; }
+        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their values.
@@ -58,7 +58,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes
@@ -66,7 +66,7 @@ namespace Rock.Extension
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public string AttributeValue( string key )
-            
+        {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
                 return this.AttributeValues[key].Value[0].Value;
@@ -82,18 +82,18 @@ namespace Rock.Extension
         /// The order.
         /// </value>
         public int Order
-            
+        {
             get
-                
+            {
                 int order = 0;
                 if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
-                    
+                {
                     foreach(var attributeCategory in Attributes)
-                        
+                    {
                         foreach(var attribute in attributeCategory.Value)
-                            
+                        {
                             if ( attribute.Key == "Order" )
-                                
+                            {
                                 if ( Int32.TryParse( attribute.DefaultValue, out order ) )
                                     return order;
                                 else
@@ -113,18 +113,18 @@ namespace Rock.Extension
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive
-            
+        {
             get
-                
+            {
                 bool isActive = false;
                 if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"].Value[0].Value, out isActive ) ) )
-                    
+                {
                     foreach ( var attributeCategory in Attributes )
-                        
+                    {
                         foreach ( var attribute in attributeCategory.Value )
-                            
+                        {
                             if ( attribute.Key == "Active" )
-                                
+                            {
                                 if ( Boolean.TryParse( attribute.DefaultValue, out isActive ) )
                                     return isActive;
                                 else
@@ -143,7 +143,7 @@ namespace Rock.Extension
         /// Initializes a new instance of the <see cref="Component"/> class.
         /// </summary>
         public Component()
-            
+        {
             Rock.Attribute.Helper.LoadAttributes( this );
         }
     }

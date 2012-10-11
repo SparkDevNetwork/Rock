@@ -16,14 +16,14 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     /// <summary>
     /// Used to manage the <see cref="Rock.MEF.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
     [BlockProperty( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
     public partial class Components : RockBlock
-        
+    {
         #region Private Variables
 
         private bool _isAuthorizedToConfigure = false;
@@ -34,24 +34,24 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
             Type containerType = Type.GetType( AttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
-                
+            {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
-                    
+                {
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
-                        
+                    {
                         if ( !Page.IsPostBack )
                             _container.Refresh();
 
-                        rGrid.DataKeyNames = new string[]      "id" };
+                        rGrid.DataKeyNames = new string[] { "id" };
                         if ( _isAuthorizedToConfigure )
                             rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.Columns[0].Visible = _isAuthorizedToConfigure;    // Reorder
@@ -69,12 +69,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void LoadViewState( object savedState )
-            
+        {
             base.LoadViewState( savedState );
             LoadEditControls();
         }
         protected override void OnLoad( EventArgs e )
-            
+        {
             base.OnLoad( e );
 
             if ( !Page.IsPostBack && _container != null)
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Controls.GridReorderEventArgs"/> instance containing the event data.</param>
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
-            
+        {
             var components = _container.Dictionary.ToList();
             var movedItem = components[e.OldIndex];
             components.RemoveAt( e.OldIndex );
@@ -101,10 +101,10 @@ namespace RockWeb.Blocks.Administration
                 components.Insert( e.NewIndex, movedItem );
 
             using ( new Rock.Data.UnitOfWorkScope() )
-                
+            {
                 int order = 0;
                 foreach ( var component in components )
-                    
+                {
                     foreach ( var category in component.Value.Value.Attributes )
                         foreach ( var attribute in category.Value )
                             if ( attribute.Key == "Order" )
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Edit( object sender, RowEventArgs e )
-            
+        {
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void rGrid_GridRebind( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
-            
+        {
             pnlList.Visible = true;
             pnlDetails.Visible = false;
         }
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
-            
+        {
             int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
@@ -179,10 +179,10 @@ namespace RockWeb.Blocks.Administration
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
-            
+        {
             var dataSource = new List<ComponentDescription>();
             foreach ( var component in _container.Dictionary )
-                
+            {
                 Type type = component.Value.Value.GetType();
                 if ( Rock.Attribute.Helper.UpdateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
                     Rock.Attribute.Helper.LoadAttributes( component.Value.Value );
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="serviceId">The service id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId )
-            
+        {
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
             LoadEditControls();
@@ -213,15 +213,15 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void LoadEditControls()
-            
+        {
             int serviceId = ( int )ViewState["serviceId"];
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
-            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, new List<string>()      "Order" }  );
+            Rock.Attribute.Helper.AddEditControls( component, phProperties, true, new List<string>() { "Order" }  );
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

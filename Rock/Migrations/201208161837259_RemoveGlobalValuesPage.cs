@@ -1,11 +1,11 @@
 namespace Rock.Migrations
-    
+{
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class RemoveGlobalValuesPage : DbMigration
-        
+    {
         public override void Up()
-            
+        {
             Sql( @"
 DECLARE @PageId int
 SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = 'D5550020-0BD0-43E6-806B-25338830F244')
@@ -36,7 +36,7 @@ INSERT INTO [coreAttributeValue] ([IsSystem],[AttributeId],[EntityId],[Order],[V
         }
         
         public override void Down()
-            
+        {
             Sql( @"
 -- delete new Attribute block attributes
 DELETE [coreAttributeValue] WHERE [Guid] = '8AB246E3-5197-4F47-8C98-D4EB704FBC57'

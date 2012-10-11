@@ -14,35 +14,35 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for Site object
     /// </summary>
     public partial class SiteDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public string Name      get; set; }
-        public string Description      get; set; }
-        public string Theme      get; set; }
-        public int? DefaultPageId      get; set; }
-        public string FaviconUrl      get; set; }
-        public string AppleTouchIconUrl      get; set; }
-        public string FacebookAppId      get; set; }
-        public string FacebookAppSecret      get; set; }
-        public string LoginPageReference      get; set; }
-        public string RegistrationPageReference      get; set; }
-        public string ErrorPage      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Theme { get; set; }
+        public int? DefaultPageId { get; set; }
+        public string FaviconUrl { get; set; }
+        public string AppleTouchIconUrl { get; set; }
+        public string FacebookAppId { get; set; }
+        public string FacebookAppSecret { get; set; }
+        public string LoginPageReference { get; set; }
+        public string RegistrationPageReference { get; set; }
+        public string ErrorPage { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public SiteDto ()
-            
+        {
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="site"></param>
         public SiteDto ( Site site )
-            
+        {
             CopyFromModel( site );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Site )
-                
+            {
                 var site = (Site)model;
                 this.IsSystem = site.IsSystem;
                 this.Name = site.Name;
@@ -85,9 +85,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Site )
-                
+            {
                 var site = (Site)model;
                 site.IsSystem = this.IsSystem;
                 site.Name = this.Name;

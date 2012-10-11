@@ -34,12 +34,12 @@
         <Columns>
             <asp:BoundField DataField="TransactionDate" HeaderText="Date" />
             <asp:BoundField DataField="Description" HeaderText="Description" />
-            <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="    0:C}" />
+            <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" />
         </Columns>
     </Rock:Grid>
 </asp:Panel>
 <script type="text/javascript">
-    $(document).ready(function ()     
+    $(document).ready(function () {
         // create DatePicker from input HTML element
         $("#<%=txtFromDate.ClientID%>").kendoDatePicker();
         $("#<%=txtToDate.ClientID%>").kendoDatePicker();

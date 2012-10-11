@@ -7,12 +7,12 @@
 using System;
 
 namespace Rock.Field.Types
-    
+{
     /// <summary>
     /// Field used to save and dispaly a currency value
     /// </summary>
     [Serializable]
     public class Currency : Decimal
-        
+    {
     }
 }

@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Location POCO Entity.
     /// </summary>
     [Table( "crmLocation" )]
     public partial class Location : Model<Location>
-        
+    {
         /// <summary>
         /// Gets or sets the Raw.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 400 )]
         [DataMember]
-        public string Raw      get; set; }
+        public string Raw { get; set; }
         
         /// <summary>
         /// Gets or sets the Street 1.
@@ -38,7 +38,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Street1      get; set; }
+        public string Street1 { get; set; }
         
         /// <summary>
         /// Gets or sets the Street 2.
@@ -48,7 +48,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Street2      get; set; }
+        public string Street2 { get; set; }
         
         /// <summary>
         /// Gets or sets the City.
@@ -58,7 +58,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string City      get; set; }
+        public string City { get; set; }
         
         /// <summary>
         /// Gets or sets the State.
@@ -68,7 +68,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string State      get; set; }
+        public string State { get; set; }
         
         /// <summary>
         /// Gets or sets the Country.
@@ -78,7 +78,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Country      get; set; }
+        public string Country { get; set; }
         
         /// <summary>
         /// Gets or sets the Zip.
@@ -88,7 +88,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 10 )]
         [DataMember]
-        public string Zip      get; set; }
+        public string Zip { get; set; }
         
         /// <summary>
         /// Gets or sets the Latitude.
@@ -97,7 +97,7 @@ namespace Rock.Crm
         /// Latitude.
         /// </value>
         [DataMember]
-        public double? Latitude      get; set; }
+        public double? Latitude { get; set; }
 
         /// <summary>
         /// Gets or sets the Longitude.
@@ -106,7 +106,7 @@ namespace Rock.Crm
         /// Longitude.
         /// </value>
         [DataMember]
-        public double? Longitude      get; set; }
+        public double? Longitude { get; set; }
 
         /// <summary>
         /// Gets or sets the Parcel Id.
@@ -116,7 +116,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string ParcelId      get; set; }
+        public string ParcelId { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Standardize Attempt.
@@ -125,7 +125,7 @@ namespace Rock.Crm
 		/// Standardize Attempt.
 		/// </value>
 		[DataMember]
-		public DateTime? StandardizeAttempt      get; set; }
+		public DateTime? StandardizeAttempt { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Standardize Service.
@@ -135,7 +135,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string StandardizeService      get; set; }
+		public string StandardizeService { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Standardize Result.
@@ -145,7 +145,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string StandardizeResult      get; set; }
+		public string StandardizeResult { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Standardize Date.
@@ -154,7 +154,7 @@ namespace Rock.Crm
 		/// Standardize Date.
 		/// </value>
 		[DataMember]
-		public DateTime? StandardizeDate      get; set; }
+		public DateTime? StandardizeDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Geocode Attempt.
@@ -163,7 +163,7 @@ namespace Rock.Crm
 		/// Geocode Attempt.
 		/// </value>
 		[DataMember]
-		public DateTime? GeocodeAttempt      get; set; }
+		public DateTime? GeocodeAttempt { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Geocode Service.
@@ -173,7 +173,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string GeocodeService      get; set; }
+		public string GeocodeService { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Geocode Result.
@@ -183,7 +183,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string GeocodeResult      get; set; }
+		public string GeocodeResult { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Geocode Date.
@@ -192,7 +192,7 @@ namespace Rock.Crm
 		/// Geocode Date.
 		/// </value>
 		[DataMember]
-		public DateTime? GeocodeDate      get; set; }
+		public DateTime? GeocodeDate { get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -200,7 +200,7 @@ namespace Rock.Crm
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Location Read( int id )
-		    
+		{
 			return Read<Location>( id );
 		}
 
@@ -208,7 +208,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Crm.Location"; } }
+		public override string EntityTypeName { get { return "Crm.Location"; } }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -217,8 +217,8 @@ namespace Rock.Crm
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
-            
-            return string.Format( "    0}     1}     2},     3}     4}",
+        {
+            return string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
     }
@@ -227,12 +227,12 @@ namespace Rock.Crm
     /// Location Configuration class.
     /// </summary>
     public partial class LocationConfiguration : EntityTypeConfiguration<Location>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationConfiguration"/> class.
         /// </summary>
         public LocationConfiguration()
-            
+        {
         }
     }
 }

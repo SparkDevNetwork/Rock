@@ -1,14 +1,14 @@
 namespace Rock.Migrations
-    
+{
     using System;
     using System.Data.Entity.Migrations;
 
     using Rock.Cms;
 #pragma warning disable 1591
     public partial class PersonDetail : RockMigration_0
-        
+    {
         public override void Up()
-            
+        {
             // Add Login Status to person detail layout
             var blockInstance = DefaultSystemBlockInstance( "Login Status", new Guid("19C2140D-498A-4675-B8A2-18B281736F6E") );
             blockInstance.PageId = null;
@@ -97,7 +97,7 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-            
+        {
             Sql( @"
     -- Delete context for person detail page
     DELETE [cmsPageContext] WHERE [Guid] = '68E043C8-C7C8-4C1F-B260-8A5AB8E6B3CB'

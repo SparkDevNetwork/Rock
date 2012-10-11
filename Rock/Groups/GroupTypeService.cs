@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Groups
-    
+{
     /// <summary>
     /// GroupType Service class
     /// </summary>
     public partial class GroupTypeService : Service<GroupType, GroupTypeDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeService"/> class
         /// </summary>
         public GroupTypeService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeService"/> class
         /// </summary>
         public GroupTypeService(IRepository<GroupType> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override GroupType CreateNew()
-            
+        {
             return new GroupType();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<GroupTypeDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<GroupTypeDto> QueryableDto( IQueryable<GroupType> items )
-            
+        {
             return items.Select( m => new GroupTypeDto()
-                    
+                {
                     IsSystem = m.IsSystem,
                     Name = m.Name,
                     Description = m.Description,

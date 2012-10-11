@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Service Log POCO Entity.
     /// </summary>
     [Table( "coreServiceLog" )]
     public partial class ServiceLog : Model<ServiceLog>
-        
+    {
         /// <summary>
         /// Gets or sets the Time.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Core
         /// Time.
         /// </value>
         [DataMember]
-        public DateTime? Time      get; set; }
+        public DateTime? Time { get; set; }
         
         /// <summary>
         /// Gets or sets the Input.
@@ -36,7 +36,7 @@ namespace Rock.Core
         /// Input.
         /// </value>
         [DataMember]
-        public string Input      get; set; }
+        public string Input { get; set; }
         
         /// <summary>
         /// Gets or sets the Type.
@@ -46,7 +46,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Type      get; set; }
+        public string Type { get; set; }
         
         /// <summary>
         /// Gets or sets the Name.
@@ -56,7 +56,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Name      get; set; }
+        public string Name { get; set; }
         
         /// <summary>
         /// Gets or sets the Result.
@@ -66,7 +66,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Result      get; set; }
+        public string Result { get; set; }
         
         /// <summary>
         /// Gets or sets the Success.
@@ -76,13 +76,13 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool Success      get; set; }
+        public bool Success { get; set; }
         
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Core.ServiceLog"; } }
+		public override string EntityTypeName { get { return "Core.ServiceLog"; } }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -90,7 +90,7 @@ namespace Rock.Core
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static ServiceLog Read( int id )
-            
+        {
             return Read<ServiceLog>( id );
         }
 
@@ -101,7 +101,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Name;
 		}
 
@@ -111,12 +111,12 @@ namespace Rock.Core
     /// Service Log Configuration class.
     /// </summary>
     public partial class ServiceLogConfiguration : EntityTypeConfiguration<ServiceLog>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceLogConfiguration"/> class.
         /// </summary>
         public ServiceLogConfiguration()
-            
+        {
         }
     }
 }
