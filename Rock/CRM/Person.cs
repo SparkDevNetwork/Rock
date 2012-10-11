@@ -168,106 +168,106 @@ namespace Rock.Crm
         [DataMember]
         public Gender Gender { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Marital Status Id.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[DataMember]
-		public int? MaritalStatusId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Anniversary Date.
-		/// </summary>
-		/// <value>
-		/// Anniversary Date.
-		/// </value>
-		[DataMember]
-		public DateTime? AnniversaryDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Graduation Date.
-		/// </summary>
-		/// <value>
-		/// Graduation Date.
-		/// </value>
-		[DataMember]
-		public DateTime? GraduationDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Email.
-		/// </summary>
-		/// <value>
-		/// Email.
-		/// </value>
-		[MaxLength( 75 )]
-		[DataMember]
-		public string Email { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Email Is Active.
-		/// </summary>
-		/// <value>
-		/// Email Is Active.
-		/// </value>
-		[DataMember]
-		public bool? IsEmailActive { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Email Note.
-		/// </summary>
-		/// <value>
-		/// Email Note.
-		/// </value>
-		[MaxLength( 250 )]
-		[DataMember]
-		public string EmailNote { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Do Not Email.
-		/// </summary>
-		/// <value>
-		/// Do Not Email.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool DoNotEmail { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the System Note.
-		/// </summary>
-		/// <value>
-		/// System Note.
-		/// </value>
-		[MaxLength( 1000 )]
-		[DataMember]
-		public string SystemNote { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Viewed Count.
-		/// </summary>
-		/// <value>
-		/// Viewed Count.
-		/// </value>
-		[DataMember]
-		public int? ViewedCount { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Person Read( int id )
-		{
-			return Read<Person>( id );
-		}
-		
+        /// <summary>
+        /// Gets or sets the Marital Status Id.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [DataMember]
+        public int? MaritalStatusId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Anniversary Date.
+        /// </summary>
+        /// <value>
+        /// Anniversary Date.
+        /// </value>
+        [DataMember]
+        public DateTime? AnniversaryDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Graduation Date.
+        /// </summary>
+        /// <value>
+        /// Graduation Date.
+        /// </value>
+        [DataMember]
+        public DateTime? GraduationDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Email.
+        /// </summary>
+        /// <value>
+        /// Email.
+        /// </value>
+        [MaxLength( 75 )]
+        [DataMember]
+        public string Email { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Email Is Active.
+        /// </summary>
+        /// <value>
+        /// Email Is Active.
+        /// </value>
+        [DataMember]
+        public bool? IsEmailActive { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Email Note.
+        /// </summary>
+        /// <value>
+        /// Email Note.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string EmailNote { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Do Not Email.
+        /// </summary>
+        /// <value>
+        /// Do Not Email.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool DoNotEmail { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the System Note.
+        /// </summary>
+        /// <value>
+        /// System Note.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string SystemNote { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Viewed Count.
+        /// </summary>
+        /// <value>
+        /// Viewed Count.
+        /// </value>
+        [DataMember]
+        public int? ViewedCount { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Person Read( int id )
+        {
+            return Read<Person>( id );
+        }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.Person"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Crm.Person"; } }
         
         /// <summary>
         /// Gets or sets the Users.
@@ -482,16 +482,16 @@ namespace Rock.Crm
             }
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.FullName;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.FullName;
+        }
     }
 
     /// <summary>

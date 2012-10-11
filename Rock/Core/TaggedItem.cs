@@ -20,40 +20,40 @@ namespace Rock.Core
     [Table( "coreTaggedItem" )]
     public partial class TaggedItem : Model<TaggedItem>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Attribute Id.
-		/// </summary>
-		/// <value>
-		/// Attribute Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int TagId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		[DataMember]
-		public int? EntityId { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Attribute Id.
+        /// </summary>
+        /// <value>
+        /// Attribute Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int TagId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.TaggedItem"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.TaggedItem"; } }
         
         /// <summary>
         /// Gets or sets the Tag
@@ -81,16 +81,16 @@ namespace Rock.Core
             get { return new Security.GenericEntity( "Global" ); }
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.EntityId.HasValue ? this.EntityId.ToString() : "";
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.EntityId.HasValue ? this.EntityId.ToString() : "";
+        }
     }
 
     /// <summary>

@@ -26,17 +26,17 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-			if ( Audits != null && Audits.Count > 0 )
+            if ( Audits != null && Audits.Count > 0 )
             {
                 var auditService = new AuditService();
 
                 foreach ( var auditDto in Audits )
                 {
-					var audit = new Audit();
-					auditDto.CopyToModel( audit );
+                    var audit = new Audit();
+                    auditDto.CopyToModel( audit );
 
-					auditService.Add( audit, audit.PersonId );
-					auditService.Save( audit, audit.PersonId );
+                    auditService.Add( audit, audit.PersonId );
+                    auditService.Save( audit, audit.PersonId );
                 }
             }
         }

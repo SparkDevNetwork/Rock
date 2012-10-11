@@ -84,31 +84,31 @@ namespace Rock.Cms
         [DataMember]
         public SpecialRole SpecialRole { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id.
-		/// </value>
-		[DataMember]
-		public int? PersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Group Id.
-		/// </summary>
-		/// <value>
-		/// Group Id.
-		/// </value>
-		[DataMember]
-		public int? GroupId { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        [DataMember]
+        public int? PersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Group Id.
+        /// </summary>
+        /// <value>
+        /// Group Id.
+        /// </value>
+        [DataMember]
+        public int? GroupId { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Auth"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.Auth"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
@@ -134,38 +134,38 @@ namespace Rock.Cms
             return false;
         }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Auth Read( int id )
-		{
-			return Read<Auth>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Auth Read( int id )
+        {
+            return Read<Auth>( id );
+        }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			var sb = new StringBuilder();
-			sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
 
-			if (SpecialRole != Cms.SpecialRole.None)
-				sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
-			else if(PersonId.HasValue)
-				sb.AppendFormat("{0} ", Person.ToString());
-			else if(GroupId.HasValue)
-				sb.AppendFormat("{0} ", Group.ToString());
+            if (SpecialRole != Cms.SpecialRole.None)
+                sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
+            else if(PersonId.HasValue)
+                sb.AppendFormat("{0} ", Person.ToString());
+            else if(GroupId.HasValue)
+                sb.AppendFormat("{0} ", Group.ToString());
 
-			sb.AppendFormat("{0} Access", Action);
+            sb.AppendFormat("{0} Access", Action);
 
-			return sb.ToString();
-		}
+            return sb.ToString();
+        }
     }
 
     /// <summary>

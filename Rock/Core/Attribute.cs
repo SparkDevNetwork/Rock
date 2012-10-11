@@ -120,62 +120,62 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Grid Column.
-		/// </summary>
-		/// <value>
-		/// Grid Column.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsGridColumn { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Default Value.
-		/// </summary>
-		/// <value>
-		/// Default Value.
-		/// </value>
+        public int Order { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Grid Column.
+        /// </summary>
+        /// <value>
+        /// Grid Column.
+        /// </value>
+        [Required]
         [DataMember]
-		public string DefaultValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Multi Value.
-		/// </summary>
-		/// <value>
-		/// Multi Value.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsMultiValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Required.
-		/// </summary>
-		/// <value>
-		/// Required.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsRequired { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Attribute Read( int id )
-		{
-			return Read<Attribute>( id );
-		}
-				
+        public bool IsGridColumn { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Default Value.
+        /// </summary>
+        /// <value>
+        /// Default Value.
+        /// </value>
+        [DataMember]
+        public string DefaultValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Multi Value.
+        /// </summary>
+        /// <value>
+        /// Multi Value.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsMultiValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Required.
+        /// </summary>
+        /// <value>
+        /// Required.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsRequired { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Attribute Read( int id )
+        {
+            return Read<Attribute>( id );
+        }
+                
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.Attribute"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.Attribute"; } }
         
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -199,18 +199,18 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
-		public virtual FieldType FieldType { get; set; }
+        public virtual FieldType FieldType { get; set; }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Key;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Key;
+        }
 }
 
     /// <summary>
@@ -223,7 +223,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeConfiguration()
         {
-			this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
-		}
+            this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
+        }
     }
 }
