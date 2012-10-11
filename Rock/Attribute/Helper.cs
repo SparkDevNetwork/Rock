@@ -49,12 +49,16 @@ namespace Rock.Attribute
                 var blockProperties = new List<PropertyAttribute>();
 
                 // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+                int properties = 0;
                 foreach ( var customAttribute in type.GetCustomAttributes( typeof( Rock.Web.UI.ContextAwareAttribute ), true ) )
                 {
                     var contextAttribute = (Rock.Web.UI.ContextAwareAttribute)customAttribute;
                     if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
                     {
-                        blockProperties.Add( new Rock.Attribute.PropertyAttribute( 0, "Context Entity Type", "Filter", "Context Entity Type", false, "" ) );
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
+
+                        blockProperties.Add( new Rock.Attribute.PropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
                     }
                 }
                         

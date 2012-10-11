@@ -112,29 +112,28 @@ namespace Rock.Web.UI
                     int properties = 0;
                     foreach(var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true))
                     {
-                        if ( attribute != null )
+                        var contextAttribute = (ContextAwareAttribute)attribute;
+                        string contextType = string.Empty;
+
+                        if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
                         {
-                            var contextAttribute = (ContextAwareAttribute)attribute;
-                            string contextType = string.Empty;
+                            // If the entity type was not specified in the attibute, look for a property that defines it
+                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                            properties++;
 
-                            if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
+                            if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
                             {
-                                // If the entity type was not specified in the attibute, look for a property that defines it
-                                string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                                if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
-                                {
-                                    contextType = AttributeValue( propertyKeyName );
-                                }
+                                contextType = AttributeValue( propertyKeyName );
                             }
-                            else
-                            {
-                                contextType = contextAttribute.EntityType;
-                            }
+                        }
+                        else
+                        {
+                            contextType = contextAttribute.EntityType;
+                        }
 
-                            if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
-                            {
-                                _contextTypesRequired.Add( contextType );
-                            }
+                        if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
+                        {
+                            _contextTypesRequired.Add( contextType );
                         }
                     }
                 }
