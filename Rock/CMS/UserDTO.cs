@@ -14,38 +14,38 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Data Transfer Object for User object
     /// </summary>
     public partial class UserDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public string UserName { get; set; }
-        public string Provider { get; set; }
-        public string Password { get; set; }
-        public bool? IsConfirmed { get; set; }
-        public DateTime? LastActivityDate { get; set; }
-        public DateTime? LastLoginDate { get; set; }
-        public DateTime? LastPasswordChangedDate { get; set; }
-        public DateTime? CreationDate { get; set; }
-        public bool? IsOnLine { get; set; }
-        public bool? IsLockedOut { get; set; }
-        public DateTime? LastLockedOutDate { get; set; }
-        public int? FailedPasswordAttemptCount { get; set; }
-        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
-        public string ApiKey { get; set; }
-        public int? PersonId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public string UserName      get; set; }
+        public string Provider      get; set; }
+        public string Password      get; set; }
+        public bool? IsConfirmed      get; set; }
+        public DateTime? LastActivityDate      get; set; }
+        public DateTime? LastLoginDate      get; set; }
+        public DateTime? LastPasswordChangedDate      get; set; }
+        public DateTime? CreationDate      get; set; }
+        public bool? IsOnLine      get; set; }
+        public bool? IsLockedOut      get; set; }
+        public DateTime? LastLockedOutDate      get; set; }
+        public int? FailedPasswordAttemptCount      get; set; }
+        public DateTime? FailedPasswordAttemptWindowStart      get; set; }
+        public string ApiKey      get; set; }
+        public int? PersonId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public UserDto ()
-        {
+            
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="user"></param>
         public UserDto ( User user )
-        {
+            
             CopyFromModel( user );
         }
 
@@ -62,9 +62,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is User )
-            {
+                
                 var user = (User)model;
                 this.UserName = user.UserName;
                 this.Password = user.Password;
@@ -90,9 +90,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is User )
-            {
+                
                 var user = (User)model;
                 user.UserName = this.UserName;
                 user.Password = this.Password;

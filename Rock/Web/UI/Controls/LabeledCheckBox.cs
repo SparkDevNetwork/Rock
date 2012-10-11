@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:LabeledCheckBox runat=server></{0}:LabeledTextBox>" )]
+    [ToolboxData( "<    0}:LabeledCheckBox runat=server></    0}:LabeledTextBox>" )]
     public class LabeledCheckBox : CheckBox
-    {
+        
         private Label label;
 
         /// <summary>
@@ -31,14 +31,14 @@ namespace Rock.Web.UI.Controls
         Description( "The help tip." )
         ]
         public string Tip
-        {
+            
             get
-            {
+                
                 string s = ViewState["Tip"] as string;
                 return s == null ? string.Empty : s;
             }
             set
-            {
+                
                 ViewState["Tip"] = value;
             }
         }
@@ -56,14 +56,14 @@ namespace Rock.Web.UI.Controls
         Description( "The help block." )
         ]
         public string Help
-        {
+            
             get
-            {
+                
                 string s = ViewState["Help"] as string;
                 return s == null ? string.Empty : s;
             }
             set
-            {
+                
                 ViewState["Help"] = value;
             }
         }
@@ -81,14 +81,14 @@ namespace Rock.Web.UI.Controls
         Description( "The text for the label." )
         ]
         public string LabelText
-        {
+            
             get
-            {
+                
                 EnsureChildControls();
                 return label.Text;
             }
             set
-            {
+                
                 EnsureChildControls();
                 label.Text = value;
             }
@@ -98,7 +98,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-        {
+            
             base.CreateChildControls();
 
             Controls.Clear();
@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
-        {
+            
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             if ( Tip.Trim() != string.Empty )
-            {
+                
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
             }
 
             if ( Help.Trim() != string.Empty )
-            {
+                
                 writer.AddAttribute( "class", "help-block" );
                 writer.RenderBeginTag( HtmlTextWriterTag.P );
                 writer.Write( Help.Trim() );

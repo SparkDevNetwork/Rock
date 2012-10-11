@@ -1,12 +1,12 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class UpdateAcronymCasing : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             Sql(@"
 UPDATE [cmsAuth] SET [EntityType] = REPLACE([EntityType], 'CMS', 'Cms') WHERE [EntityType] LIKE '%CMS%'
 UPDATE [cmsAuth] SET [EntityType] = REPLACE([EntityType], 'CRM', 'Crm') WHERE [EntityType] LIKE '%CRM%'
@@ -22,7 +22,7 @@ UPDATE [coreAttributeValue] SET [Value] = REPLACE([Value], 'CRM', 'Crm') WHERE [
         }
         
         public override void Down()
-        {
+            
             Sql(@"
 UPDATE [cmsAuth] SET [EntityType] = REPLACE([EntityType], 'Cms', 'CMS') WHERE [EntityType] LIKE '%Cms%'
 UPDATE [cmsAuth] SET [EntityType] = REPLACE([EntityType], 'Crm', 'CRM') WHERE [EntityType] LIKE '%Crm%'

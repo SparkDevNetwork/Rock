@@ -11,13 +11,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
     /// </summary>
     [Serializable]
     public class DefinedValue : FieldType
-    {
+        
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -27,16 +27,16 @@ namespace Rock.Field.Types
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
+            
             if ( !string.IsNullOrWhiteSpace( value ) )
-            {
+                
                 try
-                {
+                    
                     var definedValue = Rock.Web.Cache.DefinedValueCache.Read( Int32.Parse( value ) );
                     if ( definedValue != null )
                         return definedValue.Name;
                 }
-                catch { }
+                catch      }
 
                 return "Unknown Defined Value: " + value;
             }
@@ -49,7 +49,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
-        {
+            
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( "definedtype" );
             return configKeys;
@@ -60,7 +60,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
-        {
+            
             var controls = base.ConfigurationControls();
 
             DropDownList ddl = new DropDownList();
@@ -80,7 +80,7 @@ namespace Rock.Field.Types
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
+            
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
 
@@ -97,7 +97,7 @@ namespace Rock.Field.Types
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
                 controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey("definedtype") )
                     ( ( DropDownList )controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
@@ -111,14 +111,14 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             ListControl editControl = new DropDownList();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
-            {
+                
                 int definedTypeId = 0;
                 if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
-                {
+                    
                     Rock.Core.DefinedValueService definedValueService = new Core.DefinedValueService();
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( definedTypeId ) )
                         editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );

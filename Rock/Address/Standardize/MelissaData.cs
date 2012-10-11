@@ -11,7 +11,7 @@ using Rock.MelissaData.AddressCheck;
 using Rock.Web.UI;
 
 namespace Rock.Address.Standardize
-{
+    
     /// <summary>
     /// The AddressCheck service from <a href="http://www.melissadata.com/">Melissa Data</a>
     /// </summary>
@@ -20,7 +20,7 @@ namespace Rock.Address.Standardize
     [ExportMetadata( "ComponentName", "MelissaData" )]
     [BlockProperty( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
     public class MelissaData : StandardizeComponent
-    {
+        
         /// <summary>
         /// Standardizes the address
         /// </summary>
@@ -30,9 +30,9 @@ namespace Rock.Address.Standardize
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
         public override bool Standardize( Rock.Crm.Location location, out string result )
-        {
+            
             if ( location != null )
-            {
+                
                 var requestArray = new RequestArray();
                 requestArray.CustomerID = AttributeValue("CustomerId");
                 requestArray.OptAddressParsed = "True";
@@ -52,11 +52,11 @@ namespace Rock.Address.Standardize
                 var responseArray = serviceClient.doAddressCheck( requestArray );
 
                 if ( responseArray.TotalRecords == "1" && responseArray.Record[0].RecordID == "1" )
-                {
+                    
                     result = responseArray.Record[0].Results;
 
                     if ( responseArray.Record[0].Results.Contains( "AS01" ) )
-                    {
+                        
                         ResponseArrayRecordAddress responseAddress = responseArray.Record[0].Address;
                         location.Street1 = responseAddress.Address1;
                         location.Street2 = responseAddress.Address2;

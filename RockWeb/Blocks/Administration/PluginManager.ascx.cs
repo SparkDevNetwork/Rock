@@ -17,25 +17,25 @@ using Rock.Services.NuGet;
 using NuGet;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     public enum ViewMode
-    {
+        
         Installed,
         Available
     }
 
     public partial class PluginManager : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
         WebProjectManager nuGetService = null;
         ViewMode viewing;
 
         protected WebProjectManager NuGetService
-        {
+            
             get
-            {
+                
                 if ( nuGetService == null )
-                {
+                    
                     string packageSource = Rock.Web.Cache.GlobalAttributesCache.Value( "PackageSourceUrl" );
                     string siteRoot = Request.MapPath( "~/" );
 
@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Administration
 
         IEnumerable<IPackage> availablePackages = null;
         protected IEnumerable<IPackage> AvailablePackages
-        {
+            
             get
-            {
+                
                 if ( availablePackages == null )
-                {
+                    
                     availablePackages = NuGetService.GetLatestRemotePackages( "", includeAllVersions: false );
                 }
                 return availablePackages;
@@ -60,11 +60,11 @@ namespace RockWeb.Blocks.Administration
 
         IEnumerable<IPackage> installedPackages = null;
         protected IEnumerable<IPackage> InstalledPackages
-        {
+            
             get
-            {
+                
                 if ( installedPackages == null )
-                {
+                    
                     installedPackages = NuGetService.GetInstalledPackages( "" );
                 }
                 return installedPackages;
@@ -76,27 +76,27 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
             gPackageList.RowUpdating += gPackageList_RowUpdating;
             gvPackageVersions.RowUpdating += gvPackageVersions_RowUpdating;
         }
 
         protected override void OnLoad( EventArgs e )
-        {
+            
             nbMessage.Visible = false;
 
             this.viewing = ( hfViewing.Value == "available" ) ? ViewMode.Available : ViewMode.Installed;
 
             if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
-            {
+                
                 if ( !Page.IsPostBack )
-                {
+                    
                     BindPackageListGrid();
                 }
             }
             else
-            {
+                
                 nbMessage.Text = "You are not authorized to edit.";
                 nbMessage.Visible = true;
             }
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnPreRender( EventArgs e )
-        {
+            
             base.OnPreRender( e );
         }
         #endregion
@@ -113,19 +113,19 @@ namespace RockWeb.Blocks.Administration
         #region Nav Button Events
         
         protected void btnInstalled_Click( object sender, EventArgs e )
-        {
+            
             this.viewing = ViewMode.Installed;
             BindPackageListGrid();
         }
 
         protected void btnAvailable_Click( object sender, EventArgs e )
-        {
+            
             this.viewing = ViewMode.Available;
             BindPackageListGrid();
         }
 
         protected void bSearch_Click( object sender, EventArgs e )
-        {
+            
             liInstalled.RemoveCssClass( "active" );
             liAvailable.RemoveCssClass( "active" );
 
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
-        {
+            
             pnlPackageList.Visible = true;
             pnlPackage.Visible = false;
             BindPackageListGrid();
@@ -143,9 +143,9 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         protected void BindPackageListGrid()
-        {
+            
             switch ( this.viewing )
-            {
+                
                 case ViewMode.Installed:
                     liInstalled.AddCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
@@ -171,10 +171,10 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void gPackageList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
+            
             IPackage package = e.Row.DataItem as IPackage;
             if ( package != null )
-            {
+                
                 Boolean isPackageInstalled = NuGetService.IsPackageInstalled( package, anyVersion: true );
                 
                 LinkButton lbCommand = e.Row.FindControl( "lbCommand" ) as LinkButton;
@@ -190,18 +190,18 @@ namespace RockWeb.Blocks.Administration
                 lblAuthors.Text = string.Join( ",", package.Authors );
 
                 if ( package.IconUrl == null )
-                {
+                    
                     // TODO: change to "http://quarry.rockchms.com/Content/Images/Quarry/packageDefaultIcon-80x80.png";
                     imgIcon.Src = "http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png";
                 }
 
                 if ( package.ProjectUrl != null )
-                {
+                    
                     link.Visible = true;
                     link.HRef = package.ProjectUrl.ToString();
                 }
                 else
-                {
+                    
                     link.Visible = false;
                 }
                 
@@ -210,10 +210,10 @@ namespace RockWeb.Blocks.Administration
                 // If this package (not necessarily this version) is installed
                 // show an uninstall button and/or an update button if a later version exists
                 if ( isPackageInstalled )
-                {
+                    
                     IPackage theInstalledPackage = NuGetService.GetInstalledPackage( package.Id );
                     if ( theInstalledPackage != null )
-                    {
+                        
                         lblInstalledVersion.Visible = true;
                         lblInstalledVersion.Text += theInstalledPackage.Version;
 
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Administration
                         // if ( !installedPackage.IsLatestVersion )...
                         var latestPackage = NuGetService.GetUpdate( package );
                         if ( latestPackage != null )
-                        {
+                            
                             lbUpdate.Visible = true;
                             lblLatestVersion.Visible = true;
                             lblLatestVersion.Text += latestPackage.Version;
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Administration
                     lbCommand.AddCssClass( "btn-warning" );
                 }
                 else
-                {
+                    
                     lblVersion.Visible = true;
                     lblVersion.Text += package.Version;
                     lbCommand.CommandName = "Install";
@@ -246,24 +246,24 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void gPackageList_RowCommand( object sender, GridViewCommandEventArgs e )
-        {
+            
             int index = Int32.Parse( e.CommandArgument.ToString() );
             string packageId = gPackageList.DataKeys[index]["Id"].ToString();
             string version = gPackageList.DataKeys[index]["Version"].ToString();
 
             if ( e.CommandName.ToLower() == "view" )
-            {
+                
                 ViewPackage( packageId );
             }
             else
-            {
+                
                 ChangePackage( e, packageId, version );
                 BindPackageListGrid();
             }
         }
 
         protected void gPackageList_RowUpdating( object sender, GridViewUpdateEventArgs e )
-        {
+            
             // Not sure why this is getting called, but it is and will throw an exception 
             // if I don't handle it.
         }
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Administration
         #region Package Versions Grid Events
 
         private void ViewPackage( string packageId )
-        {
+            
             pnlPackage.Visible = true;
             pnlPackageList.Visible = false;
 
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Administration
             lDescription.Text = package.Description;
             lTags.Text = package.Tags;
             lDependencies.Text = ( package.DependencySets.Count() == 0 ) ? "This plugin has no dependencies." : 
-                package.DependencySets.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                package.DependencySets.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>    0}</li>", s ) ).Append( "</ul>" ).ToString();
 
             lbPackageUninstall.CommandArgument = packageId;
             lbPackageUninstall.Visible = NuGetService.IsPackageInstalled( package, anyVersion: true );
@@ -295,18 +295,18 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void gvPackageVersions_RowUpdating( object sender, GridViewUpdateEventArgs e )
-        {
+            
             // Not sure why this is getting called, but it is and will throw an exception 
             // if I don't handle it.
         }
 
         protected void gvPackageVersions_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
+            
             if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
+                
                 IPackage package = e.Row.DataItem as IPackage;
                 if ( package != null )
-                {
+                    
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Row.FindControl( "lbInstall" ) as LinkButton;
                     LinkButton lbUpdate = e.Row.FindControl( "lbUpdate" ) as LinkButton;
@@ -326,7 +326,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void gvPackageVersions_RowCommand( object sender, GridViewCommandEventArgs e )
-        {
+            
             int index = Int32.Parse( e.CommandArgument.ToString() );
             string packageId = gvPackageVersions.DataKeys[index]["Id"].ToString();
             string version = gvPackageVersions.DataKeys[index]["Version"].ToString();
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void lbPackageUninstall_Click( object sender, CommandEventArgs e )
-        {
+            
             string packageId = e.CommandArgument.ToString();
             ChangePackage( e, packageId, null );
             ViewPackage( packageId );
@@ -346,30 +346,30 @@ namespace RockWeb.Blocks.Administration
 
         #region Package Utility Method (used by both panels/grids)
         private void ChangePackage( CommandEventArgs e, string packageId, string version )
-        {
+            
             IEnumerable<string> errors = Enumerable.Empty<string>();
 
             switch ( e.CommandName.ToLower() )
-            {
+                
                 case "uninstall":
-                    {
+                        
                         var package = NuGetService.SourceRepository.FindPackage( packageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                         errors = NuGetService.UninstallPackage( package, true );
                     }
                     break;
 
                 case "install":
-                    {
+                        
                         var package = NuGetService.SourceRepository.FindPackage( packageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
                         if ( package != null )
-                        {
+                            
                             errors = NuGetService.InstallPackage( package );
                             //IEnumerable<IPackage> packagesRequiringLicenseAcceptance = NuGetService.GetPackagesRequiringLicenseAcceptance(package);
                         }
                         break;
                     }
                 case "update":
-                    {
+                        
                         var installed = NuGetService.GetInstalledPackage( packageId );
                         var update = NuGetService.GetUpdate( installed );
                         errors = NuGetService.UpdatePackage( update );
@@ -378,9 +378,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( errors != null && errors.Count() > 0 )
-            {
+                
                 nbMessage.Visible = true;
-                nbMessage.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                nbMessage.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>    0}</li>", s ) ).Append( "</ul>" ).ToString();
             }
         }
 

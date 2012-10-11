@@ -13,7 +13,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     [BlockProperty( 3, "Global Tags", "GlobalTags", "Entity", "Edit global tags (vs. personal tags)?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
     [System.ComponentModel.Description( "Block for administrating the tags for a given entity type" )]
     public partial class Tags : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
 
         protected string _entity = string.Empty;
@@ -39,9 +39,9 @@ namespace RockWeb.Blocks.Administration
         /// Gets a list of any context entities that the block requires.
         /// </summary>
         public override List<string> ContextTypesRequired
-        {
+            
             get 
-            {
+                
                 var requiredContext = base.ContextTypesRequired;
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
@@ -54,11 +54,11 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
 
             try
-            {
+                
 				_entity = AttributeValue( "Entity" );
 				if ( string.IsNullOrWhiteSpace( _entity ) )
 					_entity = PageParameter( "Entity" );
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Administration
 				_canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
 				if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
-				{
+				    
 					Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
 					if ( model != null )
 						_ownerId = model.Id;
@@ -83,8 +83,8 @@ namespace RockWeb.Blocks.Administration
 				}
 					
 				if ( _canConfigure )
-                {
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    
+                    rGrid.DataKeyNames = new string[]      "id" };
                     rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
@@ -92,18 +92,18 @@ namespace RockWeb.Blocks.Administration
                     rGrid.GridRebind += rGrid_GridRebind;
                 }
                 else
-                {
+                    
                     DisplayError( "You are not authorized to configure these tags" );
                 }
             }
             catch ( SystemException ex )
-            {
+                
                 DisplayError( ex.Message );
             }
         }
 
         protected override void OnLoad( EventArgs e )
-        {
+            
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
 
@@ -115,17 +115,17 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
-        {
+            
             var tagService = new Rock.Core.TagService();
             var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
 
             if ( tag != null )
-            {
+                
                 tagService.Delete( tag, CurrentPersonId );
                 tagService.Save( tag, CurrentPersonId );
             }
@@ -134,12 +134,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGrid_Add( object sender, EventArgs e )
-        {
+            
             ShowEdit( 0 );
         }
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
-        {
+            
             var tagService = new Rock.Core.TagService();
             var queryable = tagService.Queryable().
                 Where( t => t.Entity == _entity &&
@@ -161,14 +161,14 @@ namespace RockWeb.Blocks.Administration
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrid();
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 var tagService = new Rock.Core.TagService();
 
                 Rock.Core.Tag tag;
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Administration
                     tagId = 0;
 
                 if ( tagId == 0 )
-                {
+                    
                     tag = new Rock.Core.Tag();
                     tag.IsSystem = false;
                     tag.Entity = _entity;
@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Administration
                     tagService.Add( tag, CurrentPersonId );
                 }
                 else
-                {
+                    
                     tag = tagService.Get( tagId );
                 }
 
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnCancel_Click( object sender, EventArgs e )
-        {
+            
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         private void BindGrid()
-        {
+            
             var queryable = new Rock.Core.TagService().Queryable().
                 Where( t => t.Entity == _entity &&
                     ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
@@ -231,18 +231,18 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( int tagId )
-        {
+            
             var tag =  new Rock.Core.TagService().Get( tagId );
 
             if ( tag != null )
-            {
+                
                 lAction.Text = "Edit";
                 hfId.Value = tag.Id.ToString();
 
                 tbName.Text = tag.Name;
             }
             else
-            {
+                
                 lAction.Text = "Add";
                 hfId.Value = string.Empty;
 
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-        {
+            
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

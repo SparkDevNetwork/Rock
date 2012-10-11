@@ -5,13 +5,13 @@
 //
 
 namespace Rock.Rest
-{
+    
 	/// <summary>
 	/// Interface for controllers that need to add additional routes beyond the default 
-	/// api/{controller}/{id} route.
+	/// api/    controller}/    id} route.
 	/// </summary>
 	public interface IHasCustomRoutes
-	{
+	    
 		void AddRoutes( System.Web.Routing.RouteCollection routes );
 	}
 }

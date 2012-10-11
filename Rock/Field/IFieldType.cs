@@ -9,12 +9,12 @@ using System.Collections.Generic;
 using System.Web.UI;
 
 namespace Rock.Field
-{
+    
     /// <summary>
     /// Interface that a custom field type must implement
     /// </summary>
     public interface IFieldType
-    {
+        
         /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>

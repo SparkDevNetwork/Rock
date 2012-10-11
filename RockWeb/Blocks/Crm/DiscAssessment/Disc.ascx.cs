@@ -7,9 +7,9 @@ using System.Web.UI.WebControls;
 using Rock.Crm;
 
 namespace Rockweb.Blocks.Crm
-{
+    
     public partial class Disc : Rock.Web.UI.RockBlock
-    {
+        
         /// <summary>
         /// Creates a RadioButton for display on the test form.
         /// </summary>
@@ -18,7 +18,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="MorL">Is this the "m"ost RadioButton, or the "l"east RadioButton?</param>
         /// <returns></returns>
         private RadioButton createRadioButton(string questionNumber, string responseNumber, string MorL)
-        {
+            
             string rbID = questionNumber + responseNumber + MorL.ToLower();
             string rbGroupName = "q" + questionNumber + MorL.ToLower();
             RadioButton radioButton = new RadioButton();
@@ -36,12 +36,12 @@ namespace Rockweb.Blocks.Crm
         /// <param name="name">The name of the RadioButton to find.</param>
         /// <returns>The found RadioButton or null.</returns>
         private RadioButton findRadioButton(Control container, string name)
-        {
+            
             if (container.ID == name)
                 return container as RadioButton;
 
             foreach (Control control in container.Controls)
-            {
+                
                 Control foundControl = findRadioButton(control, name);
                 if (foundControl != null)
                     return foundControl as RadioButton;
@@ -56,7 +56,7 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         /// <param name="response">The question response to add.</param>
         private void buildRadioButtonTableRow(DiscService.ResponseItem response)
-        {
+            
             TableRow tr = new TableRow();
             TableCell tc = new TableCell();
             tc.Text = response.ResponseText;
@@ -76,17 +76,17 @@ namespace Rockweb.Blocks.Crm
         /// Builds a table with the questions listed.
         /// </summary>
         private void buildQuestionTable()
-        {
+            
             List<DiscService.ResponseItem> responses = DiscService.GetResponses();
 
             TableRow tr = new TableRow();
             TableCell tc = new TableCell();
 
             foreach (DiscService.ResponseItem response in responses)
-            {
+                
                 // If we are processing the first response in each question, build a question header
                 if (response.ResponseNumber == "1")
-                {
+                    
                     tr = new TableRow();
                     tc = new TableCell();
                     tc.ColumnSpan = 3;
@@ -114,7 +114,7 @@ namespace Rockweb.Blocks.Crm
         }
 
         protected void Page_Load(object sender, EventArgs e)
-        {
+            
             //Checks if RockPage IsPostBack (making the assumption that the PostBack is because the
             //  'Score Test' button was clicked.
             //Tell Javascript that the page is posted back or not.
@@ -131,7 +131,7 @@ namespace Rockweb.Blocks.Crm
             DiscService.AssessmentResults savedScores = DiscService.LoadSavedAssessmentResults(CurrentPerson);
 
             if (savedScores.LastSaveDate > DateTime.MinValue)
-            {
+                
                 //build last results table
                 lblLastAssessmentDate.Text = savedScores.LastSaveDate.ToString("MM/dd/yyyy");
 
@@ -158,7 +158,7 @@ namespace Rockweb.Blocks.Crm
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void btnScoreTest_Click(object sender, EventArgs e)
-        {
+            
             List<DiscService.ResponseItem> responses = DiscService.GetResponses();
             List<string> selectedResponseIDs = new List<string>();
 
@@ -167,7 +167,7 @@ namespace Rockweb.Blocks.Crm
             //   Examples: "012m", "130l"
             // We now know the selected response and whether it was 'm'ost or 'l'east.
             foreach (DiscService.ResponseItem response in responses)
-            {
+                
                 string rbID = response.ResponseID + "m";
                 RadioButton rb = findRadioButton(this, rbID);
                 if (rb.Checked)
@@ -195,7 +195,7 @@ namespace Rockweb.Blocks.Crm
         }
 
         protected void btnSaveResults_Click(object sender, EventArgs e)
-        {
+            
             DiscService.SaveAssessmentResults(
                 CurrentPerson,
                 lblABd.Text,

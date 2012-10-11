@@ -14,27 +14,27 @@ using System;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Data Transfer Object for Member object
     /// </summary>
     public partial class MemberDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int GroupId { get; set; }
-        public int PersonId { get; set; }
-        public int GroupRoleId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int GroupId      get; set; }
+        public int PersonId      get; set; }
+        public int GroupRoleId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public MemberDto ()
-        {
+            
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="member"></param>
         public MemberDto ( Member member )
-        {
+            
             CopyFromModel( member );
         }
 
@@ -51,9 +51,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Member )
-            {
+                
                 var member = (Member)model;
                 this.IsSystem = member.IsSystem;
                 this.GroupId = member.GroupId;
@@ -69,9 +69,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Member )
-            {
+                
                 var member = (Member)model;
                 member.IsSystem = this.IsSystem;
                 member.GroupId = this.GroupId;

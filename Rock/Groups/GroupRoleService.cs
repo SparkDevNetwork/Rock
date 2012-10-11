@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// GroupRole Service class
     /// </summary>
     public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleService"/> class
         /// </summary>
         public GroupRoleService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleService"/> class
         /// </summary>
         public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override GroupRole CreateNew()
-        {
+            
             return new GroupRole();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<GroupRoleDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Groups
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<GroupRoleDto> QueryableDto( IQueryable<GroupRole> items )
-        {
+            
             return items.Select( m => new GroupRoleDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     GroupTypeId = m.GroupTypeId,
                     Name = m.Name,

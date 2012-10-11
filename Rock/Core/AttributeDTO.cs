@@ -14,37 +14,37 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for Attribute object
     /// </summary>
     public partial class AttributeDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int FieldTypeId { get; set; }
-        public string Entity { get; set; }
-        public string EntityQualifierColumn { get; set; }
-        public string EntityQualifierValue { get; set; }
-        public string Key { get; set; }
-        public string Name { get; set; }
-        public string Category { get; set; }
-        public string Description { get; set; }
-        public int Order { get; set; }
-        public bool IsGridColumn { get; set; }
-        public string DefaultValue { get; set; }
-        public bool IsMultiValue { get; set; }
-        public bool IsRequired { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int FieldTypeId      get; set; }
+        public string Entity      get; set; }
+        public string EntityQualifierColumn      get; set; }
+        public string EntityQualifierValue      get; set; }
+        public string Key      get; set; }
+        public string Name      get; set; }
+        public string Category      get; set; }
+        public string Description      get; set; }
+        public int Order      get; set; }
+        public bool IsGridColumn      get; set; }
+        public string DefaultValue      get; set; }
+        public bool IsMultiValue      get; set; }
+        public bool IsRequired      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public AttributeDto ()
-        {
+            
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="attribute"></param>
         public AttributeDto ( Attribute attribute )
-        {
+            
             CopyFromModel( attribute );
         }
 
@@ -61,9 +61,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Attribute )
-            {
+                
                 var attribute = (Attribute)model;
                 this.IsSystem = attribute.IsSystem;
                 this.FieldTypeId = attribute.FieldTypeId;
@@ -89,9 +89,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Attribute )
-            {
+                
                 var attribute = (Attribute)model;
                 attribute.IsSystem = this.IsSystem;
                 attribute.FieldTypeId = this.FieldTypeId;

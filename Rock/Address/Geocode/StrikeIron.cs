@@ -11,7 +11,7 @@ using Rock.StrikeIron.USAddressVerification;
 using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
-{
+    
     /// <summary>
     /// The USAddressVerification service from <a href="http://www.strikeiron.com/Home.aspx">StrikeIron</a>
     /// </summary>
@@ -21,7 +21,7 @@ namespace Rock.Address.Geocode
     [BlockProperty( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
     [BlockProperty( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
     public class StrikeIron : GeocodeComponent
-    {
+        
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
@@ -31,9 +31,9 @@ namespace Rock.Address.Geocode
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
         public override bool Geocode( Rock.Crm.Location location, out string result )
-        {
+            
             if ( location != null )
-            {
+                
                 var registeredUser = new RegisteredUser();
                 registeredUser.UserID = AttributeValue("UserID");
                 registeredUser.Password = AttributeValue("Password");
@@ -48,7 +48,7 @@ namespace Rock.Address.Geocode
                     licenseInfo,
                     location.Street1,
                     location.Street2,
-                    string.Format("{0} {1} {2}", 
+                    string.Format("    0}     1}     2}", 
                         location.City,
                         location.State,
                         location.Zip),
@@ -58,15 +58,15 @@ namespace Rock.Address.Geocode
                     out verifyResult );
 
                 if (verifyResult != null)
-                {
+                    
                     result = verifyResult.ServiceStatus.StatusNbr.ToString();
 
                     if ( verifyResult.ServiceStatus.StatusNbr == 200 )
-                    {
+                        
                         USAddress usAddress = verifyResult.ServiceResult;
 
                         if ( usAddress != null && usAddress.GeoCode != null )
-                        {
+                            
                             location.Latitude = usAddress.GeoCode.Latitude;
                             location.Longitude = usAddress.GeoCode.Longitude;
 

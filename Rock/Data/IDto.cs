@@ -6,19 +6,19 @@
 using System;
 
 namespace Rock.Data
-{
+    
     /// <summary>
     /// 
     /// </summary>
 	public interface IDto
-	{
+	    
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>
         /// The id.
         /// </value>
-		int Id { get; set; }
+		int Id      get; set; }
         
         /// <summary>
         /// Gets or sets the GUID.
@@ -26,7 +26,7 @@ namespace Rock.Data
         /// <value>
         /// The GUID.
         /// </value>
-		Guid Guid { get; set; }
+		Guid Guid      get; set; }
         
         /// <summary>
         /// Copies from model.

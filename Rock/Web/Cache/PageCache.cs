@@ -18,18 +18,18 @@ using Rock.Security;
 using Rock.Web.UI;
 
 namespace Rock.Web.Cache
-{
+    
     /// <summary>
     /// Information about a page that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class PageCache : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
-    {
+        
         #region Constructors
 
-        private PageCache() : base() { }
-        private PageCache( Rock.Cms.Page page ) : base( page ) { }
+        private PageCache() : base()      }
+        private PageCache( Rock.Cms.Page page ) : base( page )      }
 
         #endregion
 
@@ -42,13 +42,13 @@ namespace Rock.Web.Cache
         /// The route id.
         /// </value>
         public int RouteId 
-        {
+            
             get
-            {
+                
                 return _routeId;
             }
             set
-            {
+                
                 _routeId = value;
             }
         }
@@ -58,20 +58,20 @@ namespace Rock.Web.Cache
         /// Gets a <see cref="Rock.Web.UI.PageReference"/> for the current page
         /// </summary>
         public Rock.Web.UI.PageReference PageReference 
-        {
+            
             get
-            {
+                
                 return new Rock.Web.UI.PageReference( Id, RouteId );
             }
         }
 
         /// <summary>
-        /// Gets the URL to the current page using the page/{id} route.
+        /// Gets the URL to the current page using the page/    id} route.
         /// </summary>
         public string Url
-        {
+            
             get
-            {
+                
                 return Rock.Web.UI.RockPage.BuildUrl( new Rock.Web.UI.PageReference( Id, -1 ), null, null );
             }
         }
@@ -79,20 +79,20 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; set; }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
         public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
-        {
+            
             get
-            {
+                
                 SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
 
                 foreach ( int id in AttributeIds )
-                {
+                    
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     if ( !attributes.ContainsKey( attribute.Category ) )
                         attributes.Add( attribute.Category, new List<AttributeCache>() );
@@ -104,7 +104,7 @@ namespace Rock.Web.Cache
             }
 
             set
-            {
+                
                 this.AttributeIds = new List<int>();
                 foreach ( var category in value )
                     foreach ( var attribute in category.Value )
@@ -119,7 +119,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The layout path.
         /// </value>
-        public string LayoutPath { get; set; }
+        public string LayoutPath      get; set; }
 
         /// <summary>
         /// Gets the parent page.
@@ -128,9 +128,9 @@ namespace Rock.Web.Cache
         /// The parent page.
         /// </value>
         public PageCache ParentPage
-        {
+            
             get
-            {
+                
                 if ( ParentPageId != null && ParentPageId.Value != 0 )
                     return PageCache.Read( ParentPageId.Value );
                 else
@@ -142,9 +142,9 @@ namespace Rock.Web.Cache
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
         public SiteCache Site
-        {
+            
             get
-            {
+                
                 if ( SiteId != null && SiteId.Value != 0 )
                     return SiteCache.Read( SiteId.Value );
                 else
@@ -156,23 +156,23 @@ namespace Rock.Web.Cache
         /// Gets a List of child <see cref="PageCache"/> objects.
         /// </summary>
         public List<PageCache> Pages
-        {
+            
             get
-            {
+                
                 List<PageCache> pages = new List<PageCache>();
 
                 if ( pageIds != null )
-                {
+                    
                     foreach ( int id in pageIds )
                         pages.Add( PageCache.Read( id ) );
                 }
                 else
-                {
+                    
                     pageIds = new List<int>();
 
                     Rock.Cms.PageService pageService = new Rock.Cms.PageService();
                     foreach ( Rock.Cms.Page page in pageService.GetByParentPageId( this.Id ) )
-                    {
+                        
                         pageIds.Add( page.Id );
                         pages.Add( PageCache.Read( page ) );
                     }
@@ -187,28 +187,28 @@ namespace Rock.Web.Cache
         /// Gets a List of all the <see cref="BlockCache"/> objects configured for the page and the page's layout.
         /// </summary>
         public List<BlockCache> Blocks
-        {
+            
             get
-            {
+                
                 List<BlockCache> blocks = new List<BlockCache>();
 
                 if ( blockIds != null )
-                {
+                    
                     foreach ( int id in blockIds )
-                    {
+                        
                         BlockCache block = BlockCache.Read( id );
                         if ( block != null )
                             blocks.Add( block );
                     }
                 }
                 else
-                {
+                    
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
                     Rock.Cms.BlockService blockService = new Rock.Cms.BlockService();
                     foreach ( Rock.Cms.Block block in blockService.GetByLayout( this.Layout ) )
-                    {
+                        
                         blockIds.Add( block.Id );
                         Rock.Attribute.Helper.LoadAttributes( block );
                         blocks.Add( BlockCache.Read( block ) );
@@ -216,7 +216,7 @@ namespace Rock.Web.Cache
 
                     // Load Page Blocks
                     foreach ( Rock.Cms.Block block in blockService.GetByPageId( this.Id ) )
-                    {
+                        
                         blockIds.Add( block.Id );
                         Rock.Attribute.Helper.LoadAttributes( block );
                         blocks.Add( BlockCache.Read( block ) );
@@ -234,15 +234,15 @@ namespace Rock.Web.Cache
         /// <value>
         /// The page contexts.
         /// </value>
-        public Dictionary<string, string> PageContexts { get; set; }
+        public Dictionary<string, string> PageContexts      get; set; }
 
         /// <summary>
         /// Gets a dictionary of the current context items (models).
         /// </summary>
         internal Dictionary<string, Rock.Data.KeyEntity> Context
-        {
-            get { return _context; }
-            set { _context = value; }
+            
+            get      return _context; }
+            set      _context = value; }
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
@@ -255,11 +255,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
-        {
+            
             Rock.Cms.PageService pageService = new Cms.PageService();
             Rock.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
-            {
+                
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
                 foreach ( var category in pageModel.Attributes )
                     foreach ( var attribute in category.Value )
@@ -274,9 +274,9 @@ namespace Rock.Web.Cache
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public bool DisplayInNav( Rock.Crm.Person person )
-        {
+            
             switch ( this.DisplayInNavWhen )
-            {
+                
                 case Cms.DisplayInNavWhen.Always:
                     return true;
                 case Cms.DisplayInNavWhen.WhenAllowed:
@@ -292,27 +292,27 @@ namespace Rock.Web.Cache
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
         public Rock.Data.IEntity GetCurrentContext( string entity )
-        {
+            
             if ( this.Context.ContainsKey( entity ) )
-            {
+                
                 var keyModel = this.Context[entity];
 
                 if ( keyModel.Entity == null )
-                {
+                    
                     Type serviceType = typeof( Rock.Data.Service<> );
-                    Type[] modelType = { Type.GetType( entity ) };
+                    Type[] modelType =      Type.GetType( entity ) };
                     Type service = serviceType.MakeGenericType( modelType );
                     var serviceInstance = Activator.CreateInstance( service );
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
-                    {
+                        
                         MethodInfo getMethod = service.GetMethod( "Get" );
-                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
+                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[]      keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
-                    {
+                        
                         MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
+                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[]      keyModel.Key } ) as Rock.Data.IEntity;
                     }
 
                     if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
@@ -329,7 +329,7 @@ namespace Rock.Web.Cache
         /// Flushes the cached block instances.
         /// </summary>
         public void FlushBlocks()
-        {
+            
             blockIds = null;
         }
 
@@ -337,7 +337,7 @@ namespace Rock.Web.Cache
         /// Flushes the cached child pages.
         /// </summary>
         public void FlushChildPages()
-        {
+            
             pageIds = null;
         }
 
@@ -353,8 +353,8 @@ namespace Rock.Web.Cache
         /// <param name="key"></param>
         /// <param name="item"></param>
         public void SaveSharedItem( string key, object item )
-        {
-            string itemKey = string.Format("{0}:Item:{1}", PageCache.CacheKey( Id ), key);
+            
+            string itemKey = string.Format("    0}:Item:    1}", PageCache.CacheKey( Id ), key);
             
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
@@ -370,8 +370,8 @@ namespace Rock.Web.Cache
         /// <param name="key"></param>
         /// <returns></returns>
         public object GetSharedItem( string key )
-        {
-            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
+            
+            string itemKey = string.Format( "    0}:Item:    1}", PageCache.CacheKey( Id ), key );
 
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
@@ -390,7 +390,7 @@ namespace Rock.Web.Cache
         /// <param name="page">Current System.Web.UI.Page</param>
         /// <param name="href">Path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddCSSLink( System.Web.UI.Page page, string href )
-        {
+            
             RockPage.AddCSSLink( page, href );
         }
 
@@ -401,7 +401,7 @@ namespace Rock.Web.Cache
         /// <param name="href">The href.</param>
         /// <param name="mediaType">MediaType to use in the css link.</param>
         public void AddCSSLink( System.Web.UI.Page page, string href, string mediaType )
-        {
+            
             RockPage.AddCSSLink( page, href, mediaType );
         }
 
@@ -411,7 +411,7 @@ namespace Rock.Web.Cache
         /// <param name="page">The page.</param>
         /// <param name="htmlMeta">The HTML meta tag.</param>
         public void AddMetaTag( System.Web.UI.Page page, HtmlMeta htmlMeta )
-        {
+            
             RockPage.AddMetaTag( page, htmlMeta );
         }
 
@@ -419,7 +419,7 @@ namespace Rock.Web.Cache
         /// Adds a new Html link that will be added to the page header prior to the page being rendered
         /// </summary>
         public void AddHtmlLink( System.Web.UI.Page page, HtmlLink htmlLink )
-        {
+            
             RockPage.AddHtmlLink( page, htmlLink );
         }
 
@@ -429,7 +429,7 @@ namespace Rock.Web.Cache
         /// <param name="page">Current System.Web.UI.Page</param>
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public void AddScriptLink( System.Web.UI.Page page, string path )
-        {
+            
             RockPage.AddScriptLink( page, path );
         }
 
@@ -439,7 +439,7 @@ namespace Rock.Web.Cache
         /// <param name="pageId">Page to link to</param>
         /// <param name="parms">Dictionary of parameters</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms )
-        {
+            
             return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, null );
         }
 
@@ -450,7 +450,7 @@ namespace Rock.Web.Cache
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
         public string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
-        {
+            
             return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, queryString );
         }
 
@@ -460,7 +460,7 @@ namespace Rock.Web.Cache
         /// <param name="pageRef">PageReference to use for the link</param>
         /// <param name="parms">Dictionary of parameters</param>
         public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms )
-        {
+            
             return RockPage.BuildUrl( pageRef, parms, null );
         }
 
@@ -471,7 +471,7 @@ namespace Rock.Web.Cache
         /// <param name="parms">Dictionary of parameters</param>
         /// <param name="queryString">Querystring to include paramters from</param>
         public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
-        {
+            
             return RockPage.BuildUrl( pageRef, parms, queryString );
         }
 
@@ -486,8 +486,8 @@ namespace Rock.Web.Cache
         /// <param name="layout"></param>
         /// <returns></returns>
         public static string FormatPath( string theme, string layout )
-        {
-            return string.Format( "~/Themes/{0}/Layouts/{1}.aspx", theme, layout );
+            
+            return string.Format( "~/Themes/    0}/Layouts/    1}.aspx", theme, layout );
         }
 
         /// <summary>
@@ -496,8 +496,8 @@ namespace Rock.Web.Cache
         /// <param name="pageId">The page id.</param>
         /// <returns></returns>
         public static string CacheKey( int pageId )
-        {
-            return string.Format( "Rock:Page:{0}", pageId );
+            
+            return string.Format( "Rock:Page:    0}", pageId );
         }
 
         /// <summary>
@@ -506,7 +506,7 @@ namespace Rock.Web.Cache
         /// <param name="pageModel"></param>
         /// <returns></returns>
         public static PageCache Read( Rock.Cms.Page pageModel )
-        {
+            
             string cacheKey = PageCache.CacheKey( pageModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -515,7 +515,7 @@ namespace Rock.Web.Cache
             if ( page != null )
                 return page;
             else
-            {
+                
                 page = PageCache.CopyModel( pageModel );
                 cache.Set( cacheKey, page, new CacheItemPolicy() );
 
@@ -530,7 +530,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static PageCache Read( int id )
-        {
+            
             string cacheKey = PageCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -539,11 +539,11 @@ namespace Rock.Web.Cache
             if ( page != null )
                 return page;
             else
-            {
+                
                 Rock.Cms.PageService pageService = new Cms.PageService();
                 Rock.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
-                {
+                    
                     Rock.Attribute.Helper.LoadAttributes( pageModel );
 
                     page = PageCache.CopyModel( pageModel );
@@ -560,7 +560,7 @@ namespace Rock.Web.Cache
 
         // Copies the Model object to the Cached object
         private static PageCache CopyModel( Rock.Cms.Page pageModel )
-        {
+            
             // Creates new object by copying properties of model
             var page = new Rock.Web.Cache.PageCache(pageModel);
 
@@ -585,7 +585,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( PageCache.CacheKey( id ) );
         }
@@ -594,11 +594,11 @@ namespace Rock.Web.Cache
         /// Flushes all the pages that use a specific layout.
         /// </summary>
         public static void FlushLayout( string layout )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
-                {
+                    
                     PageCache page = cache[item.Key] as PageCache;
                     if ( page != null && page.Layout == layout )
                         cache.Remove( item.Key );
@@ -609,11 +609,11 @@ namespace Rock.Web.Cache
         /// Flushes the block instances for all the pages that use a specific layout.
         /// </summary>
         public static void FlushLayoutBlocks( string layout )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
-                {
+                    
                     PageCache page = cache[item.Key] as PageCache;
                     if ( page != null && page.Layout == layout )
                         page.FlushBlocks();
@@ -627,7 +627,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
-        {
+            
             return this.Name;
         }
 
@@ -641,16 +641,16 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string EntityTypeName { get; set; }
+        public string EntityTypeName      get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
         public Security.ISecured ParentAuthority
-        {
+            
             get
-            {
+                
                 if ( this.ParentPage != null )
                     return this.ParentPage;
                 else
@@ -661,7 +661,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// A list of actions that this class supports.
         /// </summary>
-        public List<string> SupportedActions { get; set; }
+        public List<string> SupportedActions      get; set; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -672,7 +672,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
-        {
+            
             return Security.Authorization.Authorized( this, action, person );
         }
 
@@ -683,7 +683,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
-        {
+            
             return action == "View";
         }
 
@@ -692,7 +692,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
-        {
+            
             return Authorization.FindAuthRules( this );
         }
 
@@ -706,7 +706,7 @@ namespace Rock.Web.Cache
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public XDocument MenuXml( Rock.Crm.Person person )
-        {
+            
             return MenuXml( 1, person );
         }
 
@@ -717,15 +717,15 @@ namespace Rock.Web.Cache
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public XDocument MenuXml( int levelsDeep, Rock.Crm.Person person )
-        {
+            
             XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
         private XElement MenuXmlElement( int levelsDeep,  Rock.Crm.Person person )
-        {
+            
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
-            {
+                
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
@@ -742,7 +742,7 @@ namespace Rock.Web.Cache
 
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages)
                 foreach ( PageCache page in Pages )
-                {
+                    
                     XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
                     if ( childPageElement != null )
                         childPagesElement.Add( childPageElement );

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// HtmlContent Service class
     /// </summary>
     public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentService"/> class
         /// </summary>
         public HtmlContentService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentService"/> class
         /// </summary>
         public HtmlContentService(IRepository<HtmlContent> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override HtmlContent CreateNew()
-        {
+            
             return new HtmlContent();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<HtmlContentDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<HtmlContentDto> QueryableDto( IQueryable<HtmlContent> items )
-        {
+            
             return items.Select( m => new HtmlContentDto()
-                {
+                    
                     BlockId = m.BlockId,
                     EntityValue = m.EntityValue,
                     Version = m.Version,

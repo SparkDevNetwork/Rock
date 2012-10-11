@@ -10,19 +10,19 @@ using System.Web.Http;
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
 	/// <summary>
 	/// Users REST API
 	/// </summary>
 	public partial class UsersController : IHasCustomRoutes
-	{
+	    
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		{
+		    
 			routes.MapHttpRoute(
 				name: "UsernameAvailable",
-				routeTemplate: "api/users/available/{username}",
+				routeTemplate: "api/users/available/    username}",
 				defaults: new
-				{
+				    
 					controller = "users",
 					action = "available"
 				} );
@@ -35,7 +35,7 @@ namespace Rock.Rest.Cms
 		/// <returns></returns>
 		[HttpGet]
 		public bool Available( string username )
-		{
+		    
 			return new UserService().GetByUserName( username ) == null;
 		}
 	}

@@ -13,12 +13,12 @@ using System.Web;
 using Rock.Extension;
 
 namespace Rock.Search
-{
+    
     /// <summary>
     /// 
     /// </summary>
     public class SearchContainer : Container<SearchComponent, IComponentData>
-    {
+        
         /// <summary>
         /// 
         /// </summary>
@@ -28,9 +28,9 @@ namespace Rock.Search
         /// Gets the instance.
         /// </summary>
         public static SearchContainer Instance
-        {
+            
             get
-            {
+                
                 if ( instance == null )
                     instance = new SearchContainer();
                 return instance;
@@ -41,14 +41,14 @@ namespace Rock.Search
         /// Prevents a default instance of the <see cref="SearchContainer" /> class from being created.
         /// </summary>
         private SearchContainer()
-        {
+            
             Refresh();
         }
 
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( SearchComponent ) )]
-        protected override IEnumerable<Lazy<SearchComponent, IComponentData>> MEFComponents { get; set; }
+        protected override IEnumerable<Lazy<SearchComponent, IComponentData>> MEFComponents      get; set; }
 #pragma warning restore
     }
 }

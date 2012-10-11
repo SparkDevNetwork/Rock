@@ -14,38 +14,38 @@ using System;
 using Rock.Data;
 
 namespace Rock.Util
-{
+    
     /// <summary>
     /// Data Transfer Object for Job object
     /// </summary>
     public partial class JobDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public bool? IsActive { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Assemby { get; set; }
-        public string Class { get; set; }
-        public string CronExpression { get; set; }
-        public DateTime? LastSuccessfulRun { get; set; }
-        public DateTime? LastRunDate { get; set; }
-        public int? LastRunDuration { get; set; }
-        public string LastStatus { get; set; }
-        public string LastStatusMessage { get; set; }
-        public string LastRunSchedulerName { get; set; }
-        public string NotificationEmails { get; set; }
-        public JobNotificationStatus NotificationStatus { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public bool? IsActive      get; set; }
+        public string Name      get; set; }
+        public string Description      get; set; }
+        public string Assemby      get; set; }
+        public string Class      get; set; }
+        public string CronExpression      get; set; }
+        public DateTime? LastSuccessfulRun      get; set; }
+        public DateTime? LastRunDate      get; set; }
+        public int? LastRunDuration      get; set; }
+        public string LastStatus      get; set; }
+        public string LastStatusMessage      get; set; }
+        public string LastRunSchedulerName      get; set; }
+        public string NotificationEmails      get; set; }
+        public JobNotificationStatus NotificationStatus      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public JobDto ()
-        {
+            
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Util
         /// </summary>
         /// <param name="job"></param>
         public JobDto ( Job job )
-        {
+            
             CopyFromModel( job );
         }
 
@@ -62,9 +62,9 @@ namespace Rock.Util
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Job )
-            {
+                
                 var job = (Job)model;
                 this.IsSystem = job.IsSystem;
                 this.IsActive = job.IsActive;
@@ -91,9 +91,9 @@ namespace Rock.Util
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Job )
-            {
+                
                 var job = (Job)model;
                 job.IsSystem = this.IsSystem;
                 job.IsActive = this.IsActive;

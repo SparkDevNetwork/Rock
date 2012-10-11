@@ -1,10 +1,10 @@
 ﻿namespace RockJobSchedulerService
-{
+    
     /// <summary>
     /// Project Installer 
     /// </summary>
     partial class ProjectInstaller
-    {
+        
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -15,9 +15,9 @@
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose( bool disposing )
-        {
+            
             if ( disposing && ( components != null ) )
-            {
+                
                 components.Dispose();
             }
             base.Dispose( disposing );
@@ -30,7 +30,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
-        {
+            
             this.serviceProcessInstaller1 = new System.ServiceProcess.ServiceProcessInstaller();
             this.serviceInstaller1 = new System.ServiceProcess.ServiceInstaller();
             // 
@@ -49,7 +49,7 @@
             // 
             // ProjectInstaller
             // 
-            this.Installers.AddRange( new System.Configuration.Install.Installer[] {
+            this.Installers.AddRange( new System.Configuration.Install.Installer[]     
             this.serviceProcessInstaller1,
             this.serviceInstaller1} );
 

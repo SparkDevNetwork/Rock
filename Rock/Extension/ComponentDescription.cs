@@ -8,19 +8,19 @@ using System;
 using System.Collections.Generic;
 
 namespace Rock.Extension
-{
+    
     /// <summary>
     /// Helper class for wrapping the properties of a MEF class to use in databinding
     /// </summary>
     public class ComponentDescription
-    {
+        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>
         /// The id.
         /// </value>
-        public int Id { get; set; }
+        public int Id      get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -28,7 +28,7 @@ namespace Rock.Extension
         /// <value>
         /// The name.
         /// </value>
-        public string Name { get; set; }
+        public string Name      get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -36,7 +36,7 @@ namespace Rock.Extension
         /// <value>
         /// The description.
         /// </value>
-        public string Description { get; set; }
+        public string Description      get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -44,7 +44,7 @@ namespace Rock.Extension
         /// <value>
         /// The order.
         /// </value>
-        public int Order { get; set; }
+        public int Order      get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ComponentDescription"/> is active.
@@ -52,7 +52,7 @@ namespace Rock.Extension
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        public bool IsActive { get; set; }
+        public bool IsActive      get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ComponentDescription" /> class.
@@ -60,7 +60,7 @@ namespace Rock.Extension
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
         public ComponentDescription( int id, KeyValuePair<string, Component> service )
-        {
+            
             Id = id;
 
             Type type = service.Value.GetType();
@@ -73,9 +73,9 @@ namespace Rock.Extension
             // property of this class
             var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
             if ( descAttributes != null )
-            {
+                
                 foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
-                {
+                    
                     Description = descAttribute.Description;
                 }
             }

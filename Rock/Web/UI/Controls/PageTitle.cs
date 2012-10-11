@@ -5,11 +5,11 @@
 //
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// Renders the title of a page
     /// </summary>
     public class PageTitle : System.Web.UI.WebControls.Literal
-    {
+        
     }
 }

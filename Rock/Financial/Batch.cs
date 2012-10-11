@@ -13,13 +13,13 @@ using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
-{
+    
     /// <summary>
     /// Batch POCO class.
     /// </summary>
     [Table("financialBatch")]
     public partial class Batch : Model<Batch>
-    {
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Name { get; set; }
+        public string Name      get; set; }
 
         /// <summary>
         /// Gets or sets the batch date.
@@ -37,7 +37,7 @@ namespace Rock.Financial
         /// The batch date.
         /// </value>
         [DataMember]
-        public DateTime? BatchDate { get; set; }
+        public DateTime? BatchDate      get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Batch"/> is closed.
@@ -46,7 +46,7 @@ namespace Rock.Financial
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsClosed { get; set; }
+        public bool IsClosed      get; set; }
 
         /// <summary>
         /// Gets or sets the campus id.
@@ -55,7 +55,7 @@ namespace Rock.Financial
         /// The campus id.
         /// </value>
         [DataMember]
-        public int? CampusId { get; set; }
+        public int? CampusId      get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -65,7 +65,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Entity { get; set; }
+        public string Entity      get; set; }
 
         /// <summary>
         /// Gets or sets the entity id.
@@ -74,7 +74,7 @@ namespace Rock.Financial
         /// The entity id.
         /// </value>
         [DataMember]
-        public int? EntityId { get; set; }
+        public int? EntityId      get; set; }
 
         /// <summary>
         /// Gets or sets the foreign reference.
@@ -84,9 +84,9 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string ForeignReference { get; set; }
+        public string ForeignReference      get; set; }
 
-        //public virtual Campus Campus { get; set; }
+        //public virtual Campus Campus      get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -94,7 +94,7 @@ namespace Rock.Financial
         /// <value>
         /// The transactions.
         /// </value>
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<Transaction> Transactions      get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -102,14 +102,14 @@ namespace Rock.Financial
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Batch Read( int id )
-		{
+		    
 			return Read<Batch>( id );
 		}
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName { get { return "Financial.Batch"; } }
+        public override string EntityTypeName      get      return "Financial.Batch"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -118,7 +118,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
     }
@@ -127,12 +127,12 @@ namespace Rock.Financial
     /// Batch Configuration class.
     /// </summary>
     public partial class BatchConfiguration : EntityTypeConfiguration<Batch>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchConfiguration"/> class.
         /// </summary>
         public BatchConfiguration()
-        {
+            
         }
     }
 }

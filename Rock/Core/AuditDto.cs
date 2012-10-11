@@ -14,30 +14,30 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for Audit object
     /// </summary>
     public partial class AuditDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public string EntityType { get; set; }
-        public int EntityId { get; set; }
-        public string EntityName { get; set; }
-        public AuditType AuditType { get; set; }
-        public string Properties { get; set; }
-        public DateTimeOffset? DateTime { get; set; }
-        public int? PersonId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public string EntityType      get; set; }
+        public int EntityId      get; set; }
+        public string EntityName      get; set; }
+        public AuditType AuditType      get; set; }
+        public string Properties      get; set; }
+        public DateTimeOffset? DateTime      get; set; }
+        public int? PersonId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public AuditDto ()
-        {
+            
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="audit"></param>
         public AuditDto ( Audit audit )
-        {
+            
             CopyFromModel( audit );
         }
 
@@ -54,9 +54,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Audit )
-            {
+                
                 var audit = (Audit)model;
                 this.EntityType = audit.EntityType;
                 this.EntityId = audit.EntityId;
@@ -75,9 +75,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Audit )
-            {
+                
                 var audit = (Audit)model;
                 audit.EntityType = this.EntityType;
                 audit.EntityId = this.EntityId;

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Site Service class
     /// </summary>
     public partial class SiteService : Service<Site, SiteDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteService"/> class
         /// </summary>
         public SiteService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteService"/> class
         /// </summary>
         public SiteService(IRepository<Site> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Site CreateNew()
-        {
+            
             return new Site();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<SiteDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<SiteDto> QueryableDto( IQueryable<Site> items )
-        {
+            
             return items.Select( m => new SiteDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     Name = m.Name,
                     Description = m.Description,

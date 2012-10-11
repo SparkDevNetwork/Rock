@@ -6,7 +6,7 @@
     var attribute = null;
     var value = null;
     
-    function editType(clickedTypeId) {
+    function editType(clickedTypeId)     
     
         type = null;
                 
@@ -16,14 +16,14 @@
         $('#<%= ddlTypeFieldType.ClientID %>').val('');
         $('#<%= hfTypeId.ClientID %>').val(clickedTypeId);
 
-        if (clickedTypeId != 0) {
+        if (clickedTypeId != 0)     
 
-            $.ajax({
+            $.ajax(    
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 url: rock.baseUrl + 'REST/Core/DefinedType/' + clickedTypeId,
-                success: function (getData, status, xhr) {
+                success: function (getData, status, xhr)     
 
                     type = getData;
                        
@@ -31,22 +31,22 @@
                     $('#<%= tbTypeCategory.ClientID %>').val( type.Category );
                     $('#<%= tbTypeDescription.ClientID %>').val( type.Description );
                     $('#<%= ddlTypeFieldType.ClientID %>').val( type.FieldTypeId );
-                    $('#modal-types').modal('show').bind('shown', function () {
+                    $('#modal-types').modal('show').bind('shown', function ()     
                         $('#modal-types').appendTo('#<%= upTypes.ClientID %>');
                     });
                 },
-                error: function (xhr, status, error) {
+                error: function (xhr, status, error)     
                     alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         }
-        else {
+        else     
 
             var category = $('#<%= ddlCategoryFilter.ClientID %>').val();
             category = category == '[All]' ? '' : category;
             $('#<%= tbTypeCategory.ClientID %>').val(category);
                         
-            $('#modal-types').modal('show').bind('shown', function () {
+            $('#modal-types').modal('show').bind('shown', function ()     
                 $('#modal-types').appendTo('#<%= upTypes.ClientID %>');
             });
         
@@ -55,38 +55,38 @@
         return false;
     }
 
-    function editValue(clickedValueId) {
+    function editValue(clickedValueId)     
 
         value = null;
 
         $('#<%= tbValueName.ClientID %>').val('');
         $('#<%= tbValueDescription.ClientID %>').val('');
 
-        if (clickedValueId != 0) {
+        if (clickedValueId != 0)     
 
-            $.ajax({
+            $.ajax(    
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 url: rock.baseUrl + 'REST/Core/DefinedValue/' + clickedValueId,
-                success: function (getData, status, xhr) {
+                success: function (getData, status, xhr)     
 
                     value = getData;
 
                     $('#<%= tbValueName.ClientID %>').val(value.Name);
                     $('#<%= tbValueDescription.ClientID %>').val(value.Description);
-                    $('#modal-values').modal('show').bind('shown', function () {
+                    $('#modal-values').modal('show').bind('shown', function ()     
                         $('#modal-values').appendTo('#<%= upValues.ClientID %>');
                     });
                 },
-                error: function (xhr, status, error) {
+                error: function (xhr, status, error)     
                     alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         }
-        else {
+        else     
 
-            $('#modal-values').modal('show').bind('shown', function () {
+            $('#modal-values').modal('show').bind('shown', function ()     
                 $('#modal-values').appendTo('#<%= upValues.ClientID %>');
             });
 
@@ -95,7 +95,7 @@
         return false;
     }
 
-    function editAttribute(attributeId) {
+    function editAttribute(attributeId)     
 
         attribute = null;        
 
@@ -108,14 +108,14 @@
         $('#<%= cbAttributeGridColumn.ClientID %>').removeAttr('checked');
         $('#<%= cbAttributeRequired.ClientID %>').removeAttr('checked');
 
-        if ( attributeId != 0 ) {
+        if ( attributeId != 0 )     
 
-            $.ajax({
+            $.ajax(    
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 url: rock.baseUrl + 'REST/Core/Attribute/' + attributeId,
-                success: function ( getData, status, xhr ) {
+                success: function ( getData, status, xhr )     
                     
                     attribute = getData;
 
@@ -130,20 +130,20 @@
                     if ( attribute.Required )
                         $('#<%= cbAttributeRequired.ClientID %>').attr('checked', 'checked');
                     
-                    $('#modal-attributes').modal('show').bind('shown', function () {
+                    $('#modal-attributes').modal('show').bind('shown', function ()     
                         $('#modal-attributes').appendTo('#<%= upValues.ClientID %>');
                         $('#<%= upTypes.ClientID %>')
                     });
                 },
-                error: function (xhr, status, error) {
+                error: function (xhr, status, error)     
                     alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         }
 
-        else {
+        else     
 
-            $('#modal-attributes').modal('show').bind('shown', function () {
+            $('#modal-attributes').modal('show').bind('shown', function ()     
                 $('#modal-attributes').appendTo('#<%= upAttributes.ClientID %>');
             });
 
@@ -152,11 +152,11 @@
         return false;
     }
 
-    Sys.Application.add_load(function () {
+    Sys.Application.add_load(function ()     
 
-        $('a.btn.primary').click(function () {
+        $('a.btn.primary').click(function ()     
 
-            if (Page_ClientValidate()) {
+            if (Page_ClientValidate())     
 
                 var restAction = 'PUT';
                 var restUrl = null;
@@ -165,7 +165,7 @@
 
                 parent = $(this).parents('.modal');
 
-                switch (parent.attr('Id')) {
+                switch (parent.attr('Id'))     
                     case 'modal-types':
 
                         object = (type === null) ? new Object() : type;
@@ -204,38 +204,38 @@
                         break;
                 }
 
-                if (object.Id === undefined) {
+                if (object.Id === undefined)     
                     restAction = 'POST';
                     object.Id = 0;
                     object.System = false;
                     object.Order = 0;
-                } else {
+                } else     
                     restUrl += object.Id;
                 }
 
-                $.ajax({
+                $.ajax(    
                     type: restAction,
                     contentType: 'application/json',
                     dataType: 'json',
                     data: JSON.stringify(object),
                     url: restUrl,
-                    success: function (data, status, xhr) {
+                    success: function (data, status, xhr)     
                         parent.modal('hide');
                         $('#<%= btnRefresh.ClientID %>').click();
                     },
-                    error: function (xhr, status, error) {
+                    error: function (xhr, status, error)     
                         alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
             }
         });
 
-        $('#modal-types, #modal-values, #modal-attributes').modal({
+        $('#modal-types, #modal-values, #modal-attributes').modal(    
             backdrop: true,
             keyboard: true
         });
 
-        $('a.btn.secondary').click(function () {
+        $('a.btn.secondary').click(function ()     
             $(this).parents('.modal').modal('hide');
         });
 

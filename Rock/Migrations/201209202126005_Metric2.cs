@@ -1,29 +1,29 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class Metric2 : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             DropForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson" );
             DropForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson" );
             DropForeignKey( "coreMetricValue", "MetricId", "coreMetric" );
             DropForeignKey( "coreMetricValue", "CreatedByPersonId", "crmPerson" );
             DropForeignKey( "coreMetricValue", "ModifiedByPersonId", "crmPerson" );
-            DropIndex( "coreMetric", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreMetric", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreMetricValue", new[] { "MetricId" } );
-            DropIndex( "coreMetricValue", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreMetricValue", new[] { "ModifiedByPersonId" } );
+            DropIndex( "coreMetric", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreMetric", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreMetricValue", new[]      "MetricId" } );
+            DropIndex( "coreMetricValue", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreMetricValue", new[]      "ModifiedByPersonId" } );
             DropTable( "coreMetric" );
             DropTable( "coreMetricValue" );
             
             CreateTable(
                 "dbo.coreMetric",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         Type = c.Boolean(nullable: false),
@@ -55,7 +55,7 @@ namespace Rock.Migrations
             CreateTable(
                 "dbo.coreMetricValue",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         MetricId = c.Int(nullable: false),
@@ -83,15 +83,15 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             DataDown();
 
-            DropIndex("dbo.coreMetricValue", new[] { "MetricId" });
-            DropIndex("dbo.coreMetricValue", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.coreMetricValue", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreMetric", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.coreMetric", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreMetric", new[] { "CollectionFrequencyId" });
+            DropIndex("dbo.coreMetricValue", new[]      "MetricId" });
+            DropIndex("dbo.coreMetricValue", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.coreMetricValue", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreMetric", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.coreMetric", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreMetric", new[]      "CollectionFrequencyId" });
             DropForeignKey("dbo.coreMetricValue", "MetricId", "dbo.coreMetric");
             DropForeignKey("dbo.coreMetricValue", "ModifiedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.coreMetricValue", "CreatedByPersonId", "dbo.crmPerson");
@@ -104,7 +104,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreMetricValue",
                 c => new
-                {
+                    
                     Id = c.Int( nullable: false, identity: true ),
                     IsSystem = c.Boolean( nullable: false ),
                     MetricId = c.Int( nullable: false ),
@@ -125,7 +125,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreMetric",
                 c => new
-                {
+                    
                     Id = c.Int( nullable: false, identity: true ),
                     IsSystem = c.Boolean( nullable: false ),
                     Type = c.Boolean( nullable: false ),

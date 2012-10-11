@@ -1,16 +1,16 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class ChangeAddressToLocation : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             CreateTable(
                 "dbo.crmLocation",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         Raw = c.String(maxLength: 400),
                         Street1 = c.String(maxLength: 100),
@@ -100,17 +100,17 @@ namespace Rock.Migrations
 
             DropForeignKey("crmAddress", "CreatedByPersonId", "crmPerson");
             DropForeignKey("crmAddress", "ModifiedByPersonId", "crmPerson");
-            DropIndex("crmAddress", new[] { "CreatedByPersonId" });
-            DropIndex("crmAddress", new[] { "ModifiedByPersonId" });
+            DropIndex("crmAddress", new[]      "CreatedByPersonId" });
+            DropIndex("crmAddress", new[]      "ModifiedByPersonId" });
             DropTable("crmAddress");
         }
         
         public override void Down()
-        {
+            
             CreateTable(
                 "dbo.crmAddress",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         Raw = c.String(maxLength: 400),
                         Street1 = c.String(maxLength: 100),
@@ -196,8 +196,8 @@ namespace Rock.Migrations
                 SET IDENTITY_INSERT crmAddress OFF
 " );
 
-            DropIndex("dbo.crmLocation", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.crmLocation", new[] { "CreatedByPersonId" });
+            DropIndex("dbo.crmLocation", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.crmLocation", new[]      "CreatedByPersonId" });
             DropForeignKey("dbo.crmLocation", "ModifiedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.crmLocation", "CreatedByPersonId", "dbo.crmPerson");
             DropTable("dbo.crmLocation");

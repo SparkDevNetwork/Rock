@@ -12,13 +12,13 @@ using Rock.Crm;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
-{
+    
 	/// <summary>
 	/// User control for viewing key attributes
 	/// </summary>
 	[BlockProperty( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
 	public partial class KeyAttributes : Rock.Web.UI.PersonBlock
-    {
+        
 		private XDocument xDocument = null;
 
 		/// <summary>
@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 		/// </summary>
 		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
 		protected override void OnInit( EventArgs e )
-		{
+		    
 			base.OnInit( e );
 
 			var rootElement = new XElement( "root" );
@@ -36,16 +36,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			rootElement.Add( attributesElement );
 
 			foreach ( string keyAttributeId in GetUserValue( "Rock.KeyAttributes" ).SplitDelimitedValues() )
-			{
+			    
 				int attributeId = 0;
 				if (Int32.TryParse(keyAttributeId, out attributeId))
-				{
+				    
 					var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 					if ( attribute != null )
-					{
+					    
 						var values = Person.AttributeValues[attribute.Key].Value;
 						if ( values != null && values.Count > 0 )
-						{
+						    
 							attributesElement.Add( new XElement( "attribute",
 								new XAttribute( "name", attribute.Name ),
 								new XCData( attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty )
@@ -67,14 +67,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 		/// </summary>
 		/// <param name="writer"></param>
 		protected override void Render( System.Web.UI.HtmlTextWriter writer )
-		{
+		    
 			try
-			{
+			    
 				if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
-				{
+				    
 					string xsltFile = AttributeValue( "XsltFile" );
 					if ( !String.IsNullOrEmpty( xsltFile ) )
-					{
+					    
 						string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
 						var xslt = new XslCompiledTransform();
 						xslt.Load( xsltPath );
@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 				}
 			}
 			catch ( Exception ex )
-			{
+			    
 				writer.Write( "Error: " + ex.Message );
 			}
 		}

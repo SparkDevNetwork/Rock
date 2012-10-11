@@ -16,10 +16,10 @@ using Rock.Core;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
 
     public partial class Metrics : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
 
         private MetricService metricService = new MetricService();
@@ -32,45 +32,45 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
 
             try
-            {
+                
                 _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindCategoryFilter();                
 
                 if ( _canConfigure )
-                {
-                    rGridMetric.DataKeyNames = new string[] { "id" };
+                    
+                    rGridMetric.DataKeyNames = new string[]      "id" };
                     rGridMetric.Actions.IsAddEnabled = true;
 
                     rGridMetric.Actions.AddClick += rGridMetric_Add;
                     rGridMetric.GridRebind += rGridMetric_GridRebind;
 
-                    rGridValue.DataKeyNames = new string[] { "id" };
+                    rGridValue.DataKeyNames = new string[]      "id" };
                     rGridValue.Actions.IsAddEnabled = true;
 
                     rGridValue.Actions.AddClick += rGridValue_Add;
                     rGridValue.GridRebind += rGridValue_GridRebind;
 
                     modalValue.SaveClick += btnSaveValue_Click;
-                    modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+                    modalValue.OnCancelScript = string.Format( "$('#    0}').val('');", hfIdValue.ClientID );
                 }
                 else
-                {
+                    
                     DisplayError( "You are not authorized to configure this page" );
                 }
             }
             catch ( SystemException ex )
-            {
+                
                 DisplayError( ex.Message );
             }
         }
 
         protected override void OnLoad( EventArgs e )
-        {
+            
             if ( !Page.IsPostBack && _canConfigure )
                 BindGridMetric();
 
@@ -82,25 +82,25 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
-        {
+            
             BindCategoryFilter();
             BindGridMetric();
         }
 
         protected void rGridMetric_Add( object sender, EventArgs e )
-        {
+            
             BindCollectionFrequencies();
             ShowEditMetric( 0 );
         }
 
         protected void rGridMetric_Edit( object sender, RowEventArgs e )
-        {
+            
             BindCollectionFrequencies();
             ShowEditMetric( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGridMetric_EditValue( object sender, RowEventArgs e )
-        {
+            
             hfIdMetric.Value = rGridMetric.DataKeys[e.RowIndex]["id"].ToString();
             BindGridValue();
 
@@ -109,12 +109,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGridMetric_Delete( object sender, RowEventArgs e )
-        {
+            
             var metricService = new Rock.Core.MetricService();
 
             Rock.Core.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
             if ( metric != null )
-            {
+                
                 metricService.Delete( metric, CurrentPersonId );
                 metricService.Save( metric, CurrentPersonId );
             }
@@ -123,21 +123,21 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnSaveMetric_Click( object sender, EventArgs e )
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 var metricService = new Rock.Core.MetricService();
                 Rock.Core.Metric metric;                
                 int metricId = ( hfIdMetric.Value ) != null ? Int32.Parse( hfIdMetric.Value ) : 0;
 
                 if ( metricId == 0 )
-                {
+                    
                     metric = new Rock.Core.Metric();
                     metric.IsSystem = false;
                     metricService.Add( metric, CurrentPersonId );
                 }
                 else
-                {
+                    
                     metric = metricService.Get( metricId );
                 }
 
@@ -163,36 +163,36 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnCancelMetric_Click( object sender, EventArgs e )
-        {
+            
             pnlMetricDetails.Visible = false;
             pnlMetricList.Visible = true;
         }
 
         void rGridMetric_GridRebind( object sender, EventArgs e )
-        {
+            
             BindCategoryFilter();
             BindGridMetric();
         }
         
         protected void rGridValue_Add( object sender, EventArgs e )
-        {
+            
             BindMetricFilter();
             ShowEditValue( 0 );
         }
 
         protected void rGridValue_Edit( object sender, RowEventArgs e )
-        {
+            
             BindMetricFilter();
             ShowEditValue( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGridValue_Delete( object sender, RowEventArgs e )
-        {
+            
             var metricValueService = new Rock.Core.MetricValueService();
 
             Rock.Core.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
             if ( metricValue != null )
-            {
+                
                 metricValueService.Delete( metricValue, CurrentPersonId );
                 metricValueService.Save( metricValue, CurrentPersonId );
             }
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnValueDone_Click( object sender, EventArgs e )
-        {
+            
             BindCategoryFilter();
             BindGridMetric();
             pnlValueList.Visible = false;
@@ -209,22 +209,22 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnSaveValue_Click( object sender, EventArgs e )
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 int metricValueId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
                 var metricValueService = new Rock.Core.MetricValueService();
                 Rock.Core.MetricValue metricValue;                                
 
                 if ( metricValueId == 0 )
-                {
+                    
                     metricValue = new Rock.Core.MetricValue();
                     metricValue.IsSystem = false;
                     metricValue.MetricId = Int32.Parse( hfIdMetric.Value );
                     metricValueService.Add( metricValue, CurrentPersonId );
                 }
                 else
-                {
+                    
                     metricValue = metricValueService.Get( metricValueId );
                 }
 
@@ -244,13 +244,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnCancelValue_Click( object sender, EventArgs e )
-        {
+            
             modalValue.Hide();
             pnlValueList.Visible = true;
         }
 
         void rGridValue_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGridValue();
         }
         
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Administration
         #region Methods
                 
         private void BindCategoryFilter()
-        {
+            
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void BindGridMetric()
-        {
+            
             var queryable = new Rock.Core.MetricService().Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
@@ -297,12 +297,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void BindCollectionFrequencies()
-        {
+            
             ddlCollectionFrequency.Items.Clear();
 
             List<DefinedValue> definedValues = new List<DefinedValue>();
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 definedValues = definedValueService.Queryable().
                     Where( definedValue => definedValue.DefinedType.Guid == Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ).
                     OrderBy( v => v.Order).
@@ -315,13 +315,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEditMetric( int metricId )
-        {
+            
             hfIdMetric.Value = metricId.ToString();
 
             var metric = new Rock.Core.MetricService().Get( metricId );
 
             if ( metric != null )
-            {
+                
                 lAction.Text = "Edit";
                 tbCategory.Text = metric.Category;
                 tbTitle.Text = metric.Title;
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Administration
                 tbSourceSQL.Text = metric.SourceSQL;
             }
             else
-            {
+                
                 lAction.Text = "Add";
                 tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
                 tbTitle.Text = string.Empty;
@@ -353,12 +353,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void BindMetricFilter()
-        {
+            
             ddlMetricFilter.Items.Clear();
 
             List<Metric> metrics = new List<Metric>();
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 metrics = metricService.Queryable().
                     Where( a => a.Title != "" && a.Title != null ).
                     OrderBy( a => a.Title ).
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Administration
         }
         
         private void BindGridValue( )
-        {
+            
             int metricId = ( hfIdMetric.Value != null ) ? Int32.Parse( hfIdMetric.Value ) : 0;
             var queryable = new Rock.Core.MetricValueService().Queryable();
             
@@ -393,13 +393,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEditValue( int metricValueId )
-        {
+            
             hfIdValue.Value = metricValueId.ToString();
 
             var metricValue = new Rock.Core.MetricValueService().Get( metricValueId );
 
             if ( metricValue != null )
-            {
+                
                 lValue.Text = "Edit";
                 tbValue.Text = metricValue.Value;
                 tbValueDescription.Text = metricValue.Description;
@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Administration
                 cbIsDateBased.Checked = metricValue.isDateBased;
             }
             else 
-            {
+                
                 lValue.Text = "Add";
                 tbValue.Text = string.Empty;
                 tbValueDescription.Text = string.Empty;
@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-        {
+            
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

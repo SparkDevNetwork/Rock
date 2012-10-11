@@ -17,14 +17,14 @@ using Rock;
 using Rock.Core;
 
 namespace Rock.Data
-{
+    
 	/// <summary>
 	/// Repository for working with the Entity Framework
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public class EFRepository<T> : IRepository<T>, IDisposable
 		where T : Rock.Data.Entity<T>
-	{
+	    
         /// <summary>
         /// 
         /// </summary>
@@ -39,9 +39,9 @@ namespace Rock.Data
 		/// Gets the context.
 		/// </summary>
 		internal DbContext Context
-		{
+		    
 			get
-			{
+			    
 				if ( UnitOfWorkScope.CurrentObjectContext != null )
 					return UnitOfWorkScope.CurrentObjectContext;
 
@@ -63,14 +63,14 @@ namespace Rock.Data
 		/// </summary>
 		public EFRepository() :
 			this( new RockContext() )
-		{ }
+		     }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
 		/// </summary>
 		/// <param name="objectContext">The object context.</param>
 		public EFRepository( DbContext objectContext )
-		{
+		    
 			IsDisposed = false;
 			_context = objectContext;
 			_objectSet = Context.Set<T>();
@@ -78,21 +78,21 @@ namespace Rock.Data
 		}
 
 		/// <summary>
-		/// An <see cref="IQueryable{T}"/> list of entitities
+		/// An <see cref="IQueryable    T}"/> list of entitities
 		/// </summary>
 		/// <returns></returns>
 		public virtual IQueryable<T> AsQueryable()
-		{
+		    
 			return _objectSet;
 		}
 
 		/// <summary>
-		/// An <see cref="IQueryable{T}"/> list of entitities
+		/// An <see cref="IQueryable    T}"/> list of entitities
 		/// with a eager load of includes properties
 		/// </summary>
 		/// <returns></returns>
 		public virtual IQueryable<T> AsQueryable( string includes )
-		{
+		    
 			DbQuery<T> value = _objectSet;
 			if ( !String.IsNullOrEmpty( includes ) )
 				foreach ( var include in includes.SplitDelimitedValues() )
@@ -101,23 +101,23 @@ namespace Rock.Data
 		}
 
 		/// <summary>
-		/// An <see cref="IEnumerable{T}"/> list of all entities
+		/// An <see cref="IEnumerable    T}"/> list of all entities
 		/// </summary>
 		/// <returns></returns>
 		public virtual IEnumerable<T> GetAll()
-		{
+		    
 			return _objectSet.ToList();
 		}
 
 		/// <summary>
-		/// An <see cref="IEnumerable{T}"/> list of all entities that match the where clause
+		/// An <see cref="IEnumerable    T}"/> list of all entities that match the where clause
 		/// </summary>
 		/// <param name="where">
 		/// <example>An example where clause: <c>t => t.Id == id</c></example>
 		/// </param>
 		/// <returns></returns>
 		public virtual IEnumerable<T> Find( Expression<Func<T, bool>> where )
-		{
+		    
 			return _objectSet.Where( where );
 		}
 
@@ -130,7 +130,7 @@ namespace Rock.Data
 		/// </param>
 		/// <returns></returns>
 		public virtual T Single( Expression<Func<T, bool>> where )
-		{
+		    
 			return _objectSet.Single( where );
 		}
 
@@ -143,7 +143,7 @@ namespace Rock.Data
 		/// </param>
 		/// <returns></returns>
 		public virtual T First( Expression<Func<T, bool>> where )
-		{
+		    
 			return _objectSet.First( where );
 		}
 
@@ -156,7 +156,7 @@ namespace Rock.Data
 		/// </param>
 		/// <returns></returns>
 		public virtual T FirstOrDefault( Expression<Func<T, bool>> where )
-		{
+		    
 			return _objectSet.FirstOrDefault( where );
 		}
 
@@ -166,7 +166,7 @@ namespace Rock.Data
 		/// <param name="entity">The entity.</param>
 		/// <returns></returns>
 		public virtual DateTimeOffset? DateCreated( T entity )
-		{
+		    
 			return DateCreated( entity.EntityTypeName, entity.Id );
 		}
 
@@ -177,7 +177,7 @@ namespace Rock.Data
 		/// <param name="entityId">The entity id.</param>
 		/// <returns></returns>
 		public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
-		{
+		    
 			return _auditSet
 				.Where( a =>
 					a.EntityType == entityTypeName &&
@@ -195,7 +195,7 @@ namespace Rock.Data
 		/// <param name="entity">The entity.</param>
 		/// <returns></returns>
 		public virtual DateTimeOffset? DateLastModified( T entity )
-		{
+		    
 			return DateLastModified( entity.EntityTypeName, entity.Id );
 		}
 
@@ -206,7 +206,7 @@ namespace Rock.Data
 		/// <param name="entityId">The entity id.</param>
 		/// <returns></returns>
 		public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
-		{
+		    
 			return _auditSet
 				.Where( a =>
 					a.EntityType == entityTypeName &&
@@ -224,7 +224,7 @@ namespace Rock.Data
 		/// <param name="entity">The entity.</param>
 		/// <returns></returns>
 		public virtual int? CreatedByPersonId( T entity )
-		{
+		    
 			return CreatedByPersonId( entity.EntityTypeName, entity.Id );
 		}
 
@@ -235,7 +235,7 @@ namespace Rock.Data
 		/// <param name="entityId">The entity id.</param>
 		/// <returns></returns>
 		public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
-		{
+		    
 			return _auditSet
 				.Where( a =>
 					a.EntityType == entityTypeName &&
@@ -253,7 +253,7 @@ namespace Rock.Data
 		/// <param name="entity">The entity.</param>
 		/// <returns></returns>
 		public virtual int? LastModifiedByPersonId( T entity )
-		{
+		    
 			return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
 		}
 
@@ -264,7 +264,7 @@ namespace Rock.Data
 		/// <param name="entityId">The entity id.</param>
 		/// <returns></returns>
 		public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
-		{
+		    
 			return _auditSet
 				.Where( a =>
 					a.EntityType == entityTypeName &&
@@ -282,7 +282,7 @@ namespace Rock.Data
 		/// <param name="entity">The entity.</param>
 		/// <returns></returns>
 		public virtual IQueryable<Audit> Audits( T entity )
-		{
+		    
 			return Audits( entity.EntityTypeName, entity.Id );
 		}
 
@@ -293,7 +293,7 @@ namespace Rock.Data
 		/// <param name="entityId">The entity id.</param>
 		/// <returns></returns>
 		public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
-		{
+		    
 			return _auditSet
 				.Where( a =>
 					a.EntityType == entityTypeName &&
@@ -306,7 +306,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="entity">The entity.</param>
 		public virtual void Add( T entity )
-		{
+		    
 			_objectSet.Add( entity );
 		}
 
@@ -315,7 +315,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="entity">The entity.</param>
 		public virtual void Attach( T entity )
-		{
+		    
 			_objectSet.Attach( entity );
 		}
 
@@ -324,7 +324,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="entity">The entity.</param>
 		public virtual void Delete( T entity )
-		{
+		    
 			_objectSet.Remove( entity );
 		}
 
@@ -336,7 +336,7 @@ namespace Rock.Data
 		/// <param name="audits">The audits.</param>
 		/// <returns></returns>
 		public List<Rock.Core.EntityChange> Save( int? PersonId, List<Rock.Core.AuditDto> audits )
-		{
+		    
 			var entityChanges = new List<Core.EntityChange>();
 
 			Context.ChangeTracker.DetectChanges();
@@ -349,12 +349,12 @@ namespace Rock.Data
 
 			foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
 				System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
-			{
+			    
 				var rockEntity = entry.Entity as Entity<T>;
 				var audit = new Rock.Core.AuditDto();
 
 				switch ( entry.State )
-				{
+				    
 					case System.Data.EntityState.Added:
 						addedEntities.Add( entry.Entity );
 						audit.AuditType = AuditType.Add;
@@ -368,15 +368,15 @@ namespace Rock.Data
 					case System.Data.EntityState.Modified:
 
 						if ( rockEntity != null )
-						{
+						    
 							bool cancel = false;
 							rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
 							if ( cancel )
-							{
+							    
 								contextAdapter.ObjectContext.Detach( entry );
 							}
 							else
-							{
+							    
 								modifiedEntities.Add( entry.Entity );
 								audit.AuditType = AuditType.Modify;
 							}
@@ -386,22 +386,22 @@ namespace Rock.Data
 				}
 
 				if ( rockEntity != null )
-				{
+				    
 					Type rockEntityType = rockEntity.GetType();
 					if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
 						rockEntityType = rockEntityType.BaseType;
 
 					if ( AuditClass( rockEntityType ) )
-					{
+					    
 						var dbEntity = Context.Entry( entry.Entity );
 
 						var modifiedProperties = new List<string>();
 						PropertyInfo[] properties = rockEntityType.GetProperties();
 
 						foreach ( PropertyInfo propInfo in properties )
-						{
+						    
 							if ( AuditProperty( propInfo ) )
-							{
+							    
 								var dbPropertyEntry = dbEntity.Property( propInfo.Name );
 								if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
 									modifiedProperties.Add( propInfo.Name );
@@ -409,7 +409,7 @@ namespace Rock.Data
 						}
 
 						if ( modifiedProperties.Count > 0 )
-						{
+						    
 							audit.DateTime = DateTimeOffset.Now;
 							audit.PersonId = PersonId;
 							audit.EntityType = rockEntity.EntityTypeName;
@@ -425,21 +425,21 @@ namespace Rock.Data
 			Context.SaveChanges();
 
 			foreach ( object modifiedEntity in addedEntities )
-			{
+			    
 				var model = modifiedEntity as Entity<T>;
 				if ( model != null )
 					model.RaiseAddedEvent( PersonId );
 			}
 
 			foreach ( object deletedEntity in deletedEntities )
-			{
+			    
 				var model = deletedEntity as Entity<T>;
 				if ( model != null )
 					model.RaiseDeletedEvent( PersonId );
 			}
 
 			foreach ( object modifiedEntity in modifiedEntities )
-			{
+			    
 				var model = modifiedEntity as Entity<T>;
 				if ( model != null )
 					model.RaiseUpdatedEvent( PersonId );
@@ -454,7 +454,7 @@ namespace Rock.Data
         /// <param name="baseType">Type of the base.</param>
         /// <returns></returns>
 		private bool AuditClass( Type baseType )
-		{
+		    
 			var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
 			return ( attribute == null );
 		}
@@ -465,7 +465,7 @@ namespace Rock.Data
         /// <param name="propertyInfo">The property info.</param>
         /// <returns></returns>
 		private bool AuditProperty( PropertyInfo propertyInfo )
-		{
+		    
 			if (propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
 				propertyInfo.GetCustomAttribute( typeof( System.Runtime.Serialization.DataMemberAttribute ) ) != null )
 				return true;
@@ -480,20 +480,20 @@ namespace Rock.Data
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
 		private List<Rock.Core.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
-		{
+		    
 			List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
 
 			// Do not track changes on the 'EntityChange' entity type. 
 			if ( !( entity is Rock.Core.EntityChange ) )
-			{
+			    
 				Guid changeSet = Guid.NewGuid();
 
 				// Look for properties that have the "TrackChanges" attribute
 				foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
-				{
+				    
 					object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
 					if ( customAttributes.Length > 0 )
-					{
+					    
 						var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
 						var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
 							Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
@@ -502,7 +502,7 @@ namespace Rock.Data
 						string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
 
 						if ( currentValueStr != originalValueStr )
-						{
+						    
 							if ( entityChanges == null )
 								entityChanges = new List<Core.EntityChange>();
 
@@ -529,7 +529,7 @@ namespace Rock.Data
 		/// Dispose object
 		/// </summary>
 		public void Dispose()
-		{
+		    
 			Dispose( true );
 			GC.SuppressFinalize( this );
 		}
@@ -539,13 +539,13 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="disposing"></param>
 		protected virtual void Dispose( bool disposing )
-		{
+		    
 			if ( !IsDisposed )
-			{
+			    
 				if ( disposing )
-				{
+				    
 					if ( _context != null )
-                    {
+                        
 						_context.Dispose();
                     }
 				}

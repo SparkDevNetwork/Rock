@@ -14,12 +14,12 @@ using System.Reflection;
 using Rock.Extension;
 
 namespace Rock.Address
-{
+    
     /// <summary>
     /// Singleton class that uses MEF to load and cache all of the GeocodeComponent classes
     /// </summary>
     public class GeocodeContainer : Container<GeocodeComponent, IComponentData>
-    {
+        
         #region Singleton Support
 
         private static GeocodeContainer instance;
@@ -28,9 +28,9 @@ namespace Rock.Address
         /// Gets the instance.
         /// </summary>
         public static GeocodeContainer Instance
-        {
+            
             get
-            {
+                
                 if ( instance == null )
                     instance = new GeocodeContainer();
                 return instance;
@@ -38,7 +38,7 @@ namespace Rock.Address
         }
 
         private GeocodeContainer()
-        {
+            
             Refresh();
         }
 
@@ -49,7 +49,7 @@ namespace Rock.Address
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( GeocodeComponent ) )]
-        protected override IEnumerable<Lazy<GeocodeComponent, IComponentData>> MEFComponents { get; set; }
+        protected override IEnumerable<Lazy<GeocodeComponent, IComponentData>> MEFComponents      get; set; }
 #pragma warning restore
 
         #endregion

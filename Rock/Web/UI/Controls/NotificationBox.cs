@@ -10,14 +10,14 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// Displays a standard warning or error message box
     /// </summary>
     [DefaultProperty( "Text" )]
-    [ToolboxData( "<{0}:NotificationBox runat=server></{0}:NotificationBox>" )]
+    [ToolboxData( "<    0}:NotificationBox runat=server></    0}:NotificationBox>" )]
     public class NotificationBox : Literal
-    {
+        
         private string _Title;
         /// <summary>
         /// Gets or sets the title (title is inline with the message text but is bold).
@@ -26,9 +26,9 @@ namespace Rock.Web.UI.Controls
         /// The title.
         /// </value>
         public string Title
-        {
-            get { return _Title; }
-            set { _Title = value; }
+            
+            get      return _Title; }
+            set      _Title = value; }
         }
 
         private string _Heading;
@@ -39,9 +39,9 @@ namespace Rock.Web.UI.Controls
         /// The heading.
         /// </value>
         public string Heading
-        {
-            get { return _Heading; }
-            set { _Heading = value; }
+            
+            get      return _Heading; }
+            set      _Heading = value; }
         }
 
         private bool _Padded;
@@ -52,9 +52,9 @@ namespace Rock.Web.UI.Controls
         /// Enable extra padding.
         /// </value>
         public bool IsPadded
-        {
-            get { return _Padded; }
-            set { _Padded = value; }
+            
+            get      return _Padded; }
+            set      _Padded = value; }
         }
 
         private NotificationBoxType _NotificationBoxType;
@@ -65,9 +65,9 @@ namespace Rock.Web.UI.Controls
         /// The type of the notification box.
         /// </value>
         public NotificationBoxType NotificationBoxType
-        {
-            get { return _NotificationBoxType; }
-            set { _NotificationBoxType = value; }
+            
+            get      return _NotificationBoxType; }
+            set      _NotificationBoxType = value; }
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> object that receives the server control content.</param>
         protected override void Render( HtmlTextWriter writer )
-        {
+            
             string paddingCss = "";
             if ( _Padded )
                 paddingCss = " alert-block";
@@ -98,7 +98,7 @@ namespace Rock.Web.UI.Controls
     /// The type of notification box to display
     /// </summary>
     public enum NotificationBoxType
-    {
+        
 
         /// <summary>
         /// Display an information box

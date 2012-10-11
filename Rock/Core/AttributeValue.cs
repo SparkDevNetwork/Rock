@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Attribute Value POCO Entity.
     /// </summary>
     [Table( "coreAttributeValue" )]
     public partial class AttributeValue : Entity<AttributeValue>
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Attribute Id.
@@ -38,7 +38,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int AttributeId { get; set; }
+		public int AttributeId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Entity Id.
@@ -47,7 +47,7 @@ namespace Rock.Core
 		/// Entity Id.
 		/// </value>
 		[DataMember]
-		public int? EntityId { get; set; }
+		public int? EntityId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Order.
@@ -56,7 +56,7 @@ namespace Rock.Core
 		/// Order.
 		/// </value>
 		[DataMember]
-		public int? Order { get; set; }
+		public int? Order      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Value.
@@ -65,13 +65,13 @@ namespace Rock.Core
 		/// Value.
 		/// </value>
 		[DataMember]
-		public string Value { get; set; }
+		public string Value      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.AttributeValue"; } }
+		public override string EntityTypeName      get      return "Core.AttributeValue"; } }
         
         /// <summary>
         /// Gets or sets the Attribute.
@@ -79,7 +79,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Attribute"/> object.
         /// </value>
-        public virtual Attribute Attribute { get; set; }
+        public virtual Attribute Attribute      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -87,7 +87,7 @@ namespace Rock.Core
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static AttributeValue Read( int id )
-        {
+            
             return Read<AttributeValue>( id );
         }
 
@@ -98,7 +98,7 @@ namespace Rock.Core
         /// A <see cref="System.String" /> that represents this instance.
         /// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Value;
 		}
     }
@@ -107,12 +107,12 @@ namespace Rock.Core
     /// Attribute Value Configuration class.
     /// </summary>
     public partial class AttributeValueConfiguration : EntityTypeConfiguration<AttributeValue>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueConfiguration"/> class.
         /// </summary>
         public AttributeValueConfiguration()
-        {
+            
             this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
         }
     }

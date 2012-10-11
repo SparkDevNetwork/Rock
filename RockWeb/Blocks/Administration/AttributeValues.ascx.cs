@@ -14,7 +14,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     [BlockProperty( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [BlockProperty( 3, "Entity Id", "Entity", "The entity id that values apply to", false, "" )]
     public partial class AttributeValues : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
 
         protected string _entity = string.Empty;
@@ -38,11 +38,11 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
 
             try
-            {
+                
                 _entity = AttributeValue( "Entity" );
                 if ( string.IsNullOrWhiteSpace( _entity ) )
                     _entity = PageParameter( "Entity" );
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( entityIdString ) )
                     entityIdString = PageParameter( "EntityId" );
                 if ( !string.IsNullOrWhiteSpace( entityIdString ) )
-                {
+                    
                     int entityIdint = 0;
                     if (Int32.TryParse(entityIdString, out entityIdint))
                         _entityId = entityIdint;
@@ -70,35 +70,35 @@ namespace RockWeb.Blocks.Administration
                 BindFilter();
 
                 if ( _canConfigure )
-                {
-                    rGrid.DataKeyNames = new string[] { "id" };
+                    
+                    rGrid.DataKeyNames = new string[]      "id" };
                     rGrid.ShowActionRow = false;
 
                     rGrid.GridRebind += rGrid_GridRebind;
                     rGrid.RowDataBound += rGrid_RowDataBound;
                     modalDetails.SaveClick += modalDetails_SaveClick;
 
-                    modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfId.ClientID );
+                    modalDetails.OnCancelScript = string.Format( "$('#    0}').val('');", hfId.ClientID );
 
                     string editAttributeId = Request.Form[hfId.UniqueID];
                     if ( Page.IsPostBack && editAttributeId != null && editAttributeId.Trim() != string.Empty )
                         ShowEdit( Int32.Parse( editAttributeId ), false );
                 }
                 else
-                {
+                    
                     DisplayError( "You are not authorized to configure this page" );
                 }
 
             }
             catch ( SystemException ex )
-            {
+                
                 DisplayError( ex.Message );
             }
 
         }
 
         protected override void OnLoad( EventArgs e )
-        {
+            
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
 
@@ -106,34 +106,34 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
-        {
+            
             BindGrid();
         }
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"], true );
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrid();
         }
 
         void modalDetails_SaveClick( object sender, EventArgs e )
-        {
+            
             int attributeId = 0;
             if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out attributeId ) )
                 attributeId = 0;
 
             if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
-            {
+                
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
                 AttributeValueService attributeValueService = new AttributeValueService();
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                 if ( attributeValue == null )
-                {
+                    
                     attributeValue = new Rock.Core.AttributeValue();
                     attributeValue.AttributeId = attributeId;
                     attributeValue.EntityId = _entityId;
@@ -157,13 +157,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         void rGrid_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
+            
             if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
+                
                 Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
 
                 if ( lValue != null )
-                {
+                    
                     int attributeId = ( int )rGrid.DataKeys[e.Row.RowIndex].Value;
 
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         private void BindFilter()
-        {
+            
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( "[All]" );
 
@@ -201,9 +201,9 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void BindGrid()
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 AttributeService attributeService = new AttributeService();
 
                 var queryable = attributeService.
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Administration
                     OrderBy( a => a.Category ).
                     ThenBy( a => a.Name ).
                     Select( a => new
-                    {
+                        
                         a.Id,
                         a.Category,
                         a.Name,
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( int attributeId, bool setValues )
-        {
+            
             var attribute = Rock.Web.Cache.AttributeCache.Read(attributeId);
 
             hfId.Value = attribute.Id.ToString();
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-        {
+            
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

@@ -7,12 +7,12 @@
 using Rock.Extension;
 
 namespace Rock.Address
-{
+    
     /// <summary>
     /// The base class for all address standardization components
     /// </summary>
     public abstract class StandardizeComponent : Component
-    {
+        
         /// <summary>
         /// Abstract method for standardizing the specified address.  Derived classes should implement
         /// this method to standardize the address.

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Financial
-{
+    
     /// <summary>
     /// PersonAccountLookup Service class
     /// </summary>
     public partial class PersonAccountLookupService : Service<PersonAccountLookup, PersonAccountLookupDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
         /// </summary>
         public PersonAccountLookupService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAccountLookupService"/> class
         /// </summary>
         public PersonAccountLookupService(IRepository<PersonAccountLookup> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override PersonAccountLookup CreateNew()
-        {
+            
             return new PersonAccountLookup();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PersonAccountLookupDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PersonAccountLookupDto> QueryableDto( IQueryable<PersonAccountLookup> items )
-        {
+            
             return items.Select( m => new PersonAccountLookupDto()
-                {
+                    
                     PersonId = m.PersonId,
                     Account = m.Account,
                     Id = m.Id,

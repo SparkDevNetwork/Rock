@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Person Trail POCO Service class
     /// </summary>
     public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
-    {
+        
         /// <summary>
         /// Gets Person Trails by Current Id
         /// </summary>
         /// <param name="currentId">Current Id.</param>
         /// <returns>An enumerable list of PersonMerged objects.</returns>
         public IEnumerable<PersonMerged> GetByCurrentId( int currentId )
-        {
+            
             return Repository.Find( t => t.CurrentId == currentId );
         }
 
@@ -32,10 +32,10 @@ namespace Rock.Crm
         /// <param name="publicKey">The public key.</param>
         /// <returns></returns>
         public string Current( string publicKey )
-        {
+            
             PersonMerged personMerged = GetByEncryptedKey( publicKey );
             while ( personMerged != null )
-            {
+                
                 publicKey = personMerged.CurrentPublicKey;
                 personMerged = GetByEncryptedKey( publicKey );
             }
@@ -48,10 +48,10 @@ namespace Rock.Crm
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public int Current( int id )
-        {
+            
             PersonMerged personMerged = Get( id );
             while ( personMerged != null )
-            {
+                
                 id = personMerged.CurrentId;
                 personMerged = Get( id );
             }

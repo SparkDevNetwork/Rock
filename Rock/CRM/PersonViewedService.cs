@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// PersonViewed Service class
     /// </summary>
     public partial class PersonViewedService : Service<PersonViewed, PersonViewedDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedService"/> class
         /// </summary>
         public PersonViewedService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedService"/> class
         /// </summary>
         public PersonViewedService(IRepository<PersonViewed> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override PersonViewed CreateNew()
-        {
+            
             return new PersonViewed();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PersonViewedDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PersonViewedDto> QueryableDto( IQueryable<PersonViewed> items )
-        {
+            
             return items.Select( m => new PersonViewedDto()
-                {
+                    
                     ViewerPersonId = m.ViewerPersonId,
                     TargetPersonId = m.TargetPersonId,
                     ViewDateTime = m.ViewDateTime,

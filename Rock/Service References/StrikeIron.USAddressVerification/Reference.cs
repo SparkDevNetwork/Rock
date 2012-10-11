@@ -9,13 +9,13 @@
 //------------------------------------------------------------------------------
 
 namespace Rock.StrikeIron.USAddressVerification
-{
+    
 
 #pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.strikeiron.com", ConfigurationName="StrikeIron.USAddressVerification.USAddressVerificationSoap")]
-    public interface USAddressVerificationSoap {
+    public interface USAddressVerificationSoap     
         
         // CODEGEN: Generating message contract since message VerifyAddressUSARequest has headers
         [System.ServiceModel.OperationContractAttribute(Action="http://www.strikeiron.com/VerifyAddressUSA", ReplyAction="*")]
@@ -79,7 +79,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ws.strikeiron.com")]
-    public partial class LicenseInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class LicenseInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private UnregisteredUser unregisteredUserField;
         
@@ -87,11 +87,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public UnregisteredUser UnregisteredUser {
-            get {
+        public UnregisteredUser UnregisteredUser     
+            get     
                 return this.unregisteredUserField;
             }
-            set {
+            set     
                 this.unregisteredUserField = value;
                 this.RaisePropertyChanged("UnregisteredUser");
             }
@@ -99,11 +99,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public RegisteredUser RegisteredUser {
-            get {
+        public RegisteredUser RegisteredUser     
+            get     
                 return this.registeredUserField;
             }
-            set {
+            set     
                 this.registeredUserField = value;
                 this.RaisePropertyChanged("RegisteredUser");
             }
@@ -111,9 +111,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -125,17 +125,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ws.strikeiron.com")]
-    public partial class UnregisteredUser : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class UnregisteredUser : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string emailAddressField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string EmailAddress {
-            get {
+        public string EmailAddress     
+            get     
                 return this.emailAddressField;
             }
-            set {
+            set     
                 this.emailAddressField = value;
                 this.RaisePropertyChanged("EmailAddress");
             }
@@ -143,9 +143,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -157,7 +157,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class ServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string infoKeyField;
         
@@ -165,11 +165,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string InfoKey {
-            get {
+        public string InfoKey     
+            get     
                 return this.infoKeyField;
             }
-            set {
+            set     
                 this.infoKeyField = value;
                 this.RaisePropertyChanged("InfoKey");
             }
@@ -177,11 +177,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string InfoValue {
-            get {
+        public string InfoValue     
+            get     
                 return this.infoValueField;
             }
-            set {
+            set     
                 this.infoValueField = value;
                 this.RaisePropertyChanged("InfoValue");
             }
@@ -189,9 +189,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -203,17 +203,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsResultArrayOfServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsResultArrayOfServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private ServiceInfoRecord[] resultsField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
-        public ServiceInfoRecord[] Results {
-            get {
+        public ServiceInfoRecord[] Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -221,9 +221,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -235,7 +235,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsOutputOfSIWsResultArrayOfServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsOutputOfSIWsResultArrayOfServiceInfoRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus serviceStatusField;
         
@@ -243,11 +243,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ServiceStatus {
-            get {
+        public SIWsStatus ServiceStatus     
+            get     
                 return this.serviceStatusField;
             }
-            set {
+            set     
                 this.serviceStatusField = value;
                 this.RaisePropertyChanged("ServiceStatus");
             }
@@ -255,11 +255,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public SIWsResultArrayOfServiceInfoRecord ServiceResult {
-            get {
+        public SIWsResultArrayOfServiceInfoRecord ServiceResult     
+            get     
                 return this.serviceResultField;
             }
-            set {
+            set     
                 this.serviceResultField = value;
                 this.RaisePropertyChanged("ServiceResult");
             }
@@ -267,9 +267,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -281,7 +281,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsStatus : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsStatus : object, System.ComponentModel.INotifyPropertyChanged     
         
         private int statusNbrField;
         
@@ -289,11 +289,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public int StatusNbr {
-            get {
+        public int StatusNbr     
+            get     
                 return this.statusNbrField;
             }
-            set {
+            set     
                 this.statusNbrField = value;
                 this.RaisePropertyChanged("StatusNbr");
             }
@@ -301,11 +301,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string StatusDescription {
-            get {
+        public string StatusDescription     
+            get     
                 return this.statusDescriptionField;
             }
-            set {
+            set     
                 this.statusDescriptionField = value;
                 this.RaisePropertyChanged("StatusDescription");
             }
@@ -313,9 +313,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -327,17 +327,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsResultArrayOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsResultArrayOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private MethodStatusRecord[] resultsField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
-        public MethodStatusRecord[] Results {
-            get {
+        public MethodStatusRecord[] Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -345,9 +345,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -359,17 +359,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class MethodStatusRecord : SIWsResultArrayOfSIWsStatus {
+    public partial class MethodStatusRecord : SIWsResultArrayOfSIWsStatus     
         
         private string methodNameField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string MethodName {
-            get {
+        public string MethodName     
+            get     
                 return this.methodNameField;
             }
-            set {
+            set     
                 this.methodNameField = value;
                 this.RaisePropertyChanged("MethodName");
             }
@@ -383,17 +383,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsResultArrayOfSIWsStatus : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsResultArrayOfSIWsStatus : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus[] resultsField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
-        public SIWsStatus[] Results {
-            get {
+        public SIWsStatus[] Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -401,9 +401,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -415,7 +415,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsOutputOfSIWsResultArrayOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsOutputOfSIWsResultArrayOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus serviceStatusField;
         
@@ -423,11 +423,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ServiceStatus {
-            get {
+        public SIWsStatus ServiceStatus     
+            get     
                 return this.serviceStatusField;
             }
-            set {
+            set     
                 this.serviceStatusField = value;
                 this.RaisePropertyChanged("ServiceStatus");
             }
@@ -435,11 +435,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public SIWsResultArrayOfMethodStatusRecord ServiceResult {
-            get {
+        public SIWsResultArrayOfMethodStatusRecord ServiceResult     
+            get     
                 return this.serviceResultField;
             }
-            set {
+            set     
                 this.serviceResultField = value;
                 this.RaisePropertyChanged("ServiceResult");
             }
@@ -447,9 +447,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -461,7 +461,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsOutputOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsOutputOfMethodStatusRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus serviceStatusField;
         
@@ -469,11 +469,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ServiceStatus {
-            get {
+        public SIWsStatus ServiceStatus     
+            get     
                 return this.serviceStatusField;
             }
-            set {
+            set     
                 this.serviceStatusField = value;
                 this.RaisePropertyChanged("ServiceStatus");
             }
@@ -481,11 +481,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public MethodStatusRecord ServiceResult {
-            get {
+        public MethodStatusRecord ServiceResult     
+            get     
                 return this.serviceResultField;
             }
-            set {
+            set     
                 this.serviceResultField = value;
                 this.RaisePropertyChanged("ServiceResult");
             }
@@ -493,9 +493,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -508,17 +508,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public abstract partial class SIWsResultWithStatus : object, System.ComponentModel.INotifyPropertyChanged {
+    public abstract partial class SIWsResultWithStatus : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus itemStatusField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ItemStatus {
-            get {
+        public SIWsStatus ItemStatus     
+            get     
                 return this.itemStatusField;
             }
-            set {
+            set     
                 this.itemStatusField = value;
                 this.RaisePropertyChanged("ItemStatus");
             }
@@ -526,9 +526,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -540,17 +540,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class USAddressWithStatus : SIWsResultWithStatus {
+    public partial class USAddressWithStatus : SIWsResultWithStatus     
         
         private USAddress addressField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public USAddress Address {
-            get {
+        public USAddress Address     
+            get     
                 return this.addressField;
             }
-            set {
+            set     
                 this.addressField = value;
                 this.RaisePropertyChanged("Address");
             }
@@ -563,7 +563,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class USAddress : Address {
+    public partial class USAddress : Address     
         
         private string stateField;
         
@@ -609,11 +609,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string State {
-            get {
+        public string State     
+            get     
                 return this.stateField;
             }
-            set {
+            set     
                 this.stateField = value;
                 this.RaisePropertyChanged("State");
             }
@@ -621,11 +621,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Urbanization {
-            get {
+        public string Urbanization     
+            get     
                 return this.urbanizationField;
             }
-            set {
+            set     
                 this.urbanizationField = value;
                 this.RaisePropertyChanged("Urbanization");
             }
@@ -633,11 +633,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string ZIPPlus4 {
-            get {
+        public string ZIPPlus4     
+            get     
                 return this.zIPPlus4Field;
             }
-            set {
+            set     
                 this.zIPPlus4Field = value;
                 this.RaisePropertyChanged("ZIPPlus4");
             }
@@ -645,11 +645,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string ZIPCode {
-            get {
+        public string ZIPCode     
+            get     
                 return this.zIPCodeField;
             }
-            set {
+            set     
                 this.zIPCodeField = value;
                 this.RaisePropertyChanged("ZIPCode");
             }
@@ -657,11 +657,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string ZIPAddOn {
-            get {
+        public string ZIPAddOn     
+            get     
                 return this.zIPAddOnField;
             }
-            set {
+            set     
                 this.zIPAddOnField = value;
                 this.RaisePropertyChanged("ZIPAddOn");
             }
@@ -669,11 +669,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string CarrierRoute {
-            get {
+        public string CarrierRoute     
+            get     
                 return this.carrierRouteField;
             }
-            set {
+            set     
                 this.carrierRouteField = value;
                 this.RaisePropertyChanged("CarrierRoute");
             }
@@ -681,11 +681,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string PMB {
-            get {
+        public string PMB     
+            get     
                 return this.pMBField;
             }
-            set {
+            set     
                 this.pMBField = value;
                 this.RaisePropertyChanged("PMB");
             }
@@ -693,11 +693,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string PMBDesignator {
-            get {
+        public string PMBDesignator     
+            get     
                 return this.pMBDesignatorField;
             }
-            set {
+            set     
                 this.pMBDesignatorField = value;
                 this.RaisePropertyChanged("PMBDesignator");
             }
@@ -705,11 +705,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string DeliveryPoint {
-            get {
+        public string DeliveryPoint     
+            get     
                 return this.deliveryPointField;
             }
-            set {
+            set     
                 this.deliveryPointField = value;
                 this.RaisePropertyChanged("DeliveryPoint");
             }
@@ -717,11 +717,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string DPCheckDigit {
-            get {
+        public string DPCheckDigit     
+            get     
                 return this.dPCheckDigitField;
             }
-            set {
+            set     
                 this.dPCheckDigitField = value;
                 this.RaisePropertyChanged("DPCheckDigit");
             }
@@ -729,11 +729,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string LACS {
-            get {
+        public string LACS     
+            get     
                 return this.lACSField;
             }
-            set {
+            set     
                 this.lACSField = value;
                 this.RaisePropertyChanged("LACS");
             }
@@ -741,11 +741,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=11)]
-        public string CMRA {
-            get {
+        public string CMRA     
+            get     
                 return this.cMRAField;
             }
-            set {
+            set     
                 this.cMRAField = value;
                 this.RaisePropertyChanged("CMRA");
             }
@@ -753,11 +753,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=12)]
-        public string DPV {
-            get {
+        public string DPV     
+            get     
                 return this.dPVField;
             }
-            set {
+            set     
                 this.dPVField = value;
                 this.RaisePropertyChanged("DPV");
             }
@@ -765,11 +765,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=13)]
-        public string DPVFootnote {
-            get {
+        public string DPVFootnote     
+            get     
                 return this.dPVFootnoteField;
             }
-            set {
+            set     
                 this.dPVFootnoteField = value;
                 this.RaisePropertyChanged("DPVFootnote");
             }
@@ -777,11 +777,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=14)]
-        public string RDI {
-            get {
+        public string RDI     
+            get     
                 return this.rDIField;
             }
-            set {
+            set     
                 this.rDIField = value;
                 this.RaisePropertyChanged("RDI");
             }
@@ -789,11 +789,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=15)]
-        public string RecordType {
-            get {
+        public string RecordType     
+            get     
                 return this.recordTypeField;
             }
-            set {
+            set     
                 this.recordTypeField = value;
                 this.RaisePropertyChanged("RecordType");
             }
@@ -801,11 +801,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=16)]
-        public string CongressDistrict {
-            get {
+        public string CongressDistrict     
+            get     
                 return this.congressDistrictField;
             }
-            set {
+            set     
                 this.congressDistrictField = value;
                 this.RaisePropertyChanged("CongressDistrict");
             }
@@ -813,11 +813,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=17)]
-        public string County {
-            get {
+        public string County     
+            get     
                 return this.countyField;
             }
-            set {
+            set     
                 this.countyField = value;
                 this.RaisePropertyChanged("County");
             }
@@ -825,11 +825,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=18)]
-        public string CountyNumber {
-            get {
+        public string CountyNumber     
+            get     
                 return this.countyNumberField;
             }
-            set {
+            set     
                 this.countyNumberField = value;
                 this.RaisePropertyChanged("CountyNumber");
             }
@@ -837,11 +837,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=19)]
-        public string StateNumber {
-            get {
+        public string StateNumber     
+            get     
                 return this.stateNumberField;
             }
-            set {
+            set     
                 this.stateNumberField = value;
                 this.RaisePropertyChanged("StateNumber");
             }
@@ -849,11 +849,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=20)]
-        public USGeocode GeoCode {
-            get {
+        public USGeocode GeoCode     
+            get     
                 return this.geoCodeField;
             }
-            set {
+            set     
                 this.geoCodeField = value;
                 this.RaisePropertyChanged("GeoCode");
             }
@@ -866,7 +866,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class USGeocode : Geocode {
+    public partial class USGeocode : Geocode     
         
         private string censusTractField;
         
@@ -880,11 +880,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string CensusTract {
-            get {
+        public string CensusTract     
+            get     
                 return this.censusTractField;
             }
-            set {
+            set     
                 this.censusTractField = value;
                 this.RaisePropertyChanged("CensusTract");
             }
@@ -892,11 +892,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string StateNumber {
-            get {
+        public string StateNumber     
+            get     
                 return this.stateNumberField;
             }
-            set {
+            set     
                 this.stateNumberField = value;
                 this.RaisePropertyChanged("StateNumber");
             }
@@ -904,11 +904,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string CountyNumber {
-            get {
+        public string CountyNumber     
+            get     
                 return this.countyNumberField;
             }
-            set {
+            set     
                 this.countyNumberField = value;
                 this.RaisePropertyChanged("CountyNumber");
             }
@@ -916,11 +916,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string BlockNumber {
-            get {
+        public string BlockNumber     
+            get     
                 return this.blockNumberField;
             }
-            set {
+            set     
                 this.blockNumberField = value;
                 this.RaisePropertyChanged("BlockNumber");
             }
@@ -928,11 +928,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string BlockGroup {
-            get {
+        public string BlockGroup     
+            get     
                 return this.blockGroupField;
             }
-            set {
+            set     
                 this.blockGroupField = value;
                 this.RaisePropertyChanged("BlockGroup");
             }
@@ -946,7 +946,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class Geocode : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class Geocode : object, System.ComponentModel.INotifyPropertyChanged     
         
         private double latitudeField;
         
@@ -954,11 +954,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public double Latitude {
-            get {
+        public double Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -966,11 +966,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public double Longitude {
-            get {
+        public double Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -978,9 +978,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -993,7 +993,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public abstract partial class Address : object, System.ComponentModel.INotifyPropertyChanged {
+    public abstract partial class Address : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string addressLine1Field;
         
@@ -1023,11 +1023,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string AddressLine1 {
-            get {
+        public string AddressLine1     
+            get     
                 return this.addressLine1Field;
             }
-            set {
+            set     
                 this.addressLine1Field = value;
                 this.RaisePropertyChanged("AddressLine1");
             }
@@ -1035,11 +1035,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string AddressLine2 {
-            get {
+        public string AddressLine2     
+            get     
                 return this.addressLine2Field;
             }
-            set {
+            set     
                 this.addressLine2Field = value;
                 this.RaisePropertyChanged("AddressLine2");
             }
@@ -1047,11 +1047,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string StreetNumber {
-            get {
+        public string StreetNumber     
+            get     
                 return this.streetNumberField;
             }
-            set {
+            set     
                 this.streetNumberField = value;
                 this.RaisePropertyChanged("StreetNumber");
             }
@@ -1059,11 +1059,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Firm {
-            get {
+        public string Firm     
+            get     
                 return this.firmField;
             }
-            set {
+            set     
                 this.firmField = value;
                 this.RaisePropertyChanged("Firm");
             }
@@ -1071,11 +1071,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string PreDirection {
-            get {
+        public string PreDirection     
+            get     
                 return this.preDirectionField;
             }
-            set {
+            set     
                 this.preDirectionField = value;
                 this.RaisePropertyChanged("PreDirection");
             }
@@ -1083,11 +1083,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string StreetName {
-            get {
+        public string StreetName     
+            get     
                 return this.streetNameField;
             }
-            set {
+            set     
                 this.streetNameField = value;
                 this.RaisePropertyChanged("StreetName");
             }
@@ -1095,11 +1095,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string StreetType {
-            get {
+        public string StreetType     
+            get     
                 return this.streetTypeField;
             }
-            set {
+            set     
                 this.streetTypeField = value;
                 this.RaisePropertyChanged("StreetType");
             }
@@ -1107,11 +1107,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string PostDirection {
-            get {
+        public string PostDirection     
+            get     
                 return this.postDirectionField;
             }
-            set {
+            set     
                 this.postDirectionField = value;
                 this.RaisePropertyChanged("PostDirection");
             }
@@ -1119,11 +1119,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string Extension {
-            get {
+        public string Extension     
+            get     
                 return this.extensionField;
             }
-            set {
+            set     
                 this.extensionField = value;
                 this.RaisePropertyChanged("Extension");
             }
@@ -1131,11 +1131,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string ExtensionNumber {
-            get {
+        public string ExtensionNumber     
+            get     
                 return this.extensionNumberField;
             }
-            set {
+            set     
                 this.extensionNumberField = value;
                 this.RaisePropertyChanged("ExtensionNumber");
             }
@@ -1143,11 +1143,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string Village {
-            get {
+        public string Village     
+            get     
                 return this.villageField;
             }
-            set {
+            set     
                 this.villageField = value;
                 this.RaisePropertyChanged("Village");
             }
@@ -1155,11 +1155,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=11)]
-        public string City {
-            get {
+        public string City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -1167,11 +1167,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=12)]
-        public string AddressStatus {
-            get {
+        public string AddressStatus     
+            get     
                 return this.addressStatusField;
             }
-            set {
+            set     
                 this.addressStatusField = value;
                 this.RaisePropertyChanged("AddressStatus");
             }
@@ -1179,9 +1179,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1193,17 +1193,17 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsResultArrayOfUSAddressWithStatus : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsResultArrayOfUSAddressWithStatus : object, System.ComponentModel.INotifyPropertyChanged     
         
         private USAddressWithStatus[] resultsField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
-        public USAddressWithStatus[] Results {
-            get {
+        public USAddressWithStatus[] Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -1211,9 +1211,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1225,7 +1225,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus serviceStatusField;
         
@@ -1233,11 +1233,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ServiceStatus {
-            get {
+        public SIWsStatus ServiceStatus     
+            get     
                 return this.serviceStatusField;
             }
-            set {
+            set     
                 this.serviceStatusField = value;
                 this.RaisePropertyChanged("ServiceStatus");
             }
@@ -1245,11 +1245,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public SIWsResultArrayOfUSAddressWithStatus ServiceResult {
-            get {
+        public SIWsResultArrayOfUSAddressWithStatus ServiceResult     
+            get     
                 return this.serviceResultField;
             }
-            set {
+            set     
                 this.serviceResultField = value;
                 this.RaisePropertyChanged("ServiceResult");
             }
@@ -1257,9 +1257,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1271,7 +1271,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class USBatchAddress : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class USBatchAddress : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string addressLine1Field;
         
@@ -1285,11 +1285,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string AddressLine1 {
-            get {
+        public string AddressLine1     
+            get     
                 return this.addressLine1Field;
             }
-            set {
+            set     
                 this.addressLine1Field = value;
                 this.RaisePropertyChanged("AddressLine1");
             }
@@ -1297,11 +1297,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string AddressLine2 {
-            get {
+        public string AddressLine2     
+            get     
                 return this.addressLine2Field;
             }
-            set {
+            set     
                 this.addressLine2Field = value;
                 this.RaisePropertyChanged("AddressLine2");
             }
@@ -1309,11 +1309,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string CityStateZIPCode {
-            get {
+        public string CityStateZIPCode     
+            get     
                 return this.cityStateZIPCodeField;
             }
-            set {
+            set     
                 this.cityStateZIPCodeField = value;
                 this.RaisePropertyChanged("CityStateZIPCode");
             }
@@ -1321,11 +1321,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Firm {
-            get {
+        public string Firm     
+            get     
                 return this.firmField;
             }
-            set {
+            set     
                 this.firmField = value;
                 this.RaisePropertyChanged("Firm");
             }
@@ -1333,11 +1333,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Urbanization {
-            get {
+        public string Urbanization     
+            get     
                 return this.urbanizationField;
             }
-            set {
+            set     
                 this.urbanizationField = value;
                 this.RaisePropertyChanged("Urbanization");
             }
@@ -1345,9 +1345,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1359,7 +1359,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ws.strikeiron.com")]
-    public partial class SubscriptionInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SubscriptionInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private int licenseStatusCodeField;
         
@@ -1375,11 +1375,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public int LicenseStatusCode {
-            get {
+        public int LicenseStatusCode     
+            get     
                 return this.licenseStatusCodeField;
             }
-            set {
+            set     
                 this.licenseStatusCodeField = value;
                 this.RaisePropertyChanged("LicenseStatusCode");
             }
@@ -1387,11 +1387,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string LicenseStatus {
-            get {
+        public string LicenseStatus     
+            get     
                 return this.licenseStatusField;
             }
-            set {
+            set     
                 this.licenseStatusField = value;
                 this.RaisePropertyChanged("LicenseStatus");
             }
@@ -1399,11 +1399,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public int LicenseActionCode {
-            get {
+        public int LicenseActionCode     
+            get     
                 return this.licenseActionCodeField;
             }
-            set {
+            set     
                 this.licenseActionCodeField = value;
                 this.RaisePropertyChanged("LicenseActionCode");
             }
@@ -1411,11 +1411,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string LicenseAction {
-            get {
+        public string LicenseAction     
+            get     
                 return this.licenseActionField;
             }
-            set {
+            set     
                 this.licenseActionField = value;
                 this.RaisePropertyChanged("LicenseAction");
             }
@@ -1423,11 +1423,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public int RemainingHits {
-            get {
+        public int RemainingHits     
+            get     
                 return this.remainingHitsField;
             }
-            set {
+            set     
                 this.remainingHitsField = value;
                 this.RaisePropertyChanged("RemainingHits");
             }
@@ -1435,11 +1435,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public decimal Amount {
-            get {
+        public decimal Amount     
+            get     
                 return this.amountField;
             }
-            set {
+            set     
                 this.amountField = value;
                 this.RaisePropertyChanged("Amount");
             }
@@ -1447,9 +1447,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1461,7 +1461,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ws.strikeiron.com")]
-    public partial class RegisteredUser : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class RegisteredUser : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string userIDField;
         
@@ -1469,11 +1469,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string UserID {
-            get {
+        public string UserID     
+            get     
                 return this.userIDField;
             }
-            set {
+            set     
                 this.userIDField = value;
                 this.RaisePropertyChanged("UserID");
             }
@@ -1481,11 +1481,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Password {
-            get {
+        public string Password     
+            get     
                 return this.passwordField;
             }
-            set {
+            set     
                 this.passwordField = value;
                 this.RaisePropertyChanged("Password");
             }
@@ -1493,9 +1493,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1507,7 +1507,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public partial class SIWsOutputOfUSAddress : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class SIWsOutputOfUSAddress : object, System.ComponentModel.INotifyPropertyChanged     
         
         private SIWsStatus serviceStatusField;
         
@@ -1515,11 +1515,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public SIWsStatus ServiceStatus {
-            get {
+        public SIWsStatus ServiceStatus     
+            get     
                 return this.serviceStatusField;
             }
-            set {
+            set     
                 this.serviceStatusField = value;
                 this.RaisePropertyChanged("ServiceStatus");
             }
@@ -1527,11 +1527,11 @@ namespace Rock.StrikeIron.USAddressVerification
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public USAddress ServiceResult {
-            get {
+        public USAddress ServiceResult     
+            get     
                 return this.serviceResultField;
             }
-            set {
+            set     
                 this.serviceResultField = value;
                 this.RaisePropertyChanged("ServiceResult");
             }
@@ -1539,9 +1539,9 @@ namespace Rock.StrikeIron.USAddressVerification
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1551,7 +1551,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.17929")]
     [System.SerializableAttribute()]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.strikeiron.com")]
-    public enum CasingEnum {
+    public enum CasingEnum     
         
         /// <remarks/>
         UPPER,
@@ -1567,7 +1567,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="VerifyAddressUSA", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class VerifyAddressUSARequest {
+    public partial class VerifyAddressUSARequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
@@ -1591,10 +1591,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ComponentModel.DefaultValueAttribute(CasingEnum.UPPER)]
         public Rock.StrikeIron.USAddressVerification.CasingEnum Casing;
         
-        public VerifyAddressUSARequest() {
+        public VerifyAddressUSARequest()     
         }
         
-        public VerifyAddressUSARequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string AddressLine1, string AddressLine2, string CityStateZIPCode, string Firm, string Urbanization, Rock.StrikeIron.USAddressVerification.CasingEnum Casing) {
+        public VerifyAddressUSARequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string AddressLine1, string AddressLine2, string CityStateZIPCode, string Firm, string Urbanization, Rock.StrikeIron.USAddressVerification.CasingEnum Casing)     
             this.LicenseInfo = LicenseInfo;
             this.AddressLine1 = AddressLine1;
             this.AddressLine2 = AddressLine2;
@@ -1609,7 +1609,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="VerifyAddressUSAResponse", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class VerifyAddressUSAResponse {
+    public partial class VerifyAddressUSAResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
@@ -1617,10 +1617,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress VerifyAddressUSAResult;
         
-        public VerifyAddressUSAResponse() {
+        public VerifyAddressUSAResponse()     
         }
         
-        public VerifyAddressUSAResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress VerifyAddressUSAResult) {
+        public VerifyAddressUSAResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress VerifyAddressUSAResult)     
             this.SubscriptionInfo = SubscriptionInfo;
             this.VerifyAddressUSAResult = VerifyAddressUSAResult;
         }
@@ -1630,7 +1630,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="VerifyAddressUSABatch", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class VerifyAddressUSABatchRequest {
+    public partial class VerifyAddressUSABatchRequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
@@ -1642,10 +1642,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ComponentModel.DefaultValueAttribute(CasingEnum.UPPER)]
         public Rock.StrikeIron.USAddressVerification.CasingEnum Casing;
         
-        public VerifyAddressUSABatchRequest() {
+        public VerifyAddressUSABatchRequest()     
         }
         
-        public VerifyAddressUSABatchRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, Rock.StrikeIron.USAddressVerification.USBatchAddress[] Addresses, Rock.StrikeIron.USAddressVerification.CasingEnum Casing) {
+        public VerifyAddressUSABatchRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, Rock.StrikeIron.USAddressVerification.USBatchAddress[] Addresses, Rock.StrikeIron.USAddressVerification.CasingEnum Casing)     
             this.LicenseInfo = LicenseInfo;
             this.Addresses = Addresses;
             this.Casing = Casing;
@@ -1656,7 +1656,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="VerifyAddressUSABatchResponse", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class VerifyAddressUSABatchResponse {
+    public partial class VerifyAddressUSABatchResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
@@ -1664,10 +1664,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus VerifyAddressUSABatchResult;
         
-        public VerifyAddressUSABatchResponse() {
+        public VerifyAddressUSABatchResponse()     
         }
         
-        public VerifyAddressUSABatchResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus VerifyAddressUSABatchResult) {
+        public VerifyAddressUSABatchResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus VerifyAddressUSABatchResult)     
             this.SubscriptionInfo = SubscriptionInfo;
             this.VerifyAddressUSABatchResult = VerifyAddressUSABatchResult;
         }
@@ -1677,7 +1677,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetStatusCodesForMethod", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetStatusCodesForMethodRequest {
+    public partial class GetStatusCodesForMethodRequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
@@ -1685,10 +1685,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public string MethodName;
         
-        public GetStatusCodesForMethodRequest() {
+        public GetStatusCodesForMethodRequest()     
         }
         
-        public GetStatusCodesForMethodRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string MethodName) {
+        public GetStatusCodesForMethodRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string MethodName)     
             this.LicenseInfo = LicenseInfo;
             this.MethodName = MethodName;
         }
@@ -1698,7 +1698,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetStatusCodesForMethodResponse", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetStatusCodesForMethodResponse {
+    public partial class GetStatusCodesForMethodResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
@@ -1706,10 +1706,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord GetStatusCodesForMethodResult;
         
-        public GetStatusCodesForMethodResponse() {
+        public GetStatusCodesForMethodResponse()     
         }
         
-        public GetStatusCodesForMethodResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord GetStatusCodesForMethodResult) {
+        public GetStatusCodesForMethodResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord GetStatusCodesForMethodResult)     
             this.SubscriptionInfo = SubscriptionInfo;
             this.GetStatusCodesForMethodResult = GetStatusCodesForMethodResult;
         }
@@ -1719,15 +1719,15 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetStatusCodes", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetStatusCodesRequest {
+    public partial class GetStatusCodesRequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
         
-        public GetStatusCodesRequest() {
+        public GetStatusCodesRequest()     
         }
         
-        public GetStatusCodesRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo) {
+        public GetStatusCodesRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo)     
             this.LicenseInfo = LicenseInfo;
         }
     }
@@ -1736,7 +1736,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetStatusCodesResponse", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetStatusCodesResponse {
+    public partial class GetStatusCodesResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
@@ -1744,10 +1744,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord GetStatusCodesResult;
         
-        public GetStatusCodesResponse() {
+        public GetStatusCodesResponse()     
         }
         
-        public GetStatusCodesResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord GetStatusCodesResult) {
+        public GetStatusCodesResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord GetStatusCodesResult)     
             this.SubscriptionInfo = SubscriptionInfo;
             this.GetStatusCodesResult = GetStatusCodesResult;
         }
@@ -1757,15 +1757,15 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetServiceInfo", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetServiceInfoRequest {
+    public partial class GetServiceInfoRequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
         
-        public GetServiceInfoRequest() {
+        public GetServiceInfoRequest()     
         }
         
-        public GetServiceInfoRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo) {
+        public GetServiceInfoRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo)     
             this.LicenseInfo = LicenseInfo;
         }
     }
@@ -1774,7 +1774,7 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetServiceInfoResponse", WrapperNamespace="http://www.strikeiron.com", IsWrapped=true)]
-    public partial class GetServiceInfoResponse {
+    public partial class GetServiceInfoResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
@@ -1782,10 +1782,10 @@ namespace Rock.StrikeIron.USAddressVerification
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.strikeiron.com", Order=0)]
         public Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord GetServiceInfoResult;
         
-        public GetServiceInfoResponse() {
+        public GetServiceInfoResponse()     
         }
         
-        public GetServiceInfoResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord GetServiceInfoResult) {
+        public GetServiceInfoResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo, Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord GetServiceInfoResult)     
             this.SubscriptionInfo = SubscriptionInfo;
             this.GetServiceInfoResult = GetServiceInfoResult;
         }
@@ -1795,15 +1795,15 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetRemainingHits", WrapperNamespace="http://ws.strikeiron.com", IsWrapped=true)]
-    public partial class GetRemainingHitsRequest {
+    public partial class GetRemainingHitsRequest     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo;
         
-        public GetRemainingHitsRequest() {
+        public GetRemainingHitsRequest()     
         }
         
-        public GetRemainingHitsRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo) {
+        public GetRemainingHitsRequest(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo)     
             this.LicenseInfo = LicenseInfo;
         }
     }
@@ -1812,52 +1812,52 @@ namespace Rock.StrikeIron.USAddressVerification
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="GetRemainingHitsResponse", WrapperNamespace="http://ws.strikeiron.com", IsWrapped=true)]
-    public partial class GetRemainingHitsResponse {
+    public partial class GetRemainingHitsResponse     
         
         [System.ServiceModel.MessageHeaderAttribute(Namespace="http://ws.strikeiron.com")]
         public Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo;
         
-        public GetRemainingHitsResponse() {
+        public GetRemainingHitsResponse()     
         }
         
-        public GetRemainingHitsResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo) {
+        public GetRemainingHitsResponse(Rock.StrikeIron.USAddressVerification.SubscriptionInfo SubscriptionInfo)     
             this.SubscriptionInfo = SubscriptionInfo;
         }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface USAddressVerificationSoapChannel : Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap, System.ServiceModel.IClientChannel {
+    public interface USAddressVerificationSoapChannel : Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap, System.ServiceModel.IClientChannel     
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class USAddressVerificationSoapClient : System.ServiceModel.ClientBase<Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap>, Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap {
+    public partial class USAddressVerificationSoapClient : System.ServiceModel.ClientBase<Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap>, Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap     
         
-        public USAddressVerificationSoapClient() {
+        public USAddressVerificationSoapClient()     
         }
         
         public USAddressVerificationSoapClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+                base(endpointConfigurationName)     
         }
         
         public USAddressVerificationSoapClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public USAddressVerificationSoapClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public USAddressVerificationSoapClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+                base(binding, remoteAddress)     
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.VerifyAddressUSAResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.VerifyAddressUSA(Rock.StrikeIron.USAddressVerification.VerifyAddressUSARequest request) {
+        Rock.StrikeIron.USAddressVerification.VerifyAddressUSAResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.VerifyAddressUSA(Rock.StrikeIron.USAddressVerification.VerifyAddressUSARequest request)     
             return base.Channel.VerifyAddressUSA(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo VerifyAddressUSA(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string AddressLine1, string AddressLine2, string CityStateZIPCode, string Firm, string Urbanization, Rock.StrikeIron.USAddressVerification.CasingEnum Casing, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress VerifyAddressUSAResult) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo VerifyAddressUSA(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string AddressLine1, string AddressLine2, string CityStateZIPCode, string Firm, string Urbanization, Rock.StrikeIron.USAddressVerification.CasingEnum Casing, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfUSAddress VerifyAddressUSAResult)     
             Rock.StrikeIron.USAddressVerification.VerifyAddressUSARequest inValue = new Rock.StrikeIron.USAddressVerification.VerifyAddressUSARequest();
             inValue.LicenseInfo = LicenseInfo;
             inValue.AddressLine1 = AddressLine1;
@@ -1872,11 +1872,11 @@ namespace Rock.StrikeIron.USAddressVerification
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.VerifyAddressUSABatch(Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchRequest request) {
+        Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.VerifyAddressUSABatch(Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchRequest request)     
             return base.Channel.VerifyAddressUSABatch(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo VerifyAddressUSABatch(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, Rock.StrikeIron.USAddressVerification.USBatchAddress[] Addresses, Rock.StrikeIron.USAddressVerification.CasingEnum Casing, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus VerifyAddressUSABatchResult) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo VerifyAddressUSABatch(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, Rock.StrikeIron.USAddressVerification.USBatchAddress[] Addresses, Rock.StrikeIron.USAddressVerification.CasingEnum Casing, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfUSAddressWithStatus VerifyAddressUSABatchResult)     
             Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchRequest inValue = new Rock.StrikeIron.USAddressVerification.VerifyAddressUSABatchRequest();
             inValue.LicenseInfo = LicenseInfo;
             inValue.Addresses = Addresses;
@@ -1887,11 +1887,11 @@ namespace Rock.StrikeIron.USAddressVerification
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetStatusCodesForMethod(Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodRequest request) {
+        Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetStatusCodesForMethod(Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodRequest request)     
             return base.Channel.GetStatusCodesForMethod(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetStatusCodesForMethod(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string MethodName, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord GetStatusCodesForMethodResult) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetStatusCodesForMethod(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, string MethodName, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfMethodStatusRecord GetStatusCodesForMethodResult)     
             Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodRequest inValue = new Rock.StrikeIron.USAddressVerification.GetStatusCodesForMethodRequest();
             inValue.LicenseInfo = LicenseInfo;
             inValue.MethodName = MethodName;
@@ -1901,11 +1901,11 @@ namespace Rock.StrikeIron.USAddressVerification
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.GetStatusCodesResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetStatusCodes(Rock.StrikeIron.USAddressVerification.GetStatusCodesRequest request) {
+        Rock.StrikeIron.USAddressVerification.GetStatusCodesResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetStatusCodes(Rock.StrikeIron.USAddressVerification.GetStatusCodesRequest request)     
             return base.Channel.GetStatusCodes(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetStatusCodes(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord GetStatusCodesResult) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetStatusCodes(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfMethodStatusRecord GetStatusCodesResult)     
             Rock.StrikeIron.USAddressVerification.GetStatusCodesRequest inValue = new Rock.StrikeIron.USAddressVerification.GetStatusCodesRequest();
             inValue.LicenseInfo = LicenseInfo;
             Rock.StrikeIron.USAddressVerification.GetStatusCodesResponse retVal = ((Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap)(this)).GetStatusCodes(inValue);
@@ -1914,11 +1914,11 @@ namespace Rock.StrikeIron.USAddressVerification
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.GetServiceInfoResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetServiceInfo(Rock.StrikeIron.USAddressVerification.GetServiceInfoRequest request) {
+        Rock.StrikeIron.USAddressVerification.GetServiceInfoResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetServiceInfo(Rock.StrikeIron.USAddressVerification.GetServiceInfoRequest request)     
             return base.Channel.GetServiceInfo(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetServiceInfo(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord GetServiceInfoResult) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetServiceInfo(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo, out Rock.StrikeIron.USAddressVerification.SIWsOutputOfSIWsResultArrayOfServiceInfoRecord GetServiceInfoResult)     
             Rock.StrikeIron.USAddressVerification.GetServiceInfoRequest inValue = new Rock.StrikeIron.USAddressVerification.GetServiceInfoRequest();
             inValue.LicenseInfo = LicenseInfo;
             Rock.StrikeIron.USAddressVerification.GetServiceInfoResponse retVal = ((Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap)(this)).GetServiceInfo(inValue);
@@ -1927,11 +1927,11 @@ namespace Rock.StrikeIron.USAddressVerification
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.StrikeIron.USAddressVerification.GetRemainingHitsResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetRemainingHits(Rock.StrikeIron.USAddressVerification.GetRemainingHitsRequest request) {
+        Rock.StrikeIron.USAddressVerification.GetRemainingHitsResponse Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap.GetRemainingHits(Rock.StrikeIron.USAddressVerification.GetRemainingHitsRequest request)     
             return base.Channel.GetRemainingHits(request);
         }
         
-        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetRemainingHits(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo) {
+        public Rock.StrikeIron.USAddressVerification.SubscriptionInfo GetRemainingHits(Rock.StrikeIron.USAddressVerification.LicenseInfo LicenseInfo)     
             Rock.StrikeIron.USAddressVerification.GetRemainingHitsRequest inValue = new Rock.StrikeIron.USAddressVerification.GetRemainingHitsRequest();
             inValue.LicenseInfo = LicenseInfo;
             Rock.StrikeIron.USAddressVerification.GetRemainingHitsResponse retVal = ((Rock.StrikeIron.USAddressVerification.USAddressVerificationSoap)(this)).GetRemainingHits(inValue);

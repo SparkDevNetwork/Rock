@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for DefinedValue object
     /// </summary>
     public partial class DefinedValueDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int DefinedTypeId { get; set; }
-        public int Order { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int DefinedTypeId      get; set; }
+        public int Order      get; set; }
+        public string Name      get; set; }
+        public string Description      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public DefinedValueDto ()
-        {
+            
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="definedValue"></param>
         public DefinedValueDto ( DefinedValue definedValue )
-        {
+            
             CopyFromModel( definedValue );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is DefinedValue )
-            {
+                
                 var definedValue = (DefinedValue)model;
                 this.IsSystem = definedValue.IsSystem;
                 this.DefinedTypeId = definedValue.DefinedTypeId;
@@ -71,9 +71,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is DefinedValue )
-            {
+                
                 var definedValue = (DefinedValue)model;
                 definedValue.IsSystem = this.IsSystem;
                 definedValue.DefinedTypeId = this.DefinedTypeId;

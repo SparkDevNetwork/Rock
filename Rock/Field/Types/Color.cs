@@ -11,13 +11,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
     [Serializable]
     public class Color : FieldType
-    {
+        
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
@@ -26,7 +26,7 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             DropDownList ddl = new DropDownList();
 
             Type colors = typeof( System.Drawing.Color );
@@ -44,7 +44,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             if ( control != null && control is DropDownList )
                 return ( ( DropDownList )control ).SelectedValue;
             return null;
@@ -57,7 +57,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
+            
             if ( control != null && control is DropDownList )
                 ( ( DropDownList )control ).SelectedValue = value;
         }

@@ -7,12 +7,12 @@
 using Rock.Extension;
 
 namespace Rock.Address
-{
+    
     /// <summary>
     /// The base class for all address geocoding components
     /// </summary>
     public abstract class GeocodeComponent : Component
-    {
+        
         /// <summary>
         /// Abstract method for geocoding the specified address.  Derived classes should implement
         /// this method to geocode the address.

@@ -1,11 +1,11 @@
 namespace Rock.Migrations
-{
+    
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class AddDefinedValuesPage : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             // add the page Defined Values to the admin section of the website.
             Sql( @"
 -- cmsPage --
@@ -21,7 +21,7 @@ INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[O
         }
         
         public override void Down()
-        {
+            
             // Remove the Defined Values page and block instance
             Sql( @"
 -- cmsBlockInstance

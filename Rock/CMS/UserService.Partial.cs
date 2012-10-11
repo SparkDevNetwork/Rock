@@ -13,19 +13,19 @@ using Rock.Data;
 using Rock.Security;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// User POCO Service class
     /// </summary>
     public partial class UserService : Service<User, UserDto>
-    {
+        
         /// <summary>
         /// Gets Users by Api Key
         /// </summary>
         /// <param name="apiKey">Api Key.</param>
         /// <returns>An enumerable list of User objects.</returns>
         public IEnumerable<User> GetByApiKey( string apiKey )
-        {
+            
             return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
         
@@ -35,7 +35,7 @@ namespace Rock.Cms
         /// <param name="personId">Person Id.</param>
         /// <returns>An enumerable list of User objects.</returns>
         public IEnumerable<User> GetByPersonId( int? personId )
-        {
+            
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
         
@@ -45,7 +45,7 @@ namespace Rock.Cms
         /// <param name="userName">User Name.</param>
         /// <returns>User object.</returns>
         public User GetByUserName( string userName )
-        {
+            
             return Repository
                 .AsQueryable( "Person" )
                 .Where( u => u.UserName == userName )
@@ -72,7 +72,7 @@ namespace Rock.Cms
             string password,
             bool isConfirmed,
             int? currentPersonId )
-        {
+            
             User user = this.GetByUserName( username );
             if ( user != null )
                 throw new ArgumentOutOfRangeException( "username", "Username already exists" );
@@ -90,10 +90,10 @@ namespace Rock.Cms
                 user.PersonId = person.Id;
 
             if ( serviceType == AuthenticationServiceType.Internal )
-            {
+                
                 AuthenticationComponent authenticationComponent = GetComponent( serviceName );
                 if ( authenticationComponent == null )
-                    throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", serviceName), "serviceName" );
+                    throw new ArgumentException( string.Format( "'    0}' service does not exist, or is not active", serviceName), "serviceName" );
 
                 user.Password = authenticationComponent.EncodePassword( user, password );
             }
@@ -112,13 +112,13 @@ namespace Rock.Cms
         /// <param name="newPassword">The new password.</param>
         /// <returns></returns>
         public bool ChangePassword( User user, string oldPassword, string newPassword )
-        {
+            
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
             AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
             if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+                throw new Exception( string.Format( "'    0}' service does not exist, or is not active", user.ServiceName ) );
 
             if ( !authenticationComponent.Authenticate( user, oldPassword ) )
                 return false;
@@ -135,13 +135,13 @@ namespace Rock.Cms
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         public void ChangePassword( User user, string password )
-        {
+            
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
 
             AuthenticationComponent authenticationComponent = GetComponent( user.ServiceName );
             if ( authenticationComponent == null )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
+                throw new Exception( string.Format( "'    0}' service does not exist, or is not active", user.ServiceName ) );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDate = DateTime.Now;
@@ -152,13 +152,13 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="user">The user.</param>
         public void Unlock( User user )
-        {
+            
             user.IsLockedOut = false;
             this.Save( user, null );
         }
 
         private void UpdateFailureCount( User user )
-        {
+            
             int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
 
@@ -173,10 +173,10 @@ namespace Rock.Cms
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
             if ( DateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
-            {
+                
                 attempts++;
                 if ( attempts >= maxInvalidPasswordAttempts )
-                {
+                    
                     user.IsLockedOut = true;
                     user.LastLockedOutDate = DateTime.Now;
                 }
@@ -184,7 +184,7 @@ namespace Rock.Cms
                 user.FailedPasswordAttemptCount = attempts;
             }
             else
-            {
+                
                 user.FailedPasswordAttemptCount = 1;
                 user.FailedPasswordAttemptWindowStart = DateTime.Now;
             }
@@ -196,18 +196,18 @@ namespace Rock.Cms
         /// <param name="code">The encrypted confirmation code.</param>
         /// <returns></returns>
         public User GetByConfirmationCode( string code )
-        {
+            
             if ( !string.IsNullOrEmpty( code ) )
-            {
+                
                 string identifier = string.Empty;
-                try { identifier = Rock.Security.Encryption.DecryptString( code ); }
-                catch { }
+                try      identifier = Rock.Security.Encryption.DecryptString( code ); }
+                catch      }
 
                 if ( identifier.StartsWith( "ROCK|" ) )
-                {
+                    
                     string[] idParts = identifier.Split( '|' );
                     if ( idParts.Length == 4 )
-                    {
+                        
                         string publicKey = idParts[1];
                         string username = idParts[2];
                         long ticks = 0;
@@ -230,9 +230,9 @@ namespace Rock.Cms
         }
 
         private AuthenticationComponent GetComponent( string serviceName )
-        {
+            
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
-            {
+                
                 var component = serviceEntry.Value.Value;
                 string componentName = component.GetType().FullName;
                 if (
@@ -240,7 +240,7 @@ namespace Rock.Cms
                     component.AttributeValues.ContainsKey( "Active" ) &&
                     bool.Parse( component.AttributeValues["Active"].Value[0].Value )
                 )
-                {
+                    
                     return component;
                 }
             }
@@ -248,9 +248,9 @@ namespace Rock.Cms
         }
 
         private ExternalAuthenticationComponent GetExternalComponent( string serviceName )
-        {
+            
             foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
-            {
+                
                 var component = serviceEntry.Value.Value;
                 string componentName = component.GetType().FullName;
                 if (
@@ -258,7 +258,7 @@ namespace Rock.Cms
                     component.AttributeValues.ContainsKey( "Active" ) &&
                     bool.Parse( component.AttributeValues["Active"].Value[0].Value )
                 )
-                {
+                    
                     return component;
                 }
             }
@@ -272,7 +272,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public static User GetCurrentUser()
-        {
+            
             return GetCurrentUser( true );
         }
 
@@ -282,24 +282,24 @@ namespace Rock.Cms
         /// <param name="userIsOnline">if set to <c>true</c> [user is online].</param>
         /// <returns></returns>
         public static User GetCurrentUser( bool userIsOnline )
-        {
+            
             string userName = User.GetCurrentUserName();
             if ( userName != string.Empty )
-            {
+                
                 if ( userName.StartsWith( "rckipid=" ) )
-                {
+                    
                     Rock.Crm.PersonService personService = new Crm.PersonService();
                     Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
                         return impersonatedPerson.ImpersonatedUser;
                 }
                 else
-                {
+                    
                     UserService userService = new UserService();
                     User user = userService.GetByUserName( userName );
 
                     if ( user != null && userIsOnline )
-                    {
+                        
                         // Save last activity date
                         var transaction = new Rock.Transactions.UserLastActivityTransaction();
                         transaction.UserId = user.Id;

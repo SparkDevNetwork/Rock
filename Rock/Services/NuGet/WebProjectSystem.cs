@@ -10,12 +10,12 @@ using System.Runtime.Versioning;
 using NuGet;
 
 namespace Rock.Services.NuGet
-{
+    
     /// <summary>
     /// 
     /// </summary>
     public class WebProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
-    {
+        
         /// <summary>
         /// 
         /// </summary>
@@ -27,13 +27,13 @@ namespace Rock.Services.NuGet
         /// <value>
         /// <c>true</c> if this instance is binding redirect supported; otherwise, <c>false</c>.
         /// </value>
-        public bool IsBindingRedirectSupported { get { return _isBindingRedirectSupported; } }
+        public bool IsBindingRedirectSupported      get      return _isBindingRedirectSupported; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebProjectSystem" /> class.
         /// </summary>
         /// <param name="siteRoot">The site root.</param>
-        public WebProjectSystem( string siteRoot ) : base( siteRoot ) {    }
+        public WebProjectSystem( string siteRoot ) : base( siteRoot )         }
 
         /// <summary>
         /// Adds the framework reference.
@@ -41,7 +41,7 @@ namespace Rock.Services.NuGet
         /// <param name="name">The name.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public void AddFrameworkReference( string name )
-        {
+            
             throw new NotImplementedException();
         }
 
@@ -51,7 +51,7 @@ namespace Rock.Services.NuGet
         /// <param name="referencePath">The reference path.</param>
         /// <param name="stream">The stream.</param>
         public void AddReference( string referencePath, Stream stream )
-        {
+            
             string fileName = Path.GetFileName( referencePath );
             string fullPath = this.GetFullPath( GetReferencePath( fileName ) );
             this.AddFile( fullPath, stream );
@@ -63,7 +63,7 @@ namespace Rock.Services.NuGet
         /// <param name="name">The name.</param>
         /// <returns></returns>
         protected virtual string GetReferencePath( string name )
-        {
+            
             return Path.Combine( "bin", name );
         }
 
@@ -75,7 +75,7 @@ namespace Rock.Services.NuGet
         ///   <c>true</c> if [is supported file] [the specified path]; otherwise, <c>false</c>.
         /// </returns>
         public bool IsSupportedFile( string path )
-        {
+            
             return ( !path.StartsWith( "tools", StringComparison.OrdinalIgnoreCase ) && !Path.GetFileName( path ).Equals( "app.config", StringComparison.OrdinalIgnoreCase ) );
         }
 
@@ -86,8 +86,8 @@ namespace Rock.Services.NuGet
         /// The name of the project.
         /// </value>
         public string ProjectName
-        {
-            get { return Root; }
+            
+            get      return Root; }
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Rock.Services.NuGet
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public bool ReferenceExists( string name )
-        {
+            
             string referencePath = GetReferencePath( name );
             return FileExists( referencePath );
         }
@@ -106,10 +106,10 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="name">The name.</param>
         public void RemoveReference( string name )
-        {
+            
             DeleteFile( GetReferencePath( name ) );
             if ( !this.GetFiles( "bin", false ).Any<string>() )
-            {
+                
                 DeleteDirectory( "bin" );
             }
         }
@@ -120,7 +120,7 @@ namespace Rock.Services.NuGet
         /// <param name="path">The path.</param>
         /// <returns></returns>
         public string ResolvePath( string path )
-        {
+            
             return path;
         }
 
@@ -131,8 +131,8 @@ namespace Rock.Services.NuGet
         /// The target framework.
         /// </value>
         public FrameworkName TargetFramework
-        {
-            get { return VersionUtility.DefaultTargetFramework; }
+            
+            get      return VersionUtility.DefaultTargetFramework; }
         }
 
         /// <summary>
@@ -141,9 +141,9 @@ namespace Rock.Services.NuGet
         /// <param name="propertyName">Name of the property.</param>
         /// <returns></returns>
         public dynamic GetPropertyValue( string propertyName )
-        {
+            
             if ( ( propertyName != null ) && propertyName.Equals( "RootNamespace", StringComparison.OrdinalIgnoreCase ) )
-            {
+                
                 return string.Empty;
             }
             return null;

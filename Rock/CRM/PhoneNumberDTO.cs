@@ -14,31 +14,31 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Data Transfer Object for PhoneNumber object
     /// </summary>
     public partial class PhoneNumberDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int PersonId { get; set; }
-        public string Number { get; set; }
-        public string Extension { get; set; }
-        public int? NumberTypeId { get; set; }
-        public bool IsMessagingEnabled { get; set; }
-        public bool IsUnlisted { get; set; }
-        public string Description { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int PersonId      get; set; }
+        public string Number      get; set; }
+        public string Extension      get; set; }
+        public int? NumberTypeId      get; set; }
+        public bool IsMessagingEnabled      get; set; }
+        public bool IsUnlisted      get; set; }
+        public string Description      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PhoneNumberDto ()
-        {
+            
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="phoneNumber"></param>
         public PhoneNumberDto ( PhoneNumber phoneNumber )
-        {
+            
             CopyFromModel( phoneNumber );
         }
 
@@ -55,9 +55,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is PhoneNumber )
-            {
+                
                 var phoneNumber = (PhoneNumber)model;
                 this.IsSystem = phoneNumber.IsSystem;
                 this.PersonId = phoneNumber.PersonId;
@@ -77,9 +77,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is PhoneNumber )
-            {
+                
                 var phoneNumber = (PhoneNumber)model;
                 phoneNumber.IsSystem = this.IsSystem;
                 phoneNumber.PersonId = this.PersonId;

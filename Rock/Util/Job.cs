@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Util
-{
+    
     /// <summary>
     /// Job POCO Entity.
     /// </summary>
     [Table( "utilJob" )]
     public partial class Job : Model<Job>
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Util
         /// Determines whether the job is a system job..
         /// </value>
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
         
         /// <summary>
         /// Gets or sets the Active.
@@ -36,7 +36,7 @@ namespace Rock.Util
         /// Determines is the job is currently active..
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool? IsActive      get; set; }
         
         /// <summary>
         /// Gets or sets the Name.
@@ -47,7 +47,7 @@ namespace Rock.Util
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Name { get; set; }
+        public string Name      get; set; }
         
         /// <summary>
         /// Gets or sets the Description.
@@ -57,7 +57,7 @@ namespace Rock.Util
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
-        public string Description { get; set; }
+        public string Description      get; set; }
         
         /// <summary>
         /// Gets or sets the Assemby.
@@ -67,7 +67,7 @@ namespace Rock.Util
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Assemby { get; set; }
+        public string Assemby      get; set; }
         
         /// <summary>
         /// Gets or sets the Class.
@@ -78,7 +78,7 @@ namespace Rock.Util
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Class { get; set; }
+        public string Class      get; set; }
         
         /// <summary>
         /// Gets or sets the Cron Expression.
@@ -89,7 +89,7 @@ namespace Rock.Util
         [Required]
         [MaxLength( 120 )]
         [DataMember]
-        public string CronExpression { get; set; }
+        public string CronExpression      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Successful Run.
@@ -98,7 +98,7 @@ namespace Rock.Util
         /// Date and time the job last completed successfully..
         /// </value>
         [DataMember]
-        public DateTime? LastSuccessfulRun { get; set; }
+        public DateTime? LastSuccessfulRun      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Date.
@@ -107,7 +107,7 @@ namespace Rock.Util
         /// Last date and time the job attempted to run..
         /// </value>
         [DataMember]
-        public DateTime? LastRunDate { get; set; }
+        public DateTime? LastRunDate      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Duration.
@@ -116,7 +116,7 @@ namespace Rock.Util
         /// Number of seconds that the last job took to finish..
         /// </value>
         [DataMember]
-        public int? LastRunDuration { get; set; }
+        public int? LastRunDuration      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Status.
@@ -126,7 +126,7 @@ namespace Rock.Util
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string LastStatus { get; set; }
+        public string LastStatus      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Status Message.
@@ -135,7 +135,7 @@ namespace Rock.Util
         /// Message from the last run.  Usually used to store the exception message..
         /// </value>
         [DataMember]
-        public string LastStatusMessage { get; set; }
+        public string LastStatusMessage      get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Scheduler Name.
@@ -145,7 +145,7 @@ namespace Rock.Util
         /// </value>
         [MaxLength( 40 )]
         [DataMember]
-        public string LastRunSchedulerName { get; set; }
+        public string LastRunSchedulerName      get; set; }
         
         /// <summary>
         /// Gets or sets the Notification Emails.
@@ -155,7 +155,7 @@ namespace Rock.Util
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
-        public string NotificationEmails { get; set; }
+        public string NotificationEmails      get; set; }
         
         /// <summary>
         /// Gets or sets the Notification Status.
@@ -165,7 +165,7 @@ namespace Rock.Util
         /// </value>
         [Required]
         [DataMember]
-        public JobNotificationStatus NotificationStatus { get; set; }
+        public JobNotificationStatus NotificationStatus      get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -173,7 +173,7 @@ namespace Rock.Util
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Job Read( int id )
-		{
+		    
 			return Read<Job>( id );
 		}
 
@@ -181,7 +181,7 @@ namespace Rock.Util
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Util.Job"; } }
+		public override string EntityTypeName      get      return "Util.Job"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -190,7 +190,7 @@ namespace Rock.Util
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
         
@@ -200,12 +200,12 @@ namespace Rock.Util
     /// Job Configuration class.
     /// </summary>
     public partial class JobConfiguration : EntityTypeConfiguration<Job>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="JobConfiguration"/> class.
         /// </summary>
         public JobConfiguration()
-        {
+            
         }
     }
 
@@ -213,7 +213,7 @@ namespace Rock.Util
     /// Job notification status
     /// </summary>
     public enum JobNotificationStatus
-    {
+        
         /// <summary>
         /// Notify on all status
         /// </summary>

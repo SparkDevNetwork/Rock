@@ -25,14 +25,14 @@ using Quartz;
 using Rock.Core;
 
 namespace Rock.Jobs
-{
+    
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
     public class JobPulse : IJob
-    {
+        
         
         /// <summary> 
         /// Empty constructor for job initilization
@@ -42,7 +42,7 @@ namespace Rock.Jobs
         /// </para>
         /// </summary>
         public JobPulse()
-        {
+            
         }
         
         /// <summary> 
@@ -54,10 +54,10 @@ namespace Rock.Jobs
         /// the <see cref="IJob" />.
         /// </summary>
         public virtual void  Execute(IJobExecutionContext context)
-        {
+            
 
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 AttributeService attribService = new AttributeService();
                 AttributeValueService attributeValueService = new AttributeValueService();
 
@@ -66,7 +66,7 @@ namespace Rock.Jobs
 
                 // create attribute value if one does not exist
                 if ( jobPulseAttribValue == null )
-                {
+                    
                     jobPulseAttribValue = new AttributeValue();
                     jobPulseAttribValue.AttributeId = jobPulseAttrib.Id;
                     attributeValueService.Add( jobPulseAttribValue, null );

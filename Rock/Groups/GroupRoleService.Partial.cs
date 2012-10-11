@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Group Role POCO Service class
     /// </summary>
     public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
-    {
+        
         /// <summary>
         /// Gets Group Roles by Order
         /// </summary>
         /// <param name="order">Order.</param>
         /// <returns>An enumerable list of GroupRole objects.</returns>
         public IEnumerable<GroupRole> GetByOrder( int? order )
-        {
+            
             return Repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
         }
     }

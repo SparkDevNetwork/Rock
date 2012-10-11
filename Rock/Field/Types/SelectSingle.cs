@@ -10,19 +10,19 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
     [Serializable]
     public class SelectSingle : FieldType
-    {
+        
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
-        {
+            
             List<string> configKeys = new List<string>();
             configKeys.Add( "values" );
             configKeys.Add( "fieldtype" );
@@ -34,7 +34,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
-        {
+            
             List<Control> controls = new List<Control>();
 
             TextBox tb = new TextBox();
@@ -56,13 +56,13 @@ namespace Rock.Field.Types
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
+            
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values", "Comma-delimited list of values to display", "" ) );
             configurationValues.Add( "fieldtype", new ConfigurationValue( "Field Type", "Field type to use for selection", "ddl" ) );
 
             if ( controls != null && controls.Count == 2 )
-            {
+                
                 if ( controls[0] != null && controls[0] is TextBox )
                     configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
 
@@ -80,9 +80,9 @@ namespace Rock.Field.Types
         /// <param name="controls"></param>
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             if ( controls != null && controls.Count == 2 && configurationValues != null)
-            {
+                
                 if ( controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
                     ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
 
@@ -99,18 +99,18 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             ListControl editControl = null;
 
             if ( configurationValues != null )
-            {
+                
                 if ( configurationValues.ContainsKey( "fieldtype" ) && configurationValues["fieldtype"].Value == "rb" )
                     editControl = new RadioButtonList();
                 else
                     editControl = new DropDownList();
 
                 if ( configurationValues.ContainsKey( "values" ) )
-                    foreach ( string value in configurationValues["values"].Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    foreach ( string value in configurationValues["values"].Value.Split( new char[]      ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         editControl.Items.Add( new ListItem( value ) );
             }
 
@@ -124,7 +124,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             if ( control != null && control is ListControl )
                 return ((ListControl)control).SelectedValue;
 
@@ -138,7 +138,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
+            
             if ( control != null && control is ListControl )
                 ( ( ListControl )control ).SelectedValue = value;
         }

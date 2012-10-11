@@ -14,31 +14,31 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Data Transfer Object for Auth object
     /// </summary>
     public partial class AuthDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public string EntityType { get; set; }
-        public int? EntityId { get; set; }
-        public int Order { get; set; }
-        public string Action { get; set; }
-        public string AllowOrDeny { get; set; }
-        public SpecialRole SpecialRole { get; set; }
-        public int? PersonId { get; set; }
-        public int? GroupId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public string EntityType      get; set; }
+        public int? EntityId      get; set; }
+        public int Order      get; set; }
+        public string Action      get; set; }
+        public string AllowOrDeny      get; set; }
+        public SpecialRole SpecialRole      get; set; }
+        public int? PersonId      get; set; }
+        public int? GroupId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public AuthDto ()
-        {
+            
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="auth"></param>
         public AuthDto ( Auth auth )
-        {
+            
             CopyFromModel( auth );
         }
 
@@ -55,9 +55,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Auth )
-            {
+                
                 var auth = (Auth)model;
                 this.EntityType = auth.EntityType;
                 this.EntityId = auth.EntityId;
@@ -77,9 +77,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Auth )
-            {
+                
                 var auth = (Auth)model;
                 auth.EntityType = this.EntityType;
                 auth.EntityId = this.EntityId;

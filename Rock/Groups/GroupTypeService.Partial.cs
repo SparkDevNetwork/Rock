@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Group Type POCO Service class
     /// </summary>
     public partial class GroupTypeService : Service<GroupType, GroupTypeDto>
-    {
+        
         /// <summary>
         /// Gets Group Types by Default Group Role Id
         /// </summary>
         /// <param name="defaultGroupRoleId">Default Group Role Id.</param>
         /// <returns>An enumerable list of GroupType objects.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
-        {
+            
             return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
         }
     }

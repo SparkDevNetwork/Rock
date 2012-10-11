@@ -12,7 +12,7 @@ using System.Web.UI;
 using Rock.Field;
 
 namespace Rock.Web.Cache
-{
+    
     /// <summary>
     /// Information about an attribute that is required by the rendering engine.
     /// This information will be cached by Rock. 
@@ -23,22 +23,22 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     public class AttributeCache : Rock.Core.AttributeDto
-    {
-        private AttributeCache() : base() { }
-        private AttributeCache( Rock.Core.Attribute model ) : base( model ) { }
+        
+        private AttributeCache() : base()      }
+        private AttributeCache( Rock.Core.Attribute model ) : base( model )      }
 
         // <summary>
         // Gets the category.
         // </summary>
         //public override string Category 
-        //{ 
+        //     
         //    get
-        //    {
+        //        
         //        return string.IsNullOrEmpty( base.Category ) ? "Attributes" : base.Category;
         //    }
 
         //    private set
-        //    {
+        //        
         //        if ( value == "Attributes" )
         //            base.Category = null;
         //        else
@@ -53,14 +53,14 @@ namespace Rock.Web.Cache
         /// The type of the field.
         /// </value>
         public FieldTypeCache FieldType 
-        {
-            get { return FieldTypeCache.Read( FieldTypeId ); }
+            
+            get      return FieldTypeCache.Read( FieldTypeId ); }
         }
 
         /// <summary>
         /// Gets the qualifier values if any have been defined for the attribute
         /// </summary>
-        public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
+        public Dictionary<string, ConfigurationValue> QualifierValues      get; private set; }
 
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
@@ -69,7 +69,7 @@ namespace Rock.Web.Cache
         /// <param name="setValue">if set to <c>true</c> set the control's value</param>
         /// <returns></returns>
         public Control CreateControl( string value, bool setValue)
-        {
+            
             Control editControl = this.FieldType.Field.EditControl( QualifierValues);
             if ( setValue )
                 this.FieldType.Field.SetEditValue( editControl, QualifierValues, value );
@@ -79,8 +79,8 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Attribute:{0}", id );
+            
+            return string.Format( "Rock:Attribute:    0}", id );
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attributeModel to cache</param>
         /// <returns></returns>
         public static AttributeCache Read( Rock.Core.Attribute attributeModel )
-        {
+            
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -98,7 +98,7 @@ namespace Rock.Web.Cache
             if ( attribute != null )
                 return attribute;
             else
-            {
+                
                 attribute = AttributeCache.CopyModel( attributeModel );
                 cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         public static AttributeCache Read( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
+            
             AttributeCache attribute = AttributeCache.CopyModel( attributeModel, qualifiers );
 
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
@@ -130,7 +130,7 @@ namespace Rock.Web.Cache
         /// <param name="id">The id of the Attribute to read</param>
         /// <returns></returns>
         public static AttributeCache Read( int id )
-        {
+            
             string cacheKey = AttributeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -139,11 +139,11 @@ namespace Rock.Web.Cache
             if ( attribute != null )
                 return attribute;
             else
-            {
+                
                 Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
                 Rock.Core.Attribute attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
-                {
+                    
                     attribute = AttributeCache.CopyModel( attributeModel );
 
                     cache.Set( cacheKey, attribute, new CacheItemPolicy() );
@@ -162,7 +162,7 @@ namespace Rock.Web.Cache
         /// <param name="attributeModel">The attribute model.</param>
         /// <returns></returns>
         public static AttributeCache CopyModel( Rock.Core.Attribute attributeModel )
-        {
+            
             var qualifiers = new Dictionary<string, string>();
 
             foreach ( Rock.Core.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
@@ -172,7 +172,7 @@ namespace Rock.Web.Cache
         }
 
         private static AttributeCache CopyModel( Rock.Core.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
+            
             var attribute = new AttributeCache(attributeModel);
 
             attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
@@ -187,7 +187,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The id of the attribute to remove from cache</param>
         public static void Flush( int id )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( AttributeCache.CacheKey( id ) );
         }

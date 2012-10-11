@@ -10,12 +10,12 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Metric POCO Service class
     /// </summary>
     public partial class MetricService : Service<Metric, MetricDto>
-    {
+        
         /// <summary>
         /// Gets Metrics by Type
         /// </summary>
@@ -24,7 +24,7 @@ namespace Rock.Core
         /// An enumerable list of Metric objects.
         /// </returns>
         public IEnumerable<Metric> GetByType( bool? type )
-        {
+            
             return Repository.Find( t => ( t.Type == type || ( type == null && t.Type == null ) ) ).OrderBy( t => t.Order );
         }
 
@@ -34,7 +34,7 @@ namespace Rock.Core
         /// <param name="metricId">metricId.</param>
         /// <returns>Metric object.</returns>
         public Metric GetById( int? metricId )
-        {
+            
             return Repository.FirstOrDefault( t => t.Id == metricId );
         }
 
@@ -44,7 +44,7 @@ namespace Rock.Core
         /// <param name="guid">Guid.</param>
         /// <returns>Metric object.</returns>
         public Metric GetByGuid( Guid guid )
-        {
+            
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
     }

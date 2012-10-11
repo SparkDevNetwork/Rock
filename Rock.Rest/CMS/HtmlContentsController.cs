@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
     /// <summary>
     /// HtmlContents REST API
     /// </summary>
     public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Cms.HtmlContent, Rock.Cms.HtmlContentDto>
-    {
-        public HtmlContentsController() : base( new Rock.Cms.HtmlContentService() ) { } 
+        
+        public HtmlContentsController() : base( new Rock.Cms.HtmlContentService() )      } 
     }
 }

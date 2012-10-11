@@ -11,23 +11,23 @@ using Rock.Cms;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Cms
-{
+    
 	/// <summary>
 	/// Blocks REST API
 	/// </summary>
 	public partial class BlocksController : IHasCustomRoutes 
-	{
+	    
 		/// <summary>
 		/// Add Custom route needed for block move
 		/// </summary>
 		/// <param name="routes"></param>
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		{
+		    
 			routes.MapHttpRoute(
 				name: "BlockMove",
-				routeTemplate: "api/blocks/move/{id}",
+				routeTemplate: "api/blocks/move/    id}",
 				defaults: new
-				{
+				    
 					controller = "blocks",
 					action = "move"
 				} );
@@ -41,10 +41,10 @@ namespace Rock.Rest.Cms
 		[HttpPut]
 		[Authenticate]
 		public void Move( int id, BlockDto block )
-		{
+		    
 			var user = CurrentUser();
 			if ( user != null )
-			{
+			    
 				var service = new BlockService();
 				Block model;
 				if ( !service.TryGet( id, out model ) )
@@ -54,14 +54,14 @@ namespace Rock.Rest.Cms
 					throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
 				if ( model.IsValid )
-				{
+				    
 					if ( model.Layout != null && model.Layout != block.Layout )
 						Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
 
 					if (block.Layout != null)
 						Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout);
 					else
-					{
+					    
 						var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
 						page.FlushBlocks();
 					}

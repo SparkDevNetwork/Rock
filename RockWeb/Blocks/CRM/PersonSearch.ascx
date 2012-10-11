@@ -4,7 +4,7 @@
     <Columns>
         <asp:HyperLinkField 
             DataNavigateUrlFields="Id" 
-            DataNavigateUrlFormatString="~/person/{0}"
+            DataNavigateUrlFormatString="~/person/    0}"
             DataTextField="FullNameLastFirst" 
             SortExpression="FullNameLastFirst" 
             HeaderText="Person"  />

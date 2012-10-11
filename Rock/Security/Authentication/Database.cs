@@ -15,7 +15,7 @@ using System.Web.Configuration;
 using Rock.Cms;
 
 namespace Rock.Security.Authentication
-{
+    
     /// <summary>
     /// Authenticates a username/password using the Rock database
     /// </summary>
@@ -23,7 +23,7 @@ namespace Rock.Security.Authentication
     [Export(typeof(AuthenticationComponent))]
     [ExportMetadata("ComponentName", "Database")]
     public class Database : AuthenticationComponent
-    {
+        
 		private static byte[] encryptionKey;
 		private static MachineKeySection machineKeyConfig = (MachineKeySection)ConfigurationManager.GetSection( "system.web/machineKey" );
 
@@ -32,12 +32,12 @@ namespace Rock.Security.Authentication
 		/// </summary>
 		/// <exception cref="System.Configuration.ConfigurationErrorsException">Cannot use an Auto Generated machine key</exception>
 		static Database()
-		{
+		    
 			string configKey;
 
 			configKey = machineKeyConfig.ValidationKey;
 			if ( configKey.Contains( "AutoGenerate" ) )
-			{
+			    
 				throw new ConfigurationErrorsException( "Cannot use an Auto Generated machine key" );
 			}
 
@@ -51,7 +51,7 @@ namespace Rock.Security.Authentication
         /// <param name="password">The password.</param>
         /// <returns></returns>
 		public override Boolean Authenticate( User user, string password )
-		{
+		    
 			return EncodePassword( user, password ) == user.Password;
 		}
 
@@ -62,14 +62,14 @@ namespace Rock.Security.Authentication
 		/// <param name="password"></param>
 		/// <returns></returns>
 		public override String EncodePassword( User user, string password )
-		{
+		    
 			HMACSHA1 hash = new HMACSHA1();
 			hash.Key = encryptionKey;
 			return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( password ) ) );
 		}
 
 		private static byte[] HexToByte( string hexString )
-		{
+		    
 			byte[] returnBytes = new byte[hexString.Length / 2];
 			for ( int i = 0; i < returnBytes.Length; i++ )
 				returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );

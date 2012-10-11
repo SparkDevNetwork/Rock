@@ -1,18 +1,18 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 
 #pragma warning disable 1591
     
     public partial class AddAuditFunctionality : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             CreateTable(
                 "dbo.coreAudit",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         EntityType = c.String(nullable: false, maxLength: 100),
                         EntityId = c.Int(nullable: false),
@@ -184,7 +184,7 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             AddColumn("dbo.utilJob", "ModifiedByPersonId", c => c.Int());
             AddColumn("dbo.utilJob", "CreatedByPersonId", c => c.Int());
             AddColumn("dbo.utilJob", "ModifiedDateTime", c => c.DateTime());
@@ -334,9 +334,9 @@ namespace Rock.Migrations
             AddColumn("dbo.cmsAuth", "CreatedByPersonId", c => c.Int());
             AddColumn("dbo.cmsAuth", "ModifiedDateTime", c => c.DateTime());
             AddColumn("dbo.cmsAuth", "CreatedDateTime", c => c.DateTime());
-            DropIndex("dbo.coreExceptionLog", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreEntityChange", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreAudit", new[] { "PersonId" });
+            DropIndex("dbo.coreExceptionLog", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreEntityChange", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreAudit", new[]      "PersonId" });
             DropForeignKey("dbo.coreExceptionLog", "CreatedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.coreEntityChange", "CreatedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.coreAudit", "PersonId", "dbo.crmPerson");

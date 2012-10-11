@@ -14,29 +14,29 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for DefinedType object
     /// </summary>
     public partial class DefinedTypeDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int? FieldTypeId { get; set; }
-        public int Order { get; set; }
-        public string Category { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int? FieldTypeId      get; set; }
+        public int Order      get; set; }
+        public string Category      get; set; }
+        public string Name      get; set; }
+        public string Description      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public DefinedTypeDto ()
-        {
+            
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="definedType"></param>
         public DefinedTypeDto ( DefinedType definedType )
-        {
+            
             CopyFromModel( definedType );
         }
 
@@ -53,9 +53,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is DefinedType )
-            {
+                
                 var definedType = (DefinedType)model;
                 this.IsSystem = definedType.IsSystem;
                 this.FieldTypeId = definedType.FieldTypeId;
@@ -73,9 +73,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is DefinedType )
-            {
+                
                 var definedType = (DefinedType)model;
                 definedType.IsSystem = this.IsSystem;
                 definedType.FieldTypeId = this.FieldTypeId;

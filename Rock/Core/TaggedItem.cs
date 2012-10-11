@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Tagged Ited POCO Entity.
     /// </summary>
     [Table( "coreTaggedItem" )]
     public partial class TaggedItem : Model<TaggedItem>
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Attribute Id.
@@ -38,7 +38,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int TagId { get; set; }
+		public int TagId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Entity Id.
@@ -47,13 +47,13 @@ namespace Rock.Core
 		/// Entity Id.
 		/// </value>
 		[DataMember]
-		public int? EntityId { get; set; }
+		public int? EntityId      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.TaggedItem"; } }
+		public override string EntityTypeName      get      return "Core.TaggedItem"; } }
         
         /// <summary>
         /// Gets or sets the Tag
@@ -61,7 +61,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Tag"/> object.
         /// </value>
-        public virtual Tag Tag { get; set; }
+        public virtual Tag Tag      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -69,7 +69,7 @@ namespace Rock.Core
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static AttributeValue Read( int id )
-        {
+            
             return Read<AttributeValue>( id );
         }
 
@@ -77,8 +77,8 @@ namespace Rock.Core
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
+            
+            get      return new Security.GenericEntity( "Global" ); }
         }
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.EntityId.HasValue ? this.EntityId.ToString() : "";
 		}
     }
@@ -97,12 +97,12 @@ namespace Rock.Core
     /// Attribute Value Configuration class.
     /// </summary>
     public partial class TaggeedItemConfiguration : EntityTypeConfiguration<TaggedItem>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueConfiguration"/> class.
         /// </summary>
         public TaggeedItemConfiguration()
-        {
+            
             this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
         }
     }

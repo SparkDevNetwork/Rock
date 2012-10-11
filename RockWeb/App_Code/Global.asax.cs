@@ -26,12 +26,12 @@ using Rock.Transactions;
 using Rock.Util;
 
 namespace RockWeb
-{
+    
     /// <summary>
     /// 
     /// </summary>
     public class Global : System.Web.HttpApplication
-    {
+        
         /// <summary>
         /// global Quartz scheduler for jobs 
         /// </summary>
@@ -53,14 +53,14 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
-        {
+            
             // Preload the commonly used objects
             LoadCacheObjects();
 
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
-            {
+                
 
                 ISchedulerFactory sf;
 
@@ -71,18 +71,18 @@ namespace RockWeb
                 // get list of active jobs
                 JobService jobService = new JobService();
                 foreach ( Job job in jobService.GetActiveJobs().ToList() )
-                {
+                    
                     try
-                    {
+                        
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                         ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                         sched.ScheduleJob( jobDetail, jobTrigger );
                     }
                     catch ( Exception ex )
-                    {
+                        
                         // create a friendly error message
-                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assemby, ex.Message );
+                        string message = string.Format( "Error loading the job:     0}.  Ensure that the correct version of the job's assembly (    1}.dll) in the websites App_Code directory. \n\n\n\n    2}", job.Name, job.Assemby, ex.Message );
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
 
@@ -116,7 +116,7 @@ namespace RockWeb
         /// <param name="v">The v.</param>
         /// <param name="r">The r.</param>
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
-        {
+            
             // call a page on the site to keep IIS alive 
             string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
             WebRequest request = WebRequest.Create( url );
@@ -133,28 +133,28 @@ namespace RockWeb
         /// Drains the transaction queue.
         /// </summary>
         private void DrainTransactionQueue()
-        {
+            
             // process the transaction queue
             if ( !Global.QueueInUse )
-            {
+                
                 Global.QueueInUse = true;
 
                 try
-                {
+                    
                     while ( RockQueue.TransactionQueue.Count != 0 )
-                    {
+                        
                         ITransaction transaction = (ITransaction)RockQueue.TransactionQueue.Dequeue();
                         transaction.Execute();
                     }
                 }
                 catch (Exception ex)
-                {
+                    
                     try
-                    {
-                        EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ), EventLogEntryType.Error );
+                        
+                        EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.DrainTransactionQueue():     0}", ex.Message ), EventLogEntryType.Error );
                     }
                     catch
-                    {
+                        
                     }
                 }
 
@@ -168,7 +168,7 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_Start( object sender, EventArgs e )
-        {
+            
 
         }
 
@@ -178,7 +178,7 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
-        {
+            
             Context.Items.Add( "Request_Start_Time", DateTime.Now );
         }
 
@@ -188,7 +188,7 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_AuthenticateRequest( object sender, EventArgs e )
-        {
+            
 
         }
 
@@ -199,13 +199,13 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
-        {
+            
             // log error
             System.Web.HttpContext context = HttpContext.Current;
             System.Exception ex = Context.Server.GetLastError();
 
             if ( ex != null )
-            {
+                
                 bool logException = true;
 
                 // string to send a message to the error page to prevent infinite loops
@@ -213,18 +213,18 @@ namespace RockWeb
                 string errorQueryParm = "?error=1";
 
                 if ( context.Request.Url.ToString().Contains( "?error=1" ) )
-                {
+                    
                     errorQueryParm = "?error=2";
                 }
                 else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
-                {
+                    
                     // something really bad is occurring stop logging errors as we're in an infinate loop
                     logException = false;
                 }
 
 
                 if ( logException )
-                {
+                    
                     string status = "500";
 
                     // determine if 404's should be tracked as exceptions
@@ -232,12 +232,12 @@ namespace RockWeb
 
                     // set status to 404
                     if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
-                    {
+                        
                         status = "404";
                     }
 
                     if ( status == "500" || track404 )
-                    {
+                        
                         LogError( ex, -1, status, context );
                         context.Server.ClearError();
 
@@ -249,7 +249,7 @@ namespace RockWeb
                         string siteName = string.Empty;
 
                         if ( context.Items["Rock:SiteId"] != null )
-                        {
+                            
                             int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
 
                             // load site
@@ -264,7 +264,7 @@ namespace RockWeb
 
                         // email notifications if 500 error
                         if ( status == "500" )
-                        {
+                            
                             // setup merge codes for email
                             var mergeObjects = new List<object>();
 
@@ -277,18 +277,18 @@ namespace RockWeb
                             // get email addresses to send to
                             string emailAddressesList = Rock.Web.Cache.GlobalAttributesCache.Value( "EmailExceptionsList" );
                             if ( emailAddressesList != null )
-                            {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                                
+                                string[] emailAddresses = emailAddressesList.Split( new char[]      ',' }, StringSplitOptions.RemoveEmptyEntries );
 
                                 var recipients = new Dictionary<string, List<object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
-                                {
+                                    
                                     recipients.Add( emailAddress, mergeObjects );
                                 }
 
                                 if ( recipients.Count > 0 )
-                                {
+                                    
                                     Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
                                     SetSMTPParameters( email );  //TODO move this set up to the email object
                                     email.Send( recipients );
@@ -313,7 +313,7 @@ namespace RockWeb
         /// <param name="exLevel">The ex level.</param>
         /// <returns></returns>
         private string FormatException( Exception ex, string exLevel )
-        {
+            
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
@@ -321,7 +321,7 @@ namespace RockWeb
 
             // check for inner exception
             if ( ex.InnerException != null )
-            {
+                
                 //lErrorInfo.Text += "<p /><p />";
                 message += FormatException( ex.InnerException, "-" + exLevel );
             }
@@ -334,7 +334,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="email">The email.</param>
         private void SetSMTPParameters( Email email )
-        {
+            
             email.Server = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPServer" );
 
             int port = 0;
@@ -359,9 +359,9 @@ namespace RockWeb
         /// <param name="status">The status.</param>
         /// <param name="context">The context.</param>
         private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
-        {
+            
             try
-            {
+                
                 // get the current user
                 Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
 
@@ -433,14 +433,14 @@ namespace RockWeb
 
             }
             catch ( Exception )
-            {
+                
                 // if you get an exception while logging an exception I guess you're hosed...
                 try
-                {
-                    EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.LogError(): {0}", ex.Message ), EventLogEntryType.Error );
+                    
+                    EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.LogError():     0}", ex.Message ), EventLogEntryType.Error );
                 }
                 catch
-                {
+                    
                 }
             }
         }
@@ -451,7 +451,7 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_End( object sender, EventArgs e )
-        {
+            
 
         }
 
@@ -461,13 +461,13 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_End( object sender, EventArgs e )
-        {
+            
             // close out jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
-            {
+                
                 if ( sched != null )
-                {
+                    
                     sched.Shutdown();
                 }
             }
@@ -484,7 +484,7 @@ namespace RockWeb
         /// Adds the call back.
         /// </summary>
         private void AddCallBack()
-        {
+            
             OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
             HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
                 DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
@@ -496,7 +496,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="filters">The filters.</param>
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
-        {
+            
             //filters.Add( new System.Web.Http.AuthorizeAttribute() );
             //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
             filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
@@ -507,12 +507,12 @@ namespace RockWeb
         /// </summary>
         /// <param name="routes">The routes.</param>
         private void RegisterRoutes( RouteCollection routes )
-        {
+            
             PageRouteService pageRouteService = new PageRouteService();
 
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
-            {
+                
                 // Create the custom route and save the page id in the DataTokens collection
                 Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
                 route.DataTokens = new RouteValueDictionary();
@@ -526,7 +526,7 @@ namespace RockWeb
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ),
                 new System.IO.DirectoryInfo( Server.MapPath( "~/bin" ) ) ) )
-            {
+                
                 var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
                 if ( controller != null )
                     controller.AddRoutes( routes );
@@ -535,12 +535,12 @@ namespace RockWeb
             // Add API Service routes
             routes.MapHttpRoute(
                 name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = System.Web.Http.RouteParameter.Optional }
+                routeTemplate: "api/    controller}/    id}",
+                defaults: new      id = System.Web.Http.RouteParameter.Optional }
             );
 
             // Add a default page route
-            routes.Add( new Route( "page/{PageId}", new Rock.Web.RockRouteHandler() ) );
+            routes.Add( new Route( "page/    PageId}", new Rock.Web.RockRouteHandler() ) );
 
             // Add a default route for when no parameters are passed
             routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
@@ -550,7 +550,7 @@ namespace RockWeb
         /// Adds the event handlers.
         /// </summary>
         private void AddEventHandlers()
-        {
+            
             Rock.Cms.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
             Rock.Cms.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
             Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
@@ -561,9 +561,9 @@ namespace RockWeb
         /// Loads the cache objects.
         /// </summary>
         private void LoadCacheObjects()
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 // Cache all the Field Types
                 var fieldTypeService = new Rock.Core.FieldTypeService();
                 foreach ( var fieldType in fieldTypeService.Queryable() )
@@ -582,7 +582,7 @@ namespace RockWeb
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
                 var qualifiers = new Dictionary<int, Dictionary<string, string>>();
                 foreach ( var attributeQualifier in new Rock.Core.AttributeQualifierService().Queryable() )
-                {
+                    
                     if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
                         qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
                     qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
@@ -590,7 +590,7 @@ namespace RockWeb
 
                 // Cache all the attributes.
                 foreach ( var attribute in new Rock.Core.AttributeService().Queryable() )
-                {
+                    
                     if ( qualifiers.ContainsKey( attribute.Id ) )
                         Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
                     else
@@ -609,15 +609,15 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
         void Page_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
-        {
+            
             // Get a reference to the updated page
             Rock.Cms.Page page = e.Model as Rock.Cms.Page;
             if ( page != null )
-            {
+                
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
                 if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
-                {
+                    
                     // Get the cached page
                     var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
@@ -631,7 +631,7 @@ namespace RockWeb
 
                 // Check to see if updated page has a parent
                 if ( page.ParentPageId.HasValue )
-                {
+                    
                     // If the parent page is cached, flush it's list of child pages
                     if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.ParentPageId.Value ) ) )
                         Rock.Web.Cache.PageCache.Read( page.ParentPageId.Value ).FlushChildPages();
@@ -645,15 +645,15 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
         void Page_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
-        {
+            
             // Get a reference to the deleted page
             Rock.Cms.Page page = e.Model as Rock.Cms.Page;
             if ( page != null )
-            {
+                
                 // Check to see if the page being updated is cached
                 System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
                 if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
-                {
+                    
                     // Get the cached page
                     var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
 
@@ -673,11 +673,11 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
         void Block_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
-        {
+            
             // Get a reference to the update block instance
             Rock.Cms.Block block = e.Model as Rock.Cms.Block;
             if ( block != null )
-            {
+                
                 // Flush the block instance from cache
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
 
@@ -693,11 +693,11 @@ namespace RockWeb
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
         void Block_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
-        {
+            
             // Get a reference to the deleted block instance
             Rock.Cms.Block block = e.Model as Rock.Cms.Block;
             if ( block != null )
-            {
+                
                 // Flush the block instance from cache
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
 

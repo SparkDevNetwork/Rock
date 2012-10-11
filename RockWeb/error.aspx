@@ -13,11 +13,11 @@
 <!--    <script src="<%= ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script> -->
     <script src="<%= ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" >
     <script>
-        $(document).ready(function () {
+        $(document).ready(function ()     
             $(".stack-trace").hide();
             
             //toggle the componenet with class msg_body
-            $(".exception-type").click(function () {
+            $(".exception-type").click(function ()     
                 $(this).next(".stack-trace").slideToggle(500);
             });
         });

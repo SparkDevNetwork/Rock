@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Site Domain POCO Entity.
     /// </summary>
     [Table( "cmsSiteDomain" )]
     public partial class SiteDomain : Model<SiteDomain>
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Site Id.
@@ -38,7 +38,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int SiteId { get; set; }
+		public int SiteId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Domain.
@@ -49,13 +49,13 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
-		public string Domain { get; set; }
+		public string Domain      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.SiteDomain"; } }
+		public override string EntityTypeName      get      return "Cms.SiteDomain"; } }
         
         /// <summary>
         /// Gets or sets the Site.
@@ -63,7 +63,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-        public virtual Site Site { get; set; }
+        public virtual Site Site      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -71,7 +71,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static SiteDomain Read( int id )
-        {
+            
             return Read<SiteDomain>( id );
         }
 
@@ -82,7 +82,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Domain;
 		}
     }
@@ -91,12 +91,12 @@ namespace Rock.Cms
     /// Site Domain Configuration class.
     /// </summary>
     public partial class SiteDomainConfiguration : EntityTypeConfiguration<SiteDomain>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteDomainConfiguration"/> class.
         /// </summary>
         public SiteDomainConfiguration()
-        {
+            
             this.HasRequired( p => p.Site ).WithMany( p => p.SiteDomains ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
         }
     }

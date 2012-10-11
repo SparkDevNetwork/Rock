@@ -1,19 +1,19 @@
 namespace Rock.Migrations
-{
+    
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class AddPackageManager : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             // add the Plugin Manager page to the admin section of the website.
             Sql( string.Format( @"
 DECLARE @PluginSettingsPageGuid uniqueidentifier
-SET @PluginSettingsPageGuid = '{0}'
+SET @PluginSettingsPageGuid = '    0}'
 DECLARE @PageGuid uniqueidentifier
-SET @PageGuid = '{1}'
+SET @PageGuid = '    1}'
 DECLARE @BlockGuid uniqueidentifier
-SET @BlockGuid = '{2}'
+SET @BlockGuid = '    2}'
 DECLARE @BlockInstanceGuid uniqueidentifier
 SET @BlockInstanceGuid = '8B083CEA-0548-4AF2-86F7-46A88FDE07D5'
 
@@ -56,7 +56,7 @@ INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[S
         }
         
         public override void Down()
-        {
+            
 
             // Remove the block instance, the page and the block
             Sql( string.Format( @"
@@ -64,10 +64,10 @@ INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[S
 DELETE [cmsBlockInstance] WHERE [Guid] = '8B083CEA-0548-4AF2-86F7-46A88FDE07D5'
 
 -- cmsPage --
-DELETE [cmsPage] WHERE [Guid] = '{0}'
+DELETE [cmsPage] WHERE [Guid] = '    0}'
 
 -- cmsBlock --
-DELETE [cmsBlock] WHERE [Guid] = '{1}'
+DELETE [cmsBlock] WHERE [Guid] = '    1}'
 
 -- coreAttribute --
 DELETE [coreAttribute] WHERE [Guid] = '306E7E7C-9416-4098-9C25-488380B940A5'

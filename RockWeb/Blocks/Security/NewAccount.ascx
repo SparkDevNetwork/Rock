@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NewAccount.ascx.cs" Inherits="RockWeb.Blocks.Security.NewAccount" %>
 <script type="text/javascript">
 
-    Sys.Application.add_load(function () {
+    Sys.Application.add_load(function ()     
 
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
@@ -9,29 +9,29 @@
 
         availabilityMessageRow.hide();
 
-        usernameTextbox.blur(function () {
-            if ($(this).val()) {
-                $.ajax({
+        usernameTextbox.blur(function ()     
+            if ($(this).val())     
+                $.ajax(    
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
                     url: rock.baseUrl + 'api/users/available/' + escape($(this).val()),
-                    success: function (getData, status, xhr) {
+                    success: function (getData, status, xhr)     
 
-                        if (getData) {
-                            if (availabilityMessageRow.is(':visible')) {
+                        if (getData)     
+                            if (availabilityMessageRow.is(':visible'))     
                                 usernameUnavailable.html('This username is available.');
                                 usernameUnavailable.addClass('success');
                                 usernameUnavailable.removeClass('warning');
                             }
-                        } else {
+                        } else     
                             availabilityMessageRow.show();
                             usernameUnavailable.html('This username is already taken!');
                             usernameUnavailable.addClass('warning');
                             usernameUnavailable.removeClass('success');
                         }
                     },
-                    error: function (xhr, status, error) {
+                    error: function (xhr, status, error)     
                         //alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
@@ -135,7 +135,7 @@
             </asp:TemplateField>
             <asp:BoundField DataField="FullName" HeaderText="Name" />
             <asp:BoundField DataField="Gender" HeaderText="Gender" />
-            <asp:BoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="{0:MMMM d}" />
+            <asp:BoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="    0:MMMM d}" />
         </Columns>
         </Rock:Grid>
 

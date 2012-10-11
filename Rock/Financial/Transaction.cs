@@ -14,13 +14,13 @@ using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Financial
-{
+    
     /// <summary>
     /// Transaction POCO class.
     /// </summary>
     [Table("financialTransaction")]
     public partial class Transaction : Model<Transaction>
-    {
+        
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
@@ -29,7 +29,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(250)]
-        public string Description { get; set; }
+        public string Description      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction date.
@@ -38,7 +38,7 @@ namespace Rock.Financial
         /// The transaction date.
         /// </value>
         [DataMember]
-        public DateTime? TransactionDate { get; set; }
+        public DateTime? TransactionDate      get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -48,7 +48,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Entity { get; set; }
+        public string Entity      get; set; }
 
         /// <summary>
         /// Gets or sets the entity id.
@@ -57,7 +57,7 @@ namespace Rock.Financial
         /// The entity id.
         /// </value>
         [DataMember]
-        public int? EntityId { get; set; }
+        public int? EntityId      get; set; }
 
         /// <summary>
         /// Gets or sets the batch id.
@@ -66,7 +66,7 @@ namespace Rock.Financial
         /// The batch id.
         /// </value>
         [DataMember]
-        public int? BatchId { get; set; }
+        public int? BatchId      get; set; }
 
         /// <summary>
         /// Gets or sets the currency type id.
@@ -75,7 +75,7 @@ namespace Rock.Financial
         /// The currency type id.
         /// </value>
         [DataMember]
-        public int? CurrencyTypeId { get; set; }
+        public int? CurrencyTypeId      get; set; }
 
         /// <summary>
         /// Gets or sets the credit card type id.
@@ -84,7 +84,7 @@ namespace Rock.Financial
         /// The credit card type id.
         /// </value>
         [DataMember]
-        public int? CreditCardTypeId { get; set; }
+        public int? CreditCardTypeId      get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -93,7 +93,7 @@ namespace Rock.Financial
         /// The amount.
         /// </value>
         [DataMember]
-        public decimal Amount { get; set; }
+        public decimal Amount      get; set; }
 
         /// <summary>
         /// Gets or sets the refund transaction id.
@@ -102,7 +102,7 @@ namespace Rock.Financial
         /// The refund transaction id.
         /// </value>
         [DataMember]
-        public int? RefundTransactionId { get; set; }
+        public int? RefundTransactionId      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction image id.
@@ -111,7 +111,7 @@ namespace Rock.Financial
         /// The transaction image id.
         /// </value>
         [DataMember]
-        public int? TransactionImageId { get; set; }
+        public int? TransactionImageId      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.
@@ -121,7 +121,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string TransactionCode { get; set; }
+        public string TransactionCode      get; set; }
 
         /// <summary>
         /// Gets or sets the gateway id.
@@ -130,7 +130,7 @@ namespace Rock.Financial
         /// The gateway id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? GatewayId      get; set; }
 
         /// <summary>
         /// Gets or sets the source type id.
@@ -139,7 +139,7 @@ namespace Rock.Financial
         /// The source type id.
         /// </value>
         [DataMember]
-        public int? SourceTypeId { get; set; }
+        public int? SourceTypeId      get; set; }
 
         /// <summary>
         /// Gets or sets the summary.
@@ -149,7 +149,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(500)]
-        public string Summary { get; set; }
+        public string Summary      get; set; }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -157,7 +157,7 @@ namespace Rock.Financial
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static Transaction Read( int id )
-        {
+            
             return Read<Transaction>( id );
         }
 
@@ -167,7 +167,7 @@ namespace Rock.Financial
         /// <value>
         /// The batch.
         /// </value>
-        public virtual Batch Batch { get; set; }
+        public virtual Batch Batch      get; set; }
 
         /// <summary>
         /// Gets or sets the type of the currency.
@@ -175,7 +175,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the currency.
         /// </value>
-        public virtual DefinedValue CurrencyType { get; set; }
+        public virtual DefinedValue CurrencyType      get; set; }
 
         /// <summary>
         /// Gets or sets the type of the credit card.
@@ -183,7 +183,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the credit card.
         /// </value>
-        public virtual DefinedValue CreditCardType { get; set; }
+        public virtual DefinedValue CreditCardType      get; set; }
 
         /// <summary>
         /// Gets or sets the gateway.
@@ -191,7 +191,7 @@ namespace Rock.Financial
         /// <value>
         /// The gateway.
         /// </value>
-        public virtual Gateway Gateway { get; set; }
+        public virtual Gateway Gateway      get; set; }
 
         /// <summary>
         /// Gets or sets the type of the source.
@@ -199,7 +199,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the source.
         /// </value>
-        public virtual DefinedValue SourceType { get; set; }
+        public virtual DefinedValue SourceType      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -207,7 +207,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction details.
         /// </value>
-        public virtual ICollection<TransactionDetail> TransactionDetails { get; set; }
+        public virtual ICollection<TransactionDetail> TransactionDetails      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -215,13 +215,13 @@ namespace Rock.Financial
         /// <value>
         /// The transaction funds.
         /// </value>
-        public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
-        //public virtual ICollection<Fund> Funds { get; set; }
+        public virtual ICollection<TransactionFund> TransactionFunds      get; set; }
+        //public virtual ICollection<Fund> Funds      get; set; }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName { get { return "Financial.Transaction"; } }
+        public override string EntityTypeName      get      return "Financial.Transaction"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -230,7 +230,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Amount.ToString();
 		}
     }
@@ -239,13 +239,13 @@ namespace Rock.Financial
     /// Transaction Configuration class.
     /// </summary>
     public partial class TransactionConfiguration : EntityTypeConfiguration<Transaction>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionConfiguration"/> class.
         /// </summary>
         public TransactionConfiguration()
-        {
-            //this.HasMany(p => p.Funds).WithMany(c => c.Transactions).Map(m => { m.MapLeftKey("TransactionId"); m.MapRightKey("FundId"); m.ToTable("financialTransactionFund"); });
+            
+            //this.HasMany(p => p.Funds).WithMany(c => c.Transactions).Map(m =>      m.MapLeftKey("TransactionId"); m.MapRightKey("FundId"); m.ToTable("financialTransactionFund"); });
             this.HasOptional(b => b.Batch).WithMany(t => t.Transactions).HasForeignKey(t => t.BatchId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.CurrencyType).WithMany().HasForeignKey(t => t.CurrencyTypeId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.CreditCardType).WithMany().HasForeignKey(t => t.CreditCardTypeId).WillCascadeOnDelete(false);

@@ -14,12 +14,12 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
 namespace Rock
-{
+    
     /// <summary>
     /// Extension Methods
     /// </summary>
     public static class ExtensionMethods
-    {
+        
         #region Object Extensions
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Rock
         /// <param name="obj">Object.</param>
         /// <returns></returns>
         public static string ToJSON( this object obj )
-        {
+            
             return JsonConvert.SerializeObject( obj );
         }
 
@@ -39,8 +39,8 @@ namespace Rock
         /// <param name="recursionDepth">constrains the number of object levels to process.</param>
         /// <returns></returns>
         public static string ToJSON( this object obj, int recursionDepth )
-        {
-            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
+            
+            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings      MaxDepth = recursionDepth } );
         }
 
         /// <summary>
@@ -49,13 +49,13 @@ namespace Rock
         /// <param name="obj">The object to copy.</param>
         /// <returns></returns>
         public static ExpandoObject ToDynamic( this object obj )
-        {
+            
             dynamic expando = new ExpandoObject();
             var dict = expando as IDictionary<string, object>;
             var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
 
             foreach (var prop in properties)
-            {
+                
                 dict[prop.Name] = prop.GetValue( obj, null );
             }
 
@@ -72,11 +72,11 @@ namespace Rock
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
         public static string SplitCase( this string str )
-        {
+            
 			if ( str == null )
 				return null;
 
-			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+			return Regex.Replace( Regex.Replace( str, @"(\P    Ll})(\P    Ll}\p    Ll})", "$1 $2" ), @"(\p    Ll})(\P    Ll})", "$1 $2" );
         }
 
         /// <summary>
@@ -86,13 +86,13 @@ namespace Rock
         /// <param name="whitespace">if set to <c>true</c> [whitespace].</param>
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
-        {
+            
 			if (str == null)
 				return new string[0];
 
 			string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
 
-			char[] delimiter = new char[] { ',' };
+			char[] delimiter = new char[]      ',' };
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
@@ -104,7 +104,7 @@ namespace Rock
         /// <param name="newValue">The value to insert.</param>
         /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
-        {
+            
 			if ( str == null )
 				return null;
 
@@ -117,7 +117,7 @@ namespace Rock
             char[] chars = new char[str.Length + Math.Max( 0, inc )];
             while ( ( position1 = upperString.IndexOf( upperPattern,
                                               position0 ) ) != -1 )
-            {
+                
                 for ( int i = position0; i < position1; ++i )
                     chars[count++] = str[i];
                 for ( int i = 0; i < newValue.Length; ++i )
@@ -136,7 +136,7 @@ namespace Rock
 		/// <param name="str"></param>
 		/// <returns></returns>
         public static string EscapeQuotes( this string str )
-        {
+            
 			if ( str == null )
 				return null;
 
@@ -150,7 +150,7 @@ namespace Rock
 		/// <param name="maxLength"></param>
 		/// <returns></returns>
         public static string Ellipsis( this string str, int maxLength )
-        {
+            
 			if ( str == null )
 				return null;
 
@@ -176,7 +176,7 @@ namespace Rock
         /// <param name="id">The id.</param>
         /// <returns></returns>
 		public static string DefinedValue( this int? id )
-		{
+		    
 			if ( !id.HasValue )
 				return string.Empty;
 			
@@ -197,7 +197,7 @@ namespace Rock
 		/// <param name="field"></param>
 		/// <returns></returns>
 		public static int Bit( this Boolean field )
-		{
+		    
 			return field ? 1 : 0;
 		}
 
@@ -211,7 +211,7 @@ namespace Rock
 		/// <param name="start"></param>
 		/// <returns></returns>
 		public static int Age( this DateTimeOffset? start )
-		{
+		    
 			if ( start.HasValue )
 				return start.Value.Age();
 			else
@@ -224,7 +224,7 @@ namespace Rock
 		/// <param name="start"></param>
 		/// <returns></returns>
 		public static int Age( this DateTimeOffset start )
-		{
+		    
 			var now = DateTime.Today;
 			int age = now.Year - start.Year;
 			if ( start > now.AddYears( -age ) ) age--;
@@ -239,7 +239,7 @@ namespace Rock
         /// <param name="end">The end.</param>
         /// <returns></returns>
         public static int TotalMonths( this DateTimeOffset end, DateTimeOffset start )
-        {
+            
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
 
@@ -250,7 +250,7 @@ namespace Rock
         /// <param name="end">The end.</param>
         /// <returns></returns>
 		public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
-        {
+            
             return (end.Year) - (start.Year);
         }
 
@@ -262,9 +262,9 @@ namespace Rock
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
 		public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
-		{
+		    
             if ( dateTime.HasValue )
-            {
+                
 				return ToElapsedString( dateTime.Value, condensed, includeTime );
 			}
 			else
@@ -279,14 +279,14 @@ namespace Rock
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
 		/// <returns></returns>
 		public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
-		{
+		    
 			DateTimeOffset start = dateTime;
 			DateTimeOffset end = DateTimeOffset.Now;
 
 			string direction = " Ago";
 			TimeSpan timeSpan = end.Subtract( start );
 			if ( timeSpan.TotalMilliseconds < 0 )
-			{
+			    
 				direction = " From Now";
 				start = end;
 				end = dateTime;
@@ -296,37 +296,37 @@ namespace Rock
 			string duration = "";
 
 			if ( timeSpan.TotalHours < 24 && includeTime )
-			{
+			    
 				// Less than one second
 				if ( timeSpan.TotalSeconds <= 1 )
-					duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
+					duration = string.Format( "1    0}", condensed ? "sec" : " Second" );
 
 				else if ( timeSpan.TotalSeconds < 60 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
+					duration = string.Format( "    0:N0}    1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
 				else if ( timeSpan.TotalMinutes <= 1 )
-					duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
+					duration = string.Format( "1    0}", condensed ? "min" : " Minute" );
 				else if ( timeSpan.TotalMinutes < 60 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
+					duration = string.Format( "    0:N0}    1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
 				else if ( timeSpan.TotalHours <= 1 )
-					duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
+					duration = string.Format( "1    0}", condensed ? "hr" : " Hour" );
 				else if ( timeSpan.TotalHours < 24 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
+					duration = string.Format( "    0:N0}    1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
 			}
 
 			if ( duration == "" )
-			{
+			    
 				if ( timeSpan.TotalDays <= 1 )
-					duration = string.Format( "1{0}", condensed ? "day" : " Day" );
+					duration = string.Format( "1    0}", condensed ? "day" : " Day" );
 				else if ( timeSpan.TotalDays < 31 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
+					duration = string.Format( "    0:N0}    1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
 				else if ( end.TotalMonths( start ) <= 1 )
-					duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
+					duration = string.Format( "1    0}", condensed ? "mon" : " Month" );
 				else if ( end.TotalMonths( start ) <= 18 )
-					duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
+					duration = string.Format( "    0:N0}    1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
 				else if ( end.TotalYears( start ) <= 1 )
-					duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
+					duration = string.Format( "1    0}", condensed ? "yr" : " Year" );
 				else
-					duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
+					duration = string.Format( "    0:N0}    1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
 			}
 
 			return "(" + duration + (condensed ? "" : direction) + ")";
@@ -345,7 +345,7 @@ namespace Rock
         /// <param name="constructorParameters">The constructor parameters.</param>
         /// <returns></returns>
         public static System.Web.UI.UserControl LoadControl( this System.Web.UI.Control control, string userControlPath, params object[] constructorParameters )
-        {
+            
             List<Type> constParamTypes = new List<Type>();
             foreach ( object constParam in constructorParameters )
                 constParamTypes.Add( constParam.GetType() );
@@ -372,7 +372,7 @@ namespace Rock
         /// <param name="webControl">The web control.</param>
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
-        {
+            
             string match = @"\b" + className + "\b";
             string css = webControl.CssClass;
 
@@ -386,7 +386,7 @@ namespace Rock
         /// <param name="webControl">The web control.</param>
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
-        {
+            
             string match = @"\s*\b" + className + "\b";
             string css = webControl.CssClass;
 
@@ -404,7 +404,7 @@ namespace Rock
         /// <param name="htmlControl">The html control.</param>
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
-        {
+            
             string match = @"\b" + className + "\b";
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
@@ -418,7 +418,7 @@ namespace Rock
         /// <param name="htmlControl">The html control.</param>
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.HtmlControls.HtmlControl htmlControl, string className )
-        {
+            
             string match = @"\s*\b" + className + @"\b";
             string css = htmlControl.Attributes["class"] ?? string.Empty;
 
@@ -436,13 +436,13 @@ namespace Rock
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
         public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
-        {
+            
             try
-            {
+                
                 ddl.SelectedValue = value;
             }
             catch
-            {
+                
                 if ( ddl.Items.Count > 0 )
                     ddl.SelectedIndex = 0;
             }
@@ -459,7 +459,7 @@ namespace Rock
         /// <param name="eff">The eff.</param>
         /// <returns></returns>
         public static String ConvertToString( this Enum eff )
-        {
+            
             return Enum.GetName( eff.GetType(), eff ).SplitCase();
         }
 
@@ -470,7 +470,7 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <returns></returns>
         public static T ConvertToEnum<T>( this String enumValue )
-        {
+            
             return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
         }
 
@@ -486,7 +486,7 @@ namespace Rock
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
         public static string AsDelimited<T>( this List<T> items, string delimiter)
-        {
+            
             List<string> strings = new List<string>();
             foreach ( T item in items )
                 strings.Add( item.ToString() );
@@ -500,10 +500,10 @@ namespace Rock
         /// <param name="delimter">The delimter.</param>
         /// <returns></returns>
         public static string Join( this Dictionary<string, string> items, string delimter )
-        {
+            
             List<string> parms = new List<string>();
             foreach ( var item in items )
-                parms.Add( string.Join( "=", new string[] { item.Key, item.Value } ) );
+                parms.Add( string.Join( "=", new string[]      item.Key, item.Value } ) );
             return string.Join( delimter, parms.ToArray() );
         }
 
@@ -519,7 +519,7 @@ namespace Rock
         /// <param name="property">The property to order by.</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> OrderBy<T>( this IQueryable<T> source, string property )
-        {
+            
             return ApplyOrder<T>( source, property, "OrderBy" );
         }
 
@@ -531,7 +531,7 @@ namespace Rock
         /// <param name="property">The property to order by.</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> OrderByDescending<T>( this IQueryable<T> source, string property )
-        {
+            
             return ApplyOrder<T>( source, property, "OrderByDescending" );
         }
 
@@ -543,7 +543,7 @@ namespace Rock
         /// <param name="property">The property to order by.</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> ThenBy<T>( this IOrderedQueryable<T> source, string property )
-        {
+            
             return ApplyOrder<T>( source, property, "ThenBy" );
         }
 
@@ -555,18 +555,18 @@ namespace Rock
         /// <param name="property">The property to order by.</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> ThenByDescending<T>( this IOrderedQueryable<T> source, string property )
-        {
+            
             return ApplyOrder<T>( source, property, "ThenByDescending" );
         }
 
         static IOrderedQueryable<T> ApplyOrder<T>( IQueryable<T> source, string property, string methodName )
-        {
+            
             string[] props = property.Split( '.' );
             Type type = typeof( T );
             ParameterExpression arg = Expression.Parameter( type, "x" );
             Expression expr = arg;
             foreach ( string prop in props )
-            {
+                
                 // use reflection (not ComponentModel) to mirror LINQ
                 PropertyInfo pi = type.GetProperty( prop );
                 expr = Expression.Property( expr, pi );
@@ -581,7 +581,7 @@ namespace Rock
                             && method.GetGenericArguments().Length == 2
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
-                    .Invoke( null, new object[] { source, lambda } );
+                    .Invoke( null, new object[]      source, lambda } );
             return ( IOrderedQueryable<T> )result;
         }
 
@@ -593,7 +593,7 @@ namespace Rock
         /// <param name="sortProperty">The sort property.</param>
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
-        {
+            
             if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
                 return source.OrderBy( sortProperty.Property );
             else

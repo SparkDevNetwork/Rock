@@ -9,13 +9,13 @@
 //------------------------------------------------------------------------------
 
 namespace Rock.ServiceObjects.GeoCoder
-{
+    
 
 #pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://www.serviceobjects.com/", ConfigurationName="ServiceObjects.GeoCoder.DOTSGeoCoderSoap")]
-    public interface DOTSGeoCoderSoap {
+    public interface DOTSGeoCoderSoap     
         
         [System.ServiceModel.OperationContractAttribute(Action="http://www.serviceobjects.com/GetGeoLocation", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
@@ -76,7 +76,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class Location : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class Location : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -96,11 +96,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -108,11 +108,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Latitude {
-            get {
+        public string Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -120,11 +120,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Longitude {
-            get {
+        public string Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -132,11 +132,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -144,11 +144,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Tract {
-            get {
+        public string Tract     
+            get     
                 return this.tractField;
             }
-            set {
+            set     
                 this.tractField = value;
                 this.RaisePropertyChanged("Tract");
             }
@@ -156,11 +156,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string Block {
-            get {
+        public string Block     
+            get     
                 return this.blockField;
             }
-            set {
+            set     
                 this.blockField = value;
                 this.RaisePropertyChanged("Block");
             }
@@ -168,11 +168,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string Level {
-            get {
+        public string Level     
+            get     
                 return this.levelField;
             }
-            set {
+            set     
                 this.levelField = value;
                 this.RaisePropertyChanged("Level");
             }
@@ -180,11 +180,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string LevelDescription {
-            get {
+        public string LevelDescription     
+            get     
                 return this.levelDescriptionField;
             }
-            set {
+            set     
                 this.levelDescriptionField = value;
                 this.RaisePropertyChanged("LevelDescription");
             }
@@ -192,9 +192,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -206,7 +206,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class Err : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class Err : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string descField;
         
@@ -216,11 +216,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Desc {
-            get {
+        public string Desc     
+            get     
                 return this.descField;
             }
-            set {
+            set     
                 this.descField = value;
                 this.RaisePropertyChanged("Desc");
             }
@@ -228,11 +228,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Number {
-            get {
+        public string Number     
+            get     
                 return this.numberField;
             }
-            set {
+            set     
                 this.numberField = value;
                 this.RaisePropertyChanged("Number");
             }
@@ -240,11 +240,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Location {
-            get {
+        public string Location     
+            get     
                 return this.locationField;
             }
-            set {
+            set     
                 this.locationField = value;
                 this.RaisePropertyChanged("Location");
             }
@@ -252,9 +252,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -266,7 +266,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class DistanceBetweenInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class DistanceBetweenInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -278,11 +278,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -290,11 +290,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string MilesBetween {
-            get {
+        public string MilesBetween     
+            get     
                 return this.milesBetweenField;
             }
-            set {
+            set     
                 this.milesBetweenField = value;
                 this.RaisePropertyChanged("MilesBetween");
             }
@@ -302,11 +302,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string KilometersBetween {
-            get {
+        public string KilometersBetween     
+            get     
                 return this.kilometersBetweenField;
             }
-            set {
+            set     
                 this.kilometersBetweenField = value;
                 this.RaisePropertyChanged("KilometersBetween");
             }
@@ -314,11 +314,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string FeetBetween {
-            get {
+        public string FeetBetween     
+            get     
                 return this.feetBetweenField;
             }
-            set {
+            set     
                 this.feetBetweenField = value;
                 this.RaisePropertyChanged("FeetBetween");
             }
@@ -326,9 +326,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -340,7 +340,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class DistanceToWaterInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class DistanceToWaterInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -356,11 +356,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -368,11 +368,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string MilesToWater {
-            get {
+        public string MilesToWater     
+            get     
                 return this.milesToWaterField;
             }
-            set {
+            set     
                 this.milesToWaterField = value;
                 this.RaisePropertyChanged("MilesToWater");
             }
@@ -380,11 +380,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Latitude {
-            get {
+        public string Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -392,11 +392,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Longitude {
-            get {
+        public string Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -404,11 +404,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string ClosestWaterLatitude {
-            get {
+        public string ClosestWaterLatitude     
+            get     
                 return this.closestWaterLatitudeField;
             }
-            set {
+            set     
                 this.closestWaterLatitudeField = value;
                 this.RaisePropertyChanged("ClosestWaterLatitude");
             }
@@ -416,11 +416,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string ClosestWaterLongitude {
-            get {
+        public string ClosestWaterLongitude     
+            get     
                 return this.closestWaterLongitudeField;
             }
-            set {
+            set     
                 this.closestWaterLongitudeField = value;
                 this.RaisePropertyChanged("ClosestWaterLongitude");
             }
@@ -428,9 +428,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -442,7 +442,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class ReverseAddress : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ReverseAddress : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -458,11 +458,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -470,11 +470,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Address {
-            get {
+        public string Address     
+            get     
                 return this.addressField;
             }
-            set {
+            set     
                 this.addressField = value;
                 this.RaisePropertyChanged("Address");
             }
@@ -482,11 +482,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string City {
-            get {
+        public string City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -494,11 +494,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string State {
-            get {
+        public string State     
+            get     
                 return this.stateField;
             }
-            set {
+            set     
                 this.stateField = value;
                 this.RaisePropertyChanged("State");
             }
@@ -506,11 +506,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -518,11 +518,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string County {
-            get {
+        public string County     
+            get     
                 return this.countyField;
             }
-            set {
+            set     
                 this.countyField = value;
                 this.RaisePropertyChanged("County");
             }
@@ -530,9 +530,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -544,7 +544,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class GeocodeCityWorldwideInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class GeocodeCityWorldwideInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string cityField;
         
@@ -560,11 +560,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string City {
-            get {
+        public string City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -572,11 +572,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Region {
-            get {
+        public string Region     
+            get     
                 return this.regionField;
             }
-            set {
+            set     
                 this.regionField = value;
                 this.RaisePropertyChanged("Region");
             }
@@ -584,11 +584,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Country {
-            get {
+        public string Country     
+            get     
                 return this.countryField;
             }
-            set {
+            set     
                 this.countryField = value;
                 this.RaisePropertyChanged("Country");
             }
@@ -596,11 +596,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Latitude {
-            get {
+        public string Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -608,11 +608,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Longitude {
-            get {
+        public string Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -620,11 +620,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -632,9 +632,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -646,7 +646,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class ZipCodeInfo : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ZipCodeInfo : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -690,11 +690,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -702,11 +702,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string City {
-            get {
+        public string City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -714,11 +714,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string State {
-            get {
+        public string State     
+            get     
                 return this.stateField;
             }
-            set {
+            set     
                 this.stateField = value;
                 this.RaisePropertyChanged("State");
             }
@@ -726,11 +726,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string County {
-            get {
+        public string County     
+            get     
                 return this.countyField;
             }
-            set {
+            set     
                 this.countyField = value;
                 this.RaisePropertyChanged("County");
             }
@@ -738,11 +738,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string AreaCode {
-            get {
+        public string AreaCode     
+            get     
                 return this.areaCodeField;
             }
-            set {
+            set     
                 this.areaCodeField = value;
                 this.RaisePropertyChanged("AreaCode");
             }
@@ -750,11 +750,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string CityAbbreviation {
-            get {
+        public string CityAbbreviation     
+            get     
                 return this.cityAbbreviationField;
             }
-            set {
+            set     
                 this.cityAbbreviationField = value;
                 this.RaisePropertyChanged("CityAbbreviation");
             }
@@ -762,11 +762,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string CityType {
-            get {
+        public string CityType     
+            get     
                 return this.cityTypeField;
             }
-            set {
+            set     
                 this.cityTypeField = value;
                 this.RaisePropertyChanged("CityType");
             }
@@ -774,11 +774,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string CountyFIPS {
-            get {
+        public string CountyFIPS     
+            get     
                 return this.countyFIPSField;
             }
-            set {
+            set     
                 this.countyFIPSField = value;
                 this.RaisePropertyChanged("CountyFIPS");
             }
@@ -786,11 +786,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string StateFIPS {
-            get {
+        public string StateFIPS     
+            get     
                 return this.stateFIPSField;
             }
-            set {
+            set     
                 this.stateFIPSField = value;
                 this.RaisePropertyChanged("StateFIPS");
             }
@@ -798,11 +798,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string TimeZone {
-            get {
+        public string TimeZone     
+            get     
                 return this.timeZoneField;
             }
-            set {
+            set     
                 this.timeZoneField = value;
                 this.RaisePropertyChanged("TimeZone");
             }
@@ -810,11 +810,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string DayLightSavings {
-            get {
+        public string DayLightSavings     
+            get     
                 return this.dayLightSavingsField;
             }
-            set {
+            set     
                 this.dayLightSavingsField = value;
                 this.RaisePropertyChanged("DayLightSavings");
             }
@@ -822,11 +822,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=11)]
-        public string MSA {
-            get {
+        public string MSA     
+            get     
                 return this.mSAField;
             }
-            set {
+            set     
                 this.mSAField = value;
                 this.RaisePropertyChanged("MSA");
             }
@@ -834,11 +834,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=12)]
-        public string MD {
-            get {
+        public string MD     
+            get     
                 return this.mdField;
             }
-            set {
+            set     
                 this.mdField = value;
                 this.RaisePropertyChanged("MD");
             }
@@ -846,11 +846,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=13)]
-        public string CBSA {
-            get {
+        public string CBSA     
+            get     
                 return this.cBSAField;
             }
-            set {
+            set     
                 this.cBSAField = value;
                 this.RaisePropertyChanged("CBSA");
             }
@@ -858,11 +858,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=14)]
-        public string PMSA {
-            get {
+        public string PMSA     
+            get     
                 return this.pMSAField;
             }
-            set {
+            set     
                 this.pMSAField = value;
                 this.RaisePropertyChanged("PMSA");
             }
@@ -870,11 +870,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=15)]
-        public string DMA {
-            get {
+        public string DMA     
+            get     
                 return this.dMAField;
             }
-            set {
+            set     
                 this.dMAField = value;
                 this.RaisePropertyChanged("DMA");
             }
@@ -882,11 +882,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=16)]
-        public string Latitude {
-            get {
+        public string Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -894,11 +894,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=17)]
-        public string Longitude {
-            get {
+        public string Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -906,11 +906,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=18)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -918,11 +918,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=19)]
-        public string[] CityAlternativeName {
-            get {
+        public string[] CityAlternativeName     
+            get     
                 return this.cityAlternativeNameField;
             }
-            set {
+            set     
                 this.cityAlternativeNameField = value;
                 this.RaisePropertyChanged("CityAlternativeName");
             }
@@ -930,9 +930,9 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -944,7 +944,7 @@ namespace Rock.ServiceObjects.GeoCoder
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://www.serviceobjects.com/")]
-    public partial class Location_V3 : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class Location_V3 : object, System.ComponentModel.INotifyPropertyChanged     
         
         private Err errorField;
         
@@ -970,11 +970,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public Err Error {
-            get {
+        public Err Error     
+            get     
                 return this.errorField;
             }
-            set {
+            set     
                 this.errorField = value;
                 this.RaisePropertyChanged("Error");
             }
@@ -982,11 +982,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Latitude {
-            get {
+        public string Latitude     
+            get     
                 return this.latitudeField;
             }
-            set {
+            set     
                 this.latitudeField = value;
                 this.RaisePropertyChanged("Latitude");
             }
@@ -994,11 +994,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Longitude {
-            get {
+        public string Longitude     
+            get     
                 return this.longitudeField;
             }
-            set {
+            set     
                 this.longitudeField = value;
                 this.RaisePropertyChanged("Longitude");
             }
@@ -1006,11 +1006,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -1018,11 +1018,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Tract {
-            get {
+        public string Tract     
+            get     
                 return this.tractField;
             }
-            set {
+            set     
                 this.tractField = value;
                 this.RaisePropertyChanged("Tract");
             }
@@ -1030,11 +1030,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string Block {
-            get {
+        public string Block     
+            get     
                 return this.blockField;
             }
-            set {
+            set     
                 this.blockField = value;
                 this.RaisePropertyChanged("Block");
             }
@@ -1042,11 +1042,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string Level {
-            get {
+        public string Level     
+            get     
                 return this.levelField;
             }
-            set {
+            set     
                 this.levelField = value;
                 this.RaisePropertyChanged("Level");
             }
@@ -1054,11 +1054,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string LevelDescription {
-            get {
+        public string LevelDescription     
+            get     
                 return this.levelDescriptionField;
             }
-            set {
+            set     
                 this.levelDescriptionField = value;
                 this.RaisePropertyChanged("LevelDescription");
             }
@@ -1066,11 +1066,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string StateFIPS {
-            get {
+        public string StateFIPS     
+            get     
                 return this.stateFIPSField;
             }
-            set {
+            set     
                 this.stateFIPSField = value;
                 this.RaisePropertyChanged("StateFIPS");
             }
@@ -1078,11 +1078,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string CountyFIPS {
-            get {
+        public string CountyFIPS     
+            get     
                 return this.countyFIPSField;
             }
-            set {
+            set     
                 this.countyFIPSField = value;
                 this.RaisePropertyChanged("CountyFIPS");
             }
@@ -1090,11 +1090,11 @@ namespace Rock.ServiceObjects.GeoCoder
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string Debug {
-            get {
+        public string Debug     
+            get     
                 return this.debugField;
             }
-            set {
+            set     
                 this.debugField = value;
                 this.RaisePropertyChanged("Debug");
             }
@@ -1102,90 +1102,90 @@ namespace Rock.ServiceObjects.GeoCoder
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface DOTSGeoCoderSoapChannel : Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap, System.ServiceModel.IClientChannel {
+    public interface DOTSGeoCoderSoapChannel : Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap, System.ServiceModel.IClientChannel     
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class DOTSGeoCoderSoapClient : System.ServiceModel.ClientBase<Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap>, Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap {
+    public partial class DOTSGeoCoderSoapClient : System.ServiceModel.ClientBase<Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap>, Rock.ServiceObjects.GeoCoder.DOTSGeoCoderSoap     
         
-        public DOTSGeoCoderSoapClient() {
+        public DOTSGeoCoderSoapClient()     
         }
         
         public DOTSGeoCoderSoapClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+                base(endpointConfigurationName)     
         }
         
         public DOTSGeoCoderSoapClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public DOTSGeoCoderSoapClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public DOTSGeoCoderSoapClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+                base(binding, remoteAddress)     
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocation(string Address, string City, string State, string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocation(string Address, string City, string State, string PostalCode, string LicenseKey)     
             return base.Channel.GetGeoLocation(Address, City, State, PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByZipPlusFour(string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByZipPlusFour(string PostalCode, string LicenseKey)     
             return base.Channel.GetGeoLocationByZipPlusFour(PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByZipPlusTwo(string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByZipPlusTwo(string PostalCode, string LicenseKey)     
             return base.Channel.GetGeoLocationByZipPlusTwo(PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByCityState(string City, string State, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetGeoLocationByCityState(string City, string State, string LicenseKey)     
             return base.Channel.GetGeoLocationByCityState(City, State, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetBestMatch(string Address, string City, string State, string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetBestMatch(string Address, string City, string State, string PostalCode, string LicenseKey)     
             return base.Channel.GetBestMatch(Address, City, State, PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location GetBestMatch_V2(string Address, string City, string State, string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location GetBestMatch_V2(string Address, string City, string State, string PostalCode, string LicenseKey)     
             return base.Channel.GetBestMatch_V2(Address, City, State, PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.Location_V3 GetBestMatch_V3(string Address, string City, string State, string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.Location_V3 GetBestMatch_V3(string Address, string City, string State, string PostalCode, string LicenseKey)     
             return base.Channel.GetBestMatch_V3(Address, City, State, PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.ZipCodeInfo GetZipInfo(string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.ZipCodeInfo GetZipInfo(string PostalCode, string LicenseKey)     
             return base.Channel.GetZipInfo(PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.GeocodeCityWorldwideInfo[] GetGeoLocationWorldwide(string City, string Region, string Country, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.GeocodeCityWorldwideInfo[] GetGeoLocationWorldwide(string City, string Region, string Country, string LicenseKey)     
             return base.Channel.GetGeoLocationWorldwide(City, Region, Country, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.ReverseAddress GetReverseLocation(string Latitude, string Longitude, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.ReverseAddress GetReverseLocation(string Latitude, string Longitude, string LicenseKey)     
             return base.Channel.GetReverseLocation(Latitude, Longitude, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.DistanceToWaterInfo GetDistanceToWater(string Latitude, string Longitude, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.DistanceToWaterInfo GetDistanceToWater(string Latitude, string Longitude, string LicenseKey)     
             return base.Channel.GetDistanceToWater(Latitude, Longitude, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.DistanceToWaterInfo GetDistanceToWaterByAddress(string Address, string City, string State, string PostalCode, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.DistanceToWaterInfo GetDistanceToWaterByAddress(string Address, string City, string State, string PostalCode, string LicenseKey)     
             return base.Channel.GetDistanceToWaterByAddress(Address, City, State, PostalCode, LicenseKey);
         }
         
-        public Rock.ServiceObjects.GeoCoder.DistanceBetweenInfo GetDistance(string FromLatitude, string FromLongitude, string ToLatitude, string ToLongitude, string LicenseKey) {
+        public Rock.ServiceObjects.GeoCoder.DistanceBetweenInfo GetDistance(string FromLatitude, string FromLongitude, string ToLatitude, string ToLongitude, string LicenseKey)     
             return base.Channel.GetDistance(FromLatitude, FromLongitude, ToLatitude, ToLongitude, LicenseKey);
         }
     }

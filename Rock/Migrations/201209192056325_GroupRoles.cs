@@ -1,26 +1,26 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class GroupRoles : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             DropForeignKey("dbo.groupsGroupTypeRole", "GroupRoleId", "dbo.groupsGroupRole");
             DropForeignKey("dbo.groupsGroupTypeRole", "GroupTypeId", "dbo.groupsGroupType");
-            DropIndex("groupsGroupTypeRole", new[] { "GroupRoleId" });
-            DropIndex("groupsGroupTypeRole", new[] { "GroupTypeId" });
+            DropIndex("groupsGroupTypeRole", new[]      "GroupRoleId" });
+            DropIndex("groupsGroupTypeRole", new[]      "GroupTypeId" });
 
             CreateTable(
                 "dbo.groupGroupLocation",
                 c => new
-                    {
+                        
                         GroupId = c.Int(nullable: false),
                         LocationId = c.Int(nullable: false),
                         LocationTypeId = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => new { t.GroupId, t.LocationId })
+                .PrimaryKey(t => new      t.GroupId, t.LocationId })
                 .ForeignKey("dbo.groupsGroup", t => t.GroupId, cascadeDelete: true)
                 .ForeignKey("dbo.crmLocation", t => t.LocationId, cascadeDelete: true)
                 .Index(t => t.GroupId)
@@ -71,25 +71,25 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             CreateTable(
                 "dbo.groupsGroupTypeRole",
                 c => new
-                    {
+                        
                         GroupRoleId = c.Int(nullable: false),
                         GroupTypeId = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => new { t.GroupRoleId, t.GroupTypeId });
+                .PrimaryKey(t => new      t.GroupRoleId, t.GroupTypeId });
 
             Sql( @"
                 INSERT INTO [groupsGroupTypeRole] ([GroupRoleId], [GroupTypeId])
                     SELECT [Id], [GroupTypeId] FROM [groupsGroupRole]
 " );
             
-            DropIndex( "dbo.groupsGroupRole", new[] { "GroupTypeId" } );
-            DropIndex("dbo.groupGroupLocation", new[] { "LocationId" });
-            DropIndex("dbo.groupGroupLocation", new[] { "GroupId" });
-            DropIndex("dbo.groupsGroup", new[] { "CampusId" });
+            DropIndex( "dbo.groupsGroupRole", new[]      "GroupTypeId" } );
+            DropIndex("dbo.groupGroupLocation", new[]      "LocationId" });
+            DropIndex("dbo.groupGroupLocation", new[]      "GroupId" });
+            DropIndex("dbo.groupsGroup", new[]      "CampusId" });
             DropForeignKey("dbo.groupsGroupRole", "GroupTypeId", "dbo.groupsGroupType");
             DropForeignKey("dbo.groupGroupLocation", "LocationId", "dbo.crmLocation");
             DropForeignKey("dbo.groupGroupLocation", "GroupId", "dbo.groupsGroup");

@@ -1,13 +1,13 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class PhoneNumberType : RockMigration_0
-    {
+        
         public override void Up()
-        {
-            DropIndex( "dbo.crmPhoneNumber", new string[] { "Number" } );
+            
+            DropIndex( "dbo.crmPhoneNumber", new string[]      "Number" } );
             AddColumn( "dbo.crmPhoneNumber", "NumberTypeId", c => c.Int() );
             AddColumn( "dbo.crmPhoneNumber", "IsUnlisted", c => c.Boolean( nullable: false ) );
             AlterColumn( "dbo.crmPhoneNumber", "Number", c => c.String( nullable: false, maxLength: 20 ) );
@@ -25,7 +25,7 @@ namespace Rock.Migrations
         }
 
         public override void Down()
-        {
+            
             Sql( @"
                 UPDATE [crmPhoneNumber] SET [NumberTypeId] = NULL 
                 DELETE [coreDefinedValue] WHERE [DefinedTypeId] IN (
@@ -33,8 +33,8 @@ namespace Rock.Migrations
 " );
             DeleteDefinedType( "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD" );
 
-            DropIndex( "dbo.crmPhoneNumber", new string[] { "Number" } );
-            DropIndex( "dbo.crmPhoneNumber", new[] { "NumberTypeId" } );
+            DropIndex( "dbo.crmPhoneNumber", new string[]      "Number" } );
+            DropIndex( "dbo.crmPhoneNumber", new[]      "NumberTypeId" } );
             DropForeignKey( "dbo.crmPhoneNumber", "NumberTypeId", "dbo.coreDefinedValue" );
             AlterColumn( "dbo.crmPhoneNumber", "Number", c => c.String( nullable: false, maxLength: 100 ) );
             DropColumn( "dbo.crmPhoneNumber", "IsUnlisted" );

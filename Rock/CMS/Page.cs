@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Page POCO Entity.
     /// </summary>
     [Table( "cmsPage" )]
     public partial class Page : Model<Page>, IOrdered, IExportable
-    {
+        
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
@@ -30,7 +30,7 @@ namespace Rock.Cms
         [MaxLength( 100 )]
         [TrackChanges]
         [DataMember]
-        public string Name { get; set; }
+        public string Name      get; set; }
 
         /// <summary>
         /// Gets or sets the Title.
@@ -40,7 +40,7 @@ namespace Rock.Cms
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Title { get; set; }
+        public string Title      get; set; }
 
         /// <summary>
         /// Gets or sets the IsSystem.
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
 
         /// <summary>
         /// Gets or sets the Parent Page Id.
@@ -59,7 +59,7 @@ namespace Rock.Cms
         /// Parent Page Id.
         /// </value>
         [DataMember]
-        public int? ParentPageId { get; set; }
+        public int? ParentPageId      get; set; }
 
         /// <summary>
         /// Gets or sets the Site Id.
@@ -68,7 +68,7 @@ namespace Rock.Cms
         /// Site Id.
         /// </value>
         [DataMember]
-        public int? SiteId { get; set; }
+        public int? SiteId      get; set; }
 
         /// <summary>
         /// Gets or sets the Layout.
@@ -78,7 +78,7 @@ namespace Rock.Cms
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Layout { get; set; }
+        public string Layout      get; set; }
 
         /// <summary>
         /// Gets or sets the Requires Encryption.
@@ -88,7 +88,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool RequiresEncryption { get; set; }
+        public bool RequiresEncryption      get; set; }
 
         /// <summary>
         /// Gets or sets the Enable View State.
@@ -99,9 +99,9 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool EnableViewState
-        {
-            get { return _enableViewState; }
-            set { _enableViewState = value; }
+            
+            get      return _enableViewState; }
+            set      _enableViewState = value; }
         }
         private bool _enableViewState = true;
 
@@ -113,7 +113,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool MenuDisplayDescription { get; set; }
+        public bool MenuDisplayDescription      get; set; }
 
         /// <summary>
         /// Gets or sets the Menu Display Icon.
@@ -123,7 +123,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool MenuDisplayIcon { get; set; }
+        public bool MenuDisplayIcon      get; set; }
 
         /// <summary>
         /// Gets or sets the Menu Display Child Pages.
@@ -133,7 +133,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages      get; set; }
 
         /// <summary>
         /// Gets or sets the Display In Nav When.
@@ -148,7 +148,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+        public DisplayInNavWhen DisplayInNavWhen      get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -158,7 +158,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public int Order { get; set; }
+        public int Order      get; set; }
 
         /// <summary>
         /// Gets or sets the Output Cache Duration.
@@ -168,7 +168,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public int OutputCacheDuration { get; set; }
+        public int OutputCacheDuration      get; set; }
 
         /// <summary>
         /// Gets or sets the Description.
@@ -177,7 +177,7 @@ namespace Rock.Cms
         /// Description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description      get; set; }
 
         /// <summary>
         /// Gets or sets the Include Admin Footer.
@@ -188,9 +188,9 @@ namespace Rock.Cms
         [Required]
         [DataMember]
         public bool IncludeAdminFooter
-        {
-            get { return _includeAdminFooter; }
-            set { _includeAdminFooter = value; }
+            
+            get      return _includeAdminFooter; }
+            set      _includeAdminFooter = value; }
         }
         private bool _includeAdminFooter = true;
 		
@@ -200,7 +200,7 @@ namespace Rock.Cms
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Page Read( int id )
-		{
+		    
 			return Read<Page>( id );
 		}
 		
@@ -212,13 +212,13 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 150 )]
 		[DataMember]
-		public string IconUrl { get; set; }
+		public string IconUrl      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Page"; } }
+		public override string EntityTypeName      get      return "Cms.Page"; } }
         
 		/// <summary>
         /// Gets or sets the Blocks.
@@ -226,7 +226,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Blocks.
         /// </value>
-        public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks      get; set; }
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -234,7 +234,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Pages.
         /// </value>
-        public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Page> Pages      get; set; }
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -242,7 +242,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Page Routes.
         /// </value>
-        public virtual ICollection<PageRoute> PageRoutes { get; set; }
+        public virtual ICollection<PageRoute> PageRoutes      get; set; }
 
         /// <summary>
         /// Gets or sets the Page Contexts.
@@ -250,7 +250,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Page Contexts.
         /// </value>
-        public virtual ICollection<PageContext> PageContexts { get; set; }
+        public virtual ICollection<PageContext> PageContexts      get; set; }
 
         /// <summary>
         /// Gets or sets the Sites.
@@ -258,7 +258,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Sites.
         /// </value>
-        public virtual ICollection<Site> Sites { get; set; }
+        public virtual ICollection<Site> Sites      get; set; }
 
         /// <summary>
         /// Gets or sets the Parent Page.
@@ -266,7 +266,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        public virtual Page ParentPage { get; set; }
+        public virtual Page ParentPage      get; set; }
 
         /// <summary>
         /// Gets or sets the Site.
@@ -274,14 +274,14 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-        public virtual Site Site { get; set; }
+        public virtual Site Site      get; set; }
 
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
         public override List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
+            
+            get      return new List<string>()      "View", "Edit", "Configure" }; }
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace Rock.Cms
         /// A <see cref="string"/> that represents this instance.
         /// </returns>
         public override string ToString()
-        {
+            
             return Name;
         }
 
@@ -300,13 +300,13 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string PageSortHash
-        {
+            
             get
-            {
+                
                 string result = Title.PadRight( 100, ' ' );
                 var _parentPage = ParentPage;
                 while ( _parentPage != null )
-                {
+                    
                     result = _parentPage.Title.PadRight( 100, ' ' ) + result;
                     _parentPage = _parentPage.ParentPage;
                 }
@@ -320,13 +320,13 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public int PageDepth
-        {
+            
             get
-            {
+                
                 int result = 0;
                 var _parentPage = ParentPage;
                 while ( _parentPage != null )
-                {
+                    
                     result++;
                     _parentPage = _parentPage.ParentPage;
                 }
@@ -342,9 +342,9 @@ namespace Rock.Cms
         /// The drop down list text.
         /// </value>
         public string DropDownListText
-        {
+            
             get
-            {
+                
                 return new string( '-', PageDepth ) + Title;
             }
         }
@@ -354,7 +354,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string ExportJson()
-        {
+            
             return ExportObject().ToJSON();
         }
 
@@ -363,7 +363,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public object ExportObject()
-        {
+            
             return MapPagesRecursive( this );
         }
 
@@ -373,7 +373,7 @@ namespace Rock.Cms
         /// <param name="page">The page.</param>
         /// <returns></returns>
         public static dynamic MapPagesRecursive( Page page )
-        {
+            
             dynamic exportPage = new PageDto( page ).ToDynamic();
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
@@ -382,14 +382,14 @@ namespace Rock.Cms
             MapPageRoutes( page, exportPage );
 
             if ( page.Pages == null )
-            {
+                
                 return exportPage;
             }
 
             exportPage.Pages = new List<dynamic>();
 
             foreach ( var childPage in page.Pages )
-            {
+                
                 exportPage.Pages.Add( MapPagesRecursive( childPage ) );
             }
 
@@ -402,16 +402,16 @@ namespace Rock.Cms
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
         private static void MapBlocks( Page page, dynamic exportPage )
-        {
+            
             if ( page.Blocks == null )
-            {
+                
                 return;
             }
 
             exportPage.Blocks = new List<dynamic>();
 
             foreach ( var block in page.Blocks )
-            {
+                
                 exportPage.Blocks.Add( block.ExportObject() );
             }
         }
@@ -422,16 +422,16 @@ namespace Rock.Cms
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
         private static void MapPageRoutes( Page page, dynamic exportPage )
-        {
+            
             if ( page.PageRoutes == null )
-            {
+                
                 return;
             }
 
             exportPage.PageRoutes = new List<dynamic>();
 
             foreach ( var pageRoute in page.PageRoutes )
-            {
+                
                 exportPage.PageRoutes.Add( pageRoute.ExportObject() );
             }
         }
@@ -442,7 +442,7 @@ namespace Rock.Cms
         /// <param name="data">The data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
-        {
+            
             throw new NotImplementedException();
         }
     }
@@ -451,12 +451,12 @@ namespace Rock.Cms
     /// Page Configuration class.
     /// </summary>
     public partial class PageConfiguration : EntityTypeConfiguration<Page>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PageConfiguration"/> class.
         /// </summary>
         public PageConfiguration()
-        {
+            
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
         }
@@ -466,7 +466,7 @@ namespace Rock.Cms
     /// How should page be displayed in a page navigation block
     /// </summary>
     public enum DisplayInNavWhen
-    {
+        
         /// <summary>
         /// Display this page in navigation controls when allowed by security
         /// </summary>

@@ -13,9 +13,9 @@ using Rock;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     public partial class Campuses : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
         
         Rock.Crm.CampusService campusService = new Rock.Crm.CampusService();
@@ -25,10 +25,10 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
-            {
-                gCampuses.DataKeyNames = new string[] { "id" };
+                
+                gCampuses.DataKeyNames = new string[]      "id" };
                 gCampuses.Actions.IsAddEnabled = true;
                 gCampuses.Actions.AddClick += gCampuses_Add;
                 gCampuses.GridRebind += gCampuses_GridRebind;
@@ -39,16 +39,16 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
 
-        {
+            
             nbMessage.Visible = false;
 
             if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
-            {
+                
                 if ( !Page.IsPostBack )
                     BindGrid();
             }
             else
-            {
+                
                 gCampuses.Visible = false;
                 nbMessage.Text = "You are not authorized to edit campuses";
                 nbMessage.Visible = true;
@@ -62,15 +62,15 @@ namespace RockWeb.Blocks.Administration
         #region Grid Events
 
         protected void gCampuses_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( ( int )gCampuses.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gCampuses_Delete( object sender, RowEventArgs e )
-        {
+            
             Rock.Crm.Campus campus = campusService.Get( ( int )gCampuses.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
-            {
+                
                 campusService.Delete( campus, CurrentPersonId );
                 campusService.Save( campus, CurrentPersonId );
             }
@@ -79,12 +79,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         void gCampuses_Add( object sender, EventArgs e )
-        {
+            
             ShowEdit( 0 );
         }
 
         void gCampuses_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrid();
         }
 
@@ -93,13 +93,13 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         protected void btnCancel_Click( object sender, EventArgs e )
-        {
+            
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-        {
+            
             Rock.Crm.Campus campus;
 
             int campusId = 0;
@@ -107,12 +107,12 @@ namespace RockWeb.Blocks.Administration
                 campusId = 0;
 
             if ( campusId == 0 )
-            {
+                
                 campus = new Rock.Crm.Campus();
                 campusService.Add( campus, CurrentPersonId );
             }
             else
-            {
+                
                 campus = campusService.Get( campusId );
             }
 
@@ -130,24 +130,24 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void BindGrid()
-        {
+            
             gCampuses.DataSource = campusService.Queryable().OrderBy( s => s.Name ).ToList();
             gCampuses.DataBind();
         }
 
         protected void ShowEdit( int campusId )
-        {
+            
             Rock.Crm.Campus campus = campusService.Get( campusId );
 
             if ( campus != null )
-            {
+                
                 lAction.Text = "Edit";
                 hfCampusId.Value = campus.Id.ToString();
 
                 tbCampusName.Text = campus.Name;
             }
             else
-            {
+                
                 lAction.Text = "Add";
                 tbCampusName.Text = string.Empty;
             }

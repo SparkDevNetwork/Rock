@@ -14,36 +14,36 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for Metric object
     /// </summary>
     public partial class MetricDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public bool Type { get; set; }
-        public string Category { get; set; }
-        public string Title { get; set; }
-        public string Subtitle { get; set; }
-        public string Description { get; set; }
-        public int? MinValue { get; set; }
-        public int? MaxValue { get; set; }
-        public int? CollectionFrequencyId { get; set; }
-        public DateTime? LastCollected { get; set; }
-        public string Source { get; set; }
-        public string SourceSQL { get; set; }
-        public int Order { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public bool Type      get; set; }
+        public string Category      get; set; }
+        public string Title      get; set; }
+        public string Subtitle      get; set; }
+        public string Description      get; set; }
+        public int? MinValue      get; set; }
+        public int? MaxValue      get; set; }
+        public int? CollectionFrequencyId      get; set; }
+        public DateTime? LastCollected      get; set; }
+        public string Source      get; set; }
+        public string SourceSQL      get; set; }
+        public int Order      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public MetricDto ()
-        {
+            
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="metric"></param>
         public MetricDto ( Metric metric )
-        {
+            
             CopyFromModel( metric );
         }
 
@@ -60,9 +60,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Metric )
-            {
+                
                 var metric = (Metric)model;
                 this.IsSystem = metric.IsSystem;
                 this.Type = metric.Type;
@@ -87,9 +87,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Metric )
-            {
+                
                 var metric = (Metric)model;
                 metric.IsSystem = this.IsSystem;
                 metric.Type = this.Type;

@@ -11,23 +11,23 @@ using Rock.Crm;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Crm
-{
+    
 	/// <summary>
 	/// Locations REST API
 	/// </summary>
 	public partial class LocationsController : IHasCustomRoutes
-	{
+	    
 		/// <summary>
 		/// Add custom routes needed for geocoding and standardization
 		/// </summary>
 		/// <param name="routes"></param>
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		{
+		    
 			routes.MapHttpRoute(
 				name: "LocationGeocode",
 				routeTemplate: "api/locations/geocode",
 				defaults: new
-				{
+				    
 					controller = "locations",
 					action = "geocode"
 				} );
@@ -36,7 +36,7 @@ namespace Rock.Rest.Crm
 				name: "LocationStandardize",
 				routeTemplate: "api/locations/standardize",
 				defaults: new
-				{
+				    
 					controller = "locations",
 					action = "standardize"
 				} );
@@ -50,12 +50,12 @@ namespace Rock.Rest.Crm
 		[HttpPut]
 		[Authenticate]
 		public LocationDto Geocode( LocationDto location )
-		{
+		    
 			var user = CurrentUser();
 			if ( user != null )
-			{
+			    
 				if ( location != null )
-				{
+				    
 					var locationService = new LocationService();
 					return new LocationDto( locationService.Geocode( location, user.PersonId ) );
 				}
@@ -72,12 +72,12 @@ namespace Rock.Rest.Crm
 		[HttpPut]
 		[Authenticate]
 		public LocationDto Standardize( LocationDto location )
-		{
+		    
 			var user = CurrentUser();
 			if ( user != null )
-			{
+			    
 				if ( location != null )
-				{
+				    
 					var locationService = new LocationService();
 					return new LocationDto( locationService.Standardize( location, user.PersonId ) );
 				}

@@ -14,24 +14,24 @@ using System.Web.UI.WebControls;
 // http://www.mourfield.com/Article/70/using-the-jquery-validation-plugin-to-build-a-data-annotations-aspnet-validator
 
 namespace Rock.Web.UI.Validation
-{
-    //[ToolboxData("<{0}:DataAnnotationValidator runat="server"></{0}:DataAnnotationValidator>")]
+    
+    //[ToolboxData("<    0}:DataAnnotationValidator runat="server"></    0}:DataAnnotationValidator>")]
     /// <summary>
     /// Data Annotation Validator for validating based on data attributes
     /// </summary>
     public class DataAnnotationValidator : BaseValidator
-    {
+        
         #region Properties
 
         /// <summary>
         /// The type of the source to check
         /// </summary>
-        public string SourceTypeName { get; set; }
+        public string SourceTypeName      get; set; }
 
         /// <summary>
         /// The property that is annotated
         /// </summary>
-        public string PropertyName { get; set; }
+        public string PropertyName      get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="DataAnnotationValidator"/> is required.
@@ -40,9 +40,9 @@ namespace Rock.Web.UI.Validation
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
         public bool IsRequired
-        {
+            
             get
-            {
+                
                 // get the type that we are going to validate
                 Type source = GetValidatedType();
 
@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Validation
         /// true if the value in the input control is valid; otherwise, false.
         /// </returns>
         protected override bool EvaluateIsValid()
-        {
+            
             // get the type that we are going to validate
             Type source = GetValidatedType();
 
@@ -79,29 +79,29 @@ namespace Rock.Web.UI.Validation
             foreach ( var attribute in property.GetCustomAttributes(
                      typeof( ValidationAttribute ), true )
                        .OfType<ValidationAttribute>() )
-            {
+                
                 if ( !attribute.IsValid( value ) )
-                {
+                    
                     if ( !string.IsNullOrWhiteSpace( attribute.ErrorMessage ) )
-                    {
+                        
                         ErrorMessage = attribute.ErrorMessage;
                     }
                     else if ( attribute.ErrorMessageResourceType != null )
-                    {
+                        
                         ErrorMessage = new System.Resources.ResourceManager( attribute.ErrorMessageResourceType ).GetString( attribute.ErrorMessageResourceName );
                     }
                     else
-                    {
+                        
                         if ( attribute is MaxLengthAttribute )
-                        {
+                            
                             ErrorMessage = "Max length is " + ( attribute as MaxLengthAttribute ).Length.ToString();
                         }
                         else if ( attribute is RequiredAttribute )
-                        {
+                            
                             ErrorMessage = "Value is required";
                         }
                         else
-                        {
+                            
                             ErrorMessage = "Invalid value";
                         }
                     }
@@ -113,18 +113,18 @@ namespace Rock.Web.UI.Validation
         }
 
         private Type GetValidatedType()
-        {
+            
             if ( string.IsNullOrEmpty( SourceTypeName ) )
-            {
+                
                 throw new InvalidOperationException(
                   "Null SourceTypeName can't be validated" );
             }
 
             Type validatedType = Type.GetType( SourceTypeName );
             if ( validatedType == null )
-            {
+                
                 throw new InvalidOperationException(
-                    string.Format( "{0}:{1}",
+                    string.Format( "    0}:    1}",
                       "Invalid SourceTypeName", SourceTypeName ) );
             }
 
@@ -132,14 +132,14 @@ namespace Rock.Web.UI.Validation
         }
 
         private PropertyInfo GetValidatedProperty( Type source )
-        {
+            
             PropertyInfo property = source.GetProperty( PropertyName,
               BindingFlags.Public | BindingFlags.Instance );
 
             if ( property == null )
-            {
+                
                 throw new InvalidOperationException(
-                  string.Format( "{0}:{1}",
+                  string.Format( "    0}:    1}",
                     "Validated Property Does Not Exists", PropertyName ) );
             }
             return property;

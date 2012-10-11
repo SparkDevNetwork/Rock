@@ -11,26 +11,26 @@ using System.Linq;
 using Rock.Security;
 
 namespace Rock.Web.Cache
-{
+    
     /// <summary>
     /// Information about a block that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class BlockCache : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
-    {
-        private BlockCache() : base() { }
-        private BlockCache( Rock.Cms.Block model ) : base( model ) { }
+        
+        private BlockCache() : base()      }
+        private BlockCache( Rock.Cms.Block model ) : base( model )      }
 
         /// <summary>
         /// Gets the location of the block (Layout or Page)
         /// </summary>
-        public BlockLocation BlockLocation { get; private set; }
+        public BlockLocation BlockLocation      get; private set; }
 
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -38,13 +38,13 @@ namespace Rock.Web.Cache
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
         public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
-        {
+            
             get
-            {
+                
                 SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
 
                 foreach ( int id in AttributeIds )
-                {
+                    
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     if ( !attributes.ContainsKey( attribute.Category ) )
                         attributes.Add( attribute.Category, new List<AttributeCache>() );
@@ -56,7 +56,7 @@ namespace Rock.Web.Cache
             }
 
             set
-            {
+                
                 this.AttributeIds = new List<int>();
                 foreach ( var category in value )
                     foreach ( var attribute in category.Value )
@@ -68,9 +68,9 @@ namespace Rock.Web.Cache
         /// Gets the page.
         /// </summary>
         public PageCache Page
-        {
+            
             get
-            {
+                
                 if ( PageId.HasValue )
                     return PageCache.Read( PageId.Value );
                 else
@@ -82,9 +82,9 @@ namespace Rock.Web.Cache
         /// Gets the block type
         /// </summary>
         public BlockTypeCache BlockType
-        {
+            
             get
-            {
+                
                 return BlockTypeCache.Read( BlockTypeId );
             }
         }
@@ -94,12 +94,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
-        {
+            
             var blockService = new Cms.BlockService();
             var blockModel = blockService.Get( this.Id );
 
             if ( blockModel != null )
-            {
+                
                 Rock.Attribute.Helper.LoadAttributes( blockModel );
                 foreach ( var category in blockModel.Attributes )
                     foreach ( var attribute in category.Value )
@@ -111,14 +111,14 @@ namespace Rock.Web.Cache
         /// Reloads the attribute values.
         /// </summary>
         public void ReloadAttributeValues()
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 var blockService = new Cms.BlockService();
                 var blockModel = blockService.Get( this.Id );
 
                 if ( blockModel != null )
-                {
+                    
                     Rock.Attribute.Helper.LoadAttributes( blockModel );
 
                     this.AttributeValues = blockModel.AttributeValues;
@@ -139,15 +139,15 @@ namespace Rock.Web.Cache
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
-        {
+            
             return this.Name;
         }
 
         #region Static Methods
 
         private static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Block:{0}", id );
+            
+            return string.Format( "Rock:Block:    0}", id );
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Rock.Web.Cache
         /// <param name="blockModel"></param>
         /// <returns></returns>
         public static BlockCache Read( Rock.Cms.Block blockModel )
-        {
+            
             string cacheKey = BlockCache.CacheKey( blockModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -165,7 +165,7 @@ namespace Rock.Web.Cache
             if ( block != null )
                 return block;
             else
-            {
+                
                 block = BlockCache.CopyModel( blockModel );
                 cache.Set( cacheKey, block, new CacheItemPolicy() );
 
@@ -180,7 +180,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static BlockCache Read( int id )
-        {
+            
             string cacheKey = BlockCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -189,11 +189,11 @@ namespace Rock.Web.Cache
             if ( block != null )
                 return block;
             else
-            {
+                
                 var blockService = new Cms.BlockService();
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
-                {
+                    
                     Rock.Attribute.Helper.LoadAttributes( blockModel );
 
                     block = BlockCache.CopyModel( blockModel );
@@ -208,7 +208,7 @@ namespace Rock.Web.Cache
         }
 
         private static BlockCache CopyModel ( Rock.Cms.Block blockModel )
-        {
+            
             BlockCache block = new BlockCache(blockModel);
 
             block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
@@ -231,7 +231,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( BlockCache.CacheKey( id ) );
         }
@@ -244,16 +244,16 @@ namespace Rock.Web.Cache
         /// The auth entity. The auth entity is a unique identifier for each type of class that implements
         /// the <see cref="Rock.Security.ISecured"/> interface.
         /// </summary>
-        public string EntityTypeName { get; set; }
+        public string EntityTypeName      get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
         public Security.ISecured ParentAuthority
-        {
+            
             get 
-            {
+                
                 if ( this.BlockLocation == Cache.BlockLocation.Page )
                     return this.Page;
                 return null;
@@ -264,9 +264,9 @@ namespace Rock.Web.Cache
         /// The list of actions that this class supports.
         /// </summary>
         public List<string> SupportedActions 
-        {
+            
             get 
-            {
+                
                 List<string> combinedActions = new List<string>();
                 
                 if (BlockActions != null)
@@ -279,8 +279,8 @@ namespace Rock.Web.Cache
             }
         }
 
-        internal List<string> BlockActions { get; set; }
-        internal List<string> BlockTypeActions { get; set; }
+        internal List<string> BlockActions      get; set; }
+        internal List<string> BlockTypeActions      get; set; }
 
         /// <summary>
         /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -291,7 +291,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
-        {
+            
             return Security.Authorization.Authorized( this, action, person );
         }
 
@@ -302,7 +302,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
-        {
+            
             return action == "View";
         }
 
@@ -311,7 +311,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
-        {
+            
             return Authorization.FindAuthRules( this );
         }
 
@@ -323,7 +323,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     public enum BlockLocation
-    {
+        
         /// <summary>
         /// Block is located in the layout (will be rendered for every page using the layout)
         /// </summary>

@@ -5,12 +5,12 @@ using System.Web;
 using System.IO;
 
 namespace Rock.Transactions
-{
+    
     /// <summary>
     /// Tracks when a page is viewed.
     /// </summary>
     public class PageViewTransaction : ITransaction
-    {
+        
 
         /// <summary>
         /// Gets or sets the Page Id.
@@ -18,7 +18,7 @@ namespace Rock.Transactions
         /// <value>
         /// Page Id.
         /// </value>
-        public int PageId { get; set; }
+        public int PageId      get; set; }
 
         /// <summary>
         /// Gets or sets the Site Id.
@@ -26,7 +26,7 @@ namespace Rock.Transactions
         /// <value>
         /// Site Id.
         /// </value>
-        public int SiteId { get; set; }
+        public int SiteId      get; set; }
 
         /// <summary>
         /// Gets or sets the Person Id.
@@ -34,7 +34,7 @@ namespace Rock.Transactions
         /// <value>
         /// Person Id.
         /// </value>
-        public int PersonId { get; set; }
+        public int PersonId      get; set; }
 
         /// <summary>
         /// Gets or sets the DateTime the page was viewed.
@@ -42,7 +42,7 @@ namespace Rock.Transactions
         /// <value>
         /// Date Viewed.
         /// </value>
-        public DateTime DateViewed { get; set; }
+        public DateTime DateViewed      get; set; }
 
         /// <summary>
         /// Gets or sets the IP address that requested the page.
@@ -50,7 +50,7 @@ namespace Rock.Transactions
         /// <value>
         /// IP Address.
         /// </value>
-        public string IPAddress { get; set; }
+        public string IPAddress      get; set; }
 
         /// <summary>
         /// Gets or sets the browser vendor and version.
@@ -58,14 +58,14 @@ namespace Rock.Transactions
         /// <value>
         /// IP Address.
         /// </value>
-        public string UserAgent { get; set; }
+        public string UserAgent      get; set; }
         
         
         /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
         public void Execute()
-        {
+            
             string directory = AppDomain.CurrentDomain.BaseDirectory;
             directory = Path.Combine( directory, "Logs" );
 
@@ -78,7 +78,7 @@ namespace Rock.Transactions
             
             // write to the file
             StreamWriter w = new StreamWriter( filePath, true );
-            w.Write( "{0},{1},{2},{3},{4},{5}\r\n", DateViewed.ToString(),  PageId.ToString(), SiteId.ToString(), PersonId.ToString(), IPAddress, UserAgent);
+            w.Write( "    0},    1},    2},    3},    4},    5}\r\n", DateViewed.ToString(),  PageId.ToString(), SiteId.ToString(), PersonId.ToString(), IPAddress, UserAgent);
             w.Close();
         }
     }

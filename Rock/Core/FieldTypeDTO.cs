@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for FieldType object
     /// </summary>
     public partial class FieldTypeDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Assembly { get; set; }
-        public string Class { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public string Name      get; set; }
+        public string Description      get; set; }
+        public string Assembly      get; set; }
+        public string Class      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public FieldTypeDto ()
-        {
+            
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="fieldType"></param>
         public FieldTypeDto ( FieldType fieldType )
-        {
+            
             CopyFromModel( fieldType );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is FieldType )
-            {
+                
                 var fieldType = (FieldType)model;
                 this.IsSystem = fieldType.IsSystem;
                 this.Name = fieldType.Name;
@@ -71,9 +71,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is FieldType )
-            {
+                
                 var fieldType = (FieldType)model;
                 fieldType.IsSystem = this.IsSystem;
                 fieldType.Name = this.Name;

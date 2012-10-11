@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// ExceptionLog Service class
     /// </summary>
     public partial class ExceptionLogService : Service<ExceptionLog, ExceptionLogDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
         /// </summary>
         public ExceptionLogService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
         /// </summary>
         public ExceptionLogService(IRepository<ExceptionLog> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override ExceptionLog CreateNew()
-        {
+            
             return new ExceptionLog();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<ExceptionLogDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<ExceptionLogDto> QueryableDto( IQueryable<ExceptionLog> items )
-        {
+            
             return items.Select( m => new ExceptionLogDto()
-                {
+                    
                     ParentId = m.ParentId,
                     SiteId = m.SiteId,
                     PageId = m.PageId,

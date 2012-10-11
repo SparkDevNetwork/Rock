@@ -9,16 +9,16 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
-{
+    
     /// <summary>
     /// Information about a campus that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class CampusCache : Rock.Crm.CampusDto
-    {
-        private CampusCache() : base() { }
-        private CampusCache( Rock.Crm.Campus model ) : base( model) { }
+        
+        private CampusCache() : base()      }
+        private CampusCache( Rock.Crm.Campus model ) : base( model)      }
 
         #region Static Methods
 
@@ -28,8 +28,8 @@ namespace Rock.Web.Cache
         /// <param name="id">The campus id.</param>
         /// <returns></returns>
         public static string CacheKey( int id )
-        {
-            return string.Format( "Rock:Campus:{0}", id );
+            
+            return string.Format( "Rock:Campus:    0}", id );
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Web.Cache
         /// <param name="campusModel"></param>
         /// <returns></returns>
         public static CampusCache Read( Rock.Crm.Campus campusModel )
-        {
+            
             string cacheKey = CampusCache.CacheKey( campusModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -47,7 +47,7 @@ namespace Rock.Web.Cache
             if ( campus != null )
                 return campus;
             else
-            {
+                
                 campus = CampusCache.CopyModel( campusModel );
                 cache.Set( cacheKey, campus, new CacheItemPolicy() );
 
@@ -62,7 +62,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static CampusCache Read( int id )
-        {
+            
             string cacheKey = CampusCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -71,11 +71,11 @@ namespace Rock.Web.Cache
             if ( campus != null )
                 return campus;
             else
-            {
+                
                 Rock.Crm.CampusService campusService = new Rock.Crm.CampusService();
                 Rock.Crm.Campus campusModel = campusService.Get( id );
                 if ( campusModel != null )
-                {
+                    
                     Rock.Attribute.Helper.LoadAttributes( campusModel );
 
                     campus = CampusCache.CopyModel( campusModel );
@@ -92,7 +92,7 @@ namespace Rock.Web.Cache
 
         // Copies the Model object to the Cached object
         private static CampusCache CopyModel( Rock.Crm.Campus campusModel )
-        {
+            
             // Creates new object by copying properties of model
             var campus = new Rock.Web.Cache.CampusCache(campusModel);
             return campus;
@@ -103,7 +103,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( CampusCache.CacheKey( id ) );
         }

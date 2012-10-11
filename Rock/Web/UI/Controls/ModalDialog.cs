@@ -14,13 +14,13 @@ using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// A Modal Popup Dialog Window
     /// </summary>
-    [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
+    [ToolboxData( "<    0}:ModalDialog runat=server></    0}:ModalDialog>" )]
     public class ModalDialog : ModalPopupExtender, INamingContainer
-    {
+        
         private Button _dfltShowButton;
         private Panel _dialogPanel;
 
@@ -40,7 +40,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
         }
@@ -57,14 +57,14 @@ namespace Rock.Web.UI.Controls
             Description( "The title of the dialog." )
         ]
         public string Title
-        {
+            
             get
-            {
+                
                 EnsureChildControls();
                 return _title.Text;
             }
             set
-            {
+                
                 EnsureChildControls();
                 _title.Text = value;
             }
@@ -79,14 +79,14 @@ namespace Rock.Web.UI.Controls
         Description( "Disable Default Save Behavior" )
         ]
         public bool IsDefaultSaveDisabled
-        {
+            
             get
-            {
+                
                 bool? b = ViewState["IsDefaultSaveDisabled"] as bool?;
                 return ( b == null ) ? false : b.Value;
             }
             set
-            {
+                
                 ViewState["IsDefaultSaveDisabled"] = value;
             }
         }
@@ -104,9 +104,9 @@ namespace Rock.Web.UI.Controls
             Description( "The Contents of the dialog." )
         ]
         public Panel Content
-        {
+            
             get 
-            {
+                
                 EnsureChildControls();
                 return _contentPanel; 
             }
@@ -117,7 +117,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-        {
+            
             base.CreateChildControls();
             base.Controls.Clear();
 
@@ -182,9 +182,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnPreRender( EventArgs e )
-        {
+            
             _closeLink.Attributes["onclick"] = string.Format(
-                "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
+                "    0} $find('    1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
             if ( SaveClick == null && !IsDefaultSaveDisabled )
                 this.OkControlID = _saveLink.ID;
@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void SaveLink_ServerClick( object sender, EventArgs e )
-        {
+            
             if ( SaveClick != null )
                 SaveClick( sender, e );
         }

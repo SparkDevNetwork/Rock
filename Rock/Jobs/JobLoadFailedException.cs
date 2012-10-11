@@ -7,13 +7,13 @@
 using System;
 
 namespace Rock.Jobs
-{
+    
     /// <summary>
     /// Job failed to load exception
     /// </summary>
     [Serializable]
     public class JobLoadFailedException : Exception
-    {
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobLoadFailedException"/> class.
@@ -21,7 +21,7 @@ namespace Rock.Jobs
         /// <param name="message">The message.</param>
         public JobLoadFailedException( string message )
             : base( message )
-        {
+            
 
         }
 
