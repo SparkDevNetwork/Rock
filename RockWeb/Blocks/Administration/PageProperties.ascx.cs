@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Administration
                         {
                             blockControl.CurrentPage = _page;
                             blockControl.CurrentBlock = block;
-                            foreach ( var context in blockControl.RequiredContext )
+                            foreach ( var context in blockControl.ContextTypesRequired )
                                 if ( !blockContexts.Contains( context ) )
                                     blockContexts.Add( context );
                         }

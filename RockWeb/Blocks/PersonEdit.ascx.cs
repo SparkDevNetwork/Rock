@@ -19,7 +19,7 @@ namespace RockWeb.Blocks
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public override List<string> RequiredContext
+        public override List<string> ContextTypesRequired
         {
             get { return new List<string>() { "Rock.Crm.Person" }; }
         }
