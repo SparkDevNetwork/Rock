@@ -11,25 +11,13 @@ namespace Rock.Web.UI
 	/// <summary>
 	/// A Block used on the person detail page
 	/// </summary>
-	public class PersonBlock : RockBlock
+    [ContextAware( "Rock.Crm.Person" )]
+    public class PersonBlock : RockBlock
 	{
 		/// <summary>
 		/// The current person being viewed
 		/// </summary>
 		protected Person Person { get; set; }
-
-		/// <summary>
-		/// Gets a list of any context entities that the block requires.
-		/// </summary>
-		public override List<string> RequiredContext
-		{
-			get
-			{
-				var requiredContext = base.RequiredContext;
-				requiredContext.Add( "Rock.Crm.Person" );
-				return requiredContext;
-			}
-		}
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -39,9 +27,12 @@ namespace Rock.Web.UI
 		{
 			base.OnInit( e );
 
-			this.Person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
-			if ( Person == null )
-				Person = new Person();
+            if ( ContextEntities.ContainsKey( "Rock.Crm.Person" ) )
+            {
+                Person = ContextEntities["Rock.Crm.Person"] as Person;
+                if ( Person == null )
+                    Person = new Person();
+            }
 		}
 
 		/// <summary>

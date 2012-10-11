@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
@@ -100,13 +101,55 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<string> RequiredContext
+        public virtual List<string> ContextTypesRequired
         {
             get
             {
-                return new List<string>();
+                if ( _contextTypesRequired == null )
+                {
+                    _contextTypesRequired = new List<string>();
+
+                    int properties = 0;
+                    foreach(var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true))
+                    {
+                        if ( attribute != null )
+                        {
+                            var contextAttribute = (ContextAwareAttribute)attribute;
+                            string contextType = string.Empty;
+
+                            if ( String.IsNullOrEmpty( contextAttribute.EntityType ) )
+                            {
+                                // If the entity type was not specified in the attibute, look for a property that defines it
+                                string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                                if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
+                                {
+                                    contextType = AttributeValue( propertyKeyName );
+                                }
+                            }
+                            else
+                            {
+                                contextType = contextAttribute.EntityType;
+                            }
+
+                            if ( contextType != string.Empty && !_contextTypesRequired.Contains( contextType ) )
+                            {
+                                _contextTypesRequired.Add( contextType );
+                            }
+                        }
+                    }
+                }
+                return _contextTypesRequired;
             }
         }
+        private List<string> _contextTypesRequired;
+
+        /// <summary>
+        /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
+        /// </summary>
+        /// <value>
+        /// The context entities.
+        /// </value>
+        public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities { get; private set; }
 
         #endregion
 
@@ -208,6 +251,39 @@ namespace Rock.Web.UI
         #endregion
 
         #region Overridden Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            // Get the context types defined through configuration or block properties
+            var requiredContext = ContextTypesRequired;
+
+            // Check to see if a context type was specified in a query, form, or page route parameter
+            string param = PageParameter( "ContextEntityType" );
+            if ( !String.IsNullOrWhiteSpace( param ) )
+            {
+                requiredContext.Add( param );
+            }
+
+            // Get the current context for each required context type
+            ContextEntities = new Dictionary<string, Data.IEntity>();
+            foreach ( var contextEntityType in requiredContext )
+            {
+                if ( !String.IsNullOrWhiteSpace( contextEntityType ) )
+                {
+                    Data.IEntity contextEntity = CurrentPage.GetCurrentContext( contextEntityType );
+                    if ( contextEntity != null )
+                    {
+                        ContextEntities.Add( contextEntityType, contextEntity );
+                    }
+                }
+            }
+
+            base.OnInit( e );
+        }
 
         /// <summary>
         /// When a control renders it's content to the page, this method will also check to see if 

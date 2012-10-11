@@ -46,14 +46,32 @@ namespace Rock.Attribute
             {
                 List<string> existingKeys = new List<string>();
 
-                foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
-                {
-                    var blockProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
-                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                var blockProperties = new List<PropertyAttribute>();
 
+                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( Rock.Web.UI.ContextAwareAttribute ), true ) )
+                {
+                    var contextAttribute = (Rock.Web.UI.ContextAwareAttribute)customAttribute;
+                    if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
+                    {
+                        blockProperties.Add( new Rock.Attribute.PropertyAttribute( 0, "Context Entity Type", "Filter", "Context Entity Type", false, "" ) );
+                    }
+                }
+                        
+                // Add any property attributes that were defined for the block
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
+                {
+                    blockProperties.Add( (Rock.Attribute.PropertyAttribute)customAttribute );
+                }
+
+                // Create any attributes that need to be created
+                foreach( var blockProperty in blockProperties)
+                {
+                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
 
+                // Remove any old attributes
                 Core.AttributeService attributeService = new Core.AttributeService();
                 foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
                     if ( !existingKeys.Contains( a.Key ) )
