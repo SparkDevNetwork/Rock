@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 using System.DirectoryServices.AccountManagement;
 
 using Rock.Cms;
+using Rock.Web.UI;
 
 namespace Rock.Security.Authentication
 {
@@ -18,8 +19,8 @@ namespace Rock.Security.Authentication
     [Description( "Active Directory Authentication Provider" )]
     [Export(typeof(AuthenticationComponent))]
     [ExportMetadata("ComponentName", "Active Directory")]
-	[Rock.Attribute.Property( 1, "Server", "Server", "The Active Directory server name", true, "" )]
-	[Rock.Attribute.Property( 2, "Domain", "Server", "The network domain that users belongs to", true, "" )]
+	[BlockProperty( 1, "Server", "Server", "The Active Directory server name", true, "" )]
+	[BlockProperty( 2, "Domain", "Server", "The network domain that users belongs to", true, "" )]
 	public class ActiveDirectory : AuthenticationComponent
     {
 		/// <summary>

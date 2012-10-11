@@ -9,13 +9,14 @@ using System.Xml.Xsl;
 
 using Rock;
 using Rock.Crm;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
 	/// <summary>
 	/// User control for viewing key attributes
 	/// </summary>
-	[Rock.Attribute.Property( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
+	[BlockProperty( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
 	public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
 		private XDocument xDocument = null;

@@ -26,9 +26,9 @@ namespace RockWeb.Blocks.Core
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
     [ContextAware]
-    [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [Rock.Attribute.Property( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
+    [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [BlockProperty( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
     public partial class ContextAttributeValues : RockBlock
     {
         protected string _category = string.Empty;

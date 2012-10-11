@@ -18,6 +18,7 @@
 #endregion
 
 using Quartz;
+using Rock.Web.UI;
 
 namespace Rock.Jobs
 {
@@ -28,8 +29,8 @@ namespace Rock.Jobs
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [Rock.Attribute.Property( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
-    [Rock.Attribute.Property( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
+    [BlockProperty( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
+    [BlockProperty( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
     public class TestJob : IJob
     {
         
