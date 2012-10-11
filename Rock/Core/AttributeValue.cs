@@ -20,58 +20,58 @@ namespace Rock.Core
     [Table( "coreAttributeValue" )]
     public partial class AttributeValue : Entity<AttributeValue>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Attribute Id.
-		/// </summary>
-		/// <value>
-		/// Attribute Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int AttributeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		[DataMember]
-		public int? EntityId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[DataMember]
-		public int? Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Value.
-		/// </summary>
-		/// <value>
-		/// Value.
-		/// </value>
-		[DataMember]
-		public string Value { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Attribute Id.
+        /// </summary>
+        /// <value>
+        /// Attribute Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int AttributeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [DataMember]
+        public int? Order { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        /// <value>
+        /// Value.
+        /// </value>
+        [DataMember]
+        public string Value { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.AttributeValue"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.AttributeValue"; } }
         
         /// <summary>
         /// Gets or sets the Attribute.
@@ -97,10 +97,10 @@ namespace Rock.Core
         /// <returns>
         /// A <see cref="System.String" /> that represents this instance.
         /// </returns>
-		public override string ToString()
-		{
-			return this.Value;
-		}
+        public override string ToString()
+        {
+            return this.Value;
+        }
     }
 
     /// <summary>

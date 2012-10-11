@@ -96,31 +96,31 @@ namespace Rock.Financial
         /// </value>
         public virtual ICollection<Transaction> Transactions { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Batch Read( int id )
-		{
-			return Read<Batch>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Batch Read( int id )
+        {
+            return Read<Batch>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
         public override string EntityTypeName { get { return "Financial.Batch"; } }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>

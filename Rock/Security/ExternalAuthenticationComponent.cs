@@ -12,18 +12,18 @@ using Rock.Extension;
 
 namespace Rock.Security
 {
-	/// <summary>
-	/// Base class for components that authenticate user by redirecting to third-party site (i.e. Facebook, Twitter, Google, etc)
-	/// </summary>
-	public abstract class ExternalAuthenticationComponent : Component
+    /// <summary>
+    /// Base class for components that authenticate user by redirecting to third-party site (i.e. Facebook, Twitter, Google, etc)
+    /// </summary>
+    public abstract class ExternalAuthenticationComponent : Component
     {
-		/// <summary>
-		/// Tests the Http Request to determine if authentication should be tested by this 
-		/// authentication provider.
-		/// </summary>
-		/// <param name="request">The request.</param>
-		/// <returns></returns>
-		public abstract Boolean IsReturningFromAuthentication( HttpRequest request);
+        /// <summary>
+        /// Tests the Http Request to determine if authentication should be tested by this 
+        /// authentication provider.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public abstract Boolean IsReturningFromAuthentication( HttpRequest request);
 
         /// <summary>
         /// Generates the login URL.
@@ -32,19 +32,19 @@ namespace Rock.Security
         /// <returns></returns>
         public abstract Uri GenerateLoginUrl( HttpRequest request );
 
-		/// <summary>
-		/// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
-		/// </summary>
-		/// <param name="request">The request.</param>
-		/// <param name="userName">Name of the user.</param>
-		/// <param name="returnUrl">The return URL.</param>
-		/// <returns></returns>
-		public abstract Boolean Authenticate( HttpRequest request, out string userName, out string returnUrl );
+        /// <summary>
+        /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="returnUrl">The return URL.</param>
+        /// <returns></returns>
+        public abstract Boolean Authenticate( HttpRequest request, out string userName, out string returnUrl );
 
-		/// <summary>
-		/// Gets the URL of an image that should be displayed.
-		/// </summary>
-		/// <returns></returns>
-		public abstract String ImageUrl();
+        /// <summary>
+        /// Gets the URL of an image that should be displayed.
+        /// </summary>
+        /// <returns></returns>
+        public abstract String ImageUrl();
     }
 }

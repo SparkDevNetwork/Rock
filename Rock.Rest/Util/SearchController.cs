@@ -20,13 +20,13 @@ using Rock.Data;
 
 namespace Rock.Rest.Util
 {
-	/// <summary>
-	/// Search REST API
-	/// </summary>
-	public partial class SearchController : ApiController
-	{
+    /// <summary>
+    /// Search REST API
+    /// </summary>
+    public partial class SearchController : ApiController
+    {
         // GET api/<controller>
-		public IQueryable<string> Get()
+        public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;
             string type = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "type" );

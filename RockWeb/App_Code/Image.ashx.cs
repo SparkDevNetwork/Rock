@@ -32,80 +32,80 @@ namespace RockWeb
         {
             context.Response.Clear();
 
-			if ( context.Request.QueryString == null || context.Request.QueryString.Count == 0)
-			{
-				context.Response.StatusCode = 404;
-				context.Response.End();
-				return;
-			}
+            if ( context.Request.QueryString == null || context.Request.QueryString.Count == 0)
+            {
+                context.Response.StatusCode = 404;
+                context.Response.End();
+                return;
+            }
 
-			string anID = context.Request.QueryString[0];
-			int id;
+            string anID = context.Request.QueryString[0];
+            int id;
 
-			if (!int.TryParse( anID, out id))
-			{
-				context.Response.StatusCode = 404;
-				context.Response.End();
-				return;
-			}
+            if (!int.TryParse( anID, out id))
+            {
+                context.Response.StatusCode = 404;
+                context.Response.End();
+                return;
+            }
 
-			try
-			{
-				FileService fileService = new FileService();
-				Rock.Cms.File file = null;
+            try
+            {
+                FileService fileService = new FileService();
+                Rock.Cms.File file = null;
 
-				string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-				string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
+                string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
+                string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
 
-				// Is it cached
-				if ( System.IO.File.Exists( physFilePath ) )
-				{
-					// When was file last modified
-					dynamic fileInfo = fileService
-						.Queryable()
-						.Where( f => f.Id == id )
-						.Select( f => new
-						{
-							MimeType = f.MimeType,
-							LastModifiedTime = f.LastModifiedTime
-						} )
-						.FirstOrDefault();
+                // Is it cached
+                if ( System.IO.File.Exists( physFilePath ) )
+                {
+                    // When was file last modified
+                    dynamic fileInfo = fileService
+                        .Queryable()
+                        .Where( f => f.Id == id )
+                        .Select( f => new
+                        {
+                            MimeType = f.MimeType,
+                            LastModifiedTime = f.LastModifiedTime
+                        } )
+                        .FirstOrDefault();
 
-					file = new Rock.Cms.File();
-					file.MimeType = fileInfo.MimeType;
-					file.LastModifiedTime = fileInfo.LastModifiedTime;
+                    file = new Rock.Cms.File();
+                    file.MimeType = fileInfo.MimeType;
+                    file.LastModifiedTime = fileInfo.LastModifiedTime;
 
-					// Is cached version newer?
-					if ( file.LastModifiedTime.HasValue && file.LastModifiedTime.Value.CompareTo( new DateTimeOffset( System.IO.File.GetCreationTime( physFilePath ) ) ) <= 0 )
-						file.Data = FetchFromCache( physFilePath );
-				}
+                    // Is cached version newer?
+                    if ( file.LastModifiedTime.HasValue && file.LastModifiedTime.Value.CompareTo( new DateTimeOffset( System.IO.File.GetCreationTime( physFilePath ) ) ) <= 0 )
+                        file.Data = FetchFromCache( physFilePath );
+                }
 
-				if ( file == null || file.Data == null )
-				{
-					file = fileService.Get( id );
+                if ( file == null || file.Data == null )
+                {
+                    file = fileService.Get( id );
 
-					if ( file != null )
-					{
-						if ( WantsImageResizing( context ) )
-							Resize( context, file );
+                    if ( file != null )
+                    {
+                        if ( WantsImageResizing( context ) )
+                            Resize( context, file );
 
-						Cache( file, physFilePath );
-					}
-				}
+                        Cache( file, physFilePath );
+                    }
+                }
 
-				if ( file == null || file.Data == null )
-				{
-					context.Response.StatusCode = 404;
-					context.Response.End();
-					return;
-				}
+                if ( file == null || file.Data == null )
+                {
+                    context.Response.StatusCode = 404;
+                    context.Response.End();
+                    return;
+                }
 
-				// Post process
-				SendFile( context, file );
-			}
-			catch
-			{
-			}
+                // Post process
+                SendFile( context, file );
+            }
+            catch
+            {
+            }
         }
 
         /// <summary>

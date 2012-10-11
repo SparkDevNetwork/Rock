@@ -24,21 +24,21 @@
                 onrowdatabound="gPackageList_RowDataBound" DataKeyNames="Id,Version" GridLines="none"
                 onrowcommand="gPackageList_RowCommand" >
                     <Columns>
-			            <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
+                        <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
                                 <div class="span2">
                                     <img runat="server" id="imgIcon" src='<%# Eval("IconUrl") %>' alt="Plugin Icon" width="80" height="80" />
                                 </div>
                                 <div class="span10">
-					                <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
-					                <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
-					                <p><asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
+                                    <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
+                                    <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
+                                    <p><asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
                                         <asp:Literal runat="server" ID="lblLatestVersion" Visible="false" Text="Latest Version "></asp:Literal>
                                         <asp:Literal runat="server" ID="lblInstalledVersion"  Visible="false" Text="Installed Version "></asp:Literal>
                                     </p>
-					                <div>
-						                <p><%# Eval("Description") %></p>
-					                </div>
+                                    <div>
+                                        <p><%# Eval("Description") %></p>
+                                    </div>
                                     <asp:LinkButton CssClass="btn" ID="lbCommand" runat="server" />
                                     <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="update" Text="Update" runat="server" /> &nbsp;
                                     <a runat="server" id="lProjectUrl" href="#">Project Website</a>
@@ -65,8 +65,8 @@
                     <asp:Image runat="server" ID="imgIcon" alt="Plugin Icon" width="128" height="128" />
                 </div>
                 <div class="span10">
-					<h3><asp:Literal runat="server" ID="lTitle"></asp:Literal></h3>
-					<p>by <asp:Literal runat="server" ID="lAuthors"></asp:Literal></p>
+                    <h3><asp:Literal runat="server" ID="lTitle"></asp:Literal></h3>
+                    <p>by <asp:Literal runat="server" ID="lAuthors"></asp:Literal></p>
                     
                     <h5>Description</h5>
                     <p><asp:Literal runat="server" ID="lDescription"></asp:Literal></p>

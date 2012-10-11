@@ -63,19 +63,19 @@ namespace Rock.Cms
         public string IdParameter { get; set; }
 
         /// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
+        /// Gets or sets the Created Date Time.
+        /// </summary>
+        /// <value>
+        /// Created Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? CreatedDateTime { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.PageContext"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.PageContext"; } }
         
         /// <summary>
         /// Gets or sets the Page.
@@ -95,16 +95,16 @@ namespace Rock.Cms
             return Read<PageContext>( id );
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
+        }
     }
 
     /// <summary>

@@ -63,57 +63,57 @@ namespace Rock.Tests.Fakes
             return FirstOrDefault( where );
         }
 
-		public virtual DateTimeOffset? DateCreated( T entity )
-		{
-			return DateCreated( entity.EntityTypeName, entity.Id );
-		}
+        public virtual DateTimeOffset? DateCreated( T entity )
+        {
+            return DateCreated( entity.EntityTypeName, entity.Id );
+        }
 
-		public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
-		{
-			return null; 
-		}
+        public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+        {
+            return null; 
+        }
 
-		public virtual DateTimeOffset? DateLastModified( T entity )
-		{
-			return DateLastModified( entity.EntityTypeName, entity.Id );
-		}
+        public virtual DateTimeOffset? DateLastModified( T entity )
+        {
+            return DateLastModified( entity.EntityTypeName, entity.Id );
+        }
 
-		public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
-		{
-			return null;
-		}
+        public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+        {
+            return null;
+        }
 
-		public virtual int? CreatedByPersonId( T entity )
-		{
-			return CreatedByPersonId( entity.EntityTypeName, entity.Id );
-		}
+        public virtual int? CreatedByPersonId( T entity )
+        {
+            return CreatedByPersonId( entity.EntityTypeName, entity.Id );
+        }
 
-		public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
-		{
-			return null;
-		}
+        public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+        {
+            return null;
+        }
 
-		public virtual int? LastModifiedByPersonId( T entity )
-		{
-			return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
-		}
+        public virtual int? LastModifiedByPersonId( T entity )
+        {
+            return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
+        }
 
-		public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
-		{
-			return null;
-		}
+        public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+        {
+            return null;
+        }
 
-		public virtual IQueryable<Audit> Audits( T entity )
-		{
-			return Audits( entity.EntityTypeName, entity.Id );
-		}
+        public virtual IQueryable<Audit> Audits( T entity )
+        {
+            return Audits( entity.EntityTypeName, entity.Id );
+        }
 
-		public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
-		{
-			return null;
-		}
+        public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+        {
+            return null;
+        }
 
-		public virtual void Add( T entity )
+        public virtual void Add( T entity )
         {
             db.ToList().Add( entity );
         }

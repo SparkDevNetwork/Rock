@@ -31,10 +31,10 @@ namespace RockWeb.Blocks.Core
     [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [BlockProperty( 3, "Attribute Categories", "Filter", "Delimited List of Attribute Category Names", true, "" )]
-	[BlockProperty( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
-	public partial class AttributeCategoryView : RockBlock
+    [BlockProperty( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
+    public partial class AttributeCategoryView : RockBlock
     {
-		private XDocument xDocument = null;
+        private XDocument xDocument = null;
 
         protected override void OnInit( EventArgs e )
         {
@@ -125,27 +125,27 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-		protected override void Render( System.Web.UI.HtmlTextWriter writer )
-		{
-			try
-			{
-				if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
-				{
-					string xsltFile = AttributeValue( "XsltFile" );
-					if ( !String.IsNullOrEmpty( xsltFile ) )
-					{
-						string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
-						var xslt = new XslCompiledTransform();
-						xslt.Load( xsltPath );
-						xslt.Transform( xDocument.CreateReader(), null, writer );
-					}
-				}
-			}
-			catch ( Exception ex )
-			{
-				writer.Write( "Error: " + ex.Message );
-			}
-		}
+        protected override void Render( System.Web.UI.HtmlTextWriter writer )
+        {
+            try
+            {
+                if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
+                {
+                    string xsltFile = AttributeValue( "XsltFile" );
+                    if ( !String.IsNullOrEmpty( xsltFile ) )
+                    {
+                        string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
+                        var xslt = new XslCompiledTransform();
+                        xslt.Load( xsltPath );
+                        xslt.Transform( xDocument.CreateReader(), null, writer );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                writer.Write( "Error: " + ex.Message );
+            }
+        }
 
     }
 }

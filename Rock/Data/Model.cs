@@ -18,75 +18,75 @@ namespace Rock.Data
     /// <summary>
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
-	[IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
-	public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
+    [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
     {
-		#region ISecured implementation
+        #region ISecured implementation
 
-		/// <summary>
-		/// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured"/> interface should return
-		/// a value that is unique across all <see cref="Rock.Security.ISecured"/> classes.  Typically this is the
-		/// qualified name of the class.
-		/// </summary>
-		[NotMapped]
-		public abstract override string EntityTypeName { get; }
+        /// <summary>
+        /// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured"/> interface should return
+        /// a value that is unique across all <see cref="Rock.Security.ISecured"/> classes.  Typically this is the
+        /// qualified name of the class.
+        /// </summary>
+        [NotMapped]
+        public abstract override string EntityTypeName { get; }
 
-		/// <summary>
-		/// A parent authority.  If a user is not specifically allowed or denied access to
-		/// this object, Rock will check access to the parent authority specified by this property.
-		/// </summary>
-		[NotMapped]
-		public virtual Security.ISecured ParentAuthority { get { return null; } }
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
+        [NotMapped]
+        public virtual Security.ISecured ParentAuthority { get { return null; } }
 
-		/// <summary>
-		/// A list of actions that this class supports.
-		/// </summary>
-		[NotMapped]
-		public virtual List<string> SupportedActions
-		{
-			get { return new List<string>() { "View", "Edit", "Configure" }; }
-		}
+        /// <summary>
+        /// A list of actions that this class supports.
+        /// </summary>
+        [NotMapped]
+        public virtual List<string> SupportedActions
+        {
+            get { return new List<string>() { "View", "Edit", "Configure" }; }
+        }
 
-		/// <summary>
-		/// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-		/// </summary>
-		/// <param name="action">The action.</param>
-		/// <param name="person">The person.</param>
-		/// <returns>
-		///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-		/// </returns>
-		public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
-		{
-			return Security.Authorization.Authorized( this, action, person );
-		}
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
+        {
+            return Security.Authorization.Authorized( this, action, person );
+        }
 
-		/// <summary>
-		/// If a user or role is not specifically allowed or denied to perform the selected action,
-		/// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
-		/// </summary>
-		/// <param name="action">The action.</param>
-		/// <returns></returns>
-		public virtual bool IsAllowedByDefault( string action )
-		{
-			return action == "View";
-		}
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public virtual bool IsAllowedByDefault( string action )
+        {
+            return action == "View";
+        }
 
-		/// <summary>
-		/// Finds the AuthRule records associated with the current object.
-		/// </summary>
-		/// <returns></returns>
-		public IQueryable<AuthRule> FindAuthRules()
-		{
-			return ( from action in SupportedActions
-					 from rule in Authorization.AuthRules( this.EntityTypeName, this.Id, action )
-					 select rule ).AsQueryable();
-		}
+        /// <summary>
+        /// Finds the AuthRule records associated with the current object.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<AuthRule> FindAuthRules()
+        {
+            return ( from action in SupportedActions
+                     from rule in Authorization.AuthRules( this.EntityTypeName, this.Id, action )
+                     select rule ).AsQueryable();
+        }
 
-		#endregion
+        #endregion
 
-		#region IHasAttributes implementation
+        #region IHasAttributes implementation
 
-		private bool _attributesLoaded = false;
+        private bool _attributesLoaded = false;
 
         // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
         // to tell WCF Data Services not to worry about the associated properties.
@@ -136,6 +136,6 @@ namespace Rock.Data
         }
         private Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> _attributeValues;
 
-		#endregion
-	}
+        #endregion
+    }
 }
