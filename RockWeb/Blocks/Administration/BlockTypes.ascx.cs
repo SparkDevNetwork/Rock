@@ -217,19 +217,17 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             BlockTypeService blockTypeService = new BlockTypeService();
-            List<BlockType> blockTypes;
-
             SortProperty sortProperty = gBlockTypes.SortProperty;
+
             if ( sortProperty != null )
             {
-                blockTypes = blockTypeService.Queryable().Sort( sortProperty ).ToList();
+                gBlockTypes.DataSource = blockTypeService.Queryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                blockTypes = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
+                gBlockTypes.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
             }
 
-            gBlockTypes.DataSource = blockTypes;
             gBlockTypes.DataBind();
         }
 
@@ -247,6 +245,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockType != null )
             {
+                lAction.Text = "Edit";
                 hfBlockTypeId.Value = blockType.Id.ToString();
                 tbName.Text = blockType.Name;
                 tbPath.Text = blockType.Path;
@@ -254,6 +253,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
+                lAction.Text = "Add";
                 hfBlockTypeId.Value = string.Empty;
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;
