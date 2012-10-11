@@ -20,31 +20,31 @@ namespace Rock.Crm
     [Table( "crmPersonMerged" )]
     public partial class PersonMerged : Model<PersonMerged>
     {
-		/// <summary>
-		/// Gets or sets the Current Id.
-		/// </summary>
-		/// <value>
-		/// Current Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int CurrentId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Current Guid.
-		/// </summary>
-		/// <value>
-		/// Current Guid.
-		/// </value>
-		[Required]
-		[DataMember]
-		public Guid CurrentGuid { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Current Id.
+        /// </summary>
+        /// <value>
+        /// Current Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int CurrentId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Current Guid.
+        /// </summary>
+        /// <value>
+        /// Current Guid.
+        /// </value>
+        [Required]
+        [DataMember]
+        public Guid CurrentGuid { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
@@ -69,16 +69,16 @@ namespace Rock.Crm
             return Read<PersonMerged>( id );
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return string.Format( "{0}->{1}", this.Id, this.CurrentId );
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0}->{1}", this.Id, this.CurrentId );
+        }
     }
 
     /// <summary>

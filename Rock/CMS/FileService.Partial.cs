@@ -11,20 +11,20 @@ using Rock.Data;
 
 namespace Rock.Cms
 {
-	/// <summary>
-	/// File POCO Service class
-	/// </summary>
+    /// <summary>
+    /// File POCO Service class
+    /// </summary>
     public partial class FileService : Service<File, FileDto>
     {
-		/// <summary>
-		/// Saves the specified item.
-		/// </summary>
-		/// <param name="item">The item.</param>
-		/// <param name="personId">The person id.</param>
-		public override void Save( File item, int? personId )
-		{
-			item.LastModifiedTime = DateTimeOffset.Now;
-			base.Save( item, personId );
-		}
+        /// <summary>
+        /// Saves the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person id.</param>
+        public override void Save( File item, int? personId )
+        {
+            item.LastModifiedTime = DateTimeOffset.Now;
+            base.Save( item, personId );
+        }
     }
 }

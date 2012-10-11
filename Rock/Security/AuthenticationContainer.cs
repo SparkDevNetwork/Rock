@@ -14,9 +14,9 @@ using Rock.Extension;
 
 namespace Rock.Security
 {
-	/// <summary>
-	/// MEF Container class for Authentication Componenets
-	/// </summary>
+    /// <summary>
+    /// MEF Container class for Authentication Componenets
+    /// </summary>
     public class AuthenticationContainer : Container<AuthenticationComponent, IComponentData>
     {
         private static AuthenticationContainer instance;

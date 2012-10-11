@@ -3,16 +3,16 @@
     
 
     <fieldset>
-	    <legend>Login</legend> 
+        <legend>Login</legend> 
         <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
         <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:LabeledTextBox>
         
         <div class="control-group">
-        	<div class="controls">
-        		<label class="checkbox">
-        			<asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
-        		</label>
-        	</div>
+            <div class="controls">
+                <label class="checkbox">
+                    <asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
+                </label>
+            </div>
         </div>
         
     </fieldset>

@@ -74,106 +74,106 @@ namespace Rock.Cms
         [DataMember]
         public bool? IsConfirmed { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Last Activity Date.
-		/// </summary>
-		/// <value>
-		/// Last Activity Date.
-		/// </value>
-		[NotAudited]
-		[DataMember]
-		public DateTime? LastActivityDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Last Login Date.
-		/// </summary>
-		/// <value>
-		/// Last Login Date.
-		/// </value>
-		[DataMember]
-		public DateTime? LastLoginDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Last Password Changed Date.
-		/// </summary>
-		/// <value>
-		/// Last Password Changed Date.
-		/// </value>
-		[DataMember]
-		public DateTime? LastPasswordChangedDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Creation Date.
-		/// </summary>
-		/// <value>
-		/// Creation Date.
-		/// </value>
-		[DataMember]
-		public DateTime? CreationDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Is On Line.
-		/// </summary>
-		/// <value>
-		/// Is On Line.
-		/// </value>
-		[DataMember]
-		public bool? IsOnLine { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Is Locked Out.
-		/// </summary>
-		/// <value>
-		/// Is Locked Out.
-		/// </value>
-		[DataMember]
-		public bool? IsLockedOut { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Last Locked Out Date.
-		/// </summary>
-		/// <value>
-		/// Last Locked Out Date.
-		/// </value>
-		[DataMember]
-		public DateTime? LastLockedOutDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Failed Password Attempt Count.
-		/// </summary>
-		/// <value>
-		/// Failed Password Attempt Count.
-		/// </value>
-		[DataMember]
-		public int? FailedPasswordAttemptCount { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Failed Password Attempt Window Start.
-		/// </summary>
-		/// <value>
-		/// Failed Password Attempt Window Start.
-		/// </value>
-		[DataMember]
-		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Api Key.
-		/// </summary>
-		/// <value>
-		/// Api Key.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string ApiKey { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id.
-		/// </value>
-		[DataMember]
-		public int? PersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the Last Activity Date.
+        /// </summary>
+        /// <value>
+        /// Last Activity Date.
+        /// </value>
+        [NotAudited]
+        [DataMember]
+        public DateTime? LastActivityDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Last Login Date.
+        /// </summary>
+        /// <value>
+        /// Last Login Date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastLoginDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Last Password Changed Date.
+        /// </summary>
+        /// <value>
+        /// Last Password Changed Date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastPasswordChangedDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Creation Date.
+        /// </summary>
+        /// <value>
+        /// Creation Date.
+        /// </value>
+        [DataMember]
+        public DateTime? CreationDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Is On Line.
+        /// </summary>
+        /// <value>
+        /// Is On Line.
+        /// </value>
+        [DataMember]
+        public bool? IsOnLine { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Is Locked Out.
+        /// </summary>
+        /// <value>
+        /// Is Locked Out.
+        /// </value>
+        [DataMember]
+        public bool? IsLockedOut { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Last Locked Out Date.
+        /// </summary>
+        /// <value>
+        /// Last Locked Out Date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastLockedOutDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Failed Password Attempt Count.
+        /// </summary>
+        /// <value>
+        /// Failed Password Attempt Count.
+        /// </value>
+        [DataMember]
+        public int? FailedPasswordAttemptCount { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Failed Password Attempt Window Start.
+        /// </summary>
+        /// <value>
+        /// Failed Password Attempt Window Start.
+        /// </value>
+        [DataMember]
+        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Api Key.
+        /// </summary>
+        /// <value>
+        /// Api Key.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string ApiKey { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        [DataMember]
+        public int? PersonId { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
@@ -198,8 +198,8 @@ namespace Rock.Cms
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.User"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.User"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -255,16 +255,16 @@ namespace Rock.Cms
             }
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.UserName;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.UserName;
+        }
 
         #region Static Methods
 

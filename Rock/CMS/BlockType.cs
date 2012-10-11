@@ -20,52 +20,52 @@ namespace Rock.Cms
     [Table( "cmsBlockType" )]
     public partial class BlockType : Model<BlockType>, IExportable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Path.
-		/// </summary>
-		/// <value>
-		/// Path.
-		/// </value>
-		[Required]
-		[MaxLength( 200 )]
-		[DataMember]
-		public string Path { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Path.
+        /// </summary>
+        /// <value>
+        /// Path.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string Path { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.BlockType"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.BlockType"; } }
         
         /// <summary>
         /// Gets or sets the Blocks.
@@ -85,16 +85,16 @@ namespace Rock.Cms
             return Read<BlockType>( id );
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
 
         /// <summary>
         /// Exports the object as JSON.

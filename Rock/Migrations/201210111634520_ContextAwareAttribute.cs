@@ -20,17 +20,17 @@ namespace Rock.Migrations
         {
             Sql( @"
                 UPDATE A SET
-	                 [Key] = 'ContextEntityType'
-	                ,[Name] = 'Context Entity Type'
-	                ,[Description] = 'Context Entity Type'
+                     [Key] = 'ContextEntityType'
+                    ,[Name] = 'Context Entity Type'
+                    ,[Description] = 'Context Entity Type'
                 FROM [cmsBlock] B
                 INNER JOIN [cmsBlockType] BT
-	                ON BT.[Id] = B.[BlockTypeId]
+                    ON BT.[Id] = B.[BlockTypeId]
                 INNER JOIN [coreAttribute] A
-	                ON A.[Entity] = 'Rock.Cms.Block'
-	                AND A.[EntityQualifierColumn] = 'BlockTypeId'
-	                AND A.[EntityQualifierValue] = CAST(BT.[Id] AS varchar)
-	                AND A.[Key] = 'Entity'
+                    ON A.[Entity] = 'Rock.Cms.Block'
+                    AND A.[EntityQualifierColumn] = 'BlockTypeId'
+                    AND A.[EntityQualifierValue] = CAST(BT.[Id] AS varchar)
+                    AND A.[Key] = 'Entity'
                 WHERE BT.[Path] in ('~/Blocks/Core/AttributeCategoryView.ascx','~/Blocks/Core/ContextAttributeValues.ascx','~/Blocks/Core/Tags.ascx')
 " );
 
@@ -43,17 +43,17 @@ namespace Rock.Migrations
         {
             Sql( @"
                 UPDATE A SET
-	                 [Key] = 'Entity'
-	                ,[Name] = 'Entity'
-	                ,[Description] = 'Context Entity Type'
+                     [Key] = 'Entity'
+                    ,[Name] = 'Entity'
+                    ,[Description] = 'Context Entity Type'
                 FROM [cmsBlock] B
                 INNER JOIN [cmsBlockType] BT
-	                ON BT.[Id] = B.[BlockTypeId]
+                    ON BT.[Id] = B.[BlockTypeId]
                 INNER JOIN [coreAttribute] A
-	                ON A.[Entity] = 'Rock.Cms.Block'
-	                AND A.[EntityQualifierColumn] = 'BlockTypeId'
-	                AND A.[EntityQualifierValue] = CAST(BT.[Id] AS varchar)
-	                AND A.[Key] = 'Entity'
+                    ON A.[Entity] = 'Rock.Cms.Block'
+                    AND A.[EntityQualifierColumn] = 'BlockTypeId'
+                    AND A.[EntityQualifierValue] = CAST(BT.[Id] AS varchar)
+                    AND A.[Key] = 'Entity'
                 WHERE BT.[Path] in ('~/Blocks/Core/AttributeCategoryView.ascx','~/Blocks/Core/ContextAttributeValues.ascx','~/Blocks/Core/Tags.ascx')
 " );
         }

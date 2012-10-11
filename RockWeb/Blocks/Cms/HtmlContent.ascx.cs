@@ -18,325 +18,325 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-	[AdditionalActions( new string[] { "Approve" } )]
-	[BlockProperty( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
-	[BlockProperty( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-	[BlockProperty( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
-	[BlockProperty( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
-	[BlockProperty( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-	[BlockProperty( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
-	[BlockProperty( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [AdditionalActions( new string[] { "Approve" } )]
+    [BlockProperty( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
+    [BlockProperty( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
+    [BlockProperty( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
+    [BlockProperty( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
+    [BlockProperty( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
+    [BlockProperty( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public partial class HtmlContent : Rock.Web.UI.RockBlock
     {
         #region Private Global Variables
 
-		bool _supportVersioning = false;
-		bool _requireApproval = false;
+        bool _supportVersioning = false;
+        bool _requireApproval = false;
 
-		#endregion
+        #endregion
 
-		#region Events
+        #region Events
 
-		protected override void OnInit( EventArgs e )
-		{
-			base.OnInit( e );
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
 
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-			CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
 
-			CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-			CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
-			_supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
-			_requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
+            _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
+            _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
 
-			mpeContent.OnOkScript = string.Format( "saveHtmlContent_{0}();", CurrentBlock.Id );
+            mpeContent.OnOkScript = string.Format( "saveHtmlContent_{0}();", CurrentBlock.Id );
 
-			rGrid.DataKeyNames = new string[] { "id" };
-			rGrid.ShowActionRow = false;
+            rGrid.DataKeyNames = new string[] { "id" };
+            rGrid.ShowActionRow = false;
 
-			this.AttributesUpdated += HtmlContent_AttributesUpdated;
+            this.AttributesUpdated += HtmlContent_AttributesUpdated;
 
-			ShowView();
-		}
+            ShowView();
+        }
 
-		protected override void OnLoad( EventArgs e )
-		{
-			base.OnLoad( e );
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
-			hfAction.Value = string.Empty;
-		}
+            hfAction.Value = string.Empty;
+        }
 
-		protected void lbEdit_Click( object sender, EventArgs e )
-		{
-			HtmlContentService service = new HtmlContentService();
-			Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
-			if ( content == null )
-				content = new Rock.Cms.HtmlContent();
+        protected void lbEdit_Click( object sender, EventArgs e )
+        {
+            HtmlContentService service = new HtmlContentService();
+            Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
+            if ( content == null )
+                content = new Rock.Cms.HtmlContent();
 
-			if ( _supportVersioning )
-			{
-				phCurrentVersion.Visible = true;
-				pnlVersioningHeader.Visible = true;
-				cbOverwriteVersion.Visible = true;
+            if ( _supportVersioning )
+            {
+                phCurrentVersion.Visible = true;
+                pnlVersioningHeader.Visible = true;
+                cbOverwriteVersion.Visible = true;
 
-				hfVersion.Value = content.Version.ToString();
-				lVersion.Text = content.Version.ToString();
-				tbStartDate.Text = content.StartDateTime.HasValue ? content.StartDateTime.Value.ToShortDateString() : string.Empty;
-				tbExpireDate.Text = content.ExpireDateTime.HasValue ? content.ExpireDateTime.Value.ToShortDateString() : string.Empty;
+                hfVersion.Value = content.Version.ToString();
+                lVersion.Text = content.Version.ToString();
+                tbStartDate.Text = content.StartDateTime.HasValue ? content.StartDateTime.Value.ToShortDateString() : string.Empty;
+                tbExpireDate.Text = content.ExpireDateTime.HasValue ? content.ExpireDateTime.Value.ToShortDateString() : string.Empty;
 
-				if ( _requireApproval )
-				{
-					cbApprove.Checked = content.IsApproved;
-					cbApprove.Enabled = IsUserAuthorized( "Approve" );
-					cbApprove.Visible = true;
-				}
-				else
-					cbApprove.Visible = false;
-			}
-			else
-			{
-				phCurrentVersion.Visible = false;
-				pnlVersioningHeader.Visible = false;
-				cbOverwriteVersion.Visible = false;
-			}
+                if ( _requireApproval )
+                {
+                    cbApprove.Checked = content.IsApproved;
+                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
+                    cbApprove.Visible = true;
+                }
+                else
+                    cbApprove.Visible = false;
+            }
+            else
+            {
+                phCurrentVersion.Visible = false;
+                pnlVersioningHeader.Visible = false;
+                cbOverwriteVersion.Visible = false;
+            }
 
-			txtHtmlContentEditor.Text = content.Content;
+            txtHtmlContentEditor.Text = content.Content;
 
-			BindGrid();
+            BindGrid();
 
-			hfAction.Value = "Edit";
-		}
+            hfAction.Value = "Edit";
+        }
 
-		protected override void OnPreRender( EventArgs e )
-		{
-			aClose.Attributes["onclick"] = string.Format(
-				"$find('{0}').hide();return false;", mpeContent.BehaviorID );
+        protected override void OnPreRender( EventArgs e )
+        {
+            aClose.Attributes["onclick"] = string.Format(
+                "$find('{0}').hide();return false;", mpeContent.BehaviorID );
 
-			base.OnPreRender( e );
-		}
+            base.OnPreRender( e );
+        }
 
-		void HtmlContent_AttributesUpdated( object sender, EventArgs e )
-		{
-			lPreText.Text = AttributeValue( "PreText" );
-			lPostText.Text = AttributeValue( "PostText" );
-		}
+        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
+        {
+            lPreText.Text = AttributeValue( "PreText" );
+            lPostText.Text = AttributeValue( "PostText" );
+        }
 
-		protected void btnSave_Click( object sender, EventArgs e )
-		{
-			if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
-			{
-				Rock.Cms.HtmlContent content = null;
-				HtmlContentService service = new HtmlContentService();
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
+            {
+                Rock.Cms.HtmlContent content = null;
+                HtmlContentService service = new HtmlContentService();
 
-				// get settings
-				string entityValue = EntityValue();
+                // get settings
+                string entityValue = EntityValue();
 
-				// get current  content
-				int version = 0;
-				if ( !Int32.TryParse( hfVersion.Value, out version ) )
-					version = 0;
-				content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
+                // get current  content
+                int version = 0;
+                if ( !Int32.TryParse( hfVersion.Value, out version ) )
+                    version = 0;
+                content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
 
-				// if the existing content changed, and the overwrite option was not checked, create a new version
-				if ( content != null &&
-					_supportVersioning &&
-					content.Content != txtHtmlContentEditor.Text &&
-					!cbOverwriteVersion.Checked )
-					content = null;
+                // if the existing content changed, and the overwrite option was not checked, create a new version
+                if ( content != null &&
+                    _supportVersioning &&
+                    content.Content != txtHtmlContentEditor.Text &&
+                    !cbOverwriteVersion.Checked )
+                    content = null;
 
-				// if a record doesn't exist then  create one
-				if ( content == null )
-				{
-					content = new Rock.Cms.HtmlContent();
-					content.BlockId = CurrentBlock.Id;
-					content.EntityValue = entityValue;
+                // if a record doesn't exist then  create one
+                if ( content == null )
+                {
+                    content = new Rock.Cms.HtmlContent();
+                    content.BlockId = CurrentBlock.Id;
+                    content.EntityValue = entityValue;
 
-					if ( _supportVersioning )
-					{
-						int? maxVersion = service.Queryable().
-							Where( c => c.BlockId == CurrentBlock.Id &&
-								c.EntityValue == entityValue ).
-							Select( c => (int?)c.Version ).Max();
+                    if ( _supportVersioning )
+                    {
+                        int? maxVersion = service.Queryable().
+                            Where( c => c.BlockId == CurrentBlock.Id &&
+                                c.EntityValue == entityValue ).
+                            Select( c => (int?)c.Version ).Max();
 
-						content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
-					}
-					else
-						content.Version = 0;
+                        content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
+                    }
+                    else
+                        content.Version = 0;
 
-					service.Add( content, CurrentPersonId );
-				}
+                    service.Add( content, CurrentPersonId );
+                }
 
-				if ( _supportVersioning )
-				{
-					DateTime startDate;
-					if ( DateTime.TryParse( tbStartDate.Text, out startDate ) )
-						content.StartDateTime = startDate;
-					else
-						content.StartDateTime = null;
+                if ( _supportVersioning )
+                {
+                    DateTime startDate;
+                    if ( DateTime.TryParse( tbStartDate.Text, out startDate ) )
+                        content.StartDateTime = startDate;
+                    else
+                        content.StartDateTime = null;
 
-					DateTime expireDate;
-					if ( DateTime.TryParse( tbExpireDate.Text, out expireDate ) )
-						content.ExpireDateTime = expireDate;
-					else
-						content.ExpireDateTime = null;
-				}
-				else
-				{
-					content.StartDateTime = null;
-					content.ExpireDateTime = null;
-				}
+                    DateTime expireDate;
+                    if ( DateTime.TryParse( tbExpireDate.Text, out expireDate ) )
+                        content.ExpireDateTime = expireDate;
+                    else
+                        content.ExpireDateTime = null;
+                }
+                else
+                {
+                    content.StartDateTime = null;
+                    content.ExpireDateTime = null;
+                }
 
-				if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
-				{
-					content.IsApproved = !_requireApproval || cbApprove.Checked;
-					if ( content.IsApproved )
-					{
-						content.ApprovedByPersonId = CurrentPersonId;
-						content.ApprovedDateTime = DateTime.Now;
-					}
-				}
+                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
+                {
+                    content.IsApproved = !_requireApproval || cbApprove.Checked;
+                    if ( content.IsApproved )
+                    {
+                        content.ApprovedByPersonId = CurrentPersonId;
+                        content.ApprovedDateTime = DateTime.Now;
+                    }
+                }
 
-				content.Content = txtHtmlContentEditor.Text;
+                content.Content = txtHtmlContentEditor.Text;
 
-				service.Save( content, CurrentPersonId );
+                service.Save( content, CurrentPersonId );
 
-				// flush cache content 
-				this.FlushCacheItem( entityValue );
+                // flush cache content 
+                this.FlushCacheItem( entityValue );
 
-			}
+            }
 
-			ShowView();
-		}
+            ShowView();
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
-		{
-			List<Control> configControls = new List<Control>();
+        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        {
+            List<Control> configControls = new List<Control>();
 
-			// add edit icon to config controls if user has edit permission
-			if ( canConfig || canEdit )
-			{
-				LinkButton lbEdit = new LinkButton();
-				lbEdit.CssClass = "edit";
-				lbEdit.ToolTip = "Edit HTML";
-				lbEdit.Click += new EventHandler( lbEdit_Click );
-				configControls.Add( lbEdit );
-				HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
-				lbEdit.Controls.Add( iEdit );
-				iEdit.Attributes.Add( "class", "icon-edit" );
+            // add edit icon to config controls if user has edit permission
+            if ( canConfig || canEdit )
+            {
+                LinkButton lbEdit = new LinkButton();
+                lbEdit.CssClass = "edit";
+                lbEdit.ToolTip = "Edit HTML";
+                lbEdit.Click += new EventHandler( lbEdit_Click );
+                configControls.Add( lbEdit );
+                HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
+                lbEdit.Controls.Add( iEdit );
+                iEdit.Attributes.Add( "class", "icon-edit" );
 
-				ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
-			}
+                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
+            }
 
-			configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
+            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
 
-			return configControls;
-		}
+            return configControls;
+        }
 
-		private void ShowView()
-		{
-			string entityValue = EntityValue();
-			string html = "";
+        private void ShowView()
+        {
+            string entityValue = EntityValue();
+            string html = "";
 
-			string cachedContent = GetCacheItem( entityValue ) as string;
+            string cachedContent = GetCacheItem( entityValue ) as string;
 
-			// if content not cached load it from DB
-			if ( cachedContent == null )
-			{
-				Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
+            // if content not cached load it from DB
+            if ( cachedContent == null )
+            {
+                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
-				if ( content != null )
-					html = content.Content;
-				else
-					html = string.Empty;
+                if ( content != null )
+                    html = content.Content;
+                else
+                    html = string.Empty;
 
-				// cache content
-				int cacheDuration = 0;
-				if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
-					AddCacheItem( entityValue, html, cacheDuration );
-			}
-			else
-				html = cachedContent;
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
+                    AddCacheItem( entityValue, html, cacheDuration );
+            }
+            else
+                html = cachedContent;
 
-			// add content to the content window
-			lPreText.Text = AttributeValue( "PreText" );
-			lHtmlContent.Text = html;
-			lPostText.Text = AttributeValue( "PostText" );
-		}
+            // add content to the content window
+            lPreText.Text = AttributeValue( "PreText" );
+            lHtmlContent.Text = html;
+            lPostText.Text = AttributeValue( "PostText" );
+        }
 
-		private void BindGrid()
-		{
-			var HtmlService = new HtmlContentService();
-			var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
+        private void BindGrid()
+        {
+            var HtmlService = new HtmlContentService();
+            var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-			var personService = new Rock.Crm.PersonService();
-			var versionAudits = new Dictionary<int, Rock.Core.Audit>();
-			var modifiedPersons = new Dictionary<int, string>();
+            var personService = new Rock.Crm.PersonService();
+            var versionAudits = new Dictionary<int, Rock.Core.Audit>();
+            var modifiedPersons = new Dictionary<int, string>();
 
-			foreach ( var version in content )
-			{
-				var lastAudit = HtmlService.Audits( version )
-					.Where( a => a.AuditType == Rock.Core.AuditType.Add ||
-						a.AuditType == Rock.Core.AuditType.Modify )
-					.OrderByDescending( h => h.DateTime )
-					.FirstOrDefault();
-				if ( lastAudit != null )
-					versionAudits.Add( version.Id, lastAudit );
-			}
+            foreach ( var version in content )
+            {
+                var lastAudit = HtmlService.Audits( version )
+                    .Where( a => a.AuditType == Rock.Core.AuditType.Add ||
+                        a.AuditType == Rock.Core.AuditType.Modify )
+                    .OrderByDescending( h => h.DateTime )
+                    .FirstOrDefault();
+                if ( lastAudit != null )
+                    versionAudits.Add( version.Id, lastAudit );
+            }
 
-			foreach ( var audit in versionAudits.Values )
-			{
-				if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
-				{
-					var modifiedPerson = personService.Get( audit.PersonId.Value, true );
-					modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
-				}
-			}
+            foreach ( var audit in versionAudits.Values )
+            {
+                if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
+                {
+                    var modifiedPerson = personService.Get( audit.PersonId.Value, true );
+                    modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
+                }
+            }
 
-			var versions = content.
-				Select( v => new
-				{
-					v.Id,
-					v.Version,
-					v.Content,
-					ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
-					ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
-					Approved = v.IsApproved,
-					ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
-					v.StartDateTime,
-					v.ExpireDateTime
-				} ).ToList();
+            var versions = content.
+                Select( v => new
+                {
+                    v.Id,
+                    v.Version,
+                    v.Content,
+                    ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
+                    ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
+                    Approved = v.IsApproved,
+                    ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
+                    v.StartDateTime,
+                    v.ExpireDateTime
+                } ).ToList();
 
-			rGrid.DataSource = versions;
-			rGrid.DataBind();
-		}
+            rGrid.DataSource = versions;
+            rGrid.DataBind();
+        }
 
-		private string EntityValue()
-		{
-			string entityValue = string.Empty;
+        private string EntityValue()
+        {
+            string entityValue = string.Empty;
 
-			string contextParameter = AttributeValue( "ContextParameter" );
-			if ( !string.IsNullOrEmpty( contextParameter ) )
-				entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
+            string contextParameter = AttributeValue( "ContextParameter" );
+            if ( !string.IsNullOrEmpty( contextParameter ) )
+                entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
 
-			string contextParameterValue = PageParameter( contextParameter );
-			if ( !string.IsNullOrEmpty( contextParameterValue ) )
-				entityValue += "&ContextName=" + contextParameterValue;
+            string contextParameterValue = PageParameter( contextParameter );
+            if ( !string.IsNullOrEmpty( contextParameterValue ) )
+                entityValue += "&ContextName=" + contextParameterValue;
 
-			return entityValue;
-		}
+            return entityValue;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }
 
