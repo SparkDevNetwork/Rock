@@ -13,12 +13,12 @@
 using Rock.Core;
 
 namespace Rock.Rest.Core
-{
+    
     /// <summary>
     /// AttributeQualifiers REST API
     /// </summary>
     public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Core.AttributeQualifier, Rock.Core.AttributeQualifierDto>
-    {
-        public AttributeQualifiersController() : base( new Rock.Core.AttributeQualifierService() ) { } 
+        
+        public AttributeQualifiersController() : base( new Rock.Core.AttributeQualifierService() )      } 
     }
 }

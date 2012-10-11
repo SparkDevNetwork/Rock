@@ -13,12 +13,12 @@
 using Rock.Crm;
 
 namespace Rock.Rest.Crm
-{
+    
     /// <summary>
     /// Campus REST API
     /// </summary>
     public partial class CampusController : Rock.Rest.ApiController<Rock.Crm.Campus, Rock.Crm.CampusDto>
-    {
-        public CampusController() : base( new Rock.Crm.CampusService() ) { } 
+        
+        public CampusController() : base( new Rock.Crm.CampusService() )      } 
     }
 }

@@ -14,37 +14,37 @@ using System;
 using Rock.Data;
 
 namespace Rock.Financial
-{
+    
     /// <summary>
     /// Data Transfer Object for Fund object
     /// </summary>
     public partial class FundDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public string Name { get; set; }
-        public string PublicName { get; set; }
-        public string Description { get; set; }
-        public int? ParentFundId { get; set; }
-        public bool IsTaxDeductible { get; set; }
-        public int Order { get; set; }
-        public bool IsActive { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public bool IsPledgable { get; set; }
-        public string GlCode { get; set; }
-        public int? FundTypeId { get; set; }
-        public string Entity { get; set; }
-        public int? EntityId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public string Name      get; set; }
+        public string PublicName      get; set; }
+        public string Description      get; set; }
+        public int? ParentFundId      get; set; }
+        public bool IsTaxDeductible      get; set; }
+        public int Order      get; set; }
+        public bool IsActive      get; set; }
+        public DateTime? StartDate      get; set; }
+        public DateTime? EndDate      get; set; }
+        public bool IsPledgable      get; set; }
+        public string GlCode      get; set; }
+        public int? FundTypeId      get; set; }
+        public string Entity      get; set; }
+        public int? EntityId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public FundDto ()
-        {
+            
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="fund"></param>
         public FundDto ( Fund fund )
-        {
+            
             CopyFromModel( fund );
         }
 
@@ -61,9 +61,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Fund )
-            {
+                
                 var fund = (Fund)model;
                 this.Name = fund.Name;
                 this.PublicName = fund.PublicName;
@@ -89,9 +89,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Fund )
-            {
+                
                 var fund = (Fund)model;
                 fund.Name = this.Name;
                 fund.PublicName = this.PublicName;

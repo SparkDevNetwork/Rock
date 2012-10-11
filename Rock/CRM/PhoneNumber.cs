@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Phone Number POCO Entity.
     /// </summary>
     [Table( "crmPhoneNumber" )]
     public partial class PhoneNumber : Model<PhoneNumber>
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
         
         /// <summary>
         /// Gets or sets the Person Id.
@@ -38,7 +38,7 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [DataMember]
-        public int PersonId { get; set; }
+        public int PersonId      get; set; }
         
         /// <summary>
         /// Gets or sets the Number.
@@ -49,32 +49,32 @@ namespace Rock.Crm
         [Required]
         [MaxLength( 20 )]
         [DataMember]
-        public string Number { get; set; }
+        public string Number      get; set; }
 
         /// <summary>
         /// Gets or sets the extension
         /// </summary>
         [MaxLength( 20 )]
         [DataMember]
-        public string Extension { get; set; }
+        public string Extension      get; set; }
 
         /// <summary>
         /// Type of phone number
         /// </summary>
         [DataMember]
-        public int? NumberTypeId { get; set; }
+        public int? NumberTypeId      get; set; }
 
         /// <summary>
         /// Gets or sets whether the number has been opted in for SMS
         /// </summary>
         [Required]
         [DataMember]
-        public bool IsMessagingEnabled { get; set; }
+        public bool IsMessagingEnabled      get; set; }
 
         /// <summary>
         /// The phone number type
         /// </summary>
-        public virtual Core.DefinedValue NumberType { get; set; }
+        public virtual Core.DefinedValue NumberType      get; set; }
 
         /// <summary>
         /// Gets or sets the whether the number is unlisted or not.
@@ -83,7 +83,7 @@ namespace Rock.Crm
         /// IsUnlisted.
         /// </value>
         [DataMember]
-        public bool IsUnlisted { get; set; }
+        public bool IsUnlisted      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Description.
@@ -92,13 +92,13 @@ namespace Rock.Crm
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.PhoneNumber"; } }
+		public override string EntityTypeName      get      return "Crm.PhoneNumber"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -106,7 +106,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-        public virtual Person Person { get; set; }
+        public virtual Person Person      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -114,7 +114,7 @@ namespace Rock.Crm
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static PhoneNumber Read( int id )
-        {
+            
             return Read<PhoneNumber>( id );
         }
 
@@ -124,7 +124,7 @@ namespace Rock.Crm
         /// <param name="number"></param>
         /// <returns></returns>
         public static string FormattedNumber( string number )
-        {
+            
             number = new System.Text.RegularExpressions.Regex( @"\D" ).Replace( number, string.Empty );
             number = number.TrimStart( '1' );
             if ( number.Length == 7 )
@@ -144,7 +144,7 @@ namespace Rock.Crm
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return FormattedNumber( this.Number );
 		}
     }
@@ -153,12 +153,12 @@ namespace Rock.Crm
     /// Phone Number Configuration class.
     /// </summary>
     public partial class PhoneNumberConfiguration : EntityTypeConfiguration<PhoneNumber>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberConfiguration"/> class.
         /// </summary>
         public PhoneNumberConfiguration()
-        {
+            
             this.HasRequired( p => p.Person ).WithMany( p => p.PhoneNumbers ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.NumberType ).WithMany().HasForeignKey( p => p.NumberTypeId ).WillCascadeOnDelete( false );
         }

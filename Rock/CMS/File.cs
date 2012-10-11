@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// File POCO Entity.
     /// </summary>
     [Table( "cmsFile" )]
     public partial class File : Model<File>
-    {
+        
 		/// <summary>
 		/// Gets or sets the Temporary.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsTemporary { get; set; }
+		public bool IsTemporary      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the System.
@@ -38,7 +38,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Data.
@@ -47,7 +47,7 @@ namespace Rock.Cms
 		/// Data.
 		/// </value>
 		[DataMember]
-		public byte[] Data { get; set; }
+		public byte[] Data      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Url.
@@ -57,7 +57,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 255 )]
 		[DataMember]
-		public string Url { get; set; }
+		public string Url      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the File Name.
@@ -68,7 +68,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 255 )]
 		[DataMember]
-		public string FileName { get; set; }
+		public string FileName      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Mime Type.
@@ -79,7 +79,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 255 )]
 		[DataMember]
-		public string MimeType { get; set; }
+		public string MimeType      get; set; }
 
 		/// <summary>
 		/// Gets or sets the time that file was last modified.
@@ -88,7 +88,7 @@ namespace Rock.Cms
 		/// The last modified time.
 		/// </value>
 		[DataMember]
-		public DateTimeOffset? LastModifiedTime { get; set; }
+		public DateTimeOffset? LastModifiedTime      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Description.
@@ -97,13 +97,13 @@ namespace Rock.Cms
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.File"; } }
+		public override string EntityTypeName      get      return "Cms.File"; } }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -111,7 +111,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static File Read( int id )
-        {
+            
             return Read<File>( id );
         }
 
@@ -122,7 +122,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.FileName;
 		}
 
@@ -132,12 +132,12 @@ namespace Rock.Cms
     /// File Configuration class.
     /// </summary>
     public partial class FileConfiguration : EntityTypeConfiguration<File>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="FileConfiguration"/> class.
         /// </summary>
         public FileConfiguration()
-        {
+            
         }
     }
 }

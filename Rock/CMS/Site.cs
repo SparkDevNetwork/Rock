@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Site POCO Entity.
     /// </summary>
     [Table( "cmsSite" )]
     public partial class Site : Model<Site>
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -39,7 +39,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Name      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -48,7 +48,7 @@ namespace Rock.Cms
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Theme.
@@ -58,7 +58,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Theme { get; set; }
+		public string Theme      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Default Page Id.
@@ -67,7 +67,7 @@ namespace Rock.Cms
 		/// Default Page Id.
 		/// </value>
 		[DataMember]
-		public int? DefaultPageId { get; set; }
+		public int? DefaultPageId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Favicon Url.
@@ -77,7 +77,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 150 )]
 		[DataMember]
-		public string FaviconUrl { get; set; }
+		public string FaviconUrl      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Apple Touch Icon Url.
@@ -87,7 +87,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 150 )]
 		[DataMember]
-		public string AppleTouchIconUrl { get; set; }
+		public string AppleTouchIconUrl      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Facebook App Id.
@@ -97,7 +97,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 25 )]
 		[DataMember]
-		public string FacebookAppId { get; set; }
+		public string FacebookAppId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Facebook App Secret.
@@ -107,7 +107,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string FacebookAppSecret { get; set; }
+		public string FacebookAppSecret      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Login Page Reference.
@@ -117,7 +117,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 10 )]
 		[DataMember]
-		public string LoginPageReference { get; set; }
+		public string LoginPageReference      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Registration Page Reference.
@@ -127,7 +127,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 10 )]
 		[DataMember]
-		public string RegistrationPageReference { get; set; }
+		public string RegistrationPageReference      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Error Page.
@@ -137,13 +137,13 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 200 )]
 		[DataMember]
-		public string ErrorPage { get; set; }
+		public string ErrorPage      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Site"; } }
+		public override string EntityTypeName      get      return "Cms.Site"; } }
         
         /// <summary>
         /// Gets or sets the Pages.
@@ -151,7 +151,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Pages.
         /// </value>
-        public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Page> Pages      get; set; }
         
         /// <summary>
         /// Gets or sets the Site Domains.
@@ -159,7 +159,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Site Domains.
         /// </value>
-        public virtual ICollection<SiteDomain> SiteDomains { get; set; }
+        public virtual ICollection<SiteDomain> SiteDomains      get; set; }
         
         /// <summary>
         /// Gets or sets the Default Page.
@@ -167,7 +167,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        public virtual Page DefaultPage { get; set; }
+        public virtual Page DefaultPage      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -175,7 +175,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static Site Read( int id )
-        {
+            
             return Read<Site>( id );
         }
 
@@ -186,7 +186,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
     }
@@ -195,12 +195,12 @@ namespace Rock.Cms
     /// Site Configuration class.
     /// </summary>
     public partial class SiteConfiguration : EntityTypeConfiguration<Site>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteConfiguration"/> class.
         /// </summary>
         public SiteConfiguration()
-        {
+            
             this.HasOptional( p => p.DefaultPage ).WithMany( p => p.Sites ).HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
         }
     }

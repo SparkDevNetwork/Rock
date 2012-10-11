@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field used to save and dispaly a text value
     /// </summary>
     [Serializable]
     public class Image : FieldType
-    {
+        
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -25,8 +25,8 @@ namespace Rock.Field.Types
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            return string.Format( "<a href='{0}image.ashx?{1}' target='_blank'>Image</a>",
+            
+            return string.Format( "<a href='    0}image.ashx?    1}' target='_blank'>Image</a>",
                 parentControl.ResolveUrl( "~" ),
                 value );
         }
@@ -39,7 +39,7 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             return new Web.UI.Controls.ImageSelector();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
                 return ( ( Rock.Web.UI.Controls.ImageSelector )control ).ImageId;
             return null;
@@ -63,7 +63,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-        {
+            
             if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
                 ( ( Rock.Web.UI.Controls.ImageSelector )control ).ImageId = value;
         }

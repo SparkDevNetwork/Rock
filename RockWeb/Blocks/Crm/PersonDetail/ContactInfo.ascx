@@ -10,28 +10,28 @@
     </ul>
 
     <script>
-        $('ul.phone-numbers li a').live({
+        $('ul.phone-numbers li a').live(    
             mouseenter:
-                function () {
+                function ()     
                     var spanItem = $('span.phone-unlisted', this);
-                    if (spanItem.length > 0) {
+                    if (spanItem.length > 0)     
                         $(spanItem).text($(spanItem).attr('data-value'));
                     }
 
                     var phoneIcon = $('i', this);
-                    if (phoneIcon.length > 0) {
+                    if (phoneIcon.length > 0)     
                         $(phoneIcon).fadeToggle();
                     }
                 },
             mouseleave:
-                function () {
+                function ()     
                     var spanItem = $('span.phone-unlisted', this);
-                    if (spanItem.length > 0) {
+                    if (spanItem.length > 0)     
                         $(spanItem).text('Unlisted');
                     }
 
                     var phoneIcon = $('i', this);
-                    if (phoneIcon.length > 0) {
+                    if (phoneIcon.length > 0)     
                         $(phoneIcon).hide();
                     }
                 }

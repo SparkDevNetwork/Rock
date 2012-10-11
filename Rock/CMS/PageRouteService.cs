@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// PageRoute Service class
     /// </summary>
     public partial class PageRouteService : Service<PageRoute, PageRouteDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PageRouteService"/> class
         /// </summary>
         public PageRouteService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageRouteService"/> class
         /// </summary>
         public PageRouteService(IRepository<PageRoute> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override PageRoute CreateNew()
-        {
+            
             return new PageRoute();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PageRouteDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PageRouteDto> QueryableDto( IQueryable<PageRoute> items )
-        {
+            
             return items.Select( m => new PageRouteDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     PageId = m.PageId,
                     Route = m.Route,

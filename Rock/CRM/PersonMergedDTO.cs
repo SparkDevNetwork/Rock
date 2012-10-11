@@ -14,25 +14,25 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Data Transfer Object for PersonMerged object
     /// </summary>
     public partial class PersonMergedDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public int CurrentId { get; set; }
-        public Guid CurrentGuid { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public int CurrentId      get; set; }
+        public Guid CurrentGuid      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PersonMergedDto ()
-        {
+            
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="personMerged"></param>
         public PersonMergedDto ( PersonMerged personMerged )
-        {
+            
             CopyFromModel( personMerged );
         }
 
@@ -49,9 +49,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is PersonMerged )
-            {
+                
                 var personMerged = (PersonMerged)model;
                 this.CurrentId = personMerged.CurrentId;
                 this.CurrentGuid = personMerged.CurrentGuid;
@@ -65,9 +65,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is PersonMerged )
-            {
+                
                 var personMerged = (PersonMerged)model;
                 personMerged.CurrentId = this.CurrentId;
                 personMerged.CurrentGuid = this.CurrentGuid;

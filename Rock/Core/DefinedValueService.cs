@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// DefinedValue Service class
     /// </summary>
     public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
         /// </summary>
         public DefinedValueService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
         /// </summary>
         public DefinedValueService(IRepository<DefinedValue> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override DefinedValue CreateNew()
-        {
+            
             return new DefinedValue();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<DefinedValueDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<DefinedValueDto> QueryableDto( IQueryable<DefinedValue> items )
-        {
+            
             return items.Select( m => new DefinedValueDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     DefinedTypeId = m.DefinedTypeId,
                     Order = m.Order,

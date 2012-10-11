@@ -10,13 +10,13 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// <see cref="Grid"/> Column for reordering rows in a grid
     /// </summary>
-    [ToolboxData( "<{0}:ReorderField runat=server></{0}:ReorderField>" )]
+    [ToolboxData( "<    0}:ReorderField runat=server></    0}:ReorderField>" )]
     public class ReorderField : TemplateField
-    {
+        
         /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
@@ -26,16 +26,16 @@ namespace Rock.Web.UI.Controls
         /// Always returns false.
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
-        {
+            
             Grid grid = control as Grid;
             if ( grid != null )
-            {
+                
                 if (grid.AllowSorting)
                     throw new ArgumentException( "Cannot use ReorderField with grid AllowSorting" );
 
                 string script = @"
-    var fixHelper = function(e, ui) {
-        ui.children().each(function() {
+    var fixHelper = function(e, ui)     
+        ui.children().each(function()     
             $(this).width($(this).width());
         });
         return ui;
@@ -44,23 +44,23 @@ namespace Rock.Web.UI.Controls
                 grid.Page.ClientScript.RegisterStartupScript( grid.Page.GetType(), "grid-sortable-helper-script", script, true );
 
                 script = string.Format( @"
-    Sys.Application.add_load(function () {{
-        $('#{0} tbody').sortable({{
+    Sys.Application.add_load(function ()         
+        $('#    0} tbody').sortable(        
             helper: fixHelper,
             handle: '.grid-icon-cell.reorder',
-            start: function(event, ui) {{
+            start: function(event, ui)         
                 var start_pos = ui.item.index();
                 ui.item.data('start_pos', start_pos);
             }},
-            update: function(event, ui) {{
-                __doPostBack('{1}', 're-order:' + ui.item.attr('datakey') + ';' + ui.item.data('start_pos') + ';' + ui.item.index());
+            update: function(event, ui)         
+                __doPostBack('    1}', 're-order:' + ui.item.attr('datakey') + ';' + ui.item.data('start_pos') + ';' + ui.item.index());
             }}
         }}).disableSelection();
     }});
 ", grid.ClientID, grid.UniqueID );
 
                 grid.Page.ClientScript.RegisterStartupScript( this.GetType(),
-                    string.Format( "grid-sort-{0}-script", grid.ClientID ), script, true );
+                    string.Format( "grid-sort-    0}-script", grid.ClientID ), script, true );
 
                 this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
                 this.ItemStyle.CssClass = "grid-icon-cell reorder";
@@ -75,16 +75,16 @@ namespace Rock.Web.UI.Controls
     /// Template used by the <see cref="ReorderField"/> control
     /// </summary>
     public class ReorderFieldTemplate : ITemplate
-    {
+        
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
-        {
+            
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
-            {
+                
                 HtmlGenericControl a = new HtmlGenericControl( "a" );
                 a.Attributes.Add( "href", "#" );
                 a.InnerText = "Reorder";

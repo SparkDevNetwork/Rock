@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
+    [ToolboxData( "<    0}:LabeledDropDownList runat=server></    0}:LabeledDropDownList>" )]
     public class LabeledDropDownList : DropDownList
-    {
+        
         /// <summary>
         /// 
         /// </summary>
@@ -39,16 +39,16 @@ namespace Rock.Web.UI.Controls
         Description( "Is the value required?" )
         ]
         public bool Required
-        {
+            
             get
-            {
+                
                 if ( ViewState["Required"] != null )
                     return ( bool )ViewState["Required"];
                 else
                     return false;
             }
             set
-            {
+                
                 ViewState["Required"] = value;
             }
         }
@@ -66,14 +66,14 @@ namespace Rock.Web.UI.Controls
         Description( "The help tip." )
         ]
         public string Tip
-        {
+            
             get
-            {
+                
                 string s = ViewState["Tip"] as string;
                 return s == null ? string.Empty : s;
             }
             set
-            {
+                
                 ViewState["Tip"] = value;
             }
         }
@@ -91,14 +91,14 @@ namespace Rock.Web.UI.Controls
         Description( "The help block." )
         ]
         public string Help
-        {
+            
             get
-            {
+                
                 string s = ViewState["Help"] as string;
                 return s == null ? string.Empty : s;
             }
             set
-            {
+                
                 ViewState["Help"] = value;
             }
         }
@@ -116,14 +116,14 @@ namespace Rock.Web.UI.Controls
         Description( "The text for the label." )
         ]
         public string LabelText
-        {
+            
             get
-            {
+                
                 EnsureChildControls();
                 return label.Text;
             }
             set
-            {
+                
                 EnsureChildControls();
                 label.Text = value;
             }
@@ -133,7 +133,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-        {
+            
             base.CreateChildControls();
 
             Controls.Clear();
@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
-        {
+            
             bool isValid = !Required || validator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
@@ -174,14 +174,14 @@ namespace Rock.Web.UI.Controls
             base.Render( writer );
 
             if ( Required )
-            {
+                
                 validator.Enabled = true;
                 validator.ErrorMessage = LabelText + " is Required.";
                 validator.RenderControl( writer );
             }
 
             if ( Tip.Trim() != string.Empty )
-            {
+                
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -192,7 +192,7 @@ namespace Rock.Web.UI.Controls
             }
 
             if ( Help.Trim() != string.Empty )
-            {
+                
                 writer.AddAttribute( "class", "help-block" );
                 writer.RenderBeginTag( HtmlTextWriterTag.P );
                 writer.Write( Help.Trim() );
@@ -209,7 +209,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The writer.</param>
         protected void RenderBase( HtmlTextWriter writer )
-        {
+            
             base.Render( writer );
         }
 
@@ -220,7 +220,7 @@ namespace Rock.Web.UI.Controls
         /// Always returns an <see cref="T:System.Web.UI.EmptyControlCollection"/>.
         /// </returns>
         protected override ControlCollection CreateControlCollection()
-        {
+            
             // By default a DropDownList control does not allow adding of child controls.
             // This method needs to be overridden to allow this
             return new ControlCollection( this );

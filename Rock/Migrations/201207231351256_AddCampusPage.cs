@@ -1,11 +1,11 @@
 namespace Rock.Migrations
-{
+    
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class AddCampusPage : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             // add the Campus page to the admin section of the website.
             Sql( @"
 -- cmsBlock --
@@ -26,7 +26,7 @@ INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[O
         }
 
         public override void Down()
-        {
+            
             // Remove the Campus page and block instance
             Sql( @"
 -- cmsBlockInstance

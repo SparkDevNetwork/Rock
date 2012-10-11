@@ -13,12 +13,12 @@
 using Rock.Core;
 
 namespace Rock.Rest.Core
-{
+    
     /// <summary>
     /// FieldTypes REST API
     /// </summary>
     public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Core.FieldType, Rock.Core.FieldTypeDto>
-    {
-        public FieldTypesController() : base( new Rock.Core.FieldTypeService() ) { } 
+        
+        public FieldTypesController() : base( new Rock.Core.FieldTypeService() )      } 
     }
 }

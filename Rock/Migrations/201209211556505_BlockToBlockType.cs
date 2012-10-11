@@ -1,22 +1,22 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class BlockToBlockType : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             DropForeignKey("cmsBlock", "CreatedByPersonId", "crmPerson");
             DropForeignKey("cmsBlock", "ModifiedByPersonId", "crmPerson");
             DropForeignKey("cmsBlockInstance", "BlockId", "cmsBlock");
-            DropIndex("cmsBlock", new[] { "CreatedByPersonId" });
-            DropIndex("cmsBlock", new[] { "ModifiedByPersonId" });
-            DropIndex("cmsBlockInstance", new[] { "BlockId" });
+            DropIndex("cmsBlock", new[]      "CreatedByPersonId" });
+            DropIndex("cmsBlock", new[]      "ModifiedByPersonId" });
+            DropIndex("cmsBlockInstance", new[]      "BlockId" });
             CreateTable(
                 "dbo.cmsBlockType",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         Path = c.String(nullable: false, maxLength: 200),
@@ -87,11 +87,11 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             CreateTable(
                 "dbo.cmsBlock",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         Path = c.String(nullable: false, maxLength: 200),
@@ -151,9 +151,9 @@ namespace Rock.Migrations
                 UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockId' WHERE [EntityQualifierColumn] = 'BlockTypeId'
 " );
 
-            DropIndex("dbo.cmsBlockInstance", new[] { "BlockTypeId" });
-            DropIndex("dbo.cmsBlockType", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.cmsBlockType", new[] { "CreatedByPersonId" });
+            DropIndex("dbo.cmsBlockInstance", new[]      "BlockTypeId" });
+            DropIndex("dbo.cmsBlockType", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.cmsBlockType", new[]      "CreatedByPersonId" });
             DropForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType");
             DropForeignKey("dbo.cmsBlockType", "ModifiedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.cmsBlockType", "CreatedByPersonId", "dbo.crmPerson");

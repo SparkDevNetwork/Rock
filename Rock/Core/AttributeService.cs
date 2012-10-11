@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Attribute Service class
     /// </summary>
     public partial class AttributeService : Service<Attribute, AttributeDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeService"/> class
         /// </summary>
         public AttributeService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeService"/> class
         /// </summary>
         public AttributeService(IRepository<Attribute> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Attribute CreateNew()
-        {
+            
             return new Attribute();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<AttributeDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<AttributeDto> QueryableDto( IQueryable<Attribute> items )
-        {
+            
             return items.Select( m => new AttributeDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     FieldTypeId = m.FieldTypeId,
                     Entity = m.Entity,

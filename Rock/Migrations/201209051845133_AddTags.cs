@@ -1,16 +1,16 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class AddTags : RockMigration_0
-    {
+        
         public override void Up()
-        {
+            
             CreateTable(
                 "dbo.coreTag",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         Entity = c.String(maxLength: 50),
@@ -36,7 +36,7 @@ namespace Rock.Migrations
             CreateTable(
                 "dbo.coreTaggedItem",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         TagId = c.Int(nullable: false),
@@ -84,7 +84,7 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             // Tag Administration Page
             DeletePage( "9EC914AF-D726-4715-934D-49D9F41BF039" );
 
@@ -101,12 +101,12 @@ namespace Rock.Migrations
             DeleteBlockAttributeValue( "B551E9D1-304C-4E13-8CC5-318899FF2741", "D8A029F8-83BE-454A-99D3-94D879EBF87C");
             DeleteBlockAttributeValue( "B551E9D1-304C-4E13-8CC5-318899FF2741", "9909E07F-0E68-43B8-A151-24D03C795093");
 
-            DropIndex("dbo.coreTaggedItem", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.coreTaggedItem", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreTaggedItem", new[] { "TagId" });
-            DropIndex("dbo.coreTag", new[] { "ModifiedByPersonId" });
-            DropIndex("dbo.coreTag", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.coreTag", new[] { "OwnerId" });
+            DropIndex("dbo.coreTaggedItem", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.coreTaggedItem", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreTaggedItem", new[]      "TagId" });
+            DropIndex("dbo.coreTag", new[]      "ModifiedByPersonId" });
+            DropIndex("dbo.coreTag", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.coreTag", new[]      "OwnerId" });
             DropForeignKey("dbo.coreTaggedItem", "ModifiedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.coreTaggedItem", "CreatedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.coreTaggedItem", "TagId", "dbo.coreTag");

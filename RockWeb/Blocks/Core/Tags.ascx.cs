@@ -13,14 +13,14 @@ using Rock.Core;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
-{
+    
     [ContextAware]
     [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
     [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     public partial class Tags : RockBlock
-    {
+        
         protected void Page_Load( object sender, EventArgs e )
-        {
+            
             string entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
                 entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Core
             string contextTypeName = string.Empty;
             Rock.Data.IEntity contextEntity = null;
             foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
+                
                 contextTypeName = entry.Key;
                 contextEntity = entry.Value;
                 // Should only be one.
@@ -43,15 +43,15 @@ namespace RockWeb.Blocks.Core
             }
 
             if ( !String.IsNullOrWhiteSpace( contextTypeName ) && contextEntity != null )
-            {
+                
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.GetByEntity(
                     contextTypeName, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
-                    .Select( i => new {
+                    .Select( i => new     
                         OwnerId = i.Tag.OwnerId,
                         Name = i.Tag.Name
                     }))
-                {
+                    
                     if ( sb.Length > 0 )
                         sb.Append( ',' );
                     sb.Append( item.Name );
@@ -60,25 +60,25 @@ namespace RockWeb.Blocks.Core
                 }
 
                 phTags.Controls.Add( new LiteralControl( string.Format(
-                    "<input name=\"person-tags\" id=\"person-tags\" value=\"{0}\" />", sb.ToString() ) ) );
+                    "<input name=\"person-tags\" id=\"person-tags\" value=\"    0}\" />", sb.ToString() ) ) );
 
                 string script = string.Format( @"
-    $(document).ready(function () {{
+    $(document).ready(function ()         
         $('ul.ui-autocomplete').css('width', '300px');
-        $('#person-tags').tagsInput({{
-            'autocomplete_url': function( request, response ) {{
-                $.ajax({{
-                    url: rock.baseUrl + 'api/tags/availablenames/{0}/{1}/{2}{3}{4}',
+        $('#person-tags').tagsInput(        
+            'autocomplete_url': function( request, response )         
+                $.ajax(        
+                    url: rock.baseUrl + 'api/tags/availablenames/    0}/    1}/    2}    3}    4}',
                     dataType: 'json',
-                    success: function(data, status, xhr){{ 
-                        response($.map(data, function (item) {{
-                            return {{
+                    success: function(data, status, xhr)         
+                        response($.map(data, function (item)         
+                            return         
                                 value: item.Name,
                                 class: item.OwnerId == null || item.OwnerId == '' ? 'system' : 'personal'
                             }}
                         }}))
                     }},
-                    error: function(xhr, status, error) {{
+                    error: function(xhr, status, error)         
                         alert(status + ' [' + error + ']: ' + xhr.reponseText);
                     }}
                 }});
@@ -95,43 +95,43 @@ namespace RockWeb.Blocks.Core
         }});
     }});
 
-    function verifyTag(tagName) {{
-        $.ajax({{
+    function verifyTag(tagName)         
+        $.ajax(        
             type: 'GET',
-            url: rock.baseUrl + 'api/tags/{0}/{1}/' + tagName + '{3}{4}',
-            statusCode: {{
-                404: function () {{
+            url: rock.baseUrl + 'api/tags/    0}/    1}/' + tagName + '    3}    4}',
+            statusCode:         
+                404: function ()         
                         var r = confirm(""A tag called '"" + tagName + ""' does not exist. Do you want to create a new personal tag?"");
-                        if (r == true) {{
+                        if (r == true)         
                             AddTag(tagName);
                         }}
-                        else {{
+                        else         
                             // remove tag
                             $('#person-tags').removeTag(tagName);
                         }}
                     }},
-                200: function (data, status, xhr) {{
+                200: function (data, status, xhr)         
                         AddTag(tagName);
                     }}
             }},
         }});
     }}
 
-    function AddTag(tagName) {{
-        $.ajax({{
+    function AddTag(tagName)         
+        $.ajax(        
             type: 'POST',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
-            error: function (xhr, status, error) {{
+            url: rock.baseUrl + 'api/taggeditems/    0}/    1}/    2}/' + tagName + '    3}    4}',
+            error: function (xhr, status, error)         
                 alert(status + ' [' + error + ']: ' + xhr.responseText);
             }}
         }});
     }}
 
-    function RemoveTag(tagName) {{
-        $.ajax({{
+    function RemoveTag(tagName)         
+        $.ajax(        
             type: 'DELETE',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
-            error: function (xhr, status, error) {{
+            url: rock.baseUrl + 'api/taggeditems/    0}/    1}/    2}/' + tagName + '    3}    4}',
+            error: function (xhr, status, error)         
                 alert(status + ' [' + error + ']: ' + xhr.responseText);
             }}
         }});

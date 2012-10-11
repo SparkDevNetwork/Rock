@@ -4,19 +4,19 @@ using System.Linq;
 using System.Web;
 
 namespace Rock.Communication
-{
+    
     /// <summary>
     /// 
     /// </summary>
     public class BouncedEmail
-    {
+        
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>
         /// The status.
         /// </value>
-        public string Status { get; set; }
+        public string Status      get; set; }
         
         /// <summary>
         /// Gets or sets the created.
@@ -24,7 +24,7 @@ namespace Rock.Communication
         /// <value>
         /// The created.
         /// </value>
-        public DateTime Created { get; set; }
+        public DateTime Created      get; set; }
         
         /// <summary>
         /// Gets or sets the reason.
@@ -32,7 +32,7 @@ namespace Rock.Communication
         /// <value>
         /// The reason.
         /// </value>
-        public string Reason { get; set; }
+        public string Reason      get; set; }
         
         /// <summary>
         /// Gets or sets the email.
@@ -40,6 +40,6 @@ namespace Rock.Communication
         /// <value>
         /// The email.
         /// </value>
-        public string Email { get; set; }
+        public string Email      get; set; }
     }
 }

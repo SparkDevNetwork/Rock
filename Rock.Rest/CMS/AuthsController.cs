@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
     /// <summary>
     /// Auths REST API
     /// </summary>
     public partial class AuthsController : Rock.Rest.ApiController<Rock.Cms.Auth, Rock.Cms.AuthDto>
-    {
-        public AuthsController() : base( new Rock.Cms.AuthService() ) { } 
+        
+        public AuthsController() : base( new Rock.Cms.AuthService() )      } 
     }
 }

@@ -14,30 +14,30 @@ using System;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Data Transfer Object for Group object
     /// </summary>
     public partial class GroupDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int? ParentGroupId { get; set; }
-        public int GroupTypeId { get; set; }
-        public int? CampusId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsSecurityRole { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int? ParentGroupId      get; set; }
+        public int GroupTypeId      get; set; }
+        public int? CampusId      get; set; }
+        public string Name      get; set; }
+        public string Description      get; set; }
+        public bool IsSecurityRole      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public GroupDto ()
-        {
+            
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="group"></param>
         public GroupDto ( Group group )
-        {
+            
             CopyFromModel( group );
         }
 
@@ -54,9 +54,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Group )
-            {
+                
                 var group = (Group)model;
                 this.IsSystem = group.IsSystem;
                 this.ParentGroupId = group.ParentGroupId;
@@ -75,9 +75,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Group )
-            {
+                
                 var group = (Group)model;
                 group.IsSystem = this.IsSystem;
                 group.ParentGroupId = this.ParentGroupId;

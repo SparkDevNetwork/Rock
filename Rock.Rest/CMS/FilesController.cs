@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
     /// <summary>
     /// Files REST API
     /// </summary>
     public partial class FilesController : Rock.Rest.ApiController<Rock.Cms.File, Rock.Cms.FileDto>
-    {
-        public FilesController() : base( new Rock.Cms.FileService() ) { } 
+        
+        public FilesController() : base( new Rock.Cms.FileService() )      } 
     }
 }

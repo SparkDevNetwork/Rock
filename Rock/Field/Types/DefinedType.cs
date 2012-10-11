@@ -11,13 +11,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field Type used to display a dropdown list of Defined Types
     /// </summary>
     [Serializable]
     public class DefinedType : SelectSingle
-    {
+        
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
@@ -26,7 +26,7 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-        {
+            
             ListControl editControl = new DropDownList();
 
             Rock.Core.DefinedTypeService definedTypeService = new Core.DefinedTypeService();

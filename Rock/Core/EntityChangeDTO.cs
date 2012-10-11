@@ -14,32 +14,32 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for EntityChange object
     /// </summary>
     public partial class EntityChangeDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public Guid ChangeSet { get; set; }
-        public string ChangeType { get; set; }
-        public string EntityType { get; set; }
-        public int EntityId { get; set; }
-        public string Property { get; set; }
-        public string OriginalValue { get; set; }
-        public string CurrentValue { get; set; }
-        public DateTime? CreatedDateTime { get; set; }
-        public int? CreatedByPersonId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public Guid ChangeSet      get; set; }
+        public string ChangeType      get; set; }
+        public string EntityType      get; set; }
+        public int EntityId      get; set; }
+        public string Property      get; set; }
+        public string OriginalValue      get; set; }
+        public string CurrentValue      get; set; }
+        public DateTime? CreatedDateTime      get; set; }
+        public int? CreatedByPersonId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public EntityChangeDto ()
-        {
+            
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="entityChange"></param>
         public EntityChangeDto ( EntityChange entityChange )
-        {
+            
             CopyFromModel( entityChange );
         }
 
@@ -56,9 +56,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is EntityChange )
-            {
+                
                 var entityChange = (EntityChange)model;
                 this.ChangeSet = entityChange.ChangeSet;
                 this.ChangeType = entityChange.ChangeType;
@@ -79,9 +79,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is EntityChange )
-            {
+                
                 var entityChange = (EntityChange)model;
                 entityChange.ChangeSet = this.ChangeSet;
                 entityChange.ChangeType = this.ChangeType;

@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Email Template POCO Entity.
     /// </summary>
     [Table( "crmEmailTemplate" )]
     public partial class EmailTemplate : Model<EmailTemplate>
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Crm
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -37,7 +37,7 @@ namespace Rock.Crm
 		/// Person Id.
 		/// </value>
 		[DataMember]
-		public int? PersonId { get; set; }
+		public int? PersonId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Category.
@@ -47,7 +47,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Category { get; set; }
+		public string Category      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Title.
@@ -58,7 +58,7 @@ namespace Rock.Crm
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Title { get; set; }
+		public string Title      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the From.
@@ -68,7 +68,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 200 )]
 		[DataMember]
-		public string From { get; set; }
+		public string From      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the To.
@@ -77,7 +77,7 @@ namespace Rock.Crm
 		/// To.
 		/// </value>
 		[DataMember]
-		public string To { get; set; }
+		public string To      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Cc.
@@ -86,7 +86,7 @@ namespace Rock.Crm
 		/// Cc.
 		/// </value>
 		[DataMember]
-		public string Cc { get; set; }
+		public string Cc      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Bcc.
@@ -95,7 +95,7 @@ namespace Rock.Crm
 		/// Bcc.
 		/// </value>
 		[DataMember]
-		public string Bcc { get; set; }
+		public string Bcc      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Subject.
@@ -106,7 +106,7 @@ namespace Rock.Crm
 		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
-		public string Subject { get; set; }
+		public string Subject      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Body.
@@ -116,7 +116,7 @@ namespace Rock.Crm
 		/// </value>
 		[Required]
 		[DataMember]
-		public string Body { get; set; }
+		public string Body      get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -124,7 +124,7 @@ namespace Rock.Crm
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static EmailTemplate Read( int id )
-		{
+		    
 			return Read<EmailTemplate>( id );
 		}
 
@@ -132,7 +132,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.EmailTemplate"; } }
+		public override string EntityTypeName      get      return "Crm.EmailTemplate"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -140,7 +140,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-		public virtual Person Person { get; set; }
+		public virtual Person Person      get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -149,7 +149,7 @@ namespace Rock.Crm
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Title;
 		}
     }
@@ -158,12 +158,12 @@ namespace Rock.Crm
     /// Email Template Configuration class.
     /// </summary>
     public partial class EmailTemplateConfiguration : EntityTypeConfiguration<EmailTemplate>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateConfiguration"/> class.
         /// </summary>
         public EmailTemplateConfiguration()
-        {
+            
             this.HasOptional( p => p.Person ).WithMany( p => p.EmailTemplates ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }
     }

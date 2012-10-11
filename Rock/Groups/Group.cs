@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Group POCO Entity.
     /// </summary>
     [Table( "groupsGroup" )]
     public partial class Group : Model<Group>
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Groups
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
         
         /// <summary>
         /// Gets or sets the Parent Group Id.
@@ -37,7 +37,7 @@ namespace Rock.Groups
         /// Parent Group Id.
         /// </value>
         [DataMember]
-        public int? ParentGroupId { get; set; }
+        public int? ParentGroupId      get; set; }
         
         /// <summary>
         /// Gets or sets the Group Type Id.
@@ -47,7 +47,7 @@ namespace Rock.Groups
         /// </value>
         [Required]
         [DataMember]
-        public int GroupTypeId { get; set; }
+        public int GroupTypeId      get; set; }
 
         /// <summary>
         /// Gets or sets the Campus Id.
@@ -56,7 +56,7 @@ namespace Rock.Groups
         /// Campus Id.
         /// </value>
         [DataMember]
-        public int? CampusId { get; set; }
+        public int? CampusId      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Name.
@@ -67,7 +67,7 @@ namespace Rock.Groups
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Name      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -76,7 +76,7 @@ namespace Rock.Groups
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Is Security Role.
@@ -86,7 +86,7 @@ namespace Rock.Groups
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSecurityRole { get; set; }
+		public bool IsSecurityRole      get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -94,7 +94,7 @@ namespace Rock.Groups
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Group Read( int id )
-		{
+		    
 			return Read<Group>( id );
 		}
 		
@@ -102,7 +102,7 @@ namespace Rock.Groups
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Groups.Group"; } }
+		public override string EntityTypeName      get      return "Groups.Group"; } }
         
         /// <summary>
         /// Gets or sets the Groups.
@@ -110,7 +110,7 @@ namespace Rock.Groups
         /// <value>
         /// Collection of Groups.
         /// </value>
-        public virtual ICollection<Group> Groups { get; set; }
+        public virtual ICollection<Group> Groups      get; set; }
         
         /// <summary>
         /// Gets or sets the Members.
@@ -118,7 +118,7 @@ namespace Rock.Groups
         /// <value>
         /// Collection of Members.
         /// </value>
-        public virtual ICollection<Member> Members { get; set; }
+        public virtual ICollection<Member> Members      get; set; }
 
         /// <summary>
         /// Gets or sets the Locations.
@@ -126,7 +126,7 @@ namespace Rock.Groups
         /// <value>
         /// Collection of Locations.
         /// </value>
-        public virtual ICollection<GroupLocation> Locations { get; set; }
+        public virtual ICollection<GroupLocation> Locations      get; set; }
 
         /// <summary>
         /// Gets or sets the Parent Group.
@@ -134,7 +134,7 @@ namespace Rock.Groups
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
-        public virtual Group ParentGroup { get; set; }
+        public virtual Group ParentGroup      get; set; }
         
         /// <summary>
         /// Gets or sets the Group Type.
@@ -142,7 +142,7 @@ namespace Rock.Groups
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
-        public virtual GroupType GroupType { get; set; }
+        public virtual GroupType GroupType      get; set; }
 
         /// <summary>
         /// Gets or sets the Campus.
@@ -150,7 +150,7 @@ namespace Rock.Groups
         /// <value>
         /// A <see cref="Rock.Crm.Campus"/> object.
         /// </value>
-        public virtual Rock.Crm.Campus Campus { get; set; }
+        public virtual Rock.Crm.Campus Campus      get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -159,7 +159,7 @@ namespace Rock.Groups
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
 
@@ -169,12 +169,12 @@ namespace Rock.Groups
     /// Group Configuration class.
     /// </summary>
     public partial class GroupConfiguration : EntityTypeConfiguration<Group>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupConfiguration"/> class.
         /// </summary>
         public GroupConfiguration()
-        {
+            
             this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete(false);
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId).WillCascadeOnDelete( false );

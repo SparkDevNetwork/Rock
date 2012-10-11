@@ -14,30 +14,30 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for Tag object
     /// </summary>
     public partial class TagDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public string Entity { get; set; }
-        public string EntityQualifierColumn { get; set; }
-        public string EntityQualifierValue { get; set; }
-        public string Name { get; set; }
-        public int Order { get; set; }
-        public int? OwnerId { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public string Entity      get; set; }
+        public string EntityQualifierColumn      get; set; }
+        public string EntityQualifierValue      get; set; }
+        public string Name      get; set; }
+        public int Order      get; set; }
+        public int? OwnerId      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public TagDto ()
-        {
+            
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="tag"></param>
         public TagDto ( Tag tag )
-        {
+            
             CopyFromModel( tag );
         }
 
@@ -54,9 +54,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is Tag )
-            {
+                
                 var tag = (Tag)model;
                 this.IsSystem = tag.IsSystem;
                 this.Entity = tag.Entity;
@@ -75,9 +75,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is Tag )
-            {
+                
                 var tag = (Tag)model;
                 tag.IsSystem = this.IsSystem;
                 tag.Entity = this.Entity;

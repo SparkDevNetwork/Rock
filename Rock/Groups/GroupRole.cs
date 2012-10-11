@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Groups
-{
+    
     /// <summary>
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "groupsGroupRole" )]
     public partial class GroupRole : Model<GroupRole>
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Groups
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
 
         /// <summary>
         /// Gets or sets the Group Type Id.
@@ -37,7 +37,7 @@ namespace Rock.Groups
         /// Group Type Id.
         /// </value>
         [DataMember]
-        public int? GroupTypeId { get; set; }
+        public int? GroupTypeId      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Name.
@@ -47,7 +47,7 @@ namespace Rock.Groups
 		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Name      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -57,7 +57,7 @@ namespace Rock.Groups
 		/// </value>
 		[Required]
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Order.
@@ -66,7 +66,7 @@ namespace Rock.Groups
 		/// Order.
 		/// </value>
 		[DataMember]
-		public int? Order { get; set; }
+		public int? Order      get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -74,7 +74,7 @@ namespace Rock.Groups
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static GroupRole Read( int id )
-		{
+		    
 			return Read<GroupRole>( id );
 		}
 
@@ -82,7 +82,7 @@ namespace Rock.Groups
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Groups.GroupRole"; } }
+		public override string EntityTypeName      get      return "Groups.GroupRole"; } }
 
 		/// <summary>
 		/// Gets or sets the Group Type.
@@ -90,7 +90,7 @@ namespace Rock.Groups
 		/// <value>
 		/// A <see cref="GroupType"/> object.
 		/// </value>
-		public virtual GroupType GroupType { get; set; }
+		public virtual GroupType GroupType      get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -99,7 +99,7 @@ namespace Rock.Groups
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
     }
@@ -108,12 +108,12 @@ namespace Rock.Groups
     /// Group Role Configuration class.
     /// </summary>
     public partial class GroupRoleConfiguration : EntityTypeConfiguration<GroupRole>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleConfiguration"/> class.
         /// </summary>
         public GroupRoleConfiguration()
-        {
+            
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
         }
     }

@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
     /// <summary>
     /// Users REST API
     /// </summary>
     public partial class UsersController : Rock.Rest.ApiController<Rock.Cms.User, Rock.Cms.UserDto>
-    {
-        public UsersController() : base( new Rock.Cms.UserService() ) { } 
+        
+        public UsersController() : base( new Rock.Cms.UserService() )      } 
     }
 }

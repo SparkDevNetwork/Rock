@@ -13,12 +13,12 @@
 using Rock.Financial;
 
 namespace Rock.Rest.Financial
-{
+    
     /// <summary>
     /// Gateways REST API
     /// </summary>
     public partial class GatewaysController : Rock.Rest.ApiController<Rock.Financial.Gateway, Rock.Financial.GatewayDto>
-    {
-        public GatewaysController() : base( new Rock.Financial.GatewayService() ) { } 
+        
+        public GatewaysController() : base( new Rock.Financial.GatewayService() )      } 
     }
 }

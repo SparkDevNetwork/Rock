@@ -14,13 +14,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// MetricValue POCO Entity.
     /// </summary>
     [Table( "coreMetricValue" )]
     public partial class MetricValue : Model<MetricValue>, IOrdered
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -29,7 +29,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
 
         /// <summary>
         /// Gets or sets the MetricId.
@@ -39,7 +39,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public int MetricId { get; set; }
+        public int MetricId      get; set; }
 
         /// <summary>
         /// Gets or sets the Value.
@@ -50,7 +50,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Value { get; set; }
+        public string Value      get; set; }
         
         /// <summary>
         /// Gets or sets the Description.
@@ -59,7 +59,7 @@ namespace Rock.Core
         /// Description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description      get; set; }
         
         /// <summary>
         /// Gets or sets the xValue.
@@ -69,7 +69,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public string xValue { get; set; }
+        public string xValue      get; set; }
                 
         /// <summary>
         /// Gets or sets the isDateBased flag.
@@ -79,7 +79,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool isDateBased { get; set; }
+        public bool isDateBased      get; set; }
 
         /// <summary>
         /// Gets or sets the Label.
@@ -88,7 +88,7 @@ namespace Rock.Core
         /// Label.
         /// </value>
         [DataMember]
-        public string Label { get; set; }
+        public string Label      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Order.
@@ -98,13 +98,13 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int Order { get; set; }
+		public int Order      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.MetricValue"; } }
+		public override string EntityTypeName      get      return "Core.MetricValue"; } }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -112,7 +112,7 @@ namespace Rock.Core
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static MetricValue Read( int id )
-        {
+            
             return Read<MetricValue>( id );
         }
 
@@ -120,8 +120,8 @@ namespace Rock.Core
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
+            
+            get      return new Security.GenericEntity( "Global" ); }
         }
 
 		/// <summary>
@@ -131,7 +131,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Value;
 		}
 
@@ -139,7 +139,7 @@ namespace Rock.Core
         /// Initializes a new instance of the <see cref="MetricValue"/> class.
         /// </summary>
         public MetricValue()
-        {
+            
             
         }
     }
@@ -148,12 +148,12 @@ namespace Rock.Core
     /// MetricValue Configuration class.
     /// </summary>
     public partial class MetricValueConfiguration : EntityTypeConfiguration<MetricValue>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValueConfiguration"/> class.
         /// </summary>
         public MetricValueConfiguration()
-        {
+            
         }
     }
 }

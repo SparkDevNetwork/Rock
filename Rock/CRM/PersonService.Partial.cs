@@ -10,12 +10,12 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Person POCO Service class
     /// </summary>
     public partial class PersonService : Service<Person, PersonDto>
-    {
+        
         #region Get People
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Rock.Crm
         /// <param name="email">Email.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByEmail( string email )
-        {
+            
             return Repository.Find( t => ( t.Email == email || ( email == null && t.Email == null ) ) );
         }
         
@@ -34,7 +34,7 @@ namespace Rock.Crm
         /// <param name="maritalStatusId">Marital Status Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId )
-        {
+            
             return Repository.Find( t => ( t.MaritalStatusId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusId == null ) ) );
         }
         
@@ -44,7 +44,7 @@ namespace Rock.Crm
         /// <param name="personStatusId">Person Status Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByPersonStatusId( int? personStatusId )
-        {
+            
             return Repository.Find( t => ( t.PersonStatusId == personStatusId || ( personStatusId == null && t.PersonStatusId == null ) ) );
         }
         
@@ -54,7 +54,7 @@ namespace Rock.Crm
         /// <param name="recordStatusId">Record Status Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId )
-        {
+            
             return Repository.Find( t => ( t.RecordStatusId == recordStatusId || ( recordStatusId == null && t.RecordStatusId == null ) ) );
         }
         
@@ -64,7 +64,7 @@ namespace Rock.Crm
         /// <param name="recordStatusReasonId">Record Status Reason Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId )
-        {
+            
             return Repository.Find( t => ( t.RecordStatusReasonId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonId == null ) ) );
         }
         
@@ -74,7 +74,7 @@ namespace Rock.Crm
         /// <param name="recordTypeId">Record Type Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId )
-        {
+            
             return Repository.Find( t => ( t.RecordTypeId == recordTypeId || ( recordTypeId == null && t.RecordTypeId == null ) ) );
         }
         
@@ -84,7 +84,7 @@ namespace Rock.Crm
         /// <param name="suffixId">Suffix Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetBySuffixId( int? suffixId )
-        {
+            
             return Repository.Find( t => ( t.SuffixId == suffixId || ( suffixId == null && t.SuffixId == null ) ) );
         }
         
@@ -94,7 +94,7 @@ namespace Rock.Crm
         /// <param name="titleId">Title Id.</param>
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByTitleId( int? titleId )
-        {
+            
             return Repository.Find( t => ( t.TitleId == titleId || ( titleId == null && t.TitleId == null ) ) );
         }
 
@@ -104,12 +104,12 @@ namespace Rock.Crm
         /// <param name="fullName">The full name.</param>
         /// <returns></returns>
         public IQueryable<Person> GetByFullName( string fullName )
-        {
+            
             string firstName = string.Empty;
             string lastName = string.Empty;
 
             if ( fullName.Contains( ' ' ) )
-            {
+                
                 firstName = fullName.Substring( 0, fullName.LastIndexOf( ' ' ) );
                 lastName = fullName.Substring( fullName.LastIndexOf( ' ' ) + 1 );
             }
@@ -132,12 +132,12 @@ namespace Rock.Crm
         /// <param name="encryptedID">The encrypted ID.</param>
         /// <returns></returns>
         public Person GetByEncryptedID( string encryptedID )
-        {
+            
             string identifier = Rock.Security.Encryption.DecryptString( encryptedID );
 
             string[] idParts = identifier.Split( '|' );
             if ( idParts.Length == 2 )
-            {
+                
                 Guid personGuid = new Guid( idParts[0] );
                 int personId = Int32.Parse( idParts[1] );
 
@@ -168,7 +168,7 @@ namespace Rock.Crm
         /// Person object.
         /// </returns>
         public Person Get( int id, bool followTrail )
-        {
+            
             if ( followTrail )
                 id = new PersonMergedService().Current( id );
 
@@ -184,7 +184,7 @@ namespace Rock.Crm
         /// Person object.
         /// </returns>
         public Person GetByEncryptedKey( string encryptedKey, bool followTrail )
-        {
+            
             if ( followTrail )
                 encryptedKey = new PersonMergedService().Current( encryptedKey );
 
@@ -203,13 +203,13 @@ namespace Rock.Crm
         /// <param name="values"></param>
         /// <param name="personId"></param>
         public void SaveUserValue(Person person, string key, List<string> values, int? personId)
-        {
+            
             var attributeService = new Core.AttributeService();
             var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key );
 
             if ( attribute == null )
-            {
+                
                 var fieldTypeService = new Core.FieldTypeService();
                 var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
 
@@ -238,7 +238,7 @@ namespace Rock.Crm
                 attributeValueService.Delete( attributeValue, personId );
 
             foreach ( var value in values )
-            {
+                
                 var attributeValue = new Core.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = person.Id;
@@ -255,13 +255,13 @@ namespace Rock.Crm
         /// <param name="key"></param>
         /// <returns></returns>
         public List<string> GetUserValue( Person person, string key )
-        {
+            
             var attributeService = new Core.AttributeService();
             var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key);
 
             if (attribute != null)
-            {
+                
                 var attributeValueService = new Core.AttributeValueService();
                 var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
                 if (attributeValues != null && attributeValues.Count() > 0)
@@ -277,7 +277,7 @@ namespace Rock.Crm
         /// <param name="person"></param>
         /// <returns></returns>
         public Dictionary<string, List<string>> GetUserValues( Person person )
-        {
+            
             var values = new Dictionary<string, List<string>>();
 
             foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
@@ -286,7 +286,7 @@ namespace Rock.Crm
                     v.Attribute.EntityQualifierColumn == string.Empty &&
                     v.Attribute.EntityQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
-            {
+                
                 if (!values.Keys.Contains(attributeValue.Attribute.Key))
                     values.Add(attributeValue.Attribute.Key, new List<string>());
                 values[attributeValue.Attribute.Key].Add(attributeValue.Value);

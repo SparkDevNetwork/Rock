@@ -4,7 +4,7 @@
 <head runat="server">
     <style>
         BODY
-        {
+            
             background-color: white;
             color: #000000;
             font-family: Verdana;
@@ -12,31 +12,31 @@
             margin-top: 0;
         }
         #content
-        {
+            
             font-size: 0.7em;
             margin-left: 30px;
             padding-bottom: 2em;
         }
         A:link
-        {
+            
             color: #336699;
             font-weight: bold;
             text-decoration: underline;
         }
         A:visited
-        {
+            
             color: #6699CC;
             font-weight: bold;
             text-decoration: underline;
         }
         A:active
-        {
+            
             color: #336699;
             font-weight: bold;
             text-decoration: underline;
         }
         .heading1
-        {
+            
             background-color: #003366;
             border-bottom: 6px solid #336699;
             color: #FFFFFF;
@@ -49,7 +49,7 @@
             padding-top: 16px;
         }
         pre
-        {
+            
             background-color: #E5E5CC;
             border: 1px solid #F0F0E0;
             font-family: Courier New;
@@ -60,20 +60,20 @@
             word-wrap: break-word;
         }
         table
-        {
+            
             border-collapse: collapse;
             border-spacing: 0;
             font-family: Verdana;
         }
         table th
-        {
+            
             background-color: #CECF9C;
             border-bottom: 2px solid white;
             border-right: 2px solid white;
             font-weight: bold;
         }
         table td
-        {
+            
             background-color: #E5E5CC;
             border-bottom: 2px solid white;
             border-right: 2px solid white;
@@ -95,8 +95,8 @@
                     HeaderText="Help Url" 
                     DataTextField="Url"
                     DataNavigateUrlFields="Url"
-                    DataTextFormatString="{0}/help"
-                    DataNavigateUrlFormatString="~/{0}/help" />
+                    DataTextFormatString="    0}/help"
+                    DataNavigateUrlFormatString="~/    0}/help" />
             </Columns>
         </asp:GridView>
     </div>

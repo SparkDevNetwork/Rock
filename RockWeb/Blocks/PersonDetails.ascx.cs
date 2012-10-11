@@ -8,11 +8,11 @@ using System;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks
-{
+    
     public partial class PersonDetails : RockBlock
-    {
+        
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
 
             RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );

@@ -14,27 +14,27 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for AttributeQualifier object
     /// </summary>
     public partial class AttributeQualifierDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int AttributeId { get; set; }
-        public string Key { get; set; }
-        public string Value { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int AttributeId      get; set; }
+        public string Key      get; set; }
+        public string Value      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public AttributeQualifierDto ()
-        {
+            
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="attributeQualifier"></param>
         public AttributeQualifierDto ( AttributeQualifier attributeQualifier )
-        {
+            
             CopyFromModel( attributeQualifier );
         }
 
@@ -51,9 +51,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is AttributeQualifier )
-            {
+                
                 var attributeQualifier = (AttributeQualifier)model;
                 this.IsSystem = attributeQualifier.IsSystem;
                 this.AttributeId = attributeQualifier.AttributeId;
@@ -69,9 +69,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is AttributeQualifier )
-            {
+                
                 var attributeQualifier = (AttributeQualifier)model;
                 attributeQualifier.IsSystem = this.IsSystem;
                 attributeQualifier.AttributeId = this.AttributeId;

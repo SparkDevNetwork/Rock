@@ -13,14 +13,14 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Exception Log POCO Entity.
     /// </summary>
 	[NotAudited]
     [Table( "coreExceptionLog" )]
     public partial class ExceptionLog : Model<ExceptionLog>
-    {
+        
 		/// <summary>
 		/// Gets or sets the Parent Id.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
 		/// Parent Id of the exeption, used for linking inner exceptions..
 		/// </value>
 		[DataMember]
-		public int? ParentId { get; set; }
+		public int? ParentId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Site Id.
@@ -37,7 +37,7 @@ namespace Rock.Core
 		/// Site Id that the exception occurred on..
 		/// </value>
 		[DataMember]
-		public int? SiteId { get; set; }
+		public int? SiteId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -46,7 +46,7 @@ namespace Rock.Core
 		/// Page Id that the exception occurred on..
 		/// </value>
 		[DataMember]
-		public int? PageId { get; set; }
+		public int? PageId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Exception Date.
@@ -56,7 +56,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public DateTime ExceptionDate { get; set; }
+		public DateTime ExceptionDate      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Created By Person Id.
@@ -65,7 +65,7 @@ namespace Rock.Core
 		/// Created By Person Id.
 		/// </value>
 		[DataMember]
-		public int? CreatedByPersonId { get; set; }
+		public int? CreatedByPersonId      get; set; }
 
         /// <summary>
         /// Gets or sets the created by person.
@@ -73,7 +73,7 @@ namespace Rock.Core
         /// <value>
         /// The created by person.
         /// </value>
-		public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+		public virtual Rock.Crm.Person CreatedByPerson      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Has Inner Exception.
@@ -82,7 +82,7 @@ namespace Rock.Core
 		/// Whether the exception has an inner exception..
 		/// </value>
 		[DataMember]
-		public bool? HasInnerException { get; set; }
+		public bool? HasInnerException      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Status Code.
@@ -92,7 +92,7 @@ namespace Rock.Core
 		/// </value>
 		[MaxLength( 10 )]
 		[DataMember]
-		public string StatusCode { get; set; }
+		public string StatusCode      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Exception Type.
@@ -102,7 +102,7 @@ namespace Rock.Core
 		/// </value>
 		[MaxLength( 150 )]
 		[DataMember]
-		public string ExceptionType { get; set; }
+		public string ExceptionType      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -111,7 +111,7 @@ namespace Rock.Core
 		/// The exception message..
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Source.
@@ -121,7 +121,7 @@ namespace Rock.Core
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string Source { get; set; }
+		public string Source      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Stack Trace.
@@ -130,7 +130,7 @@ namespace Rock.Core
 		/// The stack trace that was produced..
 		/// </value>
 		[DataMember]
-		public string StackTrace { get; set; }
+		public string StackTrace      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Url.
@@ -140,7 +140,7 @@ namespace Rock.Core
 		/// </value>
 		[MaxLength( 250 )]
 		[DataMember]
-		public string PageUrl { get; set; }
+		public string PageUrl      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Server Variables.
@@ -149,7 +149,7 @@ namespace Rock.Core
 		/// Server variables at the time of the exception..
 		/// </value>
 		[DataMember]
-		public string ServerVariables { get; set; }
+		public string ServerVariables      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Query String.
@@ -158,7 +158,7 @@ namespace Rock.Core
 		/// Full query string..
 		/// </value>
 		[DataMember]
-		public string QueryString { get; set; }
+		public string QueryString      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Form.
@@ -167,7 +167,7 @@ namespace Rock.Core
 		/// Form items at the time of the exception..
 		/// </value>
 		[DataMember]
-		public string Form { get; set; }
+		public string Form      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Cookies.
@@ -176,13 +176,13 @@ namespace Rock.Core
 		/// Cookies at the time of the exception..
 		/// </value>
 		[DataMember]
-		public string Cookies { get; set; }
+		public string Cookies      get; set; }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.ExceptionLog"; } }
+		public override string EntityTypeName      get      return "Core.ExceptionLog"; } }
         
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -190,7 +190,7 @@ namespace Rock.Core
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static ExceptionLog Read( int id )
-		{
+		    
 			return Read<ExceptionLog>( id );
 		}
 
@@ -201,7 +201,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Description;
 		}
     }
@@ -210,12 +210,12 @@ namespace Rock.Core
     /// Exception Log Configuration class.
     /// </summary>
     public partial class ExceptionLogConfiguration : EntityTypeConfiguration<ExceptionLog>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionLogConfiguration"/> class.
         /// </summary>
         public ExceptionLogConfiguration()
-        {
+            
 			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
 		}
     }

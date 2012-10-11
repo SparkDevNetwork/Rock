@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// <see cref="Grid"/> Column to display a boolean value.
     /// </summary>
-    [ToolboxData( "<{0}:BoolField runat=server></{0}:BoolField>" )]
+    [ToolboxData( "<    0}:BoolField runat=server></    0}:BoolField>" )]
     public class BoolField : BoundField
-    {
+        
         /// <summary>
         /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField"/> object.
         /// </summary>
@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
         /// false in all cases.
         /// </returns>
         public override bool Initialize( bool enableSorting, Control control )
-        {
+            
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.ItemStyle.CssClass = "grid-icon-cell bool";
 
@@ -41,18 +41,18 @@ namespace Rock.Web.UI.Controls
         /// The field value converted to the format specified by <see cref="P:System.Web.UI.WebControls.BoundField.DataFormatString"/>.
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
-        {
+            
             bool boolValue = false;
 
             string value = base.FormatDataValue( dataValue, encode );
             if ( !bool.TryParse( value, out boolValue ) )
-            {
+                
                 int intValue = 0;
                 if ( Int32.TryParse( value, out intValue ) )
                     boolValue = intValue != 0;
             }
 
-            return string.Format( "<span class=\"{0}\">{1}</span>", 
+            return string.Format( "<span class=\"    0}\">    1}</span>", 
                 boolValue.ToString().ToLower(), ( boolValue ? " " : "" ) );
         }
     }

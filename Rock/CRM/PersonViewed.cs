@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// Person Viewed POCO Entity.
     /// </summary>
     [Table( "crmPersonViewed" )]
     public partial class PersonViewed : Model<PersonViewed>
-    {
+        
         /// <summary>
         /// Gets or sets the Viewer Person Id.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Crm
         /// Viewer Person Id.
         /// </value>
         [DataMember]
-        public int? ViewerPersonId { get; set; }
+        public int? ViewerPersonId      get; set; }
         
         /// <summary>
         /// Gets or sets the Target Person Id.
@@ -36,7 +36,7 @@ namespace Rock.Crm
         /// Target Person Id.
         /// </value>
         [DataMember]
-        public int? TargetPersonId { get; set; }
+        public int? TargetPersonId      get; set; }
         
         /// <summary>
         /// Gets or sets the View Date Time.
@@ -45,7 +45,7 @@ namespace Rock.Crm
         /// View Date Time.
         /// </value>
         [DataMember]
-        public DateTime? ViewDateTime { get; set; }
+        public DateTime? ViewDateTime      get; set; }
         
         /// <summary>
         /// Gets or sets the Ip Address.
@@ -55,7 +55,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 25 )]
         [DataMember]
-        public string IpAddress { get; set; }
+        public string IpAddress      get; set; }
         
         /// <summary>
         /// Gets or sets the Source.
@@ -65,13 +65,13 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Source { get; set; }
+        public string Source      get; set; }
         
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.PersonViewed"; } }
+		public override string EntityTypeName      get      return "Crm.PersonViewed"; } }
         
         /// <summary>
         /// Gets or sets the Viewer Person.
@@ -79,7 +79,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-        public virtual Person ViewerPerson { get; set; }
+        public virtual Person ViewerPerson      get; set; }
         
         /// <summary>
         /// Gets or sets the Target Person.
@@ -87,7 +87,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-        public virtual Person TargetPerson { get; set; }
+        public virtual Person TargetPerson      get; set; }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -95,7 +95,7 @@ namespace Rock.Crm
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static PersonViewed Read( int id )
-        {
+            
             return Read<PersonViewed>( id );
         }
 
@@ -106,9 +106,9 @@ namespace Rock.Crm
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			if (ViewerPerson != null && TargetPerson != null)
-				return string.Format("{0} Viewed {1}", ViewerPerson.FullName, TargetPerson.FullName);
+				return string.Format("    0} Viewed     1}", ViewerPerson.FullName, TargetPerson.FullName);
 			return string.Empty;
 		}
     }
@@ -117,12 +117,12 @@ namespace Rock.Crm
     /// Person Viewed Configuration class.
     /// </summary>
     public partial class PersonViewedConfiguration : EntityTypeConfiguration<PersonViewed>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedConfiguration"/> class.
         /// </summary>
         public PersonViewedConfiguration()
-        {
+            
             this.HasOptional( p => p.ViewerPerson ).WithMany().HasForeignKey( p => p.ViewerPersonId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.TargetPerson ).WithMany().HasForeignKey( p => p.TargetPersonId ).WillCascadeOnDelete(false);
         }

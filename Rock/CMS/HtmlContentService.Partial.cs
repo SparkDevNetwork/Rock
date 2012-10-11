@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Html Content POCO Service class
     /// </summary>
     public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
-    {
+        
         /// <summary>
         /// Gets Html Contents by Approved By Person Id
         /// </summary>
         /// <param name="approvedByPersonId">Approved By Person Id.</param>
         /// <returns>An enumerable list of HtmlContent objects.</returns>
         public IEnumerable<HtmlContent> GetByApprovedByPersonId( int? approvedByPersonId )
-        {
+            
             return Repository.Find( t => ( t.ApprovedByPersonId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonId == null ) ) );
         }
         
@@ -32,7 +32,7 @@ namespace Rock.Cms
         /// <param name="blockId">a block instance id</param>
         /// <returns>An enumerable list of HtmlContent objects.</returns>
         public IEnumerable<HtmlContent> GetByBlockId( int blockId )
-        {
+            
             return Repository.Find( t => t.BlockId == blockId );
         }
         
@@ -44,7 +44,7 @@ namespace Rock.Cms
         /// <param name="version">Version.</param>
         /// <returns>HtmlContent object.</returns>
         public HtmlContent GetByBlockIdAndEntityValueAndVersion( int blockId, string entityValue, int version )
-        {
+            
             return Repository.FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
         }
 
@@ -55,7 +55,7 @@ namespace Rock.Cms
         /// <param name="entityValue">The entity value.</param>
         /// <returns></returns>
         public HtmlContent GetActiveContent( int blockId, string entityValue )
-        {
+            
             // Only consider approved content and content that is not prior to the start date 
             // or past the expire date
             var content = Queryable().
@@ -81,7 +81,7 @@ namespace Rock.Cms
         /// <param name="entityValue">The entity value.</param>
         /// <returns></returns>
         public IEnumerable<HtmlContent> GetContent( int blockId, string entityValue )
-        {
+            
             var content = Queryable();
 
             // If an entity value is specified, then return content specific to that context, 

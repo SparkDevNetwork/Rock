@@ -7,16 +7,16 @@
 using System.Collections.Generic;
 
 namespace Rock.Attribute
-{
+    
     /// <summary>
     /// Represents any class that supports having attributes
     /// </summary>
     public interface IHasAttributes
-    {
+        
         /// <summary>
         /// Gets the id.
         /// </summary>
-        int Id { get; }
+        int Id      get; }
 
         /// <summary>
         /// List of attributes associated with the object grouped by category.  This property will not include 
@@ -25,7 +25,7 @@ namespace Rock.Attribute
         /// <value>
         /// The attributes.
         /// </value>
-        SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes { get; set; }
+        SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes      get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.
@@ -43,6 +43,6 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
+        Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; set; }
     }
 }

@@ -13,12 +13,12 @@
 using Rock.Util;
 
 namespace Rock.Rest.Util
-{
+    
     /// <summary>
     /// Jobs REST API
     /// </summary>
     public partial class JobsController : Rock.Rest.ApiController<Rock.Util.Job, Rock.Util.JobDto>
-    {
-        public JobsController() : base( new Rock.Util.JobService() ) { } 
+        
+        public JobsController() : base( new Rock.Util.JobService() )      } 
     }
 }

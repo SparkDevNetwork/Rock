@@ -15,12 +15,12 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     /// <summary>
     /// 
     /// </summary>
     public partial class Sites : RockBlock
-    {
+        
         #region Control Methods
 
         /// <summary>
@@ -28,12 +28,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
 
             if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
-            {
-                gSites.DataKeyNames = new string[] { "id" };
+                
+                gSites.DataKeyNames = new string[]      "id" };
                 gSites.Actions.IsAddEnabled = true;
                 gSites.Actions.AddClick += gSites_Add;
                 gSites.GridRebind += gSites_GridRebind;
@@ -48,19 +48,19 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
-        {
+            
             nbMessage.Visible = false;
 
             if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
-            {
+                
                 if ( !Page.IsPostBack )
-                {
+                    
                     BindGrid();
                     LoadDropDowns();
                 }
             }
             else
-            {
+                
                 gSites.Visible = false;
                 nbMessage.Text = "You are not authorized to edit sites";
                 nbMessage.Visible = true;
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_Add( object sender, EventArgs e )
-        {
+            
             ShowEdit( 0 );
         }
 
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( (int)gSites.DataKeys[e.RowIndex]["id"] );
         }
 
@@ -99,11 +99,11 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Delete( object sender, RowEventArgs e )
-        {
+            
             SiteService siteService = new SiteService();
             Site site = siteService.Get( (int)gSites.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
-            {
+                
                 siteService.Delete( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrid();
         }
 
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
-        {
+            
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
@@ -144,33 +144,33 @@ namespace RockWeb.Blocks.Administration
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
-        {
+            
             Site site;
             SiteDomain sd;
             bool newSite = false;
 
             using ( new UnitOfWorkScope() )
-            {
+                
                 SiteService siteService = new SiteService();
                 SiteDomainService siteDomainService = new SiteDomainService();
 
                 int siteId = 0;
                 if ( !int.TryParse( hfSiteId.Value, out siteId ) )
-                {
+                    
                     siteId = 0;
                 }
 
                 if ( siteId == 0 )
-                {
+                    
                     newSite = true;
                     site = new Rock.Cms.Site();
                     siteService.Add( site, CurrentPersonId );
                 }
                 else
-                {
+                    
                     site = siteService.Get( siteId );
                     foreach ( var domain in site.SiteDomains.ToList() )
-                    {
+                        
                         siteDomainService.Delete( domain, CurrentPersonId );
                     }
 
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Administration
                 site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
 
                 foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
-                {
+                    
                     sd = new SiteDomain();
                     sd.Domain = domain;
                     sd.Guid = Guid.NewGuid();
@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Administration
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
 
                 if ( !site.IsValid )
-                {
+                    
                     // Controls will render the error messages                    
                     return;
                 }
@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Administration
                 siteService.Save( site, CurrentPersonId );
 
                 if ( newSite )
-                {
+                    
                     Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
                 }
 
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Administration
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
-        {
+            
             SiteService siteService = new SiteService();
             gSites.DataSource = siteService.Queryable().OrderBy( s => s.Name ).ToList();
             gSites.DataBind();
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
-        {
+            
             PageService pageService = new PageService();
             List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
             ddlDefaultPage.DataSource = allPages.OrderBy( a => a.PageSortHash );
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Administration
             ddlTheme.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
-            {
+                
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
             }
         }
@@ -254,12 +254,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="siteId">The site id.</param>
         protected void ShowEdit( int siteId )
-        {
+            
             SiteService siteService = new SiteService();
             Site site = siteService.Get( siteId );
 
             if ( site != null )
-            {
+                
                 lAction.Text = "Edit";
                 hfSiteId.Value = site.Id.ToString();
 
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
                 if ( site.DefaultPageId.HasValue )
-                {
+                    
                     ddlDefaultPage.SelectedValue = site.DefaultPageId.Value.ToString();
                 }
 
@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Administration
                 tbFacebookAppSecret.Text = site.FacebookAppSecret;
             }
             else
-            {
+                
                 lAction.Text = "Add";
                 tbSiteName.Text = string.Empty;
                 tbDescription.Text = string.Empty;

@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Data Transfer Object for AttributeValue object
     /// </summary>
     public partial class AttributeValueDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public bool IsSystem { get; set; }
-        public int AttributeId { get; set; }
-        public int? EntityId { get; set; }
-        public int? Order { get; set; }
-        public string Value { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public bool IsSystem      get; set; }
+        public int AttributeId      get; set; }
+        public int? EntityId      get; set; }
+        public int? Order      get; set; }
+        public string Value      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public AttributeValueDto ()
-        {
+            
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="attributeValue"></param>
         public AttributeValueDto ( AttributeValue attributeValue )
-        {
+            
             CopyFromModel( attributeValue );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is AttributeValue )
-            {
+                
                 var attributeValue = (AttributeValue)model;
                 this.IsSystem = attributeValue.IsSystem;
                 this.AttributeId = attributeValue.AttributeId;
@@ -71,9 +71,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is AttributeValue )
-            {
+                
                 var attributeValue = (AttributeValue)model;
                 attributeValue.IsSystem = this.IsSystem;
                 attributeValue.AttributeId = this.AttributeId;

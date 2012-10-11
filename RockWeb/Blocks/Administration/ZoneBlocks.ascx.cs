@@ -13,9 +13,9 @@ using Rock;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-{
+    
     public partial class ZoneBlocks : Rock.Web.UI.RockBlock
-    {
+        
         #region Fields
 
         private Rock.Web.Cache.PageCache _page = null;
@@ -27,19 +27,19 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-        {
+            
             CurrentPage.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
 
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Web.Cache.PageCache.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
-            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", CurrentPage.Layout );
+            lAllPages.Text = string.Format( "All Pages Using '    0}' Layout", CurrentPage.Layout );
 
             // TODO: Managing layout block instances should probably be controlled by site security
             if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
-            {
-                gLayoutBlocks.DataKeyNames = new string[] { "id" };
+                
+                gLayoutBlocks.DataKeyNames = new string[]      "id" };
                 gLayoutBlocks.Actions.IsAddEnabled = true;
                 gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
                 gLayoutBlocks.GridReorder += gLayoutBlocks_GridReorder;
@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
-            {
-                gPageBlocks.DataKeyNames = new string[] { "id" };
+                
+                gPageBlocks.DataKeyNames = new string[]      "id" };
                 gPageBlocks.Actions.IsAddEnabled = true;
                 gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
@@ -56,32 +56,32 @@ namespace RockWeb.Blocks.Administration
             }
 
             string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
-            $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
-            $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
+        Sys.Application.add_load(function ()         
+            $('#modal-popup div.modal-header h3 small', window.parent.document).html('    0}');
+            $('#    1} a').click(function()          $('#    3}').val('Page'); }});
+            $('#    2} a').click(function()          $('#    3}').val('Layout'); }});
         }});
     ", _zoneName, liPage.ClientID, liLayout.ClientID, hfOption.ClientID );
 
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "zone-add-load-{0}", this.ClientID ), script, true );
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "zone-add-load-    0}", this.ClientID ), script, true );
 
             base.OnInit( e );
         }
 
         protected override void OnLoad( EventArgs e )
-        {
+            
             nbMessage.Visible = false;
 
             if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
-            {
+                
                 if ( !Page.IsPostBack )
-                {
+                    
                     BindGrids();
                     LoadBlockTypes();
                 }
             }
             else
-            {
+                
                 gPageBlocks.Visible = false;
                 nbMessage.Text = "You are not authorized to edit these blocks";
                 nbMessage.Visible = true;
@@ -91,18 +91,18 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnPreRender( EventArgs e )
-        {
+            
             base.OnPreRender( e );
 
             if ( hfOption.Value == "Page" )
-            {
+                
                 liPage.AddCssClass( "active" );
                 divPage.AddCssClass( "active" );
                 liLayout.RemoveCssClass( "active" );
                 divLayout.RemoveCssClass( "active" );
             }
             else
-            {
+                
                 liPage.RemoveCssClass( "active" );
                 divPage.RemoveCssClass( "active" );
                 liLayout.AddCssClass( "active" );
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Administration
         #region Grid Events
 
         void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
-        {
+            
             blockService.Reorder(
                 blockService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
@@ -123,15 +123,15 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void gLayoutBlocks_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( Rock.Web.Cache.BlockLocation.Layout, ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
-        {
+            
             Rock.Cms.Block block = blockService.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
-            {
+                
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( _page.Layout );
@@ -141,17 +141,17 @@ namespace RockWeb.Blocks.Administration
         }
 
         void LayoutBlocks_Add( object sender, EventArgs e )
-        {
+            
             ShowEdit( Rock.Web.Cache.BlockLocation.Layout, 0 );
         }
 
         void gLayoutBlocks_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrids();
         }
 
         void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
-        {
+            
             blockService.Reorder(
                 blockService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
                 e.OldIndex, e.NewIndex, CurrentPersonId );
@@ -160,15 +160,15 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void gPageBlocks_Edit( object sender, RowEventArgs e )
-        {
+            
             ShowEdit( Rock.Web.Cache.BlockLocation.Page, ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
-        {
+            
             Rock.Cms.Block block = blockService.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
-            {
+                
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
                 _page.FlushBlocks();
@@ -178,12 +178,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         void gPageBlocks_GridAdd( object sender, EventArgs e )
-        {
+            
             ShowEdit( Rock.Web.Cache.BlockLocation.Page, 0 );
         }
 
         void gPageBlocks_GridRebind( object sender, EventArgs e )
-        {
+            
             BindGrids();
         }
 
@@ -192,13 +192,13 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         protected void btnCancel_Click( object sender, EventArgs e )
-        {
+            
             pnlDetails.Visible = false;
             pnlLists.Visible = true;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-        {
+            
             Rock.Cms.Block block;
 
             int blockId = 0;
@@ -206,17 +206,17 @@ namespace RockWeb.Blocks.Administration
                 blockId = 0;
 
             if ( blockId == 0 )
-            {
+                
                 block = new Rock.Cms.Block();
 
                 Rock.Web.Cache.BlockLocation location = hfBlockLocation.Value.ConvertToEnum<Rock.Web.Cache.BlockLocation>();
                 if ( location == Rock.Web.Cache.BlockLocation.Layout )
-                {
+                    
                     block.Layout = _page.Layout;
                     block.PageId = null;
                 }
                 else
-                {
+                    
                     block.Layout = null;
                     block.PageId = _page.Id;
                 }
@@ -260,37 +260,37 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void BindGrids()
-        {
+            
             BindLayoutGrid();
             BindPageGrid();
         }
 
         private void BindLayoutGrid()
-        {
+            
             gLayoutBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList();
             gLayoutBlocks.DataBind();
         }
 
         private void BindPageGrid()
-        {
+            
             gPageBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
             gPageBlocks.DataBind();
         }
 
         private void LoadBlockTypes()
-        {
+            
             using ( new Rock.Data.UnitOfWorkScope() )
-            {
+                
                 Rock.Cms.BlockTypeService blockTypeService = new Rock.Cms.BlockTypeService();
 
                 // Add any unregistered blocks
                 foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
-                {
+                    
                     try
-                    {
+                        
                         Control control = LoadControl( blockType.Path );
                         if ( control is Rock.Web.UI.RockBlock )
-                        {
+                            
                             blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path );
                             // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
                             blockType.Name = System.Text.RegularExpressions.Regex.Replace( blockType.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
                     catch
-                    {
+                        
                     }
                 }
 
@@ -313,19 +313,19 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( Rock.Web.Cache.BlockLocation location, int blockId )
-        {
+            
             Rock.Cms.Block block = blockService.Get( blockId );
             hfBlockLocation.Value = location.ConvertToString();
 
             if ( block != null )
-            {
+                
                 lAction.Text = "Edit ";
                 hfBlockId.Value = block.Id.ToString();
                 ddlBlockType.SelectedValue = block.BlockType.Id.ToString();
                 tbBlockName.Text = block.Name;
             }
             else
-            {
+                
                 lAction.Text = "Add ";
                 hfBlockId.Value = "0";
 

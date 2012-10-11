@@ -6,12 +6,12 @@
 using System;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field used to save and display a person
     /// </summary>
     [Serializable]
     public class PersonField : FieldType
-    {
+        
     }
 }

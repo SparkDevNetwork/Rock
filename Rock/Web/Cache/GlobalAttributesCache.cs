@@ -10,18 +10,18 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
-{
+    
     /// <summary>
     /// Global Attributes
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class GlobalAttributesCache
-    {
+        
         /// <summary>
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
-        private GlobalAttributesCache() { }
+        private GlobalAttributesCache()      }
 
         /// <summary>
         /// Global Attribute Value for the specified key.
@@ -29,7 +29,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public string AttributeValue (string key)
-        {
+            
             if (AttributeValues.Keys.Contains(key))
                 return AttributeValues[key].Value;
             return null;
@@ -41,12 +41,12 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        public Dictionary<string, KeyValuePair<string, string>> AttributeValues      get; set; }
 
         #region Static Methods
 
         private static string CacheKey()
-        {
+            
             return "Rock:GlobalAttributes";
         }
 
@@ -56,7 +56,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         public static GlobalAttributesCache Read()
-        {
+            
             string cacheKey = GlobalAttributesCache.CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
@@ -65,7 +65,7 @@ namespace Rock.Web.Cache
             if ( globalAttributes != null )
                 return globalAttributes;
             else
-            {
+                
                 globalAttributes = new GlobalAttributesCache();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
                     Where( a => a.Entity == "" &&
                         ( a.EntityQualifierColumn ?? string.Empty ) == "" &&
                         ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
-                {
+                    
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
                     globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
@@ -92,7 +92,7 @@ namespace Rock.Web.Cache
         /// Removes Global Attributes from cache
         /// </summary>
         public static void Flush()
-        {
+            
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( GlobalAttributesCache.CacheKey() );
         }
@@ -103,7 +103,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public static string Value(string key)
-        {
+            
             GlobalAttributesCache globalAttributes = Read();
             return globalAttributes.AttributeValue( key );
         }

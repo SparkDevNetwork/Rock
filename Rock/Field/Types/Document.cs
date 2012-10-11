@@ -6,12 +6,12 @@
 using System;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field used to save and dispaly a document
     /// </summary>
     [Serializable]
     public class Document : FieldType
-    {
+        
     }
 }

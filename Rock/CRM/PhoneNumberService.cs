@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Crm
-{
+    
     /// <summary>
     /// PhoneNumber Service class
     /// </summary>
     public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
         /// </summary>
         public PhoneNumberService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
         /// </summary>
         public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override PhoneNumber CreateNew()
-        {
+            
             return new PhoneNumber();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PhoneNumberDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Crm
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
-        {
+            
             return items.Select( m => new PhoneNumberDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     PersonId = m.PersonId,
                     Number = m.Number,

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Util
-{
+    
     /// <summary>
     /// Job Service class
     /// </summary>
     public partial class JobService : Service<Job, JobDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="JobService"/> class
         /// </summary>
         public JobService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobService"/> class
         /// </summary>
         public JobService(IRepository<Job> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Job CreateNew()
-        {
+            
             return new Job();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Util
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<JobDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Util
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<JobDto> QueryableDto( IQueryable<Job> items )
-        {
+            
             return items.Select( m => new JobDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     IsActive = m.IsActive,
                     Name = m.Name,

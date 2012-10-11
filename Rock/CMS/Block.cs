@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Block POCO Entity.
     /// </summary>
     [Table( "cmsBlock" )]
     public partial class Block : Model<Block>, IOrdered, IExportable
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -37,7 +37,7 @@ namespace Rock.Cms
 		/// Page Id.
 		/// </value>
 		[DataMember]
-		public int? PageId { get; set; }
+		public int? PageId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Layout.
@@ -47,7 +47,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Layout { get; set; }
+		public string Layout      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Block Type Id.
@@ -57,7 +57,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int BlockTypeId { get; set; }
+		public int BlockTypeId      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Zone.
@@ -68,7 +68,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Zone { get; set; }
+		public string Zone      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Order.
@@ -78,7 +78,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int Order { get; set; }
+		public int Order      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -90,7 +90,7 @@ namespace Rock.Cms
 		[TrackChanges]
 		[Required( ErrorMessage = "Name is required" )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Name      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Output Cache Duration.
@@ -100,13 +100,13 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int OutputCacheDuration { get; set; }
+		public int OutputCacheDuration      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Block"; } }
+		public override string EntityTypeName      get      return "Cms.Block"; } }
         
 		/// <summary>
         /// Gets or sets the Html Contents.
@@ -114,7 +114,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Html Contents.
         /// </value>
-        public virtual ICollection<HtmlContent> HtmlContents { get; set; }
+        public virtual ICollection<HtmlContent> HtmlContents      get; set; }
 
         /// <summary>
         /// Gets or sets the Block Type.
@@ -122,7 +122,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="BlockType"/> object.
         /// </value>
-        public virtual BlockType BlockType { get; set; }
+        public virtual BlockType BlockType      get; set; }
 
         /// <summary>
         /// Gets or sets the Page.
@@ -130,14 +130,14 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+		public virtual Page Page      get; set; }
         
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
         public override List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
+            
+            get      return new List<string>()      "View", "Edit", "Configure" }; }
         }
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Rock.Cms
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Block Read( int id )
-		{
+		    
 			return Read<Block>( id );
 		}
 
@@ -157,7 +157,7 @@ namespace Rock.Cms
         /// A <see cref="string"/> that represents this instance.
         /// </returns>
         public override string ToString()
-        {
+            
             return this.Name;
         }
 
@@ -166,7 +166,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string ExportJson()
-        {
+            
             return ExportObject().ToJSON();
         }
 
@@ -175,23 +175,23 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public object ExportObject()
-        {
+            
             dynamic exportObject = this.ToDynamic();
 
             if ( BlockType != null )
-            {
+                
                 exportObject.BlockType = BlockType.ExportObject();
             }
 
             if ( HtmlContents == null )
-            {
+                
                 return exportObject;
             }
 
             exportObject.HtmlContents = new List<dynamic>();
 
             foreach ( var content in HtmlContents )
-            {
+                
                 exportObject.HtmlContents.Add( content.ExportObject() );
             }
 
@@ -203,7 +203,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="data">The data.</param>
         public void ImportJson( string data )
-        {
+            
 
         }
     }
@@ -212,12 +212,12 @@ namespace Rock.Cms
     /// Block Instance Configuration class.
     /// </summary>
     public partial class BlockConfiguration : EntityTypeConfiguration<Block>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockConfiguration"/> class.
         /// </summary>
         public BlockConfiguration()
-        {
+            
             this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }

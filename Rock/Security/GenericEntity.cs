@@ -4,12 +4,12 @@ using System.Linq;
 using System.Web;
 
 namespace Rock.Security
-{
+    
     /// <summary>
     /// A generic ISecured entity
     /// </summary>
     public class GenericEntity : ISecured
-    {
+        
         private string _authEntity = "";
 
         /// <summary>
@@ -17,7 +17,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="authEntity">The auth entity.</param>
         public GenericEntity( string authEntity )
-        {
+            
             _authEntity = authEntity;
         }
 
@@ -27,16 +27,16 @@ namespace Rock.Security
         /// qualified name of the class.
         /// </summary>
         public string EntityTypeName
-        {
-            get { return _authEntity; }
+            
+            get      return _authEntity; }
         }
 
         /// <summary>
         /// The Id
         /// </summary>
         public int Id
-        {
-            get { return 0; }
+            
+            get      return 0; }
         }
 
         /// <summary>
@@ -44,16 +44,16 @@ namespace Rock.Security
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
         public ISecured ParentAuthority
-        {
-            get { return null; }
+            
+            get      return null; }
         }
 
         /// <summary>
         /// A list of actions that this class supports.
         /// </summary>
         public List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
+            
+            get      return new List<string>()      "View", "Edit", "Configure" }; }
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rock.Security
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
         public bool IsAuthorized( string action, Rock.Crm.Person person )
-        {
+            
             return Security.Authorization.Authorized( this, action, person );
         }
 
@@ -76,7 +76,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
-        {
+            
             return action == "View";
         }
 
@@ -85,7 +85,7 @@ namespace Rock.Security
         /// </summary>
         /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
-        {
+            
             return Authorization.FindAuthRules( this );
         }
     }

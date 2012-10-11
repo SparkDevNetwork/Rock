@@ -15,7 +15,7 @@ using Rock.Crm;
 using Rock.Web.UI;
 
 namespace Rock.Search.Person
-{
+    
     /// <summary>
     /// Searches for people with matching names
     /// </summary>
@@ -23,16 +23,16 @@ namespace Rock.Search.Person
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
     [BlockProperty( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Name" )]
-    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
+    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '    0}' for the search text)", true, "" )]
     public class Name : SearchComponent
-    {
+        
         /// <summary>
         /// The text to display as the search type
         /// </summary>
         public override string SearchLabel
-        {
+            
             get
-            {
+                
                 if ( !String.IsNullOrWhiteSpace( AttributeValue( "SearchLabel" ) ) )
                     return AttributeValue( "SearchLabel" );
                 else
@@ -44,9 +44,9 @@ namespace Rock.Search.Person
         /// The URL to redirect user to for search
         /// </summary>
         public override string ResultUrl
-        {
+            
             get
-            {
+                
                 if ( !String.IsNullOrWhiteSpace( AttributeValue( "ResultURL" ) ) )
                     return AttributeValue( "ResultURL" );
                 else
@@ -60,7 +60,7 @@ namespace Rock.Search.Person
         /// <param name="searchterm"></param>
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
-        {
+            
             string fName = string.Empty;
             string lName = string.Empty;
 
@@ -69,13 +69,13 @@ namespace Rock.Search.Person
             bool lastFirst = searchterm.Contains(",");
 
             if (lastFirst)
-            {
+                
                 // last, first
                 lName = names.Length >= 1 ? names[0] : string.Empty;
                 fName = names.Length >= 2 ? names[1] : string.Empty;
             }
             else
-            {
+                
                 // first last
                 fName = names.Length >= 1 ? names[0] : string.Empty;
                 lName = names.Length >= 2 ? names[1] : string.Empty;

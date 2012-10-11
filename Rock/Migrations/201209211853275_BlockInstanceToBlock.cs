@@ -1,28 +1,28 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class BlockInstanceToBlock : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             DropForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType");
             DropForeignKey("cmsBlockInstance", "PageId", "cmsPage");
             DropForeignKey("cmsBlockInstance", "CreatedByPersonId", "crmPerson");
             DropForeignKey("cmsBlockInstance", "ModifiedByPersonId", "crmPerson");
-            DropIndex( "cmsBlockInstance", new[] { "BlockTypeId" } );
-            DropIndex( "cmsBlockInstance", new[] { "PageId" } );
-            DropIndex( "cmsBlockInstance", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsBlockInstance", new[] { "ModifiedByPersonId" } );
+            DropIndex( "cmsBlockInstance", new[]      "BlockTypeId" } );
+            DropIndex( "cmsBlockInstance", new[]      "PageId" } );
+            DropIndex( "cmsBlockInstance", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsBlockInstance", new[]      "ModifiedByPersonId" } );
 
             DropForeignKey("cmsHtmlContent", "BlockId", "cmsBlockInstance");
-            DropIndex( "cmsHtmlContent", new[] { "BlockId" } );
+            DropIndex( "cmsHtmlContent", new[]      "BlockId" } );
             
             CreateTable(
                 "dbo.cmsBlock",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         PageId = c.Int(),
@@ -84,7 +84,7 @@ namespace Rock.Migrations
                 SET IDENTITY_INSERT cmsBlock OFF
 
                 UPDATE [coreAttribute] SET [Entity] = 'Rock.Cms.Block' WHERE [Entity] = 'Rock.Cms.BlockInstance'
-                UPDATE [cmsPageRoute] SET [Route] = 'BlockProperties/{BlockId}' WHERE [Guid] = '6438C940-96F7-4A7E-9DA5-A30FD4FF143A'
+                UPDATE [cmsPageRoute] SET [Route] = 'BlockProperties/    BlockId}' WHERE [Guid] = '6438C940-96F7-4A7E-9DA5-A30FD4FF143A'
 " );
             
             AddForeignKey("dbo.cmsHtmlContent", "BlockId", "dbo.cmsBlock", "Id", cascadeDelete: true);
@@ -94,11 +94,11 @@ namespace Rock.Migrations
         }
         
         public override void Down()
-        {
+            
             CreateTable(
                 "dbo.cmsBlockInstance",
                 c => new
-                    {
+                        
                         Id = c.Int(nullable: false, identity: true),
                         IsSystem = c.Boolean(nullable: false),
                         PageId = c.Int(),
@@ -153,15 +153,15 @@ namespace Rock.Migrations
                 SET IDENTITY_INSERT cmsBlockInstance OFF
 
                 UPDATE [coreAttribute] SET [Entity] = 'Rock.Cms.BlockInstance' WHERE [Entity] = 'Rock.Cms.Block'
-                UPDATE [cmsPageRoute] SET [Route] = 'BlockProperties/{BlockInstance}' WHERE [Guid] = '6438C940-96F7-4A7E-9DA5-A30FD4FF143A'
+                UPDATE [cmsPageRoute] SET [Route] = 'BlockProperties/    BlockInstance}' WHERE [Guid] = '6438C940-96F7-4A7E-9DA5-A30FD4FF143A'
 " );
-            DropIndex( "dbo.cmsHtmlContent", new[] { "BlockId" } );
+            DropIndex( "dbo.cmsHtmlContent", new[]      "BlockId" } );
             DropForeignKey( "dbo.cmsHtmlContent", "BlockId", "dbo.cmsBlock" );
             
-            DropIndex( "dbo.cmsBlock", new[] { "ModifiedByPersonId" } );
-            DropIndex("dbo.cmsBlock", new[] { "CreatedByPersonId" });
-            DropIndex("dbo.cmsBlock", new[] { "PageId" });
-            DropIndex("dbo.cmsBlock", new[] { "BlockTypeId" });
+            DropIndex( "dbo.cmsBlock", new[]      "ModifiedByPersonId" } );
+            DropIndex("dbo.cmsBlock", new[]      "CreatedByPersonId" });
+            DropIndex("dbo.cmsBlock", new[]      "PageId" });
+            DropIndex("dbo.cmsBlock", new[]      "BlockTypeId" });
             DropForeignKey("dbo.cmsBlock", "ModifiedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.cmsBlock", "CreatedByPersonId", "dbo.crmPerson");
             DropForeignKey("dbo.cmsBlock", "PageId", "dbo.cmsPage");

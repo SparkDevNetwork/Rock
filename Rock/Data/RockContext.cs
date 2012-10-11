@@ -7,19 +7,19 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
-{
+    
     /// <summary>
     /// Entity Framework Context
     /// </summary>
     internal partial class RockContext : DbContext
-    {
+        
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
         /// the Auths.
         /// </value>
-        public DbSet<Rock.Cms.Auth> Auths { get; set; }
+        public DbSet<Rock.Cms.Auth> Auths      get; set; }
 
         /// <summary>
         /// Gets or sets the Block Types.
@@ -27,7 +27,7 @@ namespace Rock.Data
         /// <value>
         /// the Block Types.
         /// </value>
-        public DbSet<Rock.Cms.BlockType> BlockTypes { get; set; }
+        public DbSet<Rock.Cms.BlockType> BlockTypes      get; set; }
 
         /// <summary>
         /// Gets or sets the Blocks.
@@ -35,7 +35,7 @@ namespace Rock.Data
         /// <value>
         /// the Blocks.
         /// </value>
-        public DbSet<Rock.Cms.Block> Blocks { get; set; }
+        public DbSet<Rock.Cms.Block> Blocks      get; set; }
 
         /// <summary>
         /// Gets or sets the Files.
@@ -43,7 +43,7 @@ namespace Rock.Data
         /// <value>
         /// the Files.
         /// </value>
-        public DbSet<Rock.Cms.File> Files { get; set; }
+        public DbSet<Rock.Cms.File> Files      get; set; }
 
         /// <summary>
         /// Gets or sets the Html Contents.
@@ -51,7 +51,7 @@ namespace Rock.Data
         /// <value>
         /// the Html Contents.
         /// </value>
-        public DbSet<Rock.Cms.HtmlContent> HtmlContents { get; set; }
+        public DbSet<Rock.Cms.HtmlContent> HtmlContents      get; set; }
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -59,7 +59,7 @@ namespace Rock.Data
         /// <value>
         /// the Pages.
         /// </value>
-        public DbSet<Rock.Cms.Page> Pages { get; set; }
+        public DbSet<Rock.Cms.Page> Pages      get; set; }
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -67,7 +67,7 @@ namespace Rock.Data
         /// <value>
         /// the Page Routes.
         /// </value>
-        public DbSet<Rock.Cms.PageRoute> PageRoutes { get; set; }
+        public DbSet<Rock.Cms.PageRoute> PageRoutes      get; set; }
 
         /// <summary>
         /// Gets or sets the Sites.
@@ -75,7 +75,7 @@ namespace Rock.Data
         /// <value>
         /// the Sites.
         /// </value>
-        public DbSet<Rock.Cms.Site> Sites { get; set; }
+        public DbSet<Rock.Cms.Site> Sites      get; set; }
 
         /// <summary>
         /// Gets or sets the Site Domains.
@@ -83,7 +83,7 @@ namespace Rock.Data
         /// <value>
         /// the Site Domains.
         /// </value>
-        public DbSet<Rock.Cms.SiteDomain> SiteDomains { get; set; }
+        public DbSet<Rock.Cms.SiteDomain> SiteDomains      get; set; }
 
         /// <summary>
         /// Gets or sets the Users.
@@ -91,7 +91,7 @@ namespace Rock.Data
         /// <value>
         /// the Users.
         /// </value>
-        public DbSet<Rock.Cms.User> Users { get; set; }
+        public DbSet<Rock.Cms.User> Users      get; set; }
 
         /// <summary>
         /// Gets or sets the Attributes.
@@ -99,7 +99,7 @@ namespace Rock.Data
         /// <value>
         /// the Attributes.
         /// </value>
-        public DbSet<Rock.Core.Attribute> Attributes { get; set; }
+        public DbSet<Rock.Core.Attribute> Attributes      get; set; }
 
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -107,7 +107,7 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Qualifiers.
         /// </value>
-        public DbSet<Rock.Core.AttributeQualifier> AttributeQualifiers { get; set; }
+        public DbSet<Rock.Core.AttributeQualifier> AttributeQualifiers      get; set; }
 
         /// <summary>
         /// Gets or sets the Attribute Values.
@@ -115,7 +115,7 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Values.
         /// </value>
-        public DbSet<Rock.Core.AttributeValue> AttributeValues { get; set; }
+        public DbSet<Rock.Core.AttributeValue> AttributeValues      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Attribute Values.
@@ -123,7 +123,7 @@ namespace Rock.Data
 		/// <value>
 		/// the Attribute Values.
 		/// </value>
-		public DbSet<Rock.Core.Audit> Audits { get; set; }
+		public DbSet<Rock.Core.Audit> Audits      get; set; }
 
 		/// <summary>
         /// Gets or sets the Defined Types.
@@ -131,7 +131,7 @@ namespace Rock.Data
         /// <value>
         /// the Defined Types.
         /// </value>
-        public DbSet<Rock.Core.DefinedType> DefinedTypes { get; set; }
+        public DbSet<Rock.Core.DefinedType> DefinedTypes      get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Values.
@@ -139,7 +139,7 @@ namespace Rock.Data
         /// <value>
         /// the Defined Values.
         /// </value>
-        public DbSet<Rock.Core.DefinedValue> DefinedValues { get; set; }
+        public DbSet<Rock.Core.DefinedValue> DefinedValues      get; set; }
 
         /// <summary>
         /// Gets or sets the Entity Changes.
@@ -147,7 +147,7 @@ namespace Rock.Data
         /// <value>
         /// the Entity Changes.
         /// </value>
-        public DbSet<Rock.Core.EntityChange> EntityChanges { get; set; }
+        public DbSet<Rock.Core.EntityChange> EntityChanges      get; set; }
 
         /// <summary>
         /// Gets or sets the Exception Logs.
@@ -155,7 +155,7 @@ namespace Rock.Data
         /// <value>
         /// the Exception Logs.
         /// </value>
-        public DbSet<Rock.Core.ExceptionLog> ExceptionLogs { get; set; }
+        public DbSet<Rock.Core.ExceptionLog> ExceptionLogs      get; set; }
 
         /// <summary>
         /// Gets or sets the Field Types.
@@ -163,7 +163,7 @@ namespace Rock.Data
         /// <value>
         /// the Field Types.
         /// </value>
-        public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
+        public DbSet<Rock.Core.FieldType> FieldTypes      get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Types.
@@ -171,7 +171,7 @@ namespace Rock.Data
         /// <value>
         /// the Defined Types.
         /// </value>
-        public DbSet<Rock.Core.Metric> Metrics { get; set; }
+        public DbSet<Rock.Core.Metric> Metrics      get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Values.
@@ -179,7 +179,7 @@ namespace Rock.Data
         /// <value>
         /// the Defined Values.
         /// </value>
-        public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+        public DbSet<Rock.Core.MetricValue> MetricValues      get; set; }
 
         /// <summary>
         /// Gets or sets the Service Logs.
@@ -187,7 +187,7 @@ namespace Rock.Data
         /// <value>
         /// the Service Logs.
         /// </value>
-        public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
+        public DbSet<Rock.Core.ServiceLog> ServiceLogs      get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.
@@ -195,7 +195,7 @@ namespace Rock.Data
         /// <value>
         /// the Tags.
         /// </value>
-        public DbSet<Rock.Core.Tag> Tags { get; set; }
+        public DbSet<Rock.Core.Tag> Tags      get; set; }
 
         /// <summary>
         /// Gets or sets the Tagged Items.
@@ -203,7 +203,7 @@ namespace Rock.Data
         /// <value>
         /// the Tagged Items.
         /// </value>
-        public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+        public DbSet<Rock.Core.TaggedItem> TaggedItems      get; set; }
 
         /// <summary>
         /// Gets or sets the Location.
@@ -211,7 +211,7 @@ namespace Rock.Data
         /// <value>
         /// the Location.
         /// </value>
-        public DbSet<Rock.Crm.Location> Locations { get; set; }
+        public DbSet<Rock.Crm.Location> Locations      get; set; }
 
         /// <summary>
         /// Gets or sets the Campuses.
@@ -219,7 +219,7 @@ namespace Rock.Data
         /// <value>
         /// the Campuses.
         /// </value>
-        public DbSet<Rock.Crm.Campus> Campuses { get; set; }
+        public DbSet<Rock.Crm.Campus> Campuses      get; set; }
 
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -227,7 +227,7 @@ namespace Rock.Data
         /// <value>
         /// the Email Templates.
         /// </value>
-        public DbSet<Rock.Crm.EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<Rock.Crm.EmailTemplate> EmailTemplates      get; set; }
 
         /// <summary>
         /// Gets or sets the People.
@@ -235,7 +235,7 @@ namespace Rock.Data
         /// <value>
         /// the People.
         /// </value>
-        public DbSet<Rock.Crm.Person> People { get; set; }
+        public DbSet<Rock.Crm.Person> People      get; set; }
 
         /// <summary>
         /// Gets or sets the Person Trails.
@@ -243,7 +243,7 @@ namespace Rock.Data
         /// <value>
         /// the Person Trails.
         /// </value>
-        public DbSet<Rock.Crm.PersonMerged> PersonMerges { get; set; }
+        public DbSet<Rock.Crm.PersonMerged> PersonMerges      get; set; }
 
         /// <summary>
         /// Gets or sets the Person Vieweds.
@@ -251,7 +251,7 @@ namespace Rock.Data
         /// <value>
         /// the Person Vieweds.
         /// </value>
-        public DbSet<Rock.Crm.PersonViewed> PersonVieweds { get; set; }
+        public DbSet<Rock.Crm.PersonViewed> PersonVieweds      get; set; }
 
         /// <summary>
         /// Gets or sets the Phone Numbers.
@@ -259,7 +259,7 @@ namespace Rock.Data
         /// <value>
         /// the Phone Numbers.
         /// </value>
-        public DbSet<Rock.Crm.PhoneNumber> PhoneNumbers { get; set; }
+        public DbSet<Rock.Crm.PhoneNumber> PhoneNumbers      get; set; }
 
         /// <summary>
         /// Gets or sets the Groups.
@@ -267,7 +267,7 @@ namespace Rock.Data
         /// <value>
         /// the Groups.
         /// </value>
-        public DbSet<Rock.Groups.Group> Groups { get; set; }
+        public DbSet<Rock.Groups.Group> Groups      get; set; }
 
         /// <summary>
         /// Gets or sets the Group Roles.
@@ -275,7 +275,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Roles.
         /// </value>
-        public DbSet<Rock.Groups.GroupRole> GroupRoles { get; set; }
+        public DbSet<Rock.Groups.GroupRole> GroupRoles      get; set; }
 
         /// <summary>
         /// Gets or sets the Group Types.
@@ -283,7 +283,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Types.
         /// </value>
-        public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
+        public DbSet<Rock.Groups.GroupType> GroupTypes      get; set; }
 
         /// <summary>
         /// Gets or sets the Group Locations.
@@ -291,7 +291,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Locations.
         /// </value>
-        public DbSet<Rock.Groups.GroupLocation> GroupLocations { get; set; }
+        public DbSet<Rock.Groups.GroupLocation> GroupLocations      get; set; }
 
         /// <summary>
         /// Gets or sets the Members.
@@ -299,7 +299,7 @@ namespace Rock.Data
         /// <value>
         /// the Members.
         /// </value>
-        public DbSet<Rock.Groups.Member> Members { get; set; }
+        public DbSet<Rock.Groups.Member> Members      get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.
@@ -307,7 +307,7 @@ namespace Rock.Data
         /// <value>
         /// the Jobs.
         /// </value>
-        public DbSet<Rock.Util.Job> Jobs { get; set; }
+        public DbSet<Rock.Util.Job> Jobs      get; set; }
 
         /// <summary>
         /// Gets or sets the batches.
@@ -315,7 +315,7 @@ namespace Rock.Data
         /// <value>
         /// The batches.
         /// </value>
-        public DbSet<Rock.Financial.Batch> Batches { get; set; }
+        public DbSet<Rock.Financial.Batch> Batches      get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -323,7 +323,7 @@ namespace Rock.Data
         /// <value>
         /// The fund.
         /// </value>
-        public DbSet<Rock.Financial.Fund> Fund { get; set; }
+        public DbSet<Rock.Financial.Fund> Fund      get; set; }
 
         /// <summary>
         /// Gets or sets the pledges.
@@ -331,7 +331,7 @@ namespace Rock.Data
         /// <value>
         /// The pledges.
         /// </value>
-        public DbSet<Rock.Financial.Pledge> Pledges { get; set; }
+        public DbSet<Rock.Financial.Pledge> Pledges      get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -339,7 +339,7 @@ namespace Rock.Data
         /// <value>
         /// The transactions.
         /// </value>
-        public DbSet<Rock.Financial.Transaction> Transactions { get; set; }
+        public DbSet<Rock.Financial.Transaction> Transactions      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -347,7 +347,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
-        public DbSet<Rock.Financial.TransactionDetail> TransactionDetails { get; set; }
+        public DbSet<Rock.Financial.TransactionDetail> TransactionDetails      get; set; }
 
         /// <summary>
         /// Gets or sets the person account lookups.
@@ -355,7 +355,7 @@ namespace Rock.Data
         /// <value>
         /// The person account lookups.
         /// </value>
-        public DbSet<Rock.Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+        public DbSet<Rock.Financial.PersonAccountLookup> PersonAccountLookups      get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -363,7 +363,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction funds.
         /// </value>
-        public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
+        public DbSet<Rock.Financial.TransactionFund> TransactionFunds      get; set; }
 
         /// <summary>
         /// This method is called when the context has been initialized, but
@@ -371,7 +371,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
-        {
+            
             ContextHelper.AddConfigurations( modelBuilder );
         }
     }
@@ -380,13 +380,13 @@ namespace Rock.Data
     /// 
     /// </summary>
 	public static class ContextHelper
-	{
+	    
         /// <summary>
         /// Adds the configurations.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
 		public static void AddConfigurations(DbModelBuilder modelBuilder)
-		{
+		    
 			modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
 			modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );

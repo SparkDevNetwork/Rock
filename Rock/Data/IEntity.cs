@@ -6,19 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Rock.Data
-{
+    
 	/// <summary>
 	/// Interface for all code-first entitites
 	/// </summary>
 	public interface IEntity
-	{
+	    
 		/// <summary>
 		/// Gets or sets the id.
 		/// </summary>
 		/// <value>
 		/// The id.
 		/// </value>
-		int Id { get; set; }
+		int Id      get; set; }
 
 		/// <summary>
 		/// Gets or sets the GUID.
@@ -26,7 +26,7 @@ namespace Rock.Data
 		/// <value>
 		/// The GUID.
 		/// </value>
-		Guid Guid { get; set; }
+		Guid Guid      get; set; }
 
 		/// <summary>
 		/// Gets the unique type name of the entity.  Typically this is the qualified name of the class
@@ -34,7 +34,7 @@ namespace Rock.Data
 		/// <value>
 		/// The name of the entity type.
 		/// </value>
-		string EntityTypeName { get; }
+		string EntityTypeName      get; }
 
 		/// <summary>
 		/// Gets the encrypted key.
@@ -42,7 +42,7 @@ namespace Rock.Data
 		/// <value>
 		/// The encrypted key.
 		/// </value>
-		string EncryptedKey { get; }
+		string EncryptedKey      get; }
 
 		/// <summary>
 		/// Gets the context key.
@@ -50,7 +50,7 @@ namespace Rock.Data
 		/// <value>
 		/// The context key.
 		/// </value>
-		string ContextKey { get; }
+		string ContextKey      get; }
 
 		/// <summary>
 		/// Gets the validation results.
@@ -58,7 +58,7 @@ namespace Rock.Data
 		/// <value>
 		/// The validation results.
 		/// </value>
-		List<ValidationResult> ValidationResults { get; }
+		List<ValidationResult> ValidationResults      get; }
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is valid.
@@ -66,6 +66,6 @@ namespace Rock.Data
 		/// <value>
 		///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
 		/// </value>
-		bool IsValid { get; }
+		bool IsValid      get; }
 	}
 }

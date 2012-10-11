@@ -1,11 +1,11 @@
 namespace Rock.Migrations
-{
+    
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class PersonMerge : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             Sql( @"
 CREATE PROC [dbo].[crmPerson_sp_Merge]
 @OldId int, 
@@ -86,7 +86,7 @@ END
         }
         
         public override void Down()
-        {
+            
 
             Sql( @"
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[crmPerson_sp_Merge]') AND type in (N'P', N'PC'))

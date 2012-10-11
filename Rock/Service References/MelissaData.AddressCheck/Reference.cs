@@ -9,13 +9,13 @@
 //------------------------------------------------------------------------------
 
 namespace Rock.MelissaData.AddressCheck
-{
+    
 
 #pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="urn:MelissaDataAddressCheckService", ConfigurationName="MelissaData.AddressCheck.IService")]
-    public interface IService {
+    public interface IService     
         
         [System.ServiceModel.OperationContractAttribute(Action="urn:MelissaDataAddressCheckService/IService/doAddressCheck", ReplyAction="urn:MelissaDataAddressCheckService/IService/doAddressCheckResponse")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
@@ -28,7 +28,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:mdWebServiceAddress")]
-    public partial class RequestArray : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class RequestArray : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string transmissionReferenceField;
         
@@ -40,11 +40,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string TransmissionReference {
-            get {
+        public string TransmissionReference     
+            get     
                 return this.transmissionReferenceField;
             }
-            set {
+            set     
                 this.transmissionReferenceField = value;
                 this.RaisePropertyChanged("TransmissionReference");
             }
@@ -52,11 +52,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string CustomerID {
-            get {
+        public string CustomerID     
+            get     
                 return this.customerIDField;
             }
-            set {
+            set     
                 this.customerIDField = value;
                 this.RaisePropertyChanged("CustomerID");
             }
@@ -64,11 +64,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string OptAddressParsed {
-            get {
+        public string OptAddressParsed     
+            get     
                 return this.optAddressParsedField;
             }
-            set {
+            set     
                 this.optAddressParsedField = value;
                 this.RaisePropertyChanged("OptAddressParsed");
             }
@@ -76,11 +76,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Record", Order=3)]
-        public RequestArrayRecord[] Record {
-            get {
+        public RequestArrayRecord[] Record     
+            get     
                 return this.recordField;
             }
-            set {
+            set     
                 this.recordField = value;
                 this.RaisePropertyChanged("Record");
             }
@@ -88,9 +88,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -102,7 +102,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class RequestArrayRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class RequestArrayRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string recordIDField;
         
@@ -130,11 +130,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string RecordID {
-            get {
+        public string RecordID     
+            get     
                 return this.recordIDField;
             }
-            set {
+            set     
                 this.recordIDField = value;
                 this.RaisePropertyChanged("RecordID");
             }
@@ -142,11 +142,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Company {
-            get {
+        public string Company     
+            get     
                 return this.companyField;
             }
-            set {
+            set     
                 this.companyField = value;
                 this.RaisePropertyChanged("Company");
             }
@@ -154,11 +154,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string LastName {
-            get {
+        public string LastName     
+            get     
                 return this.lastNameField;
             }
-            set {
+            set     
                 this.lastNameField = value;
                 this.RaisePropertyChanged("LastName");
             }
@@ -166,11 +166,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Urbanization {
-            get {
+        public string Urbanization     
+            get     
                 return this.urbanizationField;
             }
-            set {
+            set     
                 this.urbanizationField = value;
                 this.RaisePropertyChanged("Urbanization");
             }
@@ -178,11 +178,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string AddressLine1 {
-            get {
+        public string AddressLine1     
+            get     
                 return this.addressLine1Field;
             }
-            set {
+            set     
                 this.addressLine1Field = value;
                 this.RaisePropertyChanged("AddressLine1");
             }
@@ -190,11 +190,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string AddressLine2 {
-            get {
+        public string AddressLine2     
+            get     
                 return this.addressLine2Field;
             }
-            set {
+            set     
                 this.addressLine2Field = value;
                 this.RaisePropertyChanged("AddressLine2");
             }
@@ -202,11 +202,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string Suite {
-            get {
+        public string Suite     
+            get     
                 return this.suiteField;
             }
-            set {
+            set     
                 this.suiteField = value;
                 this.RaisePropertyChanged("Suite");
             }
@@ -214,11 +214,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string City {
-            get {
+        public string City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -226,11 +226,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string State {
-            get {
+        public string State     
+            get     
                 return this.stateField;
             }
-            set {
+            set     
                 this.stateField = value;
                 this.RaisePropertyChanged("State");
             }
@@ -238,11 +238,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -250,11 +250,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string Plus4 {
-            get {
+        public string Plus4     
+            get     
                 return this.plus4Field;
             }
-            set {
+            set     
                 this.plus4Field = value;
                 this.RaisePropertyChanged("Plus4");
             }
@@ -262,11 +262,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=11)]
-        public string Country {
-            get {
+        public string Country     
+            get     
                 return this.countryField;
             }
-            set {
+            set     
                 this.countryField = value;
                 this.RaisePropertyChanged("Country");
             }
@@ -274,9 +274,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -288,7 +288,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArray : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArray : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string versionField;
         
@@ -302,11 +302,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Version {
-            get {
+        public string Version     
+            get     
                 return this.versionField;
             }
-            set {
+            set     
                 this.versionField = value;
                 this.RaisePropertyChanged("Version");
             }
@@ -314,11 +314,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string TransmissionReference {
-            get {
+        public string TransmissionReference     
+            get     
                 return this.transmissionReferenceField;
             }
-            set {
+            set     
                 this.transmissionReferenceField = value;
                 this.RaisePropertyChanged("TransmissionReference");
             }
@@ -326,11 +326,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Results {
-            get {
+        public string Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -338,11 +338,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string TotalRecords {
-            get {
+        public string TotalRecords     
+            get     
                 return this.totalRecordsField;
             }
-            set {
+            set     
                 this.totalRecordsField = value;
                 this.RaisePropertyChanged("TotalRecords");
             }
@@ -350,11 +350,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Record", Order=4)]
-        public ResponseArrayRecord[] Record {
-            get {
+        public ResponseArrayRecord[] Record     
+            get     
                 return this.recordField;
             }
-            set {
+            set     
                 this.recordField = value;
                 this.RaisePropertyChanged("Record");
             }
@@ -362,9 +362,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -376,7 +376,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecord : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecord : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string recordIDField;
         
@@ -386,11 +386,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string RecordID {
-            get {
+        public string RecordID     
+            get     
                 return this.recordIDField;
             }
-            set {
+            set     
                 this.recordIDField = value;
                 this.RaisePropertyChanged("RecordID");
             }
@@ -398,11 +398,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Results {
-            get {
+        public string Results     
+            get     
                 return this.resultsField;
             }
-            set {
+            set     
                 this.resultsField = value;
                 this.RaisePropertyChanged("Results");
             }
@@ -410,11 +410,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public ResponseArrayRecordAddress Address {
-            get {
+        public ResponseArrayRecordAddress Address     
+            get     
                 return this.addressField;
             }
-            set {
+            set     
                 this.addressField = value;
                 this.RaisePropertyChanged("Address");
             }
@@ -422,9 +422,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -436,7 +436,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddress : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddress : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string companyField;
         
@@ -476,11 +476,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Company {
-            get {
+        public string Company     
+            get     
                 return this.companyField;
             }
-            set {
+            set     
                 this.companyField = value;
                 this.RaisePropertyChanged("Company");
             }
@@ -488,11 +488,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public ResponseArrayRecordAddressUrbanization Urbanization {
-            get {
+        public ResponseArrayRecordAddressUrbanization Urbanization     
+            get     
                 return this.urbanizationField;
             }
-            set {
+            set     
                 this.urbanizationField = value;
                 this.RaisePropertyChanged("Urbanization");
             }
@@ -500,11 +500,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Address1 {
-            get {
+        public string Address1     
+            get     
                 return this.address1Field;
             }
-            set {
+            set     
                 this.address1Field = value;
                 this.RaisePropertyChanged("Address1");
             }
@@ -512,11 +512,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public string Address2 {
-            get {
+        public string Address2     
+            get     
                 return this.address2Field;
             }
-            set {
+            set     
                 this.address2Field = value;
                 this.RaisePropertyChanged("Address2");
             }
@@ -524,11 +524,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public string Suite {
-            get {
+        public string Suite     
+            get     
                 return this.suiteField;
             }
-            set {
+            set     
                 this.suiteField = value;
                 this.RaisePropertyChanged("Suite");
             }
@@ -536,11 +536,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public string PrivateMailBox {
-            get {
+        public string PrivateMailBox     
+            get     
                 return this.privateMailBoxField;
             }
-            set {
+            set     
                 this.privateMailBoxField = value;
                 this.RaisePropertyChanged("PrivateMailBox");
             }
@@ -548,11 +548,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public ResponseArrayRecordAddressCity City {
-            get {
+        public ResponseArrayRecordAddressCity City     
+            get     
                 return this.cityField;
             }
-            set {
+            set     
                 this.cityField = value;
                 this.RaisePropertyChanged("City");
             }
@@ -560,11 +560,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public ResponseArrayRecordAddressState State {
-            get {
+        public ResponseArrayRecordAddressState State     
+            get     
                 return this.stateField;
             }
-            set {
+            set     
                 this.stateField = value;
                 this.RaisePropertyChanged("State");
             }
@@ -572,11 +572,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string Zip {
-            get {
+        public string Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -584,11 +584,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string Plus4 {
-            get {
+        public string Plus4     
+            get     
                 return this.plus4Field;
             }
-            set {
+            set     
                 this.plus4Field = value;
                 this.RaisePropertyChanged("Plus4");
             }
@@ -596,11 +596,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=10)]
-        public string CarrierRoute {
-            get {
+        public string CarrierRoute     
+            get     
                 return this.carrierRouteField;
             }
-            set {
+            set     
                 this.carrierRouteField = value;
                 this.RaisePropertyChanged("CarrierRoute");
             }
@@ -608,11 +608,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=11)]
-        public string DeliveryPointCode {
-            get {
+        public string DeliveryPointCode     
+            get     
                 return this.deliveryPointCodeField;
             }
-            set {
+            set     
                 this.deliveryPointCodeField = value;
                 this.RaisePropertyChanged("DeliveryPointCode");
             }
@@ -620,11 +620,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=12)]
-        public string DeliveryPointCheckDigit {
-            get {
+        public string DeliveryPointCheckDigit     
+            get     
                 return this.deliveryPointCheckDigitField;
             }
-            set {
+            set     
                 this.deliveryPointCheckDigitField = value;
                 this.RaisePropertyChanged("DeliveryPointCheckDigit");
             }
@@ -632,11 +632,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=13)]
-        public string CongressionalDistrict {
-            get {
+        public string CongressionalDistrict     
+            get     
                 return this.congressionalDistrictField;
             }
-            set {
+            set     
                 this.congressionalDistrictField = value;
                 this.RaisePropertyChanged("CongressionalDistrict");
             }
@@ -644,11 +644,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=14)]
-        public ResponseArrayRecordAddressType Type {
-            get {
+        public ResponseArrayRecordAddressType Type     
+            get     
                 return this.typeField;
             }
-            set {
+            set     
                 this.typeField = value;
                 this.RaisePropertyChanged("Type");
             }
@@ -656,11 +656,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=15)]
-        public ResponseArrayRecordAddressCountry Country {
-            get {
+        public ResponseArrayRecordAddressCountry Country     
+            get     
                 return this.countryField;
             }
-            set {
+            set     
                 this.countryField = value;
                 this.RaisePropertyChanged("Country");
             }
@@ -668,11 +668,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=16)]
-        public string AddressKey {
-            get {
+        public string AddressKey     
+            get     
                 return this.addressKeyField;
             }
-            set {
+            set     
                 this.addressKeyField = value;
                 this.RaisePropertyChanged("AddressKey");
             }
@@ -680,11 +680,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=17)]
-        public ResponseArrayRecordAddressParsed Parsed {
-            get {
+        public ResponseArrayRecordAddressParsed Parsed     
+            get     
                 return this.parsedField;
             }
-            set {
+            set     
                 this.parsedField = value;
                 this.RaisePropertyChanged("Parsed");
             }
@@ -692,9 +692,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -706,17 +706,17 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressUrbanization : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressUrbanization : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string nameField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Name {
-            get {
+        public string Name     
+            get     
                 return this.nameField;
             }
-            set {
+            set     
                 this.nameField = value;
                 this.RaisePropertyChanged("Name");
             }
@@ -724,9 +724,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -738,53 +738,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressCity : object, System.ComponentModel.INotifyPropertyChanged {
-        
-        private string nameField;
-        
-        private string abbreviationField;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Name {
-            get {
-                return this.nameField;
-            }
-            set {
-                this.nameField = value;
-                this.RaisePropertyChanged("Name");
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Abbreviation {
-            get {
-                return this.abbreviationField;
-            }
-            set {
-                this.abbreviationField = value;
-                this.RaisePropertyChanged("Abbreviation");
-            }
-        }
-        
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        
-        protected void RaisePropertyChanged(string propertyName) {
-            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
-                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.17929")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressState : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressCity : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string nameField;
         
@@ -792,11 +746,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Name {
-            get {
+        public string Name     
+            get     
                 return this.nameField;
             }
-            set {
+            set     
                 this.nameField = value;
                 this.RaisePropertyChanged("Name");
             }
@@ -804,11 +758,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Abbreviation {
-            get {
+        public string Abbreviation     
+            get     
                 return this.abbreviationField;
             }
-            set {
+            set     
                 this.abbreviationField = value;
                 this.RaisePropertyChanged("Abbreviation");
             }
@@ -816,9 +770,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -830,7 +784,53 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressType : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressState : object, System.ComponentModel.INotifyPropertyChanged     
+        
+        private string nameField;
+        
+        private string abbreviationField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public string Name     
+            get     
+                return this.nameField;
+            }
+            set     
+                this.nameField = value;
+                this.RaisePropertyChanged("Name");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        public string Abbreviation     
+            get     
+                return this.abbreviationField;
+            }
+            set     
+                this.abbreviationField = value;
+                this.RaisePropertyChanged("Abbreviation");
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName)     
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null))     
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.0.30319.17929")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
+    public partial class ResponseArrayRecordAddressType : object, System.ComponentModel.INotifyPropertyChanged     
         
         private ResponseArrayRecordAddressTypeAddress addressField;
         
@@ -838,11 +838,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public ResponseArrayRecordAddressTypeAddress Address {
-            get {
+        public ResponseArrayRecordAddressTypeAddress Address     
+            get     
                 return this.addressField;
             }
-            set {
+            set     
                 this.addressField = value;
                 this.RaisePropertyChanged("Address");
             }
@@ -850,11 +850,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public ResponseArrayRecordAddressTypeZip Zip {
-            get {
+        public ResponseArrayRecordAddressTypeZip Zip     
+            get     
                 return this.zipField;
             }
-            set {
+            set     
                 this.zipField = value;
                 this.RaisePropertyChanged("Zip");
             }
@@ -862,9 +862,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -876,7 +876,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressTypeAddress : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressTypeAddress : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string codeField;
         
@@ -884,11 +884,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Code {
-            get {
+        public string Code     
+            get     
                 return this.codeField;
             }
-            set {
+            set     
                 this.codeField = value;
                 this.RaisePropertyChanged("Code");
             }
@@ -896,11 +896,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Description {
-            get {
+        public string Description     
+            get     
                 return this.descriptionField;
             }
-            set {
+            set     
                 this.descriptionField = value;
                 this.RaisePropertyChanged("Description");
             }
@@ -908,9 +908,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -922,7 +922,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressTypeZip : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressTypeZip : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string codeField;
         
@@ -930,11 +930,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Code {
-            get {
+        public string Code     
+            get     
                 return this.codeField;
             }
-            set {
+            set     
                 this.codeField = value;
                 this.RaisePropertyChanged("Code");
             }
@@ -942,11 +942,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Description {
-            get {
+        public string Description     
+            get     
                 return this.descriptionField;
             }
-            set {
+            set     
                 this.descriptionField = value;
                 this.RaisePropertyChanged("Description");
             }
@@ -954,9 +954,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -968,7 +968,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressCountry : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressCountry : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string abbreviationField;
         
@@ -976,11 +976,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Abbreviation {
-            get {
+        public string Abbreviation     
+            get     
                 return this.abbreviationField;
             }
-            set {
+            set     
                 this.abbreviationField = value;
                 this.RaisePropertyChanged("Abbreviation");
             }
@@ -988,11 +988,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Name {
-            get {
+        public string Name     
+            get     
                 return this.nameField;
             }
-            set {
+            set     
                 this.nameField = value;
                 this.RaisePropertyChanged("Name");
             }
@@ -1000,9 +1000,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1014,7 +1014,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressParsed : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressParsed : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string streetNameField;
         
@@ -1038,11 +1038,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string StreetName {
-            get {
+        public string StreetName     
+            get     
                 return this.streetNameField;
             }
-            set {
+            set     
                 this.streetNameField = value;
                 this.RaisePropertyChanged("StreetName");
             }
@@ -1050,11 +1050,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string AddressRange {
-            get {
+        public string AddressRange     
+            get     
                 return this.addressRangeField;
             }
-            set {
+            set     
                 this.addressRangeField = value;
                 this.RaisePropertyChanged("AddressRange");
             }
@@ -1062,11 +1062,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=2)]
-        public string Suffix {
-            get {
+        public string Suffix     
+            get     
                 return this.suffixField;
             }
-            set {
+            set     
                 this.suffixField = value;
                 this.RaisePropertyChanged("Suffix");
             }
@@ -1074,11 +1074,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=3)]
-        public ResponseArrayRecordAddressParsedDirection Direction {
-            get {
+        public ResponseArrayRecordAddressParsedDirection Direction     
+            get     
                 return this.directionField;
             }
-            set {
+            set     
                 this.directionField = value;
                 this.RaisePropertyChanged("Direction");
             }
@@ -1086,11 +1086,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=4)]
-        public ResponseArrayRecordAddressParsedSuite Suite {
-            get {
+        public ResponseArrayRecordAddressParsedSuite Suite     
+            get     
                 return this.suiteField;
             }
-            set {
+            set     
                 this.suiteField = value;
                 this.RaisePropertyChanged("Suite");
             }
@@ -1098,11 +1098,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=5)]
-        public ResponseArrayRecordAddressParsedPrivateMailbox PrivateMailbox {
-            get {
+        public ResponseArrayRecordAddressParsedPrivateMailbox PrivateMailbox     
+            get     
                 return this.privateMailboxField;
             }
-            set {
+            set     
                 this.privateMailboxField = value;
                 this.RaisePropertyChanged("PrivateMailbox");
             }
@@ -1110,11 +1110,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=6)]
-        public string Garbage {
-            get {
+        public string Garbage     
+            get     
                 return this.garbageField;
             }
-            set {
+            set     
                 this.garbageField = value;
                 this.RaisePropertyChanged("Garbage");
             }
@@ -1122,11 +1122,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=7)]
-        public string RouteService {
-            get {
+        public string RouteService     
+            get     
                 return this.routeServiceField;
             }
-            set {
+            set     
                 this.routeServiceField = value;
                 this.RaisePropertyChanged("RouteService");
             }
@@ -1134,11 +1134,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=8)]
-        public string LockBox {
-            get {
+        public string LockBox     
+            get     
                 return this.lockBoxField;
             }
-            set {
+            set     
                 this.lockBoxField = value;
                 this.RaisePropertyChanged("LockBox");
             }
@@ -1146,11 +1146,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=9)]
-        public string DeliveryInstallation {
-            get {
+        public string DeliveryInstallation     
+            get     
                 return this.deliveryInstallationField;
             }
-            set {
+            set     
                 this.deliveryInstallationField = value;
                 this.RaisePropertyChanged("DeliveryInstallation");
             }
@@ -1158,9 +1158,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1172,7 +1172,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressParsedDirection : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressParsedDirection : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string postField;
         
@@ -1180,11 +1180,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Post {
-            get {
+        public string Post     
+            get     
                 return this.postField;
             }
-            set {
+            set     
                 this.postField = value;
                 this.RaisePropertyChanged("Post");
             }
@@ -1192,11 +1192,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Pre {
-            get {
+        public string Pre     
+            get     
                 return this.preField;
             }
-            set {
+            set     
                 this.preField = value;
                 this.RaisePropertyChanged("Pre");
             }
@@ -1204,9 +1204,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1218,7 +1218,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressParsedSuite : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressParsedSuite : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string rangeField;
         
@@ -1226,11 +1226,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Range {
-            get {
+        public string Range     
+            get     
                 return this.rangeField;
             }
-            set {
+            set     
                 this.rangeField = value;
                 this.RaisePropertyChanged("Range");
             }
@@ -1238,11 +1238,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Name {
-            get {
+        public string Name     
+            get     
                 return this.nameField;
             }
-            set {
+            set     
                 this.nameField = value;
                 this.RaisePropertyChanged("Name");
             }
@@ -1250,9 +1250,9 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -1264,7 +1264,7 @@ namespace Rock.MelissaData.AddressCheck
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="urn:mdWebServiceAddress")]
-    public partial class ResponseArrayRecordAddressParsedPrivateMailbox : object, System.ComponentModel.INotifyPropertyChanged {
+    public partial class ResponseArrayRecordAddressParsedPrivateMailbox : object, System.ComponentModel.INotifyPropertyChanged     
         
         private string nameField;
         
@@ -1272,11 +1272,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
-        public string Name {
-            get {
+        public string Name     
+            get     
                 return this.nameField;
             }
-            set {
+            set     
                 this.nameField = value;
                 this.RaisePropertyChanged("Name");
             }
@@ -1284,11 +1284,11 @@ namespace Rock.MelissaData.AddressCheck
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=1)]
-        public string Range {
-            get {
+        public string Range     
+            get     
                 return this.rangeField;
             }
-            set {
+            set     
                 this.rangeField = value;
                 this.RaisePropertyChanged("Range");
             }
@@ -1296,42 +1296,42 @@ namespace Rock.MelissaData.AddressCheck
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName) {
+        protected void RaisePropertyChanged(string propertyName)     
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
+            if ((propertyChanged != null))     
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface IServiceChannel : Rock.MelissaData.AddressCheck.IService, System.ServiceModel.IClientChannel {
+    public interface IServiceChannel : Rock.MelissaData.AddressCheck.IService, System.ServiceModel.IClientChannel     
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class ServiceClient : System.ServiceModel.ClientBase<Rock.MelissaData.AddressCheck.IService>, Rock.MelissaData.AddressCheck.IService {
+    public partial class ServiceClient : System.ServiceModel.ClientBase<Rock.MelissaData.AddressCheck.IService>, Rock.MelissaData.AddressCheck.IService     
         
-        public ServiceClient() {
+        public ServiceClient()     
         }
         
         public ServiceClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
+                base(endpointConfigurationName)     
         }
         
         public ServiceClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public ServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
+                base(endpointConfigurationName, remoteAddress)     
         }
         
         public ServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress) {
+                base(binding, remoteAddress)     
         }
         
-        public Rock.MelissaData.AddressCheck.ResponseArray doAddressCheck(Rock.MelissaData.AddressCheck.RequestArray Request) {
+        public Rock.MelissaData.AddressCheck.ResponseArray doAddressCheck(Rock.MelissaData.AddressCheck.RequestArray Request)     
             return base.Channel.doAddressCheck(Request);
         }
     }

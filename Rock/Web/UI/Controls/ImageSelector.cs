@@ -12,13 +12,13 @@ using System.Web.UI.WebControls;
 using Rock;
 
 namespace Rock.Web.UI.Controls
-{   
+       
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:ImageSelector runat=server></{0}:ImageSelector>" )]
+    [ToolboxData( "<    0}:ImageSelector runat=server></    0}:ImageSelector>" )]
     public class ImageSelector : CompositeControl
-    {
+        
         private Image image;
         private HiddenField hiddenField;
         private FileUpload fileUpload;
@@ -37,14 +37,14 @@ namespace Rock.Web.UI.Controls
         Description( "Image Id" )
         ]
         public string ImageId
-        {
+            
             get
-            {
+                
                 EnsureChildControls();
                 return hiddenField.Value;
             }
             set
-            {
+                
                 EnsureChildControls();
                 hiddenField.Value = value;
             }
@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnInit( System.EventArgs e )
-        {
+            
             base.OnInit( e );
 
             Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
@@ -65,37 +65,37 @@ namespace Rock.Web.UI.Controls
             Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             string script = string.Format( @"
-    $(document).ready(function() {{
+    $(document).ready(function()         
 
-        $('#{0}').kendoUpload({{
+        $('#    0}').kendoUpload(        
             multiple: false,
             showFileList: false,
-            async: {{
+            async:         
                 saveUrl: rock.baseUrl + 'ImageUploader.ashx'
             }},
 
-            success: function(e) {{
+            success: function(e)         
 
-                if (e.operation == 'upload' && e.response != '0') {{
-                    $('#{1}').val(e.response);
-                    $('#{2}').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
-                    $('#{2}').show('fast', function() {{ 
-                        if ($('#modal-scroll-container').length) {{
+                if (e.operation == 'upload' && e.response != '0')         
+                    $('#    1}').val(e.response);
+                    $('#    2}').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
+                    $('#    2}').show('fast', function()          
+                        if ($('#modal-scroll-container').length)         
                             $('#modal-scroll-container').tinyscrollbar_update('relative');
                         }}
                     }});
-                    $('#{3}').show('fast');
+                    $('#    3}').show('fast');
                 }}
 
             }}
         }});
 
-        $('#{3}').click( function(){{
+        $('#    3}').click( function()        
             $(this).hide('fast');
-            $('#{1}').val('0');
-            $('#{2}').attr('src','')
-            $('#{2}').hide('fast', function() {{ 
-                if ($('#modal-scroll-container').length) {{
+            $('#    1}').val('0');
+            $('#    2}').attr('src','')
+            $('#    2}').hide('fast', function()          
+                if ($('#modal-scroll-container').length)         
                     $('#modal-scroll-container').tinyscrollbar_update('relative');
                 }}
             }});
@@ -116,17 +116,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void  RenderControl(HtmlTextWriter writer)
-        {
+            
             writer.AddAttribute( "class", "rock-image" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( !string.IsNullOrEmpty( ImageId ) && ImageId != "0" )
-            {
+                
                 image.Style["display"] = "inline";
                 image.ImageUrl = "~/image.ashx?" + ImageId + "&width=50&height=50";
             }
             else
-            {
+                
                 image.Style["display"] = "none";
                 image.ImageUrl = string.Empty;
             }
@@ -136,7 +136,7 @@ namespace Rock.Web.UI.Controls
             htmlAnchor.RenderControl( writer );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
+            fileUpload.Attributes["name"] = string.Format( "    0}[]", base.ID );
             fileUpload.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -147,7 +147,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-        {
+            
             image = new Image();
             image.ID = "img";
             Controls.Add( image );

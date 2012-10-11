@@ -9,16 +9,16 @@ using Rock.Cms;
 #pragma warning disable 1591
 
 namespace Rock.Migrations
-{
+    
     /// <summary>
     /// Custom Migration methods for migrations prior to the 201209211556505_BlockToBlockType migration
     /// </summary>
     public abstract class RockMigration_0 : DbMigration
-    {
+        
         #region Block Methods
 
         public void AddBlock( string name, string description, string path, string guid )
-        {
+            
             Sql( string.Format( @"
                 
                 INSERT INTO [cmsBlock] (
@@ -26,9 +26,9 @@ namespace Rock.Migrations
                     [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
                     [Guid])
                 VALUES(
-                    1,'{0}','{1}','{2}',
+                    1,'    0}','    1}','    2}',
                     GETDATE(),GETDATE(),1,1,
-                    '{3}')
+                    '    3}')
 ",
 					path,
 					name,
@@ -38,16 +38,16 @@ namespace Rock.Migrations
 		}
 
 		public void AddBlock( BlockTypeDto block )
-		{
+		    
 			Sql( string.Format( @"
 				INSERT INTO [cmsBlock] (
 					[IsSystem],[Path],[Name],[Description],
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					{0},'{1}','{2}','{3}'
+					    0},'    1}','    2}','    3}'
 					GETDATE(),GETDATE(),1,1,
-					'{4}')
+					'    4}')
 ",
 					block.IsSystem.Bit(),
 					block.Path,
@@ -57,16 +57,16 @@ namespace Rock.Migrations
 		}
 
 		public void DeleteBlock( string guid )
-		{
+		    
 			Sql( string.Format( @"
-				DELETE [cmsBlock] WHERE [Guid] = '{0}'
+				DELETE [cmsBlock] WHERE [Guid] = '    0}'
 ",
 					guid
 					) );
 		}
 
 		public BlockTypeDto DefaultSystemBlock( string name, string description, Guid guid )
-		{
+		    
 			var block = new BlockTypeDto();
 
 			block.IsSystem = true;
@@ -82,11 +82,11 @@ namespace Rock.Migrations
 		#region Page Methods
 
 		public void AddPage( string parentPageGuid, string name, string description, string guid )
-		{
+		    
 			Sql( string.Format( @"
 				
 				DECLARE @ParentPageId int
-				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '    0}')
 
 				DECLARE @Order int
 				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
@@ -98,11 +98,11 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[IconUrl],[Guid])
 				VALUES(
-					'{1}','{1}',1,@ParentPageId,1,'Default',
+					'    1}','    1}',1,@ParentPageId,1,'Default',
 					0,1,1,0,1,0,
-					@Order,0,'{2}',1,
+					@Order,0,'    2}',1,
 					GETDATE(),GETDATE(),1,1,
-					'','{3}')
+					'','    3}')
 ",
 					parentPageGuid,
 					name,
@@ -112,12 +112,12 @@ namespace Rock.Migrations
 		}
 
 		public void AddPage( string parentPageGuid, PageDto page )
-		{
+		    
 
 			Sql( string.Format( @"
 
 				DECLARE @ParentPageId int
-				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '    0}')
 
 				DECLARE @Order int
 				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
@@ -129,11 +129,11 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[IconUrl],[Guid])
 				VALUES(
-					'{1}','{2}',{3},@ParentPageId,{4},'{5}',
-					{6},{7},{8},{9},{10},{11},
-					@Order,{12},'{13}',{14},
+					'    1}','    2}',    3},@ParentPageId,    4},'    5}',
+					    6},    7},    8},    9},    10},    11},
+					@Order,    12},'    13}',    14},
 					GETDATE(),GETDATE(),1,1,
-					'{15}','{16}')
+					'    15}','    16}')
 ",
 					parentPageGuid,
 					page.Name,
@@ -155,16 +155,16 @@ namespace Rock.Migrations
 		}
 
 		public void DeletePage( string guid )
-		{
+		    
 			Sql( string.Format( @"
-				DELETE [cmsPage] WHERE [Guid] = '{0}'
+				DELETE [cmsPage] WHERE [Guid] = '    0}'
 ",
 					guid
 					) );
 		}
 
 		public PageDto DefaultSystemPage( string name, string description, Guid guid )
-		{
+		    
 			var page = new PageDto();
 
 			page.Name = name;
@@ -188,7 +188,7 @@ namespace Rock.Migrations
 		#region BlockInstance Methods
 
 		public void AddBlockInstance( string pageGuid, string blockGuid, string name, string zone, string guid, int order = 0 )
-		{
+		    
 			var sb = new StringBuilder();
 
 			sb.Append(@"
@@ -200,13 +200,13 @@ namespace Rock.Migrations
 ");
             else
                 sb.AppendFormat( @"
-                SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+                SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '    0}')
 ",                     pageGuid);
 
             sb.AppendFormat( @"
                 
                 DECLARE @BlockId int
-                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '    0}')
 
                 DECLARE @BlockInstanceId int
                 INSERT INTO [cmsBlockInstance] (
@@ -215,10 +215,10 @@ namespace Rock.Migrations
                     [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
                     [Guid])
                 VALUES(
-                    1,@PageId,NULL,@BlockId,'{1}',
-                    {2},'{3}',0,
+                    1,@PageId,NULL,@BlockId,'    1}',
+                        2},'    3}',0,
                     GETDATE(),GETDATE(),1,1,
-                    '{4}')
+                    '    4}')
                 SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
                     blockGuid,
@@ -239,7 +239,7 @@ namespace Rock.Migrations
         }
 
         public void AddBlockInstance( string pageGuid, string blockGuid, BlockDto blockInstance )
-        {
+            
             var sb = new StringBuilder();
 
             sb.Append(@"
@@ -251,13 +251,13 @@ namespace Rock.Migrations
 ");
 			else
 				sb.AppendFormat( @"
-				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '    0}')
 ", 					pageGuid);
 
 			sb.AppendFormat( @"
 
 				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '    0}')
 
 				DECLARE @BlockInstanceId int
 				INSERT INTO [cmsBlockInstance] (
@@ -266,10 +266,10 @@ namespace Rock.Migrations
 					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
 					[Guid])
 				VALUES(
-					{1},@PageId,{2},@BlockId,'{3}',
-					{4},'{5}',{6},
+					    1},@PageId,    2},@BlockId,'    3}',
+					    4},'    5}',    6},
 					GETDATE(),GETDATE(),1,1,
-					'{7}')
+					'    7}')
 				SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
 					blockGuid,
@@ -293,19 +293,19 @@ namespace Rock.Migrations
         }
 
         public void DeleteBlockInstance( string guid )
-        {
+            
             Sql( string.Format( @"
                 DECLARE @BlockInstanceId int
-                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '    0}')
                 DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockInstanceId
-                DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
+                DELETE [cmsBlockInstance] WHERE [Guid] = '    0}'
 ",
 					guid
 					) );
 		}
 
 		public BlockDto DefaultSystemBlockInstance( string name, Guid guid )
-		{
+		    
 			var blockInstance = new BlockDto();
 
 			blockInstance.IsSystem = true;
@@ -321,14 +321,14 @@ namespace Rock.Migrations
 		#region Attribute Methods
 
 		public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid)
-		{
+		    
 			Sql( string.Format( @"
 				
 				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '    0}')
 
 				DECLARE @FieldTypeId int
-				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
+				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '    1}')
 
 				INSERT INTO [coreAttribute] (
 					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
@@ -338,10 +338,10 @@ namespace Rock.Migrations
 					[Guid])
 				VALUES(
 					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
-					'{2}','{3}','{4}','{5}',
-					{6},0,'{7}',0,0,
+					'    2}','    3}','    4}','    5}',
+					    6},0,'    7}',0,0,
 					GETDATE(),GETDATE(),1,1,
-					'{8}')
+					'    8}')
 ",
 					blockGuid,
 					fieldTypeGuid,
@@ -356,15 +356,15 @@ namespace Rock.Migrations
 		}
 
 		public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Core.AttributeDto attribute )
-		{
+		    
 
 			Sql( string.Format( @"
 
 				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '    0}')
 
 				DECLARE @FieldTypeId int
-				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
+				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '    1}')
 
 				INSERT INTO [coreAttribute] (
 					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
@@ -374,10 +374,10 @@ namespace Rock.Migrations
 					[Guid])
 				VALUES(
 					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
-					'{2}','{3}','{4}','{5}',
-					{6},{7},'{8}',{9},{10},
+					'    2}','    3}','    4}','    5}',
+					    6},    7},'    8}',    9},    10},
 					GETDATE(),GETDATE(),1,1,
-					'{11}')
+					'    11}')
 ",
 					blockGuid,
 					fieldTypeGuid,
@@ -395,16 +395,16 @@ namespace Rock.Migrations
 		}
 
 		public void DeleteBlockAttribute( string guid )
-		{
+		    
 			Sql( string.Format( @"
-				DELETE [coreAttribute] WHERE [Guid] = '{0}'
+				DELETE [coreAttribute] WHERE [Guid] = '    0}'
 ",
 					guid
 					) );
 		}
 
 		public Rock.Core.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
-		{
+		    
 			var attribute = new Rock.Core.AttributeDto();
 
 			attribute.IsSystem = true;
@@ -423,14 +423,14 @@ namespace Rock.Migrations
 		#region Block Attribute Value Methods
 
 		public void AddBlockAttributeValue( string blockInstanceGuid, string attributeGuid, string value )
-		{
+		    
 			Sql( string.Format( @"
 				
 				DECLARE @BlockInstanceId int
-				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '    0}')
 
 				DECLARE @AttributeId int
-				SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
+				SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '    1}')
 
 				INSERT INTO [coreAttributeValue] (
 					[IsSystem],[AttributeId],[EntityId],
@@ -439,7 +439,7 @@ namespace Rock.Migrations
 					[Guid])
 				VALUES(
 					1,@AttributeId,@BlockInstanceId,
-					0,'{2}',
+					0,'    2}',
 					GETDATE(),GETDATE(),1,1,
 					NEWID())
 ",
@@ -450,14 +450,14 @@ namespace Rock.Migrations
         }
 
         public void DeleteBlockAttributeValue( string blockInstanceGuid, string attributeGuid )
-        {
+            
             Sql( string.Format( @"
 
                 DECLARE @BlockInstanceId int
-                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '    0}')
 
                 DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
+                SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '    1}')
 
                 DELETE [coreAttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockInstanceId
 ",
@@ -471,7 +471,7 @@ namespace Rock.Migrations
         #region DefinedType Methods
 
         public void AddDefinedType( string category, string name, string description, string guid )
-        {
+            
             Sql( string.Format( @"
                 
                 DECLARE @FieldTypeId int
@@ -487,9 +487,9 @@ namespace Rock.Migrations
                     [Guid])
                 VALUES(
                     1,@FieldTypeId,@Order,
-                    '{0}','{1}','{2}',
+                    '    0}','    1}','    2}',
                     GETDATE(),GETDATE(),1,1,
-                    '{3}')
+                    '    3}')
 ",
                     category,
                     name,
@@ -499,9 +499,9 @@ namespace Rock.Migrations
         }
 
         public void DeleteDefinedType( string guid )
-        {
+            
             Sql( string.Format( @"
-                DELETE [coreDefinedType] WHERE [Guid] = '{0}'
+                DELETE [coreDefinedType] WHERE [Guid] = '    0}'
 ",
                     guid
                     ) );
@@ -512,11 +512,11 @@ namespace Rock.Migrations
         #region DefinedType Methods
 
         public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
-        {
+            
             Sql( string.Format( @"
                 
                 DECLARE @DefinedTypeId int
-                SET @DefinedTypeId = (SELECT [Id] FROM [coreDefinedType] WHERE [Guid] = '{0}')
+                SET @DefinedTypeId = (SELECT [Id] FROM [coreDefinedType] WHERE [Guid] = '    0}')
 
                 DECLARE @Order int
                 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [coreDefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId
@@ -528,9 +528,9 @@ namespace Rock.Migrations
                     [Guid])
                 VALUES(
                     1,@DefinedTypeId,@Order,
-                    '{1}','{2}',
+                    '    1}','    2}',
                     GETDATE(),GETDATE(),1,1,
-                    '{3}')
+                    '    3}')
 ",
                     definedTypeGuid,
                     name,
@@ -540,9 +540,9 @@ namespace Rock.Migrations
         }
 
         public void DeleteDefinedValue( string guid )
-        {
+            
             Sql( string.Format( @"
-                DELETE [coreDefinedValue] WHERE [Guid] = '{0}'
+                DELETE [coreDefinedValue] WHERE [Guid] = '    0}'
 ",
                     guid
                     ) );

@@ -11,13 +11,13 @@ using System.Linq;
 using NuGet;
 
 namespace Rock.Services.NuGet
-{
+    
     /// <summary>
     /// This is the service layer that handles installing, updating, removing Packages (aka Plugins)
     /// from the website / local filesystem and the Rock Quarry (our NuGet server).
     /// </summary>
     public class WebProjectManager
-    {
+        
         private readonly IProjectManager _projectManager;
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Rock.Services.NuGet
         /// <param name="remoteSource">URL of the NuGet server API (ex, http://nuget.org/api/v2 ).</param>
         /// <param name="siteRoot">The physical path to the web root.</param>
         public WebProjectManager( string remoteSource, string siteRoot )
-        {
+            
             string webRepositoryDirectory = GetWebRepositoryDirectory( siteRoot );
             var fileSystem = new PhysicalFileSystem( webRepositoryDirectory );
             var packagePathResolver = new RockPackagePathResolver( fileSystem );
@@ -40,9 +40,9 @@ namespace Rock.Services.NuGet
         /// Represents the local NuGet package repository.
         /// </summary>
         public IPackageRepository LocalRepository
-        {
+            
             get
-            {
+                
                 return _projectManager.LocalRepository;
             }
         }
@@ -51,9 +51,9 @@ namespace Rock.Services.NuGet
         /// Represents the remote/source NuGet package repository.
         /// </summary>
         public IPackageRepository SourceRepository
-        {
+            
             get
-            {
+                
                 return _projectManager.SourceRepository;
             }
         }
@@ -67,7 +67,7 @@ namespace Rock.Services.NuGet
         /// a list of packages
         /// </returns>
         public IQueryable<IPackage> GetLatestRemotePackages( string searchTerms, bool includeAllVersions )
-        {
+            
             var packages = GetPackages( SourceRepository, searchTerms );
             return packages.Where( x => x.IsLatestVersion || includeAllVersions );
         }
@@ -78,7 +78,7 @@ namespace Rock.Services.NuGet
         /// <param name="searchTerms">a string of space delimited search terms</param>
         /// <returns>a list of packages</returns>
         public IQueryable<IPackage> GetRemotePackages( string searchTerms )
-        {
+            
             return GetPackages( SourceRepository, searchTerms );
         }
 
@@ -88,7 +88,7 @@ namespace Rock.Services.NuGet
         /// <param name="searchTerms">a string of space delimited search terms</param>
         /// <returns>a list of packages</returns>
         public IQueryable<IPackage> GetInstalledPackages( string searchTerms )
-        {
+            
             return GetPackages( LocalRepository, searchTerms );
         }
 
@@ -98,7 +98,7 @@ namespace Rock.Services.NuGet
         // <param name="searchTerms">a string of space delimited search terms</param>
         // <returns>a list of packages</returns>
         //public IQueryable<IPackage> GetPackagesWithUpdates( string searchTerms )
-        //{
+        //    
         //    IQueryable<IPackage> packages = LocalRepository.GetUpdates( SourceRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFramework: null ).AsQueryable();
         //    return GetPackages( packages, searchTerms );
         //}
@@ -109,7 +109,7 @@ namespace Rock.Services.NuGet
         /// <param name="packageId">the Id of a package</param>
         /// <returns>a package</returns>
         public IPackage GetInstalledPackage( string packageId )
-        {
+            
             return LocalRepository.FindPackage( packageId );
         }
 
@@ -118,9 +118,9 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <returns>Warnings encountered when installing the package.</returns>
         public IEnumerable<string> InstallPackage( IPackage package )
-        {
+            
             return PerformLoggedAction( () =>
-            {
+                
                 _projectManager.AddPackageReference( package.Id, package.Version, ignoreDependencies: false, allowPrereleaseVersions: false );
             } );
         }
@@ -130,9 +130,9 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <returns>Warnings encountered when updating the package.</returns>
         public IEnumerable<string> UpdatePackage( IPackage package )
-        {
+            
             return PerformLoggedAction( () =>
-            {
+                
                 _projectManager.UpdatePackageReference( package.Id, package.Version, updateDependencies: true, allowPrereleaseVersions: false);
             } );
         }
@@ -141,9 +141,9 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <returns>Warnings encountered when uninstalling the package.</returns>
         public IEnumerable<string> UninstallPackage( IPackage package, bool removeDependencies )
-        {
+            
             return PerformLoggedAction( () =>
-            {
+                
                 _projectManager.RemovePackageReference( package.Id, forceRemove: false, removeDependencies: removeDependencies );
             } );
         }
@@ -154,7 +154,7 @@ namespace Rock.Services.NuGet
         /// <param name="package"></param>
         /// <returns></returns>
         public bool IsPackageInstalled( IPackage package )
-        {
+            
             return LocalRepository.Exists( package );
         }
 
@@ -167,7 +167,7 @@ namespace Rock.Services.NuGet
         /// <param name="anyVersion"></param>
         /// <returns></returns>
         public bool IsPackageInstalled( IPackage package, bool anyVersion )
-        {
+            
             return (anyVersion) ? LocalRepository.Exists( package.Id ) : LocalRepository.Exists( package );
         }
 
@@ -177,7 +177,7 @@ namespace Rock.Services.NuGet
         /// <param name="package">a package</param>
         /// <returns>a package; otherwise null if no package was found</returns>
         public IPackage GetUpdate( IPackage package )
-        {
+            
             return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFramework: null ).FirstOrDefault( p => package.Id == p.Id );
         }
 
@@ -188,7 +188,7 @@ namespace Rock.Services.NuGet
         /// a list of packages
         /// </returns>
         public IEnumerable<IPackage> GetUpdates()
-        {
+            
             return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFramework: null );
         }
 
@@ -198,15 +198,15 @@ namespace Rock.Services.NuGet
         /// <param name="action">The action.</param>
         /// <returns></returns>
         private IEnumerable<string> PerformLoggedAction( Action action )
-        {
+            
             ErrorLogger logger = new ErrorLogger();
             _projectManager.Logger = logger;
             try
-            {
+                
                 action();
             }
             finally
-            {
+                
                 _projectManager.Logger = null;
             }
             return logger.Errors;
@@ -218,7 +218,7 @@ namespace Rock.Services.NuGet
         /// <param name="package">The package.</param>
         /// <returns></returns>
         internal IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance( IPackage package )
-        {
+            
             return GetPackagesRequiringLicenseAcceptance( package, localRepository: LocalRepository, sourceRepository: SourceRepository );
         }
 
@@ -230,7 +230,7 @@ namespace Rock.Services.NuGet
         /// <param name="sourceRepository">The source repository.</param>
         /// <returns></returns>
         internal static IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance( IPackage package, IPackageRepository localRepository, IPackageRepository sourceRepository )
-        {
+            
             var dependencies = GetPackageDependencies( package, localRepository, sourceRepository );
 
             return from p in dependencies
@@ -246,7 +246,7 @@ namespace Rock.Services.NuGet
         /// <param name="sourceRepository">The source repository.</param>
         /// <returns></returns>
         private static IEnumerable<IPackage> GetPackageDependencies( IPackage package, IPackageRepository localRepository, IPackageRepository sourceRepository )
-        {
+            
             InstallWalker walker = new InstallWalker( localRepository: localRepository, sourceRepository: sourceRepository, logger: NullLogger.Instance, ignoreDependencies: false, allowPrereleaseVersions: false, targetFramework: null );
             IEnumerable<PackageOperation> operations = walker.ResolveOperations( package );
 
@@ -262,7 +262,7 @@ namespace Rock.Services.NuGet
         /// <param name="searchTerm">The search term.</param>
         /// <returns></returns>
         internal static IQueryable<IPackage> GetPackages( IPackageRepository repository, string searchTerm )
-        {
+            
             return GetPackages( repository.GetPackages(), searchTerm );
         }
 
@@ -273,9 +273,9 @@ namespace Rock.Services.NuGet
         /// <param name="searchTerm">The search term.</param>
         /// <returns></returns>
         internal static IQueryable<IPackage> GetPackages( IQueryable<IPackage> packages, string searchTerm )
-        {
+            
             if ( !String.IsNullOrEmpty( searchTerm ) )
-            {
+                
                 searchTerm = searchTerm.Trim();
                 packages = packages.Find( searchTerm );
             }
@@ -288,7 +288,7 @@ namespace Rock.Services.NuGet
         /// <param name="siteRoot">The site root.</param>
         /// <returns></returns>
         internal static string GetWebRepositoryDirectory( string siteRoot )
-        {
+            
             return Path.Combine( siteRoot, "App_Data", "packages" );
         }
 
@@ -296,7 +296,7 @@ namespace Rock.Services.NuGet
         /// 
         /// </summary>
         private class ErrorLogger : ILogger
-        {
+            
             /// <summary>
             /// 
             /// </summary>
@@ -309,9 +309,9 @@ namespace Rock.Services.NuGet
             /// The errors.
             /// </value>
             public IEnumerable<string> Errors
-            {
+                
                 get
-                {
+                    
                     return _errors;
                 }
             }
@@ -323,9 +323,9 @@ namespace Rock.Services.NuGet
             /// <param name="message">The message.</param>
             /// <param name="args">The args.</param>
             public void Log( MessageLevel level, string message, params object[] args )
-            {
+                
                 if ( level == MessageLevel.Warning || level == MessageLevel.Error )
-                {
+                    
                     _errors.Add( String.Format( CultureInfo.CurrentCulture, message, args ) );
                 }
             }

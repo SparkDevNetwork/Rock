@@ -15,13 +15,13 @@ using Rock.Crm;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
-{
+    
     public partial class Bio : Rock.Web.UI.PersonBlock
-    {
+        
 		protected string RecordStatus = string.Empty;
 
 		protected override void OnInit( EventArgs e )
-		{
+		    
 			base.OnInit( e );
 
 			// Name
@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 				page.SetTitle( Person.FullName );
 
 			if ( Person.PhotoId.HasValue )
-			{
+			    
 				var imgLink = new HtmlAnchor();
 				phImage.Controls.Add( imgLink );
 				imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 				var img = new HtmlImage();
 				imgLink.Controls.Add( img );
-				img.Src = string.Format( "~/image.ashx?{0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
+				img.Src = string.Format( "~/image.ashx?    0}&maxwidth=165&maxheight=165", Person.PhotoId.Value );
 				img.Alt = Person.FullName;
 			}
 
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 			var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 			if ( families != null )
-			{
+			    
 				var campusNames = new List<string>();
 				foreach(int campusId in families
 					.Where( g => g.CampusId.HasValue)
@@ -58,13 +58,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 			}
 
 			if ( Person.BirthDate.HasValue)
-				lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", new DateTimeOffset(Person.BirthDate.Value).Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
+				lAge.Text = string.Format( "    0} yrs old <em>    1}</em>", new DateTimeOffset(Person.BirthDate.Value).Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
 	
 			lGender.Text = Person.Gender.ToString();
 
 			lMaritalStatus.Text = Person.MaritalStatusId.DefinedValue();
 			if ( Person.AnniversaryDate.HasValue )
-				lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", new DateTimeOffset(Person.AnniversaryDate.Value).Age(), Person.AnniversaryDate.Value.ToString("MM/dd") );
+				lAnniversary.Text = string.Format( "    0} yrs <em>    1}</em>", new DateTimeOffset(Person.AnniversaryDate.Value).Age(), Person.AnniversaryDate.Value.ToString("MM/dd") );
         }
     }
 }

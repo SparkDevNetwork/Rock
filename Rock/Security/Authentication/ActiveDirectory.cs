@@ -12,7 +12,7 @@ using Rock.Cms;
 using Rock.Web.UI;
 
 namespace Rock.Security.Authentication
-{
+    
     /// <summary>
     /// Authenticates a username using Active Directory
     /// </summary>
@@ -22,7 +22,7 @@ namespace Rock.Security.Authentication
 	[BlockProperty( 1, "Server", "Server", "The Active Directory server name", true, "" )]
 	[BlockProperty( 2, "Domain", "Server", "The network domain that users belongs to", true, "" )]
 	public class ActiveDirectory : AuthenticationComponent
-    {
+        
 		/// <summary>
 		/// Authenticates the specified user name and password
 		/// </summary>
@@ -30,14 +30,14 @@ namespace Rock.Security.Authentication
 		/// <param name="password">The password.</param>
 		/// <returns></returns>
 		public override bool Authenticate( User user, string password )
-		{
+		    
 			string username = user.UserName;
 			if ( !String.IsNullOrWhiteSpace( AttributeValue( "Domain" ) ) )
-				username = string.Format( @"{0}\{1}", AttributeValue( "Domain" ), user.UserName );
+				username = string.Format( @"    0}\    1}", AttributeValue( "Domain" ), user.UserName );
 
 			var context = new PrincipalContext( ContextType.Domain, AttributeValue( "Server" ) );
 			using ( context )
-			{
+			    
 				return context.ValidateCredentials( user.UserName, password );
 			}
 		}
@@ -49,7 +49,7 @@ namespace Rock.Security.Authentication
 		/// <param name="password"></param>
 		/// <returns></returns>
 		public override string EncodePassword( User user, string password )
-		{
+		    
 			return null;
 		}
 	}

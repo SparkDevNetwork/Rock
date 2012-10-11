@@ -1,13 +1,13 @@
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
 
     public partial class RemovePersonForeignKeys : DbMigration
-    {
+        
         public override void Up()
-        {
+            
             DropForeignKey( "cmsAuth", "CreatedByPersonId", "crmPerson" );
             DropForeignKey( "cmsAuth", "ModifiedByPersonId", "crmPerson" );
             DropForeignKey( "crmPerson", "CreatedByPersonId", "crmPerson" );
@@ -84,82 +84,82 @@ namespace Rock.Migrations
             DropForeignKey( "dbo.coreTaggedItem", "ModifiedByPersonId", "dbo.crmPerson" );
             DropForeignKey( "utilJob", "CreatedByPersonId", "crmPerson" );
             DropForeignKey( "utilJob", "ModifiedByPersonId", "crmPerson" );
-            DropIndex( "cmsAuth", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsAuth", new[] { "ModifiedByPersonId" } );
-            DropIndex( "crmPerson", new[] { "CreatedByPersonId" } );
-            DropIndex( "crmPerson", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsUser", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsUser", new[] { "ModifiedByPersonId" } );
-            DropIndex( "crmEmailTemplate", new[] { "CreatedByPersonId" } );
-            DropIndex( "crmEmailTemplate", new[] { "ModifiedByPersonId" } );
-            DropIndex( "crmPhoneNumber", new[] { "CreatedByPersonId" } );
-            DropIndex( "crmPhoneNumber", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreDefinedValue", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreDefinedValue", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreDefinedType", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreDefinedType", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreFieldType", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreFieldType", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreAttribute", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreAttribute", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreAttributeQualifier", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreAttributeQualifier", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreAttributeValue", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreAttributeValue", new[] { "ModifiedByPersonId" } );
-            DropIndex( "groupsMember", new[] { "CreatedByPersonId" } );
-            DropIndex( "groupsMember", new[] { "ModifiedByPersonId" } );
-            DropIndex( "groupsGroup", new[] { "CreatedByPersonId" } );
-            DropIndex( "groupsGroup", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.crmLocation", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.crmLocation", new[] { "ModifiedByPersonId" } );
-            DropIndex( "groupsGroupType", new[] { "CreatedByPersonId" } );
-            DropIndex( "groupsGroupType", new[] { "ModifiedByPersonId" } );
-            DropIndex( "groupsGroupRole", new[] { "CreatedByPersonId" } );
-            DropIndex( "groupsGroupRole", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.crmCampus", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.crmCampus", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialPledge", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialPledge", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialFund", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialFund", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialTransaction", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialTransaction", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialBatch", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialBatch", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialGateway", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialGateway", new[] { "ModifiedByPersonId" } );
-            DropIndex( "financialTransactionDetail", new[] { "CreatedByPersonId" } );
-            DropIndex( "financialTransactionDetail", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsFile", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsFile", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.cmsBlockType", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.cmsBlockType", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.cmsBlock", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.cmsBlock", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsHtmlContent", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsHtmlContent", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsPage", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsPage", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsPageRoute", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsPageRoute", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsPageContext", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsPageContext", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsSite", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsSite", new[] { "ModifiedByPersonId" } );
-            DropIndex( "cmsSiteDomain", new[] { "CreatedByPersonId" } );
-            DropIndex( "cmsSiteDomain", new[] { "ModifiedByPersonId" } );
-            DropIndex( "coreEntityChange", new[] { "CreatedByPersonId" } );
-            DropIndex( "coreExceptionLog", new[] { "PersonId" } );
-            DropIndex( "dbo.coreMetric", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.coreMetric", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.coreMetricValue", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.coreMetricValue", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.coreTag", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.coreTag", new[] { "ModifiedByPersonId" } );
-            DropIndex( "dbo.coreTaggedItem", new[] { "CreatedByPersonId" } );
-            DropIndex( "dbo.coreTaggedItem", new[] { "ModifiedByPersonId" } );
-            DropIndex( "utilJob", new[] { "CreatedByPersonId" } );
-            DropIndex( "utilJob", new[] { "ModifiedByPersonId" } );
+            DropIndex( "cmsAuth", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsAuth", new[]      "ModifiedByPersonId" } );
+            DropIndex( "crmPerson", new[]      "CreatedByPersonId" } );
+            DropIndex( "crmPerson", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsUser", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsUser", new[]      "ModifiedByPersonId" } );
+            DropIndex( "crmEmailTemplate", new[]      "CreatedByPersonId" } );
+            DropIndex( "crmEmailTemplate", new[]      "ModifiedByPersonId" } );
+            DropIndex( "crmPhoneNumber", new[]      "CreatedByPersonId" } );
+            DropIndex( "crmPhoneNumber", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreDefinedValue", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreDefinedValue", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreDefinedType", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreDefinedType", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreFieldType", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreFieldType", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreAttribute", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreAttribute", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreAttributeQualifier", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreAttributeQualifier", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreAttributeValue", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreAttributeValue", new[]      "ModifiedByPersonId" } );
+            DropIndex( "groupsMember", new[]      "CreatedByPersonId" } );
+            DropIndex( "groupsMember", new[]      "ModifiedByPersonId" } );
+            DropIndex( "groupsGroup", new[]      "CreatedByPersonId" } );
+            DropIndex( "groupsGroup", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.crmLocation", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.crmLocation", new[]      "ModifiedByPersonId" } );
+            DropIndex( "groupsGroupType", new[]      "CreatedByPersonId" } );
+            DropIndex( "groupsGroupType", new[]      "ModifiedByPersonId" } );
+            DropIndex( "groupsGroupRole", new[]      "CreatedByPersonId" } );
+            DropIndex( "groupsGroupRole", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.crmCampus", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.crmCampus", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialPledge", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialPledge", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialFund", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialFund", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialTransaction", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialTransaction", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialBatch", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialBatch", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialGateway", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialGateway", new[]      "ModifiedByPersonId" } );
+            DropIndex( "financialTransactionDetail", new[]      "CreatedByPersonId" } );
+            DropIndex( "financialTransactionDetail", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsFile", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsFile", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.cmsBlockType", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.cmsBlockType", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.cmsBlock", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.cmsBlock", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsHtmlContent", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsHtmlContent", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsPage", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsPage", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsPageRoute", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsPageRoute", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsPageContext", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsPageContext", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsSite", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsSite", new[]      "ModifiedByPersonId" } );
+            DropIndex( "cmsSiteDomain", new[]      "CreatedByPersonId" } );
+            DropIndex( "cmsSiteDomain", new[]      "ModifiedByPersonId" } );
+            DropIndex( "coreEntityChange", new[]      "CreatedByPersonId" } );
+            DropIndex( "coreExceptionLog", new[]      "PersonId" } );
+            DropIndex( "dbo.coreMetric", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.coreMetric", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.coreMetricValue", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.coreMetricValue", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.coreTag", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.coreTag", new[]      "ModifiedByPersonId" } );
+            DropIndex( "dbo.coreTaggedItem", new[]      "CreatedByPersonId" } );
+            DropIndex( "dbo.coreTaggedItem", new[]      "ModifiedByPersonId" } );
+            DropIndex( "utilJob", new[]      "CreatedByPersonId" } );
+            DropIndex( "utilJob", new[]      "ModifiedByPersonId" } );
             AddColumn( "coreExceptionLog", "CreatedByPersonId", c => c.Int() );
             DropColumn( "coreExceptionLog", "PersonId" );
 
@@ -358,7 +358,7 @@ END
         }
 
         public override void Down()
-        {
+            
             AddColumn( "coreExceptionLog", "PersonId", c => c.Int() );
             DropColumn( "coreExceptionLog", "CreatedByPersonId" );
             CreateIndex( "utilJob", "ModifiedByPersonId" );

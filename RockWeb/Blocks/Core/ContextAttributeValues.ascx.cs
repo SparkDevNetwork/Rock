@@ -21,7 +21,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
-{
+    
     /// <summary>
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
@@ -30,11 +30,11 @@ namespace RockWeb.Blocks.Core
     [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     [BlockProperty( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
     public partial class ContextAttributeValues : RockBlock
-    {
+        
         protected string _category = string.Empty;
 
         protected override void OnInit( EventArgs e )
-        {
+            
             base.OnInit( e );
             
             string entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Core
             string contextTypeName = string.Empty;
             Rock.Data.IEntity contextEntity = null;
             foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
+                
                 contextTypeName = entry.Key;
                 contextEntity = entry.Value;
                 // Should only be one.
@@ -61,13 +61,13 @@ namespace RockWeb.Blocks.Core
             }
 
             if (!String.IsNullOrWhiteSpace(contextTypeName) && contextEntity != null)
-            {
+                
                 ObjectCache cache = MemoryCache.Default;
-                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextTypeName, entityQualifierColumn, entityQualifierValue );
+                string cacheKey = string.Format( "Attributes:    0}:    1}:    2}", contextTypeName, entityQualifierColumn, entityQualifierValue );
 
                 Dictionary<string, List<int>> cachedAttributes = cache[cacheKey] as Dictionary<string, List<int>>;
                 if ( cachedAttributes == null )
-                {
+                    
                     cachedAttributes = new Dictionary<string, List<int>>();
 
                     AttributeService attributeService = new AttributeService();
@@ -77,8 +77,8 @@ namespace RockWeb.Blocks.Core
                             ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue ).
                         OrderBy( a => a.Category ).
                         ThenBy( a => a.Order ).
-                        Select( a => new { a.Category, a.Id } ) )
-                    {
+                        Select( a => new      a.Category, a.Id } ) )
+                        
                         if ( !cachedAttributes.ContainsKey( item.Category ) )
                             cachedAttributes.Add( item.Category, new List<int>() );
                         cachedAttributes[item.Category].Add( item.Id );
@@ -90,10 +90,10 @@ namespace RockWeb.Blocks.Core
 
                 Rock.Attribute.IHasAttributes model = contextEntity as Rock.Attribute.IHasAttributes;
                 if ( model != null )
-                {
+                    
                     if ( cachedAttributes.ContainsKey( _category ) )
                         foreach ( var attributeId in cachedAttributes[_category] )
-                        {
+                            
                             var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                             if ( attribute != null )
                                 phAttributes.Controls.Add( (AttributeInstanceValues)this.LoadControl( "~/Blocks/Core/AttributeInstanceValues.ascx", model, attribute, CurrentPersonId ) );
@@ -102,8 +102,8 @@ namespace RockWeb.Blocks.Core
             }
 
             string script = @"
-    Sys.Application.add_load(function () {
-        $('div.context-attribute-values .delete').click(function(){
+    Sys.Application.add_load(function ()     
+        $('div.context-attribute-values .delete').click(function()    
             return confirm('Are you sure?');
         });
     });

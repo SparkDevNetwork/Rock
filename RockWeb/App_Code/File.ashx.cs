@@ -11,14 +11,14 @@ using System.Data.SqlClient;
 using System.Web;
 
 namespace RockWeb
-{
+    
     /// <summary>
     /// Handles retrieving file data from storage
     /// </summary>
     public class File : IHttpAsyncHandler
-    {
+        
         public File()
-        {
+            
         }
 
         /// <summary>
@@ -29,13 +29,13 @@ namespace RockWeb
         /// <param name="extraData">Any state data needed to process the request.</param>
         /// <returns>An IAsyncResult that contains information about the status of the process.</returns>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
-        {
+            
             try
-            {
+                
                 string anID = context.Request.QueryString[0];
 
                 if ( string.IsNullOrEmpty( anID ) )
-                {
+                    
                     throw new Exception( "file id must be provided" );
                 }
 
@@ -43,11 +43,11 @@ namespace RockWeb
                 Guid guid = new Guid();
 
                 if ( !( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
-                {
+                    
                     throw new Exception( "file id key must be a guid or an int" );
                 }
 
-                SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
+                SqlConnection conn = new SqlConnection( string.Format( "    0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
                 cmd.CommandText = "cmsFile_sp_getByID";
@@ -65,7 +65,7 @@ namespace RockWeb
                     CommandBehavior.CloseConnection );  // close connection immediately after read
             }
             catch ( Exception ex )
-            {
+                
                 // TODO: log this error
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
@@ -80,19 +80,19 @@ namespace RockWeb
         /// </summary>
         /// <param name="result">An IAsyncResult that contains information about the status of the process.</param>
         public void EndProcessRequest( IAsyncResult result )
-        {
+            
             HttpContext context = (HttpContext)result.AsyncState;
 
             try
-            {
+                
                 // restore the command from the context
                 SqlCommand cmd = (SqlCommand)context.Items["cmd"];
                 using ( SqlDataReader reader = cmd.EndExecuteReader( result ) )
-                {
+                    
                     reader.Read();
                     context.Response.Clear();
                     context.Response.BinaryWrite( (byte[])reader["Data"] );
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", reader["FileName"] ) );
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename=    0}", reader["FileName"] ) );
                     context.Response.ContentType = (string)reader["MimeType"];
                     context.Response.Flush();
                     context.Response.End();
@@ -100,7 +100,7 @@ namespace RockWeb
                 }
             }
             catch ( Exception ex )
-            {
+                
                 // TODO: log this error
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
@@ -115,7 +115,7 @@ namespace RockWeb
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public void ProcessRequest( HttpContext context )
-        {
+            
             throw new NotImplementedException( "The method or operation is not implemented. This is an asynchronous file handler." );
         }
 
@@ -124,9 +124,9 @@ namespace RockWeb
         /// </summary>
         /// <returns>true if the <see cref="T:System.Web.IHttpHandler" /> instance is reusable; otherwise, false.</returns>
         public bool IsReusable
-        {
+            
             get
-            {
+                
                 return false;
             }
         }

@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Tag POCO Entity.
     /// </summary>
     [Table( "coreTag" )]
     public partial class Tag : Model<Tag>, IOrdered
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
         
         /// <summary>
         /// Gets or sets the Entity.
@@ -38,7 +38,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Entity { get; set; }
+        public string Entity      get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
@@ -48,7 +48,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string EntityQualifierColumn { get; set; }
+        public string EntityQualifierColumn      get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -58,7 +58,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityQualifierValue { get; set; }
+        public string EntityQualifierValue      get; set; }
         
         /// <summary>
         /// Gets or sets the Name.
@@ -69,7 +69,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Name { get; set; }
+        public string Name      get; set; }
         
         /// <summary>
         /// Gets or sets the Order.
@@ -79,7 +79,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public int Order { get; set; }
+        public int Order      get; set; }
 
         /// <summary>
         /// Gets or sets the Owner Person Id.
@@ -88,7 +88,7 @@ namespace Rock.Core
         /// Owner Id.
         /// </value>
         [DataMember]
-        public int? OwnerId { get; set; }
+        public int? OwnerId      get; set; }
 
         /// <summary>
         /// Gets or sets the Owner Person.
@@ -96,7 +96,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-        public virtual Crm.Person Owner { get; set; }
+        public virtual Crm.Person Owner      get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -104,7 +104,7 @@ namespace Rock.Core
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Attribute Read( int id )
-		{
+		    
 			return Read<Attribute>( id );
 		}
 
@@ -112,7 +112,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.Tag"; } }
+		public override string EntityTypeName      get      return "Core.Tag"; } }
         
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -120,14 +120,14 @@ namespace Rock.Core
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
-        public virtual ICollection<TaggedItem> TaggedItems { get; set; }
+        public virtual ICollection<TaggedItem> TaggedItems      get; set; }
         
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
+            
+            get      return new Security.GenericEntity( "Global" ); }
         }
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
     }
@@ -146,12 +146,12 @@ namespace Rock.Core
     /// Attribute Configuration class.
     /// </summary>
     public partial class TagConfiguration : EntityTypeConfiguration<Tag>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeConfiguration"/> class.
         /// </summary>
         public TagConfiguration()
-        {
+            
             this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
         }
     }

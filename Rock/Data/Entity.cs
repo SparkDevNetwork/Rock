@@ -15,7 +15,7 @@ using System.Runtime.Serialization;
 using Rock.Security;
 
 namespace Rock.Data
-{
+    
 	/// <summary>
 	/// Base class that all models need to inherit from
 	/// </summary>
@@ -23,7 +23,7 @@ namespace Rock.Data
 	[DataServiceKey( "Id" )]
 	[DataContract]
 	public abstract class Entity<T> : IEntity
-    {
+        
         // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
         // the service to interface with EF and fetch data.
 
@@ -32,7 +32,7 @@ namespace Rock.Data
         /// </summary>
         [Key]
         [DataMember]
-        public int Id { get; set; }
+        public int Id      get; set; }
 
         /// <summary>
         /// Gets or sets the GUID.
@@ -42,9 +42,9 @@ namespace Rock.Data
         /// </value>
         [AlternateKey]
         [DataMember]
-        public Guid Guid { 
-            get { return _guid; }
-            set { _guid = value; }
+        public Guid Guid      
+            get      return _guid; }
+            set      _guid = value; }
         }
         private Guid _guid = Guid.NewGuid();
 
@@ -55,16 +55,16 @@ namespace Rock.Data
 		/// The type of the entity.
 		/// </value>
 		[NotMapped]
-		public abstract string EntityTypeName { get; }
+		public abstract string EntityTypeName      get; }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]
         public string EncryptedKey
-        {
+            
             get
-            {
+                
                 string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
@@ -78,9 +78,9 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         public string ContextKey
-        {
+            
             get
-            {
+                
                 string identifier = 
                     typeof(T).FullName + "|" +
                     this.Id.ToString() + ">" + 
@@ -94,8 +94,8 @@ namespace Rock.Data
         /// </summary>
         [NotMapped]
         public List<ValidationResult> ValidationResults
-        {
-            get { return _validationResults; }
+            
+            get      return _validationResults; }
         }
         private List<ValidationResult> _validationResults;
 
@@ -107,9 +107,9 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         public bool IsValid
-        {
+            
             get
-            {
+                
                 var valContext = new ValidationContext( this, serviceProvider: null, items: null );
                 _validationResults = new List<ValidationResult>();
                 return Validator.TryValidateObject( this, valContext, _validationResults );
@@ -123,7 +123,7 @@ namespace Rock.Data
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static TT Read<TT>( int id ) where TT : Entity<TT>
-        {
+            
             return new Service<TT>().Get( id );
         }
 
@@ -139,7 +139,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnAdding( ModelUpdatingEventArgs e )
-		{
+		    
 			if ( Adding != null )
 				Adding( this, e );
 		}
@@ -150,7 +150,7 @@ namespace Rock.Data
 		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseAddingEvent( out bool cancel, int? personId )
-		{
+		    
 			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
 			OnAdding( e );
 			cancel = e.Cancel;
@@ -166,7 +166,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnAdded( ModelUpdatedEventArgs e )
-		{
+		    
 			if ( Added != null )
 				Added( this, e );
 		}
@@ -176,7 +176,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseAddedEvent( int? personId )
-		{
+		    
 			OnAdded( new ModelUpdatedEventArgs( this, personId ) );
 		}
 
@@ -190,7 +190,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnDeleting( ModelUpdatingEventArgs e )
-		{
+		    
 			if ( Deleting != null )
 				Deleting( this, e );
 		}
@@ -201,7 +201,7 @@ namespace Rock.Data
 		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseDeletingEvent( out bool cancel, int? personId )
-		{
+		    
 			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
 			OnDeleting( e );
 			cancel = e.Cancel;
@@ -217,7 +217,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnDeleted( ModelUpdatedEventArgs e )
-		{
+		    
 			if ( Deleted != null )
 				Deleted( this, e );
 		}
@@ -227,7 +227,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseDeletedEvent( int? personId )
-		{
+		    
 			OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
 		}
 
@@ -241,7 +241,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnUpdating( ModelUpdatingEventArgs e )
-		{
+		    
 			if ( Updating != null )
 				Updating( this, e );
 		}
@@ -252,7 +252,7 @@ namespace Rock.Data
 		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseUpdatingEvent( out bool cancel, int? personId )
-		{
+		    
 			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
 			OnUpdating( e );
 			cancel = e.Cancel;
@@ -268,7 +268,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
 		protected virtual void OnUpdated( ModelUpdatedEventArgs e )
-		{
+		    
 			if ( Updated != null )
 				Updated( this, e );
 		}
@@ -278,7 +278,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <param name="personId">The person id.</param>
 		public virtual void RaiseUpdatedEvent( int? personId )
-		{
+		    
 			OnUpdated( new ModelUpdatedEventArgs( this, personId ) );
 		}
 
@@ -292,7 +292,7 @@ namespace Rock.Data
 	/// Event argument used when model was added, updated, or deleted
 	/// </summary>
 	public class ModelUpdatedEventArgs : EventArgs
-	{
+	    
 		/// <summary>
 		/// The affected model
 		/// </summary>
@@ -309,7 +309,7 @@ namespace Rock.Data
 		/// <param name="model">The model.</param>
 		/// <param name="personId">The person id.</param>
 		public ModelUpdatedEventArgs( IEntity model, int? personId )
-		{
+		    
 			Model = model;
 			PersonId = personId;
 		}
@@ -319,7 +319,7 @@ namespace Rock.Data
 	/// Event argument used when model is being added, updated, or deleted
 	/// </summary>
 	public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
-	{
+	    
 		private bool cancel = false;
 		/// <summary>
 		/// Gets or sets a value indicating whether event should be cancelled.
@@ -328,10 +328,10 @@ namespace Rock.Data
 		///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
 		/// </value>
 		public bool Cancel
-		{
-			get { return cancel; }
+		    
+			get      return cancel; }
 			set
-			{
+			    
 				if ( value == true )
 					cancel = true;
 			}
@@ -344,7 +344,7 @@ namespace Rock.Data
 		/// <param name="personId">The person id.</param>
 		public ModelUpdatingEventArgs( IEntity model, int? personId )
 			: base( model, personId )
-		{
+		    
 		}
 	}
 
@@ -354,18 +354,18 @@ namespace Rock.Data
 	/// Object used for current model (context) implementation 
 	/// </summary>
 	internal class KeyEntity
-	{
-		public string Key { get; set; }
-		public int Id { get; set; }
-		public IEntity Entity { get; set; }
+	    
+		public string Key      get; set; }
+		public int Id      get; set; }
+		public IEntity Entity      get; set; }
 
 		public KeyEntity( int id )
-		{
+		    
 			Id = id;
 		}
 
 		public KeyEntity( string key )
-		{
+		    
 			Key = key;
 		}
 	}

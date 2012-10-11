@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// Block Type POCO Entity.
     /// </summary>
     [Table( "cmsBlockType" )]
     public partial class BlockType : Model<BlockType>, IExportable
-    {
+        
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem { get; set; }
+		public bool IsSystem      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Path.
@@ -39,7 +39,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
-		public string Path { get; set; }
+		public string Path      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Name.
@@ -50,7 +50,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 100 )]
 		[DataMember]
-		public string Name { get; set; }
+		public string Name      get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Description.
@@ -59,13 +59,13 @@ namespace Rock.Cms
 		/// Description.
 		/// </value>
 		[DataMember]
-		public string Description { get; set; }
+		public string Description      get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.BlockType"; } }
+		public override string EntityTypeName      get      return "Cms.BlockType"; } }
         
         /// <summary>
         /// Gets or sets the Blocks.
@@ -73,7 +73,7 @@ namespace Rock.Cms
         /// <value>
         /// Collection of Blocks.
         /// </value>
-        public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks      get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -81,7 +81,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static BlockType Read( int id )
-        {
+            
             return Read<BlockType>( id );
         }
 
@@ -92,7 +92,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Name;
 		}
 
@@ -101,7 +101,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string ExportJson()
-        {
+            
             return ExportObject().ToJSON();
         }
 
@@ -110,7 +110,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public object ExportObject()
-        {
+            
             return this.ToDynamic();
         }
 
@@ -119,7 +119,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="data">The data.</param>
         public void ImportJson(string data)
-        {
+            
             throw new NotImplementedException();
         }
 
@@ -129,12 +129,12 @@ namespace Rock.Cms
     /// Block Type Configuration class.
     /// </summary>
     public partial class BlockTypeConfiguration : EntityTypeConfiguration<BlockType>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTypeConfiguration"/> class.
         /// </summary>
         public BlockTypeConfiguration()
-        {
+            
         }
     }
 }

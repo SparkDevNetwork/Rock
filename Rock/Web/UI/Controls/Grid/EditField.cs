@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{
+    
     /// <summary>
     /// <see cref="Grid"/> Column for editing a row in a grid
     /// </summary>
-    [ToolboxData( "<{0}:EditField runat=server></{0}:EditField>" )]
+    [ToolboxData( "<    0}:EditField runat=server></    0}:EditField>" )]
     public class EditField : TemplateField
-    {
+        
         /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
         /// Always returns false.
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
-        {
+            
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.ItemStyle.CssClass = "grid-icon-cell edit";
 
@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void editFieldTemplate_LinkButtonClick( object sender, RowEventArgs e )
-        {
+            
             OnClick( e );
         }
 
@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         public virtual void OnClick( RowEventArgs e )
-        {
+            
             if ( Click != null )
                 Click( this, e );
         }
@@ -66,16 +66,16 @@ namespace Rock.Web.UI.Controls
     /// Template used by the <see cref="EditField"/> control
     /// </summary>
     public class EditFieldTemplate : ITemplate
-    {
+        
         /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/> object that child controls and templates belong to. These child controls are in turn defined within an inline template.
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
-        {
+            
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
-            {
+                
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.ToolTip = "Edit";
                 lbEdit.Click += lbEdit_Click;
@@ -90,9 +90,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         void lbEdit_Click( object sender, EventArgs e )
-        {
+            
             if ( LinkButtonClick != null )
-            {
+                
                 GridViewRow row = ( GridViewRow )( ( LinkButton )sender ).Parent.Parent;
                 RowEventArgs args = new RowEventArgs( row.RowIndex );
                 LinkButtonClick( sender, args );

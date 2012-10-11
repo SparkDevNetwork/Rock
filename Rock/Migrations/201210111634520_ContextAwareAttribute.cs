@@ -4,7 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 namespace Rock.Migrations
-{
+    
     using System;
     using System.Data.Entity.Migrations;
     
@@ -12,12 +12,12 @@ namespace Rock.Migrations
     /// 
     /// </summary>
     public partial class ContextAwareAttribute : RockMigration
-    {
+        
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
-        {
+            
             Sql( @"
                 UPDATE A SET
 	                 [Key] = 'ContextEntityType'
@@ -40,7 +40,7 @@ namespace Rock.Migrations
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
-        {
+            
             Sql( @"
                 UPDATE A SET
 	                 [Key] = 'Entity'

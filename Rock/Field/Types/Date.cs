@@ -13,13 +13,13 @@ using System.Web.UI.WebControls;
 using Rock;
 
 namespace Rock.Field.Types
-{
+    
     /// <summary>
     /// Field used to save and dispaly a text value
     /// </summary>
     [Serializable]
     public class Date : FieldType
-    {
+        
         /// <summary>
         /// Formats date display
         /// </summary>
@@ -29,33 +29,33 @@ namespace Rock.Field.Types
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
+            
             string formattedValue = string.Empty;
 
 			DateTimeOffset dateValue = DateTimeOffset.MinValue;
 			if ( DateTimeOffset.TryParse( value, out dateValue ) )
-			{
+			    
 				formattedValue = dateValue.DateTime.ToShortDateString();
 
 				if ( configurationValues != null &&
 					configurationValues.ContainsKey( "format" ) &&
 					!String.IsNullOrWhiteSpace( configurationValues["format"].Value ) )
-				{
+				    
 					try
-					{
+					    
 						formattedValue = dateValue.ToString( configurationValues["format"].Value );
 					}
 					catch
-					{
+					    
 						formattedValue = dateValue.DateTime.ToShortDateString();
 					}
 				}
 
 				if ( !condensed )
-				{
+				    
 					if ( configurationValues != null &&
 						configurationValues.ContainsKey( "displayDiff" ) )
-					{
+					    
 						bool displayDiff = false;
 						if ( bool.TryParse( configurationValues["displayDiff"].Value, out displayDiff ) && displayDiff )
 							formattedValue += " " + dateValue.ToElapsedString( true, false );
@@ -71,7 +71,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
 		public override List<string> ConfigurationKeys()
-		{
+		    
 			var keys = base.ConfigurationKeys();
 			keys.Add( "format" );
 			keys.Add( "displayDiff" );
@@ -83,7 +83,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <returns></returns>
 		public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
-		{
+		    
 			var controls = base.ConfigurationControls();
 
 			TextBox textbox = new TextBox();
@@ -105,11 +105,11 @@ namespace Rock.Field.Types
         /// <param name="controls">The controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
 		public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-		{
+		    
 			base.SetConfigurationValues( controls, configurationValues );
 
 			if ( controls != null && controls.Count >= 2 )
-			{
+			    
 				int i = controls.Count - 2;
 				if ( controls[i] != null && controls[i] is TextBox &&
 					configurationValues.ContainsKey( "format" ) )
@@ -118,7 +118,7 @@ namespace Rock.Field.Types
 				if ( controls[i] != null && controls[i] is HtmlGenericControl &&
 					controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox &&
 					configurationValues.ContainsKey( "displayDiff" ) )
-				{
+				    
 					bool displayDiff = false;
 					if ( !bool.TryParse( configurationValues["displayDiff"].Value ?? "False", out displayDiff ) )
 						displayDiff = false;
@@ -134,13 +134,13 @@ namespace Rock.Field.Types
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
 		public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-		{
+		    
 			var values = base.ConfigurationValues( controls );
 			values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date)", "" ) );
 			values.Add( "displayDiff", new ConfigurationValue( "Display Date Span", "Display the number of years between value and current date", "False" ) );
 
 			if ( controls != null && controls.Count >= 2 )
-			{
+			    
 				int i = controls.Count - 2;
 				if ( controls[i] != null && controls[i] is TextBox )
 					values["format"].Value = ( (TextBox)controls[i] ).Text;

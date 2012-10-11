@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-{
+    
     /// <summary>
     /// PageContext Service class
     /// </summary>
     public partial class PageContextService : Service<PageContext, PageContextDto>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextService"/> class
         /// </summary>
         public PageContextService()
             : base()
-        {
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextService"/> class
         /// </summary>
         public PageContextService(IRepository<PageContext> repository) : base(repository)
-        {
+            
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override PageContext CreateNew()
-        {
+            
             return new PageContext();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PageContextDto> QueryableDto( )
-        {
+            
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
-        {
+            
             return items.Select( m => new PageContextDto()
-                {
+                    
                     IsSystem = m.IsSystem,
                     PageId = m.PageId,
                     Entity = m.Entity,

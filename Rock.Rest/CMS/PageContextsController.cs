@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-{
+    
     /// <summary>
     /// PageContexts REST API
     /// </summary>
     public partial class PageContextsController : Rock.Rest.ApiController<Rock.Cms.PageContext, Rock.Cms.PageContextDto>
-    {
-        public PageContextsController() : base( new Rock.Cms.PageContextService() ) { } 
+        
+        public PageContextsController() : base( new Rock.Cms.PageContextService() )      } 
     }
 }

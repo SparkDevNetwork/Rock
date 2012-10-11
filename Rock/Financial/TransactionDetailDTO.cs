@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Financial
-{
+    
     /// <summary>
     /// Data Transfer Object for TransactionDetail object
     /// </summary>
     public partial class TransactionDetailDto : IDto
-    {
+        
 
 #pragma warning disable 1591
-        public int? TransactionId { get; set; }
-        public string Entity { get; set; }
-        public string EntityId { get; set; }
-        public decimal Amount { get; set; }
-        public string Summary { get; set; }
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
+        public int? TransactionId      get; set; }
+        public string Entity      get; set; }
+        public string EntityId      get; set; }
+        public decimal Amount      get; set; }
+        public string Summary      get; set; }
+        public int Id      get; set; }
+        public Guid Guid      get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public TransactionDetailDto ()
-        {
+            
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="transactionDetail"></param>
         public TransactionDetailDto ( TransactionDetail transactionDetail )
-        {
+            
             CopyFromModel( transactionDetail );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-        {
+            
             if ( model is TransactionDetail )
-            {
+                
                 var transactionDetail = (TransactionDetail)model;
                 this.TransactionId = transactionDetail.TransactionId;
                 this.Entity = transactionDetail.Entity;
@@ -71,9 +71,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-        {
+            
             if ( model is TransactionDetail )
-            {
+                
                 var transactionDetail = (TransactionDetail)model;
                 transactionDetail.TransactionId = this.TransactionId;
                 transactionDetail.Entity = this.Entity;

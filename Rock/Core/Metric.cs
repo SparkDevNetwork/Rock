@@ -20,13 +20,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Core
-{
+    
     /// <summary>
     /// Metric POCO Entity.
     /// </summary>
     [Table( "coreMetric" )]
     public partial class Metric : Model<Metric>, IOrdered
-    {
+        
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -35,7 +35,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem { get; set; }
+        public bool IsSystem      get; set; }
         
         /// <summary>
         /// Gets or sets the Type.
@@ -44,7 +44,7 @@ namespace Rock.Core
         /// Type.
         /// </value>
         [DataMember]
-        public bool Type { get; set; }
+        public bool Type      get; set; }
         
         /// <summary>
         /// Gets or sets the Category.
@@ -54,7 +54,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Category { get; set; }
+        public string Category      get; set; }
         
         /// <summary>
         /// Gets or sets the Title.
@@ -65,7 +65,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string Title { get; set; }
+        public string Title      get; set; }
 
         /// <summary>
         /// Gets or sets the Subtitle.
@@ -75,7 +75,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Subtitle { get; set; }
+        public string Subtitle      get; set; }
     
         /// <summary>
         /// Gets or sets the Description.
@@ -84,7 +84,7 @@ namespace Rock.Core
         /// Description.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description      get; set; }
 
         /// <summary>
         /// Gets or sets the MinValue.
@@ -93,7 +93,7 @@ namespace Rock.Core
         /// MinValue.
         /// </value>
         [DataMember]
-        public int? MinValue { get; set; }
+        public int? MinValue      get; set; }
 
         /// <summary>
         /// Gets or sets the MaxValue.
@@ -102,7 +102,7 @@ namespace Rock.Core
         /// MaxValue.
         /// </value>
         [DataMember]
-        public int? MaxValue { get; set; }
+        public int? MaxValue      get; set; }
 
         /// <summary>
         /// Gets or sets the CollectionFrequency.
@@ -111,7 +111,7 @@ namespace Rock.Core
         /// CollectionFrequency.
         /// </value>
         [DataMember]
-        public int? CollectionFrequencyId { get; set; }
+        public int? CollectionFrequencyId      get; set; }
 
         /// <summary>
         /// Gets or sets the LastCollected Date Time.
@@ -120,7 +120,7 @@ namespace Rock.Core
         /// LastCollected Date Time.
         /// </value>
         [DataMember]
-        public DateTime? LastCollected { get; set; }
+        public DateTime? LastCollected      get; set; }
 
         /// <summary>
         /// Gets or sets the Source.
@@ -130,7 +130,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Source { get; set; }
+        public string Source      get; set; }
 
         /// <summary>
         /// Gets or sets the SourceSQL.
@@ -139,7 +139,7 @@ namespace Rock.Core
         /// SourceSQL.
         /// </value>
         [DataMember]
-        public string SourceSQL { get; set; }
+        public string SourceSQL      get; set; }
 
 		/// <summary>
 		/// Gets or sets the Order.
@@ -149,7 +149,7 @@ namespace Rock.Core
 		/// </value>
 		[Required]
 		[DataMember]
-		public int Order { get; set; }
+		public int Order      get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -157,7 +157,7 @@ namespace Rock.Core
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Metric Read( int id )
-		{
+		    
 			return Read<Metric>( id );
 		}
 
@@ -165,7 +165,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName { get { return "Core.Metric"; } }
+		public override string EntityTypeName      get      return "Core.Metric"; } }
         
         /// <summary>
         /// Gets or sets the Metric Values.
@@ -173,7 +173,7 @@ namespace Rock.Core
         /// <value>
         /// Collection of Metric Values.
         /// </value>
-        public virtual ICollection<MetricValue> MetricValues { get; set; }
+        public virtual ICollection<MetricValue> MetricValues      get; set; }
 
         /// <summary>
         /// Gets or sets the CollectionFrequency.
@@ -181,14 +181,14 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue CollectionFrequency { get; set; }
+        public virtual Core.DefinedValue CollectionFrequency      get; set; }
 
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
+            
+            get      return new Security.GenericEntity( "Global" ); }
         }
 
 		/// <summary>
@@ -198,7 +198,7 @@ namespace Rock.Core
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		{
+		    
 			return this.Title;
 		}
     }
@@ -206,12 +206,12 @@ namespace Rock.Core
     /// Metric Configuration class.
     /// </summary>
     public partial class MetricConfiguration : EntityTypeConfiguration<Metric>
-    {
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricConfiguration"/> class.
         /// </summary>
         public MetricConfiguration()
-        {
+            
             this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
         }
     }
