@@ -5,60 +5,61 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
+using Rock.Cms;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class BlockTypes : Rock.Web.UI.RockBlock
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class BlockTypes : RockBlock
     {
-        #region Fields
-
-        private bool _canConfigure = false;
-        private Rock.Cms.BlockTypeService _blockTypeService = new Rock.Cms.BlockTypeService();
-
-        #endregion
-
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            try
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
-
-                if ( _canConfigure )
-                {
-                    rGrid.DataKeyNames = new string[] { "id" };
-                    rGrid.Actions.IsAddEnabled = true;
-
-                    rGrid.Actions.AddClick += rGrid_Add;
-                    rGrid.GridRebind += rGrid_GridRebind;
-                    modalDetails.SaveClick += modalDetails_SaveClick;
-                }
-                else
-                {
-                    DisplayError( "You are not authorized to configure this page" );
-                }
-            }
-            catch ( SystemException ex )
-            {
-                DisplayError( ex.Message );
+                gBlockTypes.DataKeyNames = new string[] { "id" };
+                gBlockTypes.Actions.IsAddEnabled = true;
+                gBlockTypes.Actions.AddClick += gBlockTypes_Add;
+                gBlockTypes.GridRebind += gBlockTypes_GridRebind;
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _canConfigure )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                ScanForUnregisteredBlocks();
-                BindGrid();
+                if ( !Page.IsPostBack )
+                {
+                    ScanForUnregisteredBlocks();
+                    BindGrid();
+                }
+            }
+            else
+            {
+                gBlockTypes.Visible = false;
+                nbMessage.Text = "You are not authorized to edit block types";
+                nbMessage.Visible = true;
             }
 
             base.OnLoad( e );
@@ -66,20 +67,41 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Events
+        #region Grid Events
 
-        protected void rGrid_Edit( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Add event of the gBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gBlockTypes_Add( object sender, EventArgs e )
         {
-            ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( 0 );
         }
 
-        protected void rGrid_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Edit event of the gBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gBlockTypes_Edit( object sender, RowEventArgs e )
         {
-            Rock.Cms.BlockType blockType = _blockTypeService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( (int)gBlockTypes.DataKeys[e.RowIndex]["id"] );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gBlockTypes_Delete( object sender, RowEventArgs e )
+        {
+            BlockTypeService blockTypeService = new BlockTypeService();
+            BlockType blockType = blockTypeService.Get( (int)gBlockTypes.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
             {
-                _blockTypeService.Delete( blockType, CurrentPersonId );
-                _blockTypeService.Save( blockType, CurrentPersonId );
+                blockTypeService.Delete( blockType, CurrentPersonId );
+                blockTypeService.Save( blockType, CurrentPersonId );
 
                 Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
             }
@@ -87,51 +109,88 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        protected void rGrid_Add( object sender, EventArgs e )
-        {
-            ShowEdit( 0 );
-        }
-
-        protected void rGrid_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gBlockTypes_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        void modalDetails_SaveClick( object sender, EventArgs e )
+        #endregion
+
+        #region Edit Events
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Rock.Cms.BlockType blockType;
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            BlockType blockType;
 
             int blockTypeId = 0;
-            if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out blockTypeId ) )
+            if ( hfBlockTypeId.Value != string.Empty && !int.TryParse( hfBlockTypeId.Value, out blockTypeId ) )
+            {
                 blockTypeId = 0;
+            }
+
+            BlockTypeService blockTypeService = new BlockTypeService();
 
             if ( blockTypeId == 0 )
             {
-                blockType = new Rock.Cms.BlockType();
-                _blockTypeService.Add( blockType, CurrentPersonId );
+                blockType = new BlockType();
+                blockTypeService.Add( blockType, CurrentPersonId );
             }
             else
             {
-                Rock.Web.Cache.BlockTypeCache.Flush( blockTypeId );
-                blockType = _blockTypeService.Get( blockTypeId );
+                BlockTypeCache.Flush( blockTypeId );
+                blockType = blockTypeService.Get( blockTypeId );
             }
 
             blockType.Name = tbName.Text;
             blockType.Path = tbPath.Text;
             blockType.Description = tbDescription.Text;
 
-            _blockTypeService.Save( blockType, CurrentPersonId );
+            if ( !blockType.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            blockTypeService.Save( blockType, CurrentPersonId );
 
             BindGrid();
+
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
+        /// <summary>
+        /// Scans for unregistered blocks.
+        /// </summary>
         private void ScanForUnregisteredBlocks()
         {
-            foreach ( Rock.Cms.BlockType blockType in _blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            BlockTypeService blockTypeService = new BlockTypeService();
+            foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {
@@ -139,66 +198,69 @@ namespace RockWeb.Blocks.Administration
                     if ( control is Rock.Web.UI.RockBlock )
                     {
                         blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path ).SplitCase();
-                        blockType.Description = Rock.Reflection.GetDescription(control.GetType()) ?? string.Empty;
+                        blockType.Description = Rock.Reflection.GetDescription( control.GetType() ) ?? string.Empty;
 
-                        _blockTypeService.Add( blockType, CurrentPersonId );
-                        _blockTypeService.Save( blockType, CurrentPersonId );
+                        blockTypeService.Add( blockType, CurrentPersonId );
+                        blockTypeService.Save( blockType, CurrentPersonId );
                     }
                 }
                 catch
                 {
+                    //
                 }
             }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
-            var queryable = _blockTypeService.Queryable();
+            BlockTypeService blockTypeService = new BlockTypeService();
+            List<BlockType> blockTypes;
 
-            SortProperty sortProperty = rGrid.SortProperty;
-            if (sortProperty != null)
-                queryable = queryable.Sort( sortProperty );
+            SortProperty sortProperty = gBlockTypes.SortProperty;
+            if ( sortProperty != null )
+            {
+                blockTypes = blockTypeService.Queryable().Sort( sortProperty ).ToList();
+            }
             else
-                queryable = queryable.OrderBy( b => b.Name );
+            {
+                blockTypes = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
+            }
 
-            rGrid.DataSource = queryable.ToList();
-            rGrid.DataBind();
+            gBlockTypes.DataSource = blockTypes;
+            gBlockTypes.DataBind();
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="blockTypeId">The block type id.</param>
         protected void ShowEdit( int blockTypeId )
         {
-            Rock.Cms.BlockType blockType = _blockTypeService.Get( blockTypeId );
+            pnlDetails.Visible = true;
+            pnlList.Visible = false;
+
+            BlockTypeService blockTypeService = new BlockTypeService();
+            BlockType blockType = blockTypeService.Get( blockTypeId );
 
             if ( blockType != null )
             {
-                modalDetails.Title = "Edit Block Type";
-                hfId.Value = blockType.Id.ToString();
-
+                hfBlockTypeId.Value = blockType.Id.ToString();
                 tbName.Text = blockType.Name;
                 tbPath.Text = blockType.Path;
                 tbDescription.Text = blockType.Description;
             }
             else
             {
-                modalDetails.Title = "Add Block Type";
-                hfId.Value = string.Empty;
-
+                hfBlockTypeId.Value = string.Empty;
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;
                 tbDescription.Text = string.Empty;
             }
-
-            modalDetails.Show();
-        }
-
-        private void DisplayError( string message )
-        {
-            pnlMessage.Controls.Clear();
-            pnlMessage.Controls.Add( new LiteralControl( message ) );
-            pnlMessage.Visible = true;
         }
 
         #endregion
-
     }
 }
